@@ -171,6 +171,7 @@ RUN apt-get update \
         autojump \
         fonts-powerline \
         openssh-client \
+        make \
         micro \
         less \
         inotify-tools \
@@ -180,7 +181,10 @@ RUN apt-get update \
         zsh \
     && rm -rf /var/lib/apt/lists/*    
 
-# # Install MiniZinc + ORTools from the build layer
+# Install D2
+RUN curl -fsSL https://d2lang.com/install.sh | sh -s --
+
+# Install MiniZinc + ORTools from the build layer
 COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
 COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=minizinc-builder $ORTOOLS_HOME $ORTOOLS_HOME
