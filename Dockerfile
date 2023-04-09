@@ -1,6 +1,11 @@
 ARG DOTNET_VERSION=6.0.407
 ARG DEBIAN_VERSION=11
 ARG DEBIAN_FRONTEND=noninteractive
+ARG MINIZINC_VERSION=2.7.1
+ARG MINIZINC_HOME=/usr/local/share/minizinc
+ARG ORTOOLS_VERSION=9.6
+ARG ORTOOLS_BUILD=2534
+ARG ORTOOLS_HOME=/opt/ortools
 ARG USER_NAME=harken
 ARG USER_GID=1000
 ARG USER_UID=1000
@@ -25,10 +30,51 @@ RUN groupadd --gid ${USER_GID} ${USER_NAME} \
     && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
     && chmod 0440 /etc/sudoers.d/${USER_NAME}
 
-# ------------------------------------
-# dev
+# ********************************************************
+# MiniZinc Builder
 #
-# Development environment
+# This layer installs MiniZinc into the $MINIZINC_HOME
+# directory which is later copied to other images.
+#
+# Google OR-Tools solver for MiniZinc is also installed
+#
+# ********************************************************
+FROM minizinc/minizinc:${MINIZINC_VERSION} as minizinc-builder
+
+# Install required packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install OR-Tools
+ARG DEBIAN_VERSION
+ARG MINIZINC_HOME
+ARG ORTOOLS_VERSION
+ARG ORTOOLS_BUILD
+ARG ORTOOLS_HOME
+ARG ORTOOLS_VERSION_BUILD=${ORTOOLS_VERSION}.${ORTOOLS_BUILD}
+ARG ORTOOLS_TAR_NAME=or-tools_amd64_debian-${DEBIAN_VERSION}_cpp_v${ORTOOLS_VERSION_BUILD}.tar.gz
+ARG ORTOOLS_TAR_URL=https://github.com/google/or-tools/releases/download/v${ORTOOLS_VERSION}/${ORTOOLS_TAR_NAME}
+ARG ORTOOLS_DIR_NAME=or-tools_x86_64_Debian-${DEBIAN_VERSION}_cpp_v${ORTOOLS_VERSION_BUILD}
+
+# Download and unpack the C++ build for this OS
+RUN wget -c ${ORTOOLS_TAR_URL} && \
+    tar -xzvf ${ORTOOLS_TAR_NAME}
+
+# Move the files to the correct location
+RUN mv ${ORTOOLS_DIR_NAME} ${ORTOOLS_HOME} && \
+    cp ${ORTOOLS_HOME}/share/minizinc/solvers/* ${MINIZINC_HOME}/solvers \
+    && cp -r ${ORTOOLS_HOME}/share/minizinc/ortools ${MINIZINC_HOME}/ortools \
+    && ln -s ${ORTOOLS_HOME}/bin/fzn-ortools /usr/local/bin/fzn-ortools
+
+# Test installation
+RUN echo "var 1..9: x; constraint x > 5; solve satisfy;" \
+  | minizinc --solver com.google.or-tools --input-from-stdin
+
+
+# ------------------------------------
+# dotnet-sdk
 # ------------------------------------
 FROM non-root as dotnet-sdk
 
@@ -55,12 +101,11 @@ COPY global.json .
 
 RUN curl -sSL https://dot.net/v1/dotnet-install.sh \
   | bash /dev/stdin \
-        --jsonfile global.json \
-        --install-dir ${DOTNET_INSTALL_DIR} \
+     --jsonfile global.json \
+     --install-dir ${DOTNET_INSTALL_DIR} \
  && ln -s \
-        ${DOTNET_INSTALL_DIR}/dotnet \
-        /usr/bin/dotnet
-
+     ${DOTNET_INSTALL_DIR}/dotnet \
+     /usr/bin/dotnet
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -85,6 +130,11 @@ FROM dotnet-sdk as dev
 ARG USER_NAME
 ARG USER_GID
 ARG USER_UID
+ARG DEBIAN_VERSION
+ARG MINIZINC_HOME
+ARG ORTOOLS_VERSION
+ARG ORTOOLS_BUILD
+ARG ORTOOLS_HOME
 
 # Install core packages
 RUN apt-get update \
@@ -129,6 +179,11 @@ RUN apt-get update \
         tree \
         zsh \
     && rm -rf /var/lib/apt/lists/*    
+
+# # Install MiniZinc + ORTools from the build layer
+COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
+COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
+COPY --from=minizinc-builder $ORTOOLS_HOME $ORTOOLS_HOME
 
 # Install ZSH
 USER ${USER_NAME}
