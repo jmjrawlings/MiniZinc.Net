@@ -1,0 +1,145 @@
+ARG DOTNET_VERSION=6.0.407
+ARG DEBIAN_VERSION=11
+ARG DEBIAN_FRONTEND=noninteractive
+ARG USER_NAME=harken
+ARG USER_GID=1000
+ARG USER_UID=1000
+
+# ------------------------------------
+# base
+#
+# Base operating system
+# ------------------------------------
+FROM debian:${DEBIAN_VERSION} as base
+
+FROM base as non-root
+ARG USER_NAME
+ARG USER_GID
+ARG USER_UID
+
+# Create the user
+RUN groupadd --gid ${USER_GID} ${USER_NAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
+    && chmod 0440 /etc/sudoers.d/${USER_NAME}
+
+# ------------------------------------
+# dev
+#
+# Development environment
+# ------------------------------------
+FROM non-root as dotnet-sdk
+
+ARG DOTNET_VERSION
+ARG DEBIAN_FRONTEND
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV DOTNET_INSTALL_DIR=/usr/share/dotnet
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates \
+        libc6 \
+        libgcc1 \
+        libgssapi-krb5-2 \
+        libicu67 \
+        libssl1.1 \
+        libstdc++6 \
+        zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY global.json .
+
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh \
+  | bash /dev/stdin \
+        --jsonfile global.json \
+        --install-dir ${DOTNET_INSTALL_DIR} \
+ && ln -s \
+        ${DOTNET_INSTALL_DIR}/dotnet \
+        /usr/bin/dotnet
+
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates \
+        libc6 \
+        libgcc1 \
+        libgssapi-krb5-2 \
+        libicu67 \
+        libssl1.1 \
+        libstdc++6 \
+        zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------
+# dev
+#
+# Development environment
+# ------------------------------------
+FROM dotnet-sdk as dev
+
+ARG USER_NAME
+ARG USER_GID
+ARG USER_UID
+
+# Install core packages
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gnupg2 \
+        locales \
+        lsb-release \
+        wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Docker CE CLI
+RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | apt-key add - 2>/dev/null \
+    && echo "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        docker-ce-cli \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Docker Compose
+RUN LATEST_COMPOSE_VERSION=$(curl -sSL "https://api.github.com/repos/docker/compose/releases/latest" | grep -o -P '(?<="tag_name": ").+(?=")') \
+    && curl -sSL "https://github.com/docker/compose/releases/download/${LATEST_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose
+
+# Install Github CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt update \
+    && apt install gh -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Developer packages
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        autojump \
+        fonts-powerline \
+        openssh-client \
+        micro \
+        less \
+        inotify-tools \
+        htop \                                                  
+        git \    
+        tree \
+        zsh \
+    && rm -rf /var/lib/apt/lists/*    
+
+# Install ZSH
+USER ${USER_NAME}
+ENV HOME=/home/${USER_NAME}
+WORKDIR $HOME
+COPY .devcontainer/.p10k.zsh .p10k.zsh
+RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
+    -p git \
+    -p docker \
+    -p autojump \
+    -p https://github.com/zsh-users/zsh-autosuggestions \
+    -p https://github.com/zsh-users/zsh-completions \
+ && echo "[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh" >> .zshrc \
+ && .oh-my-zsh/custom/themes/powerlevel10k/gitstatus/install

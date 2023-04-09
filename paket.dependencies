@@ -1,0 +1,26 @@
+source https://api.nuget.org/v3/index.json
+storage: none
+framework: auto-detect
+nuget FSharp.Core
+nuget Expecto
+nuget YoloDev.Expecto.TestSdk
+nuget Microsoft.NET.Test.Sdk
+
+
+group Build
+    source https://api.nuget.org/v3/index.json
+    storage: none
+    framework: auto-detect
+    nuget Fake.IO.FileSystem
+    nuget Fake.Core.Target
+    nuget Fake.Core.ReleaseNotes
+    nuget FAKE.Core.Environment
+    nuget Fake.DotNet.Cli
+    nuget FAKE.Core.Process
+    nuget Fake.DotNet.AssemblyInfoFile
+    nuget Fake.Tools.Git
+    nuget Fake.DotNet.Paket
+    nuget Fake.Api.GitHub
+    nuget Fake.BuildServer.GitHubActions
+    nuget Argu
+    nuget Octokit
