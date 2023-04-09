@@ -1,9 +1,6 @@
-namespace MiniZinc.Net.Tests
+module MiniZinc.Net.TestRunner
+open Expecto
 
-module ExpectoTemplate =
-
-    open Expecto
-
-    [<EntryPoint>]
-    let main argv =
-        Tests.runTestsInAssembly defaultConfig argv
+[<EntryPoint>]
+let main argv =
+    runTestsInAssembly defaultConfig argv
