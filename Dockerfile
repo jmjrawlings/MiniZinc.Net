@@ -139,6 +139,8 @@ ARG ORTOOLS_HOME
 # Install core packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates \
         gnupg2 \
         locales \
         lsb-release \

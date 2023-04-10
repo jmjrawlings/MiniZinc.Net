@@ -5,11 +5,13 @@
         "dockerfile": "../Dockerfile",
         "target": "dev"
     },
+
     "mounts": [
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
         // "source=${localEnv:HOME}/.zshrc,target=/root/.zshrc,type=bind,readonly",
         // "source=${localEnv:HOME}/.p10k.zsh,target=/root/.p10k.zsh,type=bind,readonly"
     ],
+    
     "customizations": {
         "vscode": {
             "extensions": [
@@ -20,7 +22,6 @@
         },
         "settings": {
             "FSharp.fsacRuntime": "netcore",
-            "FSharp.enableAnalyzers": true,
             "terminal.integrated.defaultProfile.linux": "zsh",
             "terminal.integrated.profiles.linux": {
                 "zsh": {
@@ -43,4 +44,5 @@
     "containerEnv": {
         "DO_NOT_TRACK": "1"
     }
+    
 }
