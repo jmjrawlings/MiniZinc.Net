@@ -1,0 +1,1 @@
+module MiniZinc.Net.Prelude

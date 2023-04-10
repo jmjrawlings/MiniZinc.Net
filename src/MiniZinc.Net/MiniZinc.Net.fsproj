@@ -13,7 +13,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Library.fs" />
+    <Compile Include="Prelude.fs" />
+    <Compile Include="CLI.fs" />
+    <Compile Include="MiniZinc.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
