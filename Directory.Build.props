@@ -1,6 +1,5 @@
 <Project>
     <PropertyGroup>
-        <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
         <PackageTags>f#, fsharp</PackageTags>
         <PackageProjectUrl>https://github.com/jmjrawlings/MiniZinc.Net</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/jmjrawlings/MiniZinc.Net/blob/master/LICENSE.md</PackageLicenseUrl>
@@ -8,6 +7,5 @@
         <RepositoryType>git</RepositoryType>
         <Authors>jmjrawlings</Authors>
         <RepositoryUrl>https://github.com/jmjrawlings/MiniZinc.Net</RepositoryUrl>
-        <!-- owners is not supported in MSBuild -->
     </PropertyGroup>
 </Project>
