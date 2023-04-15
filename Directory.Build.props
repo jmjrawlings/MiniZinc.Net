@@ -7,5 +7,6 @@
         <RepositoryType>git</RepositoryType>
         <Authors>jmjrawlings</Authors>
         <RepositoryUrl>https://github.com/jmjrawlings/MiniZinc.Net</RepositoryUrl>
+        <NoWarn>0020</NoWarn>
     </PropertyGroup>
 </Project>

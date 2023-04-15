@@ -4,32 +4,55 @@ open System
 open System.IO
 open System.Diagnostics
 open System.Threading.Tasks
-open FSharp.Control
+open FSharp.Control.Reactive
+open System.Reactive
+open System.Text
+open System.Reactive.Linq
 
-#nowarn "0020"
 
-module rec Process =
+type Proc =
 
-    let exec (command: string) (args: seq<'t>) =
-        let startInfo = ProcessStartInfo()
-        startInfo.FileName <- command
+    static member create (command: string) =
+        let psi = ProcessStartInfo()
+        psi.FileName <- command
+        psi.RedirectStandardOutput <- true
+        psi.RedirectStandardError <- true
+        psi.UseShellExecute <- false
+        psi.CreateNoWindow <- true
+        psi.StandardOutputEncoding <- Encoding.UTF8
+        psi.StandardErrorEncoding <- Encoding.UTF8
+        psi 
 
-        for a in args do
-            startInfo.ArgumentList.Add(string a)
-            
-        startInfo.RedirectStandardOutput <- true
-        startInfo.RedirectStandardError <- true
-        startInfo.UseShellExecute <- false
-        startInfo.CreateNoWindow <- true
+    static member create(command:string, args: string) =
+        let psi = Proc.create(command)
+        psi.Arguments <- args
+        psi
 
+    static member create (command: string, [<ParamArray>] args: Object[]) : ProcessStartInfo =
+        let psi = Proc.create(command)
+        for arg in args do
+            psi.ArgumentList.Add (string arg)
+        psi
+    
+    static member exec (psi: ProcessStartInfo) : IObservable<string> =
+    
         use proc = new Process()
-        proc.StartInfo <- startInfo
         proc.EnableRaisingEvents <- true
-        proc.Start() 
+        proc.StartInfo <- psi
+        
+        let output = proc.OutputDataReceived
+        let error = proc.ErrorDataReceived
+        let exited = proc.Exited
+        let stream = 
+            [| output.AsObservable() ;
+              error.AsObservable() |]
+            |> Observable.mergeArray
+            |> Observable.map (fun data -> data.Data)
+            |> Observable.takeUntilOther exited
 
-        asyncSeq {
-            while true do
-                let! data_args = Async.AwaitEvent proc.OutputDataReceived
-                let! err_args = Async.AwaitEvent proc.ErrorDataReceived
-                yield data_args
-        }
+        proc.Start()
+        proc.BeginErrorReadLine()
+        proc.BeginOutputReadLine()
+        stream
+        // stream
+        

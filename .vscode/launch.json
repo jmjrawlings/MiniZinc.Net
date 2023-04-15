@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "Test",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/tests/MiniZinc.Net.Tests/bin/Debug/net6.0/MiniZinc.Net.Tests",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+
+    ]
+}
