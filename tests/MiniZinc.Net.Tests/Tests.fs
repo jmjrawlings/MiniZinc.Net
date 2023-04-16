@@ -4,10 +4,11 @@ open System
 open Expecto
 open MiniZinc.Net
 open FSharp.Control
-open System.Reactive
+open CliWrap
+open CliWrap.EventStream
 open System.Reactive.Linq
-open FSharp.Control.Reactive
-
+open FSharp.Control
+open System.Text.RegularExpressions
 
 module Tests =
 
@@ -15,16 +16,34 @@ module Tests =
     let tests =
         testList "minizinc" [
             
-            test "cli is installed" {
-                let obs = 
-                    Proc.create("minizinc", "--version")
-                    |> Proc.exec
-
-                let a = obs.ToList()
-                let b = a.Wait()
-
-                // let x = obs.LastAsync().Wait()
-                Expect.equal 1 1 ""
+            testAsync "cli is installed" {
+                
+                let pattern = @"version (\d+\.\d+\.\d+)"
+                let regex = Regex pattern
+                
+                let cli =
+                    Cli.Wrap("minizinc").WithArguments("--version")
+                    
+                let! version =
+                    cli.ListenAsync()
+                    |> AsyncSeq.ofAsyncEnum
+                    |> AsyncSeq.choose (fun cmd ->
+                        match cmd with
+                        | :? StandardOutputCommandEvent as x ->
+                            Some x.Text
+                        | _ ->
+                            None
+                        )
+                    |> AsyncSeq.choose (fun msg ->
+                        let result = regex.Match msg
+                        if result.Success then
+                            Some result.Groups.[1].Value
+                        else
+                            None
+                        )
+                    |> AsyncSeq.firstOrDefault ""
+                
+                Expect.equal version "2.7.2" "Could not determine MiniZinc version"
             }
             
 
