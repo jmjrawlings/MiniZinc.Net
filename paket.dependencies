@@ -1,18 +1,30 @@
 source https://api.nuget.org/v3/index.json
 storage: none
 framework: auto-detect
+
 nuget FSharp.Control.AsyncSeq
 nuget FSharp.Control.Reactive
+nuget FSharp.Core
+nuget CliWrap
+
+group Test
+
+source https://api.nuget.org/v3/index.json
+storage: none
+framework: auto-detect
+
 nuget FSharp.Core
 nuget Expecto
 nuget YoloDev.Expecto.TestSdk
 nuget Microsoft.NET.Test.Sdk
-
+nuget Expecto.VisualStudio.TestAdapter
 
 group Build
+
     source https://api.nuget.org/v3/index.json
     storage: none
     framework: auto-detect
+
     nuget Fake.IO.FileSystem
     nuget Fake.Core.Target
     nuget Fake.Core.ReleaseNotes

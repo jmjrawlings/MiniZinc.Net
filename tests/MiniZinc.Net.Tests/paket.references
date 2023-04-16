@@ -1,4 +1,10 @@
-Expecto
+FSharp.Control.AsyncSeq
+FSharp.Control.Reactive
 FSharp.Core
-Microsoft.NET.Test.Sdk
-YoloDev.Expecto.TestSdk
+CliWrap
+
+group Test
+    Expecto
+    Microsoft.NET.Test.Sdk
+    YoloDev.Expecto.TestSdk
+    Expecto.VisualStudio.TestAdapter
