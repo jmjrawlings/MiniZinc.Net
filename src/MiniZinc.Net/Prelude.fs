@@ -22,20 +22,28 @@ module Grep =
             then Some m
             else None)
     
-    let matchList pattern string =
-        string
-        |> Match pattern
-        |> (fun m ->
-            if m.Success
-            then Seq.toList m.Captures
-            else [])
-        |> List.map (fun c -> c.Value)
+    // Match the given pattern and store captures in an array
+    let matchArray pattern string =
+        
+        let result =
+            Match pattern string
+        
+        let groups =
+            match result with
+            | _ when result.Success ->
+                Seq.toArray result.Groups
+            | _ ->
+                Array.empty
+            |> Array.skip 1 
+            |> Array.map (fun c -> c.Value)
+
+        groups
         
     let match1 pattern =
-        matchList pattern >> List.head
+        matchArray pattern >> (fun l -> l[0])
             
     let match2 pattern =
-        matchList pattern >> (fun l -> l[0], l[1])
+        matchArray pattern >> (fun l -> l[0], l[1])
         
     let match3 pattern =
-        matchList pattern >> (fun l -> l[0], l[1], l[3])
+        matchArray pattern >> (fun l -> l[0], l[1], l[2])

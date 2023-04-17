@@ -16,31 +16,38 @@ module Command =
         | Error of error:string
         | Exit of code:int
 
-    type Command with 
+    type Command with
 
+        // Create a Command
         static member create (command: string) =
             Cli.Wrap(command)
             
+        // Create a Command
         static member create(command:string, args: string) =
             Command.create(command).WithArguments(args)
-            
+        
+        // Create a Command    
         static member create (command: string, [<ParamArray>] args: string[]) =
             Command.create(command, args)
                 
+        // Create a Command
         static member create (command: string, [<ParamArray>] args: Object[]) =
             let args =
                 args
                 |> Seq.map string
             Command.create(command, args)
-            
+        
+        // Set the working directory    
         static member workdir (dir: string) =
             fun (cmd: Command) ->
                 cmd.WithWorkingDirectory dir
 
+        // Set the working directory
         static member workdir (dir: DirectoryInfo) =
             fun (cmd: Command) ->
                 cmd.WithWorkingDirectory dir.FullName
             
+        // Execute the given Command            
         static member exec (cmd: Command) =
             cmd.ExecuteAsync()
             
@@ -58,4 +65,16 @@ module Command =
                     CommandEvent.Exit e.ExitCode
                 | other ->
                     failwithf $"Unknown object {other}"
+                )
+
+        // Stream standard out from the given command
+        static member stdout (cmd: Command) =
+            cmd
+            |> Command.listen
+            |> AsyncSeq.choose (fun ev ->
+                match ev with
+                | CommandEvent.Output x ->
+                    Some x
+                | _ ->
+                    None
                 )

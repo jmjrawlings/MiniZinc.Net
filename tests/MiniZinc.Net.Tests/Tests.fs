@@ -24,17 +24,8 @@ module Tests =
                     
                 let! version =
                     cli
-                    |> Command.listen
-                    |> AsyncSeq.choose (function
-                        | CommandEvent.Output msg -> Some msg
-                        | _ -> None)
-                    |> AsyncSeq.choose (fun msg ->
-                        let result = regex.Match msg
-                        if result.Success then
-                            Some result.Groups.[1].Value
-                        else
-                            None
-                        )
+                    |> Command.stdout
+                    |> AsyncSeq.map (Grep.match1 pattern)
                     |> AsyncSeq.firstOrDefault ""
                 
                 Expect.equal version "2.7.2" "Could not determine MiniZinc version"
