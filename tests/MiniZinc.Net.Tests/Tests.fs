@@ -1,14 +1,12 @@
 namespace MiniZinc.Net.Tests
 
-open System
 open Expecto
 open MiniZinc.Net
 open FSharp.Control
 open CliWrap
 open CliWrap.EventStream
-open System.Reactive.Linq
-open FSharp.Control
 open System.Text.RegularExpressions
+
 
 module Tests =
 
@@ -22,18 +20,14 @@ module Tests =
                 let regex = Regex pattern
                 
                 let cli =
-                    Cli.Wrap("minizinc").WithArguments("--version")
+                    Command.create("minizinc", "--version")
                     
                 let! version =
-                    cli.ListenAsync()
-                    |> AsyncSeq.ofAsyncEnum
-                    |> AsyncSeq.choose (fun cmd ->
-                        match cmd with
-                        | :? StandardOutputCommandEvent as x ->
-                            Some x.Text
-                        | _ ->
-                            None
-                        )
+                    cli
+                    |> Command.listen
+                    |> AsyncSeq.choose (function
+                        | CommandEvent.Output msg -> Some msg
+                        | _ -> None)
                     |> AsyncSeq.choose (fun msg ->
                         let result = regex.Match msg
                         if result.Success then
