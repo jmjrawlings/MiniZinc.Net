@@ -4,9 +4,6 @@ open Expecto
 open MiniZinc.Net
 open FSharp.Control
 open CliWrap
-open CliWrap.EventStream
-open System.Text.RegularExpressions
-
 
 module Tests =
 
@@ -16,8 +13,8 @@ module Tests =
             
             testAsync "cli is installed" {
                 
-                let pattern = @"version (\d+\.\d+\.\d+)"
-                let regex = Regex pattern
+                let pattern =
+                    @"version (\d+\.\d+\.\d+)"
                 
                 let cli =
                     Command.create("minizinc", "--version")
@@ -28,7 +25,10 @@ module Tests =
                     |> AsyncSeq.map (Grep.match1 pattern)
                     |> AsyncSeq.firstOrDefault ""
                 
-                Expect.equal version "2.7.2" "Could not determine MiniZinc version"
+                Expect.equal
+                    version
+                    "2.7.2"
+                    "Could not determine MiniZinc version"
             }
             
 
