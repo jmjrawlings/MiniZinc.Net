@@ -12,19 +12,8 @@ module Tests =
         testList "minizinc" [
             
             testAsync "cli is installed" {
-                
-                let pattern =
-                    @"version (\d+\.\d+\.\d+)"
-                
-                let cli =
-                    Command.create("minizinc", "--version")
                     
-                let! version =
-                    cli
-                    |> Command.stdout
-                    |> AsyncSeq.map (Grep.match1 pattern)
-                    |> AsyncSeq.firstOrDefault ""
-                
+                let! version = MiniZinc.version ()
                 Expect.equal
                     version
                     "2.7.2"

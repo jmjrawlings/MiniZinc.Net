@@ -17,6 +17,8 @@
     <Compile Include="Prelude.fs" />
     <Compile Include="Command.fs" />
     <Compile Include="MiniZinc.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="Solver.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

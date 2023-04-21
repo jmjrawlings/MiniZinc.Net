@@ -47,3 +47,11 @@ module Grep =
         
     let match3 pattern =
         matchArray pattern >> (fun l -> l[0], l[1], l[2])
+
+
+module Async =
+    let map f a =
+        async {
+            let! value = a
+            return f value
+        }
