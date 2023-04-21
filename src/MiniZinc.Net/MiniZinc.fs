@@ -1,8 +1,10 @@
 namespace MiniZinc.Net
 
 open System
+open System.Text.Json.Serialization
 open MiniZinc.Net
 open FSharp.Control
+open System.Text.Json
 
 module MiniZinc =
     
@@ -13,10 +15,32 @@ module MiniZinc =
         executablePath
         |> Command.create
         
+    /// <summary>
+    /// Get all installed solvers
+    /// </summary>
     let solvers () =
-        command()
-        |> Command.withArgs "--solvers-json"
-        |> Command.execAsync
+        async {
+            let! result =
+                command()
+                |> Command.withArgs "--solvers-json"
+                |> Command.execAsync
+
+            let json = result.StandardOutput
+            let options = JsonSerializerOptions()
+            options.PropertyNameCaseInsensitive <- true
+            let solvers =
+                JsonSerializer.Deserialize<List<Solver>>(json, options)
+                |> Map.withKey (fun s -> s.Id)
+            
+            return solvers
+        }
+
+    /// <summary>
+    /// Find a solver by Id
+    /// </summary>
+    let solver id =
+        solvers ()
+        |> Async.map (Map.tryFind id)
     
     let version () =
         let pattern =

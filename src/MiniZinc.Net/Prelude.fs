@@ -55,3 +55,9 @@ module Async =
             let! value = a
             return f value
         }
+
+module Map =
+    let withKey f xs =
+        xs
+        |> Seq.map (fun x -> (f x), x)
+        |> Map
