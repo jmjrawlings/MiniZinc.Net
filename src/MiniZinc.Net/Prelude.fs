@@ -1,6 +1,8 @@
 namespace MiniZinc.Net
 
+open System.Runtime.CompilerServices
 open System.Text.RegularExpressions
+open System.Threading.Tasks
 open FSharp.Control
 
 [<AutoOpen>]
@@ -48,16 +50,26 @@ module Grep =
     let match3 pattern =
         matchArray pattern >> (fun l -> l[0], l[1], l[2])
 
-
-module Async =
+    
+    
+module Task =
     let map f a =
-        async {
+        task {
             let! value = a
             return f value
         }
+    
 
 module Map =
     let withKey f xs =
         xs
         |> Seq.map (fun x -> (f x), x)
         |> Map
+        
+[<Extension>]        
+type Extensions =
+    
+    [<Extension>]
+    static member AsAsync(task: Task<'t>) =
+        task
+        |> Async.AwaitTask

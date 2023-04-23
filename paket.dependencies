@@ -2,10 +2,8 @@ source https://api.nuget.org/v3/index.json
 storage: none
 framework: auto-detect
 
-nuget FSharp.Control.AsyncSeq
-nuget FSharp.Control.Reactive
 nuget FSharp.Core
-nuget CliWrap
+nuget FSharp.Control.TaskSeq
 
 group Test
 

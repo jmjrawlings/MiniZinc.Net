@@ -2,28 +2,27 @@ namespace MiniZinc.Net.Tests
 
 open Expecto
 open MiniZinc.Net
-open FSharp.Control
-open CliWrap
+open System.Threading.Tasks
 
 module Tests =
     
-    let test_solver_installed id =
-        testAsync $"{id} installed" {
-            let! solver = MiniZinc.solver id
-            Expect.isTrue solver.IsSome $"{id} was not installed"
-        }
-        
-
     [<Tests>]
     let tests =
-        testList "minizinc" [
+        
+        let test_solver_installed id =
+            testTask $"{id} installed" {
+                let! solver = MiniZinc.GetSolver id
+                Expect.isSome solver $"{id} was not installed"
+            }
+
+        testList "minizinc installation" [
             
-            testAsync "cli version" {
-                let! version = MiniZinc.version ()
+            testTask "version is correct" {
+                let! version = MiniZinc.Version ()
                 Expect.equal version "2.7.2" "Could not determine MiniZinc version"
             }
             
-            testList "solvers installed" [
+            testList "solvers are installed" [
                 test_solver_installed "org.gecode.gecode"
                 test_solver_installed "org.chuffed.chuffed"
             ]

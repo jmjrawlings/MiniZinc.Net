@@ -15,7 +15,6 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Prelude.fs" />
-    <Compile Include="Command.fs" />
     <Compile Include="Solver.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="MiniZinc.fs" />

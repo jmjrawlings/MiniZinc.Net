@@ -1,7 +1,5 @@
-FSharp.Control.AsyncSeq
-FSharp.Control.Reactive
 FSharp.Core
-CliWrap
+FSharp.Control.TaskSeq
 
 group Test
     Expecto

@@ -2,9 +2,10 @@
 
 open System
 open System.Text.Json.Nodes
+open System.Text.Json.Serialization
 
 /// <summary>
-/// A MiniZinc Solver
+/// An installed MiniZinc solver
 /// </summary>
 type Solver = {
     Id : string
@@ -17,14 +18,14 @@ type Solver = {
     SupportsFzn: bool
     SupportsNL: bool
     NeedsSolns2Out: bool 
-    NeedsMznExecutable: bool 
+    NeedsMznExecutable: bool
     NeedsStdlibDir: bool
     NeedsPathsFile: bool
     IsGUIApplication: bool
     MznLibVersion: int
     ExtraInfo : JsonObject
     Description:string
-    StdFlags : List<string>
-    RequiredFlags : List<string>
+    StdFlags : List<string>    
+    RequiredFlags : List<string>    
     ExtraFlags: List<List<string>>
 }    
