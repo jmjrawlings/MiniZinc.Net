@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net
+﻿namespace MiniZinc
 
 open System
 open System.Text.Json.Nodes

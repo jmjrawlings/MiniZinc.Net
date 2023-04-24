@@ -1,4 +1,4 @@
-namespace MiniZinc.Net
+namespace MiniZinc
 
 open System.Runtime.CompilerServices
 open System.Text.RegularExpressions
