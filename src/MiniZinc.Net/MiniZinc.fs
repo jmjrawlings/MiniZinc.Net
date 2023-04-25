@@ -10,6 +10,7 @@ open FSharp.Control
 open System.Collections.Generic
 open System.Threading.Channels
 open MiniZinc
+open MiniZinc.Command
 
 module rec Net =
     
@@ -112,11 +113,11 @@ module rec Net =
                     file.FullName
 
             let model_uri =
-                Uri(model_file).AbsolutePath                                    
+                Uri(model_file).AbsolutePath
 
-            let flags =
+            let flags = 
                 [ "--json-stream"
-                ; "--model"; model_uri ]
+                 ; "--model"; model_uri ]
                 
             Command.Create(MiniZinc.ExecutablePath, flags)
             
@@ -125,6 +126,11 @@ module rec Net =
             let command = MiniZinc.Command(model)
             let result = Command.Exec(command)
             result
+            
+        static member Analyze(model: Model) =
+            let command = MiniZinc.Command(model)
+            let result = Command.Exec(command)
+            result            
             
         static member Stream(model: Model) =
             let command = MiniZinc.Command(model)

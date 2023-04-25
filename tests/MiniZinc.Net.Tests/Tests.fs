@@ -10,11 +10,37 @@ open System.Threading.Tasks
 open FSharp.Control
 open System.Collections.Generic
 open System.Threading.Channels
+open MiniZinc.Command
 
 module Tests =
     
     [<Tests>]
-    let install_tests =
+    let arg_tests =
+        testList "arg tests" [
+            test "parse flag" {
+                let cmd = "--a"
+                let arg = Arg.parse cmd
+                Expect.equal arg (Some <| Arg.Flag "--a") "?"                
+            }
+            
+            test "parse assign equals" {
+                let cmd = "--model=xd.json"
+                let actual = Arg.parse cmd
+                let expected = Arg.Assign("--model","xd.json")
+                Expect.equal actual (Some expected) ""                
+            }
+            
+            test "parse value" {
+                let input = "asdfasdf"
+                let actual = Arg.parse input
+                let expected = Arg.Value input
+                Expect.equal actual (Some expected) ""
+            }
+        ]
+    
+    
+    [<Tests>]
+    let minizinc_tests = 
         
         let test_solver_installed id =
             testTask $"{id} installed" {
@@ -39,8 +65,16 @@ module Tests =
         testList "solver tests" [
                         
             testTask "simple model solve" {
-                let model = Model.FromString("int: x = 3; int: y = 5; var int: sum = x + y; solve satisfy;")
+                let model = Model.FromString(
+                    """
+                    var 0..10: x;
+                    var 0..10: y;
+                    constraint x < y;
+                    constraint y < 3;
+                    """
+                    )
                 let! result = MiniZinc.Solve model
                 Expect.stringContains result.stdout "x" ""
             }
+            
         ]
