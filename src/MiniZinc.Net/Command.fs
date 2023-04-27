@@ -10,6 +10,8 @@ open System.Threading.Tasks
 open FSharp.Control
 open System.Collections.Generic
 open System.Threading.Channels
+open System.Text.RegularExpressions
+
 
 module rec Command =
                 
@@ -77,35 +79,228 @@ module rec Command =
 
     type Command =
         { exe: string
-          args : string list }
+          args : Args }
         
-        static member Create (cmd: string) =
+        static member Create exe =
+            Command.create exe Args.empty
+            
+        static member Create (exe, args) =
+            Command.create exe args
+            
+        static member Create(exe: string, [<ParamArray>] args: obj[]) =
+            let args =
+                args
+                |> Seq.map 
+                |> Args.parse
+            Command.create exe args                
+
+        static member Create(exe: string, args: string seq) =
+            Command.create exe (Args.ofSeq args)
+            
+        member this.Exec() =
+            Command.exec this
+        
+        member this.Stream() =
+            Command.stream this
+
+    [<RequireQualifiedAccess>]
+    type FlagType = | Short | Long | None
+
+    /// <summary>
+    /// A command line argument
+    /// </summary>
+    [<Struct>]
+    type Arg =
+        | Flag of flag:string
+        | Assign of assign:(string*string*string)
+        | Value of value:string
+        
+        member this.Flag =
+            match this with
+            | Flag f | Assign(f, _, _) -> f
+            | _ -> ""
+            
+        member this.Value =
+            match this with
+            | Assign (_, _, v) | Value v -> v
+            | _ -> ""
+            
+                
+    module Arg =
+        
+        module Pattern =
+            let quoted = "\"[^\"]*\""
+            let unquoted = "[^\s\"<>|&;]*"
+            let flag = "-(?:-?[\w|-]+)"
+            
+        // Sanitize the given value by surrounding
+        // in quotes if required
+        let sanitize (s: string) =
+            match (Regex Pattern.value).Match s with
+            | m when m.Success ->
+                s
+            | _ ->
+                $"\"{s}\""
+                
+        let parse (s: string) =
+            let mutable value = ""
+            let mutable sep = ""
+            let mutable flag = ""
+            let mutable result = Result.Error ""
+            let assign_pattern = $"({Pattern.flag})(=|\s)?(.*)"
+            let assign_regex = Regex assign_pattern 
+            match assign_regex.Match s with
+            | m when m.Success ->
+                flag <- m.Groups.[1].Value
+                sep <- m.Groups.[2].Value
+                value <- m.Groups[3].Value
+            | _ ->
+                value <- s
+                
+            let value_pattern = $"({Pattern.quoted})|({Pattern.unquoted})|(.*)"
+            let value_regex = Regex value_pattern
+            let value_match = value_regex.Match <| value.Trim()
+            if value_match.Success then
+                let quoted = value_match.Groups[1].Value
+                let unquoted = value_match.Groups[2].Value
+                let bad = value_match.Groups[3].Value
+                value <-
+                    match (quoted.Length, unquoted.Length, bad.Length) with
+                    | n, _, _ when n > 0 ->
+                        quoted
+                    | _, n, _ when n > 0 ->
+                        unquoted
+                    | _, _, n when n > 0 ->
+                        $"\"{bad}\""
+                    | _ ->
+                        ""
+            Ok (Assign (flag, sep, value))            
+            
+    /// <summary>
+    /// Command line arguments
+    /// </summary>
+    type Args =
+        | Args of Arg list
+
+        override this.ToString() =
+            Args.toString this
+        
+    module Args =
+        
+        // Empty argument list
+        let empty =
+            Args []
+        
+        // Apply a function to the arguments
+        let map f args =
+            match args with
+            | Args args -> Args (f args)
+        
+        // Add an argument
+        let add arg args =
+            map (fun args -> args @ [arg]) args
+            
+        // Get the list of args            
+        let toList args =
+            match args with
+            | Args args -> args
+            
+        let toString args =
+            args
+            |> toList
+            |> List.map string
+            |> String.concat " "
+            
+        let parseString (s: string) =
+            let ok = ResizeArray()
+            let err = ResizeArray()
+            let tokens =
+                s.Split(" ", StringSplitOptions.RemoveEmptyEntries)
+            let args =
+                tokens
+                |> Seq.map Arg.tryParse
+                |> Result.ofSeq
+                |> Result.map Args
+            args
+        
+            
+            
+           
+    
+    module Command =
+
+        let create (exe: string) (args: Args) =
+            { exe = exe; args = args }
+    
+        let empty = create "" Args.empty
+        
+        let withArgs (args: Args) (cmd: Command) =
+            { cmd with args = args }
+            
+        let addArg (arg: Arg) (cmd: Command) =
+            withArgs (Args.add arg cmd.args)
+            
+        let statement (cmd: Command) =
+            let statement = $"{cmd.exe} {cmd.args}"  
+            statement
+            
+        let toProcess (cmd: Command) =
             let proc = new Process()
-            proc.StartInfo.FileName <- cmd
+            proc.StartInfo.FileName <- cmd.exe
             proc.StartInfo.RedirectStandardOutput <- true
             proc.StartInfo.RedirectStandardError <- true
             proc.StartInfo.UseShellExecute <- false
             proc.StartInfo.CreateNoWindow <- true
             proc.EnableRaisingEvents <- true
+            proc.StartInfo.Arguments = cmd.args.ToString()
             proc
+
+
+        let stream (cmd: Command) =
             
-        static member Create(cmd: string, [<ParamArray>] args: string[]) =
-            let command = Command.Create(cmd)
-            for arg in args do
-                let escaped = Arg.escape(arg)
-                command.StartInfo.ArgumentList.Add escaped
-            command
-            
-        static member Create(cmd: string, args: string seq) =
-            let args = Seq.toArray args
-            let command = Command.Create(cmd, args)
-            command
+            let proc =
+                toProcess cmd
+                
+            let channel =
+                Channel.CreateUnbounded<CommandMessage>()
+                
+            let handleData messageType (args: DataReceivedEventArgs) =
+                match args.Data with
+                | null -> ()
+                | text ->
+                    let message : OutputMessage =
+                        OutputMessage.make(text)
+                    do
+                        message
+                        |> messageType
+                        |> channel.Writer.TryWrite 
+                    
+            let handleExit _ =
+                let message =
+                    CommandMessage.Exited {
+                        exit_code = proc.ExitCode
+                        is_error = proc.ExitCode > 0
+                        timestamp = DateTimeOffset.Now  
+                    }
+                proc.Dispose()
+                channel.Writer.TryWrite message
+                channel.Writer.Complete()
+
+            proc.OutputDataReceived.Add (handleData CommandMessage.Output)
+            proc.ErrorDataReceived.Add (handleData CommandMessage.Error)
+            proc.Exited.Add handleExit
+            proc.Start()
+            proc.BeginOutputReadLine()
+            proc.BeginErrorReadLine()
+            channel.Reader.ReadAllAsync()
         
+                    
         /// <summary>
         /// Execute a Command 
         /// </summary>    
-        static member Exec(proc: Process) =
-            let statement = Command.statement proc.StartInfo
+        let exec (cmd: Command) =
+            let proc = toProcess cmd
+            let statement = Command.statement cmd
             let stdout = StringBuilder()
             let stderr = StringBuilder()
             let complete = TaskCompletionSource<bool>()
@@ -143,106 +338,4 @@ module rec Command =
 
                 proc.Dispose()
                 return result
-            }
-            
-        static member Exec(cmd: string, [<ParamArray>] args: string[]) =
-            let proc = Command.Create(cmd, args)
-            Command.Exec(proc)
-            
-        static member Exec(cmd: string, args: string seq) =
-            let proc = Command.Create(cmd, args)
-            Command.Exec(proc)
-                    
-        static member Stream (proc: Process) =
-            let channel =
-                Channel.CreateUnbounded<CommandMessage>()
-                
-            let handleData messageType (args: DataReceivedEventArgs) =
-                match args.Data with
-                | null -> ()
-                | text ->
-                    let message : OutputMessage =
-                        OutputMessage.make(text)
-                    do
-                        message
-                        |> messageType
-                        |> channel.Writer.TryWrite 
-                    
-            let handleExit _ =
-                let message =
-                    CommandMessage.Exited {
-                        exit_code = proc.ExitCode
-                        is_error = proc.ExitCode > 0
-                        timestamp = DateTimeOffset.Now  
-                    }
-                proc.Dispose()
-                channel.Writer.TryWrite message
-                channel.Writer.Complete()
-
-            proc.OutputDataReceived.Add (handleData CommandMessage.Output)
-            proc.ErrorDataReceived.Add (handleData CommandMessage.Error)
-            proc.Exited.Add handleExit
-            proc.Start()
-            proc.BeginOutputReadLine()
-            proc.BeginErrorReadLine()
-            channel.Reader.ReadAllAsync()
-        
-        static member Stream(cmd: string, [<ParamArray>] args: string[]) =
-            let proc = Command.Create(cmd, args)
-            Command.Stream(proc)
-            
-        static member Stream(cmd: string, args: string seq) =
-            let proc = Command.Create(cmd, args)
-            Command.Stream(proc)
-
-    [<RequireQualifiedAccess>]
-    type FlagType = | Short | Long | None
-
-    type Arg =
-        | Flag of string
-        | Assign of string*string
-        | Value of string
-                
-    module Arg =
-        open System.Text.RegularExpressions
-        let pattern =
-             Regex("(--|-|/)(\w+)(=|:)?(.+)?")
-        let parse (s: string) =
-            match pattern.Match(s) with
-            | m when m.Success ->
-                let prefix = m.Groups.[1].Value
-                let key = m.Groups.[2].Value
-                let flag = $"{prefix}{key}"
-                if m.Groups.[4].Success then
-                    let value = m.Groups.[4].Value
-                    Some <| Arg.Assign(flag, value)
-                else
-                    Some <| Arg.Flag flag
-            | _ ->
-                Some (Arg.Value s)
-                
-        let escape (arg: string) =
-            if arg.StartsWith("-") then
-                arg
-            elif arg.Contains('\"') then
-                let escaped = arg.Replace("\"", "\\\"")
-                $"\"{escaped}\""
-            else
-                arg
-                
-
-    
-    module Command =
-
-        let create (exe: string) =
-            { exe = exe
-            ; args = [] }
-        
-        let withArgs (args: string seq) (cmd: Command) =
-            { cmd with args = Seq.toList args }
-            
-        let addArg (arg: string) (cmd: Command) =
-            { cmd with args = cmd.args @ [arg] }
-        let statement (proc: ProcessStartInfo) =
-            let statement = $"{proc.FileName} " + String.concat " " proc.ArgumentList
-            statement
+            }            

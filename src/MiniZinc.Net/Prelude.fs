@@ -66,6 +66,25 @@ module Map =
         |> Seq.map (fun x -> (f x), x)
         |> Map
         
+
+module Result =
+    let get (result: Result<'ok, 'err>) =
+        match result with
+        | Ok ok -> ok
+        | Error err -> failwithf "%A" err
+        
+    let ofSeq (results : Result<'ok, 'err> seq) =
+        let oks = ResizeArray()
+        let errs = ResizeArray()
+        for result in results do
+            match result with
+            | Ok v -> oks.Add v
+            | Error err -> errs.Add err
+        match errs.Count with
+        | 0 -> Ok (Seq.toList oks)
+        | _ -> Error (Seq.toList errs)
+    
+        
 [<Extension>]        
 type Extensions =
     
@@ -73,3 +92,8 @@ type Extensions =
     static member AsAsync(task: Task<'t>) =
         task
         |> Async.AwaitTask
+        
+    [<Extension>]
+    static member Get(result: Result<'ok, 'err>) =
+        Result.get result
+        
