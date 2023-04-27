@@ -12,16 +12,16 @@ open System.Threading.Channels
 open MiniZinc
 open MiniZinc.Command
 
+[<AutoOpen>]
 module rec Net =
     
-    module private Constants =
-        let  [<Literal>] SOLUTION_SEP ="----------"
-        let [<Literal>] UNSAT_MSG = "=====UNSATISFIABLE====="
-        let [<Literal>] UNSAT_OR_UNBOUNDED_MSG = "=====UNSATorUNBOUNDED====="
-        let [<Literal>] UNBOUNDED_MSG = "==UNBOUNDED====="
-        let [<Literal>] UNKNOWN_MSG = "=====UNKNOWN====="
-        let [<Literal>] ERROR_MSG = "=====ERROR====="
-        let [<Literal>] COMPLETE_MSG = "=========="
+    let  [<Literal>] SOLUTION_SEP ="----------"
+    let [<Literal>] UNSAT_MSG = "=====UNSATISFIABLE====="
+    let [<Literal>] UNSAT_OR_UNBOUNDED_MSG = "=====UNSATorUNBOUNDED====="
+    let [<Literal>] UNBOUNDED_MSG = "==UNBOUNDED====="
+    let [<Literal>] UNKNOWN_MSG = "=====UNKNOWN====="
+    let [<Literal>] ERROR_MSG = "=====ERROR====="
+    let [<Literal>] COMPLETE_MSG = "=========="
 
     type Model =
         internal
@@ -118,9 +118,9 @@ module rec Net =
             let flags = 
                 [ "--json-stream"
                  ; "--model"; model_uri ]
+                |> Args.ofSeq
                 
             Command.Create(MiniZinc.ExecutablePath, flags)
-            
             
         static member Solve(model: Model) =
             let command = MiniZinc.Command(model)
@@ -133,8 +133,22 @@ module rec Net =
             result            
             
         static member Stream(model: Model) =
+            
             let command = MiniZinc.Command(model)
             taskSeq {
                 for msg in Command.Stream(command) do
                     yield msg
             }
+            
+    module MiniZinc =
+                
+        let command args =
+            Command.create MiniZinc.ExecutablePath args
+        
+        let exec args =
+            command args
+            |> Command.exec
+            
+        let stream args =
+            command args
+            |> Command.stream

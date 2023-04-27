@@ -20,20 +20,20 @@ module Tests =
             test "parse flag" {
                 let cmd = "--a"
                 let arg = Arg.parse cmd
-                Expect.equal arg (Some <| Arg.Flag "--a") "?"                
+                Expect.equal arg (Some <| Arg.FlagOnly "--a") "?"                
             }
             
             test "parse assign equals" {
                 let cmd = "--model=xd.json"
                 let actual = Arg.parse cmd
-                let expected = Arg.Assign("--model","xd.json")
+                let expected = Arg.FlagAndValue("--model","xd.json")
                 Expect.equal actual (Some expected) ""                
             }
             
             test "parse value" {
                 let input = "asdfasdf"
                 let actual = Arg.parse input
-                let expected = Arg.Value input
+                let expected = Arg.ValueOnly input
                 Expect.equal actual (Some expected) ""
             }
         ]

@@ -87,15 +87,11 @@ module rec Command =
         static member Create (exe, args) =
             Command.create exe args
             
-        static member Create(exe: string, [<ParamArray>] args: obj[]) =
-            let args =
-                args
-                |> Seq.map 
-                |> Args.parse
-            Command.create exe args                
+        // static member Create(exe: string, [<ParamArray>] args: obj[]) =
+        //     Command.create exe args                
 
-        static member Create(exe: string, args: string seq) =
-            Command.create exe (Args.ofSeq args)
+        // static member Create(exe: string, args: string seq) =
+        //     Command.create exe (Args.ofSeq args)
             
         member this.Exec() =
             Command.exec this
@@ -111,54 +107,46 @@ module rec Command =
     /// </summary>
     [<Struct>]
     type Arg =
-        | Flag of flag:string
-        | Assign of assign:(string*string*string)
-        | Value of value:string
+        internal
+        | FlagOnly of flag:string
+        | FlagAndValue of (string*string*string)
+        | ValueOnly of value:string
         
         member this.Flag =
             match this with
-            | Flag f | Assign(f, _, _) -> f
+            | FlagOnly f | FlagAndValue(f, _, _) -> f
             | _ -> ""
             
         member this.Value =
             match this with
-            | Assign (_, _, v) | Value v -> v
+            | FlagAndValue (_, _, v) | ValueOnly v -> v
             | _ -> ""
             
                 
     module Arg =
-        
-        module Pattern =
-            let quoted = "\"[^\"]*\""
-            let unquoted = "[^\s\"<>|&;]*"
-            let flag = "-(?:-?[\w|-]+)"
-            
-        // Sanitize the given value by surrounding
-        // in quotes if required
-        let sanitize (s: string) =
-            match (Regex Pattern.value).Match s with
-            | m when m.Success ->
-                s
-            | _ ->
-                $"\"{s}\""
-                
-        let parse (s: string) =
+
+        // Parse the given string as an Arg
+        let parse (s: string) : Arg =
             let mutable value = ""
             let mutable sep = ""
             let mutable flag = ""
             let mutable result = Result.Error ""
-            let assign_pattern = $"({Pattern.flag})(=|\s)?(.*)"
-            let assign_regex = Regex assign_pattern 
-            match assign_regex.Match s with
-            | m when m.Success ->
-                flag <- m.Groups.[1].Value
-                sep <- m.Groups.[2].Value
-                value <- m.Groups[3].Value
-            | _ ->
-                value <- s
-                
-            let value_pattern = $"({Pattern.quoted})|({Pattern.unquoted})|(.*)"
+            
+            let quoted_pattern = "\"[^\"]*\""
+            let unquoted_pattern = "[^\s\"<>|&;]*"
+            let flag_pattern = "-(?:-?[\w|-]+)"
+            let assign_pattern = $"({flag_pattern})(=|\s)?(.*)"
+            let assign_regex = Regex assign_pattern
+            let value_pattern = $"({quoted_pattern})|({unquoted_pattern})|(.*)"
             let value_regex = Regex value_pattern
+            let assign_match = assign_regex.Match s 
+            if assign_match.Success then
+                flag <- assign_match.Groups.[1].Value
+                sep <- assign_match.Groups.[2].Value
+                value <- assign_match.Groups[3].Value
+            else
+                value <- s
+            
             let value_match = value_regex.Match <| value.Trim()
             if value_match.Success then
                 let quoted = value_match.Groups[1].Value
@@ -174,7 +162,12 @@ module rec Command =
                         $"\"{bad}\""
                     | _ ->
                         ""
-            Ok (Assign (flag, sep, value))            
+                        
+            match (flag, sep, value) with
+            | "", "", "" -> ValueOnly ""
+            | f, "", "" -> FlagOnly f
+            | "", "", v -> ValueOnly v
+            | f, s, v -> FlagAndValue (f, s, v)
             
     /// <summary>
     /// Command line arguments
@@ -211,21 +204,22 @@ module rec Command =
             |> List.map string
             |> String.concat " "
             
-        let parseString (s: string) =
-            let ok = ResizeArray()
-            let err = ResizeArray()
+        let parse (s: string) =
             let tokens =
                 s.Split(" ", StringSplitOptions.RemoveEmptyEntries)
             let args =
                 tokens
-                |> Seq.map Arg.tryParse
-                |> Result.ofSeq
-                |> Result.map Args
+                |> Seq.map Arg.parse
+                |> Seq.toList
+                |> Args
             args
-        
             
-            
-           
+        let ofSeq (strings: string seq) =
+            strings
+            |> Seq.map parse
+            |> Seq.collect toList
+            |> Seq.toList
+            |> Args
     
     module Command =
 
