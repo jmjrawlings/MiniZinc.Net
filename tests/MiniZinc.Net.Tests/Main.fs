@@ -1,6 +1,0 @@
-module MiniZinc.Net.TestRunner
-open Expecto
-
-[<EntryPoint>]
-let main argv =
-    runTestsInAssembly defaultConfig argv
