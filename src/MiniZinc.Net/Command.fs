@@ -1,4 +1,9 @@
-﻿namespace MiniZinc
+﻿(*
+Command.fs
+
+
+*)
+namespace MiniZinc
 
 open System
 open System.Diagnostics
@@ -9,6 +14,7 @@ open System.Text.Json
 open System.Threading.Tasks
 open FSharp.Control
 open System.Collections.Generic
+open System.Collections
 open System.Threading.Channels
 open System.Text.RegularExpressions
 
@@ -17,43 +23,43 @@ module rec Command =
                 
     [<Struct>]
     type StartMessage =
-        { process_id : int 
-        ; timestamp : DateTimeOffset }
+        { ProcessId : int 
+        ; Timestamp : DateTimeOffset }
         
     [<Struct>]
     type ExitMessage =
-        { exit_code : int
-        ; is_error : bool
-        ; timestamp : DateTimeOffset }
+        { ExitCode  : int
+        ; IsError   : bool
+        ; TimeStamp : DateTimeOffset }
         
     [<Struct>]
     type OutputMessage =
-        { text: string 
-        ; timestamp : DateTimeOffset }
+        { Text: string 
+        ; TimeStamp : DateTimeOffset }
         
         static member make text =
-            { text = text
-            ; timestamp = DateTimeOffset.Now }
+            { Text = text
+            ; TimeStamp = DateTimeOffset.Now }
 
         static member make(text, content) =
             OutputMessage.make(text, DateTimeOffset.Now, content)
             
         static member make(text, timestamp, content) =
-            { text = text
-            ; timestamp = timestamp
-            ; content = content }        
+            { Text = text
+            ; TimeStamp = timestamp
+            ; Content = content }        
             
         static member map f (msg: OutputMessage<'t>) =
-            OutputMessage.make(msg.text, f msg.content, msg.timestamp)
+            OutputMessage.make(msg.Text, f msg.Content, msg.TimeStamp)
             
         static member withData data msg =
-            OutputMessage.make(msg.text, msg.timestamp, data)
+            OutputMessage.make(msg.Text, msg.TimeStamp, data)
         
     and [<Struct>]
     OutputMessage<'t> =
-        { text: string
-        ; content : 't
-        ; timestamp : DateTimeOffset }
+        { Text: string
+        ; Content : 't
+        ; TimeStamp : DateTimeOffset }
             
     [<Struct>]
     type CommandMessage =
@@ -61,43 +67,19 @@ module rec Command =
         | Output  of output:OutputMessage
         | Error   of error:OutputMessage
         | Exited  of exit:ExitMessage
-
         
     [<Struct>]
     type CommandResult =
-        { command    : string
-        ; args       : string[]
-        ; statement  : string
-        ; start_time : DateTimeOffset
-        ; end_time   : DateTimeOffset
-        ; duration   : TimeSpan
-        ; stdout     : string
-        ; stderr     : string
-        ; exit_code  : int
-        ; is_error   : bool }
-    
-
-    type Command =
-        { exe: string
-          args : Args }
-        
-        static member Create exe =
-            Command.create exe Args.empty
-            
-        static member Create (exe, args) =
-            Command.create exe args
-            
-        // static member Create(exe: string, [<ParamArray>] args: obj[]) =
-        //     Command.create exe args                
-
-        // static member Create(exe: string, args: string seq) =
-        //     Command.create exe (Args.ofSeq args)
-            
-        member this.Exec() =
-            Command.exec this
-        
-        member this.Stream() =
-            Command.stream this
+        { Command   : string
+        ; Args      : string list
+        ; Statement : string
+        ; StartTime : DateTimeOffset
+        ; EndTime   : DateTimeOffset
+        ; Duration  : TimeSpan
+        ; StdOut    : string
+        ; StdErr    : string
+        ; ExitCode  : int
+        ; IsError   : bool }
 
     [<RequireQualifiedAccess>]
     type FlagType = | Short | Long | None
@@ -122,6 +104,11 @@ module rec Command =
             | FlagAndValue (_, _, v) | ValueOnly v -> v
             | _ -> ""
             
+        override this.ToString() =
+            match this with
+            | FlagOnly f -> f
+            | FlagAndValue (f,s,v) -> $"{f}{s}{v}"
+            | ValueOnly v -> v
                 
     module Arg =
 
@@ -130,7 +117,6 @@ module rec Command =
             let mutable value = ""
             let mutable sep = ""
             let mutable flag = ""
-            let mutable result = Result.Error ""
             
             let quoted_pattern = "\"[^\"]*\""
             let unquoted_pattern = "[^\s\"<>|&;]*"
@@ -141,8 +127,8 @@ module rec Command =
             let value_regex = Regex value_pattern
             let assign_match = assign_regex.Match s 
             if assign_match.Success then
-                flag <- assign_match.Groups.[1].Value
-                sep <- assign_match.Groups.[2].Value
+                flag <- assign_match.Groups[1].Value
+                sep <- assign_match.Groups[2].Value
                 value <- assign_match.Groups[3].Value
             else
                 value <- s
@@ -173,10 +159,38 @@ module rec Command =
     /// Command line arguments
     /// </summary>
     type Args =
+        internal
         | Args of Arg list
 
+        member this.List =
+            match this with
+            | Args list -> list
+            
         override this.ToString() =
             Args.toString this
+            
+        interface IEnumerable<Arg> with
+            member this.GetEnumerator() =
+                (this.List :> IEnumerable<Arg>).GetEnumerator()
+
+            member this.GetEnumerator() =
+                (this.List :> IEnumerable).GetEnumerator()
+                
+        static member Create([<ParamArray>] args: obj[]) =
+            args
+            |> Seq.map string
+            |> Args.parseMany
+            
+        static member (+) (a: Args, b: Args) =
+            match a,b with
+            | Args a', Args b' -> Args (a' @ b')
+            
+        static member (+) (a: Args, b: string) =
+            a + (Args.parse b)
+            
+        static member (+) (a: Args, b: Arg) =
+            a + (Args [b])
+    
         
     module Args =
         
@@ -214,43 +228,84 @@ module rec Command =
                 |> Args
             args
             
-        let ofSeq (strings: string seq) =
+        let parseMany (strings: string seq) =
             strings
             |> Seq.map parse
             |> Seq.collect toList
             |> Seq.toList
             |> Args
+            
+        let ofSeq (args: Arg seq) =
+            args
+            |> Seq.toList
+            |> Args
+            
+        let ofList (args: Arg list) =
+            Args args
+
+
+    type Command =
+        { Exe  : string
+          Args : Args }
+        
+        static member Create(exe: string, [<ParamArray>] args: obj[]) =
+            let args = Args.Create(args)
+            { Exe = exe; Args = args }
+            
+        member this.AddArgs([<ParamArray>] args: obj[]) =
+            let args = Args.Create(args)
+            Command.addArgs args this
+            
+        member this.Statement =
+            Command.statement this
+            
     
+        
     module Command =
 
         let create (exe: string) (args: Args) =
-            { exe = exe; args = args }
+            { Exe = exe; Args = args }
     
         let empty = create "" Args.empty
         
         let withArgs (args: Args) (cmd: Command) =
-            { cmd with args = args }
+            { cmd with Args = args }
             
         let addArg (arg: Arg) (cmd: Command) =
-            withArgs (Args.add arg cmd.args)
+            withArgs (cmd.Args + arg) cmd
             
+        let addArgs (args: Args) (cmd: Command) =
+            withArgs (cmd.Args + args) cmd
+        
+        /// <summary>
+        /// Return the full command line statement of
+        /// a command
+        /// </summary>    
         let statement (cmd: Command) =
-            let statement = $"{cmd.exe} {cmd.args}"  
+            let statement = $"{cmd.Exe} {cmd.Args}"  
             statement
-            
+
+        /// <summary>
+        /// Create a System.Diagnostics.Process representing
+        /// the exe and arguments of the given command
+        /// </summary>
         let toProcess (cmd: Command) =
             let proc = new Process()
-            proc.StartInfo.FileName <- cmd.exe
+            proc.StartInfo.FileName <- cmd.Exe
             proc.StartInfo.RedirectStandardOutput <- true
             proc.StartInfo.RedirectStandardError <- true
             proc.StartInfo.UseShellExecute <- false
             proc.StartInfo.CreateNoWindow <- true
             proc.EnableRaisingEvents <- true
-            proc.StartInfo.Arguments = cmd.args.ToString()
+            for arg in cmd.Args do
+                proc.StartInfo.ArgumentList.Add (string arg)
             proc
-
-
-        let stream (cmd: Command) =
+            
+        /// <summary>
+        /// Execute the given command and listen asynchronously
+        /// for messages.
+        /// </summary>
+        let stream (cmd: Command) : IAsyncEnumerable<CommandMessage> =
             
             let proc =
                 toProcess cmd
@@ -272,9 +327,9 @@ module rec Command =
             let handleExit _ =
                 let message =
                     CommandMessage.Exited {
-                        exit_code = proc.ExitCode
-                        is_error = proc.ExitCode > 0
-                        timestamp = DateTimeOffset.Now  
+                        ExitCode = proc.ExitCode
+                        IsError = proc.ExitCode > 0
+                        TimeStamp = DateTimeOffset.Now  
                     }
                 proc.Dispose()
                 channel.Writer.TryWrite message
@@ -290,8 +345,9 @@ module rec Command =
         
                     
         /// <summary>
-        /// Execute a Command 
-        /// </summary>    
+        /// Execute a Command and return full output from
+        /// stdout and stderr
+        /// </summary>
         let exec (cmd: Command) =
             let proc = toProcess cmd
             let statement = Command.statement cmd
@@ -319,17 +375,17 @@ module rec Command =
                 let end_time = DateTimeOffset.Now
                 
                 let result =
-                    { command = proc.StartInfo.FileName
-                    ; args = Seq.toArray proc.StartInfo.ArgumentList
-                    ; statement = statement 
-                    ; start_time = start_time
-                    ; end_time = end_time
-                    ; duration = end_time - start_time
-                    ; exit_code = proc.ExitCode
-                    ; is_error = proc.ExitCode > 0 
-                    ; stdout = string stdout
-                    ; stderr = string stderr }
+                    { Command = proc.StartInfo.FileName
+                    ; Args = Seq.toList proc.StartInfo.ArgumentList
+                    ; Statement = statement 
+                    ; StartTime = start_time
+                    ; EndTime = end_time
+                    ; Duration = end_time - start_time
+                    ; ExitCode = proc.ExitCode
+                    ; IsError = proc.ExitCode > 0 
+                    ; StdOut = string stdout
+                    ; StdErr = string stderr }
 
                 proc.Dispose()
                 return result
-            }            
+            }

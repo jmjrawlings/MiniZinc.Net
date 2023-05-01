@@ -9,7 +9,6 @@ open System.Threading.Tasks
 open FSharp.Control
 open System.Collections.Generic
 open System.Threading.Channels
-open MiniZinc
 open MiniZinc.Command
 
 [<AutoOpen>]
@@ -47,28 +46,22 @@ module rec Net =
                 executablePath
             and set value =
                 executablePath <- value
+                
+        /// <summary>
+        /// Create a minizinc command with the given arguments 
+        /// </summary>
+        static member Command([<ParamArray>] args: obj[]) =
+            MiniZinc.command.AddArgs(args)
 
-        /// <summary>
-        /// Execute the 'minizinc' command line tool
-        /// with the given arguments 
-        /// </summary>
-        static member Exec([<ParamArray>] args: string[]) : Task<CommandResult> =
-            Command.Exec(MiniZinc.ExecutablePath, args)
-            
-        /// <summary>
-        /// Execute the 'minizinc' command line tool
-        /// with the given arguments 
-        /// </summary>
-        static member Exec([<ParamArray>] args: string seq) : Task<CommandResult> =
-            Command.Exec(MiniZinc.ExecutablePath, args)
-        
         /// <summary>
         /// Get all installed solvers
         /// </summary>
         static member Solvers () =
+            
             task {
                 let! result =
-                    MiniZinc.Exec "--solvers-json"
+                    MiniZinc.Command "--solvers-json"
+                    |> Command.exec
                 
                 let options =
                     let opts = JsonSerializerOptions()
@@ -76,7 +69,7 @@ module rec Net =
                     opts
 
                 let solvers =
-                    JsonSerializer.Deserialize<List<Solver>>(result.stdout, options)
+                    JsonSerializer.Deserialize<List<Solver>>(result.StdOut, options)
                     |> Map.withKey (fun s -> s.Id)
                 
                 return solvers
@@ -93,15 +86,24 @@ module rec Net =
         /// Get the installed MiniZinc version
         /// </summary>
         static member Version() =
-            MiniZinc.Exec "--version"
-            |> Task.map (fun x -> x.stdout)
+            MiniZinc.Command "--version"
+            |> Command.exec
+            |> Task.map (fun x -> x.StdOut)
             |> Task.map (Grep.match1 @"version (\d+\.\d+\.\d+)")
             
-        /// <summary>
-        /// Create a Command for the given Model
-        /// </summary>
-        static member Command(model: Model) =
+        static member Stream(model: Model) =
+            let command = MiniZinc.Command(model)
+            taskSeq {
+                for msg in Command.stream command do
+                    yield msg
+            }
             
+    module MiniZinc =
+                
+        let command : Command =
+            Command.create MiniZinc.ExecutablePath Args.empty
+            
+        let solve (model: Model) =
             let model_file =
                 match model with
                 | Model.String s ->
@@ -115,40 +117,10 @@ module rec Net =
             let model_uri =
                 Uri(model_file).AbsolutePath
 
-            let flags = 
-                [ "--json-stream"
-                 ; "--model"; model_uri ]
-                |> Args.ofSeq
-                
-            Command.Create(MiniZinc.ExecutablePath, flags)
+            let command =
+                MiniZinc.Command("--json-stream", "--model", model_uri)
             
-        static member Solve(model: Model) =
-            let command = MiniZinc.Command(model)
-            let result = Command.Exec(command)
+            let result =
+                Command.exec command
+                
             result
-            
-        static member Analyze(model: Model) =
-            let command = MiniZinc.Command(model)
-            let result = Command.Exec(command)
-            result            
-            
-        static member Stream(model: Model) =
-            
-            let command = MiniZinc.Command(model)
-            taskSeq {
-                for msg in Command.Stream(command) do
-                    yield msg
-            }
-            
-    module MiniZinc =
-                
-        let command args =
-            Command.create MiniZinc.ExecutablePath args
-        
-        let exec args =
-            command args
-            |> Command.exec
-            
-        let stream args =
-            command args
-            |> Command.stream

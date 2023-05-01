@@ -1,2 +1,3 @@
-FSharp.Core
-FSharp.Control.TaskSeq
+group Main
+    FSharp.Core
+    FSharp.Control.TaskSeq

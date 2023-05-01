@@ -1,21 +1,24 @@
-source https://api.nuget.org/v3/index.json
-storage: none
-framework: auto-detect
+group Main
+    source https://api.nuget.org/v3/index.json
+    storage: none
+    framework: auto-detect
 
-nuget FSharp.Core
-nuget FSharp.Control.TaskSeq
+    nuget FSharp.Core
+    nuget FSharp.Control.TaskSeq
 
 group Test
 
-source https://api.nuget.org/v3/index.json
-storage: none
-framework: auto-detect
+    source https://api.nuget.org/v3/index.json
+    storage: none
+    framework: auto-detect
 
-nuget FSharp.Core
-nuget Expecto
-nuget YoloDev.Expecto.TestSdk
-nuget Microsoft.NET.Test.Sdk
-nuget Expecto.VisualStudio.TestAdapter
+    nuget FSharp.Core
+    nuget FSharp.Control.TaskSeq
+    nuget Microsoft.NET.Test.Sdk
+    nuget FluentAssertions
+    nuget xunit.core
+    nuget xunit.runner.visualstudio
+
 
 group Build
 
@@ -23,6 +26,7 @@ group Build
     storage: none
     framework: auto-detect
 
+    nuget FSharp.Core
     nuget Fake.IO.FileSystem
     nuget Fake.Core.Target
     nuget Fake.Core.ReleaseNotes

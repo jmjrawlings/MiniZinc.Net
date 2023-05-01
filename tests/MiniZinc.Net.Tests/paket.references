@@ -1,8 +1,7 @@
-FSharp.Core
-FSharp.Control.TaskSeq
-
 group Test
-    Expecto
+    FSharp.Core
+    FSharp.Control.TaskSeq
     Microsoft.NET.Test.Sdk
-    YoloDev.Expecto.TestSdk
-    Expecto.VisualStudio.TestAdapter
+    FluentAssertions
+    xunit.core
+    xunit.runner.visualstudio

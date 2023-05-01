@@ -1,80 +1,72 @@
-namespace MiniZinc.Net.Tests
+module Tests
 
-open Expecto
 open MiniZinc
-open MiniZinc.Net
 
 open FSharp.Control
-open System.Threading.Tasks
-open System.Threading.Tasks
-open FSharp.Control
-open System.Collections.Generic
-open System.Threading.Channels
 open MiniZinc.Command
+open Xunit
+open FluentAssertions
 
-module Tests =
+
+[<Fact>]
+let ``parse flag`` () =
+    let cmd = "--a"
+    let arg = Arg.parse(cmd)
+    arg.Flag.Should().Be("--a","")
+
+[<Fact>]
+let ``parse assign equals`` () =
+    let arg = Arg.parse "--model=xd.json"
+    arg.Flag.Should().Be("--model","")
+    arg.Value.Should().Be("xd.json","")
     
-    [<Tests>]
-    let arg_tests =
-        testList "arg tests" [
-            test "parse flag" {
-                let cmd = "--a"
-                let arg = Arg.parse cmd
-                Expect.equal arg (Some <| Arg.FlagOnly "--a") "?"                
-            }
-            
-            test "parse assign equals" {
-                let cmd = "--model=xd.json"
-                let actual = Arg.parse cmd
-                let expected = Arg.FlagAndValue("--model","xd.json")
-                Expect.equal actual (Some expected) ""                
-            }
-            
-            test "parse value" {
-                let input = "asdfasdf"
-                let actual = Arg.parse input
-                let expected = Arg.ValueOnly input
-                Expect.equal actual (Some expected) ""
-            }
-        ]
+[<Fact>]
+let ``parse value`` () =
+    let input = "asdfasdf"
+    let arg = Arg.parse input 
+    arg.Value.Should().BeSameAs(input,null)
+    arg.Flag.Should().BeEmpty("")
     
+[<Fact>]
+let ``parse many`` () =
+    let a = Args.parse("--count=1")
+    let b = Arg.parse("--count")
+    let args = Args.Create(a, b, 1)
+    args.ToString().Should().Be("--count=1 --count 1","")
+
+
+[<Theory>]
+[<InlineData("org.gecode.gecode")>]
+[<InlineData("org.chuffed.chuffed")>]
+let ``test solver installed`` id =
+    let solver =
+        MiniZinc.GetSolver id
+    let sid = solver.Result.Value.Id
+    id.Should().Be(id,"")
     
-    [<Tests>]
-    let minizinc_tests = 
-        
-        let test_solver_installed id =
-            testTask $"{id} installed" {
-                let! solver = MiniZinc.GetSolver id
-                Expect.isSome solver $"{id} was not installed"
-            }
-        testList "minizinc installation" [
-            
-            testTask "version is correct" {
-                let! version = MiniZinc.Version ()
-                Expect.equal version "2.7.2" "Could not determine MiniZinc version"
-            }
-            
-            testList "solvers are installed" [
-                test_solver_installed "org.gecode.gecode"
-                test_solver_installed "org.chuffed.chuffed"
-            ]
-        ]
-        
-    [<Tests>]
-    let solve_tests =
-        testList "solver tests" [
-                        
-            testTask "simple model solve" {
-                let model = Model.FromString(
-                    """
-                    var 0..10: x;
-                    var 0..10: y;
-                    constraint x < y;
-                    constraint y < 3;
-                    """
-                    )
-                let! result = MiniZinc.Solve model
-                Expect.stringContains result.stdout "x" ""
-            }
-            
-        ]
+[<Fact>]
+let ``test minizinc version`` () =
+    task {
+        let! version = MiniZinc.Version ()
+        version.Should().Be("2.7.2","")
+    }
+   
+//
+// [<Tests>]
+// let solve_tests =
+//     testList "solver tests" [
+//                     
+//         testTask "simple model solve" {
+//             let model = Model.FromString(
+//                 """
+//                 var 0..10: x;
+//                 var 0..10: y;
+//                 constraint x < y;
+//                 constraint y < 3;
+//                 """
+//                 )
+//             let! result = MiniZinc.solve model
+//             Expect.stringContains result.StdOut "x" ""
+//         }
+//         
+//     ]

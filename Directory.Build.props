@@ -9,4 +9,11 @@
         <RepositoryUrl>https://github.com/jmjrawlings/MiniZinc.Net</RepositoryUrl>
         <NoWarn>0020</NoWarn>
     </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <NoWarn>1182;0020</NoWarn>
+    </PropertyGroup>
 </Project>

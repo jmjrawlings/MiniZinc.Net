@@ -1,9 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <NoWarn>0020</NoWarn>
-  </PropertyGroup>
   <PropertyGroup>
     <Title>MiniZinc.Net</Title>
     <Description>Formulate and solve MiniZinc models in .NET</Description>
