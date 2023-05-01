@@ -24,7 +24,7 @@ module rec Command =
     [<Struct>]
     type StartMessage =
         { ProcessId : int 
-        ; Timestamp : DateTimeOffset }
+        ; TimeStamp : DateTimeOffset }
         
     [<Struct>]
     type ExitMessage =
@@ -259,6 +259,8 @@ module rec Command =
         member this.Statement =
             Command.statement this
             
+        member this.Exec() =
+            Command.exec this
     
         
     module Command =
@@ -339,6 +341,12 @@ module rec Command =
             proc.ErrorDataReceived.Add (handleData CommandMessage.Error)
             proc.Exited.Add handleExit
             proc.Start()
+
+            { ProcessId = proc.Id
+            ; TimeStamp = DateTimeOffset.Now }
+            |> CommandMessage.Started
+            |> channel.Writer.TryWrite
+            
             proc.BeginOutputReadLine()
             proc.BeginErrorReadLine()
             channel.Reader.ReadAllAsync()

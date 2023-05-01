@@ -92,7 +92,7 @@ module rec Net =
             |> Task.map (Grep.match1 @"version (\d+\.\d+\.\d+)")
             
         static member Stream(model: Model) =
-            let command = MiniZinc.Command(model)
+            let command = MiniZinc.solve model
             taskSeq {
                 for msg in Command.stream command do
                     yield msg
@@ -103,7 +103,7 @@ module rec Net =
         let command : Command =
             Command.create MiniZinc.ExecutablePath Args.empty
             
-        let solve (model: Model) =
+        let solve (model: Model) : Command =
             let model_file =
                 match model with
                 | Model.String s ->
@@ -120,7 +120,4 @@ module rec Net =
             let command =
                 MiniZinc.Command("--json-stream", "--model", model_uri)
             
-            let result =
-                Command.exec command
-                
-            result
+            command
