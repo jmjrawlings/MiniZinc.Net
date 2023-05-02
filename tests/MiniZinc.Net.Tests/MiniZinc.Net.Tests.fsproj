@@ -4,7 +4,9 @@
     </ItemGroup>
         <ItemGroup>
         <Compile Include="AssemblyInfo.fs" />
-        <Compile Include="Tests.fs" />
+        <Compile Include="Prelude.fs" />
+        <Compile Include="CommandTests.fs" />
+        <Compile Include="SolveTests.fs" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
