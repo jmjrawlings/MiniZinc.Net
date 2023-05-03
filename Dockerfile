@@ -177,8 +177,8 @@ RUN apt-get update \
         micro \
         less \
         inotify-tools \
-        htop \                                                  
-        git \    
+        htop \
+        git \
         tree \
         zsh \
     && rm -rf /var/lib/apt/lists/*    
