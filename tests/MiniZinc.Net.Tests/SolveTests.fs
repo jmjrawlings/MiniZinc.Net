@@ -18,8 +18,8 @@ module SolveTests =
             constraint y < 3;
             """ 
             )
-        let result = MiniZinc.solve model
-        let stdout = result.Exec().Result.StdOut
+        let result = MiniZinc.exec model
+        let stdout = result.Result.Text
         stdout.Should().Contain("x","")
 
     [<Fact>]
@@ -34,13 +34,33 @@ module SolveTests =
             )
         let sol =
             model
-            |> MiniZinc.Stream
-            |> TaskSeq.choose (function
-                | CommandMessage.Output out -> Some out
-                | _ -> None
-                )
-            |> TaskSeq.last
+            |> MiniZinc.solve
+            |> TaskSeq.toList
+            |> List.last
             
-        let msg = sol.Result.Text                    
+        let msg = sol.Text
             
         msg.Should().Contain("x","")
+
+
+    [<Fact>]
+    let ``test analyze model`` () =
+        let model = Model.FromString(
+            """
+            var 0..10: x;
+            var 0..10: y;
+            constraint x < y;
+            constraint y < 3;
+            """
+            )
+        
+        let result =
+            model
+            |> MiniZinc.analyze
+            
+        let json = result.Result
+        let vars = json["var_types"].["vars"]
+        let x = vars.["x"].["type"]
+        let y = vars.["y"].["type"]
+        x.ShouldEqual("int")
+        y.ShouldEqual("int")

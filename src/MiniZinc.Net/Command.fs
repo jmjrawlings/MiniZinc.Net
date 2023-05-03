@@ -181,6 +181,22 @@ module rec Command =
             |> Seq.map string
             |> Args.parseMany
             
+        member this.Append(arg: Arg) = 
+            match this with
+            | Args xs -> Args (xs @ [arg])
+        
+        member this.Append(Args args: Args) = 
+            match this with
+            | Args xs -> Args (xs @ args)
+            
+        member this.Append([<ParamArray>] args: obj[]) =
+            let args' =
+                args
+                |> Seq.map string
+                |> Args.parseMany
+            
+            (this.Append: Args -> Args)(args')
+            
         static member (+) (a: Args, b: Args) =
             match a,b with
             | Args a', Args b' -> Args (a' @ b')
@@ -204,7 +220,7 @@ module rec Command =
             | Args args -> Args (f args)
         
         // Add an argument
-        let add arg args =
+        let append arg args =
             map (fun args -> args @ [arg]) args
             
         // Get the list of args            
@@ -245,39 +261,33 @@ module rec Command =
 
 
     type Command =
-        { Exe  : string
-          Args : Args }
+        { Exe   : string
+          Args  : Args }
         
         static member Create(exe: string, [<ParamArray>] args: obj[]) =
             let args = Args.Create(args)
-            { Exe = exe; Args = args }
+            { Exe = exe; Args = args; }
             
         member this.AddArgs([<ParamArray>] args: obj[]) =
-            let args = Args.Create(args)
-            Command.addArgs args this
+            { this with Args = this.Args.Append(args) }
             
         member this.Statement =
             Command.statement this
             
         member this.Exec() =
             Command.exec this
+            
+        member this.Stream() =
+            Command.stream this
     
         
     module Command =
-
-        let create (exe: string) (args: Args) =
-            { Exe = exe; Args = args }
     
-        let empty = create "" Args.empty
+        let empty =
+            { Exe = ""; Args = Args.empty; }
         
         let withArgs (args: Args) (cmd: Command) =
             { cmd with Args = args }
-            
-        let addArg (arg: Arg) (cmd: Command) =
-            withArgs (cmd.Args + arg) cmd
-            
-        let addArgs (args: Args) (cmd: Command) =
-            withArgs (cmd.Args + args) cmd
         
         /// <summary>
         /// Return the full command line statement of

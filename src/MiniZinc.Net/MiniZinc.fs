@@ -5,6 +5,7 @@ open System.Diagnostics
 open System.IO
 open System.Text
 open System.Text.Json
+open System.Text.Json.Nodes
 open System.Threading.Tasks
 open FSharp.Control
 open System.Collections.Generic
@@ -13,14 +14,6 @@ open MiniZinc.Command
 
 [<AutoOpen>]
 module rec Net =
-    
-    let  [<Literal>] SOLUTION_SEP ="----------"
-    let [<Literal>] UNSAT_MSG = "=====UNSATISFIABLE====="
-    let [<Literal>] UNSAT_OR_UNBOUNDED_MSG = "=====UNSATorUNBOUNDED====="
-    let [<Literal>] UNBOUNDED_MSG = "==UNBOUNDED====="
-    let [<Literal>] UNKNOWN_MSG = "=====UNKNOWN====="
-    let [<Literal>] ERROR_MSG = "=====ERROR====="
-    let [<Literal>] COMPLETE_MSG = "=========="
 
     type Model =
         internal
@@ -46,12 +39,18 @@ module rec Net =
                 executablePath
             and set value =
                 executablePath <- value
-                
+        
+        /// <summary>
+        /// Create a minizinc command 
+        /// </summary>
+        static member Command() =
+            Command.Create(executablePath)
+               
         /// <summary>
         /// Create a minizinc command with the given arguments 
         /// </summary>
         static member Command([<ParamArray>] args: obj[]) =
-            MiniZinc.command.AddArgs(args)
+            Command.Create(executablePath, args)
 
         /// <summary>
         /// Get all installed solvers
@@ -91,19 +90,10 @@ module rec Net =
             |> Task.map (fun x -> x.StdOut)
             |> Task.map (Grep.match1 @"version (\d+\.\d+\.\d+)")
             
-        static member Stream(model: Model) =
-            let command = MiniZinc.solve model
-            taskSeq {
-                for msg in Command.stream command do
-                    yield msg
-            }
-            
     module MiniZinc =
-                
-        let command : Command =
-            Command.create MiniZinc.ExecutablePath Args.empty
-            
-        let solve (model: Model) : Command =
+        
+        let private model_arg (model: Model) =
+
             let model_file =
                 match model with
                 | Model.String s ->
@@ -116,8 +106,42 @@ module rec Net =
 
             let model_uri =
                 Uri(model_file).AbsolutePath
-
-            let command =
-                MiniZinc.Command("--json-stream", "--model", model_uri)
+                
+            let arg = Arg.parse $"--model {model_uri}"
+            arg
+                            
+        let solve (model: Model) : IAsyncEnumerable<OutputMessage> =
             
+            let args = Args.Create("--json-stream")
+            let model_arg = model_arg model
+            let args = args.Append(model_arg)
+            let command = MiniZinc.Command(args)
+                
             command
+            |> Command.stream
+            |> TaskSeq.choose (function
+                | CommandMessage.Output msg ->
+                    Some msg
+                | _ ->
+                    None)
+            
+        /// <summary>
+        /// Solve the given model and wait
+        /// for the best solution only
+        /// </summary>
+        let exec (model: Model) =
+            model
+            |> solve
+            |> TaskSeq.last
+            
+        /// <summary>
+        /// Analyse the given model
+        /// </summary>
+        let analyze (model: Model) =
+            let model_arg = model_arg model
+            let command = MiniZinc.Command("--model-types-only", model_arg)
+            task {
+                let! result = command.Exec()
+                let json = JsonObject.Parse(result.StdOut)
+                return json
+            }
