@@ -11,24 +11,12 @@ open FSharp.Control
 open System.Collections.Generic
 open System.Threading.Channels
 open MiniZinc.Command
+open MiniZinc.Model
 
 [<AutoOpen>]
 module rec Net =
 
-    type Model =
-        internal
-        | String of string
-        | Mzn of FileInfo
-        
-        static member FromString (s: string) =
-            Model.String s
-        
-        static member FromFile (file: string) =
-            Model.FromFile(FileInfo file)
-            
-        static member FromFile (file: FileInfo) =
-            Model.Mzn file
-
+    
     type MiniZinc() =
             
         static let mutable executablePath =
@@ -45,12 +33,22 @@ module rec Net =
         /// </summary>
         static member Command() =
             Command.Create(executablePath)
+            
+        /// <summary>
+        /// Create a minizinc command with the given model
+        /// and extra args 
+        /// </summary>
+        static member Command(model: Model, [<ParamArray>] args: obj[]) =
+            let model_file = MiniZinc.write_model_to_tempfile model
+            let model_arg = MiniZinc.model_arg model_file
+            let command = MiniZinc.Command().AddArgs(model_arg)
+            command
                
         /// <summary>
         /// Create a minizinc command with the given arguments 
         /// </summary>
         static member Command([<ParamArray>] args: obj[]) =
-            Command.Create(executablePath, args)
+            MiniZinc.Command().AddArgs(args)
 
         /// <summary>
         /// Get all installed solvers
@@ -92,28 +90,25 @@ module rec Net =
             
     module MiniZinc =
         
-        let private model_arg (model: Model) =
-
-            let model_file =
-                match model with
-                | Model.String s ->
-                    let mzn = Path.GetTempFileName()
-                    let mzn = Path.ChangeExtension(mzn, ".mzn")
-                    File.WriteAllText(mzn, s)
-                    mzn
-                | Model.Mzn file ->
-                    file.FullName
-
-            let model_uri =
-                Uri(model_file).AbsolutePath
-                
-            let arg = Arg.parse $"--model {model_uri}"
+        // Write the given model to a tempfile with '.mzn' extension
+        let internal write_model_to_tempfile (model: Model) : FileInfo =
+            let path = Path.GetTempFileName()
+            let path = Path.ChangeExtension(path, ".mzn")
+            File.WriteAllText(path, model.String)
+            let file = FileInfo path
+            file
+        
+        // Create a cli Arg for the given model file
+        let internal model_arg (file: FileInfo) : Arg =
+            let uri = Uri(file.FullName).AbsolutePath
+            let arg = Arg.parse $"--model {uri}"
             arg
                             
         let solve (model: Model) : IAsyncEnumerable<OutputMessage> =
             
             let args = Args.Create("--json-stream")
-            let model_arg = model_arg model
+            let model_file = write_model_to_tempfile model
+            let model_arg = model_arg model_file
             let args = args.Append(model_arg)
             let command = MiniZinc.Command(args)
                 
@@ -137,11 +132,19 @@ module rec Net =
         /// <summary>
         /// Analyse the given model
         /// </summary>
-        let analyze (model: Model) =
-            let model_arg = model_arg model
-            let command = MiniZinc.Command("--model-types-only", model_arg)
+        let model_types (model: Model) =
+            let command =
+                MiniZinc.Command(model).AddArgs("--model-types-only")
             task {
                 let! result = command.Exec()
                 let json = JsonObject.Parse(result.StdOut)
                 return json
             }
+            
+        /// <summary>
+        /// Analyse the given model
+        /// </summary>
+        let model_interface (model: Model) =
+            let command = MiniZinc.Command(model).AddArgs("--model-interface-only")
+            let result = command.Exec()
+            result

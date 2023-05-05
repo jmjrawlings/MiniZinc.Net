@@ -44,23 +44,32 @@ module SolveTests =
 
 
     [<Fact>]
-    let ``test analyze model`` () =
-        let model = Model.FromString(
-            """
-            var 0..10: x;
-            var 0..10: y;
-            constraint x < y;
-            constraint y < 3;
-            """
-            )
-        
-        let result =
-            model
-            |> MiniZinc.analyze
-            
+    let ``test analyze int`` () =
+        let model = Model.FromString("var int: x;")
+        let result = MiniZinc.model_types model
         let json = result.Result
-        let vars = json["var_types"].["vars"]
-        let x = vars.["x"].["type"]
-        let y = vars.["y"].["type"]
-        x.ShouldEqual("int")
-        y.ShouldEqual("int")
+        json["var_types"].["vars"].["x"].["type"].ShouldEqual("int")
+
+    [<Fact>]
+    let ``test analyze bool`` () =
+        let model = Model.FromString("var bool: x;")
+        let result = MiniZinc.model_types model
+        let json = result.Result
+        json["var_types"].["vars"].["x"].["type"].ShouldEqual("bool")
+        
+    [<Fact>]
+    let ``test analyze enum`` () =
+        let model = Model.FromString("enum Letter = {\"A\",\"B\",\"C\"}; var Letter: x;")
+        let result = MiniZinc.model_types model
+        let json = result.Result
+        let a = 1
+        ()
+        
+    [<Fact>]
+    let ``test model interface`` () =
+        let model = Model.FromString("int: a; int: b; var int: c; constraint c > b; var {1,2,3}: d;")
+        let result = MiniZinc.model_interface model
+        let json = result.Result
+        let a = 1
+        ()
+

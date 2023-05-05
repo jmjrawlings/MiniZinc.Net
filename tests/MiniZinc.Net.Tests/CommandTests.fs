@@ -46,5 +46,5 @@ module CommandTests =
     let ``test minizinc version`` () =
         task {
             let! version = MiniZinc.Version ()
-            version.ShouldEqual "2.7.2"
+            version.ShouldEqual "2.7.3"
         }

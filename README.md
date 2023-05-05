@@ -2,12 +2,24 @@
 
 Create and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
 
-## Goals
-- Model creation (DSL?)
-- Model solving
-- Async
+## Immediate Goals
 
-## Method
-- Parse model strings and arguments using MiniZinc CLI 
-- Start a command line process and async await the results
-- parse results into strongly typed objects
+- An API that sparks joy
+- Parse models
+  - From existing .mzn files
+  - From strings
+- Solve models
+  - All async
+  - Stream from stdout
+  - Handle timeout / user cancellation
+- Create models
+  - Think of a nice wa
+- Examples
+
+## Stretch Goals / Ideas
+- Use a [source generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview)? 
+  - Have models in separate file and a first class interface to them through C#? that would be great
+
+## Meta Goals
+- Promote MiniZinc and constraint solving
+- Get this library to a level I would use professionally in production
