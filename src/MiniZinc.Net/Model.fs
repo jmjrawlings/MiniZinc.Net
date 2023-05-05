@@ -63,8 +63,13 @@ module rec Model =
         ; String  : string }
         
         static member ParseFile (file: string) =
-            let fi = FileInfo file
-            Model.parseFile fi
+            Model.parseFile (FileInfo file)
+            
+        static member ParseFile (file: FileInfo) =
+            Model.parseFile file
+            
+        static member Parse (model: string) =
+            Model.parse model
        
         
     module Model =
@@ -75,21 +80,34 @@ module rec Model =
             ; Outputs = Map.empty
             ; String = "" }
         
-        let parseString (s: string) =
+        let parse (s: string) =
             
-            // https://regex101.com/r/efIy7M/1
-            
-            let vartype_pat = @"(?:(par|var)\s*)?"
-            let type_pat = @"([a-zA-Z][\w|\s]*)"
+            // https://regex101.com/r/efIy7M/1            
+            //let vartype_pat = @"(?:(par|var)\s*)?"
+            let type_pat = @"([^;:]*)"
             let name_pat = @"([a-zA-Z]\w*)"
-            let value_pat = @"(?:=\s*([^;`]+))"
-            let var_pat = $"{vartype_pat}{type_pat}:\s*{name_pat}\s*{value_pat}\s*;"
+            let assign_pat = @"(?:=\s*([^;`]+))"
+            let var_pat = $"var\s*{type_pat}:\s*{name_pat}\s*{assign_pat}?\s*;"
             let var_regex = Regex var_pat
+            let inputs =
+                var_regex.Matches s
+                |> Seq.filter (fun m -> m.Success)
+                |> Seq.map (fun m ->
+                   let var_name = m.Groups[2].Value
+                   let var_type = m.Groups[1].Value
+                   let var_val = m.Groups[3].Value
+                   { Name=var_name
+                   ; Type = MzAlias var_type
+                   ; VarType=VarType.Par
+                   ; Value = Some (MzString var_val) }
+                   )
+                |> Seq.toList
+                
             empty
             
         let parseFile (fi: FileInfo) =
             let contents = File.ReadAllText fi.FullName
             let name = Path.GetFileNameWithoutExtension fi.Name
-            let model = parseString contents
+            let model = parse contents
             let model = { model with Name = name }
             model

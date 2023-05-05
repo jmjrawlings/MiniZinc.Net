@@ -6,6 +6,7 @@
         <Compile Include="AssemblyInfo.fs" />
         <Compile Include="Prelude.fs" />
         <Compile Include="CommandTests.fs" />
+        <Compile Include="ParserTests.fs" />
         <Compile Include="SolveTests.fs" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />

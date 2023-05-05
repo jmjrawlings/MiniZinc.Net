@@ -5,12 +5,13 @@ module SolveTests =
     open MiniZinc
     open FSharp.Control
     open MiniZinc.Command
+    open MiniZinc.Model
     open Xunit
     open FluentAssertions
        
     [<Fact>]
-    let ``test solve simple model`` () =
-        let model = Model.FromString(
+    let ``test parse simple model`` () =
+        let model = Model.Parse(
             """
             var 0..10: x;
             var 0..10: y;
@@ -24,7 +25,7 @@ module SolveTests =
 
     [<Fact>]
     let ``test stream simple model`` () =
-        let model = Model.FromString(
+        let model = Model.Parse(
             """
             var 0..10: x;
             var 0..10: y;
@@ -45,21 +46,21 @@ module SolveTests =
 
     [<Fact>]
     let ``test analyze int`` () =
-        let model = Model.FromString("var int: x;")
+        let model = Model.Parse("var int: x;")
         let result = MiniZinc.model_types model
         let json = result.Result
         json["var_types"].["vars"].["x"].["type"].ShouldEqual("int")
 
     [<Fact>]
     let ``test analyze bool`` () =
-        let model = Model.FromString("var bool: x;")
+        let model = Model.Parse("var bool: x;")
         let result = MiniZinc.model_types model
         let json = result.Result
         json["var_types"].["vars"].["x"].["type"].ShouldEqual("bool")
         
     [<Fact>]
     let ``test analyze enum`` () =
-        let model = Model.FromString("enum Letter = {\"A\",\"B\",\"C\"}; var Letter: x;")
+        let model = Model.Parse("enum Letter = {\"A\",\"B\",\"C\"}; var Letter: x;")
         let result = MiniZinc.model_types model
         let json = result.Result
         let a = 1
@@ -67,7 +68,7 @@ module SolveTests =
         
     [<Fact>]
     let ``test model interface`` () =
-        let model = Model.FromString("int: a; int: b; var int: c; constraint c > b; var {1,2,3}: d;")
+        let model = Model.Parse("int: a; int: b; var int: c; constraint c > b; var {1,2,3}: d;")
         let result = MiniZinc.model_interface model
         let json = result.Result
         let a = 1
