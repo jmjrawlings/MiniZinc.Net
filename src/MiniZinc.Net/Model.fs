@@ -7,12 +7,12 @@ module rec Model =
     open System
     open System.IO
     
-    // Parameter or variable?
-    type VarType =
+    // Parameter Type
+    type ParType =
         | Par = 0
         | Var = 1
 
-    
+        
     // MiniZinc Type
     type MzType =
         | MzInt
@@ -42,35 +42,35 @@ module rec Model =
 
         
     // MiniZinc variable
-    type MzVar =
-        { VarType : VarType
+    type Variable =
+        { ParType : ParType
           Name    : string
-          Type    : MzType          
+          Type    : MzType
           Value   : MzValue option }
-        
+
         member this.IsVar =
-            this.VarType = VarType.Var
+            this.ParType = ParType.Var
             
         member this.IsPar =
-            this.VarType = VarType.Par
+            this.ParType = ParType.Par
         
 
     // A MiniZinc model
     type Model =
         { Name    : string 
-        ; Inputs  : Map<string, MzVar>
-        ; Outputs : Map<string, MzVar>
+        ; Inputs  : Map<string, Variable>
+        ; Outputs : Map<string, Variable>
         ; String  : string }
         
         static member ParseFile (file: string) =
-            Model.parseFile (FileInfo file)
+            Parse.file (FileInfo file)
             
         static member ParseFile (file: FileInfo) =
-            Model.parseFile file
+            Parse.file file
             
         static member Parse (model: string) =
-            Model.parse model
-       
+            Parse.model model
+            
         
     module Model =
         
@@ -79,35 +79,93 @@ module rec Model =
             ; Inputs = Map.empty
             ; Outputs = Map.empty
             ; String = "" }
-        
-        let parse (s: string) =
             
-            // https://regex101.com/r/efIy7M/1            
-            //let vartype_pat = @"(?:(par|var)\s*)?"
-            let type_pat = @"([^;:]*)"
-            let name_pat = @"([a-zA-Z]\w*)"
-            let assign_pat = @"(?:=\s*([^;`]+))"
-            let var_pat = $"var\s*{type_pat}:\s*{name_pat}\s*{assign_pat}?\s*;"
-            let var_regex = Regex var_pat
-            let inputs =
-                var_regex.Matches s
-                |> Seq.filter (fun m -> m.Success)
-                |> Seq.map (fun m ->
-                   let var_name = m.Groups[2].Value
-                   let var_type = m.Groups[1].Value
-                   let var_val = m.Groups[3].Value
-                   { Name=var_name
-                   ; Type = MzAlias var_type
-                   ; VarType=VarType.Par
-                   ; Value = Some (MzString var_val) }
-                   )
+        let parseFile file =
+            Parse.file file
+            
+        let parseString model =
+            Parse.model model
+      
+            
+    module Parse =
+        
+        module Patterns =
+            let var_type = @"(var|par)?"
+            let type_name = @"([^;:]*[^;:])"
+            let var_name = @"([a-zA-Z]\w*)"
+            let assign = @"(=\s*([^;`]+))?"
+            let var = $"{var_type}\s*{type_name}\s*:\s*{var_name}\s*{assign}\s*;"
+        
+        let var_regex = Regex Patterns.var
+        
+        // Parse a value from the given string
+        let value (s: string) : MzValue option =
+             MzValue.MzString s
+             |> Some
+             
+        // Parse a value from the given string
+        let var_type (s: string) : MzType option =
+             MzType.MzAlias s
+             |> Some
+            
+        // Parse a Var from the given line            
+        let line (s: string) : Variable option =
+            match var_regex.Match s with
+            | m when m.Success ->
+                
+                let par_type =
+                    match m.Groups[1].Value with
+                    | "var" -> ParType.Var
+                    | _ -> ParType.Par
+                    
+                let var_type =
+                    m.Groups[2].Value
+                    |> Parse.var_type
+                    |> Option.get
+                    
+                let var_name =
+                    m.Groups[3].Value
+                    
+                let value =
+                    match m.Groups[4].Value with
+                    | "" -> None
+                    | v -> Parse.value s
+                    
+                let var =
+                    { Name    = var_name
+                    ; ParType = par_type
+                    ; Type    = var_type
+                    ; Value   = value }
+                Some var
+            | _ ->
+                None
+            
+        // Parse a model from a the given string                       
+        let model (s: string) =
+            
+            let lines =
+                s.Split(";")
+                
+            let vars =
+                lines
+                |> Seq.map (sprintf "%s;")
+                |> Seq.map (fun s -> s.Trim())
+                |> Seq.choose Parse.line
                 |> Seq.toList
                 
-            empty
-            
-        let parseFile (fi: FileInfo) =
+            let inputs =
+                vars
+                |> Map.withKey (fun v -> v.Name)
+                
+            { Model.empty with
+                Inputs = inputs
+                String = s }
+                
+                
+        // Parse the given file
+        let file (fi: FileInfo) : Model =
             let contents = File.ReadAllText fi.FullName
             let name = Path.GetFileNameWithoutExtension fi.Name
-            let model = parse contents
+            let model = Parse.model contents
             let model = { model with Name = name }
             model

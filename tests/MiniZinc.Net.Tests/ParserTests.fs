@@ -8,6 +8,11 @@ module ParserTests =
     open MiniZinc.Model
     open Xunit
     open FluentAssertions
+    
+    type Model with
+        member this.HasInput x =
+            (this.Inputs.ContainsKey "x").Should().BeTrue($"Missing input \"{x}\"")
+    
        
     [<Fact>]
     let ``test parse simple model`` () =
@@ -19,4 +24,18 @@ module ParserTests =
             constraint y < 3;
             """ 
             )
-        (model.Inputs.ContainsKey "x").Should().BeTrue("")
+        model.HasInput "x"
+        model.HasInput "y"
+
+    [<Fact>]
+    let ``test parse sets`` () =
+        let model = Model.Parse(
+            """
+            {1}: a;
+            var {3,4,5}: b;
+            par set of int: c;
+            """ 
+            )
+        model.HasInput "a"
+        model.HasInput "b"
+        model.HasInput "c"
