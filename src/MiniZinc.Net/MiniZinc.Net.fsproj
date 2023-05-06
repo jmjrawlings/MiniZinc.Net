@@ -12,9 +12,13 @@
     <Compile Include="Prelude.fs" />
     <Compile Include="Command.fs" />
     <Compile Include="Model.fs" />
-    <Compile Include="Solver.fs" />
-    <Compile Include="MiniZinc.fs" />    
+    <Compile Include="Solve.fs" />
+    <Compile Include="MiniZinc.fs" />
+    <Compile Include="Parse.fs" />    
   </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+  <ItemGroup>
+    <PackageReference Include="fparsec" Version="1.1.1" />
+    <PackageReference Include="fsharp.control.taskseq" Version="0.3.0" />
+  </ItemGroup>
 </Project>
  
