@@ -136,6 +136,7 @@ module rec Model =
                     ; ParType = par_type
                     ; Type    = var_type
                     ; Value   = value }
+                    
                 Some var
             | _ ->
                 None
@@ -146,15 +147,12 @@ module rec Model =
             let lines =
                 s.Split(";")
                 
-            let vars =
+            let inputs =
                 lines
                 |> Seq.map (sprintf "%s;")
                 |> Seq.map (fun s -> s.Trim())
                 |> Seq.choose Parse.line
                 |> Seq.toList
-                
-            let inputs =
-                vars
                 |> Map.withKey (fun v -> v.Name)
                 
             { Model.empty with
