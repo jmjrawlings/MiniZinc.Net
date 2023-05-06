@@ -1,3 +1,4 @@
+fparsec
 group Build
 FSharp.Core
 Fake.IO.FileSystem

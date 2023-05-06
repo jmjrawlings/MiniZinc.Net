@@ -1,6 +1,7 @@
 group Test
     FSharp.Core
     FSharp.Control.TaskSeq
+    FParsec
     Microsoft.NET.Test.Sdk
     FluentAssertions
     xunit.core
