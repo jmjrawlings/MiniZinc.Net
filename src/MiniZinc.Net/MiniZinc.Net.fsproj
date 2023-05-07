@@ -2,6 +2,7 @@
   <PropertyGroup>
     <Title>MiniZinc.Net</Title>
     <Description>Formulate and solve MiniZinc models in .NET</Description>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>
@@ -13,8 +14,7 @@
     <Compile Include="Command.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Solve.fs" />
-    <Compile Include="MiniZinc.fs" />
-    <Compile Include="Parse.fs" />    
+    <Compile Include="MiniZinc.fs" />    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="fparsec" Version="1.1.1" />
