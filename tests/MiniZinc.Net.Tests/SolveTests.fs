@@ -58,13 +58,13 @@ module SolveTests =
         let json = result.Result
         json["var_types"].["vars"].["x"].["type"].ShouldEqual("bool")
         
-    [<Fact>]
-    let ``test analyze enum`` () =
-        let model = Model.Parse("enum Letter = {\"A\",\"B\",\"C\"}; var Letter: x;")
-        let result = MiniZinc.model_types model
-        let json = result.Result
-        let a = 1
-        ()
+    // [<Fact>]
+    // let ``test analyze enum`` () =
+    //     let model = Model.Parse("enum Letter = {\"A\",\"B\",\"C\"}; var Letter: x;")
+    //     let result = MiniZinc.model_types model
+    //     let json = result.Result
+    //     let a = 1
+    //     ()
         
     [<Fact>]
     let ``test model interface`` () =

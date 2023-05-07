@@ -11,35 +11,59 @@ module rec Model =
     type VarKind =
         | Par = 0
         | Var = 1
-
         
     // MiniZinc Type
     type MzType =
-        | MzInt
-        | MzBool
-        | MzString
-        | MzEnum    of string list
-        | MzRecord  of Map<string, MzType>
-        | MzArray   of MzType
-        | MzArray2d of MzType*MzType
-        | MzArray3d of MzType*MzType*MzType
-        | MzRange   of int * int
-        | MzSet     of MzType
-        | MzAlias   of string
+        | TInt
+        | TBool
+        | TString
+        | TFloat
+        | TEnum   of EnumType
+        | TRecord of RecordType
+        | TArray  of ArrayType
+        | TRange  of Range
+        | TSet    of SetType
+        | TRef    of string
         
+    type SetType =
+        { Elements : MzType }
+        
+    type Range =
+        { Lower : IntOrName
+          Upper : IntOrName }
+        
+    type RecordType =
+        { Name : string
+          Fields : Map<string, MzType> }
+        
+    type ArrayType =
+        { Dimensions: IntOrName list }
+        
+    type IntOrName =
+        | Int of int
+        | Name of string
+          
+    type EnumType =
+        { Name : string
+        ; Members : string list }
+        
+    type SetValue =
+        { Expr : string }
+        
+    type ArrayValue =
+        { Expr: string }
     
-    // MiniZinc Value
+    // MiniZinc Value (Type Instantiation)
     type MzValue =
-        | MzInt     of int
-        | MzBool    of bool
-        | MzString  of string
-        | MzEnum    of string
-        | MzRange   of int * int
-        | MzArray   of MzValue[]
-        | MzArray2d of MzValue[,]
-        | MzArray3d of MzValue[,,]
-        | MzVar     of string
-
+        | VInt       of int
+        | VBool      of bool
+        | VString    of string
+        | VFloat     of float
+        | VRange     of Range
+        | VArray     of ArrayValue
+        | VSet       of SetValue
+        | VRef       of string
+        
             
     // MiniZinc variable
     type Variable =
@@ -161,6 +185,15 @@ module rec Model =
         let (<?!>) (p: P<'t>) label : P<'t> =
             p <?> label <!> label
 
+        let (.>>>) a b =
+            a .>> spaces .>> b
+            
+        let (>>>.) a b =
+            a >>. spaces >>. b
+            
+        let (.>>>.) a b =
+            a .>> spaces .>>. b
+
         let str x = pstring x
         
         let chr c = pchar c
@@ -190,7 +223,7 @@ module rec Model =
         let var_type : P<MzType> =
             many1Chars (noneOf ";:=")
             <?!> "var-type"
-            |>> MzType.MzAlias
+            |>> MzType.TRef
         
         // Parse a constraint
         let constr : P<string> =
@@ -198,6 +231,30 @@ module rec Model =
             >>. ws1
             >>. many1Chars (noneOf ";:=")
             <?!> "constraint"
+            
+        // Parse an range
+        let range : P<Range> =
+            
+            let bound =
+                (pint32 |>> IntOrName.Int)
+                <|>
+                (ident |>> IntOrName.Name)
+           
+            bound .>>> str ".." .>>>. bound
+            |>> function | (lo,hi) -> { Lower=lo; Upper=hi }
+      
+        // Parse an enum
+        let enum : P<EnumType> =
+            let name = ident
+            let members = between (chr '{') (chr '}') (sepBy ident (chr ','))
+            str "enum"
+            >>. ws1
+            >>. name
+            .>>> chr '='
+            .>>>. members
+            |>> (fun (name, members) ->
+                { Name=name; Members=members })
+        
         
         // Parse a `var`                    
         let var : P<Variable> =
