@@ -8,7 +8,7 @@ module rec Model =
     open System.IO
     
     // Parameter Type
-    type ParType =
+    type VarKind =
         | Par = 0
         | Var = 1
 
@@ -38,21 +38,39 @@ module rec Model =
         | MzArray   of MzValue[]
         | MzArray2d of MzValue[,]
         | MzArray3d of MzValue[,,]
-        | MzVar     of string        
+        | MzVar     of string
 
-        
+            
     // MiniZinc variable
     type Variable =
-        { ParType : ParType
-          Name    : string
-          Type    : MzType
-          Value   : MzValue option }
+        { Kind  : VarKind
+          Name  : string
+          Type  : MzType
+          Value : MzValue option }
 
         member this.IsVar =
-            this.ParType = ParType.Var
+            this.Kind = VarKind.Var
             
         member this.IsPar =
-            this.ParType = ParType.Par
+            this.Kind = VarKind.Par
+
+        static member Var(name, typ) =
+            { Kind = VarKind.Var
+            ; Name = name
+            ; Type = typ
+            ; Value  = None }
+            
+        static member Par(name, typ) =
+            { Kind = VarKind.Par
+            ; Name = name
+            ; Type = typ
+            ; Value  = None }
+            
+        static member Par(name, typ, value) =
+            { Kind = VarKind.Par
+            ; Name = name
+            ; Type = typ
+            ; Value  = Some value }
         
 
     // A MiniZinc model
@@ -93,8 +111,15 @@ module rec Model =
         open System.Text
         type DebugInfo = { Message: string; Indent: int }
         type UserState = { mutable Debug: DebugInfo }
+        type Error = { Message: string; Trace: string; }
         type P<'t> = Parser<'t, UserState>
         type DebugType<'a> = Enter | Leave of Reply<'a>
+        
+        type Item =
+            | Variable of Variable
+            | Other of string
+            | Constraint of string
+        
         let addToDebug (stream:CharStream<UserState>) label dtype =
             let msgPadLen = 50
             let startIndent = stream.UserState.Debug.Indent
@@ -105,7 +130,7 @@ module rec Model =
                 | Leave res ->
                     let str = $"Leaving  %s{label} (%A{res.Status})"
                     let pad = max (msgPadLen - startIndent - 1) 0
-                    let resStr = $"%s{str.PadRight(pad)} %A{res.Result}"
+                    let resStr = $"%s{str.PadRight(pad)} {res.Result}"
                     resStr, startIndent-1, startIndent-1
 
             let indentStr =
@@ -136,62 +161,106 @@ module rec Model =
         let (<?!>) (p: P<'t>) label : P<'t> =
             p <?> label <!> label
 
-        // Parse whitespace
-        let s = spaces
+        let str x = pstring x
+        
+        let chr c = pchar c
+        
+        let ws = spaces
         
         // Parse at least 1 whitespace
-        let s1 = spaces1
+        let ws1 = spaces1
         
-        // Parse any char except those given
-        let anyCharExcept (xs: char list) =
-            satisfy (fun c -> List.contains c xs |> not)
-            
-        let var_name =
-            many1Chars (anyCharExcept [';'; '='])
-            <?!> "var-name"
-            
-        let var =
-            pstring "var"
-            >>. s1
-            >>. var_name
-            .>> s
-            .>> pchar ';'
+        // Parse an identifier
+        let ident =
+            let simple =
+                many1Satisfy2
+                    (fun c -> Char.IsLetter c || c = '_')
+                    Char.IsLetterOrDigit
+
+            let quoted =
+                between
+                    (pchar '\'')
+                    (pchar '\'')
+                    (many1Chars (noneOf ['\''; '\x0A'; '\x0D'; '\x00']))
+
+            (simple <|> quoted)
+            <?!> "identifier"
+        
+        // Parse a `var`
+        let var_type : P<MzType> =
+            many1Chars (noneOf ";:=")
+            <?!> "var-type"
+            |>> MzType.MzAlias
+        
+        // Parse a constraint
+        let constr : P<string> =
+            pstring "constraint"
+            >>. ws1
+            >>. many1Chars (noneOf ";:=")
+            <?!> "constraint"
+        
+        // Parse a `var`                    
+        let var : P<Variable> =
+            str "var"
+            >>. ws1 >>. var_type .>> ws
+            .>> chr ':' .>> ws
+            .>>. ident
+            |>> (fun (typ, name) ->
+                { Name = name
+                ; Type = typ
+                ; Value = None
+                ; Kind = VarKind.Var })
             <?!> "var"
+        
+        // Parse a parameter    
+        let par : P<Variable> =
+            str "par"     >>. ws1
+            >>. var_type  .>> ws
+            .>> pchar ':' .>> ws
+            .>>. ident
+            |>> (fun (typ, name) ->
+                { Name = name
+                ; Type = typ
+                ; Value = None
+                ; Kind = VarKind.Par })
+            <?!> "par"
 
         let lines =
             let other =
-                many1CharsTill (anyCharExcept [';']) (pchar ';')
+                many1Chars (noneOf [';'])
                 <?!> "other"
             let choices =
-                [ var   |>> Choice1Of2
-                ; other |>> Choice2Of2]
-            let item =
-                choices
-                |> List.map attempt
+                [ var    |>> Item.Variable
+                ; constr |>> Item.Constraint
+                ; other  |>> Item.Other ]
                 |> choice
-            sepBy item spaces
-            
+            sepEndBy choices (chr ';')
+            .>> eof
+                    
         // Parse the given string with the given parser            
         let parse parser (s: string) =
             let input = s.Trim()
             let state = { Debug = { Message = ""; Indent = 0 } }
-            runParserOnString parser state "" input
+            match runParserOnString parser state "" input with
+            | Success (value, _, _) ->
+                Result.Ok value
+            | Failure (s, msg, state) ->
+                let error =
+                    { Message = s
+                    ; Trace = state.Debug.Message }
+                Result.Error error
                         
         // Parse a model from a the given string                       
         let model (s: string) =
             let input =
                 s.Split(';')
                 |> Seq.map (fun s -> s.Trim())
-                |> String.concat ";\n"
+                |> String.concat ";"
             let result = parse lines input
-            match result with
-            | Success(choices, userState, position) ->
-                Model.empty
-            | Failure(s, parserError, userState) ->
-                failwith s
+            { Model.empty with String = s }
                  
         // Parse the given file
-        let file (fi: FileInfo) : Model =
+        let file (fi: FileInfo) =
             let contents = File.ReadAllText fi.FullName
             let name = Path.GetFileNameWithoutExtension fi.Name
             let model = Parse.model contents
