@@ -11,33 +11,40 @@ module rec Model =
     type VarKind =
         | Par = 0
         | Var = 1
+    
+    type PrimitiveType =    
+        | Int
+        | Bool
+        | String
+        | Float
+        | Ref of string
         
     // MiniZinc Type
-    type MzType =
-        | TInt
-        | TBool
-        | TString
-        | TFloat
-        | TEnum   of EnumType
-        | TRecord of RecordType
-        | TArray  of ArrayType
-        | TRange  of Range
-        | TSet    of SetType
-        | TRef    of string
+    type VarType =
+        | Primitive of PrimitiveType
+        | Enum    of EnumType
+        | Record  of RecordType
+        | Array   of ArrayType
+        | Set     of SetType
         
-    type SetType =
-        { Elements : MzType }
-        
-    type Range =
+    type RangeExpr =
         { Lower : IntOrName
           Upper : IntOrName }
         
     type RecordType =
-        { Name : string
-          Fields : Map<string, MzType> }
+        { Fields : Map<string, VarType> }
+        
+    type SetType =
+        | Unbounded of PrimitiveType
+        | Range of RangeExpr
+        | Literal of SetExpr
         
     type ArrayType =
-        { Dimensions: IntOrName list }
+        { Dimensions: IntOrName list
+          Elements: PrimitiveType }
+        
+        member this.NDim =
+            this.Dimensions.Length
         
     type IntOrName =
         | Int of int
@@ -47,30 +54,35 @@ module rec Model =
         { Name : string
         ; Members : string list }
         
-    type SetValue =
-        { Expr : string }
+    type SetExpr =
+        | Primitive of PrimitiveExpr list
+        | Expr of string
         
-    type ArrayValue =
-        { Expr: string }
+    type ArrayExpr =
+        | Primitive of PrimitiveExpr[]
+        | Expr of string
+       
+    type PrimitiveExpr =
+        | Int    of int
+        | Bool   of bool
+        | String of string
+        | Float  of float
+        | Ref    of string
     
     // MiniZinc Value (Type Instantiation)
-    type MzValue =
-        | VInt       of int
-        | VBool      of bool
-        | VString    of string
-        | VFloat     of float
-        | VRange     of Range
-        | VArray     of ArrayValue
-        | VSet       of SetValue
-        | VRef       of string
-        
+    type Value =
+        | Primitive of PrimitiveExpr
+        | Range     of RangeExpr
+        | Array     of ArrayExpr
+        | Set       of SetExpr
+        | Other     of string
             
     // MiniZinc variable
     type Variable =
         { Kind  : VarKind
           Name  : string
-          Type  : MzType
-          Value : MzValue option }
+          Type  : VarType
+          Value : Value option }
 
         member this.IsVar =
             this.Kind = VarKind.Var
@@ -198,11 +210,6 @@ module rec Model =
         
         let chr c = pchar c
         
-        let ws = spaces
-        
-        // Parse at least 1 whitespace
-        let ws1 = spaces1
-        
         // Parse an identifier
         let ident =
             let simple =
@@ -219,28 +226,22 @@ module rec Model =
             (simple <|> quoted)
             <?!> "identifier"
         
-        // Parse a `var`
-        let var_type : P<MzType> =
-            many1Chars (noneOf ";:=")
-            <?!> "var-type"
-            |>> MzType.TRef
-        
         // Parse a constraint
         let constr : P<string> =
             pstring "constraint"
-            >>. ws1
+            >>. spaces1
             >>. many1Chars (noneOf ";:=")
             <?!> "constraint"
             
         // Parse an range
-        let range : P<Range> =
+        let range_expr : P<RangeExpr> =
             
             let bound =
                 (pint32 |>> IntOrName.Int)
                 <|>
                 (ident |>> IntOrName.Name)
            
-            bound .>>> str ".." .>>>. bound
+            attempt (bound .>>> str ".." .>>>. bound)
             |>> function | (lo,hi) -> { Lower=lo; Upper=hi }
       
         // Parse an enum
@@ -248,19 +249,158 @@ module rec Model =
             let name = ident
             let members = between (chr '{') (chr '}') (sepBy ident (chr ','))
             str "enum"
-            >>. ws1
+            >>. spaces1
             >>. name
             .>>> chr '='
             .>>>. members
             |>> (fun (name, members) ->
                 { Name=name; Members=members })
+
+            
+        let vint =
+            pint32
+            
+        let vbool : P<bool> =
+            (str "true" >>% true)
+            <|>
+            (str "false" >>% false)
+            <?!> "vbool"
+            
+        let vfloat : P<float> =
+            pfloat
+            
+        let vstr : P<string> =
+            between
+                (chr '"')
+                (chr '"')
+                (manySatisfy (fun c -> c <> '"'))
         
+        let prim_expr : P<PrimitiveExpr> =
+            [ vint    |>> Int
+            ; vbool   |>> Bool
+            ; vfloat  |>> Float
+            ; vstr    |>> String ]
+            |> choice
+            <?!> "primitive-value"
+
+        // Set of primitive values eg: {1,2,10}            
+        let set_prim =
+            let delim = spaces >>. chr ',' >>. spaces
+            sepBy prim_expr delim
+                
+        let set_expr : P<SetExpr> =
+            
+            let prim =
+                set_prim |>> SetExpr.Primitive
+            
+            let expr =
+                manySatisfy (fun c -> c <> '}')
+                |>> SetExpr.Expr
+
+            between
+                (chr '"' >>. spaces)
+                (spaces >>. chr '"' )
+                ((attempt prim) <|> expr)
+                        
+        let array_expr : P<ArrayExpr> =
+            let prim =
+                let delim = spaces >>. chr ',' >>. spaces
+                sepBy prim_expr delim
+            between
+                (chr '[' >>. spaces)
+                (spaces >>. chr ']')
+                prim
+            |>> List.toArray
+            |>> ArrayExpr.Primitive
+            
+        let value : P<Value> =
+            [ prim_expr  |>> Value.Primitive
+            ; set_expr   |>> Value.Set
+            ; array_expr |>> Value.Array 
+            ; range_expr |>> Value.Range ]
+            |> choice
+            
+        let prim_type : P<PrimitiveType> =
+            [ str "bool"   >>% PrimitiveType.Bool
+            ; str "int"    >>% PrimitiveType.Int
+            ; str "string" >>% PrimitiveType.String
+            ; str "float"  >>% PrimitiveType.Float
+            ; ident |>> PrimitiveType.Ref ]
+            |> choice
+            <?!> "primitive-type"
+            
+        let set_type : P<SetType> =
+            
+            let unbounded =
+                str "set" >>. spaces1 >>. str "of" >>. spaces1 >>. prim_type
+                |>> SetType.Unbounded
+                
+            let range =
+                range_expr
+                |>> SetType.Range
+                
+            let literal =
+                set_expr
+                |>> SetType.Literal
+            
+            [ unbounded; range; literal ]
+            |> choice
+            <?!> "set-type"
+            
+        type ArrayIndex =
+            | Set of SetType
+            | Ref of string
+            
+        type ArrayElementType =
+            | Set of SetType
+            | Ref of string
+            
+            
+            
+        let array_type : P<ArrayType> =
+            
+            let index =
+                (attempt set_type) |>> ArrayIndex.Set
+                <|>
+                (ident |>> ArrayIndex.Ref)
+                 
+            let dims =
+                between
+                    (chr '[' >>. spaces)
+                    (spaces >>. chr ']')
+                    (sepBy1 index (spaced chr ','))
+            
+            pipe4
+                (str "array" >>. spaces1)
+                dims
+                (spaced1 "of")
+                
+                
+                
+                
+                
+        (fun _ dims ->
+            match dims with
+            | [] -> fail "array must have at least one dimension"
+            | _ -> TArray (TInt, Some dims)) // Replace TInt with the actual base type parser when available
+
+            
+                
+                
+            
+        let var_type : P<VarType> =
+            [ prim_type   |>> VarType.Primitive
+            ; set_type    |>> VarType.Set
+            ; array_type  |>> VarType.Array ]
+            |> choice
+            
+            
         
         // Parse a `var`                    
         let var : P<Variable> =
-            str "var"
-            >>. ws1 >>. var_type .>> ws
-            .>> chr ':' .>> ws
+            str "var" >>. spaces1
+            >>. var_type .>> spaces
+            .>> chr ':' .>> spaces
             .>>. ident
             |>> (fun (typ, name) ->
                 { Name = name
@@ -271,9 +411,9 @@ module rec Model =
         
         // Parse a parameter    
         let par : P<Variable> =
-            str "par"     >>. ws1
-            >>. var_type  .>> ws
-            .>> pchar ':' .>> ws
+            opt (str "par" .>> spaces1)
+            >>. mz_type  .>> spaces
+            .>> chr ':' .>> spaces
             .>>. ident
             |>> (fun (typ, name) ->
                 { Name = name
