@@ -43,7 +43,7 @@ module ParserTests =
     [<InlineData("'A B C' ..   4")>]
     let ``test parse range`` arg =
         let input = $"{arg}"
-        let range = parse Parse.range input
+        let range = parse Parse.range_expr input
         ()
         
     [<Theory>]
