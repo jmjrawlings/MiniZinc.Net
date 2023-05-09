@@ -12,9 +12,10 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Prelude.fs" />
     <Compile Include="Command.fs" />
+    <Compile Include="Parse.fs" />    
     <Compile Include="Model.fs" />
     <Compile Include="Solve.fs" />
-    <Compile Include="MiniZinc.fs" />    
+    <Compile Include="MiniZinc.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="fparsec" Version="1.1.1" />
