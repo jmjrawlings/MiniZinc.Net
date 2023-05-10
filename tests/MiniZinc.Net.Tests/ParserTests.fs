@@ -10,15 +10,22 @@ module ParserTests =
     open MiniZinc.Model
     open Xunit
     open FluentAssertions
-    
-    type Model with
-        member this.HasInput x =
-            (this.Inputs.ContainsKey "x").Should().BeTrue($"Missing input \"{x}\"")
 
-    let parse parser s =
-        match Parse.parse parser s with
+    let parse p s =
+        match Parse.parseLines p s with
         | Result.Ok ok ->
             ok
         | Result.Error err ->
-            failwith err.Message
-                
+            let trace = err.Trace
+            let msg = err.Message
+            failwith msg
+            
+    [<Theory>]
+    [<InlineData("int")>]
+    [<InlineData("var int")>]
+    [<InlineData("bool")>]
+    [<InlineData("var opt bool")>]
+    [<InlineData("par set of int")>]
+    let ``test type inst`` arg =
+        let input = $"{arg};"
+        parse Parse.ti_expr input

@@ -64,6 +64,9 @@ module ParseUtils =
     type P<'t> = Parser<'t, UserState>
     type DebugType<'a> = Enter | Leave of Reply<'a>
     
+    let todo<'t> () : P<'t> =
+        preturn Unchecked.defaultof<'t>
+    
     let addToDebug (stream:CharStream<UserState>) label dtype =
         let msgPadLen = 50
         let startIndent = stream.UserState.Debug.Indent
@@ -124,22 +127,12 @@ module ParseUtils =
         (opt p) |>> Option.defaultValue backup
     
 
-module rec Parse =
+module Parse =
 
     open System.IO
     open FParsec
     open ParseUtils
     open type ParseUtils.P
-        
-    type Item =
-        | Include     of IncludeItem
-        | Enum        of EnumItem
-        | TypeSynonym of TypeSynonymItem
-        | Constraint  of ConstraintItem
-        | Assign      of AssignItem 
-        | Declare     of DeclareItem
-        | Solve       of SolveItem
-        | Other       of string
         
     // Parameter Type
     type VarKind =
@@ -161,9 +154,8 @@ module rec Parse =
     type AssignItem = string * Expr
     
     type OutputItem = Expr
-            
-    type TypeSynonymItem = { Name: string; Target: DeclareItem }
-            
+
+                
     type SolveMethod =
         | Satisfy = 0
         | Minimize = 1
@@ -185,8 +177,24 @@ module rec Parse =
         { Name : string
         ; Members : string list }
             
-    // <base-ti-expr-tail>            
-    type BaseTypeInstTail =
+    type TypeInst =
+        | Base of BaseTypeInst
+        | Array of ArrayTypeInst
+
+    and ArrayTypeInst =
+        { Dimensions : TypeInst list
+        ; Type : BaseTypeInst }
+
+        member this.NDim =
+            this.Dimensions.Length
+    
+    and BaseTypeInst =
+        { Kind : VarKind
+          Type : BaseTypeInstTail
+          Set  : bool
+          Opt  : bool }
+    
+    and BaseTypeInstTail =
         | Id        of string
         | Variable  of string
         | Base      of BaseType
@@ -194,38 +202,33 @@ module rec Parse =
         | Record    of TypeInstAndId list
         | Set       of Expr list
         | Range     of NumExpr * NumExpr
-        
-    // <ti-expr>
-    type TypeInst =
-        | Base of BaseTypeInst
-        | Array of ArrayTypeInst
-        
-    // <ti-expr-and-id>
-    type TypeInstAndId = string * TypeInst
-    
-    type DeclareItem =
+            
+    and TypeInstAndId =
+        string * TypeInst
+            
+    type Item =
+        | Include     of IncludeItem
+        | Enum        of EnumItem
+        | TypeSynonym of TypeSynonymItem
+        | Constraint  of ConstraintItem
+        | Assign      of AssignItem 
+        | Declare     of DeclareItem
+        | Solve       of SolveItem
+        | Other       of string
+
+    and DeclareItem =
         { Id   : string
         ; Type : TypeInst
         ; Expr : Expr option }
-    
-    // <array-ti-expr>
-    type ArrayTypeInst =
-        { Dimensions : TypeInst list
-        ; Type : BaseTypeInst }
 
-        member this.NDim =
-            this.Dimensions.Length
-    
-    // <base-ti-expr>
-    type BaseTypeInst =
-        { Kind : VarKind
-          Type : TypeInst
-          Set  : bool
-          Opt  : bool }        
-    
+    and TypeSynonymItem =
+        { Name: string
+        ; Target: DeclareItem }
+
+        
     // <ident>
     let ident =
-        regex "_?[A-Za-z][A-Za-z0-9_]* | ’[^’\xa\xd\x0]+’"
+        regex "'\A_?[A-Za-z][A-Za-z0-9_]* | ’[^’\x0A\x0D\x00]+’'"
         <?!> "identifier"
 
     // <int-literal>
@@ -268,6 +271,7 @@ module rec Parse =
     
     let range_expr =
         attempt (num_expr .>> ( spaced "..") .>>. num_expr)
+        <?!> "range-expr"
 
     // <enum-case>
     // TODO: complex variants
@@ -293,53 +297,60 @@ module rec Parse =
         
     // <expr>        
     let expr : P<Expr> =
-        failwith "todo"
+        todo<Expr>()
         
     // A set literal of primitives eg: {1,2,3}
-    let set_literal =
+    let set_expr =
         betweenSepChar '{' '}' ',' expr
-        <?!> "set-literal"
+        <?!> "set-expr"
 
     let var_par : P<VarKind> =
-        let var = str "var" >>% VarKind.Var
-        let par = str "par" >>% VarKind.Par
-        opt (var <|> par)
-        |>> Option.defaultValue VarKind.Par
+        let var = p "var" >>% VarKind.Var
+        let par = p "par" >>% VarKind.Par
+        opt_or (var <|> par) VarKind.Par
+        <?!> "var-par"
 
-    // <ti-expr>    
-    let ti_expr : P<TypeInst> =
-        failwith "todo"
-    
+    // <ti-expr>
+    let ti_expr, ti_expr_ref =
+        createParserForwardedToRef<TypeInst, UserState>()
+
+    // <ti-expr>
+    let base_ti_expr_tail, base_ti_expr_tail_ref =
+        createParserForwardedToRef<BaseTypeInstTail, UserState>()
+        
     // <opt-ti>        
     let opt_ti =
-        opt (p "opt" >>. spaces1 >>% true)
-        |>> Option.defaultValue false
+        opt_or
+            (p "opt" >>. spaces1 >>% true)
+            false
+        <?!> "opt-ti"
     
     // <set-ti>    
     let set_ti =
-        opt (
+        opt_or
+            (
             p "set"
             >>. spaces1
             >>. p "of"
             >>. spaces1
             >>% true
-        )
-        |>> Option.defaultValue false
-
-            
+            )
+            false
+        <?!> "set-ti"
+   
     // <base-ti-expr>
     let base_ti_expr : P<BaseTypeInst> =
         pipe4
             (var_par .>> spaces1)
             set_ti
             opt_ti
-            ti_expr
+            base_ti_expr_tail
             (fun kind is_set is_opt typ ->
             { Type = typ
             ; Opt = is_opt
             ; Set = is_set
             ; Kind = kind })
-        <?> "base-ti"
+        <?!> "base-ti"
     
     // <base-type>
     let base_type : P<BaseType> =
@@ -348,7 +359,7 @@ module rec Parse =
         ; str "string" >>% BaseType.String
         ; str "float"  >>% BaseType.Float ]
         |> choice
-        <?> "base-type"
+        <?!> "base-type"
         
     // <array-ti-expr>        
     let array_ti_expr : P<ArrayTypeInst> =
@@ -365,6 +376,14 @@ module rec Parse =
         |>>  (fun (dim, typ) ->
              { Dimensions = dim; Type = typ })
         <?> "array-ti-expr"
+    
+        
+    ti_expr_ref.contents <-
+        choice [
+            base_ti_expr |>> TypeInst.Base
+            array_ti_expr |>> TypeInst.Array
+        ]
+        <?!> "ti-expr"
         
     // <ti-expr-and-id>
     let ti_expr_and_id : P<TypeInstAndId> =
@@ -375,20 +394,31 @@ module rec Parse =
         <?> "ti-expr-and-id"
 
     // <tuple-ti-expr-tail>
-    let tuple_ti_expr_tail =
+    let tuple_ti =
         ps1 "tuple"
         >>. betweenSep1Char '(' ')' ',' ti_expr
-        <?> "tuple-ti"
+        <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
-    let record_ti_expr_tail =
+    let record_ti =
         ps1 "record"
         >>. betweenSep1Char '(' ')' ',' ti_expr_and_id
-        <?> "record-ti"
-    
+        <?!> "record-ti"
+            
+    // <base-ti-expr-tail>
+    base_ti_expr_tail_ref.contents <-
+        [ base_type  |>> BaseTypeInstTail.Base
+        ; ident      |>> BaseTypeInstTail.Id
+        ; record_ti  |>> BaseTypeInstTail.Record
+        ; tuple_ti   |>> BaseTypeInstTail.Tuple
+        ; set_expr   |>> BaseTypeInstTail.Set
+        ; range_expr |>> BaseTypeInstTail.Range ]
+        |> choice
+        <?!> "base-ti-tail"
+        
     // <solve-item>
-    let solve_item =
-        failwithf ""
+    let solve_item : P<SolveItem> =
+        todo<SolveItem>()
         
     // <solve-item>
     let assign_item =
@@ -399,7 +429,6 @@ module rec Parse =
         
     // <declare-item>
     let declare_item =
-        
         let head = ti_expr_and_id
         let tail = (p '=') >>. spaces >>. expr
         head .>> spaces .>>. (opt tail)
@@ -407,8 +436,6 @@ module rec Parse =
             { Id = id; Type = ti; Expr = expr }
             )
         
-        
-    
     // <item>
     let item =
         [ declare_item    |>> Item.Declare
@@ -426,10 +453,10 @@ module rec Parse =
         .>> eof
                 
     // Parse the given string with the given parser            
-    let parse parser (s: string) =
+    let parseString (p: P<'t>) (s: string) =
         let input = s.Trim()
         let state = { Debug = { Message = ""; Indent = 0 } }
-        match runParserOnString parser state "" input with
+        match runParserOnString p state "" input with
         | Success (value, _, _) ->
             Result.Ok value
         | Failure (s, msg, state) ->
@@ -437,19 +464,26 @@ module rec Parse =
                 { Message = s
                 ; Trace = state.Debug.Message }
             Result.Error error
-                    
-    // Parse a model from a the given string                       
-    let model (s: string) =
+    
+    // Parse lines of the given string with the given parser                       
+    let parseLines (p: P<'t>) (s: string) =
         let input =
             s.Split(';')
             |> Seq.map (fun s -> s.Trim())
             |> String.concat ";"
-        let items = parse items input
-        items
+        let parser =
+            sepEndBy p (chr ';') .>> eof
+        let result =
+            parseString parser input
+        result
+                    
+    // Parse a model from a the given string                       
+    let model (s: string) =
+        parseLines items s
              
     // Parse the given file
     let file (fi: FileInfo) =
         let contents = File.ReadAllText fi.FullName
         let name = Path.GetFileNameWithoutExtension fi.Name
-        let model = Parse.model contents
+        let model = model contents
         model
