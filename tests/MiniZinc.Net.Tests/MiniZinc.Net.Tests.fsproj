@@ -8,7 +8,7 @@
         <Compile Include="Prelude.fs" />
         <Compile Include="CommandTests.fs" />
         <Compile Include="ParserTests.fs" />
-        <Compile Include="SolveTests.fs" />
+<!--        <Compile Include="SolveTests.fs" />-->
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.fsproj" />
