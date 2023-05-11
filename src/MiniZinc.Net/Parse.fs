@@ -372,8 +372,8 @@ module Parse =
         
     ti_expr_ref.contents <-
         choice [
-            base_ti_expr 
             array_ti_expr
+            base_ti_expr 
         ]
         <?!> "ti-expr"
         
@@ -400,9 +400,9 @@ module Parse =
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
         [ base_type  
-        ; ident      |>> Type.Id
         ; record_ti  |>> Type.Record
         ; tuple_ti   |>> Type.Tuple
+        ; ident      |>> Type.Id
         ; set_expr   |>> Type.Set
         ; range_expr |>> Type.Range ]
         |> choice
