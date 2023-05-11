@@ -24,7 +24,7 @@ module ParseUtils =
             pchar x .>> spaces1            
             
         static member spaced x =
-            between spaces x spaces
+            between spaces spaces x
         
         static member spaced (x: string) =
             P.spaced (pstring x)
@@ -33,7 +33,7 @@ module ParseUtils =
             P.spaced (pchar c)
             
         static member spaced1 x =
-            between spaces1 x spaces1
+            between spaces1 spaces1 x
         
         static member spaced1 (x: string) =
             P.spaced1 (pstring x)
@@ -55,7 +55,6 @@ module ParseUtils =
             
         static member betweenSepChar left right delim p =
             P.betweenSep (pchar left) (pchar right) (pchar delim) p
-            
         
     open type P
     type DebugInfo = { Message: string; Indent: int }
@@ -123,7 +122,7 @@ module ParseUtils =
     let str x =
         pstring x
         
-    let opt_or p backup =
+    let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
     
 
@@ -189,8 +188,8 @@ module Parse =
             this.Dimensions.Length
     
     and BaseTypeInst =
-        { Kind : VarKind
-          Type : BaseTypeInstTail
+        { Type : BaseTypeInstTail
+          Var  : bool
           Set  : bool
           Opt  : bool }
     
@@ -286,7 +285,7 @@ module Parse =
             
         p     "enum"
         .>>   spaced1 '='
-        .>>>. opt_or members []
+        .>>>. (opt_or [] members)
         |>> (fun (name, members) ->
             { Name=name; Members=members })
     
@@ -304,10 +303,12 @@ module Parse =
         betweenSepChar '{' '}' ',' expr
         <?!> "set-expr"
 
-    let var_par : P<VarKind> =
-        let var = p "var" >>% VarKind.Var
-        let par = p "par" >>% VarKind.Par
-        opt_or (var <|> par) VarKind.Par
+    let var_par : P<bool> =
+        let var = p "var" >>% true
+        let par = p "par" >>% false
+        (var <|> par)
+        .>> spaces1
+        |> opt_or false
         <?!> "var-par"
 
     // <ti-expr>
@@ -320,36 +321,32 @@ module Parse =
         
     // <opt-ti>        
     let opt_ti =
-        opt_or
-            (p "opt" >>. spaces1 >>% true)
-            false
+        (p "opt" >>. spaces1 >>% true)
+        |> opt_or false
         <?!> "opt-ti"
     
     // <set-ti>    
     let set_ti =
-        opt_or
-            (
-            p "set"
-            >>. spaces1
-            >>. p "of"
-            >>. spaces1
-            >>% true
-            )
-            false
+        p "set"
+        >>. spaces1
+        >>. p "of"
+        >>. spaces1
+        >>% true
+        |> opt_or false
         <?!> "set-ti"
    
     // <base-ti-expr>
     let base_ti_expr : P<BaseTypeInst> =
         pipe4
-            (var_par .>> spaces1)
+            var_par
             set_ti
             opt_ti
             base_ti_expr_tail
-            (fun kind is_set is_opt typ ->
+            (fun var is_set is_opt typ ->
             { Type = typ
             ; Opt = is_opt
             ; Set = is_set
-            ; Kind = kind })
+            ; Var = var })
         <?!> "base-ti"
     
     // <base-type>
@@ -366,16 +363,17 @@ module Parse =
         
         let dimensions =
             ti_expr
-            |> betweenSep1Char '[' ']' ','
-       
+            |> betweenSepChar '[' ']' ','
+            <?!> "array-dimensions"
+        
         str  "array"
-        >>.  spaces1
+        >>.  spaces
         >>.  dimensions
-        .>>  spaced "of"
+        .>>  spaced1 "of"
         .>>. base_ti_expr
         |>>  (fun (dim, typ) ->
              { Dimensions = dim; Type = typ })
-        <?> "array-ti-expr"
+        <?!> "array-ti-expr"
     
         
     ti_expr_ref.contents <-
@@ -475,6 +473,13 @@ module Parse =
             sepEndBy p (chr ';') .>> eof
         let result =
             parseString parser input
+        result
+        
+    // Parse a single line with the given paser
+    // a ';' will be added to the end                       
+    let parseLine (p: P<'t>) (s: string) =
+        let input = s.Trim()
+        let result = parseString p input
         result
                     
     // Parse a model from a the given string                       
