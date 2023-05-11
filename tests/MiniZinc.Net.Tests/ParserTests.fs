@@ -28,13 +28,26 @@ module ParserTests =
             let trace = err.Trace
             let msg = err.Message
             failwith msg            
+    
+    [<Theory>]
+    [<InlineData("a")>]
+    [<InlineData("B")>]
+    [<InlineData("_A_NAME")>]
+    [<InlineData("aN4m3w1thnumb3r5")>]
+    [<InlineData("'A name with Quotes'")>]
+    let ``test identifier`` arg =
+        let input = arg
+        let output = parseLine Parse.ident input
+        ()    
         
     [<Theory>]
     [<InlineData("int")>]
     [<InlineData("var int")>]
-    [<InlineData("bool")>]
-    [<InlineData("var opt bool")>]
-    [<InlineData("par set of int")>]    
+    [<InlineData("var set of int")>]
+    [<InlineData("opt bool")>]
+    [<InlineData("set of opt float")>]
+    [<InlineData("var X")>]
+    [<InlineData("par set of 'something weird'")>]
     let ``test base type inst`` arg =
         let input = arg
         let output = parseLine Parse.base_ti_expr input
@@ -47,9 +60,5 @@ module ParserTests =
         let input = arg
         let output = parseLine Parse.array_ti_expr input
         ()
-        
-        
-        
-        
-        
-        
+
+    

@@ -227,7 +227,7 @@ module Parse =
         
     // <ident>
     let ident =
-        regex "'\A_?[A-Za-z][A-Za-z0-9_]* | ’[^’\x0A\x0D\x00]+’'"
+        regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
         <?!> "identifier"
 
     // <int-literal>
