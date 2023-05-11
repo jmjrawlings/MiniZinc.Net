@@ -131,6 +131,8 @@ module ParseUtils =
         (opt p) |>> Option.defaultValue backup
     
 
+open ParseUtils
+
 module Parse =
 
     open System.IO
@@ -169,9 +171,10 @@ module Parse =
 
     // <num-expr>        
     type NumExpr =
-        | Int of int
-        | Float of float
-        | Id of string
+        | Int       of int
+        | Float     of float
+        | Id        of string
+        | Bracketed of NumExpr
 
     type Enum =
         { Name : string
@@ -255,19 +258,107 @@ module Parse =
     let string_literal : P<string> =
         manySatisfy (fun c -> c <> '"')
         |> betweenChars '"' '"'
-        <?!> "string-literal"        
+        <?!> "string-literal"
+
+    let num_expr, num_expr_ref =
+        createParserForwardedToRef<NumExpr, UserState>()
+            
+    let bracketed =
+        betweenChars '(' ')' num_expr
+
+    // <builtin-num-un-op>    
+    let builtin_num_un_op : P<string> =
+        [ "+" ; "-" ]
+        |> List.map pstring
+        |> choice
+    
+    // <builtin-num-bin-op>
+    let builtin_num_bin_op : P<string> =
+         [ "+"
+         ; "-"
+         ; "*"
+         ; "/"
+         ; "div"
+         ; "mod"
+         ; "^"
+         ; "~+"
+         ; "~-"
+         ; "~*"
+         ; "~/"
+         ; "~div" ]
+         |> List.map pstring
+         |> choice
+            
+    // <builtin-bin-op>            
+    let builtin_bin_op : P<string> =
+        [ "<->"
+        ; "->"
+        ; "<-"
+        ; "\/"
+        ; "xor"
+        ; "/\\"
+        ; "<"
+        ; ">"
+        ; "<="
+        ; ">="
+        ; "=="
+        ; "="
+        ; "!="
+        ; "~="
+        ; "~!="
+        ; "in"
+        ; "subset"
+        ; "superset"
+        ; "union"
+        ; "diff"
+        ; "symdiff"
+        ; ".."
+        ; "intersect"
+        ; "++"
+        ; "default" ]
+        |> List.map pstring
+        |> choice
         
-    // <num-expr>        
-    let num_expr =
-        (int_literal |>> NumExpr.Int)
-        <|>
-        (float_literal |>> NumExpr.Float)
-        <|>
-        (ident |>> NumExpr.Id)
+    let builtin_un_op : P<string> =
+        [ "+" ; "-"; "not" ]
+        |> List.map pstring
+        |> choice
+        
+    let builtin_op =
+        builtin_bin_op <|> builtin_un_op
+        
+        
+    // <num-expr-atom-head>    
+    let num_expr_atom_head=
+        // <builtin-num-un-op> <num-expr-atom>
+        //                | <ident-or-quoted-op>
+        //                | <int-literal>
+        //                | <float-literal>
+        //                | <if-then-else-expr>
+        //                | <let-expr>
+        //                | <call-expr>
+        //                | <gen-call-expr>
+        [ int_literal   |>> NumExpr.Int
+          float_literal |>> NumExpr.Float
+          ident         |>> NumExpr.Id
+          bracketed     |>> NumExpr.Bracketed
+          
+          ]
+        |> choice
+        
+    
+    //         
+    // <num-expr> ::= <num-expr-atom> <num-expr-binop-tail>
+    // <num-expr-atom> ::= <num-expr-atom-head> <expr-atom-tail> <annotations>
+    // <num-expr-binop-tail> ::= [ <num-bin-op> <num-expr> ]
+       
     
     // 0 .. 10
     let range_expr =
-        attempt (num_expr .>> ( spaced "..") .>>. num_expr)
+        num_expr
+        .>> ( spaced "..")
+        .>>. num_expr
+        |> attempt
         <?!> "range-expr"
 
     // <enum-case>
