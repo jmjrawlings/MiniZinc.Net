@@ -61,16 +61,16 @@ module ParseUtils =
     type UserState = { mutable Debug: DebugInfo }
     type Error = { Message: string; Trace: string; }
     type P<'t> = Parser<'t, UserState>
-    type DebugType<'a> = Enter | Leave of Reply<'a>
+    [<Struct>] type DebugEvent<'a> = Enter | Leave of Reply<'a>
     
     let todo<'t> () : P<'t> =
         preturn Unchecked.defaultof<'t>
     
-    let addToDebug (stream:CharStream<UserState>) label dtype =
+    let addToDebug (stream:CharStream<UserState>) label event =
         let msgPadLen = 50
         let startIndent = stream.UserState.Debug.Indent
-        let (str, curIndent, nextIndent) = 
-            match dtype with
+        let str, indent, nextIndent = 
+            match event with
             | Enter ->
                 $"Entering %s{label}", startIndent, startIndent+1
             | Leave res ->
@@ -80,15 +80,15 @@ module ParseUtils =
                 resStr, startIndent-1, startIndent-1
 
         let indentStr =
-            let pad = max curIndent 0
-            if curIndent = 0 then ""
+            let pad = max indent 0
+            if indent = 0 then ""
             else "\u251C".PadRight(pad, '\u251C')
 
         let posStr = $"%A{stream.Position}: ".PadRight(20)
         let posIdentStr = posStr + indentStr
 
         // The %A for res.Result makes it go onto multiple lines - pad them out correctly
-        let replaceStr = "\n" + "".PadRight(max posStr.Length 0) + "".PadRight(max curIndent 0, '\u2502').PadRight(max msgPadLen 0)
+        let replaceStr = "\n" + "".PadRight(max posStr.Length 0) + "".PadRight(max indent 0, '\u2502').PadRight(max msgPadLen 0)
         let correctedStr = str.Replace("\n", replaceStr)
         let fullStr = $"%s{posIdentStr} %s{correctedStr}\n"
 
@@ -104,8 +104,13 @@ module ParseUtils =
             addToDebug stream label (Leave reply)
             reply
 
+    #if DEBUG
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label <!> label
+    #else
+    let (<?!>) (p: P<'t>) label : P<'t> =
+        p <?> label <!> label
+    #endif        
 
     let (.>>>) a b =
         a .>> spaces .>> b
@@ -150,10 +155,7 @@ module Parse =
         
     type ConstraintItem = string
     
-    type AssignItem = string * Expr
-    
     type OutputItem = Expr
-
                 
     type SolveMethod =
         | Satisfy = 0
@@ -171,17 +173,29 @@ module Parse =
         | Float of float
         | Id of string
 
-    // <enum-item>          
-    type EnumItem =
+    type Enum =
         { Name : string
-        ; Members : string list }
+        ; Cases : EnumCase list }
+        
+    and EnumCase =
+        | Name of string
+        | Expr of Expr
     
-    and TypeInst =
-        { Type : Type
-          Var  : bool
-          Set  : bool
-          Dims : Type list
-          Opt  : bool }
+    /// <summary>
+    /// Instantiation of a Type
+    /// </summary>
+    /// <remarks>
+    /// We have flattened out the `ti-expr` EBNF
+    /// rule here that a single class that convers
+    /// everything. 
+    /// </remarks>
+    type TypeInst =
+        { Type       : Type
+          Name       : string
+          IsVar      : bool
+          IsSet      : bool
+          IsOptional : bool 
+          Dimensions : Type list }
     
     and Type =
         | Int
@@ -191,33 +205,30 @@ module Parse =
         | Id        of string
         | Variable  of string
         | Tuple     of TypeInst list
-        | Record    of TypeInstAndId list
+        | Record    of TypeInst list
         | Set       of Expr list
-        | Range     of NumExpr * NumExpr
-            
-    and TypeInstAndId =
-        string * TypeInst
+        | Range     of lower:NumExpr * upper:NumExpr
             
     type Item =
-        | Include     of IncludeItem
-        | Enum        of EnumItem
-        | TypeSynonym of TypeSynonymItem
-        | Constraint  of ConstraintItem
-        | Assign      of AssignItem 
-        | Declare     of DeclareItem
-        | Solve       of SolveItem
-        | Other       of string
-
-    and DeclareItem =
-        { Id   : string
-        ; Type : TypeInst
-        ; Expr : Expr option }
-
-    and TypeSynonymItem =
-        { Name: string
-        ; Target: DeclareItem }
-
+        | Include    of string
+        | Enum       of Enum
+        | Alias      of TypeInst
+        | Constraint of Expr
+        | Assign     of string * Expr
+        | Declare    of TypeInst * Expr option
+        | Solve      of SolveItem
+        | Predicate  of Expr
+        | Function   of TypeInst * OperationItem
+        | Test       of Test
+        | Annotation of Annotation
+        | Other      of string
         
+    and OperationItem = unit        
+        
+    and Annotation = unit
+    
+    and Test = unit
+    
     // <ident>
     let ident =
         regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
@@ -230,9 +241,9 @@ module Parse =
     
     // <bool-literal>    
     let bool_literal : P<bool> =
-        (str "true" >>% true)
+        (p "true" >>% true)
         <|>
-        (str "false" >>% false)
+        (p "false" >>% false)
         <?!> "bool-literal"
         
     // <float-literal>        
@@ -245,13 +256,6 @@ module Parse =
         manySatisfy (fun c -> c <> '"')
         |> betweenChars '"' '"'
         <?!> "string-literal"        
-            
-    // <constraint-item>
-    let constraint_item : P<string> =
-        pstring "constraint"
-        >>. spaces1
-        >>. many1Chars (noneOf ";:=")
-        <?!> "constraint"
         
     // <num-expr>        
     let num_expr =
@@ -261,6 +265,7 @@ module Parse =
         <|>
         (ident |>> NumExpr.Id)
     
+    // 0 .. 10
     let range_expr =
         attempt (num_expr .>> ( spaced "..") .>>. num_expr)
         <?!> "range-expr"
@@ -271,20 +276,22 @@ module Parse =
         ident
           
     // <enum-item>
-    let enum_item : P<EnumItem> =
+    // TODO: complex constructors
+    let enum_item : P<Enum> =
         let members =
             enum_case
             |> betweenSep1Char '{' '}' ','
             
-        p     "enum"
-        .>>   spaced1 '='
-        .>>>. (opt_or [] members)
+        p "enum"
+        .>> spaced1 '='
+        .>>>. opt_or [] members
         |>> (fun (name, members) ->
-            { Name=name; Members=members })
+            { Name=name
+            ; Cases=List.map EnumCase.Name members })
     
     // <include-item>
     let include_item : P<string> =
-        str "include" >>. string_literal
+        ps1 "include" >>. string_literal
         <?!> "include-item"
         
     // <expr>        
@@ -296,6 +303,7 @@ module Parse =
         betweenSepChar '{' '}' ',' expr
         <?!> "set-expr"
 
+    // <var-par>
     let var_par : P<bool> =
         let var = p "var" >>% true
         let par = p "par" >>% false
@@ -335,22 +343,16 @@ module Parse =
             set_ti
             opt_ti
             base_ti_expr_tail
-            (fun var is_set is_opt typ ->
-            { Type = typ
-            ; Opt = is_opt
-            ; Set = is_set
-            ; Dims = []
-            ; Var = var })
+            (fun var set opt typ ->
+                { Type = typ
+                ; IsOptional = opt
+                ; IsSet = set
+                ; Name = ""
+                ; Dimensions = []
+                ; IsVar = var }
+            )
         <?!> "base-ti"
     
-    // <base-type>
-    let base_type : P<Type> =
-        [ str "bool"   >>% Type.Bool
-        ; str "int"    >>% Type.Int
-        ; str "string" >>% Type.String
-        ; str "float"  >>% Type.Float ]
-        |> choice
-        <?!> "base-type"
         
     // <array-ti-expr>        
     let array_ti_expr : P<TypeInst> =
@@ -366,7 +368,7 @@ module Parse =
         .>>  spaced1 "of"
         .>>. base_ti_expr
         |>> (fun (dims, ti) ->
-            { ti with Dims = dims })
+            { ti with Dimensions = dims })
         <?!> "array-ti-expr"
     
         
@@ -378,11 +380,12 @@ module Parse =
         <?!> "ti-expr"
         
     // <ti-expr-and-id>
-    let ti_expr_and_id : P<TypeInstAndId> =
+    let ti_expr_and_id : P<TypeInst> =
         ti_expr
         .>> spaced ':'
         .>>. ident
-        |>> (fun (expr, id) -> (id, expr))
+        |>> (fun (expr, name) ->
+            { expr with Name = name })
         <?> "ti-expr-and-id"
 
     // <tuple-ti-expr-tail>
@@ -399,12 +402,15 @@ module Parse =
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ base_type  
-        ; record_ti  |>> Type.Record
-        ; tuple_ti   |>> Type.Tuple
-        ; ident      |>> Type.Id
-        ; set_expr   |>> Type.Set
-        ; range_expr |>> Type.Range ]
+        [ p "bool"     >>% Type.Bool
+        ; p "int"      >>% Type.Int
+        ; p "string"   >>% Type.String
+        ; p "float"    >>% Type.Float
+        ; record_ti    |>> Type.Record
+        ; tuple_ti     |>> Type.Tuple
+        ; ident        |>> Type.Id
+        ; set_expr     |>> Type.Set
+        ; range_expr   |>> Type.Range ]
         |> choice
         <?!> "base-ti-tail"
         
@@ -412,21 +418,27 @@ module Parse =
     let solve_item : P<SolveItem> =
         todo<SolveItem>()
         
-    // <solve-item>
+    // <assign-item>
     let assign_item =
-        ident .>> spaced1 '=' .>>. expr
+        ident
+        .>> spaced1 '='
+        .>>. expr
         
     let unknown_item =
-        manyCharsTill (noneOf ";") (attempt (p ";"))
+        manyChars (noneOf ";")
         
     // <declare-item>
     let declare_item =
-        let head = ti_expr_and_id
-        let tail = (p '=') >>. spaces >>. expr
-        head .>> spaces .>>. (opt tail)
-        |>> (fun ((id, ti), expr) ->
-            { Id = id; Type = ti; Expr = expr }
-            )
+        ti_expr_and_id
+        .>> spaces
+        .>>. opt (ps '=' >>. expr)
+        
+    // <constraint-item>
+    let constraint_item =
+        p "constraint"
+        >>. spaces1
+        >>. expr
+        <?!> "constraint"
         
     // <item>
     let item =

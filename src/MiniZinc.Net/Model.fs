@@ -1,5 +1,7 @@
 ﻿namespace MiniZinc
 
+open MiniZinc.Parse
+
 module rec Model =
 
     open System
@@ -9,8 +11,8 @@ module rec Model =
     // A MiniZinc model
     type Model =
         { Name    : string 
-        ; Inputs  : Map<string, DeclareItem>
-        ; Outputs : Map<string, DeclareItem>
+        ; Inputs  : Map<string, TypeInst>
+        ; Outputs : Map<string, TypeInst>
         ; String  : string }
         
         static member ParseFile (file: string) =
