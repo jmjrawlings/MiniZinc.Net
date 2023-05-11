@@ -175,28 +175,21 @@ module Parse =
     type EnumItem =
         { Name : string
         ; Members : string list }
-            
-    type TypeInst =
-        | Base of BaseTypeInst
-        | Array of ArrayTypeInst
-
-    and ArrayTypeInst =
-        { Dimensions : TypeInst list
-        ; Type : BaseTypeInst }
-
-        member this.NDim =
-            this.Dimensions.Length
     
-    and BaseTypeInst =
-        { Type : BaseTypeInstTail
+    and TypeInst =
+        { Type : Type
           Var  : bool
           Set  : bool
+          Dims : Type list
           Opt  : bool }
     
-    and BaseTypeInstTail =
+    and Type =
+        | Int
+        | Bool
+        | String
+        | Float
         | Id        of string
         | Variable  of string
-        | Base      of BaseType
         | Tuple     of TypeInst list
         | Record    of TypeInstAndId list
         | Set       of Expr list
@@ -317,7 +310,7 @@ module Parse =
 
     // <ti-expr>
     let base_ti_expr_tail, base_ti_expr_tail_ref =
-        createParserForwardedToRef<BaseTypeInstTail, UserState>()
+        createParserForwardedToRef<Type, UserState>()
         
     // <opt-ti>        
     let opt_ti =
@@ -336,7 +329,7 @@ module Parse =
         <?!> "set-ti"
    
     // <base-ti-expr>
-    let base_ti_expr : P<BaseTypeInst> =
+    let base_ti_expr : P<TypeInst> =
         pipe4
             var_par
             set_ti
@@ -346,23 +339,24 @@ module Parse =
             { Type = typ
             ; Opt = is_opt
             ; Set = is_set
+            ; Dims = []
             ; Var = var })
         <?!> "base-ti"
     
     // <base-type>
-    let base_type : P<BaseType> =
-        [ str "bool"   >>% BaseType.Bool
-        ; str "int"    >>% BaseType.Int
-        ; str "string" >>% BaseType.String
-        ; str "float"  >>% BaseType.Float ]
+    let base_type : P<Type> =
+        [ str "bool"   >>% Type.Bool
+        ; str "int"    >>% Type.Int
+        ; str "string" >>% Type.String
+        ; str "float"  >>% Type.Float ]
         |> choice
         <?!> "base-type"
         
     // <array-ti-expr>        
-    let array_ti_expr : P<ArrayTypeInst> =
+    let array_ti_expr : P<TypeInst> =
         
         let dimensions =
-            ti_expr
+            base_ti_expr_tail
             |> betweenSepChar '[' ']' ','
             <?!> "array-dimensions"
         
@@ -371,15 +365,15 @@ module Parse =
         >>.  dimensions
         .>>  spaced1 "of"
         .>>. base_ti_expr
-        |>>  (fun (dim, typ) ->
-             { Dimensions = dim; Type = typ })
+        |>> (fun (dims, ti) ->
+            { ti with Dims = dims })
         <?!> "array-ti-expr"
     
         
     ti_expr_ref.contents <-
         choice [
-            base_ti_expr |>> TypeInst.Base
-            array_ti_expr |>> TypeInst.Array
+            base_ti_expr 
+            array_ti_expr
         ]
         <?!> "ti-expr"
         
@@ -393,24 +387,24 @@ module Parse =
 
     // <tuple-ti-expr-tail>
     let tuple_ti =
-        ps1 "tuple"
+        ps "tuple"
         >>. betweenSep1Char '(' ')' ',' ti_expr
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
     let record_ti =
-        ps1 "record"
+        ps "record"
         >>. betweenSep1Char '(' ')' ',' ti_expr_and_id
         <?!> "record-ti"
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ base_type  |>> BaseTypeInstTail.Base
-        ; ident      |>> BaseTypeInstTail.Id
-        ; record_ti  |>> BaseTypeInstTail.Record
-        ; tuple_ti   |>> BaseTypeInstTail.Tuple
-        ; set_expr   |>> BaseTypeInstTail.Set
-        ; range_expr |>> BaseTypeInstTail.Range ]
+        [ base_type  
+        ; ident      |>> Type.Id
+        ; record_ti  |>> Type.Record
+        ; tuple_ti   |>> Type.Tuple
+        ; set_expr   |>> Type.Set
+        ; range_expr |>> Type.Range ]
         |> choice
         <?!> "base-ti-tail"
         

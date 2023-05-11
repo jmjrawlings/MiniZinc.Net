@@ -1,15 +1,10 @@
 ﻿namespace MiniZinc.Net.Tests
 
-open Microsoft.FSharp.Core
+open MiniZinc
+open Xunit
 
-module ParserTests =
+module ParseTests =
 
-    open MiniZinc
-    open FSharp.Control
-    open MiniZinc.Command
-    open MiniZinc.Model
-    open Xunit
-    open FluentAssertions
 
     let parseLines p s =
         match Parse.parseLines p s with
@@ -60,5 +55,29 @@ module ParserTests =
         let input = arg
         let output = parseLine Parse.array_ti_expr input
         ()
-
-    
+        
+    [<Theory>]
+    [<InlineData("record(a: int, bool:b)")>]
+    [<InlineData("record(c: X, set of int: d)")>]
+    let ``test record type inst`` arg =
+        let input = arg
+        let output = parseLine Parse.record_ti input
+        ()
+        
+    [<Theory>]
+    [<InlineData("tuple(int, string, string)")>]
+    [<InlineData("tuple(X, 'something else', set of Q)")>]
+    let ``test tuple type inst`` arg =
+        let input = arg
+        let output = parseLine Parse.tuple_ti input
+        ()
+        
+    [<Theory>]
+    [<InlineData("var set of bool: xd")>]
+    [<InlineData("var set of opt 'Quoted': 'something else'")>]
+    [<InlineData("XYZ123: xyz123")>]
+    [<InlineData("par opt 'A Thing': _ABC")>]
+    let ``test type inst`` arg =
+        let input = arg
+        let output = parseLine Parse.ti_expr_and_id input
+        ()
