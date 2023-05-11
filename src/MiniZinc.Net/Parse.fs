@@ -1,62 +1,10 @@
 ﻿namespace MiniZinc
 
+open System.IO
+open System.Runtime.InteropServices
+open FParsec
+
 module ParseUtils =
-    open FParsec
-    
-    type P () =
-        
-        static member p (x: char) =
-            pchar x
-            
-        static member p (x: string) =
-            pstring x
-            
-        static member ps (x: string) =
-            pstring x .>> spaces
-            
-        static member ps (x: char) =
-            pchar x .>> spaces
-            
-        static member ps1 (x: string) =
-            pstring x .>> spaces1
-            
-        static member ps1 (x: char) =
-            pchar x .>> spaces1            
-            
-        static member spaced x =
-            between spaces spaces x
-        
-        static member spaced (x: string) =
-            P.spaced (pstring x)
-            
-        static member spaced (c: char) =
-            P.spaced (pchar c)
-            
-        static member spaced1 x =
-            between spaces1 spaces1 x
-        
-        static member spaced1 (x: string) =
-            P.spaced1 (pstring x)
-            
-        static member spaced1 (c: char) =
-            P.spaced1 (pchar c)
-            
-        static member betweenChars (a: char) (b: char) p =
-            between (pchar a) (pchar b) p
-            
-        static member betweenSep left right delim p =
-            between (left >>. spaces) (spaces >>. right) (sepBy p (spaces >>. delim >>. spaces))
-            
-        static member betweenSep1 left right delim p =
-            between (left >>. spaces) (spaces >>. right) (sepBy1 p (spaces >>. delim >>. spaces))
-            
-        static member betweenSep1Char left right delim p =
-            P.betweenSep1 (pchar left) (pchar right) (pchar delim) p
-            
-        static member betweenSepChar left right delim p =
-            P.betweenSep (pchar left) (pchar right) (pchar delim) p
-        
-    open type P
     type DebugInfo = { Message: string; Indent: int }
     type UserState = { mutable Debug: DebugInfo }
     type Error = { Message: string; Trace: string; }
@@ -129,23 +77,90 @@ module ParseUtils =
         
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
+
+    // Overloaded methods that clean up parsing code a bit
+    type P () =
+        
+        static member p (x: char): P<char> =
+            pchar x
+            
+        static member p (x: string) : P<string> =
+            pstring x
+            
+        static member ps (x: string) : P<string> =
+            pstring x .>> spaces
+            
+        static member ps (x: char) : P<char> =
+            pchar x .>> spaces
+            
+        static member ps1 (x: string) : P<string> =
+            pstring x .>> spaces1
+            
+        static member ps1 (x: char) : P<char> =
+            pchar x .>> spaces1            
+            
+        static member spaced x =
+            between spaces spaces x
+        
+        static member spaced (x: string) : P<string> =
+            P.spaced (pstring x)
+            
+        static member spaced (c: char) : P<char> =
+            P.spaced (pchar c)
+            
+        static member spaced1 x =
+            between spaces1 spaces1 x
+        
+        static member spaced1 (x: string) : P<string> =
+            P.spaced1 (pstring x)
+            
+        static member spaced1 (c: char) : P<char> =
+            P.spaced1 (pchar c)
+
+        static member between (a: P<'a>, b: P<'a>, [<Optional; DefaultParameterValue(false)>] ws : bool) =
+            let left, right =
+                match ws with
+                | true -> (a .>> spaces), (spaces >>. b)
+                | false -> a,b
+            between left right
+            
+        static member between (a: char, b: char, [<Optional; DefaultParameterValue(false)>] ws : bool) =
+            P.between(pchar a, pchar b, ws)
+
+        static member between (a: string, b: string, [<Optional; DefaultParameterValue(false)>] ws : bool) =
+            P.between (pstring a, pstring b, ws)
+            
+        static member between (a: P<'a>, b: P<'a>, c: P<'b>, [<Optional; DefaultParameterValue(false)>] ws : bool, [<Optional; DefaultParameterValue(false)>] many : bool) =
+            fun p ->
+                let delim =
+                    match many with
+                    | true -> P.spaced c
+                    | false -> c
+                let inner =
+                    match many with
+                    | false -> sepBy p delim
+                    | true -> sepBy1 p delim
+                P.between(a, b, ws) inner
+                
+        static member between (a: char, b: char, c: char, [<Optional; DefaultParameterValue(false)>] many : bool) =
+            P.between(pchar a, pchar b, pchar c, many=many)
+            
+        static member between (a:string, b:string, c:string, [<Optional; DefaultParameterValue(false)>] many : bool) =
+            P.between(pstring a, pstring b, pstring c, many=many)
+            
+        static member between1 (a:string, b:string, c:string) =
+            P.between(a, b, c, many=true)
+            
+        static member between1 (a:char, b:char, c:char) =
+            P.between(a, b, c, many=true)
+            
     
 
 open ParseUtils
+open type ParseUtils.P
 
-module Parse =
-
-    open System.IO
-    open FParsec
-    open ParseUtils
-    open type ParseUtils.P
-        
-    // Parameter Type
-    type VarKind =
-        | Par = 0
-        | Var = 1
-    
-    type BaseType =    
+module AST =
+        type BaseType =    
         | Int
         | Bool
         | String
@@ -175,6 +190,7 @@ module Parse =
         | Float     of float
         | Id        of string
         | Bracketed of NumExpr
+        | Call      of string*Expr list
 
     type Enum =
         { Name : string
@@ -231,6 +247,10 @@ module Parse =
     and Annotation = unit
     
     and Test = unit
+
+
+module Parse =
+    
     
     // <ident>
     let ident =
@@ -257,23 +277,26 @@ module Parse =
     // <string-literal>
     let string_literal : P<string> =
         manySatisfy (fun c -> c <> '"')
-        |> betweenChars '"' '"'
+        |> between('"', '"')
         <?!> "string-literal"
 
     let num_expr, num_expr_ref =
         createParserForwardedToRef<NumExpr, UserState>()
             
     let bracketed =
-        betweenChars '(' ')' num_expr
+        between('(', ')') num_expr
 
-    // <builtin-num-un-op>    
-    let builtin_num_un_op : P<string> =
+    // <builtin-num-un-op>
+    let builtin_num_un_ops =
         [ "+" ; "-" ]
+        
+    let builtin_num_un_op : P<string> =
+        builtin_num_un_ops
         |> List.map pstring
         |> choice
     
     // <builtin-num-bin-op>
-    let builtin_num_bin_op : P<string> =
+    let builtin_num_bin_ops =
          [ "+"
          ; "-"
          ; "*"
@@ -286,11 +309,14 @@ module Parse =
          ; "~*"
          ; "~/"
          ; "~div" ]
+         
+    let builtin_num_bin_op : P<string> =
+         builtin_num_bin_ops
          |> List.map pstring
          |> choice
             
     // <builtin-bin-op>            
-    let builtin_bin_op : P<string> =
+    let builtin_bin_ops = 
         [ "<->"
         ; "->"
         ; "<-"
@@ -316,33 +342,48 @@ module Parse =
         ; "intersect"
         ; "++"
         ; "default" ]
+        
+    let builtin_bin_op : P<string> =
+        builtin_bin_ops
         |> List.map pstring
         |> choice
+        
+    let builtin_un_ops =
+        builtin_num_un_ops @ ["not"]
         
     let builtin_un_op : P<string> =
-        [ "+" ; "-"; "not" ]
+        builtin_un_ops
         |> List.map pstring
         |> choice
         
-    let builtin_op =
-        builtin_bin_op <|> builtin_un_op
+    let builtin_ops =
+        builtin_bin_ops @ builtin_un_ops
+            
+    let builtin_op : P<string> =
+        builtin_ops
+        |> List.map str
+        |> choice
         
+    // <ident-or-quoted-op>        
+    let ident_or_op =
+        builtin_op
+        |> between(''', ''')
+        |> attempt
+        <|> ident
+       
         
     // <num-expr-atom-head>    
     let num_expr_atom_head=
         // <builtin-num-un-op> <num-expr-atom>
         //                | <ident-or-quoted-op>
-        //                | <int-literal>
-        //                | <float-literal>
         //                | <if-then-else-expr>
         //                | <let-expr>
-        //                | <call-expr>
         //                | <gen-call-expr>
         [ int_literal   |>> NumExpr.Int
           float_literal |>> NumExpr.Float
           ident         |>> NumExpr.Id
           bracketed     |>> NumExpr.Bracketed
-          
+          // call_expr     |>> NumExpr.Call          
           ]
         |> choice
         
@@ -371,7 +412,7 @@ module Parse =
     let enum_item : P<Enum> =
         let members =
             enum_case
-            |> betweenSep1Char '{' '}' ','
+            |> between('{', '}', ',')
             
         p "enum"
         .>> spaced1 '='
@@ -391,7 +432,8 @@ module Parse =
         
     // A set literal of primitives eg: {1,2,3}
     let set_expr =
-        betweenSepChar '{' '}' ',' expr
+        expr
+        |> between('{', '}', ',')
         <?!> "set-expr"
 
     // <var-par>
@@ -450,7 +492,7 @@ module Parse =
         
         let dimensions =
             base_ti_expr_tail
-            |> betweenSepChar '[' ']' ','
+            |> between('[', ']', ',')
             <?!> "array-dimensions"
         
         str  "array"
@@ -482,13 +524,13 @@ module Parse =
     // <tuple-ti-expr-tail>
     let tuple_ti =
         ps "tuple"
-        >>. betweenSep1Char '(' ')' ',' ti_expr
+        >>. between1('(', ')', ',') ti_expr
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
     let record_ti =
         ps "record"
-        >>. betweenSep1Char '(' ')' ',' ti_expr_and_id
+        >>. between1('(', ')', ',') ti_expr_and_id
         <?!> "record-ti"
             
     // <base-ti-expr-tail>
@@ -504,7 +546,13 @@ module Parse =
         ; range_expr   |>> Type.Range ]
         |> choice
         <?!> "base-ti-tail"
-        
+
+    // <call-expr>
+    let call_expr =
+        ident_or_op
+        .>> spaces
+        .>>. between1('(', ')', ',') expr
+            
     // <solve-item>
     let solve_item : P<SolveItem> =
         todo<SolveItem>()
