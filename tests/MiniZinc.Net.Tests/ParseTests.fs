@@ -77,7 +77,23 @@ module ParseTests =
     [<InlineData("var set of opt 'Quoted': 'something else'")>]
     [<InlineData("XYZ123: xyz123")>]
     [<InlineData("par opt 'A Thing': _ABC")>]
-    let ``test type inst`` arg =
+    [<InlineData("int: x")>]
+    [<InlineData("var int: x")>]
+    [<InlineData("var set of int: x")>]
+    [<InlineData("opt bool: x")>]
+    [<InlineData("set of opt float: x")>]
+    [<InlineData("var X: x")>]
+    [<InlineData("par set of 'something weird': okay")>]
+    [<InlineData("array[int] of int: A_B_C")>]
+    [<InlineData("array[int,int] of var float: _A2")>]
+    [<InlineData("record(a: int, bool:b): 'asdf '")>]
+    [<InlineData("record(c: X, set of int: d): asdf")>]
+    [<InlineData("tuple(int, string, string): x")>]
+    [<InlineData("tuple(X, 'something else', set of Q): Q")>]
+    let ``test type inst and id`` arg =
         let input = arg
         let output = parseLine Parse.ti_expr_and_id input
         ()
+        
+        
+        
