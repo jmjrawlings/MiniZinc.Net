@@ -59,15 +59,6 @@ module ParseUtils =
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label <!> label
     #endif        
-
-    let (.>>>) a b =
-        a .>> spaces .>> b
-        
-    let (>>>.) a b =
-        a >>. spaces >>. b
-        
-    let (.>>>.) a b =
-        a .>> spaces .>>. b
         
     let chr x =
         pchar x
@@ -78,9 +69,24 @@ module ParseUtils =
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
 
-    // Overloaded methods that clean up parsing code a bit
+    /// <summary>
+    /// Overloaded methods that clean up parsing code a bit
+    /// </summary>
+    /// <remarks>
+    /// The shorthand used here is:
+    /// - p: parse
+    /// - s: space
+    /// - 1: at least 1
+    ///
+    /// And so `sp1` would be "at least one space followed by p" etc
+    ///
+    /// All of the overload just make calling easier instead of
+    /// having to wrap chars and strings in `pchar` and `pstring`
+    /// respectively
+    /// </remarks>
     type P () =
         
+        // Parse
         static member p (x: char): P<char> =
             pchar x
             
@@ -99,23 +105,41 @@ module ParseUtils =
         static member ps1 (x: char) : P<char> =
             pchar x .>> spaces1            
             
-        static member spaced x =
+        static member sps x =
             between spaces spaces x
         
-        static member spaced (x: string) : P<string> =
-            P.spaced (pstring x)
+        static member sps (x: string) : P<string> =
+            P.sps (pstring x)
             
-        static member spaced (c: char) : P<char> =
-            P.spaced (pchar c)
+        static member sps (c: char) : P<char> =
+            P.sps (pchar c)
             
-        static member spaced1 x =
+        static member sps1 x =
             between spaces1 spaces1 x
         
-        static member spaced1 (x: string) : P<string> =
-            P.spaced1 (pstring x)
+        static member sps1 (x: string) : P<string> =
+            P.sps1 (pstring x)
             
-        static member spaced1 (c: char) : P<char> =
-            P.spaced1 (pchar c)
+        static member sps1 (c: char) : P<char> =
+            P.sps1 (pchar c)
+            
+        static member sp x =
+            spaces >>. x
+            
+        static member sp (c: char) =
+            P.sp (pchar c)
+            
+        static member sp (s: string) =
+            P.sp (pstring s)
+            
+        static member sp1 x =
+            spaces1 >>. x
+            
+        static member sp1 (c: char) =
+            P.sp1 (pchar c)
+            
+        static member sp1 (s: string) =
+            P.sp1 (pstring s)
 
         static member between (a: P<'a>, b: P<'a>, [<Optional; DefaultParameterValue(false)>] ws : bool) =
             let left, right =
@@ -130,11 +154,17 @@ module ParseUtils =
         static member between (a: string, b: string, [<Optional; DefaultParameterValue(false)>] ws : bool) =
             P.between (pstring a, pstring b, ws)
             
+        static member betweens (a: char, b: char) =
+            P.between(a, b, ws=true)
+
+        static member betweens (a: string, b: string) =
+            P.between (a, b, ws=true)
+            
         static member between (a: P<'a>, b: P<'a>, c: P<'b>, [<Optional; DefaultParameterValue(false)>] ws : bool, [<Optional; DefaultParameterValue(false)>] many : bool) =
             fun p ->
                 let delim =
-                    match many with
-                    | true -> P.spaced c
+                    match ws with
+                    | true -> P.sps c
                     | false -> c
                 let inner =
                     match many with
@@ -143,10 +173,10 @@ module ParseUtils =
                 P.between(a, b, ws) inner
                 
         static member between (a: char, b: char, c: char, [<Optional; DefaultParameterValue(false)>] many : bool) =
-            P.between(pchar a, pchar b, pchar c, many=many)
+            P.between(pchar a, pchar b, pchar c, ws=true, many=many)
             
         static member between (a:string, b:string, c:string, [<Optional; DefaultParameterValue(false)>] many : bool) =
-            P.between(pstring a, pstring b, pstring c, many=many)
+            P.between(pstring a, pstring b, pstring c, ws=true, many=many)
             
         static member between1 (a:string, b:string, c:string) =
             P.between(a, b, c, many=true)
@@ -160,7 +190,7 @@ open ParseUtils
 open type ParseUtils.P
 
 module AST =
-        type BaseType =    
+    type BaseType =    
         | Int
         | Bool
         | String
@@ -170,7 +200,7 @@ module AST =
             
     type IncludeItem = string
         
-    type ConstraintItem = string
+    type ConstraintItem = Expr
     
     type OutputItem = Expr
                 
@@ -184,14 +214,20 @@ module AST =
           Method : SolveMethod
           Expr : Expr option }
 
-    // <num-expr>        
+    type IfThenElse =
+        { If     : Expr
+        ; Then   : Expr
+        ; ElseIf : Expr list
+        ; Else   : Expr}
+   
     type NumExpr =
-        | Int       of int
-        | Float     of float
-        | Id        of string
-        | Bracketed of NumExpr
-        | Call      of string*Expr list
-
+        | Int        of int
+        | Float      of float
+        | Id         of string
+        | Bracketed  of NumExpr
+        | Call       of string*Expr list
+        | IfThenElse of IfThenElse
+    
     type Enum =
         { Name : string
         ; Cases : EnumCase list }
@@ -231,10 +267,10 @@ module AST =
     type Item =
         | Include    of string
         | Enum       of Enum
-        | Alias      of TypeInst
+        | Alias      of AliasItem
         | Constraint of Expr
-        | Assign     of string * Expr
-        | Declare    of TypeInst * Expr option
+        | Assign     of AssignItem
+        | Declare    of DeclareItem
         | Solve      of SolveItem
         | Predicate  of Expr
         | Function   of TypeInst * OperationItem
@@ -246,11 +282,25 @@ module AST =
         
     and Annotation = unit
     
+    and AliasItem = TypeInst
+    
     and Test = unit
+    
+    and AssignItem = string * Expr
+    
+    and DeclareItem = TypeInst * Expr option
+    
+    and LetItem =
+        | Declare of DeclareItem
+        | Constraint of ConstraintItem
+        
+    and LetExpr =
+        { Items: LetItem list;  Body: Expr }
 
 
 module Parse =
     
+    open AST
     
     // <ident>
     let ident =
@@ -372,21 +422,6 @@ module Parse =
         <|> ident
        
         
-    // <num-expr-atom-head>    
-    let num_expr_atom_head=
-        // <builtin-num-un-op> <num-expr-atom>
-        //                | <ident-or-quoted-op>
-        //                | <if-then-else-expr>
-        //                | <let-expr>
-        //                | <gen-call-expr>
-        [ int_literal   |>> NumExpr.Int
-          float_literal |>> NumExpr.Float
-          ident         |>> NumExpr.Id
-          bracketed     |>> NumExpr.Bracketed
-          // call_expr     |>> NumExpr.Call          
-          ]
-        |> choice
-        
     
     //         
     // <num-expr> ::= <num-expr-atom> <num-expr-binop-tail>
@@ -397,7 +432,7 @@ module Parse =
     // 0 .. 10
     let range_expr =
         num_expr
-        .>> ( spaced "..")
+        .>> sps ".."
         .>>. num_expr
         |> attempt
         <?!> "range-expr"
@@ -414,9 +449,10 @@ module Parse =
             enum_case
             |> between('{', '}', ',')
             
-        p "enum"
-        .>> spaced1 '='
-        .>>>. opt_or [] members
+        ps "enum"
+        >>. ident
+        .>> sps1 '='
+        .>>. opt_or [] members
         |>> (fun (name, members) ->
             { Name=name
             ; Cases=List.map EnumCase.Name members })
@@ -455,16 +491,15 @@ module Parse =
         
     // <opt-ti>        
     let opt_ti =
-        (p "opt" >>. spaces1 >>% true)
+        ps1 "opt"
+        >>% true
         |> opt_or false
         <?!> "opt-ti"
     
     // <set-ti>    
     let set_ti =
-        p "set"
-        >>. spaces1
-        >>. p "of"
-        >>. spaces1
+        ps1 "set"
+        >>. ps1 "of"
         >>% true
         |> opt_or false
         <?!> "set-ti"
@@ -495,10 +530,9 @@ module Parse =
             |> between('[', ']', ',')
             <?!> "array-dimensions"
         
-        str  "array"
-        >>.  spaces
+        ps  "array"
         >>.  dimensions
-        .>>  spaced1 "of"
+        .>>  sps1 "of"
         .>>. base_ti_expr
         |>> (fun (dims, ti) ->
             { ti with Dimensions = dims })
@@ -515,7 +549,7 @@ module Parse =
     // <ti-expr-and-id>
     let ti_expr_and_id : P<TypeInst> =
         ti_expr
-        .>> spaced ':'
+        .>> sps ':'
         .>>. ident
         |>> (fun (expr, name) ->
             { expr with Name = name })
@@ -552,6 +586,23 @@ module Parse =
         ident_or_op
         .>> spaces
         .>>. between1('(', ')', ',') expr
+       
+    
+    // <num-expr-atom-head>    
+    let num_expr_atom_head=
+        // <builtin-num-un-op> <num-expr-atom>
+        //                | <ident-or-quoted-op>
+        //                | <if-then-else-expr>
+        //                | <let-expr>
+        //                | <gen-call-expr>
+        [ int_literal   |>> NumExpr.Int
+          float_literal |>> NumExpr.Float
+          ident         |>> NumExpr.Id
+          bracketed     |>> NumExpr.Bracketed
+          call_expr     |>> NumExpr.Call
+          ]
+        |> choice
+        
             
     // <solve-item>
     let solve_item : P<SolveItem> =
@@ -560,33 +611,83 @@ module Parse =
     // <assign-item>
     let assign_item =
         ident
-        .>> spaced1 '='
+        .>> sps1 '='
         .>>. expr
         
     let unknown_item =
         manyChars (noneOf ";")
         
     // <declare-item>
-    let declare_item =
+    let var_decl_item =
         ti_expr_and_id
         .>> spaces
         .>>. opt (ps '=' >>. expr)
         
+    // <type-inst-syn-item>
+    let alias_item =
+            ps1 "type"
+        >>. ident
+        .>> sps1 "="
+        .>>. ti_expr
+        |>> (fun (name, ti) -> { ti with Name = name })
+        <?!> "type-alias"
+        
     // <constraint-item>
     let constraint_item =
-        p "constraint"
-        >>. spaces1
+        ps1 "constraint"
         >>. expr
         <?!> "constraint"
         
+    // <let-item>
+    let let_item : P<LetItem> =
+        (var_decl_item |>> LetItem.Declare)
+        <|>
+        (constraint_item |>> LetItem.Constraint)
+    
+    // <let-expr>
+    let let_expr : P<LetExpr> =
+        ps "let"
+        >>. between('{', '}', ';') let_item
+        .>> sps1 "in"
+        .>>. expr
+        |>> (fun (items, body) -> {Items=items; Body=body})
+        
+    // <if-then-else-expr>
+    let if_then_else_expr : P<IfThenElse> =
+        let if_case = 
+            ps1 "if" >>. expr .>> spaces1
+        let then_case =
+            ps1 "then" >>. expr .>> spaces1
+        let elseif_case =
+            ps1 "elseif"
+            >>. expr
+            .>> sps1 "then"
+            >>. expr
+            |> many
+        let else_case =
+            expr
+            |> betweens("else", "endif")
+        pipe4
+            if_case
+            then_case
+            elseif_case
+            else_case
+            (fun if_ then_ elseif_ else_ ->
+                { If = if_
+                 ; Then = then_
+                 ; ElseIf = elseif_
+                 ; Else = else_ })
+            
+
     // <item>
     let item =
-        [ declare_item    |>> Item.Declare
+        [ var_decl_item   |>> Item.Declare
         ; enum_item       |>> Item.Enum
         ; constraint_item |>> Item.Constraint
         ; include_item    |>> Item.Include
         ; assign_item     |>> Item.Assign
-        ; solve_item      |>> Item.Solve            
+        ; solve_item      |>> Item.Solve
+        ; alias_item      |>> Item.Alias
         ; unknown_item    |>> Item.Other ]
         |> choice
     
