@@ -16,7 +16,7 @@ module ParseTests =
             failwith msg
             
     let parseLine p s =
-        match Parse.parseLines p s with
+        match Parse.parseLine p s with
         | Result.Ok ok ->
             ok
         | Result.Error err ->
@@ -95,7 +95,23 @@ module ParseTests =
         let output = parseLine Parse.ti_expr_and_id input
         ()
         
+            
+    [<Theory>]
+    [<InlineData("enum A = {A1}")>]
+    [<InlineData("enum B = {_A, _B, _C}")>]
+    [<InlineData("enum C = {  'One', 'Two',   'Three'}")>]
+    let ``test enum type inst`` arg =
+        let input = arg
+        let output = parseLine Parse.enum_item input
+        ()        
         
-        
-        
-        
+    
+    [<Theory>]
+    [<InlineData("type A = record(a: int)")>]
+    [<InlineData("type B = int")>]
+    [<InlineData("type C = tuple(bool, tuple(int, string))")>]
+    let ``test type synonyms`` arg =
+        let input = arg
+        let output = parseLine Parse.alias_item input
+        ()        
+    
