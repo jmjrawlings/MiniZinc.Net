@@ -204,19 +204,20 @@ open ParseUtils
 open type ParseUtils.P
 
 module AST =
+
     type BaseType =    
         | Int
         | Bool
         | String
         | Float
+    
+    type BinaryOp =
+        | Builtin of string
+        | Custom of string
         
-    type Expr = unit
-    
-    type ConstraintItem = Expr
-            
-    type IncludeItem = string
-    
-    type OutputItem = Expr
+    type UnaryOp =
+        | Builtin of string
+        | Custom of string
                 
     type SolveMethod =
         | Satisfy = 0
@@ -225,17 +226,52 @@ module AST =
         
     type Annotation = string
 
-    type Annotations = Annotation list
+    type Annotations = Annotation list        
+   
+    type Expr =
+        | Wildcard
+        | Int       of int
+        | Float     of float
+        | Bool      of bool
+        | String    of string
+        | Ident     of string
+        | Bracketed of Expr
+        | Set       of SetExpr
+        | SetComp  
+        | Array1d
+        | Array1dIndex
+        | Array2d
+        | Array2dIndex
+        | ArrayComp
+        | ArrayCompIndex
+        | Tuple         of TupleExpr
+        | Record        of RecordExpr
+        | UnaryOp       of UnaryOp*Expr
+        | BinaryOp      of Expr * BinaryOp * Expr
+        | Annotation
+        | IfElse        of IfElseExpr
+        | Let           of LetExpr
+        | Call          of CallExpr
+
+    and CallExpr =
+        { Name: string
+        ; Args: Expr list }
+    
+    and SetExpr = Expr list
+    
+    and TupleExpr = Expr list
+    
+    and RecordExpr = Map<string, Expr>
         
-    type SolveSatisfy =
+    and SolveSatisfy =
         { Annotations : Annotations }
         
-    type SolveOptimise =
+    and SolveOptimise =
         { Annotations : Annotations
           Method : SolveMethod
           Objective : Expr }
         
-    type SolveItem =
+    and SolveItem =
         | Satisfy of SolveSatisfy
         | Optimise of SolveOptimise
         
@@ -249,7 +285,7 @@ module AST =
             | Satisfy s -> s.Annotations
             | Optimise o -> o.Annotations
 
-    type IfThenElse =
+    and IfElseExpr =
         { If     : Expr
         ; Then   : Expr
         ; ElseIf : Expr list
@@ -260,16 +296,12 @@ module AST =
         | Float      of float
         | Id         of string
         | Bracketed  of NumExpr
-        | Call       of string*Expr list
-        | IfThenElse of IfThenElse
+        | Call       of CallExpr
+        | IfThenElse of IfElseExpr
         | Let        of LetExpr
-        | UnaryOp    of string * NumExpr
-        | BinaryOp   of NumExpr * NumBinOp * NumExpr
+        | UnaryOp    of UnaryOp * NumExpr
+        | BinaryOp   of NumExpr * BinaryOp * NumExpr
         | Indexed    of NumExpr * Expr list
-        
-    and NumBinOp =
-        | Builtin of string
-        | Custom of string
     
     and Enum =
         { Name : string
@@ -311,7 +343,7 @@ module AST =
         | Include    of string
         | Enum       of Enum
         | Alias      of AliasItem
-        | Constraint of Expr
+        | Constraint of ConstraintItem
         | Assign     of AssignItem
         | Declare    of DeclareItem
         | Solve      of SolveItem
@@ -321,12 +353,18 @@ module AST =
         | Output     of OutputItem
         | Annotation of Annotation
         | Other      of string
-        
+
+    and ConstraintItem = Expr
+            
+    and IncludeItem = string
+            
     and PredicateItem = OperationItem
     
     and TestItem = OperationItem
     
     and AliasItem = TypeInst
+
+    and OutputItem = Expr
     
     and OperationItem =
         { Name: string
@@ -353,8 +391,6 @@ module AST =
         { Items: LetItem list;  Body: Expr }
 
 
-open AST
-
 module Parse =
     
     open AST
@@ -363,7 +399,19 @@ module Parse =
     let ident =
         regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
         <?!> "identifier"
-
+        
+    let quoted_id =
+        regex "'[^'\x0A\x0D\x00]+'"
+        <?!> "quoted-id"
+    
+    // Parse the given operation as a string,
+    // if it succeeds then Builtin constructor
+    // is used, otherwise Custom.  
+    let private op_or_id builtin custom (p: P<string>) =
+        (p |>> builtin)
+        <|>
+        (quoted_id |>> custom)
+    
     // <int-literal>
     let int_literal =
         many1Satisfy Char.IsDigit
@@ -389,9 +437,27 @@ module Parse =
         |> between('"', '"')
         <?!> "string-literal"
 
+    // <ti-expr>
+    let ti_expr, ti_expr_ref =
+        createParserForwardedToRef<TypeInst, UserState>()
+
+    // <ti-expr>
+    let base_ti_expr_tail, base_ti_expr_tail_ref =
+        createParserForwardedToRef<Type, UserState>()
+        
+    // <expr>        
+    let expr, expr_ref =
+        createParserForwardedToRef<Expr, UserState>()
+    
+    // <expr-atom>        
+    let expr_atom, expr_atom_ref =
+        createParserForwardedToRef<Expr, UserState>()
+
+    // <num-expr>    
     let num_expr, num_expr_ref =
         createParserForwardedToRef<NumExpr, UserState>()
         
+    // <num-expr-atom>
     let num_expr_atom, num_expr_atom_ref =
         createParserForwardedToRef<NumExpr, UserState>()
             
@@ -468,6 +534,18 @@ module Parse =
         |> List.map pstring
         |> choice
         
+    let un_op =        
+        (op_or_id UnaryOp.Builtin UnaryOp.Custom builtin_un_op)
+        .>> spaces
+        .>>. expr_atom
+        <?!> "un-op"
+        
+    let bin_op =        
+        (op_or_id BinaryOp.Builtin BinaryOp.Custom builtin_bin_op)
+        .>> spaces
+        .>>. expr_atom
+        <?!> "bin-op"
+        
     let builtin_ops =
         builtin_bin_ops @ builtin_un_ops
             
@@ -477,29 +555,11 @@ module Parse =
         |> choice
         
     // <ident-or-quoted-op>        
-    let ident_or_op =
+    let ident_or_quoted_op =
         builtin_op
         |> between(''', ''')
         |> attempt
         <|> ident
-    
-    // <ti-expr>
-    let ti_expr, ti_expr_ref =
-        createParserForwardedToRef<TypeInst, UserState>()
-
-    // <ti-expr>
-    let base_ti_expr_tail, base_ti_expr_tail_ref =
-        createParserForwardedToRef<Type, UserState>()
-        
-    // <expr>        
-    let expr, expr_ref =
-        createParserForwardedToRef<Expr, UserState>()
-    
-         
-    // <num-expr> ::= <num-expr-atom> <num-expr-binop-tail>
-    // <num-expr-atom> ::= <num-expr-atom-head> <expr-atom-tail> <annotations>
-    // <num-expr-binop-tail> ::= [ <num-bin-op> <num-expr> ]
-       
     
     // 0 .. 10
     let range_expr =
@@ -679,10 +739,12 @@ module Parse =
 
     // <call-expr>
     let call_expr =
-        ident_or_op
+        ident_or_quoted_op
         .>> spaces
         .>>. between1('(', ')', ',') expr
         |> attempt
+        |>> (fun (name, args) ->
+            { Name=name; Args=args })
         <?!> "call-expr"
 
     // <declare-item>
@@ -712,7 +774,7 @@ module Parse =
         |>> (fun (items, body) -> {Items=items; Body=body})
         
     // <if-then-else-expr>
-    let if_else_expr : P<IfThenElse> =
+    let if_else_expr : P<IfElseExpr> =
         let if_case = 
             ps1 "if"
             >>. expr
@@ -745,9 +807,10 @@ module Parse =
                  ; ElseIf = elseif_
                  ; Else = else_ })
     
+    
     // <num-un-op>    
     let num_un_op =
-        builtin_num_un_op
+        (op_or_id UnaryOp.Builtin UnaryOp.Custom builtin_num_un_op)
         .>> spaces
         .>>. num_expr_atom
         <?!> "num-un-op"
@@ -761,7 +824,7 @@ module Parse =
           if_else_expr  |>> NumExpr.IfThenElse
           num_un_op     |>> NumExpr.UnaryOp
           call_expr     |>> NumExpr.Call
-          ident_or_op   |>> NumExpr.Id
+          ident_or_quoted_op   |>> NumExpr.Id
           ]
         |> choice
         <?!> "num-expr-atom-head"
@@ -780,16 +843,11 @@ module Parse =
             )
         <?!> "num-expr-atom"
         
-    let num_bin_op : P<NumBinOp> =
-        let builtin =
+    let num_bin_op : P<BinaryOp> =
+        op_or_id
+            BinaryOp.Builtin
+            BinaryOp.Custom
             builtin_num_bin_op
-            |>> NumBinOp.Builtin
-        let custom =
-            between(''',''') ident
-            |>> NumBinOp.Custom
-        builtin
-        <|> custom
-        <?!> "num-bin-op"
             
     // <num-expr>
     num_expr_ref.contents <-
