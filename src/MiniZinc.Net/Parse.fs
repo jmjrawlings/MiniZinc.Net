@@ -204,6 +204,10 @@ open ParseUtils
 open type ParseUtils.P
 
 module AST =
+    
+    let [<Literal>] DOUBLE_QUOTE = '"'
+    let [<Literal>] SINGLE_QUOTE = '''
+    let [<Literal>] BACKTICK = '`'
 
     type BaseType =    
         | Int
@@ -211,13 +215,11 @@ module AST =
         | String
         | Float
     
-    type BinaryOp =
-        | Builtin of string
-        | Custom of string
+    type BinaryOp = string
         
-    type UnaryOp =
-        | Builtin of string
-        | Custom of string
+    type UnaryOp = string
+    
+    type Op = string
                 
     type SolveMethod =
         | Satisfy = 0
@@ -234,7 +236,8 @@ module AST =
         | Float     of float
         | Bool      of bool
         | String    of string
-        | Ident     of string
+        | Id        of string
+        | Op        of string
         | Bracketed of Expr
         | Set       of SetExpr
         | SetComp  
@@ -246,15 +249,20 @@ module AST =
         | ArrayCompIndex
         | Tuple         of TupleExpr
         | Record        of RecordExpr
-        | UnaryOp       of UnaryOp*Expr
-        | BinaryOp      of Expr * BinaryOp * Expr
+        | UnaryOp       of (UnaryOp OrId) * Expr
+        | BinaryOp      of Expr * (BinaryOp OrId) * Expr
         | Annotation
-        | IfElse        of IfElseExpr
+        | IfThenElse    of IfThenElseExpr
         | Let           of LetExpr
         | Call          of CallExpr
+        | Indexed       of expr:Expr * index: ArrayAccess list
 
+    and OrId<'T> = Choice<'T, string>
+    
+    and ArrayAccess = Expr list
+    
     and CallExpr =
-        { Name: string
+        { Name: Op OrId
         ; Args: Expr list }
     
     and SetExpr = Expr list
@@ -285,23 +293,27 @@ module AST =
             | Satisfy s -> s.Annotations
             | Optimise o -> o.Annotations
 
-    and IfElseExpr =
+    and IfThenElseExpr =
         { If     : Expr
         ; Then   : Expr
         ; ElseIf : Expr list
         ; Else   : Expr}
    
     and NumExpr =
-        | Int        of int
-        | Float      of float
-        | Id         of string
-        | Bracketed  of NumExpr
-        | Call       of CallExpr
-        | IfThenElse of IfElseExpr
-        | Let        of LetExpr
-        | UnaryOp    of UnaryOp * NumExpr
-        | BinaryOp   of NumExpr * BinaryOp * NumExpr
-        | Indexed    of NumExpr * Expr list
+        | Int         of int
+        | Float       of float
+        | Id          of string
+        | Op          of string
+        | Bracketed   of NumExpr
+        | Call        of CallExpr
+        | IfThenElse  of IfThenElseExpr
+        | Let         of LetExpr
+        | UnaryOp     of (NumericUnaryOp OrId) * NumExpr
+        | BinaryOp    of NumExpr * (NumericBinaryOp OrId) * NumExpr
+        | ArrayAccess of NumExpr * ArrayAccess list
+            
+    and NumericUnaryOp = string
+    and NumericBinaryOp = string
     
     and Enum =
         { Name : string
@@ -391,26 +403,49 @@ module AST =
         { Items: LetItem list;  Body: Expr }
 
 
+open AST
+
 module Parse =
     
     open AST
     
+    let simple_ident : P<string> =
+        regex "_?[A-Za-z][A-Za-z0-9_]*"
+
+    let quoted_ident : P<string> =
+        regex "'[^'\x0A\x0D\x00]+'"
+        
     // <ident>
-    let ident =
-        regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
+    let ident : P<string> =
+        regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'|"
         <?!> "identifier"
         
-    let quoted_id =
-        regex "'[^'\x0A\x0D\x00]+'"
-        <?!> "quoted-id"
-    
-    // Parse the given operation as a string,
+    // Try to parse with the given operation parser.
     // if it succeeds then Builtin constructor
     // is used, otherwise Custom.  
-    let private op_or_id builtin custom (p: P<string>) =
-        (p |>> builtin)
-        <|>
-        (quoted_id |>> custom)
+    let private or_id (p: P<'T>) : P<'T OrId> =
+        let builtin =
+            p |>> Choice1Of2
+        let custom =
+            simple_ident
+            |> between(BACKTICK, BACKTICK)
+            |>> Choice2Of2
+        builtin
+        <|> custom
+        
+    // Try to parse with the given operation parser.
+    // if it succeeds then Builtin constructor
+    // is used, otherwise Custom.  
+    let private id_or if_id if_other p =
+        let id =
+            ident
+            |>> if_id
+        let other =
+            p
+            |> between(SINGLE_QUOTE, SINGLE_QUOTE)
+            |> attempt
+            |>> if_other
+        other <|> id
     
     // <int-literal>
     let int_literal =
@@ -437,38 +472,11 @@ module Parse =
         |> between('"', '"')
         <?!> "string-literal"
 
-    // <ti-expr>
-    let ti_expr, ti_expr_ref =
-        createParserForwardedToRef<TypeInst, UserState>()
-
-    // <ti-expr>
-    let base_ti_expr_tail, base_ti_expr_tail_ref =
-        createParserForwardedToRef<Type, UserState>()
-        
-    // <expr>        
-    let expr, expr_ref =
-        createParserForwardedToRef<Expr, UserState>()
-    
-    // <expr-atom>        
-    let expr_atom, expr_atom_ref =
-        createParserForwardedToRef<Expr, UserState>()
-
-    // <num-expr>    
-    let num_expr, num_expr_ref =
-        createParserForwardedToRef<NumExpr, UserState>()
-        
-    // <num-expr-atom>
-    let num_expr_atom, num_expr_atom_ref =
-        createParserForwardedToRef<NumExpr, UserState>()
-            
-    let bracketed =
-        betweens('(', ')') num_expr
-
     // <builtin-num-un-op>
     let builtin_num_un_ops =
         [ "+" ; "-" ]
         
-    let builtin_num_un_op : P<string> =
+    let builtin_num_un_op =
         builtin_num_un_ops
         |> List.map pstring
         |> choice
@@ -487,8 +495,8 @@ module Parse =
          ; "~*"
          ; "~/"
          ; "~div" ]
-         
-    let builtin_num_bin_op : P<string> =
+        
+    let builtin_num_bin_op =
          builtin_num_bin_ops
          |> List.map pstring
          |> choice
@@ -533,18 +541,47 @@ module Parse =
         builtin_un_ops
         |> List.map pstring
         |> choice
+
+    // <ti-expr>
+    let ti_expr, ti_expr_ref =
+        createParserForwardedToRef<TypeInst, UserState>()
+
+    // <ti-expr>
+    let base_ti_expr_tail, base_ti_expr_tail_ref =
+        createParserForwardedToRef<Type, UserState>()
         
-    let un_op =        
-        (op_or_id UnaryOp.Builtin UnaryOp.Custom builtin_un_op)
+    // <expr>
+    let expr, expr_ref =
+        createParserForwardedToRef<Expr, UserState>()
+    
+    // <expr-atom>        
+    let expr_atom, expr_atom_ref =
+        createParserForwardedToRef<Expr, UserState>()
+
+    // <num-expr>    
+    let num_expr, num_expr_ref =
+        createParserForwardedToRef<NumExpr, UserState>()
+        
+    // <num-expr-atom>
+    let num_expr_atom, num_expr_atom_ref =
+        createParserForwardedToRef<NumExpr, UserState>()
+            
+    let bracketed x =
+        betweens('(', ')') x
+
+    let unary =        
+        builtin_un_op
+        |> or_id 
+        
+    let un_op =
+        unary
         .>> spaces
         .>>. expr_atom
         <?!> "un-op"
-        
-    let bin_op =        
-        (op_or_id BinaryOp.Builtin BinaryOp.Custom builtin_bin_op)
-        .>> spaces
-        .>>. expr_atom
-        <?!> "bin-op"
+
+    let bin_op =
+        builtin_bin_op
+        |> or_id
         
     let builtin_ops =
         builtin_bin_ops @ builtin_un_ops
@@ -554,13 +591,6 @@ module Parse =
         |> List.map str
         |> choice
         
-    // <ident-or-quoted-op>        
-    let ident_or_quoted_op =
-        builtin_op
-        |> between(''', ''')
-        |> attempt
-        <|> ident
-    
     // 0 .. 10
     let range_expr =
         num_expr
@@ -636,14 +666,15 @@ module Parse =
     
     // <include-item>
     let include_item : P<string> =
-        ps1 "include" >>. string_literal
+        ps1 "include"
+        >>. string_literal
         <?!> "include-item"
         
     // A set literal of primitives eg: {1,2,3}
-    let set_expr =
+    let set_literal =
         expr
         |> between('{', '}', ',')
-        <?!> "set-expr"
+        <?!> "set-literal"
 
     // <var-par>
     let var_par : P<bool> =
@@ -705,10 +736,8 @@ module Parse =
     
     // <ti-expr>        
     ti_expr_ref.contents <-
-        choice [
-            array_ti_expr
-            base_ti_expr 
-        ]
+        array_ti_expr
+        <|> base_ti_expr
         <?!> "ti-expr"
 
     // <tuple-ti-expr-tail>
@@ -725,21 +754,21 @@ module Parse =
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ p "bool"     >>% Type.Bool
-        ; p "int"      >>% Type.Int
-        ; p "string"   >>% Type.String
-        ; p "float"    >>% Type.Float
-        ; record_ti    |>> Type.Record
-        ; tuple_ti     |>> Type.Tuple
-        ; ident        |>> Type.Id
-        ; set_expr     |>> Type.Set
-        ; range_expr   |>> Type.Range ]
+        [ "bool"      => Type.Bool
+        ; "int"       => Type.Int
+        ; "string"    => Type.String
+        ; "float"     => Type.Float
+        ; record_ti  |>> Type.Record
+        ; tuple_ti   |>> Type.Tuple
+        ; ident      |>> Type.Id
+        ; set_literal   |>> Type.Set
+        ; range_expr |>> Type.Range ]
         |> choice
         <?!> "base-ti-tail"
 
     // <call-expr>
     let call_expr =
-        ident_or_quoted_op
+        (id_or Choice1Of2 Choice2Of2 builtin_op)
         .>> spaces
         .>>. between1('(', ')', ',') expr
         |> attempt
@@ -774,17 +803,20 @@ module Parse =
         |>> (fun (items, body) -> {Items=items; Body=body})
         
     // <if-then-else-expr>
-    let if_else_expr : P<IfElseExpr> =
+    let if_else_expr : P<IfThenElseExpr> =
+        
         let if_case = 
             ps1 "if"
             >>. expr
             .>> spaces1
             <?!> "if-case"
+            
         let then_case =
             ps1 "then"
             >>. expr
             .>> spaces1
             <?!> "else-case"
+            
         let elseif_case =
             ps1 "elseif"
             >>. expr
@@ -792,10 +824,12 @@ module Parse =
             >>. expr
             |> many
             <?!> "elseif-case"
+            
         let else_case =
             expr
             |> betweens("else", "endif")
             <?!> "else-case"
+            
         pipe4
             if_case
             then_case
@@ -803,28 +837,34 @@ module Parse =
             else_case
             (fun if_ then_ elseif_ else_ ->
                 { If = if_
-                 ; Then = then_
-                 ; ElseIf = elseif_
-                 ; Else = else_ })
-    
+                ; Then = then_
+                ; ElseIf = elseif_
+                ; Else = else_ })    
     
     // <num-un-op>    
     let num_un_op =
-        (op_or_id UnaryOp.Builtin UnaryOp.Custom builtin_num_un_op)
+        builtin_num_un_op
+        |> or_id
         .>> spaces
         .>>. num_expr_atom
         <?!> "num-un-op"
         
+    let quoted_op =
+        builtin_op
+        |> between(SINGLE_QUOTE, SINGLE_QUOTE)
+        |> attempt
+                
     // <num-expr-atom-head>    
     let num_expr_atom_head=
-        [ float_literal |>> NumExpr.Float
-          int_literal   |>> NumExpr.Int
-          bracketed     |>> NumExpr.Bracketed
-          let_expr      |>> NumExpr.Let
-          if_else_expr  |>> NumExpr.IfThenElse
-          num_un_op     |>> NumExpr.UnaryOp
-          call_expr     |>> NumExpr.Call
-          ident_or_quoted_op   |>> NumExpr.Id
+        [ float_literal      |>> NumExpr.Float
+          int_literal        |>> NumExpr.Int
+          bracketed num_expr |>> NumExpr.Bracketed
+          let_expr           |>> NumExpr.Let
+          if_else_expr       |>> NumExpr.IfThenElse
+          num_un_op          |>> NumExpr.UnaryOp
+          call_expr          |>> NumExpr.Call
+          quoted_op          |>> NumExpr.Op 
+          ident              |>> NumExpr.Id
           ]
         |> choice
         <?!> "num-expr-atom-head"
@@ -833,21 +873,20 @@ module Parse =
     num_expr_atom_ref.contents <-
         pipe2
             (num_expr_atom_head .>> spaces) 
-            (opt (between1('[', ']', ',') expr))
-            (fun head tail ->
-                match tail with
-                | Some index ->
-                    NumExpr.Indexed (head, index)
-                | None ->
+            (many (between1('[', ']', ',') expr))
+            (fun head access ->
+                match access with
+                | []->
                     head
+                | _ ->
+                    NumExpr.ArrayAccess (head, access)
+                
             )
         <?!> "num-expr-atom"
         
-    let num_bin_op : P<BinaryOp> =
-        op_or_id
-            BinaryOp.Builtin
-            BinaryOp.Custom
-            builtin_num_bin_op
+    let num_bin_op =
+        builtin_num_bin_op
+        |> or_id
             
     // <num-expr>
     num_expr_ref.contents <-
@@ -861,8 +900,56 @@ module Parse =
                 | Some (op, right) ->
                     NumExpr.BinaryOp (head, op, right)
             )
-        <?!> "num-expr"            
+        <?!> "num-expr"
         
+        
+    // <expr-atom-head>    
+    let expr_atom_head=
+        [ float_literal  |>> Expr.Float
+          int_literal    |>> Expr.Int
+          bool_literal   |>> Expr.Bool
+          string_literal |>> Expr.String
+          "_"             => Expr.Wildcard
+          bracketed expr |>> Expr.Bracketed
+          let_expr       |>> Expr.Let
+          if_else_expr   |>> Expr.IfThenElse
+          un_op          |>> Expr.UnaryOp
+          call_expr      |>> Expr.Call
+          quoted_op      |>> Expr.Op
+          ident          |>> Expr.Id
+          ]
+        |> choice
+        <?!> "num-expr-atom-head"        
+
+    // <expr-atom>        
+    expr_atom_ref.contents <-
+        pipe2
+            (expr_atom_head .>> spaces)
+            (many (between1('[', ']', ',') expr))
+            (fun head access ->
+                match access with
+                | [] ->
+                    head
+                | _ ->
+                    Expr.Indexed (head, access)
+                
+            )
+        <?!> "expr-atom"
+            
+    // <expr>
+    expr_ref.contents <-
+        pipe2
+            expr_atom
+            (opt (sps bin_op .>>. expr))
+            (fun head tail ->
+                match tail with
+                | None ->
+                    head
+                | Some (op, right) ->
+                    Expr.BinaryOp (head, op, right)
+            )
+        <?!> "expr"
+            
     let solve_method : P<SolveMethod> =
         lookup(
           "satisfy" => SolveMethod.Satisfy,

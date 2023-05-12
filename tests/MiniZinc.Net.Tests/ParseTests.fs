@@ -126,15 +126,20 @@ module ParseTests =
         
     [<Theory>]
     [<InlineData("100 + 100")>]
+    [<InlineData("100 / 1.0")>]
+    [<InlineData("A `something` B")>]
     let ``test num binary op`` arg =
         let input = arg
         let output = parse Parse.num_expr_atom_head input
         ()        
         
-    // [<Theory>]
-    // [<InlineData("let {int: a = 2} in a;")>]
-    // let ``test num expr`` arg =
-    //     let input = arg
-    //     let output = parse Parse.num_expr_atom_head input
-    //     ()
+    [<Theory>]
+    [<InlineData("let {int: a = 2} in a;")>]
+    let ``test expr`` arg =
+        let input = arg
+        let output = parse Parse.expr input
+        ()
+        
+        
+        
         
