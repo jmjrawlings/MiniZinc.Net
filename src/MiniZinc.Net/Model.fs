@@ -6,7 +6,7 @@ module rec Model =
 
     open System
     open System.IO
-    open Parse
+    open AST
     
     // A MiniZinc model
     type Model =
