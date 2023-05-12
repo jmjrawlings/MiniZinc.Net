@@ -4,19 +4,9 @@ open MiniZinc
 open Xunit
 
 module ParseTests =
-
-
-    let parseLines p s =
-        match Parse.parseLines p s with
-        | Result.Ok ok ->
-            ok
-        | Result.Error err ->
-            let trace = err.Trace
-            let msg = err.Message
-            failwith msg
-            
-    let parseLine p s =
-        match Parse.parseLine p s with
+         
+    let parse p s =
+        match Parse.parseString p s with
         | Result.Ok ok ->
             ok
         | Result.Error err ->
@@ -32,7 +22,7 @@ module ParseTests =
     [<InlineData("'A name with Quotes'")>]
     let ``test identifier`` arg =
         let input = arg
-        let output = parseLine Parse.ident input
+        let output = parse Parse.ident input
         ()    
         
     [<Theory>]
@@ -45,7 +35,7 @@ module ParseTests =
     [<InlineData("par set of 'something weird'")>]
     let ``test base type inst`` arg =
         let input = arg
-        let output = parseLine Parse.base_ti_expr input
+        let output = parse Parse.base_ti_expr input
         ()
         
     [<Theory>]
@@ -53,7 +43,7 @@ module ParseTests =
     [<InlineData("array[int,int] of var float")>]
     let ``test array type inst`` arg =
         let input = arg
-        let output = parseLine Parse.array_ti_expr input
+        let output = parse Parse.array_ti_expr input
         ()
         
     [<Theory>]
@@ -61,15 +51,15 @@ module ParseTests =
     [<InlineData("record(c: X, set of int: d)")>]
     let ``test record type inst`` arg =
         let input = arg
-        let output = parseLine Parse.record_ti input
+        let output = parse Parse.record_ti input
         ()
-        
+                
     [<Theory>]
     [<InlineData("tuple(int, string, string)")>]
     [<InlineData("tuple(X, 'something else', set of Q)")>]
     let ``test tuple type inst`` arg =
         let input = arg
-        let output = parseLine Parse.tuple_ti input
+        let output = parse Parse.tuple_ti input
         ()
         
     [<Theory>]
@@ -92,7 +82,7 @@ module ParseTests =
     [<InlineData("tuple(X, 'something else', set of Q): Q")>]
     let ``test type inst and id`` arg =
         let input = arg
-        let output = parseLine Parse.ti_expr_and_id input
+        let output = parse Parse.ti_expr_and_id input
         ()
         
             
@@ -100,9 +90,9 @@ module ParseTests =
     [<InlineData("enum A = {A1}")>]
     [<InlineData("enum B = {_A, _B, _C}")>]
     [<InlineData("enum C = {  'One', 'Two',   'Three'}")>]
-    let ``test enum type inst`` arg =
+    let ``test enum`` arg =
         let input = arg
-        let output = parseLine Parse.enum_item input
+        let output = parse Parse.enum_item input
         ()        
         
     
@@ -110,8 +100,41 @@ module ParseTests =
     [<InlineData("type A = record(a: int)")>]
     [<InlineData("type B = int")>]
     [<InlineData("type C = tuple(bool, tuple(int, string))")>]
-    let ``test type synonyms`` arg =
+    let ``test type alias`` arg =
         let input = arg
-        let output = parseLine Parse.alias_item input
+        let output = parse Parse.alias_item input
+        ()
+        
+    [<Theory>]
+    [<InlineData("1")>]
+    [<InlineData("2.0")>]
+    [<InlineData("aVariable")>]
+    [<InlineData("(1)")>]
+    [<InlineData("(  (3))")>]
+    let ``test num expr atom simple`` arg =
+        let input = arg
+        let output = parse Parse.num_expr_atom_head input
+        ()
+        
+    [<Theory>]
+    [<InlineData("-100")>]
+    [<InlineData("+300.2")>]
+    let ``test num unary op`` arg =
+        let input = arg
+        let output = parse Parse.num_expr_atom_head input
         ()        
-    
+        
+    [<Theory>]
+    [<InlineData("100 + 100")>]
+    let ``test num binary op`` arg =
+        let input = arg
+        let output = parse Parse.num_expr_atom_head input
+        ()        
+        
+    // [<Theory>]
+    // [<InlineData("let {int: a = 2} in a;")>]
+    // let ``test num expr`` arg =
+    //     let input = arg
+    //     let output = parse Parse.num_expr_atom_head input
+    //     ()
+        

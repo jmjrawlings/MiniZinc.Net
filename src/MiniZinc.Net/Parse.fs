@@ -1,5 +1,6 @@
 ﻿namespace MiniZinc
 
+open System
 open System.IO
 open System.Runtime.InteropServices
 open FParsec
@@ -68,6 +69,9 @@ module ParseUtils =
         
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
+        
+    let (=>) key value =
+        pstring key >>% value
 
     /// <summary>
     /// Overloaded methods that clean up parsing code a bit
@@ -92,12 +96,18 @@ module ParseUtils =
             
         static member p (x: string) : P<string> =
             pstring x
+        
+        static member ps x =
+            x .>> spaces
             
         static member ps (x: string) : P<string> =
             pstring x .>> spaces
             
         static member ps (x: char) : P<char> =
             pchar x .>> spaces
+        
+        static member ps1 x =
+            x .>> spaces1
             
         static member ps1 (x: string) : P<string> =
             pstring x .>> spaces1
@@ -183,6 +193,10 @@ module ParseUtils =
             
         static member between1 (a:char, b:char, c:char) =
             P.between(a, b, c, many=true)
+           
+        static member lookup([<ParamArray>] parsers: P<'t>[]) =
+            choice parsers
+            
             
     
 
@@ -195,12 +209,12 @@ module AST =
         | Bool
         | String
         | Float
-
+        
     type Expr = unit
+    
+    type ConstraintItem = Expr
             
     type IncludeItem = string
-        
-    type ConstraintItem = Expr
     
     type OutputItem = Expr
                 
@@ -208,11 +222,32 @@ module AST =
         | Satisfy = 0
         | Minimize = 1
         | Maximize = 2
-    
-    type SolveItem =
-        { Annotations : unit
+        
+    type Annotation = string
+
+    type Annotations = Annotation list
+        
+    type SolveSatisfy =
+        { Annotations : Annotations }
+        
+    type SolveOptimise =
+        { Annotations : Annotations
           Method : SolveMethod
-          Expr : Expr option }
+          Objective : Expr }
+        
+    type SolveItem =
+        | Satisfy of SolveSatisfy
+        | Optimise of SolveOptimise
+        
+        member this.Method =
+            match this with
+            | Satisfy _ -> SolveMethod.Satisfy
+            | Optimise o -> o.Method
+            
+        member this.Annotations =
+            match this with
+            | Satisfy s -> s.Annotations
+            | Optimise o -> o.Annotations
 
     type IfThenElse =
         { If     : Expr
@@ -220,15 +255,23 @@ module AST =
         ; ElseIf : Expr list
         ; Else   : Expr}
    
-    type NumExpr =
+    and NumExpr =
         | Int        of int
         | Float      of float
         | Id         of string
         | Bracketed  of NumExpr
         | Call       of string*Expr list
         | IfThenElse of IfThenElse
+        | Let        of LetExpr
+        | UnaryOp    of string * NumExpr
+        | BinaryOp   of NumExpr * NumBinOp * NumExpr
+        | Indexed    of NumExpr * Expr list
+        
+    and NumBinOp =
+        | Builtin of string
+        | Custom of string
     
-    type Enum =
+    and Enum =
         { Name : string
         ; Cases : EnumCase list }
         
@@ -244,7 +287,7 @@ module AST =
     /// rule here that a single class that convers
     /// everything. 
     /// </remarks>
-    type TypeInst =
+    and TypeInst =
         { Type       : Type
           Name       : string
           IsVar      : bool
@@ -264,7 +307,7 @@ module AST =
         | Set       of Expr list
         | Range     of lower:NumExpr * upper:NumExpr
             
-    type Item =
+    and Item =
         | Include    of string
         | Enum       of Enum
         | Alias      of AliasItem
@@ -272,17 +315,29 @@ module AST =
         | Assign     of AssignItem
         | Declare    of DeclareItem
         | Solve      of SolveItem
-        | Predicate  of Expr
-        | Function   of TypeInst * OperationItem
-        | Test       of Test
+        | Predicate  of PredicateItem
+        | Function   of FunctionItem
+        | Test       of TestItem
+        | Output     of OutputItem
         | Annotation of Annotation
         | Other      of string
         
-    and OperationItem = unit        
-        
-    and Annotation = unit
+    and PredicateItem = OperationItem
+    
+    and TestItem = OperationItem
     
     and AliasItem = TypeInst
+    
+    and OperationItem =
+        { Name: string
+          Parameters : TypeInst list
+          Body: Expr option }
+        
+    and FunctionItem =
+        { Name: string
+          Returns : TypeInst
+          Parameters : TypeInst list
+          Body: Expr option }
     
     and Test = unit
     
@@ -298,6 +353,8 @@ module AST =
         { Items: LetItem list;  Body: Expr }
 
 
+open AST
+
 module Parse =
     
     open AST
@@ -309,7 +366,8 @@ module Parse =
 
     // <int-literal>
     let int_literal =
-        pint32
+        many1Satisfy Char.IsDigit
+        |>> int
         <?!> "int-literal"
     
     // <bool-literal>    
@@ -321,7 +379,8 @@ module Parse =
         
     // <float-literal>        
     let float_literal : P<float> =
-        pfloat
+        regex "[0-9]+.[0-9]+"
+        |>> float
         <?!> "float-literal"
         
     // <string-literal>
@@ -332,9 +391,12 @@ module Parse =
 
     let num_expr, num_expr_ref =
         createParserForwardedToRef<NumExpr, UserState>()
+        
+    let num_expr_atom, num_expr_atom_ref =
+        createParserForwardedToRef<NumExpr, UserState>()
             
     let bracketed =
-        between('(', ')') num_expr
+        betweens('(', ')') num_expr
 
     // <builtin-num-un-op>
     let builtin_num_un_ops =
@@ -420,10 +482,20 @@ module Parse =
         |> between(''', ''')
         |> attempt
         <|> ident
-       
-        
     
-    //         
+    // <ti-expr>
+    let ti_expr, ti_expr_ref =
+        createParserForwardedToRef<TypeInst, UserState>()
+
+    // <ti-expr>
+    let base_ti_expr_tail, base_ti_expr_tail_ref =
+        createParserForwardedToRef<Type, UserState>()
+        
+    // <expr>        
+    let expr, expr_ref =
+        createParserForwardedToRef<Expr, UserState>()
+    
+         
     // <num-expr> ::= <num-expr-atom> <num-expr-binop-tail>
     // <num-expr-atom> ::= <num-expr-atom-head> <expr-atom-tail> <annotations>
     // <num-expr-binop-tail> ::= [ <num-bin-op> <num-expr> ]
@@ -437,6 +509,51 @@ module Parse =
         |> attempt
         <?!> "range-expr"
 
+    // <ti-expr-and-id>
+    let ti_expr_and_id : P<TypeInst> =
+        ti_expr
+        .>> sps ':'
+        .>>. ident
+        |>> (fun (expr, name) ->
+            { expr with Name = name })
+        <?> "ti-expr-and-id"    
+    
+    let parameters : P<TypeInst list> =
+        ti_expr_and_id
+        |> between('(', ')', ',')
+    
+    // <operation-item-tail>
+    // eg: even(var int: x) = x mod 2 = 0;
+    let operation_item_tail : P<OperationItem> =
+        pipe3
+            (ps ident)
+            (ps parameters)
+            (opt (ps "=" >>. expr))
+            (fun name pars body ->
+                { Name = name
+                ; Parameters = pars
+                ; Body = body })
+        
+    // <predicate-item>
+    let predicate_item : P<PredicateItem> =
+        ps1 "predicate" >>. operation_item_tail
+
+    // <test_item>
+    let test_item : P<TestItem> =
+        ps1 "test" >>. operation_item_tail
+        
+    // <function-item>
+    let function_item : P<FunctionItem> =
+        ps1 "function"
+        >>. ti_expr
+        .>> sps ':'
+        .>>. operation_item_tail
+        |>> (fun (ti, op) ->
+            { Name = op.Name
+            ; Returns = ti
+            ; Parameters = op.Parameters
+            ; Body = op.Body })
+    
     // <enum-case>
     // TODO: complex variants
     let enum_case : P<string> =
@@ -462,10 +579,6 @@ module Parse =
         ps1 "include" >>. string_literal
         <?!> "include-item"
         
-    // <expr>        
-    let expr : P<Expr> =
-        todo<Expr>()
-        
     // A set literal of primitives eg: {1,2,3}
     let set_expr =
         expr
@@ -474,20 +587,12 @@ module Parse =
 
     // <var-par>
     let var_par : P<bool> =
-        let var = p "var" >>% true
-        let par = p "par" >>% false
-        (var <|> par)
+        [ "var" => true
+        ; "par" => false]
+        |> choice
         .>> spaces1
         |> opt_or false
         <?!> "var-par"
-
-    // <ti-expr>
-    let ti_expr, ti_expr_ref =
-        createParserForwardedToRef<TypeInst, UserState>()
-
-    // <ti-expr>
-    let base_ti_expr_tail, base_ti_expr_tail_ref =
-        createParserForwardedToRef<Type, UserState>()
         
     // <opt-ti>        
     let opt_ti =
@@ -538,22 +643,13 @@ module Parse =
             { ti with Dimensions = dims })
         <?!> "array-ti-expr"
     
-        
+    // <ti-expr>        
     ti_expr_ref.contents <-
         choice [
             array_ti_expr
             base_ti_expr 
         ]
         <?!> "ti-expr"
-        
-    // <ti-expr-and-id>
-    let ti_expr_and_id : P<TypeInst> =
-        ti_expr
-        .>> sps ':'
-        .>>. ident
-        |>> (fun (expr, name) ->
-            { expr with Name = name })
-        <?> "ti-expr-and-id"
 
     // <tuple-ti-expr-tail>
     let tuple_ti =
@@ -586,52 +682,15 @@ module Parse =
         ident_or_op
         .>> spaces
         .>>. between1('(', ')', ',') expr
-       
-    
-    // <num-expr-atom-head>    
-    let num_expr_atom_head=
-        // <builtin-num-un-op> <num-expr-atom>
-        //                | <ident-or-quoted-op>
-        //                | <if-then-else-expr>
-        //                | <let-expr>
-        //                | <gen-call-expr>
-        [ int_literal   |>> NumExpr.Int
-          float_literal |>> NumExpr.Float
-          ident         |>> NumExpr.Id
-          bracketed     |>> NumExpr.Bracketed
-          call_expr     |>> NumExpr.Call
-          ]
-        |> choice
-        
-            
-    // <solve-item>
-    let solve_item : P<SolveItem> =
-        todo<SolveItem>()
-        
-    // <assign-item>
-    let assign_item =
-        ident
-        .>> sps1 '='
-        .>>. expr
-        
-    let unknown_item =
-        manyChars (noneOf ";")
-        
+        |> attempt
+        <?!> "call-expr"
+
     // <declare-item>
     let var_decl_item =
         ti_expr_and_id
         .>> spaces
         .>>. opt (ps '=' >>. expr)
-        
-    // <type-inst-syn-item>
-    let alias_item =
-            ps1 "type"
-        >>. ident
-        .>> sps1 "="
-        .>>. ti_expr
-        |>> (fun (name, ti) -> { ti with Name = name })
-        <?!> "type-alias"
-        
+
     // <constraint-item>
     let constraint_item =
         ps1 "constraint"
@@ -653,20 +712,28 @@ module Parse =
         |>> (fun (items, body) -> {Items=items; Body=body})
         
     // <if-then-else-expr>
-    let if_then_else_expr : P<IfThenElse> =
+    let if_else_expr : P<IfThenElse> =
         let if_case = 
-            ps1 "if" >>. expr .>> spaces1
+            ps1 "if"
+            >>. expr
+            .>> spaces1
+            <?!> "if-case"
         let then_case =
-            ps1 "then" >>. expr .>> spaces1
+            ps1 "then"
+            >>. expr
+            .>> spaces1
+            <?!> "else-case"
         let elseif_case =
             ps1 "elseif"
             >>. expr
             .>> sps1 "then"
             >>. expr
             |> many
+            <?!> "elseif-case"
         let else_case =
             expr
             |> betweens("else", "endif")
+            <?!> "else-case"
         pipe4
             if_case
             then_case
@@ -677,7 +744,118 @@ module Parse =
                  ; Then = then_
                  ; ElseIf = elseif_
                  ; Else = else_ })
+    
+    // <num-un-op>    
+    let num_un_op =
+        builtin_num_un_op
+        .>> spaces
+        .>>. num_expr_atom
+        <?!> "num-un-op"
+        
+    // <num-expr-atom-head>    
+    let num_expr_atom_head=
+        [ float_literal |>> NumExpr.Float
+          int_literal   |>> NumExpr.Int
+          bracketed     |>> NumExpr.Bracketed
+          let_expr      |>> NumExpr.Let
+          if_else_expr  |>> NumExpr.IfThenElse
+          num_un_op     |>> NumExpr.UnaryOp
+          call_expr     |>> NumExpr.Call
+          ident_or_op   |>> NumExpr.Id
+          ]
+        |> choice
+        <?!> "num-expr-atom-head"
+        
+    // <num-expr-atom>        
+    num_expr_atom_ref.contents <-
+        pipe2
+            (num_expr_atom_head .>> spaces) 
+            (opt (between1('[', ']', ',') expr))
+            (fun head tail ->
+                match tail with
+                | Some index ->
+                    NumExpr.Indexed (head, index)
+                | None ->
+                    head
+            )
+        <?!> "num-expr-atom"
+        
+    let num_bin_op : P<NumBinOp> =
+        let builtin =
+            builtin_num_bin_op
+            |>> NumBinOp.Builtin
+        let custom =
+            between(''',''') ident
+            |>> NumBinOp.Custom
+        builtin
+        <|> custom
+        <?!> "num-bin-op"
             
+    // <num-expr>
+    num_expr_ref.contents <-
+        pipe2
+            num_expr_atom
+            (opt (sps num_bin_op .>>. num_expr))
+            (fun head tail ->
+                match tail with
+                | None ->
+                    head
+                | Some (op, right) ->
+                    NumExpr.BinaryOp (head, op, right)
+            )
+        <?!> "num-expr"            
+        
+    let solve_method : P<SolveMethod> =
+        lookup(
+          "satisfy" => SolveMethod.Satisfy,
+          "minimize" => SolveMethod.Minimize,
+          "maximize" => SolveMethod.Maximize
+        )
+        <?!> "solve-method"
+        
+    let annotations : P<Annotations> =
+        preturn []
+        <?!> "annotations"
+            
+    // <solve-item>
+    let solve_item : P<SolveItem> =
+        pipe3
+            (ps1 "solve" >>. annotations)
+            (sps1 solve_method)
+            (opt expr)
+            (fun annos method obj ->
+                match obj with
+                | Some o ->
+                    { Annotations = annos
+                    ; Method = method
+                    ; Objective = o }
+                    |> SolveItem.Optimise
+                | None ->
+                    { Annotations = annos }
+                    |> SolveItem.Satisfy)
+        
+    // <assign-item>
+    let assign_item =
+        ident
+        .>> sps1 '='
+        .>>. expr
+        
+    let unknown_item =
+        manyChars (noneOf ";")
+        
+    // <type-inst-syn-item>
+    let alias_item =
+            ps1 "type"
+        >>. ident
+        .>> sps1 "="
+        .>>. ti_expr
+        |>> (fun (name, ti) -> { ti with Name = name })
+        <?!> "type-alias"
+        
+    // <output-item>
+    let output_item : P<OutputItem> =
+        ps1 "output"
+        >>. expr
 
     // <item>
     let item =
@@ -688,17 +866,16 @@ module Parse =
         ; assign_item     |>> Item.Assign
         ; solve_item      |>> Item.Solve
         ; alias_item      |>> Item.Alias
+        ; output_item     |>> Item.Output
+        ; predicate_item  |>> Item.Predicate
+        ; function_item   |>> Item.Function
+        ; test_item       |>> Item.Test
         ; unknown_item    |>> Item.Other ]
         |> choice
     
-    // <item>    
-    let items =
-        sepEndBy item (chr ';')
-        .>> eof
                 
     // Parse the given string with the given parser            
-    let parseString (p: P<'t>) (s: string) =
-        let input = s.Trim()
+    let parseString (p: P<'t>) (input: string) =
         let state = { Debug = { Message = ""; Indent = 0 } }
         match runParserOnString p state "" input with
         | Success (value, _, _) ->
@@ -708,29 +885,15 @@ module Parse =
                 { Message = s
                 ; Trace = state.Debug.Message }
             Result.Error error
-    
-    // Parse lines of the given string with the given parser                       
-    let parseLines (p: P<'t>) (s: string) =
-        let input =
-            s.Split(';')
-            |> Seq.map (fun s -> s.Trim())
-            |> String.concat ";"
-        let parser =
-            sepEndBy p (chr ';') .>> eof
-        let result =
-            parseString parser input
-        result
         
-    // Parse a single line with the given paser
-    // a ';' will be added to the end                       
-    let parseLine (p: P<'t>) (s: string) =
-        let input = s.Trim()
-        let result = parseString p input
-        result
+    // Turn the given parser into one that applies line by line                      
+    let by_line (p: P<'t>) =
+        sepEndBy p (sps ';')
+        .>> eof
                     
     // Parse a model from a the given string                       
-    let model (s: string) =
-        parseLines items s
+    let model (input: string) =
+        parseString (by_line item) input
              
     // Parse the given file
     let file (fi: FileInfo) =
