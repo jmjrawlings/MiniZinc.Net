@@ -1,13 +1,12 @@
 <Project>
     <PropertyGroup>
-        <PackageTags>f#, fsharp</PackageTags>
+        <PackageTags>F#, fsharp</PackageTags>
         <PackageProjectUrl>https://github.com/jmjrawlings/MiniZinc.Net</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/jmjrawlings/MiniZinc.Net/blob/master/LICENSE.md</PackageLicenseUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <RepositoryType>git</RepositoryType>
-        <Authors>jmjrawlings</Authors>
+        <Authors>Justin Rawlings</Authors>
         <RepositoryUrl>https://github.com/jmjrawlings/MiniZinc.Net</RepositoryUrl>
-        <NoWarn>0020</NoWarn>
     </PropertyGroup>
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
