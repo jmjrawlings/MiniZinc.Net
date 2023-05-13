@@ -2,10 +2,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="build.fs" />
+    <Compile Include="Build.fs" />
   </ItemGroup>
-  <Import Project="..\.paket\Paket.Restore.targets" />
+  <ItemGroup>
+    <PackageReference Include="Fake.Api.GitHub" Version="6.0.0" />
+    <PackageReference Include="Fake.BuildServer.GitHubActions" Version="6.0.0" />
+    <PackageReference Include="Fake.Core" Version="5.16.0" />
+    <PackageReference Include="Fake.Core.Environment" Version="6.0.0" />
+    <PackageReference Include="Fake.Core.ReleaseNotes" Version="6.0.0" />
+    <PackageReference Include="Fake.Core.Target" Version="6.0.0" />
+    <PackageReference Include="Fake.DotNet" Version="2.0.0" />
+    <PackageReference Include="Fake.DotNet.AssemblyInfoFile" Version="6.0.0" />
+    <PackageReference Include="Fake.DotNet.Cli" Version="6.0.0" />
+    <PackageReference Include="Fake.IO.FileSystem" Version="6.0.0" />
+    <PackageReference Include="Fake.Tools.Git" Version="6.0.0" />
+    <PackageReference Include="OctoKit" Version="6.0.0" />
+  </ItemGroup>
 </Project>
