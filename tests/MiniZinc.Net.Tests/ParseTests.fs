@@ -123,7 +123,16 @@ module ParseTests =
     let ``test num binary op`` arg =
         let input = arg
         let output = test_parser Parsers.num_expr_atom_head input
-        ()        
+        ()
+        
+    [<Theory>]
+    [<InlineData("% 12312312")>]
+    [<InlineData("/* somethign */")>]
+    let ``test comments`` arg =
+        let input = arg
+        let output = test_parser Parsers.comment input
+        ()
+        
         
     [<Theory>]
     [<InlineData("let {int: a = 2} in a;")>]

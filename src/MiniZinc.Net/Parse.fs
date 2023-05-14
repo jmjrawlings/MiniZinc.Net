@@ -416,7 +416,21 @@ module Parsers =
     let ident : P<string> =
         regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'|"
         <?!> "identifier"
-        
+
+    
+    let single_line_comment : P<string> =
+        p '%' >>.
+        manyCharsTill (noneOf "\r\n") (skipNewline <|> eof)
+
+    let multi_line_comment : P<string> =
+        attempt (p "/*")
+        >>. manyCharsTill (noneOf "*") (p "*/")
+
+    let comment : P<string> =
+        single_line_comment
+        <|> multi_line_comment
+        |>> (fun s -> s.Trim())
+            
     // Try to parse with the given operation parser.
     // if it succeeds then Builtin constructor
     // is used, otherwise Custom.  
