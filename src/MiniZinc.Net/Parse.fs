@@ -196,8 +196,6 @@ module ParseUtils =
            
         static member lookup([<ParamArray>] parsers: P<'t>[]) =
             choice parsers
-            
-            
     
 
 open ParseUtils
@@ -403,9 +401,8 @@ module AST =
         { Items: LetItem list;  Body: Expr }
 
 
-open AST
 
-module Parse =
+module Parsers =
     
     open AST
     
@@ -801,6 +798,7 @@ module Parse =
         .>> sps1 "in"
         .>>. expr
         |>> (fun (items, body) -> {Items=items; Body=body})
+        <?!> "let-expr"
         
     // <if-then-else-expr>
     let if_else_expr : P<IfThenElseExpr> =
@@ -853,7 +851,13 @@ module Parse =
         builtin_op
         |> between(SINGLE_QUOTE, SINGLE_QUOTE)
         |> attempt
-                
+    
+    // <array-acces-tail>
+    let array_access =
+        expr
+        |> between1('[', ']', ',')
+        <?!> "array-access"
+
     // <num-expr-atom-head>    
     let num_expr_atom_head=
         [ float_literal      |>> NumExpr.Float
@@ -872,8 +876,8 @@ module Parse =
     // <num-expr-atom>        
     num_expr_atom_ref.contents <-
         pipe2
-            (num_expr_atom_head .>> spaces) 
-            (many (between1('[', ']', ',') expr))
+            num_expr_atom_head
+            (many (attempt(sp array_access)))
             (fun head access ->
                 match access with
                 | []->
@@ -887,12 +891,18 @@ module Parse =
     let num_bin_op =
         builtin_num_bin_op
         |> or_id
-            
+        
+    // <num-expr-binop-tail>
+    let num_expr_binop_tail =        
+        sps num_bin_op
+        .>>. num_expr
+        <?!> "num-expr-binop-tail"
+
     // <num-expr>
     num_expr_ref.contents <-
         pipe2
             num_expr_atom
-            (opt (sps num_bin_op .>>. num_expr))
+            (opt <| attempt num_expr_binop_tail)
             (fun head tail ->
                 match tail with
                 | None ->
@@ -919,28 +929,31 @@ module Parse =
           ident          |>> Expr.Id
           ]
         |> choice
-        <?!> "num-expr-atom-head"        
+        <?!> "expr-atom-head"
 
     // <expr-atom>        
     expr_atom_ref.contents <-
         pipe2
-            (expr_atom_head .>> spaces)
-            (many (between1('[', ']', ',') expr))
-            (fun head access ->
-                match access with
+            expr_atom_head
+            (many (attempt(sp array_access)))
+            (fun head tail ->
+                match tail with
                 | [] ->
                     head
-                | _ ->
+                | access ->
                     Expr.Indexed (head, access)
-                
             )
         <?!> "expr-atom"
+            
+    // <expr-binop-tail>
+    let expr_binop_tail =
+        sps bin_op .>>. expr
             
     // <expr>
     expr_ref.contents <-
         pipe2
             expr_atom
-            (opt (sps bin_op .>>. expr))
+            (opt <| attempt expr_binop_tail)
             (fun head tail ->
                 match tail with
                 | None ->
@@ -966,7 +979,7 @@ module Parse =
     let solve_item : P<SolveItem> =
         pipe3
             (ps1 "solve" >>. annotations)
-            (sps1 solve_method)
+            (sps solve_method)
             (opt expr)
             (fun annos method obj ->
                 match obj with
@@ -978,12 +991,14 @@ module Parse =
                 | None ->
                     { Annotations = annos }
                     |> SolveItem.Satisfy)
+        <?!> "solve-item"            
         
     // <assign-item>
     let assign_item =
         ident
         .>> sps1 '='
         .>>. expr
+        <?!> "assign-item"
         
     let unknown_item =
         manyChars (noneOf ";")
@@ -1000,49 +1015,48 @@ module Parse =
     // <output-item>
     let output_item : P<OutputItem> =
         ps1 "output"
-        >>. expr
+        >>. expr        
+        <?!> "output-item"
 
     // <item>
     let item =
-        [ var_decl_item   |>> Item.Declare
-        ; enum_item       |>> Item.Enum
+        [ enum_item       |>> Item.Enum
         ; constraint_item |>> Item.Constraint
         ; include_item    |>> Item.Include
-        ; assign_item     |>> Item.Assign
         ; solve_item      |>> Item.Solve
         ; alias_item      |>> Item.Alias
         ; output_item     |>> Item.Output
         ; predicate_item  |>> Item.Predicate
         ; function_item   |>> Item.Function
         ; test_item       |>> Item.Test
+        ; var_decl_item   |>> Item.Declare
+        ; assign_item     |>> Item.Assign
         ; unknown_item    |>> Item.Other ]
         |> choice
-    
-                
+                    
+    // Parse a model from a the given string                       
+    let model =
+        many (item .>> sps ';')
+
+
+module Parse =
+                            
     // Parse the given string with the given parser            
-    let parseString (p: P<'t>) (input: string) =
+    let string (parser: P<'t>) (input: string) =
+        let lexed = input.Trim()
         let state = { Debug = { Message = ""; Indent = 0 } }
-        match runParserOnString p state "" input with
-        | Success (value, _, _) ->
+        match runParserOnString parser state "" lexed with
+        | Success (value, _, _)     ->
             Result.Ok value
         | Failure (s, msg, state) ->
             let error =
                 { Message = s
                 ; Trace = state.Debug.Message }
             Result.Error error
+            
+    // Parse the given file with the given parser
+    let file (parser: P<'t>) (fi: FileInfo) =
+        let input = File.ReadAllText fi.FullName
+        let result = string parser input
+        result
         
-    // Turn the given parser into one that applies line by line                      
-    let by_line (p: P<'t>) =
-        sepEndBy p (sps ';')
-        .>> eof
-                    
-    // Parse a model from a the given string                       
-    let model (input: string) =
-        parseString (by_line item) input
-             
-    // Parse the given file
-    let file (fi: FileInfo) =
-        let contents = File.ReadAllText fi.FullName
-        let name = Path.GetFileNameWithoutExtension fi.Name
-        let model = model contents
-        model

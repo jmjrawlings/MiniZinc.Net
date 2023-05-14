@@ -5,14 +5,6 @@ open Xunit
 
 module ParseTests =
          
-    let parse p s =
-        match Parse.parseString p s with
-        | Result.Ok ok ->
-            ok
-        | Result.Error err ->
-            let trace = err.Trace
-            let msg = err.Message
-            failwith msg            
     
     [<Theory>]
     [<InlineData("a")>]
@@ -22,7 +14,7 @@ module ParseTests =
     [<InlineData("'A name with Quotes'")>]
     let ``test identifier`` arg =
         let input = arg
-        let output = parse Parse.ident input
+        let output = test_parser Parsers.ident input
         ()    
         
     [<Theory>]
@@ -35,7 +27,7 @@ module ParseTests =
     [<InlineData("par set of 'something weird'")>]
     let ``test base type inst`` arg =
         let input = arg
-        let output = parse Parse.base_ti_expr input
+        let output = test_parser Parsers.base_ti_expr input
         ()
         
     [<Theory>]
@@ -43,7 +35,7 @@ module ParseTests =
     [<InlineData("array[int,int] of var float")>]
     let ``test array type inst`` arg =
         let input = arg
-        let output = parse Parse.array_ti_expr input
+        let output = test_parser Parsers.array_ti_expr input
         ()
         
     [<Theory>]
@@ -51,7 +43,7 @@ module ParseTests =
     [<InlineData("record(c: X, set of int: d)")>]
     let ``test record type inst`` arg =
         let input = arg
-        let output = parse Parse.record_ti input
+        let output = test_parser Parsers.record_ti input
         ()
                 
     [<Theory>]
@@ -59,7 +51,7 @@ module ParseTests =
     [<InlineData("tuple(X, 'something else', set of Q)")>]
     let ``test tuple type inst`` arg =
         let input = arg
-        let output = parse Parse.tuple_ti input
+        let output = test_parser Parsers.tuple_ti input
         ()
         
     [<Theory>]
@@ -82,7 +74,7 @@ module ParseTests =
     [<InlineData("tuple(X, 'something else', set of Q): Q")>]
     let ``test type inst and id`` arg =
         let input = arg
-        let output = parse Parse.ti_expr_and_id input
+        let output = test_parser Parsers.ti_expr_and_id input
         ()
         
             
@@ -92,7 +84,7 @@ module ParseTests =
     [<InlineData("enum C = {  'One', 'Two',   'Three'}")>]
     let ``test enum`` arg =
         let input = arg
-        let output = parse Parse.enum_item input
+        let output = test_parser Parsers.enum_item input
         ()        
         
     
@@ -102,7 +94,7 @@ module ParseTests =
     [<InlineData("type C = tuple(bool, tuple(int, string))")>]
     let ``test type alias`` arg =
         let input = arg
-        let output = parse Parse.alias_item input
+        let output = test_parser Parsers.alias_item input
         ()
         
     [<Theory>]
@@ -113,7 +105,7 @@ module ParseTests =
     [<InlineData("(  (3))")>]
     let ``test num expr atom simple`` arg =
         let input = arg
-        let output = parse Parse.num_expr_atom_head input
+        let output = test_parser Parsers.num_expr_atom_head input
         ()
         
     [<Theory>]
@@ -121,7 +113,7 @@ module ParseTests =
     [<InlineData("+300.2")>]
     let ``test num unary op`` arg =
         let input = arg
-        let output = parse Parse.num_expr_atom_head input
+        let output = test_parser Parsers.num_expr_atom_head input
         ()        
         
     [<Theory>]
@@ -130,16 +122,23 @@ module ParseTests =
     [<InlineData("A `something` B")>]
     let ``test num binary op`` arg =
         let input = arg
-        let output = parse Parse.num_expr_atom_head input
+        let output = test_parser Parsers.num_expr_atom_head input
         ()        
         
     [<Theory>]
     [<InlineData("let {int: a = 2} in a;")>]
     let ``test expr`` arg =
         let input = arg
-        let output = parse Parse.expr input
+        let output = test_parser Parsers.expr input
         ()
         
-        
-        
+    [<Theory>]
+    [<InlineData("constraint (
+( ( Formula[1] > 0 ) == assignment[1] ) \/ 
+  ( ( Formula[2] > 0 ) == assignment[2] )
+ );")>]
+    let ``test xd`` arg =
+        let input = arg
+        let output = test_parser Parsers.model input
+        ()        
         

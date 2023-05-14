@@ -12,13 +12,22 @@ open Fake.Tools
 open MiniZinc.Build
 
 let cwd = di __SOURCE_DIRECTORY__
-let obj = cwd <//> "obj"
 let root = cwd.Parent
-let src = root <//> "src"
-let tests = root <//> "tests"
-let test_proj_dir = tests <//> "MiniZinc.Net.Tests"
+
+let src_name = "MiniZinc.Net"
+let src_dir = root <//> "src"
+let src_proj_dir = src_dir <//> src_name
+let src_proj_file = src_proj_dir </> $"{src_name}.fs"
+
+let test_name = "MiniZinc.Net.Tests"
+let test_dir = root <//> "tests"
+let test_proj_dir = test_dir <//> test_name
 let test_proj_file = test_proj_dir </> "MiniZinc.Net.Tests.fsproj"
-let test_examples_dir = test_proj_dir <//> "examples"
+
+let obj = cwd <//> "obj"
+let examples_dir = test_proj_dir <//> "examples"
+let example_tests_file = test_proj_dir </> "ExampleTests.fs"
+
 
 
 /// <summary>
@@ -31,7 +40,7 @@ let test_examples_dir = test_proj_dir <//> "examples"
 /// and copy all of the example tests into
 /// this repo.
 /// </remarks>
-let download_test_examples () =
+let download_test_models () =
     let minizinc_repo = "https://github.com/MiniZinc/libminizinc"
     let clone_dir = obj <//> "libminizinc"
     let clone_path = "tests/spec/examples"
@@ -39,8 +48,8 @@ let download_test_examples () =
     Directory.delete clone_dir.FullName
     Directory.create clone_dir.FullName
 
-    Directory.delete test_examples_dir.FullName
-    Directory.create test_examples_dir.FullName
+    Directory.delete examples_dir.FullName
+    Directory.create examples_dir.FullName
     
     let git = git clone_dir
 
@@ -55,21 +64,85 @@ let download_test_examples () =
         |> DirectoryInfo.copyRecursiveToWithFilter
                true
                (fun dir file -> file.Extension = ".mzn")
-               test_examples_dir
-               
+               examples_dir
     
     File.writeNew
-        (test_examples_dir </> "README.md" |> string)
+        (examples_dir </> "README.md" |> string)
         [$"All of the files in folder were sourced from {minizinc_repo} under {clone_path}"]
      
-    Trace.log $"Downloaded {mzn_files.Length} files to {test_examples_dir}"
+    Trace.log $"Downloaded {mzn_files.Length} files to {examples_dir}"
     
+/// <summary>
+/// Create a test suite from MiniZinc Examples
+/// </summary>
+/// <remarks>
+/// For each model we downloaded from the MiniZinc
+/// test suite we create our own test in a dedicated
+/// module. 
+/// </remarks>
+let create_test_suite() =
+        
+    let mutable code = """module MiniZinc.Net.Tests.ExampleTests
 
+open MiniZinc
+open Xunit
+open System.IO
+
+let example_dir =
+    $"{__SOURCE_DIRECTORY__}/examples"
+
+type TestSpec =
+    { Name   : string 
+    ; File   : FileInfo
+    ; String : string }
+    
+    static member create name =
+        let file = FileInfo $"{example_dir}/{name}.mzn"
+        let string = File.ReadAllText file.FullName
+        let spec = { Name = name ; File = file; String = string }
+        spec
+    
+let test (spec: TestSpec) =
+    let model = Model.parseString spec.String
+    model
+
+"""
+
+    let examples =
+        examples_dir
+        |> DirectoryInfo.getMatchingFiles "*.mzn"
+
+    for example in examples do
+        let name = example.NameWithoutExtension
+        let test_case = $"""
+[<Fact>]
+let ``test {name}`` () =
+    let spec = TestSpec.create "{name}" 
+    let result = test spec
+    ()
+    """
+        code <- code + "\n" + test_case
+    
+    File.writeString
+        false
+        example_tests_file.FullName
+        code
+ 
 let init() =
 
-    Target.create "DownloadTestExamples" <| fun _ ->
-        download_test_examples ()
-   
+    Target.create "DownloadTestModels" <| fun _ ->
+        download_test_models ()
+        
+    Target.create "CreateTestSuite" <| fun _ ->
+        create_test_suite ()
+        
+    Target.create "All" <| fun _ ->
+        ()        
+
+    "DownloadTestModels"
+        ==> "CreateTestSuite"
+        ==> "All"
+        
     
 [<EntryPoint>]
 let main args =
@@ -80,5 +153,5 @@ let main args =
     |> Context.setExecutionContext
     
     init ()
-    Target.runOrDefaultWithArguments "DownloadTestExamples"
+    Target.runOrDefaultWithArguments "All"
     0

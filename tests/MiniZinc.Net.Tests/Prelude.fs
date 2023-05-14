@@ -2,10 +2,24 @@
 
 open System.Runtime.CompilerServices
 open FluentAssertions
+open MiniZinc
 
-[<Extension>]
-type Prelude() =
+[<AutoOpen>]
+module Prelude =
     
+    let test_parser parser input =
+        match Parse.string parser input with
+        | Result.Ok ok ->
+            ok
+        | Result.Error err ->
+            let trace = err.Trace
+            let msg = err.Message
+            failwith msg
+
+
     [<Extension>]
-    static member ShouldEqual(a: obj, b: string) =
-        (string a).Should().Be(b, "")
+    type Extensions() =
+        
+        [<Extension>]
+        static member ShouldEqual(a: obj, b: string) =
+            (string a).Should().Be(b, "")

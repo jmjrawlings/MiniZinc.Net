@@ -2,6 +2,7 @@
 
 open MiniZinc.Parse
 
+[<AutoOpen>]
 module rec Model =
 
     open System
@@ -21,7 +22,7 @@ module rec Model =
         static member ParseFile (file: FileInfo) =
             Model.parseFile file
             
-        static member Parse (model: string) =
+        static member ParseString (model: string) =
             Model.parseString model
             
         
@@ -34,12 +35,9 @@ module rec Model =
             ; String = "" }
             
         let parseFile file =
-            Parse.file file
-            empty
+            Parse.file Parsers.model file
             
-            
-        let parseString model =
-            Parse.model model
-            empty
+        let parseString string =
+            Parse.string Parsers.model string
                     
             

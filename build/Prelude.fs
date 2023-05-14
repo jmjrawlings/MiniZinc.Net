@@ -34,3 +34,9 @@ module Prelude =
         |> CreateProcess.ensureExitCode
         |> Proc.run
         
+        
+    type FileInfo with
+        member this.NameWithoutExtension =
+            Path.GetFileNameWithoutExtension this.FullName
+        
+        
