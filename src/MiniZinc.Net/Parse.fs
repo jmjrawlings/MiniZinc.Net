@@ -1,6 +1,7 @@
 ﻿namespace MiniZinc
 
 open System
+open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
 open FParsec
@@ -58,7 +59,7 @@ module ParseUtils =
         p <?> label <!> label
     #else
     let (<?!>) (p: P<'t>) label : P<'t> =
-        p <?> label <!> label
+        p <?> label
     #endif        
         
     let chr x =
@@ -218,6 +219,36 @@ module AST =
     type UnaryOp = string
     
     type Op = string
+    
+    [<DebuggerDisplay("{ToString()}")>]
+    [<Struct>]
+    type Ref<'T> =
+        | Value of value:'T
+        | Name of name:string
+        
+        member this.ToString() =
+            match this with
+            | Value v -> string v
+            | Name s -> s
+            
+        member this.Value =
+            match this with
+            | Value v -> v
+            | _ -> failwith $"Ref was a Value"
+            
+        member this.Name =
+            match this with
+            | Name name -> name
+            | _ -> failwith $"Ref was a Name"
+            
+        member this.IsValue =
+            match this with
+            | Value _ -> true | _ -> false
+            
+        member this.IsName =
+            match this with
+            | Value _ -> false | _ -> true
+        
                 
     type SolveMethod =
         | Satisfy = 0
@@ -247,20 +278,18 @@ module AST =
         | ArrayCompIndex
         | Tuple         of TupleExpr
         | Record        of RecordExpr
-        | UnaryOp       of (UnaryOp OrId) * Expr
-        | BinaryOp      of Expr * (BinaryOp OrId) * Expr
+        | UnaryOp       of Ref<UnaryOp> * Expr
+        | BinaryOp      of Expr * Ref<BinaryOp> * Expr
         | Annotation
         | IfThenElse    of IfThenElseExpr
         | Let           of LetExpr
         | Call          of CallExpr
         | Indexed       of expr:Expr * index: ArrayAccess list
-
-    and OrId<'T> = Choice<'T, string>
     
     and ArrayAccess = Expr list
     
     and CallExpr =
-        { Name: Op OrId
+        { Name: Ref<Op>
         ; Args: Expr list }
     
     and SetExpr = Expr list
@@ -306,12 +335,13 @@ module AST =
         | Call        of CallExpr
         | IfThenElse  of IfThenElseExpr
         | Let         of LetExpr
-        | UnaryOp     of (NumericUnaryOp OrId) * NumExpr
-        | BinaryOp    of NumExpr * (NumericBinaryOp OrId) * NumExpr
+        | UnaryOp     of Ref<NumericUnaryOp> * NumExpr
+        | BinaryOp    of NumExpr * Ref<NumericBinaryOp> * NumExpr
         | ArrayAccess of NumExpr * ArrayAccess list
             
     and NumericUnaryOp = string
     and NumericBinaryOp = string
+    and Wildcard = unit
     
     and Enum =
         { Name : string
@@ -443,33 +473,34 @@ module Parsers =
         <|> multi_line_comment
         |>> (fun s -> s.Trim())
             
-    // Try to parse with the given operation parser.
-    // if it succeeds then Builtin constructor
-    // is used, otherwise Custom.  
-    let private or_id (p: P<'T>) : P<'T OrId> =
-        let builtin =
-            p |>> Choice1Of2
-        let custom =
+    let value_or_quoted_name (p: P<'T>) : P<Ref<'T>> =
+        
+        let value =
+            p |>> Ref.Value
+        
+        let name =
             simple_ident
             |> between(BACKTICK, BACKTICK)
-            |>> Choice2Of2
-        builtin
-        <|> custom
+            |> attempt
+            |>> Ref.Name
+            
+        name <|> value
+    
+      
+    let name_or_quoted_value (p: P<'T>) : P<Ref<'T>> =
         
-    // Try to parse with the given operation parser.
-    // if it succeeds then Builtin constructor
-    // is used, otherwise Custom.  
-    let private id_or if_id if_other p =
-        let id =
-            ident
-            |>> if_id
-        let other =
+        let name =
+            ident |>> Ref.Name
+        
+        let value =
             p
             |> between(SINGLE_QUOTE, SINGLE_QUOTE)
             |> attempt
-            |>> if_other
-        other <|> id
-    
+            |>> Ref.Value
+        
+        value <|> name  
+        
+        
     // <int-literal>
     let int_literal =
         many1Satisfy Char.IsDigit
@@ -531,11 +562,11 @@ module Parsers =
         ; "\/"
         ; "xor"
         ; "/\\"
-        ; "<"
-        ; ">"
         ; "<="
         ; ">="
         ; "=="
+        ; "<"
+        ; ">"
         ; "="
         ; "!="
         ; "~="
@@ -550,6 +581,7 @@ module Parsers =
         ; "intersect"
         ; "++"
         ; "default" ]
+        @ builtin_num_bin_ops
         
     let builtin_bin_op : P<string> =
         builtin_bin_ops
@@ -591,20 +623,15 @@ module Parsers =
     let bracketed x =
         betweens('(', ')') x
 
-    let unary =        
-        builtin_un_op
-        |> or_id 
+    let op p =
+        value_or_quoted_name p
         
     let un_op =
-        unary
+        op builtin_un_op
         .>> spaces
         .>>. expr_atom
         <?!> "un-op"
 
-    let bin_op =
-        builtin_bin_op
-        |> or_id
-        
     let builtin_ops =
         builtin_bin_ops @ builtin_un_ops
             
@@ -802,18 +829,39 @@ module Parsers =
         ; range_expr |>> Type.Range ]
         |> choice
         <?!> "base-ti-tail"
-
+    
+    let id_or_op =
+        name_or_quoted_value builtin_op
+    
     // <call-expr>
     let call_expr =
         attempt (
-            (id_or Choice1Of2 Choice2Of2 builtin_op)
+            id_or_op
             .>> spaces
             .>>. between1('(', ')', ',') expr
         )
         |>> (fun (name, args) ->
             { Name=name; Args=args })
         <?!> "call-expr"
-
+        
+    // <comp-tail>        
+    let comp_tail =
+        ()
+        
+    // <generator>
+    let generator =
+        ()
+        
+    // <gen-call-expr>
+    let gen_call_expr =
+        attempt (
+            id_or_op
+            .>> spaces
+            .>>. between1('(', ')', ',') comp_tail
+            .>> spaces
+            .>>. between1('(', ')', ',') expr
+        )
+        
     // <declare-item>
     let var_decl_item =
         ti_expr_and_id
@@ -882,8 +930,7 @@ module Parsers =
     
     // <num-un-op>    
     let num_un_op =
-        builtin_num_un_op
-        |> or_id
+        op builtin_num_un_op
         .>> spaces
         .>>. num_expr_atom
         <?!> "num-un-op"
@@ -929,13 +976,9 @@ module Parsers =
             )
         <?!> "num-expr-atom"
         
-    let num_bin_op =
-        builtin_num_bin_op
-        |> or_id
-        
     // <num-expr-binop-tail>
     let num_expr_binop_tail =        
-        sps num_bin_op
+        sps (op builtin_num_bin_op)
         .>>. num_expr
         <?!> "num-expr-binop-tail"
 
@@ -990,7 +1033,7 @@ module Parsers =
             
     // <expr-binop-tail>
     let expr_binop_tail =
-        sps bin_op .>>. expr
+        sps (op builtin_bin_op) .>>. expr
             
     // <expr>
     expr_ref.contents <-
