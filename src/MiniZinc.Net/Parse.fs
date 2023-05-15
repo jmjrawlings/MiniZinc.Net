@@ -71,8 +71,8 @@ module ParseUtils =
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
         
-    let (=>) key value =
-        pstring key >>% value
+        
+        
 
     /// <summary>
     /// Overloaded methods that clean up parsing code a bit
@@ -226,28 +226,10 @@ module AST =
         | Value of value:'T
         | Name of name:string
         
-        member this.ToString() =
+        override this.ToString() =
             match this with
             | Value v -> string v
             | Name s -> s
-            
-        member this.Value =
-            match this with
-            | Value v -> v
-            | _ -> failwith $"Ref was a Value"
-            
-        member this.Name =
-            match this with
-            | Name name -> name
-            | _ -> failwith $"Ref was a Name"
-            
-        member this.IsValue =
-            match this with
-            | Value _ -> true | _ -> false
-            
-        member this.IsName =
-            match this with
-            | Value _ -> false | _ -> true
         
                 
     type SolveMethod =
@@ -284,9 +266,20 @@ module AST =
         | IfThenElse    of IfThenElseExpr
         | Let           of LetExpr
         | Call          of CallExpr
+        | GenCall       of GenCallExpr 
         | Indexed       of expr:Expr * index: ArrayAccess list
     
     and ArrayAccess = Expr list
+    
+    and GenCallExpr =
+        { Name: Ref<Op>
+        ; Expr : Expr
+        ; Generators : Generator list  }
+    
+    and Generator =
+        { Vars: string list
+        ; Source : Expr
+        ; Where : Expr option }
     
     and CallExpr =
         { Name: Ref<Op>
@@ -472,6 +465,9 @@ module Parsers =
         single_line_comment
         <|> multi_line_comment
         |>> (fun s -> s.Trim())
+        
+    let (=>) (key: string) (value) =
+        pstring key >>% value
             
     let value_or_quoted_name (p: P<'T>) : P<Ref<'T>> =
         
@@ -844,14 +840,34 @@ module Parsers =
             { Name=name; Args=args })
         <?!> "call-expr"
         
-    // <comp-tail>        
+    let wildcard =
+        p '_'
+        >>. notFollowedBy letter
+        >>% Wildcard
+        
+    // <comp-tail>
     let comp_tail =
-        ()
-        
-    // <generator>
-    let generator =
-        ()
-        
+        let var =
+            (wildcard |>> Ref.Value)
+            <|>
+            (ident |>> Ref.Name)
+        let vars =
+            sepBy1 var (sps ',')
+        let where =
+            kw1 "where" >>. expr
+        let generator =    
+            vars
+            .>> sps "in"
+            .>>. expr
+            .>>. (opt where)
+        let generators =
+            sepBy1 generator (sps ",")
+            
+            
+        generators    
+               
+            
+            
     // <gen-call-expr>
     let gen_call_expr =
         attempt (
