@@ -103,8 +103,9 @@ type TestSpec =
         spec
     
 let test (spec: TestSpec) =
-    let model = Model.parseString spec.String
-    model
+    let result = test_parser Parsers.model spec.String
+    result
+    
 
 """
 

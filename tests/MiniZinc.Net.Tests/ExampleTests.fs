@@ -19,12 +19,11 @@ type TestSpec =
         spec
     
 let test (spec: TestSpec) =
-    match Model.parseString spec.String with
-    | Ok model ->
-        model
-    | Error err->
-        let trace = err.Trace
-        failwith err.Message
+    let result = test_parser Parsers.model spec.String
+    result
+    
+
+
 
 [<Fact>]
 let ``test 2DPacking`` () =

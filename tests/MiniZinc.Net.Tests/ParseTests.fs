@@ -127,7 +127,7 @@ module ParseTests =
         
     [<Theory>]
     [<InlineData("% 12312312")>]
-    [<InlineData("/* somethign */")>]
+    [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
         let input = arg
         let output = test_parser Parsers.comment input
@@ -136,7 +136,24 @@ module ParseTests =
         
     [<Theory>]
     [<InlineData("let {int: a = 2} in a;")>]
-    let ``test expr`` arg =
+    let ``test let`` arg =
+        let input = arg
+        let output = test_parser Parsers.expr input
+        ()
+        
+    [<Theory>]
+    [<InlineData("array2d(ROW, COL, []);")>]
+    let ``test call`` arg =
+        let input = arg
+        let output = test_parser Parsers.call_expr input
+        ()
+        
+    [<Theory>]
+    [<InlineData("[];")>]
+    [<InlineData("[||];")>]
+    [<InlineData("[|1,2,3|2,3,4|4,5,6|];")>]
+    [<InlineData("[true, false, X, true];")>]
+    let ``test array literals`` arg =
         let input = arg
         let output = test_parser Parsers.expr input
         ()

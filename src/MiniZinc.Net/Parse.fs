@@ -239,9 +239,9 @@ module AST =
         | Bracketed of Expr
         | Set       of SetExpr
         | SetComp  
-        | Array1d
+        | Array1d   of Expr list
         | Array1dIndex
-        | Array2d
+        | Array2d   of Expr list list
         | Array2dIndex
         | ArrayComp
         | ArrayCompIndex
@@ -414,9 +414,21 @@ module Parsers =
         
     // <ident>
     let ident : P<string> =
-        regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'|"
+        regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
         <?!> "identifier"
 
+    // Parse a keyword
+    // eg: 'function'
+    let kw (name: string) =
+        p name
+        .>> notFollowedBy letter
+        >>. spaces
+        
+    // Parse a keyword
+    let kw1 (name: string) =
+        p name
+        .>> notFollowedBy letter
+        >>. spaces1
     
     let single_line_comment : P<string> =
         p '%' >>.
@@ -462,27 +474,26 @@ module Parsers =
     let int_literal =
         many1Satisfy Char.IsDigit
         |>> int
-        <?!> "int-literal"
     
     // <bool-literal>    
     let bool_literal : P<bool> =
-        (p "true" >>% true)
-        <|>
-        (p "false" >>% false)
-        <?!> "bool-literal"
+        lookup(
+            "true" => true,
+            "false" => false
+            )
         
     // <float-literal>        
     let float_literal : P<float> =
-        regex "[0-9]+.[0-9]+"
-        |>> float
-        <?!> "float-literal"
+        regex "[0-9]+\.[0-9]+"
+        |>> (fun s ->
+            float s
+            )
         
     // <string-literal>
     let string_literal : P<string> =
         manySatisfy (fun c -> c <> '"')
         |> between('"', '"')
-        <?!> "string-literal"
-
+    
     // <builtin-num-un-op>
     let builtin_num_un_ops =
         [ "+" ; "-" ]
@@ -609,7 +620,22 @@ module Parsers =
         .>>. num_expr
         |> attempt
         <?!> "range-expr"
-
+    
+    // <array1d-literal>
+    let array1d_literal =
+        between('[', ']', ',') expr
+        <?!> "array1d"
+        
+    // <array2d-literal>
+    let array2d_literal =
+        let row_item = expr
+        let row_expr = sepBy row_item (sps ',')
+        let row_delim = attempt ((p '|') >>. notFollowedBy (p ']'))
+        
+        row_expr
+        |> between(p "[|", p "|]", row_delim, ws=true, many=false)
+        <?!> "array2d"
+   
     // <ti-expr-and-id>
     let ti_expr_and_id : P<TypeInst> =
         ti_expr
@@ -637,15 +663,15 @@ module Parsers =
         
     // <predicate-item>
     let predicate_item : P<PredicateItem> =
-        ps1 "predicate" >>. operation_item_tail
+        kw1 "predicate" >>. operation_item_tail
 
     // <test_item>
     let test_item : P<TestItem> =
-        ps1 "test" >>. operation_item_tail
+        kw1 "test" >>. operation_item_tail
         
     // <function-item>
     let function_item : P<FunctionItem> =
-        ps1 "function"
+        kw1 "function"
         >>. ti_expr
         .>> sps ':'
         .>>. operation_item_tail
@@ -667,7 +693,7 @@ module Parsers =
             enum_case
             |> between('{', '}', ',')
             
-        ps "enum"
+        kw1 "enum"
         >>. ident
         .>> sps1 '='
         .>>. opt_or [] members
@@ -677,7 +703,7 @@ module Parsers =
     
     // <include-item>
     let include_item : P<string> =
-        ps1 "include"
+        kw1 "include"
         >>. string_literal
         <?!> "include-item"
         
@@ -753,13 +779,13 @@ module Parsers =
 
     // <tuple-ti-expr-tail>
     let tuple_ti =
-        ps "tuple"
+        kw "tuple"
         >>. between1('(', ')', ',') ti_expr
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
     let record_ti =
-        ps "record"
+        kw "record"
         >>. between1('(', ')', ',') ti_expr_and_id
         <?!> "record-ti"
             
@@ -779,10 +805,11 @@ module Parsers =
 
     // <call-expr>
     let call_expr =
-        (id_or Choice1Of2 Choice2Of2 builtin_op)
-        .>> spaces
-        .>>. between1('(', ')', ',') expr
-        |> attempt
+        attempt (
+            (id_or Choice1Of2 Choice2Of2 builtin_op)
+            .>> spaces
+            .>>. between1('(', ')', ',') expr
+        )
         |>> (fun (name, args) ->
             { Name=name; Args=args })
         <?!> "call-expr"
@@ -795,7 +822,7 @@ module Parsers =
 
     // <constraint-item>
     let constraint_item =
-        ps1 "constraint"
+        kw "constraint"
         >>. expr
         <?!> "constraint"
         
@@ -807,7 +834,7 @@ module Parsers =
     
     // <let-expr>
     let let_expr : P<LetExpr> =
-        ps "let"
+        kw "let"
         >>. between('{', '}', ';') let_item
         .>> sps1 "in"
         .>>. expr
@@ -818,19 +845,19 @@ module Parsers =
     let if_else_expr : P<IfThenElseExpr> =
         
         let if_case = 
-            ps1 "if"
+            kw1 "if"
             >>. expr
             .>> spaces1
             <?!> "if-case"
             
         let then_case =
-            ps1 "then"
+            kw1 "then"
             >>. expr
             .>> spaces1
             <?!> "else-case"
             
         let elseif_case =
-            ps1 "elseif"
+            kw1 "elseif"
             >>. expr
             .>> sps1 "then"
             >>. expr
@@ -879,8 +906,8 @@ module Parsers =
           bracketed num_expr |>> NumExpr.Bracketed
           let_expr           |>> NumExpr.Let
           if_else_expr       |>> NumExpr.IfThenElse
-          num_un_op          |>> NumExpr.UnaryOp
           call_expr          |>> NumExpr.Call
+          num_un_op          |>> NumExpr.UnaryOp
           quoted_op          |>> NumExpr.Op 
           ident              |>> NumExpr.Id
           ]
@@ -929,18 +956,20 @@ module Parsers =
         
     // <expr-atom-head>    
     let expr_atom_head=
-        [ float_literal  |>> Expr.Float
-          int_literal    |>> Expr.Int
-          bool_literal   |>> Expr.Bool
-          string_literal |>> Expr.String
-          "_"             => Expr.Wildcard
-          bracketed expr |>> Expr.Bracketed
-          let_expr       |>> Expr.Let
-          if_else_expr   |>> Expr.IfThenElse
-          un_op          |>> Expr.UnaryOp
-          call_expr      |>> Expr.Call
-          quoted_op      |>> Expr.Op
-          ident          |>> Expr.Id
+        [ float_literal   |>> Expr.Float
+          int_literal     |>> Expr.Int
+          bool_literal    |>> Expr.Bool
+          string_literal  |>> Expr.String
+          "_"              => Expr.Wildcard
+          bracketed expr  |>> Expr.Bracketed
+          let_expr        |>> Expr.Let
+          if_else_expr    |>> Expr.IfThenElse
+          call_expr       |>> Expr.Call
+          array2d_literal |>> Expr.Array2d
+          array1d_literal |>> Expr.Array1d
+          un_op           |>> Expr.UnaryOp
+          quoted_op       |>> Expr.Op
+          ident           |>> Expr.Id
           ]
         |> choice
         <?!> "expr-atom-head"
@@ -992,7 +1021,7 @@ module Parsers =
     // <solve-item>
     let solve_item : P<SolveItem> =
         pipe3
-            (ps1 "solve" >>. annotations)
+            (kw1 "solve" >>. annotations)
             (sps solve_method)
             (opt expr)
             (fun annos method obj ->
@@ -1009,8 +1038,7 @@ module Parsers =
         
     // <assign-item>
     let assign_item =
-        ident
-        .>> sps1 '='
+        attempt (ident .>> sps1 '=')
         .>>. expr
         <?!> "assign-item"
         
@@ -1019,7 +1047,7 @@ module Parsers =
         
     // <type-inst-syn-item>
     let alias_item =
-            ps1 "type"
+        kw1 "type"
         >>. ident
         .>> sps1 "="
         .>>. ti_expr
@@ -1028,7 +1056,7 @@ module Parsers =
         
     // <output-item>
     let output_item : P<OutputItem> =
-        ps1 "output"
+        kw1 "output"
         >>. expr        
         <?!> "output-item"
 
@@ -1043,8 +1071,8 @@ module Parsers =
         ; predicate_item  |>> Item.Predicate
         ; function_item   |>> Item.Function
         ; test_item       |>> Item.Test
-        ; var_decl_item   |>> Item.Declare
         ; assign_item     |>> Item.Assign
+        ; var_decl_item   |>> Item.Declare
         ; unknown_item    |>> Item.Other ]
         |> choice
                     
