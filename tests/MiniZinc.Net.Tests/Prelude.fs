@@ -8,6 +8,7 @@ open MiniZinc
 module Prelude =
     
     let test_parser parser input =
+        let clean = Parse.clean input
         match Parse.string parser input with
         | Result.Ok ok ->
             ok

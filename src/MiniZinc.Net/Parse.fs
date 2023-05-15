@@ -62,17 +62,8 @@ module ParseUtils =
         p <?> label
     #endif        
         
-    let chr x =
-        pchar x
-        
-    let str x =
-        pstring x
-        
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
-        
-        
-        
 
     /// <summary>
     /// Overloaded methods that clean up parsing code a bit
@@ -91,64 +82,83 @@ module ParseUtils =
     /// </remarks>
     type P () =
         
-        // Parse
+        // parse 
         static member p (x: char): P<char> =
             pchar x
             
+        // parse 
         static member p (x: string) : P<string> =
             pstring x
         
+        // parse spaces
         static member ps x =
             x .>> spaces
-            
+        
+        // parse spaces    
         static member ps (x: string) : P<string> =
             pstring x .>> spaces
             
+        // parse spaces
         static member ps (x: char) : P<char> =
             pchar x .>> spaces
         
+        // parse spaces1
         static member ps1 x =
             x .>> spaces1
-            
+        
+        // parse spaces1    
         static member ps1 (x: string) : P<string> =
             pstring x .>> spaces1
-            
+
+        // parse spaces1                        
         static member ps1 (x: char) : P<char> =
             pchar x .>> spaces1            
-            
+        
+        // space parse space    
         static member sps x =
             between spaces spaces x
         
+        // space parse space
         static member sps (x: string) : P<string> =
             P.sps (pstring x)
             
+        // space parse space            
         static member sps (c: char) : P<char> =
             P.sps (pchar c)
             
+        // space1 parse space1
         static member sps1 x =
             between spaces1 spaces1 x
-        
+
+        // space1 parse space1        
         static member sps1 (x: string) : P<string> =
             P.sps1 (pstring x)
             
+        // space1 parse space1
         static member sps1 (c: char) : P<char> =
             P.sps1 (pchar c)
-            
+        
+        // space parse     
         static member sp x =
             spaces >>. x
-            
+
+        // space parse     
         static member sp (c: char) =
             P.sp (pchar c)
-            
+
+        // space parse     
         static member sp (s: string) =
             P.sp (pstring s)
             
+        // space1 parse
         static member sp1 x =
             spaces1 >>. x
             
+        // space1 parse
         static member sp1 (c: char) =
             P.sp1 (pchar c)
             
+        // space1 parse            
         static member sp1 (s: string) =
             P.sp1 (pstring s)
 
@@ -194,7 +204,7 @@ module ParseUtils =
             
         static member between1 (a:char, b:char, c:char) =
             P.between(a, b, c, many=true)
-           
+
         static member lookup([<ParamArray>] parsers: P<'t>[]) =
             choice parsers
     
@@ -213,6 +223,9 @@ module AST =
         | Bool
         | String
         | Float
+    
+    type Ident = string
+    type WildCard = unit
     
     type BinaryOp = string
         
@@ -242,7 +255,7 @@ module AST =
     type Annotations = Annotation list        
    
     type Expr =
-        | Wildcard
+        | WildCard  of WildCard
         | Int       of int
         | Float     of float
         | Bool      of bool
@@ -273,13 +286,14 @@ module AST =
     
     and GenCallExpr =
         { Name: Ref<Op>
-        ; Expr : Expr
-        ; Generators : Generator list  }
-    
+        ; Generators : Generator list  
+        ; Expr : Expr }
+
+    // eg "x,y in array where x > y"
     and Generator =
-        { Vars: string list
+        { Idents : Ref<Wildcard> list
         ; Source : Expr
-        ; Where : Expr option }
+        ; Where  : Expr option }
     
     and CallExpr =
         { Name: Ref<Op>
@@ -429,25 +443,24 @@ module Parsers =
     
     open AST
     
-    let simple_ident : P<string> =
+    let simple_ident : P<Ident> =
         regex "_?[A-Za-z][A-Za-z0-9_]*"
 
-    let quoted_ident : P<string> =
+    let quoted_ident : P<Ident> =
         regex "'[^'\x0A\x0D\x00]+'"
         
     // <ident>
-    let ident : P<string> =
+    let ident : P<Ident> =
         regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
         <?!> "identifier"
 
-    // Parse a keyword
-    // eg: 'function'
+    // Parse a keyword, ensures its not a part of a larger string
     let kw (name: string) =
         p name
         .>> notFollowedBy letter
         >>. spaces
         
-    // Parse a keyword
+    // Parse a keyword, ensures its not a part of a larger string
     let kw1 (name: string) =
         p name
         .>> notFollowedBy letter
@@ -633,7 +646,7 @@ module Parsers =
             
     let builtin_op : P<string> =
         builtin_ops
-        |> List.map str
+        |> List.map p
         |> choice
         
     // 0 .. 10
@@ -840,13 +853,12 @@ module Parsers =
             { Name=name; Args=args })
         <?!> "call-expr"
         
-    let wildcard =
+    let wildcard : P<WildCard> =
         p '_'
         >>. notFollowedBy letter
-        >>% Wildcard
         
     // <comp-tail>
-    let comp_tail =
+    let comp_tail : P<Generator list> =
         let var =
             (wildcard |>> Ref.Value)
             <|>
@@ -856,33 +868,41 @@ module Parsers =
         let where =
             kw1 "where" >>. expr
         let generator =    
-            vars
-            .>> sps "in"
-            .>>. expr
-            .>>. (opt where)
+            pipe3
+                (vars .>> sps "in")
+                expr
+                (opt where)
+                (fun idents source filter ->
+                    { Idents = idents
+                    ; Source = source
+                    ; Where = filter })
+            
         let generators =
             sepBy1 generator (sps ",")
             
-            
-        generators    
-               
-            
+        generators
             
     // <gen-call-expr>
     let gen_call_expr =
-        attempt (
-            id_or_op
-            .>> spaces
-            .>>. between1('(', ')', ',') comp_tail
-            .>> spaces
-            .>>. between1('(', ')', ',') expr
-        )
+        let name =
+            id_or_op .>> spaces
+        let generators =
+            betweens('(', ')') comp_tail .>> spaces
+        let expr =
+            betweens('(', ')') expr
+        pipe3
+            name
+            generators
+            expr
+            (fun name gens expr ->
+                { Name = name
+                ; Generators = gens
+                ; Expr = expr })
         
     // <declare-item>
     let var_decl_item =
         ti_expr_and_id
-        .>> spaces
-        .>>. opt (ps '=' >>. expr)
+        .>>. opt (sps '=' >>. expr)
 
     // <constraint-item>
     let constraint_item =
@@ -900,7 +920,7 @@ module Parsers =
     let let_expr : P<LetExpr> =
         kw "let"
         >>. between('{', '}', ';') let_item
-        .>> sps1 "in"
+        .>> sps "in"
         .>>. expr
         |>> (fun (items, body) -> {Items=items; Body=body})
         <?!> "let-expr"
@@ -909,19 +929,19 @@ module Parsers =
     let if_else_expr : P<IfThenElseExpr> =
         
         let if_case = 
-            kw1 "if"
+            kw "if"
             >>. expr
             .>> spaces1
             <?!> "if-case"
             
         let then_case =
-            kw1 "then"
+            kw "then"
             >>. expr
             .>> spaces1
             <?!> "else-case"
             
         let elseif_case =
-            kw1 "elseif"
+            kw "elseif"
             >>. expr
             .>> sps1 "then"
             >>. expr
@@ -957,10 +977,13 @@ module Parsers =
         |> attempt
     
     // <array-acces-tail>
-    let array_access =
+    let array_access : P<ArrayAccess> =
         expr
         |> between1('[', ']', ',')
         <?!> "array-access"
+        
+    let expr_atom_tail =
+        (many (attempt (sp array_access)))
 
     // <num-expr-atom-head>    
     let num_expr_atom_head=
@@ -981,7 +1004,7 @@ module Parsers =
     num_expr_atom_ref.contents <-
         pipe2
             num_expr_atom_head
-            (many (attempt(sp array_access)))
+            expr_atom_tail            
             (fun head access ->
                 match access with
                 | []->
@@ -1010,8 +1033,7 @@ module Parsers =
                 | Some (op, right) ->
                     NumExpr.BinaryOp (head, op, right)
             )
-        <?!> "num-expr"
-        
+        <?!> "num-expr"        
         
     // <expr-atom-head>    
     let expr_atom_head=
@@ -1019,10 +1041,11 @@ module Parsers =
           int_literal     |>> Expr.Int
           bool_literal    |>> Expr.Bool
           string_literal  |>> Expr.String
-          "_"              => Expr.Wildcard
+          wildcard        |>> Expr.WildCard
           bracketed expr  |>> Expr.Bracketed
           let_expr        |>> Expr.Let
           if_else_expr    |>> Expr.IfThenElse
+          gen_call_expr   |>> Expr.GenCall
           call_expr       |>> Expr.Call
           array2d_literal |>> Expr.Array2d
           array1d_literal |>> Expr.Array1d
@@ -1037,7 +1060,7 @@ module Parsers =
     expr_atom_ref.contents <-
         pipe2
             expr_atom_head
-            (many (attempt(sp array_access)))
+            expr_atom_tail
             (fun head tail ->
                 match tail with
                 | [] ->
@@ -1141,12 +1164,39 @@ module Parsers =
 
 
 module Parse =
+    
+    // Clean the input string by removing any
+    // blank lines and line comments
+    let clean (input: string) =
+        use reader = new StringReader(input)
+        use writer = new StringWriter()
+        let rec loop() =
+            match reader.ReadLine() with
+            | null ->
+                ()
+            | "" ->
+                loop()
+            | line ->
+                match line.IndexOf('%') with
+                | 0 ->
+                    loop ()
+                | -1 ->
+                    writer.WriteLine line
+                    loop()
+                | i ->
+                    let comment = line.Substring(i)
+                    let clean = line.Substring(0, i).Trim()
+                    writer.WriteLine clean
+                    loop()
+        loop()
+        let output = writer.ToString()
+        output
                             
     // Parse the given string with the given parser            
     let string (parser: P<'t>) (input: string) =
-        let lexed = input.Trim()
+        let cleaned = clean input
         let state = { Debug = { Message = ""; Indent = 0 } }
-        match runParserOnString parser state "" lexed with
+        match runParserOnString parser state "" cleaned with
         | Success (value, _, _)     ->
             Result.Ok value
         | Failure (s, msg, state) ->

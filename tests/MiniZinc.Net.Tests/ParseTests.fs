@@ -159,12 +159,14 @@ module ParseTests =
         ()
         
     [<Theory>]
-    [<InlineData("constraint (
-( ( Formula[1] > 0 ) == assignment[1] ) \/ 
-  ( ( Formula[2] > 0 ) == assignment[2] )
- );")>]
-    let ``test xd`` arg =
+    [<InlineData("forall (x in XS) (x > 0);")>]
+    let ``test generator`` arg =
         let input = arg
-        let output = test_parser Parsers.model input
+        let output = test_parser Parsers.gen_call_expr input
         ()        
         
+    [<Fact>]
+    let test_xd () =
+        let input = "constraint -76706*x[0];"
+        let output = test_parser Parsers.constraint_item input
+        ()
