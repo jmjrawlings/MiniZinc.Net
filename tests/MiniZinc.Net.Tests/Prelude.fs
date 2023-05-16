@@ -6,9 +6,9 @@ open MiniZinc
 
 [<AutoOpen>]
 module Prelude =
-    
-    let test_parser parser input =
-        let clean = Parse.clean input
+            
+    // Test parsing the string, no sanitizing occurs    
+    let test_parse_raw parser input =
         match Parse.string parser input with
         | Result.Ok ok ->
             ok
@@ -16,6 +16,11 @@ module Prelude =
             let trace = err.Trace
             let msg = err.Message
             failwith msg
+            
+    // Test parsing the string, it is sanitized first            
+    let test_parse parser input =
+        let clean = Parse.sanitize input
+        test_parse_raw parser clean
 
 
     [<Extension>]

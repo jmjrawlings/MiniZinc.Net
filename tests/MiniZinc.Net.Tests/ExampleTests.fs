@@ -19,7 +19,7 @@ type TestSpec =
         spec
     
 let test (spec: TestSpec) =
-    let result = test_parser Parsers.model spec.String
+    let result = test_parse Parsers.model spec.String
     result
     
 

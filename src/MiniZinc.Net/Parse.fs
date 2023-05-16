@@ -6,10 +6,18 @@ open System.IO
 open System.Runtime.InteropServices
 open FParsec
 
+type ParseError =
+    { Message: string
+    ; Trace: string }
+
+exception ParseException of ParseError
+
+type ParseResult<'T> = Result<'T, ParseError>
+
+
 module ParseUtils =
     type DebugInfo = { Message: string; Indent: int }
     type UserState = { mutable Debug: DebugInfo }
-    type Error = { Message: string; Trace: string; }
     type P<'t> = Parser<'t, UserState>
     [<Struct>] type DebugEvent<'a> = Enter | Leave of Reply<'a>
     
@@ -233,16 +241,22 @@ module AST =
     
     type Op = string
     
-    [<DebuggerDisplay("{ToString()}")>]
+    [<DebuggerDisplay("{String}")>]
     [<Struct>]
-    type Ref<'T> =
+    // A value of 'T' or an identifier
+    type IdentOr<'T> =
         | Value of value:'T
-        | Name of name:string
+        | Ident of name:string
         
-        override this.ToString() =
+        member this.String =
             match this with
             | Value v -> string v
-            | Name s -> s
+            | Ident s -> s
+            
+        
+        override this.ToString() =
+            this.String
+            
         
                 
     type SolveMethod =
@@ -273,8 +287,8 @@ module AST =
         | ArrayCompIndex
         | Tuple         of TupleExpr
         | Record        of RecordExpr
-        | UnaryOp       of Ref<UnaryOp> * Expr
-        | BinaryOp      of Expr * Ref<BinaryOp> * Expr
+        | UnaryOp       of IdentOr<UnaryOp> * Expr
+        | BinaryOp      of Expr * IdentOr<BinaryOp> * Expr
         | Annotation
         | IfThenElse    of IfThenElseExpr
         | Let           of LetExpr
@@ -285,18 +299,18 @@ module AST =
     and ArrayAccess = Expr list
     
     and GenCallExpr =
-        { Name: Ref<Op>
+        { Name: IdentOr<Op>
         ; Generators : Generator list  
         ; Expr : Expr }
 
     // eg "x,y in array where x > y"
     and Generator =
-        { Idents : Ref<Wildcard> list
+        { Idents : IdentOr<Wildcard> list
         ; Source : Expr
         ; Where  : Expr option }
     
     and CallExpr =
-        { Name: Ref<Op>
+        { Name: IdentOr<Op>
         ; Args: Expr list }
     
     and SetExpr = Expr list
@@ -342,8 +356,8 @@ module AST =
         | Call        of CallExpr
         | IfThenElse  of IfThenElseExpr
         | Let         of LetExpr
-        | UnaryOp     of Ref<NumericUnaryOp> * NumExpr
-        | BinaryOp    of NumExpr * Ref<NumericBinaryOp> * NumExpr
+        | UnaryOp     of IdentOr<NumericUnaryOp> * NumExpr
+        | BinaryOp    of NumExpr * IdentOr<NumericBinaryOp> * NumExpr
         | ArrayAccess of NumExpr * ArrayAccess list
             
     and NumericUnaryOp = string
@@ -482,30 +496,30 @@ module Parsers =
     let (=>) (key: string) (value) =
         pstring key >>% value
             
-    let value_or_quoted_name (p: P<'T>) : P<Ref<'T>> =
+    let value_or_quoted_name (p: P<'T>) : P<IdentOr<'T>> =
         
         let value =
-            p |>> Ref.Value
+            p |>> IdentOr.Value
         
         let name =
             simple_ident
             |> between(BACKTICK, BACKTICK)
             |> attempt
-            |>> Ref.Name
+            |>> IdentOr.Ident
             
         name <|> value
     
       
-    let name_or_quoted_value (p: P<'T>) : P<Ref<'T>> =
+    let name_or_quoted_value (p: P<'T>) : P<IdentOr<'T>> =
         
         let name =
-            ident |>> Ref.Name
+            ident |>> IdentOr.Ident
         
         let value =
             p
             |> between(SINGLE_QUOTE, SINGLE_QUOTE)
             |> attempt
-            |>> Ref.Value
+            |>> IdentOr.Value
         
         value <|> name  
         
@@ -525,9 +539,7 @@ module Parsers =
     // <float-literal>        
     let float_literal : P<float> =
         regex "[0-9]+\.[0-9]+"
-        |>> (fun s ->
-            float s
-            )
+        |>> float
         
     // <string-literal>
     let string_literal : P<string> =
@@ -860,44 +872,45 @@ module Parsers =
     // <comp-tail>
     let comp_tail : P<Generator list> =
         let var =
-            (wildcard |>> Ref.Value)
+            (wildcard |>> IdentOr.Value)
             <|>
-            (ident |>> Ref.Name)
+            (ident |>> IdentOr.Ident)
+            <?!> "gen-var"
         let vars =
-            sepBy1 var (sps ',')
+            sepBy1 (ps var) (ps ",")
+            <?!> "gen-vars"
         let where =
             kw1 "where" >>. expr
+            <?!> "gen-where"
         let generator =    
             pipe3
                 (vars .>> sps "in")
-                expr
+                (ps expr)
                 (opt where)
                 (fun idents source filter ->
                     { Idents = idents
                     ; Source = source
                     ; Where = filter })
+            <?!> "generator"
             
         let generators =
             sepBy1 generator (sps ",")
             
         generators
+        <?!> "comp_tail"
             
     // <gen-call-expr>
     let gen_call_expr =
-        let name =
-            id_or_op .>> spaces
-        let generators =
-            betweens('(', ')') comp_tail .>> spaces
-        let expr =
-            betweens('(', ')') expr
         pipe3
-            name
-            generators
-            expr
+            (ps id_or_op)
+            (ps (betweens('(', ')') comp_tail))
+            (betweens('(', ')') expr)
             (fun name gens expr ->
                 { Name = name
                 ; Generators = gens
                 ; Expr = expr })
+        |> attempt
+        <?!> "gen-call"
         
     // <declare-item>
     let var_decl_item =
@@ -1054,7 +1067,6 @@ module Parsers =
           ident           |>> Expr.Id
           ]
         |> choice
-        <?!> "expr-atom-head"
 
     // <expr-atom>        
     expr_atom_ref.contents <-
@@ -1068,7 +1080,6 @@ module Parsers =
                 | access ->
                     Expr.Indexed (head, access)
             )
-        <?!> "expr-atom"
             
     // <expr-binop-tail>
     let expr_binop_tail =
@@ -1165,9 +1176,9 @@ module Parsers =
 
 module Parse =
     
-    // Clean the input string by removing any
+    // Sanitize the input string by removing any
     // blank lines and line comments
-    let clean (input: string) =
+    let sanitize (input: string) : string =
         use reader = new StringReader(input)
         use writer = new StringWriter()
         let rec loop() =
@@ -1192,22 +1203,20 @@ module Parse =
         let output = writer.ToString()
         output
                             
-    // Parse the given string with the given parser            
-    let string (parser: P<'t>) (input: string) =
-        let cleaned = clean input
+    // Parse the given string with the given parser
+    let string (parser: P<'t>) (input: string) : ParseResult<'t> =
         let state = { Debug = { Message = ""; Indent = 0 } }
-        match runParserOnString parser state "" cleaned with
-        | Success (value, _, _)     ->
+        match runParserOnString parser state "" input with
+        | Success (value, _state, _pos) ->
             Result.Ok value
-        | Failure (s, msg, state) ->
-            let error =
-                { Message = s
-                ; Trace = state.Debug.Message }
-            Result.Error error
+        | Failure (msg, err, state) ->
+            let err = { Message = msg; Trace = state.Debug.Message }
+            Result.Error err
             
     // Parse the given file with the given parser
-    let file (parser: P<'t>) (fi: FileInfo) =
+    let file (parser: P<'t>) (fi: FileInfo) : ParseResult<'t> =
         let input = File.ReadAllText fi.FullName
-        let result = string parser input
+        let source = sanitize input
+        let result = string parser source
         result
         

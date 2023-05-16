@@ -14,7 +14,7 @@ module ParseTests =
     [<InlineData("'A name with Quotes'")>]
     let ``test identifier`` arg =
         let input = arg
-        let output = test_parser Parsers.ident input
+        let output = test_parse Parsers.ident input
         ()    
         
     [<Theory>]
@@ -27,7 +27,7 @@ module ParseTests =
     [<InlineData("par set of 'something weird'")>]
     let ``test base type inst`` arg =
         let input = arg
-        let output = test_parser Parsers.base_ti_expr input
+        let output = test_parse Parsers.base_ti_expr input
         ()
         
     [<Theory>]
@@ -35,7 +35,7 @@ module ParseTests =
     [<InlineData("array[int,int] of var float")>]
     let ``test array type inst`` arg =
         let input = arg
-        let output = test_parser Parsers.array_ti_expr input
+        let output = test_parse Parsers.array_ti_expr input
         ()
         
     [<Theory>]
@@ -43,7 +43,7 @@ module ParseTests =
     [<InlineData("record(c: X, set of int: d)")>]
     let ``test record type inst`` arg =
         let input = arg
-        let output = test_parser Parsers.record_ti input
+        let output = test_parse Parsers.record_ti input
         ()
                 
     [<Theory>]
@@ -51,7 +51,7 @@ module ParseTests =
     [<InlineData("tuple(X, 'something else', set of Q)")>]
     let ``test tuple type inst`` arg =
         let input = arg
-        let output = test_parser Parsers.tuple_ti input
+        let output = test_parse Parsers.tuple_ti input
         ()
         
     [<Theory>]
@@ -74,7 +74,7 @@ module ParseTests =
     [<InlineData("tuple(X, 'something else', set of Q): Q")>]
     let ``test type inst and id`` arg =
         let input = arg
-        let output = test_parser Parsers.ti_expr_and_id input
+        let output = test_parse Parsers.ti_expr_and_id input
         ()
         
             
@@ -84,7 +84,7 @@ module ParseTests =
     [<InlineData("enum C = {  'One', 'Two',   'Three'}")>]
     let ``test enum`` arg =
         let input = arg
-        let output = test_parser Parsers.enum_item input
+        let output = test_parse Parsers.enum_item input
         ()        
         
     
@@ -94,7 +94,7 @@ module ParseTests =
     [<InlineData("type C = tuple(bool, tuple(int, string))")>]
     let ``test type alias`` arg =
         let input = arg
-        let output = test_parser Parsers.alias_item input
+        let output = test_parse Parsers.alias_item input
         ()
         
     [<Theory>]
@@ -105,7 +105,7 @@ module ParseTests =
     [<InlineData("(  (3))")>]
     let ``test num expr atom simple`` arg =
         let input = arg
-        let output = test_parser Parsers.num_expr_atom_head input
+        let output = test_parse Parsers.num_expr_atom_head input
         ()
         
     [<Theory>]
@@ -113,7 +113,7 @@ module ParseTests =
     [<InlineData("+300.2")>]
     let ``test num unary op`` arg =
         let input = arg
-        let output = test_parser Parsers.num_expr_atom_head input
+        let output = test_parse Parsers.num_expr_atom_head input
         ()        
         
     [<Theory>]
@@ -122,7 +122,7 @@ module ParseTests =
     [<InlineData("A `something` B")>]
     let ``test num binary op`` arg =
         let input = arg
-        let output = test_parser Parsers.num_expr_atom_head input
+        let output = test_parse Parsers.num_expr_atom_head input
         ()
         
     [<Theory>]
@@ -130,7 +130,7 @@ module ParseTests =
     [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
         let input = arg
-        let output = test_parser Parsers.comment input
+        let output = test_parse_raw Parsers.comment input
         ()
         
         
@@ -138,14 +138,14 @@ module ParseTests =
     [<InlineData("let {int: a = 2} in a;")>]
     let ``test let`` arg =
         let input = arg
-        let output = test_parser Parsers.expr input
+        let output = test_parse Parsers.expr input
         ()
         
     [<Theory>]
     [<InlineData("array2d(ROW, COL, []);")>]
     let ``test call`` arg =
         let input = arg
-        let output = test_parser Parsers.call_expr input
+        let output = test_parse Parsers.call_expr input
         ()
         
     [<Theory>]
@@ -155,18 +155,18 @@ module ParseTests =
     [<InlineData("[true, false, X, true];")>]
     let ``test array literals`` arg =
         let input = arg
-        let output = test_parser Parsers.expr input
+        let output = test_parse Parsers.expr input
         ()
         
     [<Theory>]
     [<InlineData("forall (x in XS) (x > 0);")>]
     let ``test generator`` arg =
         let input = arg
-        let output = test_parser Parsers.gen_call_expr input
+        let output = test_parse Parsers.gen_call_expr input
         ()        
         
     [<Fact>]
     let test_xd () =
         let input = "constraint -76706*x[0];"
-        let output = test_parser Parsers.constraint_item input
+        let output = test_parse Parsers.constraint_item input
         ()
