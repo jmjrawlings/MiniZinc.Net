@@ -186,4 +186,12 @@ module ParseTests =
 );"""
 
         let output = test_parse Parsers.model input
-        () 
+        ()
+
+                
+    [<Fact>]
+    let ``test range expr `` () =
+        let input = """a = array1d(0..z, [x*x | x in 0..z]);"""
+        let output = test_parse Parsers.model input
+        ()
+        

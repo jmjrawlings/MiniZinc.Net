@@ -290,21 +290,21 @@ module AST =
     type Annotations = Annotation list        
    
     type Expr =
-        | WildCard  of WildCard  
-        | Int       of int
-        | Float     of float
-        | Bool      of bool
-        | String    of string
-        | Id        of string
-        | Op        of string
-        | Bracketed of Expr
-        | Set       of SetExpr
-        | SetComp  
-        | Array1d   of Expr list
+        | WildCard      of WildCard  
+        | Int           of int
+        | Float         of float
+        | Bool          of bool
+        | String        of string
+        | Id            of string
+        | Op            of string
+        | Bracketed     of Expr
+        | Set           of SetExpr
+        | SetComp       of SetCompExpr
+        | Array1d       of Array1dExpr
         | Array1dIndex
-        | Array2d   of Expr list list
+        | Array2d       of Array2dExpr
         | Array2dIndex
-        | ArrayComp
+        | ArrayComp     of ArrayCompExpr
         | ArrayCompIndex
         | Tuple         of TupleExpr
         | Record        of RecordExpr
@@ -321,8 +321,16 @@ module AST =
     
     and GenCallExpr =
         { Name: IdentOr<Op>
-        ; Generators : Generator list  
-        ; Expr : Expr }
+        ; Expr : Expr 
+        ; Generators : Generator list }  
+        
+    and ArrayCompExpr =
+        { Expr : Expr         
+        ; Generators : Generator list }
+    
+    and SetCompExpr =
+        { Expr : Expr         
+        ; Generators : Generator list }
 
     // eg "x,y in array where x > y"
     and Generator =
@@ -335,6 +343,10 @@ module AST =
         ; Args: Expr list }
     
     and SetExpr = Expr list
+    
+    and Array1dExpr = Expr list
+    
+    and Array2dExpr = Array1dExpr list
     
     and TupleExpr = Expr list
     
@@ -692,7 +704,12 @@ module Parsers =
     // <array1d-literal>
     let array1d_literal =
         between('[', ']', ',') expr
-        <?!> "array1d"
+        <?!> "array1d-literal"
+        
+    // <set-literal>
+    let set_literal =
+        between('{', '}', ',') expr
+        <?!> "set-literal"        
         
     // <array2d-literal>
     let array2d_literal =
@@ -702,7 +719,7 @@ module Parsers =
             attempt (p '|' >>. notFollowedBy (p ']'))
         row
         |> between(p "[|", p "|]", delim, ws=true, many=false)
-        <?!> "array2d"
+        <?!> "array2d-literal"
    
     // <ti-expr-and-id>
     let ti_expr_and_id : P<TypeInst> =
@@ -774,13 +791,7 @@ module Parsers =
         kw1 "include"
         >>. string_literal
         <?!> "include-item"
-        
-    // A set literal of primitives eg: {1,2,3}
-    let set_literal =
-        expr
-        |> between('{', '}', ',')
-        <?!> "set-literal"
-
+    
     // <var-par>
     let var_par : P<bool> =
         [ "var" => true
@@ -945,7 +956,27 @@ module Parsers =
                 ; Expr = expr })
         |> attempt
         <?!> "gen-call"
-        
+    
+    // <array-comp>
+    let array_comp : P<ArrayCompExpr> =
+        (expr .>> sps '|' .>>. comp_tail)
+        |> betweens('[', ']')
+        |> attempt
+        |>> (fun (expr, gens) -> 
+             { Expr=expr
+             ; Generators = gens })
+        <?!> "array-comp"
+
+    // <set-comp>
+    let set_comp : P<SetCompExpr> =
+        (expr .>> sps '|' .>>. comp_tail)
+        |> betweens('(', ')')
+        |> attempt
+        |>> (fun (expr, gens) -> 
+             { Expr=expr
+             ; Generators = gens })
+        <?!> "set-comp"
+            
     // <declare-item>
     let var_decl_item =
         ti_expr_and_id
@@ -1094,8 +1125,11 @@ module Parsers =
           if_else_expr    |>> Expr.IfThenElse
           gen_call_expr   |>> Expr.GenCall
           call_expr       |>> Expr.Call
+          array_comp      |>> Expr.ArrayComp
+          set_comp        |>> Expr.SetComp
           array2d_literal |>> Expr.Array2d
           array1d_literal |>> Expr.Array1d
+          set_literal     |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           quoted_op       |>> Expr.Op
           ident           |>> Expr.Id
