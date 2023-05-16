@@ -284,10 +284,6 @@ module AST =
         | Satisfy = 0
         | Minimize = 1
         | Maximize = 2
-        
-    type Annotation = string
-
-    type Annotations = Annotation list        
    
     type Expr =
         | WildCard      of WildCard  
@@ -318,6 +314,10 @@ module AST =
         | Indexed       of expr:Expr * index: ArrayAccess list
     
     and ArrayAccess = Expr list
+    
+    and Annotation = Expr
+    
+    and Annotations = Annotation list
     
     and GenCallExpr =
         { Name: IdentOr<Op>
@@ -398,6 +398,7 @@ module AST =
     
     and Enum =
         { Name : string
+        ; Annotations : Annotations
         ; Cases : EnumCase list }
         
     and EnumCase =
@@ -413,12 +414,14 @@ module AST =
     /// everything. 
     /// </remarks>
     and TypeInst =
-        { Type       : Type
-          Name       : string
-          IsVar      : bool
-          IsSet      : bool
-          IsOptional : bool 
-          Dimensions : Type list }
+        { Type        : Type
+          Name        : string
+          IsVar       : bool
+          IsSet       : bool
+          IsOptional  : bool
+          Annotations : Annotations
+          Dimensions  : Type list
+          Expr        : Expr option }
     
     and Type =
         | Int
@@ -463,6 +466,7 @@ module AST =
     and OperationItem =
         { Name: string
           Parameters : TypeInst list
+          Annotations : Annotations
           Body: Expr option }
         
     and FunctionItem =
@@ -475,7 +479,7 @@ module AST =
     
     and AssignItem = string * Expr
     
-    and DeclareItem = TypeInst * Expr option
+    and DeclareItem = TypeInst
     
     and LetItem =
         | Declare of DeclareItem
@@ -672,7 +676,11 @@ module Parsers =
     // <num-expr-atom>
     let num_expr_atom, num_expr_atom_ref =
         createParserForwardedToRef<NumExpr, UserState>()
-            
+        
+    // <num-expr-atom>
+    let annotations, annotations_ref =
+        createParserForwardedToRef<Annotations, UserState>()
+                
     let bracketed x =
         betweens('(', ')') x
 
@@ -704,12 +712,14 @@ module Parsers =
     // <array1d-literal>
     let array1d_literal =
         between('[', ']', ',') expr
+        |> attempt
         <?!> "array1d-literal"
         
     // <set-literal>
     let set_literal =
         between('{', '}', ',') expr
-        <?!> "set-literal"        
+        |> attempt
+        <?!> "set-literal"
         
     // <array2d-literal>
     let array2d_literal =
@@ -737,13 +747,15 @@ module Parsers =
     // <operation-item-tail>
     // eg: even(var int: x) = x mod 2 = 0;
     let operation_item_tail : P<OperationItem> =
-        pipe3
+        pipe4
             (ps ident)
             (ps parameters)
+            (ps annotations)
             (opt (ps "=" >>. expr))
-            (fun name pars body ->
+            (fun name pars anns body ->
                 { Name = name
                 ; Parameters = pars
+                ; Annotations = anns 
                 ; Body = body })
         
     // <predicate-item>
@@ -778,13 +790,15 @@ module Parsers =
             enum_case
             |> between('{', '}', ',')
             
-        kw1 "enum"
-        >>. ident
-        .>> sps1 '='
-        .>>. opt_or [] members
-        |>> (fun (name, members) ->
-            { Name=name
-            ; Cases=List.map EnumCase.Name members })
+        pipe3
+            (kw1 "enum" >>. ident .>> sps '=')
+            (ps annotations)
+            (opt_or [] members)
+            (fun name anns cases ->
+                { Name = name
+                ; Annotations = anns
+                ; Cases = List.map EnumCase.Name cases
+                })
     
     // <include-item>
     let include_item : P<string> =
@@ -829,7 +843,9 @@ module Parsers =
                 ; IsSet = set
                 ; Name = ""
                 ; Dimensions = []
-                ; IsVar = var }
+                ; IsVar = var
+                ; Annotations = [] 
+                ; Expr = None }
             )
         <?!> "base-ti"
     
@@ -979,8 +995,15 @@ module Parsers =
             
     // <declare-item>
     let var_decl_item =
-        ti_expr_and_id
-        .>>. opt (sps '=' >>. expr)
+        pipe3
+            (ps ti_expr_and_id)
+            (ps annotations)
+            (opt (ps '=' >>. expr))
+            (fun ti anns expr ->
+                { ti with
+                    Annotations = anns;
+                    Expr = expr
+                })
 
     // <constraint-item>
     let constraint_item =
@@ -1136,8 +1159,7 @@ module Parsers =
           ]
         |> choice
 
-    // <expr-atom>        
-    expr_atom_ref.contents <-
+    let expr_atom_impl =
         pipe2
             expr_atom_head
             expr_atom_tail
@@ -1148,6 +1170,19 @@ module Parsers =
                 | access ->
                     Expr.Indexed (head, access)
             )
+    
+    // <annotation>
+    let annotation : P<Annotation> =
+        ps "::"
+        >>. expr_atom_impl
+            
+    // <annotations>
+    annotations_ref.contents <-
+        many annotation
+    
+    // <expr-atom>        
+    expr_atom_ref.contents <-
+        expr_atom_impl
             
     // <expr-binop-tail>
     let expr_binop_tail =
@@ -1175,10 +1210,6 @@ module Parsers =
         )
         <?!> "solve-method"
         
-    let annotations : P<Annotations> =
-        preturn []
-        <?!> "annotations"
-            
     // <solve-item>
     let solve_item : P<SolveItem> =
         pipe3
@@ -1204,12 +1235,16 @@ module Parsers =
         <?!> "assign-item"
         
     // <type-inst-syn-item>
-    let alias_item =
-        kw1 "type"
-        >>. ident
-        .>> sps1 "="
-        .>>. ti_expr
-        |>> (fun (name, ti) -> { ti with Name = name })
+    let alias_item : P<TypeInst> =
+        pipe3
+            (kw1 "type" >>. ident .>> spaces)
+            (annotations .>> sps1 "=")
+            ti_expr
+            (fun name anns ti ->
+                { ti with
+                    Name = name
+                    Annotations = anns
+                  })
         <?!> "type-alias"
         
     // <output-item>

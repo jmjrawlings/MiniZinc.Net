@@ -195,3 +195,20 @@ module ParseTests =
         let output = test_parse Parsers.model input
         ()
         
+    [<Fact>]
+    let test_bad () =
+        let input = """
+neighbours =
+    [   { n * (R - 1) + C
+        |
+            i in 1..8,
+            R in {R0 + [-1, -2, -2, -1,  1,  2,  2,  1][i]},
+            C in {C0 + [-2, -1,  1,  2,  2,  1, -1, -2][i]}
+            where R in row /\ C in col
+        }
+    |   R0 in row, C0 in col
+    ];
+"""
+        let output = test_parse Parsers.model input
+        ()
+        
