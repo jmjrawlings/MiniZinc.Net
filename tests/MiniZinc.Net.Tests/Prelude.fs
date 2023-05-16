@@ -10,7 +10,7 @@ module Prelude =
     // Test parsing the string, no sanitizing occurs    
     let test_parse_raw parser input =
         match Parse.string parser input with
-        | Result.Ok ok ->
+        | Result.Ok ok  ->
             ok
         | Result.Error err ->
             let trace = err.Trace
@@ -19,8 +19,8 @@ module Prelude =
             
     // Test parsing the string, it is sanitized first            
     let test_parse parser input =
-        let clean = Parse.sanitize input
-        test_parse_raw parser clean
+        let source, comments = Parse.sanitize input
+        test_parse_raw parser source
 
 
     [<Extension>]

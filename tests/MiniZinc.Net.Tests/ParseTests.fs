@@ -170,3 +170,20 @@ module ParseTests =
         let input = "constraint -76706*x[0];"
         let output = test_parse Parsers.constraint_item input
         ()
+        
+    [<Fact>]
+    let test_2d_literal () =
+        let input = """a = array2d(ROW, COL,
+    [| 0, 0, 0, 0, 0, 0, 0, 0
+     | 0, _, _, _, _, _, _, 0
+     | 0, _, _, _, _, _, _, 0
+     | 0, _, _, _, _, _, _, 0
+     | 0, _, _, _, _, _, _, 0
+     | 0, _, _, _, _, _, _, 0
+     | 0, _, _, _, _, _, _, 0
+     | 0, 0, 0, 0, 0, 0, 0, 0
+     |]
+);"""
+
+        let output = test_parse Parsers.model input
+        () 

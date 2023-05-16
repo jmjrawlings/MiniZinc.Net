@@ -170,46 +170,61 @@ module ParseUtils =
         static member sp1 (s: string) =
             P.sp1 (pstring s)
 
-        static member between (a: P<'a>, b: P<'a>, [<Optional; DefaultParameterValue(false)>] ws : bool) =
+        // Parse between 'start' and 'end' with optional whitespace 
+        static member between (pStart: P<'a>, pEnd: P<'a>, [<Optional; DefaultParameterValue(false)>] ws : bool) =
             let left, right =
                 match ws with
-                | true -> (a .>> spaces), (spaces >>. b)
-                | false -> a,b
+                | true -> (pStart .>> spaces), (spaces >>. pEnd)
+                | false -> pStart,pEnd
             between left right
-            
+
+        // Parse between 'start' and 'end' with optional whitespace 
         static member between (a: char, b: char, [<Optional; DefaultParameterValue(false)>] ws : bool) =
             P.between(pchar a, pchar b, ws)
 
+        // Parse between 'start' and 'end' with optional whitespace 
         static member between (a: string, b: string, [<Optional; DefaultParameterValue(false)>] ws : bool) =
             P.between (pstring a, pstring b, ws)
-            
+
+        // Parse between 'start' and 'end' with whitespace 
         static member betweens (a: char, b: char) =
             P.between(a, b, ws=true)
 
+        // Parse between 'start' and 'end' with whitespace
         static member betweens (a: string, b: string) =
             P.between (a, b, ws=true)
-            
-        static member between (a: P<'a>, b: P<'a>, c: P<'b>, [<Optional; DefaultParameterValue(false)>] ws : bool, [<Optional; DefaultParameterValue(false)>] many : bool) =
+
+        // Parse 0 or more 'p' between 'start' and 'end' with optional whitespace            
+        static member between (pStart: P<'a>, pEnd: P<'a>, pDelim: P<'b>, [<Optional; DefaultParameterValue(false)>] ws : bool, [<Optional; DefaultParameterValue(false)>] many : bool) =
             fun p ->
-                let delim =
-                    match ws with
-                    | true -> P.sps c
-                    | false -> c
-                let inner =
-                    match many with
-                    | false -> sepBy p delim
-                    | true -> sepBy1 p delim
-                P.between(a, b, ws) inner
                 
+                let item, delim =
+                    match ws with
+                    | true ->
+                        (p .>> spaces), (pDelim .>> spaces)
+                     | false ->
+                         p, pDelim
+                
+                let items =
+                    match many with
+                    | true -> sepBy1 item delim
+                    | false -> sepBy item delim
+                    
+                P.between(pStart, pEnd, ws=ws) items                    
+                
+        // Parse 0 or more between 'start' and 'end' with optional whitespace                
         static member between (a: char, b: char, c: char, [<Optional; DefaultParameterValue(false)>] many : bool) =
             P.between(pchar a, pchar b, pchar c, ws=true, many=many)
-            
+
+        // Parse 0 or more between 'start' and 'end' with optional whitespace            
         static member between (a:string, b:string, c:string, [<Optional; DefaultParameterValue(false)>] many : bool) =
             P.between(pstring a, pstring b, pstring c, ws=true, many=many)
-            
+        
+        // Parse 1 or more between 'start' and 'end' with optional whitespace    
         static member between1 (a:string, b:string, c:string) =
             P.between(a, b, c, many=true)
             
+        // Parse 1 or more between 'start' and 'end' with optional whitespace
         static member between1 (a:char, b:char, c:char) =
             P.between(a, b, c, many=true)
 
@@ -233,7 +248,13 @@ module AST =
         | Float
     
     type Ident = string
-    type WildCard = unit
+    
+    [<Struct>]
+    [<DebuggerDisplay("_")>]
+    type WildCard =
+        | WildCard
+    
+    type Comment = string
     
     type BinaryOp = string
         
@@ -269,7 +290,7 @@ module AST =
     type Annotations = Annotation list        
    
     type Expr =
-        | WildCard  of WildCard
+        | WildCard  of WildCard  
         | Int       of int
         | Float     of float
         | Bool      of bool
@@ -305,7 +326,7 @@ module AST =
 
     // eg "x,y in array where x > y"
     and Generator =
-        { Idents : IdentOr<Wildcard> list
+        { Idents : IdentOr<WildCard> list
         ; Source : Expr
         ; Where  : Expr option }
     
@@ -362,7 +383,6 @@ module AST =
             
     and NumericUnaryOp = string
     and NumericBinaryOp = string
-    and Wildcard = unit
     
     and Enum =
         { Name : string
@@ -413,7 +433,8 @@ module AST =
         | Test       of TestItem
         | Output     of OutputItem
         | Annotation of Annotation
-        | Other      of string
+        | Comment    of string
+        
 
     and ConstraintItem = Expr
             
@@ -480,17 +501,16 @@ module Parsers =
         .>> notFollowedBy letter
         >>. spaces1
     
-    let single_line_comment : P<string> =
+    let line_comment : P<string> =
         p '%' >>.
         manyCharsTill (noneOf "\r\n") (skipNewline <|> eof)
 
-    let multi_line_comment : P<string> =
-        attempt (p "/*")
-        >>. manyCharsTill (noneOf "*") (p "*/")
+    let block_comment : P<string> =
+        regex "\/\*([\s\S]*?)\*\/"
 
     let comment : P<string> =
-        single_line_comment
-        <|> multi_line_comment
+        line_comment
+        <|> block_comment
         |>> (fun s -> s.Trim())
         
     let (=>) (key: string) (value) =
@@ -676,12 +696,12 @@ module Parsers =
         
     // <array2d-literal>
     let array2d_literal =
-        let row_item = expr
-        let row_expr = sepBy row_item (sps ',')
-        let row_delim = attempt ((p '|') >>. notFollowedBy (p ']'))
-        
-        row_expr
-        |> between(p "[|", p "|]", row_delim, ws=true, many=false)
+        let row =
+            sepBy1 (ps expr) (ps ',')
+        let delim =
+            attempt (p '|' >>. notFollowedBy (p ']'))
+        row
+        |> between(p "[|", p "|]", delim, ws=true, many=false)
         <?!> "array2d"
    
     // <ti-expr-and-id>
@@ -856,18 +876,32 @@ module Parsers =
     
     // <call-expr>
     let call_expr =
-        attempt (
-            id_or_op
-            .>> spaces
-            .>>. between1('(', ')', ',') expr
-        )
-        |>> (fun (name, args) ->
-            { Name=name; Args=args })
+        
+        let operation =
+            ps id_or_op
+        
+        // let args =
+        //     ps '('
+        //     >>. sepBy1 (ps expr) (ps ',')
+        //     .>> p ')'
+        //     <?!> "call-args"
+        let args =
+            between('(', ')', ',', many=true) expr
+            <?!> "call-args"
+        
+        pipe2
+            operation
+            args
+            (fun name args ->
+                { Name=name; Args=args })
+        |> attempt
         <?!> "call-expr"
         
     let wildcard : P<WildCard> =
         p '_'
         >>. notFollowedBy letter
+        >>% WildCard.WildCard
+        
         
     // <comp-tail>
     let comp_tail : P<Generator list> =
@@ -1135,9 +1169,6 @@ module Parsers =
         .>>. expr
         <?!> "assign-item"
         
-    let unknown_item =
-        manyChars (noneOf ";")
-        
     // <type-inst-syn-item>
     let alias_item =
         kw1 "type"
@@ -1166,43 +1197,55 @@ module Parsers =
         ; test_item       |>> Item.Test
         ; assign_item     |>> Item.Assign
         ; var_decl_item   |>> Item.Declare
-        ; unknown_item    |>> Item.Other ]
+        ; block_comment   |>> Item.Comment ]
         |> choice
                     
     // Parse a model from a the given string                       
     let model =
-        many (item .>> sps ';')
+        spaces
+        >>. sepEndBy1 item (sps ';')
+        .>> eof
 
 
 module Parse =
     
+    open System.Text.RegularExpressions
+    open AST
+    
     // Sanitize the input string by removing any
-    // blank lines and line comments
-    let sanitize (input: string) : string =
-        use reader = new StringReader(input)
-        use writer = new StringWriter()
-        let rec loop() =
-            match reader.ReadLine() with
-            | null ->
-                ()
-            | "" ->
-                loop()
-            | line ->
-                match line.IndexOf('%') with
-                | 0 ->
-                    loop ()
-                | -1 ->
-                    writer.WriteLine line
-                    loop()
-                | i ->
-                    let comment = line.Substring(i)
-                    let clean = line.Substring(0, i).Trim()
-                    writer.WriteLine clean
-                    loop()
-        loop()
-        let output = writer.ToString()
-        output
-                            
+    // blank lines and comments
+    let sanitize (input: string) : string * List<Comment> =
+        
+        let comments = ResizeArray<string>()
+        let line_comment = "%(.*)$"
+        let block_comment = "\/\*([\s\S]*?)\*\/"
+        let pattern = $"{line_comment}|{block_comment}"
+        let evaluator =
+            MatchEvaluator(fun m ->
+                
+                let comment =
+                    match m.Groups[1], m.Groups[2] with
+                    | m, _ when m.Success ->
+                        m.Value
+                    | _, m when m.Success ->
+                        m.Value
+                    | _ ->
+                        ""
+                if not (String.IsNullOrWhiteSpace comment) then
+                    comments.Add comment
+                        
+                ""
+            )
+        
+        let output =
+            Regex.Replace(input, pattern, evaluator, RegexOptions.Multiline)
+
+        // let no_empty_lines =
+        //     Regex.Replace(no_comments, "^\s*$", "", RegexOptions.Multiline)
+        //
+        let comments = Seq.toList comments
+        output, comments
+        
     // Parse the given string with the given parser
     let string (parser: P<'t>) (input: string) : ParseResult<'t> =
         let state = { Debug = { Message = ""; Indent = 0 } }
@@ -1216,7 +1259,7 @@ module Parse =
     // Parse the given file with the given parser
     let file (parser: P<'t>) (fi: FileInfo) : ParseResult<'t> =
         let input = File.ReadAllText fi.FullName
-        let source = sanitize input
+        let source, comments = sanitize input
         let result = string parser source
         result
         
