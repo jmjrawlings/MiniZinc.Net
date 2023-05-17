@@ -128,6 +128,13 @@ let ``test {name}`` () =
         false
         example_tests_file.FullName
         code
+        
+let run_tests() =
+    test_proj_file.FullName
+    |> DotNet.test (fun opts ->
+        { opts with
+            Configuration = DotNet.BuildConfiguration.Release }
+        )
  
 let init() =
 
@@ -137,11 +144,16 @@ let init() =
     Target.create "CreateTestSuite" <| fun _ ->
         create_test_suite ()
         
+    Target.create "RunTests" <| fun _ ->
+        run_tests()        
+        
     Target.create "All" <| fun _ ->
         ()        
 
     "DownloadTestModels"
         ==> "CreateTestSuite"
+        
+    "RunTests"
         ==> "All"
         
     
