@@ -3,6 +3,7 @@
 Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
 
 > *PLEASE NOTE*
+> 
 > This is very much a work in progress.  I'm only making it public at this point because the parser is pretty good and I'm
 > sure others can benefit from it.
 
