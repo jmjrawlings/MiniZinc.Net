@@ -14,5 +14,4 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet tool restore
-      - run: dotnet paket restore
       - run: dotnet test
