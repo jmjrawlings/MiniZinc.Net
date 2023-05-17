@@ -116,7 +116,7 @@ let ``test cutstock`` () =
     ()
     
 
-[<Fact(Skip = "slow")>]
+[<Fact>]
 let ``test eq20`` () =
     let spec = TestSpec.create "eq20" 
     let result = test spec

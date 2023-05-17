@@ -57,22 +57,26 @@ module ParseUtils =
             Indent = nextIndent
         }
 
-    // Add debug info to the givne parser
+    // Add debug info to the given parser
     let (<!>) (p: P<'t>) label : P<'t> =
         fun stream ->
             addToDebug stream label Enter
             let reply = p stream
             addToDebug stream label (Leave reply)
             reply
-
-    #if RELEASE
+            
+    (*
+    Adding debug information to the parser is very
+    slow so we only enable it for DEBUG
+    *)
+    #if DEBUG
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label <!> label
     #else
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label
     #endif
-        
+                    
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
 

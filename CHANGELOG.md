@@ -1,5 +1,6 @@
 # Changelog
 
-## [Unreleased]
-
-## [0.1.0] 
+## [UNRELEASED]
+- Command line runner
+- Full featured parser
+- All parser tests passing

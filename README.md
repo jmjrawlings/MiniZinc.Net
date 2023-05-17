@@ -1,26 +1,50 @@
 # MiniZinc.Net
 
-Create and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
+Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
+
+> This is unfinished. I've only made it public the parser is pretty good and 
+> others might benefit from it.
+
+
+
+
 
 ## Immediate Goals
 
 - Parse models
-  - From existing .mzn files
-  - From strings
-  - Full EBNF support?
+  - From model string
+  - From `.mzn` file
+  - Full AST as per the [Specification](https://www.minizinc.org/doc-2.7.3/en/spec.html#full-grammar)
+
 - Solve models
-  - All async
-  - Stream from stdout
+  - All async iterators
+  - Stream from stdout, stderr
   - Handle timeout / user cancellation
+
+## Wishlist
+
 - Create models
   - Come up with a nice DSL
   - Computational Expressions?
 
-## Stretch Goals / Ideas
-- Use a [source generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview)? 
-  - Have models in separate file and a first class interface to them through C#? that would be great
+- Augment models
+  - Parse then edit?
 
-## Meta Goals
-- Be world class, make constraint solving feel like a first class addition to .NET
-- Promote MiniZinc and constraint solving
+- Compile time execution
+
+  - C#
+    - Use a [source generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) 
+    - Have models in separate file and a first class interface to them through C#? that would be great
+  - F#
+    - Use a 
+
+- Comprehensive examples and walkthroughs
+ 
+
+## Motivation
+
+- Give back to the MiniZinc community
+- Share 
+- Promote MiniZinc and constraint solving  
+- Make modelling and solving CP problems a joyful experience
 - Get this library to a level I would use professionally in production
