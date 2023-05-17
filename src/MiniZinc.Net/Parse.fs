@@ -175,7 +175,7 @@ module ParseUtils =
             let left, right =
                 match ws with
                 | true -> (pStart .>> spaces), (spaces >>. pEnd)
-                | false -> pStart,pEnd
+                | false -> pStart, pEnd
             between left right
 
         // Parse between 'start' and 'end' with optional whitespace 
@@ -230,7 +230,23 @@ module ParseUtils =
 
         static member lookup([<ParamArray>] parsers: P<'t>[]) =
             choice parsers
-    
+            
+        // Parse 'p' separated by 'delim'.  Whitespace is consumed  
+        static member sepBy (delim,[<Optional; DefaultParameterValue(false)>] many : bool) : P<'t> -> P<'t list>=
+            let f =
+                if many then sepBy1 else sepBy
+             
+            fun p ->
+                f (p .>> spaces) (delim >>. spaces)
+
+        // Parse 'p' separated by 'delim'.  Whitespace is consumed  
+        static member sepBy (delim: char,[<Optional; DefaultParameterValue(false)>] many : bool) : P<'t> -> P<'t list>=
+            P.sepBy (pchar delim)
+
+        // Parse 'p' separated by 'delim'.  Whitespace is consumed  
+        static member sepBy (delim: string,[<Optional; DefaultParameterValue(false)>] many : bool) : P<'t> -> P<'t list>=
+            P.sepBy (pstring delim)
+   
 
 open ParseUtils
 open type ParseUtils.P
@@ -322,15 +338,15 @@ module AST =
     and GenCallExpr =
         { Name: IdentOr<Op>
         ; Expr : Expr 
-        ; Generators : Generator list }  
+        ; Generators : Generator list }
         
     and ArrayCompExpr =
-        { Expr : Expr         
-        ; Generators : Generator list }
+        { Yield : Expr         
+        ; From : Generator list }
     
     and SetCompExpr =
-        { Expr : Expr         
-        ; Generators : Generator list }
+        { Yield : Expr         
+        ; From : Generator list }
 
     // eg "x,y in array where x > y"
     and Generator =
@@ -507,15 +523,19 @@ module Parsers =
 
     // Parse a keyword, ensures its not a part of a larger string
     let kw (name: string) =
-        p name
-        .>> notFollowedBy letter
-        >>. spaces
+        attempt (
+            p name
+            .>> notFollowedBy letter
+            >>. spaces
+        )
         
     // Parse a keyword, ensures its not a part of a larger string
     let kw1 (name: string) =
-        p name
-        .>> notFollowedBy letter
-        >>. spaces1
+        attempt (
+            p name
+            .>> notFollowedBy letter
+            >>. spaces1
+        )
     
     let line_comment : P<string> =
         p '%' >>.
@@ -724,7 +744,7 @@ module Parsers =
     // <array2d-literal>
     let array2d_literal =
         let row =
-            sepBy1 (ps expr) (ps ',')
+            sepBy(',', many=true) expr
         let delim =
             attempt (p '|' >>. notFollowedBy (p ']'))
         row
@@ -808,9 +828,10 @@ module Parsers =
     
     // <var-par>
     let var_par : P<bool> =
-        [ "var" => true
-        ; "par" => false]
-        |> choice
+        lookup(
+            "var" => true,
+            "par" => false
+        )
         .>> spaces1
         |> opt_or false
         <?!> "var-par"
@@ -824,8 +845,7 @@ module Parsers =
     
     // <set-ti>    
     let set_ti =
-        ps1 "set"
-        >>. ps1 "of"
+        ps1 "set" >>. ps1 "of"
         >>% true
         |> opt_or false
         <?!> "set-ti"
@@ -906,12 +926,7 @@ module Parsers =
         
         let operation =
             ps id_or_op
-        
-        // let args =
-        //     ps '('
-        //     >>. sepBy1 (ps expr) (ps ',')
-        //     .>> p ')'
-        //     <?!> "call-args"
+            
         let args =
             between('(', ')', ',', many=true) expr
             <?!> "call-args"
@@ -938,7 +953,8 @@ module Parsers =
             (ident |>> IdentOr.Ident)
             <?!> "gen-var"
         let vars =
-            sepBy1 (ps var) (ps ",")
+            var
+            |> sepBy(",", many=true)
             <?!> "gen-vars"
         let where =
             kw1 "where" >>. expr
@@ -954,10 +970,8 @@ module Parsers =
                     ; Where = filter })
             <?!> "generator"
             
-        let generators =
-            sepBy1 generator (sps ",")
-            
-        generators
+        generator
+        |> sepBy(",", many=true)
         <?!> "comp_tail"
             
     // <gen-call-expr>
@@ -979,18 +993,18 @@ module Parsers =
         |> betweens('[', ']')
         |> attempt
         |>> (fun (expr, gens) -> 
-             { Expr=expr
-             ; Generators = gens })
+             { Yield=expr
+             ; From = gens })
         <?!> "array-comp"
 
     // <set-comp>
     let set_comp : P<SetCompExpr> =
         (expr .>> sps '|' .>>. comp_tail)
-        |> betweens('(', ')')
+        |> betweens('{', '}')
         |> attempt
         |>> (fun (expr, gens) -> 
-             { Expr=expr
-             ; Generators = gens })
+             { Yield=expr
+             ; From = gens })
         <?!> "set-comp"
             
     // <declare-item>
@@ -1238,7 +1252,7 @@ module Parsers =
     let alias_item : P<TypeInst> =
         pipe3
             (kw1 "type" >>. ident .>> spaces)
-            (annotations .>> sps1 "=")
+            (ps annotations .>> ps "=")
             ti_expr
             (fun name anns ti ->
                 { ti with
@@ -1309,9 +1323,9 @@ module Parse =
         let output =
             Regex.Replace(input, pattern, evaluator, RegexOptions.Multiline)
 
-        // let no_empty_lines =
-        //     Regex.Replace(no_comments, "^\s*$", "", RegexOptions.Multiline)
-        //
+        let output =
+            output.Trim()
+        
         let comments = Seq.toList comments
         output, comments
         
