@@ -173,19 +173,14 @@ module ParseTests =
         
     [<Fact>]
     let test_2d_literal () =
-        let input = """a = array2d(ROW, COL,
-    [| 0, 0, 0, 0, 0, 0, 0, 0
-     | 0, _, _, _, _, _, _, 0
-     | 0, _, _, _, _, _, _, 0
-     | 0, _, _, _, _, _, _, 0
-     | 0, _, _, _, _, _, _, 0
-     | 0, _, _, _, _, _, _, 0
-     | 0, _, _, _, _, _, _, 0
-     | 0, 0, 0, 0, 0, 0, 0, 0
-     |]
+        let input = """[| 1, 1, 1, 1, 0,
+ |  1, 1, 1, 0, 1,
+ |  1, 1, 1, 1, 1
+ |  1, 0, 1, 1, 1,
+ |  0, 1, 1, 1, 1
+|]
 );"""
-
-        let output = test_parse Parsers.model input
+        let output = test_parse Parsers.array2d_literal input
         ()
 
                 
@@ -214,3 +209,5 @@ module ParseTests =
         let input = arg
         let output = test_parse Parsers.set_comp input
         ()
+        
+        

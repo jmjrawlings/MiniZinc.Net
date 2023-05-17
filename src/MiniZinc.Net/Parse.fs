@@ -463,9 +463,10 @@ module AST =
         | Function   of FunctionItem
         | Test       of TestItem
         | Output     of OutputItem
-        | Annotation of Annotation
+        | Annotation of AnnotationItem
         | Comment    of string
-        
+
+    and AnnotationItem = CallExpr
 
     and ConstraintItem = Expr
             
@@ -743,10 +744,22 @@ module Parsers =
         
     // <array2d-literal>
     let array2d_literal =
+        
+        let row_sep =
+            attempt (
+                ps ',' >>. notFollowedBy (p '|')
+            )
+        
         let row =
-            sepBy(',', many=true) expr
+            sepBy(row_sep, many=true) expr
+            
         let delim =
-            attempt (p '|' >>. notFollowedBy (p ']'))
+            attempt (
+                opt (ps ',')
+                >>. (p '|')
+                >>. notFollowedBy (p ']')
+            )
+            
         row
         |> between(p "[|", p "|]", delim, ws=true, many=false)
         <?!> "array2d-literal"
@@ -922,7 +935,7 @@ module Parsers =
         name_or_quoted_value builtin_op
     
     // <call-expr>
-    let call_expr =
+    let call_expr : P<CallExpr> =
         
         let operation =
             ps id_or_op
@@ -1024,6 +1037,11 @@ module Parsers =
         kw "constraint"
         >>. expr
         <?!> "constraint"
+        
+    // <annotation-item>
+    let annotation_item =
+        kw1 "annotation"
+        >>. call_expr
         
     // <let-item>
     let let_item : P<LetItem> =
@@ -1278,6 +1296,7 @@ module Parsers =
         ; predicate_item  |>> Item.Predicate
         ; function_item   |>> Item.Function
         ; test_item       |>> Item.Test
+        ; annotation_item |>> Item.Annotation        
         ; assign_item     |>> Item.Assign
         ; var_decl_item   |>> Item.Declare
         ; block_comment   |>> Item.Comment ]
