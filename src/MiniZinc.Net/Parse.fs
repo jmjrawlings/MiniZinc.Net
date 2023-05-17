@@ -171,82 +171,80 @@ module ParseUtils =
             P.sp1 (pstring s)
 
         // Parse between 'start' and 'end' with optional whitespace 
-        static member between (pStart: P<'a>, pEnd: P<'a>, [<Optional; DefaultParameterValue(false)>] ws : bool) =
-            let left, right =
-                match ws with
-                | true -> (pStart .>> spaces), (spaces >>. pEnd)
-                | false -> pStart, pEnd
-            between left right
-
-        // Parse between 'start' and 'end' with optional whitespace 
-        static member between (a: char, b: char, [<Optional; DefaultParameterValue(false)>] ws : bool) =
-            P.between(pchar a, pchar b, ws)
-
-        // Parse between 'start' and 'end' with optional whitespace 
-        static member between (a: string, b: string, [<Optional; DefaultParameterValue(false)>] ws : bool) =
-            P.between (pstring a, pstring b, ws)
-
-        // Parse between 'start' and 'end' with whitespace 
-        static member betweens (a: char, b: char) =
-            P.between(a, b, ws=true)
-
-        // Parse between 'start' and 'end' with whitespace
-        static member betweens (a: string, b: string) =
-            P.between (a, b, ws=true)
+        static member between (
+                pStart : P<_>,
+                pEnd : P<_>,
+                [<Optional; DefaultParameterValue(true)>] ws : bool
+            ) =
+                let pStart', pEnd' =
+                    match ws with
+                    | true -> (pStart .>> spaces), (spaces >>. pEnd)
+                    | false -> pStart, pEnd
+                between pStart' pEnd'
+                
+        static member between(a: string, b: string, [<Optional; DefaultParameterValue(true)>] ws : bool) =
+            P.between(pstring a, pstring b, ws=ws)
+            
+        static member between(a: char, b: char, [<Optional; DefaultParameterValue(true)>] ws : bool) =
+            P.between(pchar a, pchar b, ws=ws)
 
         // Parse 0 or more 'p' between 'start' and 'end' with optional whitespace            
-        static member between (pStart: P<'a>, pEnd: P<'a>, pDelim: P<'b>, [<Optional; DefaultParameterValue(false)>] ws : bool, [<Optional; DefaultParameterValue(false)>] many : bool) =
+        static member between (
+                pStart : P<_>,
+                pEnd : P<_>,
+                pDelim : P<_>,
+                [<Optional; DefaultParameterValue(false)>] many : bool,
+                [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
+            ) =
+                P.sepBy(pDelim, many=many, allowTrailing=allowTrailing)
+                >> P.between(pStart, pEnd, ws=true)
+
+        static member between1 (
+                pStart : P<_>,
+                pEnd : P<_>,
+                pDelim : P<_>,
+                [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
+            ) =
+                P.between(pStart, pEnd, pDelim, many=true, allowTrailing=allowTrailing)
+
+                    
+        // Parse 'p' separated by 'delim'.  Whitespace is consumed  
+        static member sepBy (
+                pDelim : P<_>,
+                [<Optional; DefaultParameterValue(false)>] many : bool,
+                [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
+            ) =
+            
             fun p ->
                 
-                let item, delim =
-                    match ws with
-                    | true ->
-                        (p .>> spaces), (pDelim .>> spaces)
-                     | false ->
-                         p, pDelim
-                
-                let items =
-                    match many with
-                    | true -> sepBy1 item delim
-                    | false -> sepBy item delim
+                let p' =
+                    p .>> spaces
                     
-                P.between(pStart, pEnd, ws=ws) items                    
-                
-        // Parse 0 or more between 'start' and 'end' with optional whitespace                
-        static member between (a: char, b: char, c: char, [<Optional; DefaultParameterValue(false)>] many : bool) =
-            P.between(pchar a, pchar b, pchar c, ws=true, many=many)
+                let pDelim' =
+                    pDelim .>> spaces
+                    
+                let items : P<'t list> =    
+                    match many, allowTrailing with
+                    | false, false ->
+                        sepBy p' pDelim'
+                    | false, true ->
+                        sepEndBy p' pDelim'
+                    | true, false ->
+                        sepBy1 p' pDelim'
+                    | true, true ->
+                        sepEndBy1 p' pDelim'
+                        
+                items                    
 
-        // Parse 0 or more between 'start' and 'end' with optional whitespace            
-        static member between (a:string, b:string, c:string, [<Optional; DefaultParameterValue(false)>] many : bool) =
-            P.between(pstring a, pstring b, pstring c, ws=true, many=many)
+        static member sepBy1 (
+                pDelim : P<_>,
+                [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
+            ) =
+            P.sepBy(pDelim, many=true, allowTrailing=allowTrailing)
         
-        // Parse 1 or more between 'start' and 'end' with optional whitespace    
-        static member between1 (a:string, b:string, c:string) =
-            P.between(a, b, c, many=true)
-            
-        // Parse 1 or more between 'start' and 'end' with optional whitespace
-        static member between1 (a:char, b:char, c:char) =
-            P.between(a, b, c, many=true)
-
         static member lookup([<ParamArray>] parsers: P<'t>[]) =
             choice parsers
-            
-        // Parse 'p' separated by 'delim'.  Whitespace is consumed  
-        static member sepBy (delim,[<Optional; DefaultParameterValue(false)>] many : bool) : P<'t> -> P<'t list>=
-            let f =
-                if many then sepBy1 else sepBy
-             
-            fun p ->
-                f (p .>> spaces) (delim >>. spaces)
 
-        // Parse 'p' separated by 'delim'.  Whitespace is consumed  
-        static member sepBy (delim: char,[<Optional; DefaultParameterValue(false)>] many : bool) : P<'t> -> P<'t list>=
-            P.sepBy (pchar delim)
-
-        // Parse 'p' separated by 'delim'.  Whitespace is consumed  
-        static member sepBy (delim: string,[<Optional; DefaultParameterValue(false)>] many : bool) : P<'t> -> P<'t list>=
-            P.sepBy (pstring delim)
-   
 
 open ParseUtils
 open type ParseUtils.P
@@ -348,11 +346,10 @@ module AST =
         { Yield : Expr         
         ; From : Generator list }
 
-    // eg "x,y in array where x > y"
     and Generator =
-        { Idents : IdentOr<WildCard> list
-        ; Source : Expr
-        ; Where  : Expr option }
+        { Yield : IdentOr<WildCard> list
+        ; From  : Expr
+        ; Where : Expr option }
     
     and CallExpr =
         { Name: IdentOr<Op>
@@ -503,9 +500,9 @@ module AST =
         | Constraint of ConstraintItem
         
     and LetExpr =
-        { Items: LetItem list;  Body: Expr }
-
-
+        { Locals: LetItem list
+          In: Expr }
+        
 
 module Parsers =
     
@@ -527,7 +524,7 @@ module Parsers =
         attempt (
             p name
             .>> notFollowedBy letter
-            >>. spaces
+            .>> spaces
         )
         
     // Parse a keyword, ensures its not a part of a larger string
@@ -605,73 +602,69 @@ module Parsers =
     
     // <builtin-num-un-op>
     let builtin_num_un_ops =
-        [ "+" ; "-" ]
+        [ p "+" ; p "-" ]
         
     let builtin_num_un_op =
         builtin_num_un_ops
-        |> List.map pstring
         |> choice
     
     // <builtin-num-bin-op>
     let builtin_num_bin_ops =
-         [ "+"
-         ; "-"
-         ; "*"
-         ; "/"
-         ; "div"
-         ; "mod"
-         ; "^"
-         ; "~+"
-         ; "~-"
-         ; "~*"
-         ; "~/"
-         ; "~div" ]
+         [ p "+"
+         ; p "-"
+         ; p "*"
+         ; p "/"
+         ; (kw "div")
+         ; (kw "mod")
+         ; p "^"
+         ; p "~+"
+         ; p "~-"
+         ; p "~*"
+         ; p "~/"
+         ; p "~div" ]
         
     let builtin_num_bin_op =
          builtin_num_bin_ops
-         |> List.map pstring
          |> choice
             
     // <builtin-bin-op>            
     let builtin_bin_ops = 
-        [ "<->"
-        ; "->"
-        ; "<-"
-        ; "\/"
-        ; "xor"
-        ; "/\\"
-        ; "<="
-        ; ">="
-        ; "=="
-        ; "<"
-        ; ">"
-        ; "="
-        ; "!="
-        ; "~="
-        ; "~!="
-        ; "in"
-        ; "subset"
-        ; "superset"
-        ; "union"
-        ; "diff"
-        ; "symdiff"
-        ; ".."
-        ; "intersect"
-        ; "++"
-        ; "default" ]
+        [ p "<->"
+        ; p "->"
+        ; p "<-"
+        ; p "\/"
+        ; kw "xor"
+        ; p "/\\"
+        ; p "<="
+        ; p ">="
+        ; p "=="
+        ; p "<"
+        ; p ">"
+        ; p "="
+        ; p "!="
+        ; p "~="
+        ; p "~!="
+        ; kw "in"
+        ; kw "subset"
+        ; kw "superset"
+        ; kw "union"
+        ; kw "diff"
+        ; kw "symdiff"
+        ; p ".."
+        ; kw "intersect"
+        ; p "++"
+        ; kw "default" ]
         @ builtin_num_bin_ops
         
     let builtin_bin_op : P<string> =
         builtin_bin_ops
-        |> List.map pstring
         |> choice
         
     let builtin_un_ops =
-        builtin_num_un_ops @ ["not"]
+        builtin_num_un_ops @ [kw "not"]
         
     let builtin_un_op : P<string> =
         builtin_un_ops
-        |> List.map pstring
         |> choice
 
     // <ti-expr>
@@ -703,7 +696,7 @@ module Parsers =
         createParserForwardedToRef<Annotations, UserState>()
                 
     let bracketed x =
-        betweens('(', ')') x
+        between('(', ')' , ws=true) x
 
     let op p =
         value_or_quoted_name p
@@ -719,7 +712,6 @@ module Parsers =
             
     let builtin_op : P<string> =
         builtin_ops
-        |> List.map p
         |> choice
         
     // 0 .. 10
@@ -732,36 +724,32 @@ module Parsers =
     
     // <array1d-literal>
     let array1d_literal =
-        between('[', ']', ',') expr
-        |> attempt
+        expr
+        |> between(p '[', p ']', p ',', allowTrailing=true) 
         <?!> "array1d-literal"
-        
+            
     // <set-literal>
     let set_literal =
-        between('{', '}', ',') expr
+        between(p '{', p '}', p ',') expr
         |> attempt
         <?!> "set-literal"
         
     // <array2d-literal>
     let array2d_literal =
         
-        let row_sep =
-            attempt (
-                ps ',' >>. notFollowedBy (p '|')
-            )
-        
         let row =
-            sepBy(row_sep, many=true) expr
-            
-        let delim =
-            attempt (
-                opt (ps ',')
-                >>. (p '|')
-                >>. notFollowedBy (p ']')
-            )
-            
-        row
-        |> between(p "[|", p "|]", delim, ws=true, many=false)
+            expr
+            |> sepBy1(p ',', allowTrailing=true) 
+        
+        let rows =
+            row
+            |> sepBy(p '|', allowTrailing=true)
+        
+        let array =
+            rows
+            |> between(p "[|", p "|]")
+                
+        array        
         <?!> "array2d-literal"
    
     // <ti-expr-and-id>
@@ -775,7 +763,7 @@ module Parsers =
     
     let parameters : P<TypeInst list> =
         ti_expr_and_id
-        |> between('(', ')', ',')
+        |> between(p '(', p ')', p ',')
     
     // <operation-item-tail>
     // eg: even(var int: x) = x mod 2 = 0;
@@ -821,7 +809,7 @@ module Parsers =
     let enum_item : P<Enum> =
         let members =
             enum_case
-            |> between('{', '}', ',')
+            |> between(p '{', p '}', p ',')
             
         pipe3
             (kw1 "enum" >>. ident .>> sps '=')
@@ -888,7 +876,7 @@ module Parsers =
         
         let dimensions =
             base_ti_expr_tail
-            |> between('[', ']', ',')
+            |> between(p '[', p ']', p ',')
             <?!> "array-dimensions"
         
         ps  "array"
@@ -908,13 +896,13 @@ module Parsers =
     // <tuple-ti-expr-tail>
     let tuple_ti =
         kw "tuple"
-        >>. between1('(', ')', ',') ti_expr
+        >>. between1(p '(', p ')', p ',') ti_expr
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
     let record_ti =
         kw "record"
-        >>. between1('(', ')', ',') ti_expr_and_id
+        >>. between1(p '(', p ')', p ',') ti_expr_and_id
         <?!> "record-ti"
             
     // <base-ti-expr-tail>
@@ -941,7 +929,7 @@ module Parsers =
             ps id_or_op
             
         let args =
-            between('(', ')', ',', many=true) expr
+            between1(p '(', p ')', p ',') expr
             <?!> "call-args"
         
         pipe2
@@ -967,7 +955,7 @@ module Parsers =
             <?!> "gen-var"
         let vars =
             var
-            |> sepBy(",", many=true)
+            |> sepBy(p ",", many=true)
             <?!> "gen-vars"
         let where =
             kw1 "where" >>. expr
@@ -978,21 +966,22 @@ module Parsers =
                 (ps expr)
                 (opt where)
                 (fun idents source filter ->
-                    { Idents = idents
-                    ; Source = source
+                    { Yield = idents
+                    ; From = source
                     ; Where = filter })
             <?!> "generator"
             
         generator
-        |> sepBy(",", many=true)
+        |> sepBy(p ",", many=true)
         <?!> "comp_tail"
+       
             
     // <gen-call-expr>
     let gen_call_expr =
         pipe3
             (ps id_or_op)
-            (ps (betweens('(', ')') comp_tail))
-            (betweens('(', ')') expr)
+            (ps (between('(', ')') comp_tail))
+            (between('(', ')') expr)
             (fun name gens expr ->
                 { Name = name
                 ; Generators = gens
@@ -1003,7 +992,7 @@ module Parsers =
     // <array-comp>
     let array_comp : P<ArrayCompExpr> =
         (expr .>> sps '|' .>>. comp_tail)
-        |> betweens('[', ']')
+        |> between('[', ']')
         |> attempt
         |>> (fun (expr, gens) -> 
              { Yield=expr
@@ -1013,7 +1002,7 @@ module Parsers =
     // <set-comp>
     let set_comp : P<SetCompExpr> =
         (expr .>> sps '|' .>>. comp_tail)
-        |> betweens('{', '}')
+        |> between('{', '}')
         |> attempt
         |>> (fun (expr, gens) -> 
              { Yield=expr
@@ -1045,17 +1034,18 @@ module Parsers =
         
     // <let-item>
     let let_item : P<LetItem> =
-        (var_decl_item |>> LetItem.Declare)
-        <|>
         (constraint_item |>> LetItem.Constraint)
+        <|>
+        (var_decl_item |>> LetItem.Declare)
     
     // <let-expr>
     let let_expr : P<LetExpr> =
+        
         kw "let"
-        >>. between('{', '}', ';') let_item
+        >>. between(p '{', p '}', anyOf ":,") let_item
         .>> sps "in"
         .>>. expr
-        |>> (fun (items, body) -> {Items=items; Body=body})
+        |>> (fun (items, body) -> {Locals=items; In=body})
         <?!> "let-expr"
         
     // <if-then-else-expr>
@@ -1083,7 +1073,7 @@ module Parsers =
             
         let else_case =
             expr
-            |> betweens("else", "endif")
+            |> between("else", "endif")
             <?!> "else-case"
             
         pipe4
@@ -1112,7 +1102,7 @@ module Parsers =
     // <array-acces-tail>
     let array_access : P<ArrayAccess> =
         expr
-        |> between1('[', ']', ',')
+        |> between(p '[', p ']', p ',', many=true)
         <?!> "array-access"
         
     let expr_atom_tail =
@@ -1262,7 +1252,7 @@ module Parsers =
         
     // <assign-item>
     let assign_item =
-        attempt (ident .>> sps1 '=')
+        attempt (ident .>> sps '=')
         .>>. expr
         <?!> "assign-item"
         

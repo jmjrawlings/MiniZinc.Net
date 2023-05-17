@@ -150,12 +150,11 @@ module ParseTests =
         
     [<Theory>]
     [<InlineData("[];")>]
-    [<InlineData("[||];")>]
-    [<InlineData("[|1,2,3|2,3,4|4,5,6|];")>]
+    [<InlineData("[1,2,3,];")>]
     [<InlineData("[true, false, X, true];")>]
-    let ``test array literals`` arg =
+    let ``test array1d literal`` arg =
         let input = arg
-        let output = test_parse Parsers.expr input
+        let output = test_parse Parsers.array1d_literal input
         ()
         
     [<Theory>]
@@ -172,14 +171,18 @@ module ParseTests =
         ()
         
     [<Fact>]
-    let test_2d_literal () =
-        let input = """[| 1, 1, 1, 1, 0,
- |  1, 1, 1, 0, 1,
- |  1, 1, 1, 1, 1
- |  1, 0, 1, 1, 1,
- |  0, 1, 1, 1, 1
-|]
-);"""
+    let ``test array2d literal`` () =
+        let input = """[|
+_, _, _, _, _, _, _, _, _|
+_, 6, 8, 4, _, 1, _, 7, _|
+_, _, _, _, 8, 5, _, 3, _|
+_, 2, 6, 8, _, 9, _, 4, _|
+_, _, 7, _, _, _, 9, _, _|
+_, 5, _, 1, _, 6, 3, 2, _|
+_, 4, _, 6, 1, _, _, _, _|
+_, 3, _, 2, _, 7, 6, 9, _|
+_, _, _, _, _, _, _, _, _|
+|]"""
         let output = test_parse Parsers.array2d_literal input
         ()
 
@@ -210,4 +213,14 @@ module ParseTests =
         let output = test_parse Parsers.set_comp input
         ()
         
+    [<Fact>]
+    let ``test forall`` () =
+        let input = """
+    forall(i in 1..nb, j in i+1..nb)
+    (
+        card(sets[i] intersect sets[j]) <= 1
+    );
+"""
+        let output = test_parse Parsers.gen_call_expr input
+        ()
         
