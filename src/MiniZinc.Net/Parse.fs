@@ -27,27 +27,29 @@ module ParseUtils =
     let addToDebug (stream:CharStream<UserState>) label event =
         let msgPadLen = 50
         let startIndent = stream.UserState.Debug.Indent
-        let str, indent, nextIndent = 
+        let msg, indent, nextIndent = 
             match event with
             | Enter ->
-                $"Entering %s{label}", startIndent, startIndent+1
+                $"{label}", startIndent, startIndent+1
             | Leave res ->
-                let str = $"Leaving  %s{label} (%A{res.Status})"
+                let str = $"{label} ({res.Status})"
                 let pad = max (msgPadLen - startIndent - 1) 0
                 let resStr = $"%s{str.PadRight(pad)} {res.Result}"
                 resStr, startIndent-1, startIndent-1
-
+      
         let indentStr =
             let pad = max indent 0
             if indent = 0 then ""
-            else "\u251C".PadRight(pad, '\u251C')
+            else "-".PadRight(pad, '-')
 
-        let posStr = $"%A{stream.Position}: ".PadRight(20)
+        let row = stream.Position.Line.ToString().PadRight(5)
+        let col = stream.Position.Column.ToString().PadRight(5)
+        let posStr = $"{row} |{col} | "
         let posIdentStr = posStr + indentStr
 
         // The %A for res.Result makes it go onto multiple lines - pad them out correctly
         let replaceStr = "\n" + "".PadRight(max posStr.Length 0) + "".PadRight(max indent 0, '\u2502').PadRight(max msgPadLen 0)
-        let correctedStr = str.Replace("\n", replaceStr)
+        let correctedStr = msg.Replace("\n", replaceStr)
         let fullStr = $"%s{posIdentStr} %s{correctedStr}\n"
 
         stream.UserState.Debug <- {
@@ -55,6 +57,7 @@ module ParseUtils =
             Indent = nextIndent
         }
 
+    // Add debug info to the givne parser
     let (<!>) (p: P<'t>) label : P<'t> =
         fun stream ->
             addToDebug stream label Enter
@@ -62,13 +65,13 @@ module ParseUtils =
             addToDebug stream label (Leave reply)
             reply
 
-    #if DEBUG
+    #if RELEASE
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label <!> label
     #else
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label
-    #endif        
+    #endif
         
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
@@ -716,10 +719,11 @@ module Parsers =
         
     // 0 .. 10
     let range_expr =
-        num_expr
-        .>> sps ".."
-        .>>. num_expr
-        |> attempt
+        attempt (
+            num_expr
+            .>> sps ".."
+            .>>. num_expr
+        )
         <?!> "range-expr"
     
     // <array1d-literal>
@@ -739,11 +743,13 @@ module Parsers =
         
         let row =
             expr
-            |> sepBy1(p ',', allowTrailing=true) 
-        
+            |> sepBy1(p ',', allowTrailing=true)
+            
         let rows =
+            let sep =
+                attempt (p '|' >>. notFollowedBy (p ']'))
             row
-            |> sepBy(p '|', allowTrailing=true)
+            |> sepBy(sep, allowTrailing=true)
         
         let array =
             rows
@@ -907,15 +913,15 @@ module Parsers =
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ "bool"      => Type.Bool
-        ; "int"       => Type.Int
-        ; "string"    => Type.String
-        ; "float"     => Type.Float
-        ; record_ti  |>> Type.Record
-        ; tuple_ti   |>> Type.Tuple
-        ; ident      |>> Type.Id
-        ; set_literal   |>> Type.Set
-        ; range_expr |>> Type.Range ]
+        [ kw "bool"   >>% Type.Bool
+        ; kw "int"    >>% Type.Int
+        ; kw "string" >>% Type.String
+        ; kw "float"  >>% Type.Float
+        ; record_ti   |>> Type.Record
+        ; tuple_ti    |>> Type.Tuple
+        ; range_expr  |>> Type.Range 
+        ; ident       |>> Type.Id
+        ; set_literal |>> Type.Set ]
         |> choice
         <?!> "base-ti-tail"
     
@@ -1064,11 +1070,10 @@ module Parsers =
             <?!> "else-case"
             
         let elseif_case =
-            kw "elseif"
-            >>. expr
-            .>> sps1 "then"
-            >>. expr
-            |> many
+            kw1 "elseif"
+            >>. (ps expr)
+            .>> (kw1 "then")
+            >>. (ps expr)
             <?!> "elseif-case"
             
         let else_case =
@@ -1079,7 +1084,7 @@ module Parsers =
         pipe4
             if_case
             then_case
-            elseif_case
+            (many elseif_case)
             else_case
             (fun if_ then_ elseif_ else_ ->
                 { If = if_

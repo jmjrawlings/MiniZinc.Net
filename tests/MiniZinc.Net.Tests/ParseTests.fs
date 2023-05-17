@@ -166,23 +166,25 @@ module ParseTests =
         
     [<Fact>]
     let test_xd () =
-        let input = "constraint -76706*x[0];"
-        let output = test_parse Parsers.constraint_item input
+        let input = "var llower..lupper: Production;"
+        let output = test_parse Parsers.var_decl_item input
         ()
         
     [<Fact>]
     let ``test array2d literal`` () =
         let input = """[|
-_, _, _, _, _, _, _, _, _|
-_, 6, 8, 4, _, 1, _, 7, _|
-_, _, _, _, 8, 5, _, 3, _|
-_, 2, 6, 8, _, 9, _, 4, _|
-_, _, 7, _, _, _, 9, _, _|
-_, 5, _, 1, _, 6, 3, 2, _|
-_, 4, _, 6, 1, _, _, _, _|
-_, 3, _, 2, _, 7, 6, 9, _|
-_, _, _, _, _, _, _, _, _|
-|]"""
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+     | 0, 0, _, _, _, _, 0, _, _, _, 0
+     | 0, _, 0, _, _, _, _, _, _, _, 0
+     | 0, _, _, _, _, _, _, _, _, _, 0
+     | 0, 0, _, _, _, _, _, _, 0, _, 0
+     | 0, _, _, _, _, _, _, _, _, _, 0
+     | 0, _, 0, _, 0, _, _, _, _, _, 0
+     | 0, _, _, 0, _, _, _, _, _, _, 0
+     | 0, _, _, _, _, _, _, _, _, _, 0
+     | 0, _, _, _, _, _, _, _, _, _, 0
+     | 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+     |]"""
         let output = test_parse Parsers.array2d_literal input
         ()
 
@@ -224,3 +226,15 @@ _, _, _, _, _, _, _, _, _|
         let output = test_parse Parsers.gen_call_expr input
         ()
         
+    [<Fact>]
+    let ``test output``() =
+        let input = """
+output
+  [ if i = n_stores then "\n]"
+    elseif i mod 5 = 0 then ",\n"
+    else ","
+    endif
+  ];
+  """
+        let output = test_parse Parsers.model input
+        ()
