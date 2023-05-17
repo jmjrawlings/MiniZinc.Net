@@ -1,5 +1,3 @@
-MIT License
-
 Copyright notice:
 
  (C) 2021-2023 Justin Rawlings
