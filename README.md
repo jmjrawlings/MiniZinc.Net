@@ -2,12 +2,9 @@
 
 Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
 
-> This is unfinished. I've only made it public the parser is pretty good and 
-> others might benefit from it.
-
-
-
-
+> *PLEASE NOTE*
+> This is very much a work in progress.  I'm only making it public at this point because the parser is pretty good and I'm
+> sure others can benefit from it.
 
 ## Immediate Goals
 
