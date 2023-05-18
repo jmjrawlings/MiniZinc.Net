@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net.Tests
+﻿namespace MiniZinc.Model.Tests
 
 open System.Runtime.CompilerServices
 open FluentAssertions
@@ -21,11 +21,3 @@ module Prelude =
     let test_parse parser input =
         let source, comments = Parse.sanitize input
         test_parse_raw parser source
-
-
-    [<Extension>]
-    type Extensions() =
-        
-        [<Extension>]
-        static member ShouldEqual(a: obj, b: string) =
-            (string a).Should().Be(b, "")

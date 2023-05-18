@@ -2,17 +2,22 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <FSharpCoreImplicitPackageVersion>7.0.200</FSharpCoreImplicitPackageVersion>
+        <RootNamespace>MiniZinc.Net.Tests</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="AssemblyInfo.fs" />
         <Compile Include="Prelude.fs" />
         <Compile Include="CommandTests.fs" />
-        <Compile Include="ParseTests.fs" />
         <Compile Include="SolveTests.fs" />
         <Compile Include="ExampleTests.fs" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.fsproj" />
+      <ProjectReference Include="..\..\src\MiniZinc.Solve\MiniZinc.Solve.fsproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="../examples/**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <LinkBase>examples</LinkBase>
+        </Content>
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="FluentAssertions" Version="6.11.0" />

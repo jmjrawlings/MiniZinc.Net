@@ -1,6 +1,7 @@
-﻿namespace MiniZinc.Net.Tests
+﻿namespace MiniZinc.Model.Tests
 
 open MiniZinc
+
 open Xunit
 
 module ParseTests =

@@ -3,13 +3,13 @@
     <Title>MiniZinc.Net</Title>
     <Description>Formulate and solve MiniZinc models in .NET</Description>
     <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>MiniZinc.Net</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Prelude.fs" />
     <Compile Include="Command.fs" />
     <Compile Include="Parse.fs" />    

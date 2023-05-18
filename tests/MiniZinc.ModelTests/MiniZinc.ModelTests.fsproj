@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <FSharpCoreImplicitPackageVersion>7.0.200</FSharpCoreImplicitPackageVersion>
+        <RootNamespace>MiniZinc.Net.Tests</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="Prelude.fs" />
+        <Compile Include="ParseTests.fs" />
+        <Compile Include="ExampleTests.fs" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\MiniZinc.Model\MiniZinc.Model.fsproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="../examples/**">
+            <LinkBase>examples</LinkBase>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="FluentAssertions" Version="6.11.0" />
+      <PackageReference Include="Microsoft.Net.Test.Sdk" Version="17.5.0" />
+      <PackageReference Include="xunit.core" Version="2.4.2" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">          
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        <PrivateAssets>all</PrivateAssets>
+      </PackageReference>
+    </ItemGroup>
+</Project>
