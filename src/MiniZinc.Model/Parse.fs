@@ -1,32 +1,48 @@
 ﻿namespace MiniZinc
 
 open System
-open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
+open System.Text
 open FParsec
+open MiniZinc.AST
 
 type ParseError =
     { Message: string
+    ; Line : int64
+    ; Column : int64
+    ; Index : int64
     ; Trace: string }
 
-exception ParseException of ParseError
-
-type ParseResult<'T> = Result<'T, ParseError>
-
+type ParseResult<'T> =
+    Result<'T, ParseError>
 
 module ParseUtils =
-    type DebugInfo = { Message: string; Indent: int }
-    type UserState = { mutable Debug: DebugInfo }
+
+    type UserState() =
+        let sb = StringBuilder()
+        let mutable indent = 0
+
+        member this.Indent
+            with get() = indent
+            and set(v : int) = indent <- v
+                
+        member this.write (msg: string) =
+            sb.AppendLine msg
+            
+        member this.Message =
+            sb.ToString()
+
     type P<'t> = Parser<'t, UserState>
-    [<Struct>] type DebugEvent<'a> = Enter | Leave of Reply<'a>
     
-    let todo<'t> () : P<'t> =
-        preturn Unchecked.defaultof<'t>
+    [<Struct>]
+    type DebugEvent<'a> =
+        | Enter
+        | Leave of Reply<'a>
     
-    let addToDebug (stream:CharStream<UserState>) label event =
+    let addToDebug (stream: CharStream<UserState>) label event =
         let msgPadLen = 50
-        let startIndent = stream.UserState.Debug.Indent
+        let startIndent = stream.UserState.Indent
         let msg, indent, nextIndent = 
             match event with
             | Enter ->
@@ -52,10 +68,8 @@ module ParseUtils =
         let correctedStr = msg.Replace("\n", replaceStr)
         let fullStr = $"%s{posIdentStr} %s{correctedStr}\n"
 
-        stream.UserState.Debug <- {
-            Message = stream.UserState.Debug.Message + fullStr
-            Indent = nextIndent
-        }
+        stream.UserState.write fullStr
+        stream.UserState.Indent <- nextIndent
 
     // Add debug info to the given parser
     let (<!>) (p: P<'t>) label : P<'t> =
@@ -256,264 +270,9 @@ module ParseUtils =
 open ParseUtils
 open type ParseUtils.P
 
-module AST =
-    
-    let [<Literal>] DOUBLE_QUOTE = '"'
-    let [<Literal>] SINGLE_QUOTE = '''
-    let [<Literal>] BACKTICK = '`'
-
-    type BaseType =    
-        | Int
-        | Bool
-        | String
-        | Float
-    
-    type Ident = string
-    
-    [<Struct>]
-    [<DebuggerDisplay("_")>]
-    type WildCard =
-        | WildCard
-    
-    type Comment = string
-    
-    type BinaryOp = string
-        
-    type UnaryOp = string
-    
-    type Op = string
-    
-    [<DebuggerDisplay("{String}")>]
-    [<Struct>]
-    // A value of 'T' or an identifier
-    type IdentOr<'T> =
-        | Value of value:'T
-        | Ident of name:string
-        
-        member this.String =
-            match this with
-            | Value v -> string v
-            | Ident s -> s
-            
-        
-        override this.ToString() =
-            this.String
-            
-        
-                
-    type SolveMethod =
-        | Satisfy = 0
-        | Minimize = 1
-        | Maximize = 2
-   
-    type Expr =
-        | WildCard      of WildCard  
-        | Int           of int
-        | Float         of float
-        | Bool          of bool
-        | String        of string
-        | Id            of string
-        | Op            of string
-        | Bracketed     of Expr
-        | Set           of SetExpr
-        | SetComp       of SetCompExpr
-        | Array1d       of Array1dExpr
-        | Array1dIndex
-        | Array2d       of Array2dExpr
-        | Array2dIndex
-        | ArrayComp     of ArrayCompExpr
-        | ArrayCompIndex
-        | Tuple         of TupleExpr
-        | Record        of RecordExpr
-        | UnaryOp       of IdentOr<UnaryOp> * Expr
-        | BinaryOp      of Expr * IdentOr<BinaryOp> * Expr
-        | Annotation
-        | IfThenElse    of IfThenElseExpr
-        | Let           of LetExpr
-        | Call          of CallExpr
-        | GenCall       of GenCallExpr 
-        | Indexed       of expr:Expr * index: ArrayAccess list
-    
-    and ArrayAccess = Expr list
-    
-    and Annotation = Expr
-    
-    and Annotations = Annotation list
-    
-    and GenCallExpr =
-        { Name: IdentOr<Op>
-        ; Expr : Expr 
-        ; Generators : Generator list }
-        
-    and ArrayCompExpr =
-        { Yield : Expr         
-        ; From : Generator list }
-    
-    and SetCompExpr =
-        { Yield : Expr         
-        ; From : Generator list }
-
-    and Generator =
-        { Yield : IdentOr<WildCard> list
-        ; From  : Expr
-        ; Where : Expr option }
-    
-    and CallExpr =
-        { Name: IdentOr<Op>
-        ; Args: Expr list }
-    
-    and SetExpr = Expr list
-    
-    and Array1dExpr = Expr list
-    
-    and Array2dExpr = Array1dExpr list
-    
-    and TupleExpr = Expr list
-    
-    and RecordExpr = Map<string, Expr>
-        
-    and SolveSatisfy =
-        { Annotations : Annotations }
-        
-    and SolveOptimise =
-        { Annotations : Annotations
-          Method : SolveMethod
-          Objective : Expr }
-        
-    and SolveItem =
-        | Satisfy of SolveSatisfy
-        | Optimise of SolveOptimise
-        
-        member this.Method =
-            match this with
-            | Satisfy _ -> SolveMethod.Satisfy
-            | Optimise o -> o.Method
-            
-        member this.Annotations =
-            match this with
-            | Satisfy s -> s.Annotations
-            | Optimise o -> o.Annotations
-
-    and IfThenElseExpr =
-        { If     : Expr
-        ; Then   : Expr
-        ; ElseIf : Expr list
-        ; Else   : Expr}
-   
-    and NumExpr =
-        | Int         of int
-        | Float       of float
-        | Id          of string
-        | Op          of string
-        | Bracketed   of NumExpr
-        | Call        of CallExpr
-        | IfThenElse  of IfThenElseExpr
-        | Let         of LetExpr
-        | UnaryOp     of IdentOr<NumericUnaryOp> * NumExpr
-        | BinaryOp    of NumExpr * IdentOr<NumericBinaryOp> * NumExpr
-        | ArrayAccess of NumExpr * ArrayAccess list
-            
-    and NumericUnaryOp = string
-    and NumericBinaryOp = string
-    
-    and Enum =
-        { Name : string
-        ; Annotations : Annotations
-        ; Cases : EnumCase list }
-        
-    and EnumCase =
-        | Name of string
-        | Expr of Expr
-    
-    /// <summary>
-    /// Instantiation of a Type
-    /// </summary>
-    /// <remarks>
-    /// We have flattened out the `ti-expr` EBNF
-    /// rule here that a single class that convers
-    /// everything. 
-    /// </remarks>
-    and TypeInst =
-        { Type        : Type
-          Name        : string
-          IsVar       : bool
-          IsSet       : bool
-          IsOptional  : bool
-          Annotations : Annotations
-          Dimensions  : Type list
-          Expr        : Expr option }
-    
-    and Type =
-        | Int
-        | Bool
-        | String
-        | Float
-        | Id        of string
-        | Variable  of string
-        | Tuple     of TypeInst list
-        | Record    of TypeInst list
-        | Set       of Expr list
-        | Range     of lower:NumExpr * upper:NumExpr
-            
-    and Item =
-        | Include    of string
-        | Enum       of Enum
-        | Alias      of AliasItem
-        | Constraint of ConstraintItem
-        | Assign     of AssignItem
-        | Declare    of DeclareItem
-        | Solve      of SolveItem
-        | Predicate  of PredicateItem
-        | Function   of FunctionItem
-        | Test       of TestItem
-        | Output     of OutputItem
-        | Annotation of AnnotationItem
-        | Comment    of string
-
-    and AnnotationItem = CallExpr
-
-    and ConstraintItem = Expr
-            
-    and IncludeItem = string
-            
-    and PredicateItem = OperationItem
-    
-    and TestItem = OperationItem
-    
-    and AliasItem = TypeInst
-
-    and OutputItem = Expr
-    
-    and OperationItem =
-        { Name: string
-          Parameters : TypeInst list
-          Annotations : Annotations
-          Body: Expr option }
-        
-    and FunctionItem =
-        { Name: string
-          Returns : TypeInst
-          Parameters : TypeInst list
-          Body: Expr option }
-    
-    and Test = unit
-    
-    and AssignItem = string * Expr
-    
-    and DeclareItem = TypeInst
-    
-    and LetItem =
-        | Declare of DeclareItem
-        | Constraint of ConstraintItem
-        
-    and LetExpr =
-        { Locals: LetItem list
-          In: Expr }
         
 
 module Parsers =
-    
-    open AST
     
     let simple_ident : P<Ident> =
         regex "_?[A-Za-z][A-Za-z0-9_]*"
@@ -564,7 +323,7 @@ module Parsers =
         
         let name =
             simple_ident
-            |> between(BACKTICK, BACKTICK)
+            |> between('`', '`')
             |> attempt
             |>> IdentOr.Ident
             
@@ -578,7 +337,7 @@ module Parsers =
         
         let value =
             p
-            |> between(SINGLE_QUOTE, SINGLE_QUOTE)
+            |> between(''', ''')
             |> attempt
             |>> IdentOr.Value
         
@@ -876,7 +635,7 @@ module Parsers =
                 ; Dimensions = []
                 ; IsVar = var
                 ; Annotations = [] 
-                ; Expr = None }
+                ; Value = None }
             )
         <?!> "base-ti"
     
@@ -1028,7 +787,7 @@ module Parsers =
             (fun ti anns expr ->
                 { ti with
                     Annotations = anns;
-                    Expr = expr
+                    Value = expr
                 })
 
     // <constraint-item>
@@ -1105,7 +864,7 @@ module Parsers =
         
     let quoted_op =
         builtin_op
-        |> between(SINGLE_QUOTE, SINGLE_QUOTE)
+        |> between(''', ''')
         |> attempt
     
     // <array-acces-tail>
@@ -1114,6 +873,7 @@ module Parsers =
         |> between(p '[', p ']', p ',', many=true)
         <?!> "array-access"
         
+    // <expr-atom-tail>        
     let expr_atom_tail =
         (many (attempt (sp array_access)))
 
@@ -1311,7 +1071,6 @@ module Parsers =
 module Parse =
     
     open System.Text.RegularExpressions
-    open AST
     
     // Sanitize the input string by removing any
     // blank lines and comments
@@ -1349,12 +1108,21 @@ module Parse =
         
     // Parse the given string with the given parser
     let string (parser: P<'t>) (input: string) : ParseResult<'t> =
-        let state = { Debug = { Message = ""; Indent = 0 } }
+        
+        let state = UserState()
+        
         match runParserOnString parser state "" input with
+        
         | Success (value, _state, _pos) ->
             Result.Ok value
+            
         | Failure (msg, err, state) ->
-            let err = { Message = msg; Trace = state.Debug.Message }
+            let err =
+                { Message = msg
+                ; Line = err.Position.Line
+                ; Column = err.Position.Column
+                ; Index = err.Position.Index
+                ; Trace = state.Message }
             Result.Error err
             
     // Parse the given file with the given parser
