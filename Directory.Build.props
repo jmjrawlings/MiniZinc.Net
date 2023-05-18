@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <PackageTags>F#, fsharp</PackageTags>
+        <PackageTags>MiniZinc, Optimization, Constraint Programming</PackageTags>
         <PackageProjectUrl>https://github.com/jmjrawlings/MiniZinc.Net</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/jmjrawlings/MiniZinc.Net/blob/master/LICENSE.md</PackageLicenseUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>

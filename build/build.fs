@@ -14,20 +14,30 @@ open MiniZinc.Build
 let cwd = di __SOURCE_DIRECTORY__
 let root = cwd.Parent
 
-let src_name = "MiniZinc.Net"
 let src_dir = root <//> "src"
-let src_proj_dir = src_dir <//> src_name
-let src_proj_file = src_proj_dir </> $"{src_name}.fs"
 
-let test_name = "MiniZinc.Net.Tests"
+let model_proj_name = "MiniZinc.Model"
+let model_proj_dir = src_dir <//> model_proj_name
+let model_proj_file = model_proj_dir </> $"{model_proj_name}.fs"
+
+let solve_proj_name = "MiniZinc.Solve"
+let solve_proj_dir = src_dir <//> solve_proj_name
+let solve_proj_file = solve_proj_dir </> $"{solve_proj_name}.fs"
+
+
 let test_dir = root <//> "tests"
-let test_proj_dir = test_dir <//> test_name
-let test_proj_file = test_proj_dir </> "MiniZinc.Net.Tests.fsproj"
+
+let model_tests_name = "MiniZinc.ModelTests"
+let model_test_proj_dir = test_dir <//> model_tests_name
+let model_test_proj_file = model_test_proj_dir </> $"{model_tests_name}.fsproj"
+
+let solve_tests_name = "MiniZinc.SolveTests"
+let solve_test_proj_dir = test_dir <//> solve_tests_name
+let solve_test_proj_file = solve_test_proj_dir </> $"{solve_tests_name}.fsproj"
+
 
 let obj = cwd <//> "obj"
-let examples_dir = test_proj_dir <//> "examples"
-let example_tests_file = test_proj_dir </> "ExampleTests.fs"
-
+let examples_dir = test_dir <//> "examples"
 
 
 /// <summary>
@@ -80,35 +90,40 @@ let download_test_models () =
 /// test suite we create our own test in a dedicated
 /// module. 
 /// </remarks>
-let create_test_suite() =
+let create_example_parse_tests () =
         
-    let mutable code = """module MiniZinc.Net.Tests.ExampleTests
+    let mutable code = """
+namespace MiniZinc.Model.Tests
 
 open MiniZinc
 open Xunit
 open System.IO
 
-let example_dir =
-    $"{__SOURCE_DIRECTORY__}/examples"
-
-type TestSpec =
-    { Name   : string 
-    ; File   : FileInfo
-    ; String : string }
+module ExampleTests =
     
-    static member create name =
-        let file = FileInfo $"{example_dir}/{name}.mzn"
+    type TestSpec =
+        { Name   : string 
+        ; File   : FileInfo
+        ; String : string }
+        
+    // Test the given Spec    
+    let test_spec (spec: TestSpec) =
+        let input = spec.String
+        let output = test_parse Parsers.model input
+        ()
+        
+    // Test the given example from its Spec name    
+    let test (name: string) =
+        let file = FileInfo $"examples/{name}.mzn"
         let string = File.ReadAllText file.FullName
-        let spec = { Name = name ; File = file; String = string }
-        spec
-    
-let test (spec: TestSpec) =
-    let result = test_parse Parsers.model spec.String
-    result
-    
+        let spec =
+            { Name = name
+            ; File = file
+            ; String = string }
+        test_spec spec
 
 """
-
+    
     let examples =
         examples_dir
         |> DirectoryInfo.getMatchingFiles "*.mzn"
@@ -116,21 +131,24 @@ let test (spec: TestSpec) =
     for example in examples do
         let name = example.NameWithoutExtension
         let test_case = $"""
-[<Fact>]
-let ``test {name}`` () =
-    let spec = TestSpec.create "{name}" 
-    let result = test spec
-    ()
-    """
+    [<Fact>]
+    let ``test {name}`` () =
+        test "{name}"
+"""
+
         code <- code + "\n" + test_case
+    
+    let destination =
+        model_test_proj_dir </> "ExampleTests.fs"
     
     File.writeString
         false
-        example_tests_file.FullName
+        destination.FullName
         code
         
+        
 let run_tests() =
-    test_proj_file.FullName
+    model_test_proj_file.FullName
     |> DotNet.test (fun opts ->
         { opts with
             Configuration = DotNet.BuildConfiguration.Release }
@@ -141,8 +159,8 @@ let init() =
     Target.create "DownloadTestModels" <| fun _ ->
         download_test_models ()
         
-    Target.create "CreateTestSuite" <| fun _ ->
-        create_test_suite ()
+    Target.create "CreateExampleParseTests" <| fun _ ->
+        create_example_parse_tests ()
         
     Target.create "RunTests" <| fun _ ->
         run_tests()        
@@ -151,7 +169,7 @@ let init() =
         ()        
 
     "DownloadTestModels"
-        ==> "CreateTestSuite"
+        ==> "CreateExampleParseTests"
         
     "RunTests"
         ==> "All"

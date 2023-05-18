@@ -69,7 +69,7 @@ module ParseUtils =
     Adding debug information to the parser is very
     slow so we only enable it for DEBUG
     *)
-    #if DEBUG
+    #if TRACE_PARSER
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label <!> label
     #else

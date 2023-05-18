@@ -11,11 +11,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Prelude.fs" />
-    <Compile Include="Parse.fs" />    
-    <Compile Include="Model.fs" />
+    <Compile Include="Command.fs" />
+    <Compile Include="Solve.fs" />
+    <Compile Include="MiniZinc.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="fparsec" Version="1.1.1" />
+    <PackageReference Include="fsharp.control.taskseq" Version="0.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MiniZinc.Model\MiniZinc.Model.fsproj" />
   </ItemGroup>
 </Project>
  
