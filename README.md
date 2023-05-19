@@ -6,7 +6,7 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 > 
 > This is pre-release software.
 > 
-> I'm only making it public at this point because the parser looking really good and I'm sure others can benefit from it.
+> I'm only making it public at this point because I'm quite happy with the parser and I'm sure others can benefit from it.
 > 
 
 ## Immediate Goals
@@ -44,7 +44,7 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 ## Motivation
 
 - Give back to the MiniZinc community
-- Share 
+- Share what I've learned from solving problems in industry
 - Promote MiniZinc and constraint solving  
 - Make modelling and solving CP problems a joyful experience
 - Get this library to a level I would use professionally in production
