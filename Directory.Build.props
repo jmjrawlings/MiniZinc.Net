@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <PackageTags>MiniZinc, Optimization, Constraint Programming</PackageTags>
+        <PackageTags>MiniZinc, Optimisation, Constraint Modelling, Constraint Programming, Boolean Satisfiability, Mixed Integer Programming</PackageTags>
         <PackageProjectUrl>https://github.com/jmjrawlings/MiniZinc.Net</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/jmjrawlings/MiniZinc.Net/blob/master/LICENSE.md</PackageLicenseUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
