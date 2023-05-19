@@ -4,8 +4,9 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 
 > *PLEASE NOTE*
 > 
-> This is very much a work in progress.  I'm only making it public at this point because the parser is pretty good and I'm
+> This is still very much a work in progress.  I'm only making it public at this point because the parser is pretty good and I'm
 > sure others can benefit from it.
+
 
 ## Immediate Goals
 
@@ -46,3 +47,14 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 - Promote MiniZinc and constraint solving  
 - Make modelling and solving CP problems a joyful experience
 - Get this library to a level I would use professionally in production
+
+
+## References
+
+- [MiniZinc Installation](https://www.minizinc.org/doc-2.7.4/en/installation.html)
+- [MiniZinc Tutorial](https://www.minizinc.org/doc-2.7.4/en/part_2_tutorial.html)
+- [MiniZinc User Manual](https://www.minizinc.org/doc-2.7.4/en/part_3_user_manual.html)
+- [MiniZinc Reference](https://www.minizinc.org/doc-2.7.4/en/part_4_reference.html)
+- [Basic Modelling Course 1](https://www.coursera.org/learn/basic-modeling)
+- [Advanced Modelling Course 2](https://www.coursera.org/learn/advanced-modeling)
+- [libminizinc repository](https://github.com/MiniZinc/libminizinc)

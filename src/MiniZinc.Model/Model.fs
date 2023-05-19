@@ -3,7 +3,6 @@
 open System.Runtime.InteropServices
 open System
 open System.IO
-open MiniZinc.AST
 
     
 [<AutoOpen>]
@@ -52,6 +51,4 @@ module rec Model =
             
         let parseString string =
             Parse.string Parsers.model string
-            
-        let parseAst (ast: AST) =
-            []
+             

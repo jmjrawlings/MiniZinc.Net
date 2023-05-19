@@ -1,5 +1,6 @@
 namespace MiniZinc
 
+
 [<AutoOpen>]
 module Prelude =
     let a = ()
@@ -28,4 +29,3 @@ module Result =
         match errs.Count with
         | 0 -> Ok (Seq.toList oks)
         | _ -> Error (Seq.toList errs)
-    

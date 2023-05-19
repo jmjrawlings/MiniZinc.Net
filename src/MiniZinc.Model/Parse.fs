@@ -5,7 +5,6 @@ open System.IO
 open System.Runtime.InteropServices
 open System.Text
 open FParsec
-open MiniZinc.AST
 
 type ParseError =
     { Message: string
@@ -120,7 +119,7 @@ module ParseUtils =
             pstring x
         
         // parse spaces
-        static member ps x =
+        static member ps (x: P<'t>) : P<'t> =
             x .>> spaces
         
         // parse spaces    
@@ -132,7 +131,7 @@ module ParseUtils =
             pchar x .>> spaces
         
         // parse spaces1
-        static member ps1 x =
+        static member ps1 (x: P<'t>) : P<'t> =
             x .>> spaces1
         
         // parse spaces1    
@@ -144,7 +143,7 @@ module ParseUtils =
             pchar x .>> spaces1            
         
         // space parse space    
-        static member sps x =
+        static member sps (x: P<'t>) : P<'t> =
             between spaces spaces x
         
         // space parse space
@@ -156,7 +155,7 @@ module ParseUtils =
             P.sps (pchar c)
             
         // space1 parse space1
-        static member sps1 x =
+        static member sps1 (x: P<'t>) : P<'t> =
             between spaces1 spaces1 x
 
         // space1 parse space1        
@@ -168,7 +167,7 @@ module ParseUtils =
             P.sps1 (pchar c)
         
         // space parse     
-        static member sp x =
+        static member sp (x: P<'t>) : P<'t> =
             spaces >>. x
 
         // space parse     
@@ -180,7 +179,7 @@ module ParseUtils =
             P.sp (pstring s)
             
         // space1 parse
-        static member sp1 x =
+        static member sp1 (x: P<'t>) : P<'t> =
             spaces1 >>. x
             
         // space1 parse
@@ -274,14 +273,14 @@ open type ParseUtils.P
 
 module Parsers =
     
-    let simple_ident : P<Ident> =
+    let simple_ident : P<Id> =
         regex "_?[A-Za-z][A-Za-z0-9_]*"
 
-    let quoted_ident : P<Ident> =
+    let quoted_ident : P<Id> =
         regex "'[^'\x0A\x0D\x00]+'"
         
     // <ident>
-    let ident : P<Ident> =
+    let ident : P<Id> =
         regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
         <?!> "identifier"
 
@@ -316,30 +315,30 @@ module Parsers =
     let (=>) (key: string) (value) =
         pstring key >>% value
             
-    let value_or_quoted_name (p: P<'T>) : P<IdentOr<'T>> =
+    let value_or_quoted_name (p: P<'T>) : P<IdOr<'T>> =
         
         let value =
-            p |>> IdentOr.Value
+            p |>> IdOr.Value
         
         let name =
             simple_ident
             |> between('`', '`')
             |> attempt
-            |>> IdentOr.Ident
+            |>> IdOr.Ident
             
         name <|> value
     
       
-    let name_or_quoted_value (p: P<'T>) : P<IdentOr<'T>> =
+    let name_or_quoted_value (p: P<'T>) : P<IdOr<'T>> =
         
         let name =
-            ident |>> IdentOr.Ident
+            ident |>> IdOr.Ident
         
         let value =
             p
             |> between(''', ''')
             |> attempt
-            |>> IdentOr.Value
+            |>> IdOr.Value
         
         value <|> name  
         
@@ -367,67 +366,69 @@ module Parsers =
         |> between('"', '"')
     
     // <builtin-num-un-op>
-    let builtin_num_un_ops =
-        [ p "+" ; p "-" ]
+    let builtin_num_un_ops : P<NumericBinaryOp> list =
+        [ "+" => NumericBinaryOp.Add
+        ; "-" => NumericBinaryOp.Subtract ]
         
     let builtin_num_un_op =
         builtin_num_un_ops
         |> choice
     
     // <builtin-num-bin-op>
-    let builtin_num_bin_ops =
-         [ p "+"
-         ; p "-"
-         ; p "*"
-         ; p "/"
-         ; (kw "div")
-         ; (kw "mod")
-         ; p "^"
-         ; p "~+"
-         ; p "~-"
-         ; p "~*"
-         ; p "~/"
-         ; p "~div" ]
+    let builtin_num_bin_ops : P<BinaryOp> list =
+         [ "+" => BinaryOp.Add
+         ; "-" => BinaryOp.Subtract 
+         ; "*" => BinaryOp.Multiply
+         ; "/" => BinaryOp.Divide         
+         ; "^" => BinaryOp.Exponent
+         ; "~+" => BinaryOp.TildeAdd
+         ; "~-" => BinaryOp.TildeSubtract
+         ; "~*" => BinaryOp.TildeMultiply
+         ; "~/" => BinaryOp.TildeDivide
+         ; kw "div" >>% BinaryOp.Div
+         ; kw "mod" >>% BinaryOp.Mod
+         ; p "~div" >>% BinaryOp.TildeDiv ]
         
     let builtin_num_bin_op =
          builtin_num_bin_ops
          |> choice
             
     // <builtin-bin-op>            
-    let builtin_bin_ops = 
-        [ p "<->"
-        ; p "->"
-        ; p "<-"
-        ; p "\/"
-        ; kw "xor"
-        ; p "/\\"
-        ; p "<="
-        ; p ">="
-        ; p "=="
-        ; p "<"
-        ; p ">"
-        ; p "="
-        ; p "!="
-        ; p "~="
-        ; p "~!="
-        ; kw "in"
-        ; kw "subset"
-        ; kw "superset"
-        ; kw "union"
-        ; kw "diff"
-        ; kw "symdiff"
-        ; p ".."
-        ; kw "intersect"
-        ; p "++"
-        ; kw "default" ]
+    let builtin_bin_ops : P<BinaryOp> list = 
+        [ "<->"          => int BinaryOp.Equivalent
+        ; "->"           => BinaryOp.Implies
+        ; "<-"           => BinaryOp.ImpliedBy
+        ; "\/"           => BinaryOp.Or
+        ; "/\\"          => BinaryOp.And
+        ; "<="           => BinaryOp.LessThanEqual
+        ; ">="           => BinaryOp.GreaterThanEqual
+        ; "=="           => BinaryOp.EqualEqual
+        ; "<"            => BinaryOp.LessThan
+        ; ">"            => BinaryOp.GreaterThan
+        ; "="            => BinaryOp.Equal
+        ; "!="           => BinaryOp.NotEqual
+        ; "~="           => BinaryOp.TildeEqual
+        ; "~!="          => BinaryOp.TildeNotEqual
+        ; ".."           => BinaryOp.DotDot
+        ; "++"           => BinaryOp.PlusPlus
+        ; kw "xor"       >>% BinaryOp.Xor
+        ; kw "in"        >>% BinaryOp.In
+        ; kw "subset"    >>% BinaryOp.Subset
+        ; kw "superset"  >>% BinaryOp.Superset
+        ; kw "union"     >>% BinaryOp.Union
+        ; kw "diff"      >>% BinaryOp.Diff
+        ; kw "symdiff"   >>% BinaryOp.SymDiff
+        ; kw "intersect" >>% BinaryOp.Intersect
+        ; kw "default"   >>% BinaryOp.Default ]
         @ builtin_num_bin_ops
         
-    let builtin_bin_op : P<string> =
+        
+    let builtin_bin_op : P<BinaryOp> =
         builtin_bin_ops
         |> choice
         
     let builtin_un_ops =
-        builtin_num_un_ops @ [kw "not"]
+        builtin_num_un_ops @ [kw "not" >>% UnaryOp.Not]
         
     let builtin_un_op : P<string> =
         builtin_un_ops
@@ -439,7 +440,7 @@ module Parsers =
 
     // <ti-expr>
     let base_ti_expr_tail, base_ti_expr_tail_ref =
-        createParserForwardedToRef<Type, UserState>()
+        createParserForwardedToRef<BaseType, UserState>()
         
     // <expr>
     let expr, expr_ref =
@@ -451,11 +452,11 @@ module Parsers =
 
     // <num-expr>    
     let num_expr, num_expr_ref =
-        createParserForwardedToRef<NumExpr, UserState>()
+        createParserForwardedToRef<NumericExpr, UserState>()
         
     // <num-expr-atom>
     let num_expr_atom, num_expr_atom_ref =
-        createParserForwardedToRef<NumExpr, UserState>()
+        createParserForwardedToRef<NumericExpr, UserState>()
         
     // <num-expr-atom>
     let annotations, annotations_ref =
@@ -575,7 +576,7 @@ module Parsers =
           
     // <enum-item>
     // TODO: complex constructors
-    let enum_item : P<Enum> =
+    let enum_item : P<EnumItem> =
         let members =
             enum_case
             |> between(p '{', p '}', p ',')
@@ -676,15 +677,15 @@ module Parsers =
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ kw "bool"   >>% Type.Bool
-        ; kw "int"    >>% Type.Int
-        ; kw "string" >>% Type.String
-        ; kw "float"  >>% Type.Float
-        ; record_ti   |>> Type.Record
-        ; tuple_ti    |>> Type.Tuple
-        ; range_expr  |>> Type.Range 
-        ; ident       |>> Type.Id
-        ; set_literal |>> Type.Set ]
+        [ kw "bool"   >>% BaseType.Bool
+        ; kw "int"    >>% BaseType.Int
+        ; kw "string" >>% BaseType.String
+        ; kw "float"  >>% BaseType.Float
+        ; record_ti   |>> BaseType.Record
+        ; tuple_ti    |>> BaseType.Tuple
+        ; range_expr  |>> BaseType.Range 
+        ; ident       |>> BaseType.Id
+        ; set_literal |>> BaseType.Set ]
         |> choice
         <?!> "base-ti-tail"
     
@@ -718,9 +719,9 @@ module Parsers =
     // <comp-tail>
     let comp_tail : P<Generator list> =
         let var =
-            (wildcard |>> IdentOr.Value)
+            (wildcard |>> IdOr.Value)
             <|>
-            (ident |>> IdentOr.Ident)
+            (ident |>> IdOr.Ident)
             <?!> "gen-var"
         let vars =
             var
@@ -879,15 +880,15 @@ module Parsers =
 
     // <num-expr-atom-head>    
     let num_expr_atom_head=
-        [ float_literal      |>> NumExpr.Float
-          int_literal        |>> NumExpr.Int
-          bracketed num_expr |>> NumExpr.Bracketed
-          let_expr           |>> NumExpr.Let
-          if_else_expr       |>> NumExpr.IfThenElse
-          call_expr          |>> NumExpr.Call
-          num_un_op          |>> NumExpr.UnaryOp
-          quoted_op          |>> NumExpr.Op 
-          ident              |>> NumExpr.Id
+        [ float_literal      |>> NumericExpr.Float
+          int_literal        |>> NumericExpr.Int
+          bracketed num_expr |>> NumericExpr.Bracketed
+          let_expr           |>> NumericExpr.Let
+          if_else_expr       |>> NumericExpr.IfThenElse
+          call_expr          |>> NumericExpr.Call
+          num_un_op          |>> NumericExpr.UnaryOp
+          quoted_op          |>> NumericExpr.Op 
+          ident              |>> NumericExpr.Id
           ]
         |> choice
         <?!> "num-expr-atom-head"
@@ -902,7 +903,7 @@ module Parsers =
                 | []->
                     head
                 | _ ->
-                    NumExpr.ArrayAccess (head, access)
+                    NumericExpr.ArrayAccess (head, access)
                 
             )
         <?!> "num-expr-atom"
@@ -923,7 +924,7 @@ module Parsers =
                 | None ->
                     head
                 | Some (op, right) ->
-                    NumExpr.BinaryOp (head, op, right)
+                    NumericExpr.BinaryOp (head, op, right)
             )
         <?!> "num-expr"        
         
