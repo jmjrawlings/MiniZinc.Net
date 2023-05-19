@@ -2,7 +2,7 @@
 
 Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
 
-> *USERS BEWARE*
+> **IMPORTANT**
 > 
 > This is pre-release software.
 > 
