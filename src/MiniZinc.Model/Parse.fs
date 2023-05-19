@@ -264,6 +264,22 @@ module ParseUtils =
         
         static member lookup([<ParamArray>] parsers: P<'t>[]) =
             choice parsers
+            
+        // Parse an Operator            
+        static member pOp<'T when 'T:enum<int>>(symbol: string, value: 'T) : P<int> =
+            let first = symbol.Chars 0
+            let p =
+                match Char.IsLetter first with
+                // Words (eg: diff) handled via keyword
+                | true ->
+                    attempt (
+                       pstring symbol
+                       .>> notFollowedBy letter
+                    )
+                | false ->
+                    pstring symbol
+            let v = LanguagePrimitives.EnumToValue value                    
+            p >>% v
 
 
 open ParseUtils
@@ -314,11 +330,14 @@ module Parsers =
         
     let (=>) (key: string) (value) =
         pstring key >>% value
+        
+    let (=!>)(key: string) (value: 'T) =
+        pOp(key, value)
             
     let value_or_quoted_name (p: P<'T>) : P<IdOr<'T>> =
         
         let value =
-            p |>> IdOr.Value
+            p |>> IdOr.Val
         
         let name =
             simple_ident
@@ -338,10 +357,9 @@ module Parsers =
             p
             |> between(''', ''')
             |> attempt
-            |>> IdOr.Value
+            |>> IdOr.Val
         
-        value <|> name  
-        
+        value <|> name
         
     // <int-literal>
     let int_literal =
@@ -365,82 +383,88 @@ module Parsers =
         manySatisfy (fun c -> c <> '"')
         |> between('"', '"')
     
-    // <builtin-num-un-op>
-    let builtin_num_un_ops : P<NumericBinaryOp> list =
-        [ "+" => NumericBinaryOp.Add
-        ; "-" => NumericBinaryOp.Subtract ]
+    let builtin_num_un_ops =
+        [ "+" =!> NumericBinaryOp.Add
+        ; "-" =!> NumericBinaryOp.Subtract ]
         
+    // <builtin-num-un-op>
     let builtin_num_un_op =
         builtin_num_un_ops
         |> choice
+        |>> enum<NumericUnaryOp>
     
-    // <builtin-num-bin-op>
-    let builtin_num_bin_ops : P<BinaryOp> list =
-         [ "+" => BinaryOp.Add
-         ; "-" => BinaryOp.Subtract 
-         ; "*" => BinaryOp.Multiply
-         ; "/" => BinaryOp.Divide         
-         ; "^" => BinaryOp.Exponent
-         ; "~+" => BinaryOp.TildeAdd
-         ; "~-" => BinaryOp.TildeSubtract
-         ; "~*" => BinaryOp.TildeMultiply
-         ; "~/" => BinaryOp.TildeDivide
-         ; kw "div" >>% BinaryOp.Div
-         ; kw "mod" >>% BinaryOp.Mod
-         ; p "~div" >>% BinaryOp.TildeDiv ]
+    let builtin_num_bin_ops =
+         [ "+" =!> BinaryOp.Add
+         ; "-" =!> BinaryOp.Subtract 
+         ; "*" =!> BinaryOp.Multiply
+         ; "/" =!> BinaryOp.Divide         
+         ; "^" =!> BinaryOp.Exponent
+         ; "~+" =!> BinaryOp.TildeAdd
+         ; "~-" =!> BinaryOp.TildeSubtract
+         ; "~*" =!> BinaryOp.TildeMultiply
+         ; "~/" =!> BinaryOp.TildeDivide
+         ; "div" =!> BinaryOp.Div
+         ; "mod" =!> BinaryOp.Mod
+         ; "~div" =!> BinaryOp.TildeDiv ]
         
+    // <builtin-num-bin-op>
     let builtin_num_bin_op =
          builtin_num_bin_ops
          |> choice
+         |>> enum<NumericBinaryOp>
             
-    // <builtin-bin-op>            
-    let builtin_bin_ops : P<BinaryOp> list = 
-        [ "<->"          => int BinaryOp.Equivalent
-        ; "->"           => BinaryOp.Implies
-        ; "<-"           => BinaryOp.ImpliedBy
-        ; "\/"           => BinaryOp.Or
-        ; "/\\"          => BinaryOp.And
-        ; "<="           => BinaryOp.LessThanEqual
-        ; ">="           => BinaryOp.GreaterThanEqual
-        ; "=="           => BinaryOp.EqualEqual
-        ; "<"            => BinaryOp.LessThan
-        ; ">"            => BinaryOp.GreaterThan
-        ; "="            => BinaryOp.Equal
-        ; "!="           => BinaryOp.NotEqual
-        ; "~="           => BinaryOp.TildeEqual
-        ; "~!="          => BinaryOp.TildeNotEqual
-        ; ".."           => BinaryOp.DotDot
-        ; "++"           => BinaryOp.PlusPlus
-        ; kw "xor"       >>% BinaryOp.Xor
-        ; kw "in"        >>% BinaryOp.In
-        ; kw "subset"    >>% BinaryOp.Subset
-        ; kw "superset"  >>% BinaryOp.Superset
-        ; kw "union"     >>% BinaryOp.Union
-        ; kw "diff"      >>% BinaryOp.Diff
-        ; kw "symdiff"   >>% BinaryOp.SymDiff
-        ; kw "intersect" >>% BinaryOp.Intersect
-        ; kw "default"   >>% BinaryOp.Default ]
+    let builtin_bin_ops = 
+        [ "<->"       =!> BinaryOp.Equivalent
+        ; "->"        =!> BinaryOp.Implies
+        ; "<-"        =!> BinaryOp.ImpliedBy
+        ; "\/"        =!> BinaryOp.Or
+        ; "/\\"       =!> BinaryOp.And
+        ; "<="        =!> BinaryOp.LessThanEqual
+        ; ">="        =!> BinaryOp.GreaterThanEqual
+        ; "=="        =!> BinaryOp.EqualEqual
+        ; "<"         =!> BinaryOp.LessThan
+        ; ">"         =!> BinaryOp.GreaterThan
+        ; "="         =!> BinaryOp.Equal
+        ; "!="        =!> BinaryOp.NotEqual
+        ; "~="        =!> BinaryOp.TildeEqual
+        ; "~!="       =!> BinaryOp.TildeNotEqual
+        ; ".."        =!> BinaryOp.DotDot
+        ; "++"        =!> BinaryOp.PlusPlus
+        ; "xor"       =!> BinaryOp.Xor
+        ; "in"        =!> BinaryOp.In
+        ; "subset"    =!> BinaryOp.Subset
+        ; "superset"  =!> BinaryOp.Superset
+        ; "union"     =!> BinaryOp.Union
+        ; "diff"      =!> BinaryOp.Diff
+        ; "symdiff"   =!> BinaryOp.SymDiff
+        ; "intersect" =!> BinaryOp.Intersect
+        ; "default"   =!> BinaryOp.Default ]
         @ builtin_num_bin_ops
         
         
+    // <builtin-bin-op>            
     let builtin_bin_op : P<BinaryOp> =
         builtin_bin_ops
         |> choice
+        |>> enum<BinaryOp>
         
     let builtin_un_ops =
-        builtin_num_un_ops @ [kw "not" >>% UnaryOp.Not]
-        
-    let builtin_un_op : P<string> =
+        builtin_num_un_ops
+        @ ["not" =!> UnaryOp.Not]
+
+    // <builtin-un-op>           
+    let builtin_un_op : P<UnaryOp> =
         builtin_un_ops
         |> choice
+        |>> enum<UnaryOp>
 
     // <ti-expr>
     let ti_expr, ti_expr_ref =
-        createParserForwardedToRef<TypeInst, UserState>()
+        createParserForwardedToRef<MzType, UserState>()
 
     // <ti-expr>
     let base_ti_expr_tail, base_ti_expr_tail_ref =
-        createParserForwardedToRef<BaseType, UserState>()
+        createParserForwardedToRef<BaseTypeTail, UserState>()
         
     // <expr>
     let expr, expr_ref =
@@ -476,13 +500,15 @@ module Parsers =
 
     let builtin_ops =
         builtin_bin_ops @ builtin_un_ops
-            
-    let builtin_op : P<string> =
+
+    // <builtin-op>            
+    let builtin_op : P<Op> =
         builtin_ops
         |> choice
+        |>> enum<Op>
         
     // 0 .. 10
-    let range_expr =
+    let range_expr : P<RangeExpr> =
         attempt (
             num_expr
             .>> sps ".."
@@ -523,17 +549,17 @@ module Parsers =
         <?!> "array2d-literal"
    
     // <ti-expr-and-id>
-    let ti_expr_and_id : P<TypeInst> =
+    let ti_expr_and_id : P<Id * MzType> =
         ti_expr
         .>> sps ':'
         .>>. ident
-        |>> (fun (expr, name) ->
-            { expr with Name = name })
+        |>> (fun (expr, name) -> (name, expr))
         <?> "ti-expr-and-id"    
     
-    let parameters : P<TypeInst list> =
+    let parameters =
         ti_expr_and_id
         |> between(p '(', p ')', p ',')
+        |>> Map.ofList
     
     // <operation-item-tail>
     // eg: even(var int: x) = x mod 2 = 0;
@@ -622,7 +648,7 @@ module Parsers =
         <?!> "set-ti"
    
     // <base-ti-expr>
-    let base_ti_expr : P<TypeInst> =
+    let base_ti_expr : P<BaseType> =
         pipe4
             var_par
             set_ti
@@ -632,20 +658,16 @@ module Parsers =
                 { Type = typ
                 ; IsOptional = opt
                 ; IsSet = set
-                ; Name = ""
-                ; Dimensions = []
-                ; IsVar = var
-                ; Annotations = [] 
-                ; Value = None }
+                ; IsVar = var }
             )
         <?!> "base-ti"
     
         
     // <array-ti-expr>        
-    let array_ti_expr : P<TypeInst> =
-        
+    let array_ti_expr : P<ArrayType> =
+
         let dimensions =
-            base_ti_expr_tail
+            ti_expr
             |> between(p '[', p ']', p ',')
             <?!> "array-dimensions"
         
@@ -653,14 +675,16 @@ module Parsers =
         >>.  dimensions
         .>>  sps1 "of"
         .>>. base_ti_expr
-        |>> (fun (dims, ti) ->
-            { ti with Dimensions = dims })
+        |>> (fun (dims, ty) ->
+            { Dimensions = dims
+              Type = ty })
         <?!> "array-ti-expr"
     
     // <ti-expr>        
     ti_expr_ref.contents <-
-        array_ti_expr
-        <|> base_ti_expr
+        [ array_ti_expr |>> MzType.Array
+        ; base_ti_expr |>> MzType.Base ]
+        |> choice
         <?!> "ti-expr"
 
     // <tuple-ti-expr-tail>
@@ -673,19 +697,20 @@ module Parsers =
     let record_ti =
         kw "record"
         >>. between1(p '(', p ')', p ',') ti_expr_and_id
+        |>> Map.ofList
         <?!> "record-ti"
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ kw "bool"   >>% BaseType.Bool
-        ; kw "int"    >>% BaseType.Int
-        ; kw "string" >>% BaseType.String
-        ; kw "float"  >>% BaseType.Float
-        ; record_ti   |>> BaseType.Record
-        ; tuple_ti    |>> BaseType.Tuple
-        ; range_expr  |>> BaseType.Range 
-        ; ident       |>> BaseType.Id
-        ; set_literal |>> BaseType.Set ]
+        [ kw "bool"   >>% BaseTypeTail.Bool
+        ; kw "int"    >>% BaseTypeTail.Int
+        ; kw "string" >>% BaseTypeTail.String
+        ; kw "float"  >>% BaseTypeTail.Float
+        ; record_ti   |>> BaseTypeTail.Record
+        ; tuple_ti    |>> BaseTypeTail.Tuple
+        ; range_expr  |>> BaseTypeTail.Range 
+        ; ident       |>> BaseTypeTail.Id
+        ; set_literal |>> BaseTypeTail.Literal ]
         |> choice
         <?!> "base-ti-tail"
     
@@ -719,7 +744,7 @@ module Parsers =
     // <comp-tail>
     let comp_tail : P<Generator list> =
         let var =
-            (wildcard |>> IdOr.Value)
+            (wildcard |>> IdOr.Val)
             <|>
             (ident |>> IdOr.Ident)
             <?!> "gen-var"
@@ -780,16 +805,16 @@ module Parsers =
         <?!> "set-comp"
             
     // <declare-item>
-    let var_decl_item =
+    let var_decl_item : P<DeclareItem> =
         pipe3
             (ps ti_expr_and_id)
             (ps annotations)
             (opt (ps '=' >>. expr))
-            (fun ti anns expr ->
-                { ti with
-                    Annotations = anns;
-                    Value = expr
-                })
+            (fun (id, ty) anns expr ->
+                { Type = ty
+                ; Name = id
+                ; Annotations = anns
+                ; Value = expr } )
 
     // <constraint-item>
     let constraint_item =
@@ -1027,16 +1052,15 @@ module Parsers =
         <?!> "assign-item"
         
     // <type-inst-syn-item>
-    let alias_item : P<TypeInst> =
+    let alias_item : P<AliasItem> =
         pipe3
             (kw1 "type" >>. ident .>> spaces)
             (ps annotations .>> ps "=")
             ti_expr
-            (fun name anns ti ->
-                { ti with
-                    Name = name
-                    Annotations = anns
-                  })
+            (fun name anns ty ->
+                { Name = name
+                ; Type = ty
+                ; Annotations = anns })
         <?!> "type-alias"
         
     // <output-item>

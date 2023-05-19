@@ -1,4 +1,3 @@
-
 namespace MiniZinc.Model.Tests
 
 open MiniZinc

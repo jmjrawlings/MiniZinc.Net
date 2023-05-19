@@ -190,9 +190,11 @@ module ParseTests =
         ()
 
                 
-    [<Fact>]
-    let ``test range expr `` () =
-        let input = """a = array1d(0..z, [x*x | x in 0..z]);"""
+    [<Theory>]
+    [<InlineData("a = array1d(0..z, [x*x | x in 0..z]);")>]
+    [<InlineData("a = 1..10;")>]
+    let ``test range expr `` arg =
+        let input = arg 
         let output = test_parse Parsers.model input
         ()
         

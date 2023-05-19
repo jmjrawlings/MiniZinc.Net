@@ -7,12 +7,13 @@ open System.IO
     
 [<AutoOpen>]
 module rec Model =
+    open MiniZinc
     
     // A MiniZinc model
     type Model =
         { Name    : string 
-        ; Inputs  : Map<string, TypeInst>
-        ; Outputs : Map<string, TypeInst>
+        ; Inputs  : Map<string, MzType>
+        ; Outputs : Map<string, MzType>
         ; String  : string }
         
         /// <summary>

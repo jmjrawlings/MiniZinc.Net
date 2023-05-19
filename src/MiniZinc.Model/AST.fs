@@ -1,10 +1,9 @@
 ﻿namespace MiniZinc
 
+open System
 open System.Diagnostics
 
-// An Identifier
 type Id = string
-
 
 [<Struct>]
 [<DebuggerDisplay("_")>]
@@ -17,8 +16,26 @@ type Comment =
 [<Struct>]
 // A value of 'T' or an identifier
 type IdOr<'T> =
-    | Value of value:'T
+    | Val of value:'T
     | Ident of name:string
+        
+    member this.Value =
+        match this with
+        | Val v -> v
+        | _ -> Unchecked.defaultof<'T>
+        
+    member this.Id =
+        match this with
+        | Ident id -> id
+        | _ -> ""
+        
+    member this.IsId =
+        match this with
+        | Ident _ -> true | _ -> false
+
+    member this.IsValue =
+        match this with
+        | Val _ -> true | _ -> false
               
 type SolveMethod =
     | Satisfy = 0
@@ -134,7 +151,7 @@ type Expr =
     | Bool          of bool
     | String        of string
     | Id            of string
-    | Op            of string
+    | Op            of Op
     | Bracketed     of Expr
     | Set           of SetExpr
     | SetComp       of SetCompExpr
@@ -233,7 +250,7 @@ and NumericExpr =
     | Int         of int
     | Float       of float
     | Id          of Id
-    | Op          of Id
+    | Op          of Op
     | Bracketed   of NumericExpr
     | Call        of CallExpr
     | IfThenElse  of IfThenElseExpr
@@ -254,37 +271,40 @@ and EnumCase =
     | Name of string
     | Expr of Expr
 
+and MzType =
+    | Array of ArrayType
+    | Base of BaseType
+
 and BaseType =
+    { Type        : BaseTypeTail
+      IsVar       : bool
+      IsSet       : bool
+      IsOptional  : bool }
+    
+and ArrayType =
+    { Dimensions: MzType list
+    ; Type: BaseType }
+
+and BaseTypeTail = 
     | Int
     | Bool
     | String
     | Float
-    | Id        of string
-    | Variable  of string
-    | Tuple     of TypeInst list
-    | Record    of TypeInst list
-    | Set       of Expr list
-    | Range     of lower:NumericExpr * upper:NumericExpr
+    | Id       of string
+    | Variable of string
+    | Tuple    of TupleType
+    | Record   of RecordType
+    | Literal  of Expr list 
+    | Range    of RangeExpr
 
-
-/// <summary>
-/// Instantiation of a Type
-/// </summary>
-/// <remarks>
-/// We have flattened out the `ti-expr` EBNF
-/// rule here that a single class that convers
-/// everything. 
-/// </remarks>
-and TypeInst =
-    { Type        : BaseType
-      Name        : string
-      IsVar       : bool
-      IsSet       : bool
-      IsOptional  : bool
-      Annotations : Annotations
-      Dimensions  : BaseType list
-      Value       : Expr option }
-
+ and RecordType =
+     Map<Id, MzType>
+     
+and TupleType =
+    MzType list
+    
+and RangeExpr =
+    NumericExpr*NumericExpr
         
 and Item =
     | Include    of IncludeItem
@@ -314,21 +334,23 @@ and TestItem =
     OperationItem
 
 and AliasItem =
-    TypeInst
+    { Type : MzType
+    ; Annotations : Annotations
+    ; Name : Id }
 
 and OutputItem =
     Expr
 
 and OperationItem =
     { Name: string
-      Parameters : TypeInst list
+      Parameters : Map<string, MzType>
       Annotations : Annotations
       Body: Expr option }
     
 and FunctionItem =
     { Name: string
-      Returns : TypeInst
-      Parameters : TypeInst list
+      Returns : MzType
+      Parameters : Map<string, MzType>
       Body: Expr option }
 
 and Test =
@@ -338,7 +360,10 @@ and AssignItem =
     string * Expr
 
 and DeclareItem =
-    TypeInst
+    { Type: MzType
+    ; Name: Id
+    ; Annotations: Annotations
+    ; Value : Expr option }
 
 and LetItem =
     | Declare of DeclareItem
