@@ -2,13 +2,13 @@
 
 Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
 
-> *PLEASE NOTE*
+> *USERS BEWARE*
 > 
-> This is still very much a work in progress.  I'm only making it public at this point because the parser is pretty good and I'm
-> sure others can benefit from it.
+> This is pre-release software.
 > 
-> This is written in F# but the goal is to have
-> an idiomatic C# API also
+> I'm only making it public at this point because I'm quite happy with the parser and I'm sure others can benefit from it.
+> 
+> This is written in F# but the goal is to have an idiomatic C# API also
 
 
 ## Immediate Goals
@@ -54,7 +54,7 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 ## Motivation
 
 - Give back to the MiniZinc community
-- Share 
+- Share what I've learned from solving problems in industry
 - Promote MiniZinc and constraint solving  
 - Make modelling and solving CP problems a joyful experience
 - Get this library to a level I would use professionally in production
