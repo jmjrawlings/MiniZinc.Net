@@ -1,6 +1,5 @@
-﻿namespace MiniZinc
+﻿namespace MiniZinc.Ast
 
-open System
 open System.Diagnostics
 
 type Id = string
@@ -227,18 +226,34 @@ and SolveOptimise =
       Objective : Expr }
     
 and SolveItem =
-    | Satisfy of SolveSatisfy
-    | Optimise of SolveOptimise
+    | Sat of SolveSatisfy
+    | Opt of SolveOptimise
     
     member this.Method =
         match this with
-        | Satisfy _ -> SolveMethod.Satisfy
-        | Optimise o -> o.Method
+        | Sat _ -> SolveMethod.Satisfy
+        | Opt o -> o.Method
         
     member this.Annotations =
         match this with
-        | Satisfy s -> s.Annotations
-        | Optimise o -> o.Annotations
+        | Sat s -> s.Annotations
+        | Opt o -> o.Annotations
+        
+    static member Satisfy =
+        Sat {Annotations = [] }
+        
+    static member Minimize(expr) =
+        { Annotations = []
+        ; Objective =  expr
+        ; Method=SolveMethod.Minimize  }
+        |> Opt
+        
+    static member Maximize(expr) =
+        { Annotations = []
+        ; Objective =  expr
+        ; Method=SolveMethod.Maximize  }
+        |> Opt
+        
 
 and IfThenElseExpr =
     { If     : Expr
@@ -366,9 +381,12 @@ and DeclareItem =
     ; Value : Expr option }
 
 and LetItem =
-    | Declare of DeclareItem
-    | Constraint of ConstraintItem
+    | Decl of DeclareItem
+    | Cons of ConstraintItem
     
 and LetExpr =
     { Locals: LetItem list
       In: Expr }
+
+type Ast = Item list    
+            

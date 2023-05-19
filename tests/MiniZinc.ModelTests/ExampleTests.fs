@@ -14,7 +14,7 @@ module ExampleTests =
     // Test the given Spec    
     let test_spec (spec: TestSpec) =
         let input = spec.String
-        let output = test_parse Parsers.model input
+        let output = test_parse Parsers.ast input
         ()
         
     // Test the given example from its Spec name    

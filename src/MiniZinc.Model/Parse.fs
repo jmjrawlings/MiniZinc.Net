@@ -289,6 +289,8 @@ open type ParseUtils.P
 
 module Parsers =
     
+    open MiniZinc.Ast
+    
     let simple_ident : P<Id> =
         regex "_?[A-Za-z][A-Za-z0-9_]*"
 
@@ -829,9 +831,9 @@ module Parsers =
         
     // <let-item>
     let let_item : P<LetItem> =
-        (constraint_item |>> LetItem.Constraint)
+        (constraint_item |>> LetItem.Cons)
         <|>
-        (var_decl_item |>> LetItem.Declare)
+        (var_decl_item |>> LetItem.Decl)
     
     // <let-expr>
     let let_expr : P<LetExpr> =
@@ -1039,10 +1041,10 @@ module Parsers =
                     { Annotations = annos
                     ; Method = method
                     ; Objective = o }
-                    |> SolveItem.Optimise
+                    |> SolveItem.Opt
                 | None ->
                     { Annotations = annos }
-                    |> SolveItem.Satisfy)
+                    |> SolveItem.Sat)
         <?!> "solve-item"            
         
     // <assign-item>
@@ -1087,7 +1089,7 @@ module Parsers =
         |> choice
                     
     // Parse a model from a the given string                       
-    let model =
+    let ast : P<Ast> =
         spaces
         >>. sepEndBy1 item (sps ';')
         .>> eof
@@ -1096,6 +1098,7 @@ module Parsers =
 module Parse =
     
     open System.Text.RegularExpressions
+    open MiniZinc.Ast
     
     // Sanitize the input string by removing any
     // blank lines and comments
@@ -1156,4 +1159,3 @@ module Parse =
         let source, comments = sanitize input
         let result = string parser source
         result
-        

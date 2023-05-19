@@ -195,7 +195,7 @@ module ParseTests =
     [<InlineData("a = 1..10;")>]
     let ``test range expr `` arg =
         let input = arg 
-        let output = test_parse Parsers.model input
+        let output = test_parse Parsers.ast input
         ()
         
     [<Fact>]
@@ -239,5 +239,5 @@ output
     endif
   ];
   """
-        let output = test_parse Parsers.model input
+        let output = test_parse Parsers.ast input
         ()
