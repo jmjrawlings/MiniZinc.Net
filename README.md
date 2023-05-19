@@ -6,6 +6,9 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 > 
 > This is still very much a work in progress.  I'm only making it public at this point because the parser is pretty good and I'm
 > sure others can benefit from it.
+> 
+> This is written in F# but the goal is to have
+> an idiomatic C# API also
 
 
 ## Immediate Goals
@@ -32,13 +35,21 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 - Compile time execution
 
   - C#
-    - Use a [source generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) 
-    - Have models in separate file and a first class interface to them through C#? that would be great
+    - Use a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) 
+      - Have models in separate file and a first class interface to them through C#? that would be great
   - F#
-    - Use a 
+    - Use a [Type Provider](https://learn.microsoft.com/en-us/dotnet/fsharp/tutorials/type-providers/)? 
+      - They are pretty clunky honestly and not fun to build
 
 - Comprehensive examples and walkthroughs
  
+## Quickstart
+
+- Download [.NET6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+- Clone the repo
+- `dotnet tool restore`
+- `dotnet test`
+
 
 ## Motivation
 
