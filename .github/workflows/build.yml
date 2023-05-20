@@ -11,7 +11,8 @@ jobs:
       - uses: actions/setup-dotnet@v3
       - run: dotnet restore
       - run: dotnet build src/MiniZinc.Model/MiniZinc.Model.fsproj --no-restore
-      - run: dotnet test tests/MiniZinc.ModelTests/MiniZinc.ModelTests.fsproj --no-build --verbosity normal
+      - run: dotnet test --no-build
+        working-directory: tests/MiniZinc.ModelTests
 
   test-solve:
     runs-on:
@@ -48,4 +49,5 @@ jobs:
       - uses: actions/setup-dotnet@v3
       - run: dotnet restore
       - run: dotnet build src/MiniZinc.Solve/MiniZinc.Solve.fsproj --no-restore
-      - run: dotnet test tests/MiniZinc.SolveTests --no-build --verbosity normal
+      - run: dotnet test --no-build
+        working-directory: tests/MiniZinc.SolveTests
