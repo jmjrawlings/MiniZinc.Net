@@ -3,24 +3,48 @@ name: Build master
 on: [push, pull_request]
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        proj: [Model]
-      fail-fast: 
-        false
-    runs-on: 
-      ${{ matrix.os }}
-    env:
-      Proj: ${{ matrix.proj }}
-      SourceProj: src/MiniZinc.$Proj
-      TestProj: test/MiniZinc.$Proj.Tests
+  test-parse:
+    runs-on:
+      ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v3
-        with: 
-          global-json-file: global.json
-      - run: dotnet tool restore
-      - run: dotnet build $SourceProj
-      - run: dotnet test $TestProj
+      - run: dotnet restore
+      - run: dotnet build src/MiniZinc.Model --no-restore
+      - run: dotnet test tests/MiniZinc.ModelTests --no-build --verbosity normal
+
+  test-solve:
+    runs-on:
+      ubuntu-latest
+    strategy:
+      matrix:
+        minizinc-version: ["2.7.2", "2.5.4"]
+    env:
+      MINIZINC_VERSION: ${{ matrix.minizinc-version }}
+      MINIZINC_URL: https://github.com/MiniZinc/MiniZincIDE/releases/download/$MINIZINC_VERSION/MiniZincIDE-$MINIZINC_VERSION-x86_64.AppImage
+    steps:
+      - uses: actions/checkout@v3
+      - name: Add bin/ to PATH
+        run: |
+          mkdir -p ${{ github.workspace }}/bin
+          echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+      - name: Install libfuse (AppImage dependency)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libfuse2 libegl1
+      - name: Cache MiniZinc
+        id: cache-minizinc
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/bin/minizinc
+          key: ${{ env.MINIZINC_URL }}
+      - name: Download MiniZinc
+        if: steps.cache-minizinc.outputs.cache-hit != 'true'
+        run: |
+          sudo curl -o ${{ github.workspace }}/bin/minizinc -L $MINIZINC_URL
+          sudo chmod +x ${{ github.workspace }}/bin/minizinc
+          minizinc --version
+      - uses: actions/setup-dotnet@v3
+      - run: dotnet restore
+      - run: dotnet build src/MiniZinc.Solve --no-restore
+      - run: dotnet test tests/MiniZinc.SolveTests --no-build --verbosity normal
