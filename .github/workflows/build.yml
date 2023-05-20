@@ -7,15 +7,19 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        proj: [Model]
       fail-fast: 
         false
-
     runs-on: 
       ${{ matrix.os }}
+    env:
+      SourceProj: src/$MiniZinc.{{ matrix.proj }}
+      TestProj: test/$MiniZinc.${{ matrix.proj}}.Tests
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v3
-        with:
+        with: 
           global-json-file: global.json
       - run: dotnet tool restore
-      - run: dotnet test
+      - run: dotnet build $SourceProj
+      - run: dotnet test $TestProj

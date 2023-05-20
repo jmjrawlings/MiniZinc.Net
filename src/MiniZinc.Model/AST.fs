@@ -15,26 +15,26 @@ type Comment =
 [<Struct>]
 // A value of 'T' or an identifier
 type IdOr<'T> =
-    | Val of value:'T
-    | Ident of name:string
-        
+    | Id_ of id:string
+    | Value_ of value:'T
+
     member this.Value =
         match this with
-        | Val v -> v
+        | Value_ v -> v
         | _ -> Unchecked.defaultof<'T>
         
     member this.Id =
         match this with
-        | Ident id -> id
+        | Id_ id -> id
         | _ -> ""
         
     member this.IsId =
         match this with
-        | Ident _ -> true | _ -> false
+        | Id_ _ -> true | _ -> false
 
     member this.IsValue =
         match this with
-        | Val _ -> true | _ -> false
+        | Value_ _ -> true | _ -> false
               
 type SolveMethod =
     | Satisfy = 0

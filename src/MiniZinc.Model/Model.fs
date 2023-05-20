@@ -68,18 +68,25 @@ module rec Model =
             ; Solve = SolveItem.Satisfy }
         
         let parseFile file : Result<Model, ParseError> =
+            
+            let string =
+                File.ReadAllText file.FullName
+            
             let model =
-                file
-                |> Parse.file Parsers.ast
-                |> Result.map fromAst
+                parseString string
+                
             model
             
-            
         let parseString string : Result<Model, ParseError> =
+            
+            let input, comments =
+                Parse.sanitize string
+            
             let model =
-                string
+                input
                 |> Parse.string Parsers.ast
                 |> Result.map fromAst
+                
             model                
             
         let fromAst ast : Model =

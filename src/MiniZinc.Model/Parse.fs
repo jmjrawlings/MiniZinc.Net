@@ -339,13 +339,13 @@ module Parsers =
     let value_or_quoted_name (p: P<'T>) : P<IdOr<'T>> =
         
         let value =
-            p |>> IdOr.Val
+            p |>> IdOr.Value_
         
         let name =
             simple_ident
             |> between('`', '`')
             |> attempt
-            |>> IdOr.Ident
+            |>> IdOr.Id_
             
         name <|> value
     
@@ -353,13 +353,13 @@ module Parsers =
     let name_or_quoted_value (p: P<'T>) : P<IdOr<'T>> =
         
         let name =
-            ident |>> IdOr.Ident
+            ident |>> IdOr.Id_
         
         let value =
             p
             |> between(''', ''')
             |> attempt
-            |>> IdOr.Val
+            |>> IdOr.Value_
         
         value <|> name
         
@@ -746,9 +746,9 @@ module Parsers =
     // <comp-tail>
     let comp_tail : P<Generator list> =
         let var =
-            (wildcard |>> IdOr.Val)
+            (wildcard |>> IdOr.Value_)
             <|>
-            (ident |>> IdOr.Ident)
+            (ident |>> IdOr.Id_)
             <?!> "gen-var"
         let vars =
             var
@@ -1145,17 +1145,12 @@ module Parse =
             Result.Ok value
             
         | Failure (msg, err, state) ->
+            
             let err =
                 { Message = msg
                 ; Line = err.Position.Line
                 ; Column = err.Position.Column
                 ; Index = err.Position.Index
                 ; Trace = state.Message }
+                
             Result.Error err
-            
-    // Parse the given file with the given parser
-    let file (parser: P<'t>) (fi: FileInfo) : ParseResult<'t> =
-        let input = File.ReadAllText fi.FullName
-        let source, comments = sanitize input
-        let result = string parser source
-        result

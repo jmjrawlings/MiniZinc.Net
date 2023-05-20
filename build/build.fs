@@ -100,27 +100,11 @@ open Xunit
 open System.IO
 
 module ExampleTests =
-    
-    type TestSpec =
-        { Name   : string 
-        ; File   : FileInfo
-        ; String : string }
-        
-    // Test the given Spec    
-    let test_spec (spec: TestSpec) =
-        let input = spec.String
-        let output = test_parse Parsers.model input
-        ()
-        
-    // Test the given example from its Spec name    
+  
     let test (name: string) =
         let file = FileInfo $"examples/{name}.mzn"
-        let string = File.ReadAllText file.FullName
-        let spec =
-            { Name = name
-            ; File = file
-            ; String = string }
-        test_spec spec
+        let model = Model.parseFile file
+        model.AssertOk()
 
 """
     

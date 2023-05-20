@@ -5,6 +5,7 @@
         <RootNamespace>MiniZinc.Net.Tests</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="ModelTests.fs" />
         <Compile Include="Prelude.fs" />
         <Compile Include="ParseTests.fs" />
         <Compile Include="ExampleTests.fs" />
