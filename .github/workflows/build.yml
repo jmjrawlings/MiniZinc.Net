@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 jobs:
   test-parse:
+    name:
+      Test Parse
     runs-on:
       ubuntu-latest
     env:
@@ -13,12 +15,14 @@ jobs:
       - uses: actions/setup-dotnet@v3
       - name: Install dependencies
         run: dotnet restore $PROJ
-      - name: Build        
+      - name: Build
         run: dotnet build $PROJ --no-restore
       - name: Test        
         run: dotnet test $PROJ --no-build
 
   test-solve:
+    name:
+      Test Solve v${{ matrix.minizinc-version }}
     runs-on:
       ubuntu-latest
     strategy:
@@ -28,6 +32,7 @@ jobs:
         false        
     env:
       MINIZINC_URL: https://github.com/MiniZinc/MiniZincIDE/releases/download/${{ matrix.minizinc-version }}/MiniZincIDE-${{ matrix.minizinc-version }}-x86_64.AppImage
+      MINIZINC_VERSION: ${{ matrix.minizinc-version }}
       PROJ: tests/MiniZinc.SolveTests/MiniZinc.SolveTests.fsproj
     steps:
       - uses: actions/checkout@v3
@@ -44,7 +49,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}/bin/minizinc
-          key: ${{ env.MINIZINC_URL }}
+          key: $MINIZINC_URL
       - name: Download MiniZinc
         if: steps.cache-minizinc.outputs.cache-hit != 'true'
         run: |
