@@ -93,7 +93,7 @@ module rec Net =
         let internal write_model_to_tempfile (model: Model) : FileInfo =
             let path = Path.GetTempFileName()
             let path = Path.ChangeExtension(path, ".mzn")
-            File.WriteAllText(path, model.String)
+            File.WriteAllText(path, "")
             let file = FileInfo path
             file
         

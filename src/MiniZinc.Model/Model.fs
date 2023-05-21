@@ -1,32 +1,29 @@
 ﻿namespace MiniZinc
 
+open System.Collections.Generic
 open System.Runtime.InteropServices
 open System
 open System.IO
-open MiniZinc.Ast
 
     
 [<AutoOpen>]
 module rec Model =
     
-    open MiniZinc.Ast
-    
     // A MiniZinc model
     type Model =
-        { Name         : string
-        ; Inputs       : Map<string, MzType>
-        ; Outputs      : OutputItem list
-        ; Includes     : IncludeItem list
-        ; Constraints  : ConstraintItem list
-        ; Declarations : DeclareItem list
-        ; Enums        : EnumItem list
-        ; Assigns      : AssignItem list
-        ; Predicates   : PredicateItem list
-        ; Functions    : FunctionItem list
-        ; Aliases      : AliasItem list
-        ; Solve        : SolveItem
-        ; String       : string }
-        
+        { Name        : string
+        ; Includes    : IncludeItem list
+        ; Enums       : EnumItem list
+        ; Aliases     : AliasItem list
+        ; Variables   : DeclareItem list
+        ; Assigns     : AssignItem list
+        ; Constraints : ConstraintItem list
+        ; Predicates  : PredicateItem list
+        ; Functions   : FunctionItem list
+        ; Inputs      : DeclareItem list
+        ; Outputs     : OutputItem list 
+        ; Solve       : SolveItem }
+                
         /// <summary>
         /// Parse a Model from the given file
         /// </summary>
@@ -53,19 +50,18 @@ module rec Model =
     module Model =
         
         let empty =
-            { Inputs = Map.empty
-            ; Outputs = []
-            ; String = ""
-            ; Name = ""
+            { Name = ""
+            ; Includes = []
+            ; Enums = []
             ; Aliases = []
+            ; Variables = []
             ; Assigns = []
             ; Constraints = []
-            ; Declarations = []
-            ; Enums = []
             ; Functions = []
-            ; Includes = []
             ; Predicates = []
-            ; Solve = SolveItem.Satisfy }
+            ; Solve = SolveItem.Satisfy 
+            ; Inputs = []
+            ; Outputs = [] }
         
         let parseFile file : Result<Model, ParseError> =
             
@@ -88,35 +84,99 @@ module rec Model =
                 |> Result.map fromAst
                 
             model                
-            
+
+        // Create a Model from the given AST            
         let fromAst ast : Model =
             addAst empty ast
             
-        let rec addAst (model: Model) (ast: Ast) : Model =
-            match ast with
-            | [] ->
-                model
-            | item :: rest ->
-                match item with
-                | Include x ->
-                    addAst {model with Includes = x :: model.Includes} rest
-                | Enum x ->
-                    addAst {model with Enums = x :: model.Enums} rest
-                | Alias x ->
-                    addAst {model with Aliases =  x :: model.Aliases} rest
-                | Constraint x ->
-                    addAst {model with Constraints =  x :: model.Constraints} rest
-                | Assign x ->
-                    addAst {model with Assigns =  x :: model.Assigns} rest
-                | Declare x ->
-                    addAst {model with Declarations =   x :: model.Declarations} rest
-                | Solve x ->
-                    addAst {model with Solve = x} rest
-                | Predicate x ->
-                    addAst {model with Predicates =  x :: model.Predicates} rest
-                | Function x ->
-                    addAst {model with Functions =   x :: model.Functions} rest
-                | Output x ->
-                    addAst {model with Outputs = x :: model.Outputs} rest
+        // Incorporate the given AST into the model
+        let addAst (model: Model) (ast: Ast) : Model =
+            
+            let rec loop model ast =
+                match ast with
+                | [] ->
+                    model
+                | item :: rest ->
+                    match item with
+                    | Include x ->
+                        loop {model with Includes = x :: model.Includes} rest
+                    | Enum x ->
+                        loop {model with Enums = x :: model.Enums} rest
+                    | Alias x ->
+                        loop {model with Aliases =  x :: model.Aliases} rest
+                    | Constraint x ->
+                        loop {model with Constraints =  x :: model.Constraints} rest
+                    | Assign x ->
+                        loop {model with Assigns =  x :: model.Assigns} rest
+                    | Declare x ->
+                        loop {model with Variables =   x :: model.Variables} rest
+                    | Solve x ->
+                        loop {model with Solve = x} rest
+                    | Predicate x ->
+                        loop {model with Predicates =  x :: model.Predicates} rest
+                    | Function x ->
+                        loop {model with Functions =   x :: model.Functions} rest
+                    | Output x ->
+                        loop {model with Outputs = x :: model.Outputs} rest
+                    | Annotation _ ->
+                        loop model rest
+                    | Comment _ ->
+                        loop model rest
+                    | Test _ ->
+                        loop model rest                        
+
+            let result =
+                ast
+                |> loop model
+                |> reconcile 
+
+            result
+            
+    let reconcile model =
+        let vars =
+            resolveVariables model
+        let inputs =
+            vars
+            |> List.choose (fun var -> 
+                match var.Value with
+                | None when var.Inst = Inst.Var ->
+                    Some var
                 | _ ->
-                    addAst model rest
+                    None
+            )
+        let result =
+            { model with
+                Variables = vars
+                Inputs = inputs }
+            
+        result            
+                                
+
+    /// <summary>
+    /// Infer variables for the model
+    /// </summary>
+    /// <remarks>
+    /// Combine the information from variable
+    /// Declarations and Assignments to deteremine
+    /// what variables have been assigned or not.
+    /// </remarks>
+    let resolveVariables (model: Model) =
+        
+        let vars =
+            model.Variables
+            |> Map.withKey (fun v -> v.Name)
+            
+        let assign vars (name, value) =
+            match Map.tryFind name vars with
+            | None ->
+                vars
+            | Some var ->
+                Map.add name {var with Value = Some value } vars
+        
+        let vars =
+            model.Assigns
+            |> List.fold assign vars
+            |> Map.values
+            |> Seq.toList
+   
+        vars

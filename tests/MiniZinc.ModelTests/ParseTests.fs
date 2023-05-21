@@ -18,7 +18,7 @@ module ParseTests =
     [<InlineData("aN4m3w1thnumb3r5")>]
     [<InlineData("'A name with Quotes'")>]
     let ``test identifier`` arg =
-        test Parsers.ident arg
+        test Parsers.id arg
         
     [<Theory>]
     [<InlineData("int")>]

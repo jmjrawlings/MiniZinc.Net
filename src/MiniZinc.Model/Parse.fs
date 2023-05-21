@@ -1,7 +1,6 @@
 ﻿namespace MiniZinc
 
 open System
-open System.IO
 open System.Runtime.InteropServices
 open System.Text
 open FParsec
@@ -16,7 +15,8 @@ type ParseError =
 type ParseResult<'T> =
     Result<'T, ParseError>
 
-module ParseUtils =
+
+module Parsers =
 
     type UserState() =
         let sb = StringBuilder()
@@ -281,24 +281,16 @@ module ParseUtils =
             let v = LanguagePrimitives.EnumToValue value                    
             p >>% v
 
-
-open ParseUtils
-open type ParseUtils.P
-
-        
-
-module Parsers =
-    
-    open MiniZinc.Ast
-    
-    let simple_ident : P<Id> =
+    open type P
+       
+    let simple_id : P<Id> =
         regex "_?[A-Za-z][A-Za-z0-9_]*"
 
-    let quoted_ident : P<Id> =
+    let quoted_id : P<Id> =
         regex "'[^'\x0A\x0D\x00]+'"
         
     // <ident>
-    let ident : P<Id> =
+    let id : P<Id> =
         regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
         <?!> "identifier"
 
@@ -330,7 +322,7 @@ module Parsers =
         <|> block_comment
         |>> (fun s -> s.Trim())
         
-    let (=>) (key: string) (value) =
+    let (=>) (key: string) value =
         pstring key >>% value
         
     let (=!>)(key: string) (value: 'T) =
@@ -342,7 +334,7 @@ module Parsers =
             p |>> IdOr.Value_
         
         let name =
-            simple_ident
+            simple_id
             |> between('`', '`')
             |> attempt
             |>> IdOr.Id_
@@ -353,7 +345,7 @@ module Parsers =
     let name_or_quoted_value (p: P<'T>) : P<IdOr<'T>> =
         
         let name =
-            ident |>> IdOr.Id_
+            id |>> IdOr.Id_
         
         let value =
             p
@@ -554,7 +546,7 @@ module Parsers =
     let ti_expr_and_id : P<Id * MzType> =
         ti_expr
         .>> sps ':'
-        .>>. ident
+        .>>. id
         |>> (fun (expr, name) -> (name, expr))
         <?> "ti-expr-and-id"    
     
@@ -567,7 +559,7 @@ module Parsers =
     // eg: even(var int: x) = x mod 2 = 0;
     let operation_item_tail : P<OperationItem> =
         pipe4
-            (ps ident)
+            (ps id)
             (ps parameters)
             (ps annotations)
             (opt (ps "=" >>. expr))
@@ -600,7 +592,7 @@ module Parsers =
     // <enum-case>
     // TODO: complex variants
     let enum_case : P<string> =
-        ident
+        id
           
     // <enum-item>
     // TODO: complex constructors
@@ -610,7 +602,7 @@ module Parsers =
             |> between(p '{', p '}', p ',')
             
         pipe3
-            (kw1 "enum" >>. ident .>> sps '=')
+            (kw1 "enum" >>. id .>> sps '=')
             (ps annotations)
             (opt_or [] members)
             (fun name anns cases ->
@@ -626,13 +618,13 @@ module Parsers =
         <?!> "include-item"
     
     // <var-par>
-    let var_par : P<bool> =
+    let var_par : P<Inst> =
         lookup(
-            "var" => true,
-            "par" => false
+            "var" => Inst.Var,
+            "par" => Inst.Par
         )
         .>> spaces1
-        |> opt_or false
+        |> opt_or Inst.Par
         <?!> "var-par"
         
     // <opt-ti>        
@@ -656,11 +648,11 @@ module Parsers =
             set_ti
             opt_ti
             base_ti_expr_tail
-            (fun var set opt typ ->
+            (fun inst set opt typ ->
                 { Type = typ
                 ; IsOptional = opt
                 ; IsSet = set
-                ; IsVar = var }
+                ; Inst = inst }
             )
         <?!> "base-ti"
     
@@ -711,7 +703,7 @@ module Parsers =
         ; record_ti   |>> BaseTypeTail.Record
         ; tuple_ti    |>> BaseTypeTail.Tuple
         ; range_expr  |>> BaseTypeTail.Range 
-        ; ident       |>> BaseTypeTail.Id
+        ; id       |>> BaseTypeTail.Id
         ; set_literal |>> BaseTypeTail.Literal ]
         |> choice
         <?!> "base-ti-tail"
@@ -748,7 +740,7 @@ module Parsers =
         let var =
             (wildcard |>> IdOr.Value_)
             <|>
-            (ident |>> IdOr.Id_)
+            (id |>> IdOr.Id_)
             <?!> "gen-var"
         let vars =
             var
@@ -816,6 +808,7 @@ module Parsers =
                 { Type = ty
                 ; Name = id
                 ; Annotations = anns
+                ; Inst = MzType.DetermineInst(ty)
                 ; Value = expr } )
 
     // <constraint-item>
@@ -915,7 +908,7 @@ module Parsers =
           call_expr          |>> NumericExpr.Call
           num_un_op          |>> NumericExpr.UnaryOp
           quoted_op          |>> NumericExpr.Op 
-          ident              |>> NumericExpr.Id
+          id              |>> NumericExpr.Id
           ]
         |> choice
         <?!> "num-expr-atom-head"
@@ -974,7 +967,7 @@ module Parsers =
           set_literal     |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           quoted_op       |>> Expr.Op
-          ident           |>> Expr.Id
+          id           |>> Expr.Id
           ]
         |> choice
 
@@ -1049,14 +1042,14 @@ module Parsers =
         
     // <assign-item>
     let assign_item =
-        attempt (ident .>> sps '=')
+        attempt (id .>> sps '=')
         .>>. expr
         <?!> "assign-item"
         
     // <type-inst-syn-item>
     let alias_item : P<AliasItem> =
         pipe3
-            (kw1 "type" >>. ident .>> spaces)
+            (kw1 "type" >>. id .>> spaces)
             (ps annotations .>> ps "=")
             ti_expr
             (fun name anns ty ->
@@ -1096,9 +1089,9 @@ module Parsers =
 
 
 module Parse =
-    
+
+    open Parsers    
     open System.Text.RegularExpressions
-    open MiniZinc.Ast
     
     // Sanitize the input string by removing any
     // blank lines and comments

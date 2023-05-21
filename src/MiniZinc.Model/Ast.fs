@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Ast
+﻿namespace MiniZinc
 
 open System.Diagnostics
 
@@ -35,6 +35,10 @@ type IdOr<'T> =
     member this.IsValue =
         match this with
         | Value_ _ -> true | _ -> false
+              
+type Inst =
+    | Var = 0
+    | Par = 1
               
 type SolveMethod =
     | Satisfy = 0
@@ -278,23 +282,67 @@ and IncludeItem =
     string
 
 and EnumItem =
-    { Name : string
+    { Name : Id
     ; Annotations : Annotations
     ; Cases : EnumCase list }
     
 and EnumCase =
-    | Name of string
+    | Name of Id
     | Expr of Expr
 
 and MzType =
     | Array of ArrayType
     | Base of BaseType
+    
+    static member DetermineInst(ty: MzType) =
+        match ty with
+        | Array arr -> MzType.DetermineInst arr.Type
+        | Base ty -> MzType.DetermineInst ty
+    
+    static member DetermineInst(ty:BaseType) =
+        match ty.Inst with
+        | Inst.Var ->
+            Inst.Var
+        | _ ->
+            MzType.DetermineInst ty.Type
+        
+    static member DetermineInst(ty: BaseTypeTail) =
+        match ty with
+        | Int 
+        | Bool 
+        | String 
+        | Float 
+        | Id _ 
+        | Literal _ 
+        | Range _
+        | Variable _ ->
+            Inst.Par
+        
+        // Any var item means a var tuple    
+        | Tuple items ->
+            items
+            |> Seq.map MzType.DetermineInst
+            |> Seq.exists ((=) Inst.Var)
+            |> function
+                | true -> Inst.Var
+                | false -> Inst.Par
 
+        // Any var field means a var record                            
+        | Record fields ->
+            fields
+            |> Map.values
+            |> Seq.map MzType.DetermineInst
+            |> Seq.exists ((=) Inst.Var)
+            |> function
+                | true -> Inst.Var
+                | false -> Inst.Par
+
+    
 and BaseType =
-    { Type        : BaseTypeTail
-      IsVar       : bool
-      IsSet       : bool
-      IsOptional  : bool }
+    { Type       : BaseTypeTail
+      Inst       : Inst
+      IsSet      : bool
+      IsOptional : bool }
     
 and ArrayType =
     { Dimensions: MzType list
@@ -305,8 +353,8 @@ and BaseTypeTail =
     | Bool
     | String
     | Float
-    | Id       of string
-    | Variable of string
+    | Id       of Id
+    | Variable of Id
     | Tuple    of TupleType
     | Record   of RecordType
     | Literal  of Expr list 
@@ -375,8 +423,9 @@ and AssignItem =
     string * Expr
 
 and DeclareItem =
-    { Type: MzType
-    ; Name: Id
+    { Name: Id
+    ; Type: MzType
+    ; Inst: Inst
     ; Annotations: Annotations
     ; Value : Expr option }
 
@@ -388,5 +437,4 @@ and LetExpr =
     { Locals: LetItem list
       In: Expr }
 
-type Ast = Item list    
-            
+type Ast = Item list
