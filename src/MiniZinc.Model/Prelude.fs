@@ -1,5 +1,7 @@
 namespace MiniZinc
 
+open System.Collections.Generic
+
 
 [<AutoOpen>]
 module Prelude =
@@ -11,6 +13,12 @@ module Map =
         xs
         |> Seq.map (fun x -> (f x), x)
         |> Map
+        
+    let toDict (map: Map<'k, 'v>) : Dictionary<'k,'v> =
+        let dict = Dictionary()
+        for (k,v) in Map.toSeq map do
+            dict[k] <- v
+        dict
 
 
 module Result =
