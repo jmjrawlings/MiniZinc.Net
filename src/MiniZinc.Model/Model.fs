@@ -1,4 +1,17 @@
-﻿namespace MiniZinc
+﻿(*
+
+Model.fs
+
+Contains the primary types and functions we will use to
+create, analyze and manipulate MiniZinc models.
+
+The AST is cumbersome to manipulate directly so this module forms
+an API over the top of it.  We can readily convert between Model and 
+AST as required.
+
+*)
+
+namespace MiniZinc
 
 open System.Runtime.InteropServices
 open System

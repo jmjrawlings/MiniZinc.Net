@@ -1,4 +1,14 @@
-﻿namespace MiniZinc
+﻿(*
+
+Parse.fs
+
+Contains functions and values that enable the
+parsing of a MiniZinc model/file into an
+Abstract Syntax Tree (AST).
+
+*)
+
+namespace MiniZinc
 
 open System
 open System.Runtime.InteropServices
@@ -897,11 +907,23 @@ module Parsers =
             (opt (ps '=' >>. expr))
             (fun (id, ty) anns expr ->
                 
-                let ty,_ = P.ResolveInst ty
+                let ty,inst = P.ResolveInst ty
+                
+                let kind =
+                    match inst, expr with
+                    | Inst.Var, None ->
+                        VarKind.UnassignedVar
+                    | Inst.Par, None ->
+                        VarKind.UnassignedPar
+                    | Inst.Var, _ ->
+                        VarKind.AssignedVar
+                    | _ ->
+                        VarKind.AssignedPar
                 
                 { Type = ty
                 ; Name = id
                 ; Annotations = anns
+                ; Kind = kind
                 ; Value = expr } )
 
     // <constraint-item>
@@ -1060,7 +1082,7 @@ module Parsers =
           set_literal     |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           quoted_op       |>> Expr.Op
-          id           |>> Expr.Id
+          id              |>> Expr.Id
           ]
         |> choice
 
