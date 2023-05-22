@@ -1,3 +1,11 @@
+(*
+
+Prelude.fs
+
+Helper functions for the rest of the codebase
+
+*)
+
 namespace MiniZinc
 
 open System.Collections.Generic
@@ -22,10 +30,13 @@ module Map =
 
 
 module Result =
+    
     let get (result: Result<'ok, 'err>) =
         match result with
-        | Ok ok -> ok
-        | Error err -> failwithf "%A" err
+        | Ok ok ->
+            ok
+        | Error err ->
+            failwith $"{err}"
         
     let ofSeq (results : Result<'ok, 'err> seq) =
         let oks = ResizeArray()

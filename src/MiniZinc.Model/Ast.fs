@@ -1,6 +1,16 @@
-﻿namespace MiniZinc
+﻿(*
 
-open System
+Ast.fs
+
+A (mostly) 1:1 mapping from the MiniZinc EBNF Grammar found here:
+https://www.minizinc.org/doc-2.7.4/en/spec.html#full-grammar.  
+
+Some rules have been simplified for ease of use.
+
+*)
+
+namespace MiniZinc
+
 open System.Diagnostics
 
 type Id = string
@@ -41,11 +51,12 @@ type Inst =
     | Var = 0
     | Par = 1
     
-type Kind =
+type VarKind =
     | AssignedPar = 0
     | UnassignedPar = 1
     | AssignedVar = 2
     | UnassignedVar = 3
+    
     
 // [<Flags>]
 // type Flags =
@@ -397,6 +408,7 @@ and DeclareItem =
     { Name: Id
     ; Type: TypeInst
     ; Annotations: Annotations
+    ; Kind : VarKind 
     ; Value : Expr option }
     
     member this.Inst =
