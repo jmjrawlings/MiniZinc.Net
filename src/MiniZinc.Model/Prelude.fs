@@ -55,14 +55,14 @@ module Result =
 type Extensions =
     
     [<Extension>]
-    static member TryGet(dict: Dictionary<'k, 'v>, key: 'k) : Option<'v> =
+    static member TryGet(dict: IDictionary<'k, 'v>, key: 'k) : Option<'v> =
         let mutable value = Unchecked.defaultof<'v>
         match dict.TryGetValue(key, &value) with
         | true -> Some value
         | false -> None
 
     [<Extension>]
-    static member Get(dict: Dictionary<'k, 'v>, key: 'k, backup: 'v) : 'v =
+    static member Get(dict: IDictionary<'k, 'v>, key: 'k, backup: 'v) : 'v =
         let mutable value = Unchecked.defaultof<'v>
         match dict.TryGetValue(key, &value) with
         | true -> value
