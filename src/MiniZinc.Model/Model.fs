@@ -13,6 +13,8 @@ AST as required.
 
 namespace MiniZinc
 
+open System.Collections
+open System.Collections.Generic
 open System.Runtime.InteropServices
 open System
 open System.IO
@@ -22,19 +24,20 @@ module rec Model =
     
     // A MiniZinc model
     type Model =
-        { Name         : string
-        ; Includes     : IncludeItem list
-        ; Enums        : EnumItem list
-        ; Aliases      : AliasItem list
-        ; Variables    : DeclareItem list
-        ; Assigns      : AssignItem list
-        ; Constraints  : ConstraintItem list
-        ; Predicates   : PredicateItem list
-        ; Functions    : FunctionItem list
-        ; Inputs       : DeclareItem list
-        ; Decisions    : DeclareItem list
-        ; Outputs      : OutputItem list 
-        ; Solve        : SolveItem }
+        { Name        : string
+        ; Includes    : IncludeItem list
+        ; Enums       : EnumItem list
+        ; Aliases     : AliasItem list
+        ; Variables   : Variable list
+        
+        ; Assigns     : AssignItem list
+        ; Constraints : ConstraintItem list
+        ; Predicates  : PredicateItem list
+        ; Functions   : FunctionItem list
+        ; Inputs      : Variable list
+        ; Decisions   : Variable list
+        ; Outputs     : OutputItem list 
+        ; Solve       : SolveItem }
                 
         /// <summary>
         /// Parse a Model from the given file
@@ -160,23 +163,11 @@ module rec Model =
             
         let decisions =
             vars
-            |> List.choose (fun var -> 
-                match var.Value with
-                | None when var.Inst = Inst.Var ->
-                    Some var
-                | _ ->
-                    None
-            )
+            |> List.filter (fun v -> v.Kind = VarKind.UnassignedVar)
              
         let inputs =
             vars
-            |> List.choose (fun var -> 
-                match var.Value with
-                | None when var.Inst = Inst.Par ->
-                    Some var
-                | _ ->
-                    None
-            )            
+            |> List.filter (fun v -> v.Kind = VarKind.UnassignedPar)
             
         let result =
             { model with
@@ -216,4 +207,65 @@ module rec Model =
    
         vars
         
+    type Variables(vars: Map<string, Variable>) =
+                
+        let by_kind =
+            Dictionary<VarKind, Variables>()
+                
+        member this.Map =
+            vars
+
+        member this.Names =
+            vars.Keys
+            
+        member this.Vars =
+            vars.Values
+            
+        member this.Filter f =
+            Variables.filter f this
+                
+        member this.OfKind (kind: VarKind) =
+            match by_kind.TryGet kind with
+            | Some vars ->
+                vars
+            | None ->
+                let vars =
+                    this.Filter (fun v -> v.Kind = kind)
+                by_kind[kind] <- vars
+                vars
+            
+        interface IEnumerable<Variable> with
+            member this.GetEnumerator() = 
+                (this.Vars :> IEnumerable<_>).GetEnumerator()
+            
+        interface IEnumerable with
+            member this.GetEnumerator() : IEnumerator = 
+                (this.Vars :> IEnumerable).GetEnumerator()
+                
+                    
+    module Variables =
         
+        let ofMap map =
+            Variables(map)
+            
+        let ofSeq (vars: Variable seq) =
+            vars
+            |> Map.withKey (fun v -> v.Name)
+            |> ofMap
+        
+        let ofList (vars: Variable list) =
+            ofSeq vars
+        
+        let map f (vars: Variables) =
+            vars.Map
+            |> Map.map f
+            |> ofMap
+            
+        let filter f (vars: Variables) =
+            vars.Map
+            |> Map.filter (fun k -> f)
+            |> ofMap
+            
+        let names (vars: Variables) =
+            vars.Map.Keys
+            

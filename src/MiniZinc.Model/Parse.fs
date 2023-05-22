@@ -900,7 +900,7 @@ module Parsers =
         <?!> "set-comp"
             
     // <declare-item>
-    let var_decl_item : P<DeclareItem> =
+    let var_decl_item : P<Variable> =
         pipe3
             (ps ti_expr_and_id)
             (ps annotations)

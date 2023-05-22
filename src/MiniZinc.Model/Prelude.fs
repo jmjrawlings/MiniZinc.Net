@@ -9,6 +9,7 @@ Helper functions for the rest of the codebase
 namespace MiniZinc
 
 open System.Collections.Generic
+open System.Runtime.CompilerServices
 
 
 [<AutoOpen>]
@@ -48,3 +49,21 @@ module Result =
         match errs.Count with
         | 0 -> Ok (Seq.toList oks)
         | _ -> Error (Seq.toList errs)
+        
+        
+[<Extension>]
+type Extensions =
+    
+    [<Extension>]
+    static member TryGet(dict: Dictionary<'k, 'v>, key: 'k) : Option<'v> =
+        let mutable value = Unchecked.defaultof<'v>
+        match dict.TryGetValue(key, &value) with
+        | true -> Some value
+        | false -> None
+
+    [<Extension>]
+    static member Get(dict: Dictionary<'k, 'v>, key: 'k, backup: 'v) : 'v =
+        let mutable value = Unchecked.defaultof<'v>
+        match dict.TryGetValue(key, &value) with
+        | true -> value
+        | false -> backup

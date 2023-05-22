@@ -357,7 +357,7 @@ and Item =
     | Alias      of AliasItem
     | Constraint of ConstraintItem
     | Assign     of AssignItem
-    | Declare    of DeclareItem
+    | Declare    of Variable
     | Solve      of SolveItem
     | Predicate  of PredicateItem
     | Function   of FunctionItem
@@ -369,8 +369,11 @@ and Item =
 and AnnotationItem =
     CallExpr
 
-and ConstraintItem =
+and Constraint =
     Expr
+
+and ConstraintItem =
+    Constraint
         
 and PredicateItem =
     OperationItem
@@ -404,7 +407,7 @@ and Test =
 and AssignItem =
     string * Expr
 
-and DeclareItem =
+and Variable =
     { Name: Id
     ; Type: TypeInst
     ; Annotations: Annotations
@@ -413,6 +416,9 @@ and DeclareItem =
     
     member this.Inst =
         this.Type.Inst
+
+and DeclareItem =
+    Variable
 
 and LetItem =
     | Decl of DeclareItem
