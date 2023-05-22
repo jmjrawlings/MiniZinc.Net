@@ -1,28 +1,27 @@
 ﻿namespace MiniZinc
 
-open System.Collections.Generic
 open System.Runtime.InteropServices
 open System
 open System.IO
-
     
 [<AutoOpen>]
 module rec Model =
     
     // A MiniZinc model
     type Model =
-        { Name        : string
-        ; Includes    : IncludeItem list
-        ; Enums       : EnumItem list
-        ; Aliases     : AliasItem list
-        ; Variables   : DeclareItem list
-        ; Assigns     : AssignItem list
-        ; Constraints : ConstraintItem list
-        ; Predicates  : PredicateItem list
-        ; Functions   : FunctionItem list
-        ; Inputs      : DeclareItem list
-        ; Outputs     : OutputItem list 
-        ; Solve       : SolveItem }
+        { Name         : string
+        ; Includes     : IncludeItem list
+        ; Enums        : EnumItem list
+        ; Aliases      : AliasItem list
+        ; Variables    : DeclareItem list
+        ; Assigns      : AssignItem list
+        ; Constraints  : ConstraintItem list
+        ; Predicates   : PredicateItem list
+        ; Functions    : FunctionItem list
+        ; Inputs       : DeclareItem list
+        ; Decisions    : DeclareItem list
+        ; Outputs      : OutputItem list 
+        ; Solve        : SolveItem }
                 
         /// <summary>
         /// Parse a Model from the given file
@@ -61,6 +60,7 @@ module rec Model =
             ; Predicates = []
             ; Solve = SolveItem.Satisfy 
             ; Inputs = []
+            ; Decisions = []
             ; Outputs = [] }
         
         let parseFile file : Result<Model, ParseError> =
@@ -131,11 +131,21 @@ module rec Model =
                 |> reconcile 
 
             result
-            
-    let reconcile model =
+    
+        
+    /// <summary>
+    /// Reconcile (validate? post process?) the model
+    /// </summary>
+    /// <remarks>
+    /// Performs all necessary transformations on the model
+    /// to ensure all our desired information is computed.
+    /// </remarks>        
+    let reconcile (model: Model) =
+        
         let vars =
             resolveVariables model
-        let inputs =
+            
+        let decisions =
             vars
             |> List.choose (fun var -> 
                 match var.Value with
@@ -144,9 +154,21 @@ module rec Model =
                 | _ ->
                     None
             )
+             
+        let inputs =
+            vars
+            |> List.choose (fun var -> 
+                match var.Value with
+                | None when var.Inst = Inst.Par ->
+                    Some var
+                | _ ->
+                    None
+            )            
+            
         let result =
             { model with
                 Variables = vars
+                Decisions = decisions
                 Inputs = inputs }
             
         result            
@@ -180,3 +202,5 @@ module rec Model =
             |> Seq.toList
    
         vars
+        
+        

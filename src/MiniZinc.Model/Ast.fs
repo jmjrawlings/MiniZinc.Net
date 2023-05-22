@@ -1,5 +1,6 @@
 ﻿namespace MiniZinc
 
+open System
 open System.Diagnostics
 
 type Id = string
@@ -39,6 +40,20 @@ type IdOr<'T> =
 type Inst =
     | Var = 0
     | Par = 1
+    
+type Kind =
+    | AssignedPar = 0
+    | UnassignedPar = 1
+    | AssignedVar = 2
+    | UnassignedVar = 3
+    
+// [<Flags>]
+// type Flags =
+//     | Var        = 0b0000001
+//     | Par        = 0b0000010
+//     | Assigned   = 0b0000100
+//     | Unassigned = 0b0001000
+    
               
 type SolveMethod =
     | Satisfy = 0
@@ -289,66 +304,14 @@ and EnumItem =
 and EnumCase =
     | Name of Id
     | Expr of Expr
-
-and MzType =
-    | Array of ArrayType
-    | Base of BaseType
     
-    static member DetermineInst(ty: MzType) =
-        match ty with
-        | Array arr -> MzType.DetermineInst arr.Type
-        | Base ty -> MzType.DetermineInst ty
+and TypeInst =
+    { Type  : BaseType
+      Inst  : Inst
+      IsSet : bool
+      IsOpt : bool }   
     
-    static member DetermineInst(ty:BaseType) =
-        match ty.Inst with
-        | Inst.Var ->
-            Inst.Var
-        | _ ->
-            MzType.DetermineInst ty.Type
-        
-    static member DetermineInst(ty: BaseTypeTail) =
-        match ty with
-        | Int 
-        | Bool 
-        | String 
-        | Float 
-        | Id _ 
-        | Literal _ 
-        | Range _
-        | Variable _ ->
-            Inst.Par
-        
-        // Any var item means a var tuple    
-        | Tuple items ->
-            items
-            |> Seq.map MzType.DetermineInst
-            |> Seq.exists ((=) Inst.Var)
-            |> function
-                | true -> Inst.Var
-                | false -> Inst.Par
-
-        // Any var field means a var record                            
-        | Record fields ->
-            fields
-            |> Map.values
-            |> Seq.map MzType.DetermineInst
-            |> Seq.exists ((=) Inst.Var)
-            |> function
-                | true -> Inst.Var
-                | false -> Inst.Par
-
-    
-and BaseType =
-    { Type       : BaseTypeTail
-      Inst       : Inst
-      IsSet      : bool
-      IsOptional : bool }
-    
-and ArrayType =
-    { Dimensions: MzType list
-    ; Type: BaseType }
-
-and BaseTypeTail = 
+and BaseType = 
     | Int
     | Bool
     | String
@@ -359,15 +322,23 @@ and BaseTypeTail =
     | Record   of RecordType
     | Literal  of Expr list 
     | Range    of RangeExpr
+    | List     of TypeInst
+    | Array    of ArrayType
 
  and RecordType =
-     Map<Id, MzType>
+     Map<Id, TypeInst>
      
 and TupleType =
-    MzType list
+    TypeInst list
     
 and RangeExpr =
     NumericExpr*NumericExpr
+    
+and ListType =
+    TypeInst
+    
+and ArrayType =
+    TypeInst list * TypeInst
         
 and Item =
     | Include    of IncludeItem
@@ -397,7 +368,7 @@ and TestItem =
     OperationItem
 
 and AliasItem =
-    { Type : MzType
+    { Type : TypeInst
     ; Annotations : Annotations
     ; Name : Id }
 
@@ -406,14 +377,14 @@ and OutputItem =
 
 and OperationItem =
     { Name: string
-      Parameters : Map<string, MzType>
+      Parameters : Map<string, TypeInst>
       Annotations : Annotations
       Body: Expr option }
     
 and FunctionItem =
     { Name: string
-      Returns : MzType
-      Parameters : Map<string, MzType>
+      Returns : TypeInst
+      Parameters : Map<string, TypeInst>
       Body: Expr option }
 
 and Test =
@@ -424,10 +395,12 @@ and AssignItem =
 
 and DeclareItem =
     { Name: Id
-    ; Type: MzType
-    ; Inst: Inst
+    ; Type: TypeInst
     ; Annotations: Annotations
     ; Value : Expr option }
+    
+    member this.Inst =
+        this.Type.Inst
 
 and LetItem =
     | Decl of DeclareItem

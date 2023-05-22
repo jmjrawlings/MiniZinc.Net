@@ -279,11 +279,94 @@ module Parsers =
                 | false ->
                     pstring symbol
             let v = LanguagePrimitives.EnumToValue value                    
-            p >>% v
+            p >>% v            
+    
+        /// <summary>
+        /// Determine the correct Inst for the given TypeInst
+        /// </summary>
+        /// <remarks>
+        /// The purpose of this step is to correctly identify
+        /// which TypeInsts are 'var' versus 'par' at every level.
+        ///
+        /// Consider the two examples:
+        /// array[1..3] of record(var bool: a): x;
+        /// array[1..3] of var record(bool: b): y;
+        ///
+        /// Both are decision variables however only the second example
+        /// would be given a TypeInst with Inst == Var.
+        ///
+        /// This function returns the typeinst with the correctly
+        /// inferred Inst for every TypeInst and its children.
+        /// </remarks>
+        static member ResolveInst (ti: TypeInst) =
+            match P.ResolveInst ti.Type with
+            // If the type is a Var it overrides the setting here
+            | ty, Inst.Var ->
+                { ti with Type = ty; Inst = Inst.Var }, Inst.Var
+            // Otherwise use the existing value
+            | ty, _ ->
+                { ti with Type = ty; }, ti.Inst
+                
+            
+        static member ResolveInst (ty: BaseType) =
+            match ty with
+            | Int 
+            | Bool 
+            | String 
+            | Float 
+            | Id _ 
+            | Literal _ 
+            | Range _
+            | Variable _ ->
+                ty, Inst.Par
+            
+            // Any var item means a var tuple
+            | Tuple items ->
+                let mutable inst = Inst.Par
+                                
+                let resolved =
+                    items
+                    |> List.map (fun item ->
+                        match P.ResolveInst item with
+                        | ty, Inst.Var ->
+                            inst <- Inst.Var
+                            ty
+                        | ty, _ -> ty
+                        )
+                    
+                (BaseType.Tuple resolved), inst
+                    
+            // Any var field means a var record                            
+            | Record fields ->
+                let mutable inst = Inst.Par
+                                
+                let resolved =
+                    fields
+                    |> Map.map (fun name field ->
+                        match P.ResolveInst field with
+                        | ty, Inst.Var ->
+                            inst <- Inst.Var
+                            ty
+                        | ty, _ -> ty
+                        )
+                    
+                (BaseType.Record resolved), inst
+                
+            // A var item means a var tuple
+            | List itemType ->
+                let ty, inst = P.ResolveInst itemType
+                (BaseType.List ty), inst
+                
+            // A var item means a var array
+            | Array (dims, itemType) ->
+                let ty, inst = P.ResolveInst itemType
+                (BaseType.Array (dims, ty)), inst
+                
+                
 
     open type P
        
-    let simple_id : P<Id> =
+    let simple_id : P<Id> = 
         regex "_?[A-Za-z][A-Za-z0-9_]*"
 
     let quoted_id : P<Id> =
@@ -454,11 +537,11 @@ module Parsers =
 
     // <ti-expr>
     let ti_expr, ti_expr_ref =
-        createParserForwardedToRef<MzType, UserState>()
+        createParserForwardedToRef<TypeInst, UserState>()
 
     // <ti-expr>
     let base_ti_expr_tail, base_ti_expr_tail_ref =
-        createParserForwardedToRef<BaseTypeTail, UserState>()
+        createParserForwardedToRef<BaseType, UserState>()
         
     // <expr>
     let expr, expr_ref =
@@ -543,7 +626,7 @@ module Parsers =
         <?!> "array2d-literal"
    
     // <ti-expr-and-id>
-    let ti_expr_and_id : P<Id * MzType> =
+    let ti_expr_and_id : P<Id * TypeInst> =
         ti_expr
         .>> sps ':'
         .>>. id
@@ -642,7 +725,7 @@ module Parsers =
         <?!> "set-ti"
    
     // <base-ti-expr>
-    let base_ti_expr : P<BaseType> =
+    let base_ti_expr : P<TypeInst> =
         pipe4
             var_par
             set_ti
@@ -650,7 +733,7 @@ module Parsers =
             base_ti_expr_tail
             (fun inst set opt typ ->
                 { Type = typ
-                ; IsOptional = opt
+                ; IsOpt = opt
                 ; IsSet = set
                 ; Inst = inst }
             )
@@ -658,7 +741,7 @@ module Parsers =
     
         
     // <array-ti-expr>        
-    let array_ti_expr : P<ArrayType> =
+    let array_ti_expr : P<TypeInst> =
 
         let dimensions =
             ti_expr
@@ -670,14 +753,22 @@ module Parsers =
         .>>  sps1 "of"
         .>>. base_ti_expr
         |>> (fun (dims, ty) ->
-            { Dimensions = dims
-              Type = ty })
+            
+            let ty, inst =
+                (dims, ty)
+                |> BaseType.Array
+                |> P.ResolveInst
+                
+            { Type = ty
+            ; Inst = inst
+            ; IsSet = false
+            ; IsOpt = false })
         <?!> "array-ti-expr"
     
     // <ti-expr>        
     ti_expr_ref.contents <-
-        [ array_ti_expr |>> MzType.Array
-        ; base_ti_expr |>> MzType.Base ]
+        [ array_ti_expr
+        ; base_ti_expr  ]
         |> choice
         <?!> "ti-expr"
 
@@ -696,15 +787,15 @@ module Parsers =
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ kw "bool"   >>% BaseTypeTail.Bool
-        ; kw "int"    >>% BaseTypeTail.Int
-        ; kw "string" >>% BaseTypeTail.String
-        ; kw "float"  >>% BaseTypeTail.Float
-        ; record_ti   |>> BaseTypeTail.Record
-        ; tuple_ti    |>> BaseTypeTail.Tuple
-        ; range_expr  |>> BaseTypeTail.Range 
-        ; id       |>> BaseTypeTail.Id
-        ; set_literal |>> BaseTypeTail.Literal ]
+        [ kw "bool"   >>% BaseType.Bool
+        ; kw "int"    >>% BaseType.Int
+        ; kw "string" >>% BaseType.String
+        ; kw "float"  >>% BaseType.Float
+        ; record_ti   |>> BaseType.Record
+        ; tuple_ti    |>> BaseType.Tuple
+        ; range_expr  |>> BaseType.Range 
+        ; id       |>> BaseType.Id
+        ; set_literal |>> BaseType.Literal ]
         |> choice
         <?!> "base-ti-tail"
     
@@ -805,10 +896,12 @@ module Parsers =
             (ps annotations)
             (opt (ps '=' >>. expr))
             (fun (id, ty) anns expr ->
+                
+                let ty,_ = P.ResolveInst ty
+                
                 { Type = ty
                 ; Name = id
                 ; Annotations = anns
-                ; Inst = MzType.DetermineInst(ty)
                 ; Value = expr } )
 
     // <constraint-item>
