@@ -320,7 +320,7 @@ and TypeInst =
     { Type  : BaseType
       Inst  : Inst
       IsSet : bool
-      IsOpt : bool }   
+      IsOpt : bool }
     
 and BaseType = 
     | Int
@@ -331,9 +331,9 @@ and BaseType =
     | Variable of Id
     | Tuple    of TupleType
     | Record   of RecordType
-    | Literal  of Expr list 
-    | Range    of RangeExpr
-    | List     of TypeInst
+    | Literal  of SetLiteral 
+    | Range    of Range
+    | List     of ListType
     | Array    of ArrayType
 
  and RecordType =
@@ -342,14 +342,17 @@ and BaseType =
 and TupleType =
     TypeInst list
     
-and RangeExpr =
-    NumericExpr*NumericExpr
+and Range =
+    NumericExpr * NumericExpr
     
 and ListType =
     TypeInst
     
 and ArrayType =
     TypeInst list * TypeInst
+    
+and SetLiteral =
+    Expr list
         
 and Item =
     | Include    of IncludeItem
@@ -407,7 +410,9 @@ and Test =
 and AssignItem =
     string * Expr
 
-and Variable =
+and
+    [<DebuggerDisplay("{Name}: {Kind}")>]
+    Variable =
     { Name: Id
     ; Type: TypeInst
     ; Annotations: Annotations

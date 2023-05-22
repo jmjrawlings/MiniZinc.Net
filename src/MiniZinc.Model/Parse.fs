@@ -14,6 +14,7 @@ open System
 open System.Runtime.InteropServices
 open System.Text
 open FParsec
+open MiniZinc
 
 type ParseError =
     { Message: string
@@ -24,7 +25,6 @@ type ParseError =
 
 type ParseResult<'T> =
     Result<'T, ParseError>
-
 
 module Parsers =
 
@@ -595,7 +595,7 @@ module Parsers =
         |>> enum<Op>
         
     // 0 .. 10
-    let range_expr : P<RangeExpr> =
+    let range_expr : P<Range> =
         attempt (
             num_expr
             .>> sps ".."
@@ -610,7 +610,7 @@ module Parsers =
         <?!> "array1d-literal"
             
     // <set-literal>
-    let set_literal =
+    let set_literal : P<SetLiteral>=
         between(p '{', p '}', p ',') expr
         |> attempt
         <?!> "set-literal"
