@@ -900,31 +900,14 @@ module Parsers =
         <?!> "set-comp"
             
     // <declare-item>
-    let var_decl_item : P<Variable> =
+    let var_decl_item : P<DeclareItem> =
         pipe3
             (ps ti_expr_and_id)
             (ps annotations)
             (opt (ps '=' >>. expr))
-            (fun (id, ty) anns expr ->
-                
-                let ty,inst = P.ResolveInst ty
-                
-                let kind =
-                    match inst, expr with
-                    | Inst.Var, None ->
-                        VarKind.UnassignedVar
-                    | Inst.Par, None ->
-                        VarKind.UnassignedPar
-                    | Inst.Var, _ ->
-                        VarKind.AssignedVar
-                    | _ ->
-                        VarKind.AssignedPar
-                
-                { Type = ty
-                ; Name = id
-                ; Annotations = anns
-                ; Kind = kind
-                ; Value = expr } )
+            (fun (id, ti) anns expr ->
+                let ti, inst = P.ResolveInst ti
+                id, ti, anns, expr)
 
     // <constraint-item>
     let constraint_item =
@@ -1167,10 +1150,7 @@ module Parsers =
             (kw1 "type" >>. id .>> spaces)
             (ps annotations .>> ps "=")
             ti_expr
-            (fun name anns ty ->
-                { Name = name
-                ; Type = ty
-                ; Annotations = anns })
+            (fun id anns ty -> id, anns, ty)
         <?!> "type-alias"
         
     // <output-item>
