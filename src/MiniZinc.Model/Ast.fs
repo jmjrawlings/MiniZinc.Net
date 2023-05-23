@@ -56,15 +56,6 @@ type VarKind =
     | UnassignedPar = 1
     | AssignedVar = 2
     | UnassignedVar = 3
-    
-    
-// [<Flags>]
-// type Flags =
-//     | Var        = 0b0000001
-//     | Par        = 0b0000010
-//     | Assigned   = 0b0000100
-//     | Unassigned = 0b0001000
-    
               
 type SolveMethod =
     | Satisfy = 0
@@ -360,7 +351,7 @@ and Item =
     | Alias      of AliasItem
     | Constraint of ConstraintItem
     | Assign     of AssignItem
-    | Declare    of Variable
+    | Declare    of DeclareItem
     | Solve      of SolveItem
     | Predicate  of PredicateItem
     | Function   of FunctionItem
@@ -385,9 +376,7 @@ and TestItem =
     OperationItem
 
 and AliasItem =
-    { Type : TypeInst
-    ; Annotations : Annotations
-    ; Name : Id }
+    Id * Annotations * TypeInst
 
 and OutputItem =
     Expr
@@ -410,20 +399,8 @@ and Test =
 and AssignItem =
     string * Expr
 
-and
-    [<DebuggerDisplay("{Name}: {Kind}")>]
-    Variable =
-    { Name: Id
-    ; Type: TypeInst
-    ; Annotations: Annotations
-    ; Kind : VarKind 
-    ; Value : Expr option }
-    
-    member this.Inst =
-        this.Type.Inst
-
 and DeclareItem =
-    Variable
+    Id * TypeInst * Annotations * Expr Option
 
 and LetItem =
     | Decl of DeclareItem
