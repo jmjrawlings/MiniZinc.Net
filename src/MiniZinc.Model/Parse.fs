@@ -1112,16 +1112,16 @@ module Parsers =
             )
         <?!> "expr"
             
-    let solve_method : P<SolveMethod> =
+    let solve_method : P<SolveType> =
         lookup(
-          "satisfy" => SolveMethod.Satisfy,
-          "minimize" => SolveMethod.Minimize,
-          "maximize" => SolveMethod.Maximize
+          "satisfy" => SolveType.Satisfy,
+          "minimize" => SolveType.Minimize,
+          "maximize" => SolveType.Maximize
         )
         <?!> "solve-method"
         
     // <solve-item>
-    let solve_item : P<SolveItem> =
+    let solve_item : P<SolveMethod> =
         pipe3
             (kw1 "solve" >>. annotations)
             (sps solve_method)
@@ -1132,10 +1132,10 @@ module Parsers =
                     { Annotations = annos
                     ; Method = method
                     ; Objective = o }
-                    |> SolveItem.Opt
+                    |> SolveMethod.Opt
                 | None ->
                     { Annotations = annos }
-                    |> SolveItem.Sat)
+                    |> SolveMethod.Sat)
         <?!> "solve-item"            
         
     // <assign-item>
@@ -1145,7 +1145,7 @@ module Parsers =
         <?!> "assign-item"
         
     // <type-inst-syn-item>
-    let alias_item : P<AliasItem> =
+    let alias_item : P<SynonymItem> =
         pipe3
             (kw1 "type" >>. id .>> spaces)
             (ps annotations .>> ps "=")
@@ -1165,7 +1165,7 @@ module Parsers =
         ; constraint_item |>> Item.Constraint
         ; include_item    |>> Item.Include
         ; solve_item      |>> Item.Solve
-        ; alias_item      |>> Item.Alias
+        ; alias_item      |>> Item.Synonym
         ; output_item     |>> Item.Output
         ; predicate_item  |>> Item.Predicate
         ; function_item   |>> Item.Function
@@ -1223,11 +1223,37 @@ module Parse =
         output, comments
         
     // Parse the given string with the given parser
-    let string (parser: P<'t>) (input: string) : ParseResult<'t> =
+    let stringWith (parser: P<'t>) (input: string) : ParseResult<'t> =
         
         let state = UserState()
         
         match runParserOnString parser state "" input with
+        
+        | Success (value, _state, _pos) ->
+            Result.Ok value
+            
+        | Failure (msg, err, state) ->
+            
+            let err =
+                { Message = msg
+                ; Line = err.Position.Line
+                ; Column = err.Position.Column
+                ; Index = err.Position.Index
+                ; Trace = state.Message }
+                
+            Result.Error err
+            
+    // Parse the given string with the given parser
+    let string (input: string) : ParseResult<Ast> =
+        let result = stringWith ast input
+        result                
+            
+    // Parse the given file with the given encoding
+    let file (encoding: Encoding) (path: string) : ParseResult<Ast> =
+                
+        let state = UserState()
+        
+        match runParserOnFile ast state path encoding with
         
         | Success (value, _state, _pos) ->
             Result.Ok value

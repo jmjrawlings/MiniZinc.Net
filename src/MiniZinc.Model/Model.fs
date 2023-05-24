@@ -22,14 +22,16 @@ open System.Collections.Generic
 open System.Runtime.InteropServices
     
 type Binding =
-    | UndeclaredVar of Expr
-    | UnassignedVar of TypeInst
-    | AssignedVar of TypeInst * Expr
-    | Enum of EnumItem
-    | Synonym of TypeInst
-    | Predicate of PredicateItem
-    | Function of FunctionItem
+    | Undeclared of Expr
+    | Unassigned of TypeInst
+    | Assigned   of TypeInst * Expr
+    | Enum       of EnumItem
+    | Synonym    of TypeInst
+    | Predicate  of PredicateItem
+    | Function   of FunctionItem
+    | Conflict   of Binding list
     
+
     
 [<AutoOpen>]
 module rec Model =
@@ -37,13 +39,18 @@ module rec Model =
     // A MiniZinc model
     type Model =
         { Name        : string
-        ; Includes    : IncludeItem list
+        ; Includes    : string list
         ; Bindings    : Map<Id, Binding>
+        ; Enums       : Map<string, EnumItem>
+        ; Synonyms    : Map<string, TypeInst>
         ; Constraints : ConstraintItem list
         ; Predicates  : PredicateItem list
         ; Functions   : FunctionItem list
-        ; Outputs     : OutputItem list 
-        ; Solve       : SolveItem }
+        ; Outputs     : OutputItem list
+        ; SolveMethod : SolveMethod
+        ; Assigned    : Map<string, TypeInst * Expr>
+        ; Unassigned  : Map<string, TypeInst>
+        ; Undeclared  : Map<string, Expr> }
                 
         /// <summary>
         /// Parse a Model from the given file
@@ -76,14 +83,55 @@ module rec Model =
             ; Includes = []
             ; Enums = Map.empty
             ; Synonyms = Map.empty
-            ; Declares = Map.empty
-            ; Assignments = Map.empty
-            ; Variables = Map.empty 
             ; Constraints = []
             ; Functions = []
             ; Predicates = []
-            ; Solve = SolveItem.Satisfy 
+            ; SolveMethod = SolveMethod.Satisfy
+            ; Bindings = Map.empty
+            ; Unassigned = Map.empty
+            ; Assigned = Map.empty
+            ; Undeclared = Map.empty 
             ; Outputs = [] }
+            
+        let bindings =
+            Lens.m
+                (fun m -> m.Bindings)
+                (fun m v -> { m with Bindings = v })
+            
+        let functions =
+            Lens.v
+                (fun m -> m.Functions)
+                (fun m v -> { m with Functions = v })
+            
+        let predicates =
+            Lens.v
+                (fun m -> m.Predicates)
+                (fun m v -> { m with Predicates =  v })
+            
+        let assigned (model: Model) =
+            Lens.m
+                (fun m -> m.Assigned)
+                (fun m v -> { m with Assigned = v })
+            
+        let unassigned (model: Model) =
+            Lens.m
+                (fun m -> m.Unassigned)
+                (fun m v -> { m with Unassigned = v })
+            
+        let undeclared (model: Model) =
+            Lens.m
+                (fun m -> m.Undeclared)
+                (fun m v -> { m with Undeclared =  v })
+            
+        let enums (model: Model) =
+            Lens.m
+                (fun m -> m.Enums)
+                (fun m v -> { m with Enums = v })
+            
+        let synonyms (model: Model) =
+            Lens.m
+                (fun m -> m.Synonyms)
+                (fun m v -> { m with Synonyms = v })
         
         // Parse a Model from the given .mzn file
         let parseFile file : Result<Model, ParseError> =
@@ -104,12 +152,55 @@ module rec Model =
             
             let model =
                 input
-                |> Parse.string Parsers.ast
+                |> Parse.stringWith Parsers.ast
                 |> Result.map fromAst
                 
             model
+                 
+        // Add a binding to the model
+        let addBinding id value (model: Model) =
+                                               
+            let prior =
+                model.Bindings.TryFind id
+                
+            let binding =            
+                match prior, value with
+                
+                // Assign an unassigned variable    
+                | Some (Unassigned ti), Undeclared expr ->
+                    Binding.Assigned (ti, expr)
                     
+                // Update an existing variable                    
+                | Some (Assigned (ti, v1)), Undeclared v2 when v1=v2 ->
+                    Binding.Assigned (ti, v1)
 
+                // Assign an unassigned enum                                    
+                | Some (Enum {Cases=[]}), Enum enum ->
+                    Binding.Enum enum
+                
+                // Identical
+                | Some x, y when x = y ->
+                    x
+
+                // Already conflicted
+                | Some (Conflict xs), _ ->
+                    Binding.Conflict (xs @ [value])
+                    
+                // New clash
+                | Some x, _ ->
+                    Binding.Conflict ([x; value])
+                
+                // New binding
+                | None, _ ->
+                    value
+        
+            let bindings =
+                model.Bindings
+                |> Map.add id binding
+                
+            { model with Bindings = bindings }
+            
+        
         // Create a Model from the given AST            
         let fromAst (ast: Ast) : Model =
             
@@ -120,22 +211,23 @@ module rec Model =
                     model
                 | item :: rest ->
                     let loop = loop rest
+                    
                     match item with
-                    | Include x ->
-                        loop {
-                            model with
-                                Includes = x :: model.Includes
-                        } 
-                    | Enum x ->
-                        loop {
-                            model with
-                                Enums = model.Enums.Add (x.Name, x)
-                        }
-                    | Alias (id, _, ti) ->
-                        loop {
-                            model with
-                                Synonyms = model.Synonyms.Add (id, ti)
-                        }
+                    | Item.Include x ->
+                        { model with Includes = x :: model.Includes}
+                        |> loop
+                        
+                    | Item.Enum x ->
+                        model
+                        |> addBinding x.Name (Binding.Enum x)
+                        |> loop
+                        
+                    | Item.Synonym (id, _, ti) ->
+                        
+                        { model with Synonyms = model.Synonyms.Add (id, ti) }
+                        |> loop
+                        
+                        
                     | Constraint x ->
                         loop {
                             model with
@@ -183,7 +275,3 @@ module rec Model =
             let model = loop ast empty
             
             model
-            
-    let variables (model: Model) : Model =
-        
-        

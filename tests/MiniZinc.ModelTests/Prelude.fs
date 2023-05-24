@@ -9,7 +9,7 @@ module Prelude =
             
     // Test parsing the string, no sanitizing occurs    
     let test_parse_raw parser input =
-        match Parse.string parser input with
+        match Parse.stringWith parser input with
         | Result.Ok ok  ->
             ok
         | Result.Error err ->
