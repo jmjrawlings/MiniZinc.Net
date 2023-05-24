@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   test-parse:
     name:
-      Test Parse
+      Test Parser
     runs-on:
       ubuntu-latest
     env:
@@ -22,12 +22,12 @@ jobs:
 
   test-solve:
     name:
-      Test Solve v${{ matrix.minizinc-version }}
+      Test Solver - v${{ matrix.minizinc-version }}
     runs-on:
       ubuntu-latest
     strategy:
       matrix:
-        minizinc-version: ["2.7.4", "2.5.4"]
+        minizinc-version: ["2.7.4", "2.6.4", "2.5.5"]
       fail-fast:
         false        
     env:
