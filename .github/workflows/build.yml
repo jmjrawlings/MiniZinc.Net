@@ -49,7 +49,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}/bin/minizinc
-          key: $MINIZINC_URL
+          key: minizinc-v${{ matrix.minizinc-version }}
       - name: Download MiniZinc
         if: steps.cache-minizinc.outputs.cache-hit != 'true'
         run: |
