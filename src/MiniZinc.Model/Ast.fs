@@ -57,7 +57,7 @@ type VarKind =
     | AssignedVar = 2
     | UnassignedVar = 3
               
-type SolveMethod =
+type SolveType =
     | Satisfy = 0
     | Minimize = 1
     | Maximize = 2
@@ -243,16 +243,16 @@ and SolveSatisfy =
     
 and SolveOptimise =
     { Annotations : Annotations
-      Method : SolveMethod
+      Method : SolveType
       Objective : Expr }
     
-and SolveItem =
+and SolveMethod =
     | Sat of SolveSatisfy
     | Opt of SolveOptimise
     
-    member this.Method =
+    member this.SolveType =
         match this with
-        | Sat _ -> SolveMethod.Satisfy
+        | Sat _ -> SolveType.Satisfy
         | Opt o -> o.Method
         
     member this.Annotations =
@@ -266,13 +266,13 @@ and SolveItem =
     static member Minimize(expr) =
         { Annotations = []
         ; Objective =  expr
-        ; Method=SolveMethod.Minimize  }
+        ; Method=SolveType.Minimize  }
         |> Opt
         
     static member Maximize(expr) =
         { Annotations = []
         ; Objective =  expr
-        ; Method=SolveMethod.Maximize  }
+        ; Method=SolveType.Maximize  }
         |> Opt
         
 
@@ -348,11 +348,11 @@ and SetLiteral =
 and Item =
     | Include    of IncludeItem
     | Enum       of EnumItem
-    | Alias      of AliasItem
+    | Synonym    of SynonymItem
     | Constraint of ConstraintItem
     | Assign     of AssignItem
     | Declare    of DeclareItem
-    | Solve      of SolveItem
+    | Solve      of SolveMethod
     | Predicate  of PredicateItem
     | Function   of FunctionItem
     | Test       of TestItem
@@ -375,7 +375,7 @@ and PredicateItem =
 and TestItem =
     OperationItem
 
-and AliasItem =
+and SynonymItem =
     Id * Annotations * TypeInst
 
 and OutputItem =

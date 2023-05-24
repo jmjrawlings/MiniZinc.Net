@@ -8,7 +8,7 @@ module ParseTests =
     // Test parsing the string, it is sanitized first
     let test parser input =
         let source, comments = Parse.sanitize input
-        let output = Parse.string parser source
+        let output = Parse.stringWith parser source
         output.AssertOk()
     
     [<Theory>]
@@ -110,7 +110,7 @@ module ParseTests =
     [<InlineData("% 12312312")>]
     [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
-        let output = Parse.string Parsers.comment arg
+        let output = Parse.stringWith Parsers.comment arg
         output.AssertOk()
         
     [<Theory>]
