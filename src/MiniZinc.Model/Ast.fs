@@ -409,5 +409,18 @@ and LetItem =
 and LetExpr =
     { Locals: LetItem list
       In: Expr }
-
-type Ast = Item list
+    
+type Ast =
+    { Includes:    IncludeItem list 
+    ; Enums:       EnumItem list 
+    ; Synonyms:    SynonymItem list 
+    ; Constraints: ConstraintItem list 
+    ; Assigns:     AssignItem list 
+    ; Declares:    DeclareItem list
+    ; Solves:      SolveMethod list
+    ; Predicates:  PredicateItem list 
+    ; Functions:   FunctionItem list 
+    ; Tests:       TestItem list 
+    ; Outputs:     OutputItem list 
+    ; Annotations: AnnotationItem list 
+    ; Comments:    string list }
