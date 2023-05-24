@@ -136,11 +136,11 @@ module rec Model =
         // Parse a Model from the given .mzn file
         let parseFile file : Result<Model, ParseError> =
             
-            let string =
+            let mzn =
                 File.ReadAllText file.FullName
             
             let model =
-                parseString string
+                parseString mzn
                 
             model
             
@@ -150,9 +150,12 @@ module rec Model =
             let input, comments =
                 Parse.sanitize string
             
-            let model =
+            let ast =
                 input
-                |> Parse.stringWith Parsers.ast
+                |> Parse.string
+                
+            let model =
+                ast
                 |> Result.map fromAst
                 
             model
@@ -204,74 +207,38 @@ module rec Model =
         // Create a Model from the given AST            
         let fromAst (ast: Ast) : Model =
             
-            let rec loop (ast: Ast) (model: Model) =
+            let model =
+                { empty with
+                      Includes = ast.Includes
+                      Constraints = ast.Constraints
+                      Outputs = ast.Outputs }
                 
-                match ast with
-                | [] ->
-                    model
-                | item :: rest ->
-                    let loop = loop rest
-                    
-                    match item with
-                    | Item.Include x ->
-                        { model with Includes = x :: model.Includes}
-                        |> loop
-                        
-                    | Item.Enum x ->
-                        model
-                        |> addBinding x.Name (Binding.Enum x)
-                        |> loop
-                        
-                    | Item.Synonym (id, _, ti) ->
-                        
-                        { model with Synonyms = model.Synonyms.Add (id, ti) }
-                        |> loop
-                        
-                        
-                    | Constraint x ->
-                        loop {
-                            model with
-                                Constraints =  x :: model.Constraints
-                        } 
-                    | Assign (id, expr) ->
-                        loop {
-                            model with
-                                Assignments = model.Assignments.Add(id,expr)
-                        }
-                    | Declare (id, ti, anns, Some expr) ->
-                        loop {
-                            model with
-                                Declares = model.Declares.Add (id, ti)
-                                Assignments = model.Assignments.Add (id, expr) 
-                        } 
-                    | Declare (id, ti, anns, None) ->
-                        loop {
-                            model with
-                                Declares =  model.Declares.Add (id, ti)
-                        }
-                    | Solve x ->
-                        loop {
-                            model with
-                                Solve = x
-                        }
-                    | Predicate x ->
-                        loop {
-                            model with
-                                Predicates =  x :: model.Predicates
-                        }
-                    | Function x ->
-                        loop {
-                            model with
-                                Functions =   x :: model.Functions
-                        } 
-                    | Output x ->
-                        loop {
-                            model with
-                                Outputs = x :: model.Outputs
-                        } 
-                    | _ ->
-                        loop model
-                        
-            let model = loop ast empty
+            let bindings = ResizeArray()
             
+            for id,expr in ast.Assigns do
+                bindings.Add (id, Binding.Undeclared expr)
+
+            for id, ti, _, expr in ast.Declares do
+                match expr with
+                | Some value ->
+                    bindings.Add(id, Binding.Assigned (ti, value))
+                | None ->
+                    bindings.Add(id, Binding.Unassigned ti)
+                    
+            for enum in ast.Enums do
+                bindings.Add (enum.Name, Binding.Enum enum)
+            
+            for x in ast.Functions do
+                bindings.Add (x.Name, Binding.Function x)
+                
+            for x in ast.Predicates do
+                bindings.Add (x.Name, Binding.Predicate x)
+                
+            for (id, _anns, ti) in ast.Synonyms do
+                bindings.Add (id, Binding.Synonym ti)
+            
+            let model =
+                bindings
+                |> Seq.fold (fun m (id, b) -> addBinding id b m) model
+
             model

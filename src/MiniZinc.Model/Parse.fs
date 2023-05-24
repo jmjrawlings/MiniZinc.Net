@@ -1175,14 +1175,73 @@ module Parsers =
         ; var_decl_item   |>> Item.Declare
         ; block_comment   |>> Item.Comment ]
         |> choice
-                    
-    // Parse a model from a the given string                       
-    let ast : P<Ast> =
+                      
+    let items : P<Item list> =
         spaces
         >>. sepEndBy1 item (sps ';')
         .>> eof
+    
+    let toAst (items: Item list) =
+        
+        let rec loop (items: Item list) (ast: Ast) =
+            match items with
+            | [] ->
+                ast
+            | item :: rest ->
+                let loop = loop rest
+                match item with
+                | Include x ->
+                    loop { ast with Includes = x :: ast.Includes }
+                | Enum x ->
+                    loop { ast with Enums = x :: ast.Enums }
+                | Synonym x ->
+                    loop { ast with Synonyms = x :: ast.Synonyms }
+                | Constraint x ->
+                    loop { ast with Constraints = x :: ast.Constraints }
+                | Assign x ->
+                    loop { ast with Assigns = x :: ast.Assigns }
+                | Declare x ->
+                    loop { ast with Declares = x :: ast.Declares }
+                | Solve x ->
+                    loop { ast with Solves = x :: ast.Solves }
+                | Predicate x ->
+                    loop { ast with Predicates = x :: ast.Predicates }
+                | Function x ->
+                    loop { ast with Functions = x :: ast.Functions }
+                | Test x ->
+                    loop { ast with Tests = x :: ast.Tests }
+                | Output x ->
+                    loop { ast with Outputs = x :: ast.Outputs }
+                | Annotation x ->
+                    loop { ast with Annotations = x :: ast.Annotations }
+                | Comment x ->
+                    loop { ast with Comments = x :: ast.Comments }
+                
+        let empty =
+            { Includes = []     
+            ; Enums = []        
+            ; Synonyms = []     
+            ; Constraints = []  
+            ; Assigns = []      
+            ; Declares = []    
+            ; Solves = []      
+            ; Predicates = []   
+            ; Functions = []    
+            ; Tests = []        
+            ; Outputs = []      
+            ; Annotations = []  
+            ; Comments = [] }    
+                
+        let ast =
+            loop items empty
+            
+        ast            
+    
+    let ast =
+        items
+        |>> toAst
 
-
+                
 module Parse =
 
     open Parsers    
