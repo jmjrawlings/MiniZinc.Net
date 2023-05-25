@@ -8,6 +8,7 @@ Helper functions for the rest of the codebase
 
 namespace MiniZinc
 
+open System.IO
 open System.Collections.Generic
 open System.Runtime.CompilerServices
 
@@ -18,6 +19,28 @@ type Merge =
     | Outer
     | Union
 
+[<AutoOpen>]
+module Prelude =
+    let (|FileExists|FileNotFound|) x =
+        match File.Exists x with
+        | true -> FileExists (FileInfo x)
+        | false -> FileNotFound
+
+type File =
+    
+    static member existing(path: string) =
+        match File.Exists path with
+        | true -> Result.Ok path
+        | false -> Error $"{path} does not exist"
+    
+    static member read(path: string) =
+        path
+        |> File.existing
+        |> Result.map File.ReadAllText
+        
+    static member read(path: FileInfo) =
+        File.read(path.FullName)
+        
 
 module Map =
     let withKey f xs =
@@ -30,7 +53,14 @@ module Map =
         for (k,v) in Map.toSeq map do
             dict[k] <- v
         dict
-
+        
+    let merge a b =
+        let merged =
+            Map.toSeq a
+            |> Seq.append (Map.toSeq b)
+            |> Map.ofSeq
+        merged
+        
 
 module Result =
     
@@ -261,3 +291,7 @@ type Extensions =
         let kb = b.KeySet()
         let left, mid, right = ka.Venn(kb)
         left, mid, right
+        
+    [<Extension>]
+    static member Bind(a: Result<'ok, 'err>, f) =
+        Result.bind f a

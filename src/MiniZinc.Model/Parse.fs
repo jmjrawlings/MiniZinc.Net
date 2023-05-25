@@ -23,8 +23,6 @@ type ParseError =
     ; Index : int64
     ; Trace: string }
 
-type ParseResult<'T> =
-    Result<'T, ParseError>
 
 module Parsers =
 
@@ -1282,7 +1280,7 @@ module Parse =
         output, comments
         
     // Parse the given string with the given parser
-    let stringWith (parser: P<'t>) (input: string) : ParseResult<'t> =
+    let stringWith (parser: P<'t>) (input: string) : Result<'t, ParseError> =
         
         let state = UserState()
         
@@ -1303,12 +1301,12 @@ module Parse =
             Result.Error err
             
     // Parse the given string with the given parser
-    let string (input: string) : ParseResult<Ast> =
+    let string (input: string) : Result<Ast, ParseError> =
         let result = stringWith ast input
         result                
             
     // Parse the given file with the given encoding
-    let file (encoding: Encoding) (path: string) : ParseResult<Ast> =
+    let file (encoding: Encoding) (path: string) : Result<Ast, ParseError> =
                 
         let state = UserState()
         

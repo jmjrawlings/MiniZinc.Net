@@ -95,10 +95,21 @@ module Bindings =
     
 module rec Model =
             
+    type LoadResult =
+        // Load was successful
+        | Success of Model
+        // Could not find the model to load
+        | FileNotFound of string list
+        // Parsing failed
+        | ParseError of ParseError
+        // Reference only
+        | Reference 
+            
     // A MiniZinc model
     type Model =
         { Name        : string
-        ; Includes    : string list
+        ; File        : string option
+        ; Includes    : Map<string, LoadResult>
         ; Bindings    : Map<Id, Binding>
         ; Enums       : Map<string, EnumItem>
         ; Synonyms    : Map<string, TypeInst>
@@ -108,15 +119,15 @@ module rec Model =
         ; Outputs     : OutputItem list
         ; SolveMethod : SolveMethod
         ; Assigned    : Map<string, TypeInst * Expr>
-        ; Conflicts   : Map<string, Binding list>
         ; Unassigned  : Map<string, TypeInst>
-        ; Undeclared  : Map<string, Expr> }
+        ; Undeclared  : Map<string, Expr> 
+        ; Conflicts   : Map<string, Binding list> }
                 
         /// <summary>
         /// Parse a Model from the given file
         /// </summary>
-        static member parseFile (file: string) =
-            Model.parseFile (FileInfo file)
+        static member ParseFile (file: string) =
+            Model.parseFile file
 
         /// <summary>
         /// Parse a Model from the given string
@@ -127,7 +138,7 @@ module rec Model =
         ///
         /// Defaults is false.
         /// </param>
-        static member parseString ([<Optional; DefaultParameterValue(false)>] allowEmpty: bool) =
+        static member ParseString ([<Optional; DefaultParameterValue(false)>] allowEmpty: bool) =
             fun input ->
                 if String.IsNullOrWhiteSpace input && allowEmpty then
                     Result.Ok Model.empty
@@ -140,7 +151,8 @@ module rec Model =
         // An empty model        
         let empty =
             { Name = ""
-            ; Includes = []
+            ; File = None
+            ; Includes = Map.empty
             ; Enums = Map.empty
             ; Synonyms = Map.empty
             ; Constraints = []
@@ -154,97 +166,103 @@ module rec Model =
             ; Conflicts = Map.empty 
             ; Outputs = [] }
 
-            
-        let Bindings_ =
-            Lens.m
-                (fun m -> m.Bindings)
-                (fun v m -> { m with Bindings = v })
-            
-        let Functions_ =
-            Lens.m
-                (fun m -> m.Functions)
-                (fun v m -> { m with Functions = v })
+        [<AutoOpen>]
+        module Lenses =
+            let Bindings_ =
+                Lens.m
+                    (fun m -> m.Bindings)
+                    (fun v m -> { m with Bindings = v })
                 
-        let SolveMethod_ =
-            Lens.v
-                (fun m -> m.SolveMethod)
-                (fun v m -> { m with SolveMethod = v })                
-        
-        let Conflicts_ =
-            Lens.m
-                (fun m -> m.Conflicts)
-                (fun v m -> { m with Conflicts = v })
+            let Functions_ =
+                Lens.m
+                    (fun m -> m.Functions)
+                    (fun v m -> { m with Functions = v })
+                    
+            let SolveMethod_ =
+                Lens.v
+                    (fun m -> m.SolveMethod)
+                    (fun v m -> { m with SolveMethod = v })                
             
-        let Predicates_ =
-            Lens.m
-                (fun m -> m.Predicates)
-                (fun v m -> { m with Predicates =  v })
-            
-        let Assigned_ =
-            Lens.m
-                (fun m -> m.Assigned)
-                (fun v m -> { m with Assigned = v })
-            
-        let Unassigned_ =
-            Lens.m
-                (fun m -> m.Unassigned)
-                (fun v m -> { m with Unassigned = v })
-            
-        let Undeclared_ =
-            Lens.m
-                (fun m -> m.Undeclared)
-                (fun v m -> { m with Undeclared =  v })
-            
-        let Enums_ =
-            Lens.m
-                (fun m -> m.Enums)
-                (fun v m -> { m with Enums = v })
-            
-        let Synonyms_ =
-            Lens.m
-                (fun m -> m.Synonyms)
-                (fun v m -> { m with Synonyms = v })
+            let Conflicts_ =
+                Lens.m
+                    (fun m -> m.Conflicts)
+                    (fun v m -> { m with Conflicts = v })
                 
-        let Includes_ =
-            Lens.v
-                (fun m -> m.Includes)
-                (fun v m -> { m with Includes = v })
+            let Predicates_ =
+                Lens.m
+                    (fun m -> m.Predicates)
+                    (fun v m -> { m with Predicates =  v })
                 
-        let Outputs_ =
-            Lens.v
-                (fun m -> m.Outputs)
-                (fun v m -> { m with Outputs = v })
+            let Assigned_ =
+                Lens.m
+                    (fun m -> m.Assigned)
+                    (fun v m -> { m with Assigned = v })
                 
-        let Constraints_ = 
-            Lens.l
-                (fun m -> m.Constraints)
-                (fun v m -> { m with Constraints =  v })
+            let Unassigned_ =
+                Lens.m
+                    (fun m -> m.Unassigned)
+                    (fun v m -> { m with Unassigned = v })
                 
-        let Name_ =
-            Lens.v
-                (fun m -> m.Name)
-                (fun v m -> { m with Name = v })
+            let Undeclared_ =
+                Lens.m
+                    (fun m -> m.Undeclared)
+                    (fun v m -> { m with Undeclared =  v })
+                
+            let Enums_ =
+                Lens.m
+                    (fun m -> m.Enums)
+                    (fun v m -> { m with Enums = v })
+                
+            let Synonyms_ =
+                Lens.m
+                    (fun m -> m.Synonyms)
+                    (fun v m -> { m with Synonyms = v })
+                    
+            let Includes_ =
+                Lens.m
+                    (fun m -> m.Includes)
+                    (fun v m -> { m with Includes = v })
+                    
+            let Outputs_ =
+                Lens.v
+                    (fun m -> m.Outputs)
+                    (fun v m -> { m with Outputs = v })
+                    
+            let Constraints_ = 
+                Lens.l
+                    (fun m -> m.Constraints)
+                    (fun v m -> { m with Constraints =  v })
+            
+            let File_ = 
+                Lens.v
+                    (fun m -> m.File)
+                    (fun v m -> { m with File = v })
+                    
+            let Name_ =
+                Lens.v
+                    (fun m -> m.Name)
+                    (fun v m -> { m with Name = v })
         
         // Parse a Model from the given .mzn file
-        let parseFile file : Result<Model, ParseError> =
+        let parseFile (file: string) =
             
             let mzn =
-                File.ReadAllText file.FullName
+                File.read file
             
             let model =
-                parseString mzn
+                mzn.Bind parseString
                 
             model
             
         // Parse a Model from the given string
-        let parseString string : Result<Model, ParseError> =
-            
+        let parseString string =
+                        
             let input, comments =
                 Parse.sanitize string
             
             let ast =
-                input
-                |> Parse.string
+                Parse.string input
+                |> Result.mapError (fun e -> e.Message)
                 
             let model =
                 ast
@@ -282,10 +300,15 @@ module rec Model =
                 
             let map =
                 Bindings.ofSeq bindings
+                
+            let includes =
+                ast.Includes
+                |> Seq.map (fun i -> (i, LoadResult.Reference))
+                |> Map.ofSeq
                             
             let model =
                 fromBindings map
-                |> Includes_.set ast.Includes
+                |> Includes_.set includes
                 |> Constraints_.set ast.Constraints
                 |> Outputs_.set ast.Outputs
 
@@ -349,8 +372,8 @@ module rec Model =
             let name =
                 $"{a.Name} and {b.Name}"
                 
-            let includes =                
-                a.Includes @ b.Includes
+            let includes =
+                Map.merge a.Includes b.Includes
 
             let constraints =
                 a.Constraints @ b.Constraints
@@ -373,11 +396,10 @@ module rec Model =
         // Load an included model into this one
         let loadIncluded filename (searchDirs: string seq) (model: Model) =
                         
-            let includeFile : Result<FileInfo, string>=
+            let includeFile =
                 searchDirs
                 |> Seq.map (fun dir -> Path.Join(dir, filename))
-                |> Seq.map FileInfo
-                |> Seq.filter (fun fi -> fi.Exists)
+                |> Seq.filter File.Exists
                 |> Seq.tryHead
                 |> Result.ofOption $"Could not find {filename} in any of the search directories"
                 
@@ -393,10 +415,10 @@ module rec Model =
                     Ok {merged with Includes = includes }
                 | Error err ->
                     Error err
-                
+            
             result
             
             
         // Load all included models
-        let loadAllIncluded (searchDirs: string seq) (model: Model) =
-            model            
+        let loadIncludedModels (searchDirs: string seq) (model: Model) =
+            model
