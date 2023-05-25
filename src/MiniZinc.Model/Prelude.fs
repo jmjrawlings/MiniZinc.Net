@@ -56,82 +56,76 @@ module Result =
 // A lens for field 'u' on model 't'    
 type Lens<'t, 'u> =
     { get: 't -> 'u
-      set: 't -> 'u -> 't }
-    
-    member this.map f =
-        fun x1 ->
-            let v1 = this.get x1
+      set: 'u -> 't -> 't }
+        
+    member this.map f (m1: 't) =
+        fun m1 ->
+            let v1 = this.get m1
             let v2 = f v1
-            let x2 = this.set x1 v2
-            x2
+            let m2 = this.set v2 m1
+            m2
             
             
 // A lens for a Map<'k,'v> field on model 't'
 type MapLens<'t, 'k, 'v when 'k:comparison> =
     { get: 't -> Map<'k,'v>
-      set: 't -> Map<'k,'v> -> 't }
-    
-    member this.map f =
-        fun x1 ->
-            let v1 = this.get x1
-            let v2 = f v1
-            v2
+      set: Map<'k,'v> -> 't -> 't }
             
-    member this.update f =
-        fun m1 ->
-            let v2 = this.map f m1
-            let m2 = this.set m1 v2
-            m2
+    member this.map f (m1: 't) =
+        let v1 = this.get m1
+        let v2 = f v1
+        let m2 = this.set v2 m1
+        m2
     
-    member this.add key value =
-        fun m1 ->
-            let v1 = this.get m1
-            let v2 = v1.Add(key,value)
-            let m2 = this.set m1 v2
-            m2
+    member this.add key value (m1: 't) =
+        let v1 = this.get m1
+        let v2 = v1.Add(key,value)
+        let m2 = this.set v2 m1
+        m2
         
-    member this.remove (key: 'k) =
-        fun m1 ->
-            let v1 = this.get m1
-            let v2 = v1.Remove(key)
-            let m2 = this.set m1 v2
-            m2
+    member this.remove (key: 'k) (m1: 't) =
+        let v1 = this.get m1
+        let v2 = v1.Remove(key)
+        let m2 = this.set v2 m1
+        m2
             
-    member this.merge (right: Map<'k, 'v>) =
-        fun m1 ->
-            let left = this.get m1
-            let merged =
-                left
-                |> Map.toSeq
-                |> Seq.append (Map.toSeq right)
-                |> Map.ofSeq
-            let x2 = this.set m1 merged
-            x2
+    member this.merge (right: Map<'k, 'v>) (m1: 't) =
+        let left = this.get m1
+        let merged =
+            left
+            |> Map.toSeq
+            |> Seq.append (Map.toSeq right)
+            |> Map.ofSeq
+        let m2 = this.set merged m1
+        m2
             
     member this.tryFind (key) =
-        fun m ->
+        fun (m: 't) ->
             let map = this.get m
             let v = map.TryFind key
             v
             
     member this.tryFind (key, backup) =
-        fun m ->
+        fun (m: 't) ->
             let v =
                 m
-                |> this.map (Map.tryFind key)
+                |> this.get
+                |> Map.tryFind key
                 |> Option.defaultValue backup
             v
             
     member this.find key =
-        fun m ->
-            let v = this.map (Map.find key) m
+        fun (m: 't) ->
+            let v = Map.find key (this.get m)
             v
     
 module Lens =
         
+    // Create a lens for field field 'u on 't
     let v get set : Lens<'t, 'u> =
         { get = get; set = set }
         
+    // Create a lens into a Map<'k,'v> field on 't                        
     let m get set : MapLens<'t, 'k, 'v> =
         { get = get; set = set }
             

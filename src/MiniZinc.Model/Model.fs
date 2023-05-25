@@ -15,10 +15,7 @@ namespace MiniZinc
 
 
 open System
-open System.Diagnostics
 open System.IO
-open System.Collections
-open System.Collections.Generic
 open System.Runtime.InteropServices
     
 type Binding =
@@ -31,6 +28,61 @@ type Binding =
     | Function   of FunctionItem
     | Conflict   of Binding list
     
+type Bindings = Map<Id, Binding>
+
+module Bindings =
+    
+    let empty = Map.empty
+    
+    let add id value (bindings: Bindings) =
+                                           
+        let prior =
+            bindings.TryFind id
+            
+        let binding =            
+            match prior, value with
+            
+            // Assign an unassigned variable    
+            | Some (Unassigned ti), Undeclared expr ->
+                Binding.Assigned (ti, expr)
+                
+            // Update an existing variable                    
+            | Some (Assigned (ti, v1)), Undeclared v2 when v1=v2 ->
+                Binding.Assigned (ti, v1)
+
+            // Assign an unassigned enum                                    
+            | Some (Enum {Cases=[]}), Enum enum ->
+                Binding.Enum enum
+            
+            // Identical
+            | Some x, y when x = y ->
+                x
+
+            // Already conflicted
+            | Some (Conflict xs), _ ->
+                Binding.Conflict (xs @ [value])
+                
+            // New clash
+            | Some x, _ ->
+                Binding.Conflict [x; value]
+            
+            // New binding
+            | None, _ ->
+                value
+    
+        let result =
+            bindings.Add(id, binding)
+        
+        result            
+            
+    let ofSeq xs =
+        
+        let bindings =
+            (Map.empty, xs)
+            ||> Seq.fold (fun map (id, bnd) -> add id bnd map)
+            
+        bindings
+        
 
     
 [<AutoOpen>]
@@ -44,11 +96,12 @@ module rec Model =
         ; Enums       : Map<string, EnumItem>
         ; Synonyms    : Map<string, TypeInst>
         ; Constraints : ConstraintItem list
-        ; Predicates  : PredicateItem list
-        ; Functions   : FunctionItem list
+        ; Predicates  : Map<string, PredicateItem>
+        ; Functions   : Map<string, FunctionItem>
         ; Outputs     : OutputItem list
         ; SolveMethod : SolveMethod
         ; Assigned    : Map<string, TypeInst * Expr>
+        ; Conflicts    : Map<string, Binding list>
         ; Unassigned  : Map<string, TypeInst>
         ; Undeclared  : Map<string, Expr> }
                 
@@ -84,54 +137,80 @@ module rec Model =
             ; Enums = Map.empty
             ; Synonyms = Map.empty
             ; Constraints = []
-            ; Functions = []
-            ; Predicates = []
+            ; Functions = Map.empty
+            ; Predicates = Map.empty
             ; SolveMethod = SolveMethod.Satisfy
             ; Bindings = Map.empty
             ; Unassigned = Map.empty
             ; Assigned = Map.empty
-            ; Undeclared = Map.empty 
+            ; Undeclared = Map.empty
+            ; Conflicts = Map.empty 
             ; Outputs = [] }
             
         let bindings =
             Lens.m
                 (fun m -> m.Bindings)
-                (fun m v -> { m with Bindings = v })
+                (fun v m -> { m with Bindings = v })
             
         let functions =
-            Lens.v
+            Lens.m
                 (fun m -> m.Functions)
-                (fun m v -> { m with Functions = v })
+                (fun v m -> { m with Functions = v })
+        
+        let conflicts =
+            Lens.m
+                (fun m -> m.Conflicts)
+                (fun v m -> { m with Conflicts = v })
             
         let predicates =
-            Lens.v
+            Lens.m
                 (fun m -> m.Predicates)
-                (fun m v -> { m with Predicates =  v })
+                (fun v m -> { m with Predicates =  v })
             
-        let assigned (model: Model) =
+        let assigned =
             Lens.m
                 (fun m -> m.Assigned)
-                (fun m v -> { m with Assigned = v })
+                (fun v m -> { m with Assigned = v })
             
-        let unassigned (model: Model) =
+        let unassigned =
             Lens.m
                 (fun m -> m.Unassigned)
-                (fun m v -> { m with Unassigned = v })
+                (fun v m -> { m with Unassigned = v })
             
-        let undeclared (model: Model) =
+        let undeclared =
             Lens.m
                 (fun m -> m.Undeclared)
-                (fun m v -> { m with Undeclared =  v })
+                (fun v m -> { m with Undeclared =  v })
             
-        let enums (model: Model) =
+        let enums =
             Lens.m
                 (fun m -> m.Enums)
-                (fun m v -> { m with Enums = v })
+                (fun v m -> { m with Enums = v })
             
-        let synonyms (model: Model) =
+        let synonyms =
             Lens.m
                 (fun m -> m.Synonyms)
-                (fun m v -> { m with Synonyms = v })
+                (fun v m -> { m with Synonyms = v })
+                
+        let includes =
+            Lens.v
+                (fun m -> m.Includes)
+                (fun v m -> { m with Includes = v })
+                
+        let outputs =
+            Lens.v
+                (fun m -> m.Outputs)
+                (fun v m -> { m with Outputs = v })
+                
+        let constraints =
+            Lens.v
+                (fun m -> m.Constraints)
+                (fun v m -> { m with Constraints =  v })
+                
+        let name =
+            Lens.v
+                (fun m -> m.Name)
+                (fun v m -> { m with Name = v })
         
         // Parse a Model from the given .mzn file
         let parseFile file : Result<Model, ParseError> =
@@ -159,59 +238,10 @@ module rec Model =
                 |> Result.map fromAst
                 
             model
-                 
-        // Add a binding to the model
-        let addBinding id value (model: Model) =
-                                               
-            let prior =
-                model.Bindings.TryFind id
-                
-            let binding =            
-                match prior, value with
-                
-                // Assign an unassigned variable    
-                | Some (Unassigned ti), Undeclared expr ->
-                    Binding.Assigned (ti, expr)
-                    
-                // Update an existing variable                    
-                | Some (Assigned (ti, v1)), Undeclared v2 when v1=v2 ->
-                    Binding.Assigned (ti, v1)
-
-                // Assign an unassigned enum                                    
-                | Some (Enum {Cases=[]}), Enum enum ->
-                    Binding.Enum enum
-                
-                // Identical
-                | Some x, y when x = y ->
-                    x
-
-                // Already conflicted
-                | Some (Conflict xs), _ ->
-                    Binding.Conflict (xs @ [value])
-                    
-                // New clash
-                | Some x, _ ->
-                    Binding.Conflict ([x; value])
-                
-                // New binding
-                | None, _ ->
-                    value
-        
-            let bindings =
-                model.Bindings
-                |> Map.add id binding
-                
-            { model with Bindings = bindings }
             
         
         // Create a Model from the given AST            
         let fromAst (ast: Ast) : Model =
-            
-            let model =
-                { empty with
-                      Includes = ast.Includes
-                      Constraints = ast.Constraints
-                      Outputs = ast.Outputs }
                 
             let bindings = ResizeArray()
             
@@ -234,11 +264,64 @@ module rec Model =
             for x in ast.Predicates do
                 bindings.Add (x.Name, Binding.Predicate x)
                 
-            for (id, _anns, ti) in ast.Synonyms do
+            for id, _anns, ti in ast.Synonyms do
                 bindings.Add (id, Binding.Synonym ti)
-            
+                
+            let map =
+                Bindings.ofSeq bindings
+                            
             let model =
-                bindings
-                |> Seq.fold (fun m (id, b) -> addBinding id b m) model
+                fromBindings map
+                |> includes.set ast.Includes
+                |> constraints.set ast.Constraints
+                |> outputs.set ast.Outputs
 
+            model
+            
+                
+        // Create a Model from the given AST            
+        let fromBindings (bindings: Bindings) : Model =
+                    
+            let rec loop (bindings: (string*Binding) list) model =
+                match bindings with
+                | [] ->
+                    model
+                | (id, binding) :: rest ->
+                    match binding with
+                    | Undeclared s ->
+                        model
+                        |> undeclared.add id s 
+                        |> loop rest
+                    | Unassigned s ->
+                        model
+                        |> unassigned.add id s
+                        |> loop rest
+                    | Assigned (ti,expr) ->
+                        model
+                        |> assigned.add id (ti,expr)
+                        |> loop rest
+                    | Enum e ->
+                        model
+                        |> enums.add id e
+                        |> loop rest
+                    | Synonym s ->
+                        model
+                        |> synonyms.add id s
+                        |> loop rest
+                    | Predicate p ->
+                        model
+                        |> predicates.add id p
+                        |> loop rest   
+                    | Function f ->
+                        model
+                        |> functions.add id f
+                        |> loop rest   
+                    | Conflict c ->
+                        model
+                        |> conflicts.add id c
+                        |> loop rest
+                        
+            let model =
+                loop (Map.toList bindings) empty
+                
             model

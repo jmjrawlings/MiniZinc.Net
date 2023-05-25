@@ -22,6 +22,10 @@ module Prelude =
         let source, comments = Parse.sanitize input
         test_parse_raw parser source
         
+    let (?=) a b =
+        a.Should().BeSameAs(b, $"Values were not equal")
+        
+        
     [<Extension>]
     type Extensions() =
         
