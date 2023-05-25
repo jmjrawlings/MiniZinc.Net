@@ -14,6 +14,7 @@ AST as required.
 namespace MiniZinc
 
 open System
+open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
 
