@@ -52,11 +52,20 @@ module Result =
         | 0 -> Ok (Seq.toList oks)
         | _ -> Error (Seq.toList errs)
         
+    let ofOption err opt =
+        match opt with
+        | Some v -> Ok v
+        | None -> Error err
+            
 
 // A lens for field 'u' on model 't'    
-type Lens<'t, 'u> =
-    { get: 't -> 'u
-      set: 'u -> 't -> 't }
+type Lens<'t, 'u>(getter: 't -> 'u, setter: 'u -> 't -> 't) =
+    
+    member this.get =
+        getter
+        
+    member this.set =
+        setter
         
     member this.map f (m1: 't) =
         fun m1 ->
@@ -65,11 +74,61 @@ type Lens<'t, 'u> =
             let m2 = this.set v2 m1
             m2
             
+
+// A lens for list 'u' on model 't'    
+type ListLens<'t, 'u>(getter: 't -> 'u list, setter: 'u list -> 't -> 't) =
+    
+    member this.get =
+        getter
+        
+    member this.set =
+        setter
+        
+    member this.map f (m1: 't) =
+        fun m1 ->
+            let v1 = this.get m1
+            let v2 = f v1
+            let m2 = this.set v2 m1
+            m2
+            
+    member this.insert (x: 'u) =
+        fun (m1: 't) ->
+            let v1 = this.get m1
+            let v2 = x :: v1
+            let m2 = this.set v2 m1
+            m2
+
+    member this.insert (xs: 'u list) =
+        fun (m1: 't) ->
+            let v1 = this.get m1
+            let v2 = xs @ v1
+            let m2 = this.set v2 m1
+            m2
+                
+    member this.append (x: 'u) =
+        fun (m1: 't) ->
+            let v1 = this.get m1
+            let v2 = v1 @ [x]
+            let m2 = this.set v2 m1
+            m2
+            
+    member this.append (xs: 'u list) =
+        fun (m1: 't) ->
+            let v1 = this.get m1
+            let v2 = v1 @ xs
+            let m2 = this.set v2 m1
+            m2
+
+
             
 // A lens for a Map<'k,'v> field on model 't'
-type MapLens<'t, 'k, 'v when 'k:comparison> =
-    { get: 't -> Map<'k,'v>
-      set: Map<'k,'v> -> 't -> 't }
+type MapLens<'t, 'k, 'v when 'k:comparison>(getter: 't -> Map<'k,'v>, setter: Map<'k,'v> -> 't -> 't) =
+
+    member this.get =
+        getter
+        
+    member this.set =
+        setter
             
     member this.map f (m1: 't) =
         let v1 = this.get m1
@@ -120,14 +179,19 @@ type MapLens<'t, 'k, 'v when 'k:comparison> =
             v
     
 module Lens =
-        
+            
     // Create a lens for field field 'u on 't
-    let v get set : Lens<'t, 'u> =
-        { get = get; set = set }
+    let v get set =
+        Lens(get, set)
         
     // Create a lens into a Map<'k,'v> field on 't                        
-    let m get set : MapLens<'t, 'k, 'v> =
-        { get = get; set = set }
+    let m get set =
+        MapLens(get, set)
+        
+    // Create a lens into a Map<'k,'v> field on 't                        
+    let l get set =
+        ListLens(get, set)
+        
             
         
 [<Extension>]

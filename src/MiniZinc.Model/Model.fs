@@ -13,10 +13,10 @@ AST as required.
 
 namespace MiniZinc
 
-
 open System
 open System.IO
 open System.Runtime.InteropServices
+
     
 type Binding =
     | Undeclared of Expr
@@ -83,11 +83,18 @@ module Bindings =
             
         bindings
         
+    let merge (a: Bindings) (b: Bindings) =
+        
+        let merged =
+            Map.toSeq a
+            |> Seq.append (Map.toSeq b)
+            |> ofSeq
+            
+        merged
 
     
-[<AutoOpen>]
 module rec Model =
-    
+            
     // A MiniZinc model
     type Model =
         { Name        : string
@@ -101,7 +108,7 @@ module rec Model =
         ; Outputs     : OutputItem list
         ; SolveMethod : SolveMethod
         ; Assigned    : Map<string, TypeInst * Expr>
-        ; Conflicts    : Map<string, Binding list>
+        ; Conflicts   : Map<string, Binding list>
         ; Unassigned  : Map<string, TypeInst>
         ; Undeclared  : Map<string, Expr> }
                 
@@ -146,68 +153,74 @@ module rec Model =
             ; Undeclared = Map.empty
             ; Conflicts = Map.empty 
             ; Outputs = [] }
+
             
-        let bindings =
+        let Bindings_ =
             Lens.m
                 (fun m -> m.Bindings)
                 (fun v m -> { m with Bindings = v })
             
-        let functions =
+        let Functions_ =
             Lens.m
                 (fun m -> m.Functions)
                 (fun v m -> { m with Functions = v })
+                
+        let SolveMethod_ =
+            Lens.v
+                (fun m -> m.SolveMethod)
+                (fun v m -> { m with SolveMethod = v })                
         
-        let conflicts =
+        let Conflicts_ =
             Lens.m
                 (fun m -> m.Conflicts)
                 (fun v m -> { m with Conflicts = v })
             
-        let predicates =
+        let Predicates_ =
             Lens.m
                 (fun m -> m.Predicates)
                 (fun v m -> { m with Predicates =  v })
             
-        let assigned =
+        let Assigned_ =
             Lens.m
                 (fun m -> m.Assigned)
                 (fun v m -> { m with Assigned = v })
             
-        let unassigned =
+        let Unassigned_ =
             Lens.m
                 (fun m -> m.Unassigned)
                 (fun v m -> { m with Unassigned = v })
             
-        let undeclared =
+        let Undeclared_ =
             Lens.m
                 (fun m -> m.Undeclared)
                 (fun v m -> { m with Undeclared =  v })
             
-        let enums =
+        let Enums_ =
             Lens.m
                 (fun m -> m.Enums)
                 (fun v m -> { m with Enums = v })
             
-        let synonyms =
+        let Synonyms_ =
             Lens.m
                 (fun m -> m.Synonyms)
                 (fun v m -> { m with Synonyms = v })
                 
-        let includes =
+        let Includes_ =
             Lens.v
                 (fun m -> m.Includes)
                 (fun v m -> { m with Includes = v })
                 
-        let outputs =
+        let Outputs_ =
             Lens.v
                 (fun m -> m.Outputs)
                 (fun v m -> { m with Outputs = v })
                 
-        let constraints =
-            Lens.v
+        let Constraints_ = 
+            Lens.l
                 (fun m -> m.Constraints)
                 (fun v m -> { m with Constraints =  v })
                 
-        let name =
+        let Name_ =
             Lens.v
                 (fun m -> m.Name)
                 (fun v m -> { m with Name = v })
@@ -272,9 +285,9 @@ module rec Model =
                             
             let model =
                 fromBindings map
-                |> includes.set ast.Includes
-                |> constraints.set ast.Constraints
-                |> outputs.set ast.Outputs
+                |> Includes_.set ast.Includes
+                |> Constraints_.set ast.Constraints
+                |> Outputs_.set ast.Outputs
 
             model
             
@@ -290,38 +303,100 @@ module rec Model =
                     match binding with
                     | Undeclared s ->
                         model
-                        |> undeclared.add id s 
+                        |> Undeclared_.add id s 
                         |> loop rest
                     | Unassigned s ->
                         model
-                        |> unassigned.add id s
+                        |> Unassigned_.add id s
                         |> loop rest
                     | Assigned (ti,expr) ->
                         model
-                        |> assigned.add id (ti,expr)
+                        |> Assigned_.add id (ti,expr)
                         |> loop rest
                     | Enum e ->
                         model
-                        |> enums.add id e
+                        |> Enums_.add id e
                         |> loop rest
                     | Synonym s ->
                         model
-                        |> synonyms.add id s
+                        |> Synonyms_.add id s
                         |> loop rest
                     | Predicate p ->
                         model
-                        |> predicates.add id p
+                        |> Predicates_.add id p
                         |> loop rest   
                     | Function f ->
                         model
-                        |> functions.add id f
+                        |> Functions_.add id f
                         |> loop rest   
                     | Conflict c ->
                         model
-                        |> conflicts.add id c
+                        |> Conflicts_.add id c
                         |> loop rest
                         
             let model =
                 loop (Map.toList bindings) empty
                 
             model
+            
+            
+        // Merge the two models            
+        let merge (a: Model) (b: Model) : Model =
+                            
+            let bindings =
+                Bindings.merge a.Bindings b.Bindings
+                
+            let name =
+                $"{a.Name} and {b.Name}"
+                
+            let includes =                
+                a.Includes @ b.Includes
+
+            let constraints =
+                a.Constraints @ b.Constraints
+                                
+            let solveMethod =                
+                match a.SolveMethod, b.SolveMethod with
+                    | SolveMethod.Sat _ , other
+                    | other, SolveMethod.Sat _ -> other
+                    | left, right -> right
+                
+            let model =
+                fromBindings bindings
+                |> Constraints_.set constraints
+                |> Includes_.set includes
+                |> Name_.set name
+                |> SolveMethod_.set solveMethod
+                
+            model
+            
+        // Load an included model into this one
+        let loadIncluded filename (searchDirs: string seq) (model: Model) =
+                        
+            let includeFile : Result<FileInfo, string>=
+                searchDirs
+                |> Seq.map (fun dir -> Path.Join(dir, filename))
+                |> Seq.map FileInfo
+                |> Seq.filter (fun fi -> fi.Exists)
+                |> Seq.tryHead
+                |> Result.ofOption $"Could not find {filename} in any of the search directories"
+                
+            let includeModel =
+                includeFile
+                |> Result.bind (parseFile >> Result.mapError string)
+                
+            let result =
+                match includeModel with
+                | Ok incl ->
+                    let merged = merge model incl
+                    let includes = List.filter ((<>) filename) model.Includes
+                    Ok {merged with Includes = includes }
+                | Error err ->
+                    Error err
+                
+            result
+            
+            
+        // Load all included models
+        let loadAllIncluded (searchDirs: string seq) (model: Model) =
+            model            
