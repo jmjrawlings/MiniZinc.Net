@@ -73,7 +73,7 @@ let download_test_models () =
         clone_dir <//> clone_path
         |> DirectoryInfo.copyRecursiveToWithFilter
                true
-               (fun dir file -> file.Extension = ".mzn")
+               (fun dir file -> List.contains file.Extension [".mzn"; ".model"])
                examples_dir
     
     File.writeNew
@@ -100,12 +100,17 @@ open Xunit
 open System.IO
 
 module ExampleTests =
-  
+   
     let test (name: string) =
-        let file = FileInfo $"examples/{name}.mzn"
-        let model = Model.parseFile file
-        model.AssertOk()
-
+        let filename =
+            $"examples/{name}.mzn"
+        let options =
+            { IncludeOptions = IncludeOptions.Parse ["examples"] }
+        let model =
+            Model.parseFile options filename
+        
+        assert model.Value.Undeclared.IsEmpty
+        assert model.Value.Conflicts.IsEmpty
 """
     
     let examples =
