@@ -3,15 +3,19 @@ namespace MiniZinc.Model.Tests
 open MiniZinc
 open MiniZinc.Model
 open Xunit
-open System.IO
 
 module ExampleTests =
-  
+   
     let test (name: string) =
-        let file = FileInfo $"examples/{name}.mzn"
-        let model = Model.ParseFile file
-        model.Value
-
+        let filename =
+            $"examples/{name}.mzn"
+        let options =
+            { IncludeOptions = IncludeOptions.Parse ["examples"] }
+        let model =
+            Model.parseFile options filename
+            
+        model.Value.Undeclared.AssertEmpty()
+        model.Value.Conflicts.AssertEmpty()
 
     [<Fact>]
     let ``test 2DPacking`` () =

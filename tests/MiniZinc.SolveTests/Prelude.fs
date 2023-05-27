@@ -1,7 +1,6 @@
 ﻿namespace MiniZinc.Solve.Tests
 
 open System.Runtime.CompilerServices
-open FluentAssertions
 
 [<AutoOpen>]
 module Prelude =
@@ -10,5 +9,6 @@ module Prelude =
     type Extensions() =
         
         [<Extension>]
-        static member ShouldEqual(a: obj, b: string) =
-            (string a).Should().Be(b, "")
+        static member inline AssertEquals(a, b) =
+            if a <> b then
+                failwithf $"{a} does not equal {b}"

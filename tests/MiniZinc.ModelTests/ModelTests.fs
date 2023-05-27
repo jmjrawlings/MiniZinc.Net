@@ -4,7 +4,6 @@ open MiniZinc
 open MiniZinc.Model
 open Xunit
 open System.IO
-open FluentAssertions
 open System
 
 module ModelTests =
