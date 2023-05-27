@@ -1245,9 +1245,10 @@ module Parse =
     open Parsers    
     open System.Text.RegularExpressions
     
-    // Sanitize the input string by removing any
-    // blank lines and comments
-    let sanitize (input: string) : string * List<Comment> =
+    /// <summary>
+    /// Strip comments from the given minizinc model
+    /// </summary>
+    let stripComments (mzn: string) : string * List<Comment> =
         
         let comments = ResizeArray<string>()
         let line_comment = "%(.*)$"
@@ -1271,7 +1272,7 @@ module Parse =
             )
         
         let output =
-            Regex.Replace(input, pattern, evaluator, RegexOptions.Multiline)
+            Regex.Replace(mzn, pattern, evaluator, RegexOptions.Multiline)
 
         let output =
             output.Trim()

@@ -19,7 +19,7 @@ module Prelude =
             
     // Test parsing the string, it is sanitized first            
     let test_parse parser input =
-        let source, comments = Parse.sanitize input
+        let source, comments = Parse.stripComments input
         test_parse_raw parser source
         
     let (?=) a b =

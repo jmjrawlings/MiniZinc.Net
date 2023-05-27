@@ -7,7 +7,7 @@ module ParseTests =
             
     // Test parsing the string, it is sanitized first
     let test parser input =
-        let source, comments = Parse.sanitize input
+        let source, comments = Parse.stripComments input
         let output = Parse.stringWith parser source
         output.AssertOk()
     

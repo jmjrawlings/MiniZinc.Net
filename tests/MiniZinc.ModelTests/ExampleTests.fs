@@ -9,8 +9,8 @@ module ExampleTests =
   
     let test (name: string) =
         let file = FileInfo $"examples/{name}.mzn"
-        let model = Model.parseFile file
-        model.AssertOk()
+        let model = Model.ParseFile file
+        model.Value
 
 
     [<Fact>]

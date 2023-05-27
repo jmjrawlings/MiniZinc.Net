@@ -18,7 +18,6 @@ open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
 
-    
 type Binding =
     | Undeclared of Expr
     | Unassigned of TypeInst
@@ -29,14 +28,15 @@ type Binding =
     | Function   of FunctionItem
     | Conflict   of Binding list
     
-type Bindings = Map<Id, Binding>
+type Bindings =
+    Map<Id, Binding>    
 
 module Bindings =
     
     let empty = Map.empty
     
     let add id value (bindings: Bindings) =
-                                           
+                                                   
         let prior =
             bindings.TryFind id
             
@@ -92,20 +92,51 @@ module Bindings =
             |> ofSeq
             
         merged
+        
+type IncludeOptions =
+    | Reference
+    | Parse of string list
+  
+type ParseOptions =
+    { Inclusions: IncludeOptions }
+        
+    static member Default =
+        { Inclusions = IncludeOptions.Reference }
+        
+[<AutoOpen>]        
+module rec LoadResult =
 
-    
-module rec Model =
-            
-    type LoadResult =
+    type LoadResult<'t> =
         // Load was successful
-        | Success of Model
-        // Could not find the model to load
+        | Success of 't
+        // Could not find the model
         | FileNotFound of string list
         // Parsing failed
         | ParseError of ParseError
-        // Reference only
-        | Reference 
+        // Reference only - load has not been attempted
+        | Reference
+        
+        member this.Value =
+            LoadResult.success this
             
+                    
+    module LoadResult =
+        let map f result =
+            match result with
+            | Success model -> Success (f model)
+            | other -> other
+            
+        let success result =
+            match result with
+            | Success x -> x
+            | _ -> failwithf $"Result was not a success"
+        
+
+    
+module rec Model =
+    
+    type LoadResult = LoadResult<Model>
+                
     // A MiniZinc model
     type Model =
         { Name        : string
@@ -127,26 +158,41 @@ module rec Model =
         /// <summary>
         /// Parse a Model from the given file
         /// </summary>
-        static member ParseFile (file: string) =
-            Model.parseFile file
+        static member ParseFile (filepath: string, options: ParseOptions) =
+            Model.parseFile options filepath
+            
+        /// <summary>
+        /// Parse a Model from the given file
+        /// </summary>
+        static member ParseFile (filepath: FileInfo, options: ParseOptions) =
+            Model.parseFile options filepath.FullName
+
+        /// <summary>
+        /// Parse a Model from the given file
+        /// </summary>
+        static member ParseFile (filepath: string) =
+            Model.parseFile ParseOptions.Default filepath
+            
+        /// <summary>
+        /// Parse a Model from the given file
+        /// </summary>
+        static member ParseFile (filepath: FileInfo) =
+            Model.parseFile ParseOptions.Default filepath.FullName
+            
 
         /// <summary>
         /// Parse a Model from the given string
         /// </summary>
-        /// <param name="allowEmpty">
-        /// If true, an empty model will be returned
-        /// in the case of an empty/null string.
-        ///
-        /// Defaults is false.
-        /// </param>
-        static member ParseString ([<Optional; DefaultParameterValue(false)>] allowEmpty: bool) =
-            fun input ->
-                if String.IsNullOrWhiteSpace input && allowEmpty then
-                    Result.Ok Model.empty
-                else
-                    Model.parseString input
-                
-                
+        static member ParseString (mzn: string, options: ParseOptions) =
+            Model.parseString options mzn
+            
+        /// <summary>
+        /// Parse a Model from the given string
+        /// </summary>
+        static member ParseString (mzn: string) =
+            Model.parseString ParseOptions.Default mzn 
+            
+                    
     module Model =
 
         // An empty model        
@@ -244,37 +290,45 @@ module rec Model =
                     (fun m -> m.Name)
                     (fun v m -> { m with Name = v })
         
-        // Parse a Model from the given .mzn file
-        let parseFile (file: string) =
+        /// <summary>
+        /// Parse a Model from the given MiniZinc file
+        /// </summary>
+        let parseFile (options: ParseOptions) (filepath: string) : LoadResult =
             
-            let mzn =
-                File.read file
-            
-            let model =
-                mzn.Bind parseString
+            let result =
+                match File.read filepath with
+                | Ok string ->
+                    parseString options string
+                | Error _ ->
+                    FileNotFound [filepath]
                 
-            model
-            
-        // Parse a Model from the given string
-        let parseString string =
+            result
+        
+        /// <summary>
+        /// Parse a Model from the given MiniZinc model string
+        /// </summary>
+        let parseString (options: ParseOptions) (mzn: string) : LoadResult =
                         
             let input, comments =
-                Parse.sanitize string
+                Parse.stripComments mzn
             
-            let ast =
-                Parse.string input
-                |> Result.mapError (fun e -> e.Message)
-                
             let model =
-                ast
-                |> Result.map fromAst
+                Parse.string input
+                |> Result.map (fromAst options)
                 
-            model
+            let result =
+                match model with
+                | Result.Ok model -> LoadResult.Success model
+                | Result.Error error -> LoadResult.ParseError error
+                
+            result
             
         
-        // Create a Model from the given AST            
-        let fromAst (ast: Ast) : Model =
-                
+        /// <summary>
+        /// Create a Model from the given AST
+        /// </summary>
+        let fromAst (options: ParseOptions) (ast: Ast) : Model =
+                                        
             let bindings = ResizeArray()
             
             for id,expr in ast.Assigns do
@@ -302,24 +356,54 @@ module rec Model =
             let map =
                 Bindings.ofSeq bindings
                 
-            let includes =
+            // Parse an included model with the given filename "model.mzn"
+            let parseIncluded filename =
+                
+                let result =
+                    match options.Inclusions with
+
+                    | IncludeOptions.Reference ->
+                        LoadResult.Reference
+
+                    | IncludeOptions.Parse paths ->
+                        let searchFiles =
+                            paths
+                            |> List.map (fun dir -> Path.Join(dir, filename))
+                
+                        let filepath =
+                            searchFiles
+                            |> List.filter File.Exists
+                            |> List.tryHead
+                            
+                        match filepath with
+                        | Some path ->
+                            parseFile options path
+                        | None ->
+                            LoadResult.FileNotFound searchFiles
+                            
+                filename, result
+                
+            // We can parse all inclusions in parallel                
+            let inclusions =
                 ast.Includes
-                |> Seq.map (fun i -> (i, LoadResult.Reference))
+                |> Seq.toArray
+                |> Array.Parallel.map parseIncluded
                 |> Map.ofSeq
                             
             let model =
                 fromBindings map
-                |> Includes_.set includes
+                |> Includes_.set inclusions
                 |> Constraints_.set ast.Constraints
                 |> Outputs_.set ast.Outputs
 
             model
-            
                 
-        // Create a Model from the given AST            
+        /// <summary>
+        /// Create a Model from the given Bindings
+        /// </summary>
         let fromBindings (bindings: Bindings) : Model =
                     
-            let rec loop (bindings: (string*Binding) list) model =
+            let rec loop bindings model =
                 match bindings with
                 | [] ->
                     model
@@ -364,7 +448,9 @@ module rec Model =
             model
             
             
-        // Merge the two models            
+        /// <summary>
+        /// Merge two Models
+        /// </summary>
         let merge (a: Model) (b: Model) : Model =
                             
             let bindings =
@@ -394,32 +480,28 @@ module rec Model =
                 
             model
             
-        // Load an included model into this one
-        let loadIncluded filename (searchDirs: string seq) (model: Model) =
-                        
-            let includeFile =
-                searchDirs
-                |> Seq.map (fun dir -> Path.Join(dir, filename))
-                |> Seq.filter File.Exists
-                |> Seq.tryHead
-                |> Result.ofOption $"Could not find {filename} in any of the search directories"
-                
-            let includeModel =
-                includeFile
-                |> Result.bind (parseFile >> Result.mapError string)
-                
-            let result =
-                match includeModel with
-                | Ok incl ->
-                    let merged = merge model incl
-                    let includes = List.filter ((<>) filename) model.Includes
-                    Ok {merged with Includes = includes }
-                | Error err ->
-                    Error err
+        // // Load an included model, searching for it
+        // // in the given directories
+        // let loadIncluded filename (searchDirs: string seq) (model: Model) =
+        //                 
+        //     let filepath =
+        //         searchDirs
+        //         |> Seq.map (fun dir -> Path.Join(dir, filename))
+        //         |> Seq.filter File.Exists
+        //         |> Seq.tryHead
+        //         |> Result.ofOption $"Could not find {filename} in any of the search directories"
+        //         
+        //     let includeModel =
+        //         filepath
+        //         |> Result.bind (parseFile >> Result.mapError string)
+        //         
+        //     
+        // // Load all included models
+        // let loadIncludedModels (searchDirs: string seq) (model: Model) =
+        //     model
+
+  
+        
+        type LoadResult =
+            LoadResult<Model>
             
-            result
-            
-            
-        // Load all included models
-        let loadIncludedModels (searchDirs: string seq) (model: Model) =
-            model

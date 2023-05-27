@@ -76,18 +76,16 @@ module ModelTests =
     let ``test detect unassigned`` arg =
         
         let model =
-            Model.parseString arg
-            |> Result.defaultValue Model.empty
+            Model.ParseString arg
             
-        assert model.Unassigned.ContainsKey "x"
+        assert model.Value.Unassigned.ContainsKey "x"
         
     [<Theory>]
     [<InlineData("var int: x;x=100;")>]
     let ``test detect unassigned 2`` arg =
 
         let model =
-            Model.parseString arg
-            |> Result.defaultValue Model.empty
+            Model.ParseString arg
         
-        assert model.Unassigned.IsEmpty
+        assert model.Value.Unassigned.IsEmpty
                                         
