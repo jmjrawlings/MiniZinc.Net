@@ -47,6 +47,10 @@ module Bindings =
             | Some (Unassigned ti), Undeclared expr ->
                 Binding.Assigned (ti, expr)
                 
+            // Assign an unassigned variable    
+            | Some (Undeclared expr), Unassigned ti ->
+                Binding.Assigned (ti, expr)
+                
             // Update an existing variable                    
             | Some (Assigned (ti, v1)), Undeclared v2 when v1=v2 ->
                 Binding.Assigned (ti, v1)
@@ -98,10 +102,10 @@ type IncludeOptions =
     | Parse of string list
   
 type ParseOptions =
-    { Inclusions: IncludeOptions }
+    { IncludeOptions: IncludeOptions }
         
     static member Default =
-        { Inclusions = IncludeOptions.Reference }
+        { IncludeOptions = IncludeOptions.Reference }
         
 [<AutoOpen>]        
 module rec LoadResult =
@@ -360,7 +364,7 @@ module rec Model =
             let parseIncluded filename =
                 
                 let result =
-                    match options.Inclusions with
+                    match options.IncludeOptions with
 
                     | IncludeOptions.Reference ->
                         LoadResult.Reference
@@ -383,20 +387,30 @@ module rec Model =
                             
                 filename, result
                 
-            // We can parse all inclusions in parallel                
+            // Parse included models in parallel
             let inclusions =
                 ast.Includes
                 |> Seq.toArray
                 |> Array.Parallel.map parseIncluded
                 |> Map.ofSeq
                             
+            // Load the model from these bindings only
             let model =
                 fromBindings map
                 |> Includes_.set inclusions
                 |> Constraints_.set ast.Constraints
-                |> Outputs_.set ast.Outputs
+                |> Outputs_.set ast.Outputs                
+                
+            // Now merge the model with all inclusions
+            let unified =
+                inclusions
+                |> Map.values
+                |> Seq.choose (function
+                    | LoadResult.Success model -> Some model
+                    | _ -> None)
+                |> Seq.fold Model.merge model
 
-            model
+            unified
                 
         /// <summary>
         /// Create a Model from the given Bindings
