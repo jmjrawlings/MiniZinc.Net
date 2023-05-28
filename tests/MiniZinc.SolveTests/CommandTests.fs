@@ -4,6 +4,7 @@ module CommandTests =
 
     open MiniZinc
     open FSharp.Control
+    open MiniZinc.Tests
     open MiniZinc.Command
     open Xunit
     

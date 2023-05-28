@@ -1,18 +1,18 @@
 namespace MiniZinc.Model.Tests
 
 open MiniZinc
-open MiniZinc.Model
+open MiniZinc.Tests
 open Xunit
 
 module ExampleTests =
    
     let test (name: string) =
-        let filename =
-            $"examples/{name}.mzn"
+        let testCase =
+            TestCase.load name
         let options =
             { IncludeOptions = IncludeOptions.Parse ["examples"] }
         let model =
-            Model.parseFile options filename
+            Model.parseString options testCase.Mzn
             
         model.Value.Undeclared.AssertEmpty()
         model.Value.Conflicts.AssertEmpty()

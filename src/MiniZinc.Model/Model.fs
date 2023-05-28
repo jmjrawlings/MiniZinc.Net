@@ -18,6 +18,7 @@ open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
 
+
 type Binding =
     | Undeclared of Expr
     | Unassigned of TypeInst
@@ -136,7 +137,7 @@ module rec LoadResult =
             | _ -> failwithf $"Result was not a success"
         
 
-    
+[<AutoOpen>]    
 module rec Model =
     
     type LoadResult = LoadResult<Model>
