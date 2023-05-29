@@ -1,7 +1,9 @@
 # Changelog
 
 ## [Unreleased]
-
+- Shared `MiniZinc.Tests` library
+- `TestCase` specs are now extracted via Yaml
+- `TestCase.parse` method
 
 ## [0.3.0] - 2023-05-27
 - Recursive loading of included models
