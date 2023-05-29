@@ -34,6 +34,7 @@ open YamlDotNet.Serialization.NamingConventions
 
 type TestCase =
     { FileName: string
+    ; FileInfo: FileInfo
     ; Mzn : string
     ; Spec: string
     ; Model: LoadResult }
@@ -67,51 +68,90 @@ module TestCase =
           options : Dictionary<string, obj>
           expected : List<obj> }  // Use 'obj list' to handle both 'Result' and 'Error' types.
 
-    type CustomTagConverter<'t>() =
-        interface IYamlTypeConverter with
-            member this.Accepts(t) = t = typeof<'t>
-            member this.WriteYaml(emitter, value, typ) = ()
-            member this.ReadYaml(parser, typ) =
-                
-                let rec parseNested (parser: IParser) =
-                    match parser.Current with
-                    | :? MappingStart ->
-                        let dict = new Dictionary<string, obj>()
-                        parser.MoveNext() // Move past the start of the mapping.
-                        while parser.Current.GetType() <> typeof<MappingEnd> do
-                            parser.MoveNext() // Move to the key.
-                            let key = (parser.Current :?> Scalar).Value
-                            parser.MoveNext() // Move to the value.
-                            dict.Add(key, parseNested parser)
-                            parser.MoveNext() // Move to the next key or the end of the mapping.
-                        dict :> obj
-                    | :? SequenceStart ->
-                        let list = new List<obj>()
-                        parser.MoveNext() // Move past the start of the sequence.
-                        while parser.Current.GetType() <> typeof<SequenceEnd> do
-                            list.Add(parseNested parser)
-                            parser.MoveNext() // Move to the next item or the end of the sequence.
-                        list :> obj
-                    | :? Scalar ->
-                        (parser.Current :?> Scalar).Value :> obj
-                    | _ ->
-                        failwith "Unsupported YAML structure."
+    type YamlNode =
+        | String of string
+        | Int of int
+        | Float of float
+        | List of YamlNode list
+        | Map of Map<string, YamlNode>
 
-                parseNested parser    
+    let rec parseYaml (parser: IParser) =
+        match parser.Current with
+        | :? MappingStart as x ->
+            parseMap x parser
+            |> YamlNode.Map
+        | :? SequenceStart as x ->
+            parseList x parser
+            |> YamlNode.List
+        | :? Scalar as x ->
+            parseScalar x
+            |> YamlNode.String
+        | _ ->
+            failwith "Unsupported YAML structure."
+            
+    and parseScalar (x: Scalar) =
+        let tag = x.Tag
+        let value = x.Value
+        value
+            
+    and parseMap (x: MappingStart) (parser: IParser) =
+        let tag = x.Tag
+        let dict = Dictionary<string, YamlNode>()
+        parser.MoveNext()
+        while parser.Current.GetType() <> typeof<MappingEnd> do
+            
+            let key = (parser.Current :?> Scalar).Value
+            parser.MoveNext()
+            
+            let value = parseYaml parser
+            parser.MoveNext()
+            
+            dict[key] <- value
+            
+        
+        let map =
+            Map.ofDict dict
+            
+        map
+        
+    and parseList (x: SequenceStart) (parser: IParser) =
+        let tag = x.Tag
+        let list = ResizeArray()
+        parser.MoveNext()
+        while parser.Current.GetType() <> typeof<SequenceEnd> do
+            let node = parseYaml parser
+            parser.MoveNext()
+            list.Add node
+            
+        Seq.toList list
+    
+    type YamlParser() =
+        
+        interface IYamlTypeConverter with
+
+            member this.Accepts(t) =
+                true
+
+            member this.WriteYaml(emitter, value, typ) =
+                ()
+
+            member this.ReadYaml(parser, typ) =
+                let node = parseYaml parser
+                node
+                
     
     let deserializer =
-        DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .WithTypeConverter(CustomTagConverter<TestCaseSolution>())
-            .WithTypeConverter(CustomTagConverter<TestCaseDuration>())
-            .WithTypeConverter(CustomTagConverter<TestCaseError>())
-            .WithTypeConverter(CustomTagConverter<TestCaseResult>())
-            .WithTypeConverter(CustomTagConverter<TestCaseTest>())
-            .WithTagMapping("!Solution", typeof<TestCaseSolution>)
-            .WithTagMapping("!Test", typeof<TestCaseTest>)
-            .WithTagMapping("!Duration", typeof<TestCaseDuration>)
-            .WithTagMapping("!Result", typeof<TestCaseResult>)
-            .Build()
+        
+        let mutable x = 
+            DeserializerBuilder()
+                .IgnoreFields()
+                .IgnoreUnmatchedProperties()
+                .WithTypeConverter(YamlParser())
+                
+        for tag in ["Test";"Result";"SolutionSet";"Solution";"Duration"] do
+            x <- x.WithTagMapping($"!{tag}", typeof<obj>)
+            
+        x.Build()
           
     let assembly_file =
         Assembly.GetExecutingAssembly().Location
@@ -123,10 +163,10 @@ module TestCase =
         <//> "examples"
 
 
-    // Read the testcase from the given file
+    /// Read the testcase from the given file
     let read (filename: string) =
         let filepath = examples_dir </> filename
-        use reader = new StreamReader(filepath)
+        use reader = new StreamReader(filepath)        
         
         let header = reader.ReadLine()
         assert (header = "/***")
@@ -144,11 +184,12 @@ module TestCase =
                 
         let mzn = reader.ReadToEnd()
         let yaml = string spec
-        let json = deserializer.Deserialize<Dictionary<string, obj>>(new StringReader(yaml))
+        let json = deserializer.Deserialize<YamlNode>(new StringReader(yaml))
         let name = Path.GetFileNameWithoutExtension filename
         let testCase =
             { Spec = yaml
             ; FileName = filename
+            ; FileInfo = FileInfo filename 
             ; Model = LoadResult.Reference
             ; Mzn = mzn }
         testCase

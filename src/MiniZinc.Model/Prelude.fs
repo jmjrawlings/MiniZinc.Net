@@ -54,6 +54,10 @@ module Map =
             dict[k] <- v
         dict
         
+    let ofDict (dict: IDictionary<'k,'v>) : Map<'k, 'v> =
+        seq { for kv in dict do yield (kv.Key, kv.Value) }
+        |> Map.ofSeq
+        
     let merge a b =
         let merged =
             Map.toSeq a
