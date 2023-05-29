@@ -24,8 +24,11 @@ open System.Collections.Generic
 open System.IO
 open System.Reflection
 open System.Text
+open System.Text.Json
 open MiniZinc
 open YamlDotNet
+open YamlDotNet.Core
+open YamlDotNet.Core.Events
 open YamlDotNet.Serialization
 open YamlDotNet.Serialization.NamingConventions
 
@@ -57,18 +60,59 @@ module TestCase =
           regex : string }
 
     [<CLIMutable>]
-    type TestCaseOptions =
-        { all_solutions : bool
-          timeout : TestCaseDuration }
-
-    [<CLIMutable>]
     type TestCaseTest =
         { solvers : List<string>
           check_against : List<string>
           extra_files : List<string>
-          options : TestCaseOptions
+          options : Dictionary<string, obj>
           expected : List<obj> }  // Use 'obj list' to handle both 'Result' and 'Error' types.
+
+    type CustomTagConverter<'t>() =
+        interface IYamlTypeConverter with
+            member this.Accepts(t) = t = typeof<'t>
+            member this.WriteYaml(emitter, value, typ) = ()
+            member this.ReadYaml(parser, typ) =
+                
+                let rec parseNested (parser: IParser) =
+                    match parser.Current with
+                    | :? MappingStart ->
+                        let dict = new Dictionary<string, obj>()
+                        parser.MoveNext() // Move past the start of the mapping.
+                        while parser.Current.GetType() <> typeof<MappingEnd> do
+                            parser.MoveNext() // Move to the key.
+                            let key = (parser.Current :?> Scalar).Value
+                            parser.MoveNext() // Move to the value.
+                            dict.Add(key, parseNested parser)
+                            parser.MoveNext() // Move to the next key or the end of the mapping.
+                        dict :> obj
+                    | :? SequenceStart ->
+                        let list = new List<obj>()
+                        parser.MoveNext() // Move past the start of the sequence.
+                        while parser.Current.GetType() <> typeof<SequenceEnd> do
+                            list.Add(parseNested parser)
+                            parser.MoveNext() // Move to the next item or the end of the sequence.
+                        list :> obj
+                    | :? Scalar ->
+                        (parser.Current :?> Scalar).Value :> obj
+                    | _ ->
+                        failwith "Unsupported YAML structure."
+
+                parseNested parser    
     
+    let deserializer =
+        DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithTypeConverter(CustomTagConverter<TestCaseSolution>())
+            .WithTypeConverter(CustomTagConverter<TestCaseDuration>())
+            .WithTypeConverter(CustomTagConverter<TestCaseError>())
+            .WithTypeConverter(CustomTagConverter<TestCaseResult>())
+            .WithTypeConverter(CustomTagConverter<TestCaseTest>())
+            .WithTagMapping("!Solution", typeof<TestCaseSolution>)
+            .WithTagMapping("!Test", typeof<TestCaseTest>)
+            .WithTagMapping("!Duration", typeof<TestCaseDuration>)
+            .WithTagMapping("!Result", typeof<TestCaseResult>)
+            .Build()
+          
     let assembly_file =
         Assembly.GetExecutingAssembly().Location
         |> Path.GetFullPath
@@ -78,21 +122,14 @@ module TestCase =
         assembly_file.Directory.Parent.Parent.Parent.Parent
         <//> "examples"
 
-    let deserializer =
-        DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .WithTagMapping("!Duration", typeof<TestCaseDuration>)
-            .WithTagMapping("!Solution", typeof<TestCaseSolution>)
-            .WithTagMapping("!Result", typeof<TestCaseResult>)
-            .WithTagMapping("!Error", typeof<TestCaseError>)
-            .WithTagMapping("!Test", typeof<TestCaseTest>)
-            .Build()
-    
+
     // Read the testcase from the given file
     let read (filename: string) =
         let filepath = examples_dir </> filename
         use reader = new StreamReader(filepath)
-        reader.ReadLine()
+        
+        let header = reader.ReadLine()
+        assert (header = "/***")
                 
         let mutable stop = false
         let spec = StringBuilder()
@@ -106,11 +143,11 @@ module TestCase =
                 ()
                 
         let mzn = reader.ReadToEnd()
-        let spec = string spec
-        let yaml = deserializer.Deserialize<Test list>(spec)
+        let yaml = string spec
+        let json = deserializer.Deserialize<Dictionary<string, obj>>(new StringReader(yaml))
         let name = Path.GetFileNameWithoutExtension filename
         let testCase =
-            { Spec = spec
+            { Spec = yaml
             ; FileName = filename
             ; Model = LoadResult.Reference
             ; Mzn = mzn }
