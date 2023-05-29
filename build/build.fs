@@ -96,21 +96,19 @@ let create_example_parse_tests () =
 namespace MiniZinc.Model.Tests
 
 open MiniZinc
+open MiniZinc.Tests
 open Xunit
 open System.IO
 
 module ExampleTests =
    
     let test (name: string) =
-        let filename =
-            $"examples/{name}.mzn"
-        let options =
-            { IncludeOptions = IncludeOptions.Parse ["examples"] }
-        let model =
-            Model.parseFile options filename
-        
-        assert model.Value.Undeclared.IsEmpty
-        assert model.Value.Conflicts.IsEmpty
+        let testCase = TestCase.read name
+        let testCase = TestCase.parse testCase
+        let model = testCase.Model
+        model.Value.Undeclared.AssertEmpty()
+        model.Value.Conflicts.AssertEmpty()
+
 """
     
     let examples =
@@ -122,7 +120,7 @@ module ExampleTests =
         let test_case = $"""
     [<Fact>]
     let ``test {name}`` () =
-        test "{name}"
+        test "{example.Name}"
 """
 
         code <- code + "\n" + test_case
