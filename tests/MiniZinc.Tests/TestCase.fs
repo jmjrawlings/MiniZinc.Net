@@ -20,10 +20,14 @@ to the examples folder.
 namespace MiniZinc.Tests
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Reflection
 open System.Text
 open MiniZinc
+open YamlDotNet
+open YamlDotNet.Serialization
+open YamlDotNet.Serialization.NamingConventions
 
 type TestCase =
     { FileName: string
@@ -32,7 +36,39 @@ type TestCase =
     ; Model: LoadResult }
 
 module TestCase =
+            
+    [<CLIMutable>]
+    type TestCaseDuration =
+        { Time : string }
 
+    [<CLIMutable>]
+    type TestCaseSolution =
+        { _output_item : string }
+
+    [<CLIMutable>]
+    type TestCaseResult =
+        { status : string
+          solution : TestCaseSolution }
+
+    [<CLIMutable>]
+    type TestCaseError =
+        { Type : string
+          message : string
+          regex : string }
+
+    [<CLIMutable>]
+    type TestCaseOptions =
+        { all_solutions : bool
+          timeout : TestCaseDuration }
+
+    [<CLIMutable>]
+    type TestCaseTest =
+        { solvers : List<string>
+          check_against : List<string>
+          extra_files : List<string>
+          options : TestCaseOptions
+          expected : List<obj> }  // Use 'obj list' to handle both 'Result' and 'Error' types.
+    
     let assembly_file =
         Assembly.GetExecutingAssembly().Location
         |> Path.GetFullPath
@@ -42,6 +78,16 @@ module TestCase =
         assembly_file.Directory.Parent.Parent.Parent.Parent
         <//> "examples"
 
+    let deserializer =
+        DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithTagMapping("!Duration", typeof<TestCaseDuration>)
+            .WithTagMapping("!Solution", typeof<TestCaseSolution>)
+            .WithTagMapping("!Result", typeof<TestCaseResult>)
+            .WithTagMapping("!Error", typeof<TestCaseError>)
+            .WithTagMapping("!Test", typeof<TestCaseTest>)
+            .Build()
+    
     // Read the testcase from the given file
     let read (filename: string) =
         let filepath = examples_dir </> filename
@@ -56,11 +102,12 @@ module TestCase =
             if line = "***/" then
                 stop <- true
             else
-                spec.Append line
+                spec.AppendLine line
                 ()
                 
         let mzn = reader.ReadToEnd()
         let spec = string spec
+        let yaml = deserializer.Deserialize<Test list>(spec)
         let name = Path.GetFileNameWithoutExtension filename
         let testCase =
             { Spec = spec
