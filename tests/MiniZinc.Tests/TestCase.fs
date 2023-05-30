@@ -19,6 +19,8 @@ to the examples folder.
 *)
 namespace MiniZinc.Tests
 
+#nowarn "0025"
+
 open System
 open System.Collections.Generic
 open System.IO
@@ -29,63 +31,263 @@ open MiniZinc
 open YamlDotNet
 open YamlDotNet.Core
 open YamlDotNet.Core.Events
+open YamlDotNet.RepresentationModel
 open YamlDotNet.Serialization
 open YamlDotNet.Serialization.NamingConventions
 
-type TestCase =
-    { FileName: string
-    ; FileInfo: FileInfo
-    ; Mzn : string
-    ; Spec: string
-    ; Model: LoadResult }
-
-module TestCase =
-            
-    [<CLIMutable>]
-    type TestCaseDuration =
-        { Time : string }
-
-    [<CLIMutable>]
-    type TestCaseSolution =
-        { _output_item : string }
-
-    [<CLIMutable>]
-    type TestCaseResult =
-        { status : string
-          solution : TestCaseSolution }
+module rec TestCase =
+    
+    type TestCase =
+        { Name : string
+        ; Mzn : string
+        ; Yaml : string
+        ; FileName: string
+        ; Tests: TestCaseTest list
+        ; Model: LoadResult }
         
-    [<CLIMutable>]
-    type TestCaseSolutionSet =
-        { status : string
-          solution : TestCaseSolution }        
+    type TestCaseSolution =
+        Map<string, Yaml>
 
-    [<CLIMutable>]
+    type TestCaseResult =
+        { Status : string
+          Solutions : TestCaseSolution list }
+
     type TestCaseError =
         { Type : string
-          message : string
-          regex : string }
+          Message : string
+          Regex : string }
+        
+    type SolverId = string        
 
-    [<CLIMutable>]
     type TestCaseTest =
-        { solvers : List<string>
-          check_against : List<string>
-          extra_files : List<string>
-          options : Dictionary<string, obj>
-          expected : List<obj> }  // Use 'obj list' to handle both 'Result' and 'Error' types.
+        { Solvers : SolverId list
+          CheckAgainst : SolverId list
+          ExtraFiles : string list
+          SolveOptions : Map<string, Yaml>
+          Expected : TestCaseResult list }
 
-    type YamlNode =
-        | String of string
-        | Int of int
-        | Float of float
-        | List of YamlNode list
-        | Map of Map<string, YamlNode>
+    type MapNode =
+        { Map : Map<string, Yaml> }
+        
+        member this.Get key =
+            this.Map.Get(key)
+            
+        member this.TryGet key =
+            this.Map.TryGet(key)
+            
+        member this.GetList key =
+            match this.TryGet key with
+            | Some (Yaml.YList xs) -> xs.List
+            | _ -> []
+        
+        member this.GetMap key =
+            match this.TryGet key with
+            | Some (Yaml.NMap xs) -> xs.Map 
+            | _ -> Map.empty
+            
+        member this.GetString key =
+            match this.TryGet key with
+            | Some (Yaml.YString x) -> x 
+            | _ -> ""
+            
+        member this.GetInt key =
+            match this.TryGet key with
+            | Some (Yaml.YInt x) -> x 
+            | _ -> 0
+    
+    type YamlList =
+        | YList of Yaml list
+        
+        member this.List =
+            match this with
+            | YList xs -> xs
+    
+    type Yaml =
+        | YString of string
+        | YInt of int
+        | YFloat of float
+        | YDur of string
+        | YList of YamlList
+        | NMap of MapNode 
+        | NTest of TestCaseTest
+        | NSolution of TestCaseSolution
+        | NResult of TestCaseResult
+        
+        member this.String =
+            match this with | YString s -> s
+            
+        member this.Int =
+            match this with | YInt s -> s
+            
+        member this.Float =
+            match this with | YFloat s -> s
+        
+        member this.List =
+            match this with | YList s -> s
+            
+        member this.Map =
+            match this with | NMap s -> s
+            
+        member this.Solution =
+            match this with | NSolution s -> s
+            
+        member this.Result =
+            match this with | NResult s -> s
+        
+
+    /// Parse the current node
+    let parseNode (parser: IParser) : Yaml =
+        match parser.Current with
+                            
+        | :? MappingStart as x ->
+            parseMap parser x
+            
+        | :? SequenceStart as x ->
+            parseList parser x
+            
+        | :? Scalar as x ->
+            parseScalar parser x
+            
+        | _ ->
+            failwith "Unsupported YAML structure."
+            
+    /// Parse a Scalar
+    let parseScalar (parser: IParser) (x: Scalar) : Yaml =
+        let tag = x.Tag
+        let value = x.Value
+        let mutable float = 0.0
+        let mutable int = 0
+        
+        let node =
+            match string tag  with
+            | "!Duration" ->
+                Yaml.YDur value
+                
+            | _ when Int32.TryParse(value, &int) ->
+                Yaml.YInt int
+                
+            | _ when Double.TryParse(value, &float) ->
+                Yaml.YFloat float
+                
+            | _ ->
+                Yaml.YString value
+        node
+    
+    /// Parse a Map
+    let parseMap (parser: IParser) (x: MappingStart) : Yaml =
+        let dict = Dictionary<string, Yaml>()
+        parser.MoveNext()
+        while parser.Current.GetType() <> typeof<MappingEnd> do
+                           
+            let key = (parser.Current :?> Scalar).Value
+            parser.MoveNext()
+            
+            let value = parseNode parser
+            parser.MoveNext()
+            
+            dict[key] <- value
+            
+        let tag = x.Tag
+        let map = { Map = Map.ofDict dict }
+        let node =
+            match tag.Value with
+            | "!Test" ->
+                parseTest map
+            | "!Solution" ->
+                Yaml.NSolution (parseSolution map)
+            | "!Result" ->
+                Yaml.NResult (parseResult map)
+            | other ->
+                Yaml.NMap map
+        node
+        
+    let parseResult (map: MapNode) =
+        
+        let status =
+            map.TryGet "status"
+            |> Option.map (fun s -> s.String)
+            |> Option.defaultValue "SATISFIED"
+            
+        let solution =
+            map.Get "solution"
+            
+        let solutions = ResizeArray()
+        
+        let rec loop node =
+            match node with
+            | Yaml.NSolution sol ->
+                solutions.Add sol
+            | Yaml.YList xs ->
+                for x in xs.List do
+                    loop x
+            | _ ->
+                ()
+
+        loop solution
+        let solutions = Seq.toList solutions
+        let result = 
+            { Status = status
+            ; Solutions = solutions }
+            
+        result            
+        
+    let parseTest (map: MapNode) =
+        
+        let solvers =
+            map.GetList("solvers")
+            |> List.map (fun f -> f.String)
+        
+        let checkAgainst =
+            map.GetList("checkAgainst")
+            |> List.map (fun x -> x.String)
+            
+        let extraFiles =
+            map.GetList("extraFiles")
+            |> List.map (fun x -> x.String)
+        
+        let solveOpts =
+            map.GetMap("options")
+
+        let expected =
+            map.GetList("expected")
+            |> List.map (function | Yaml.NResult res -> res )
+        
+        let node =
+            { Solvers = solvers
+            ; CheckAgainst = checkAgainst
+            ; ExtraFiles = extraFiles
+            ; Expected =  expected
+            ; SolveOptions = solveOpts }
+            |> Yaml.NTest
+            
+        node
+        
+    let parseSolution (map: MapNode) =
+        map.Map
+       
+        
+    /// Parse a Sequence            
+    let parseList (parser: IParser) (x: SequenceStart) : Yaml =
+        let tag = x.Tag
+        let array = ResizeArray()
+        parser.MoveNext()
+        
+        while parser.Current.GetType() <> typeof<SequenceEnd> do
+            let item = parseNode parser
+            parser.MoveNext()
+            array.Add item
+            
+        let list = List.ofSeq array
+        let node = Yaml.YList (YamlList.YList list)
+        node
         
     type TestCaseParser() =
         
-        let mutable Parser = Unchecked.defaultof<IParser>
+        let mutable Parser =
+            Unchecked.defaultof<IParser>
         
         interface IYamlTypeConverter with
-
+        
             member this.Accepts(t) =
                 true
 
@@ -93,60 +295,8 @@ module TestCase =
                 ()
 
             member this.ReadYaml(parser, typ) =
-                Parser <- parser
-                let result = this.Parse()
-                result
-                    
-
-        member this.Parse () =
-            match Parser.Current with
-            | :? MappingStart as x ->
-                this.Parse x
-                |> YamlNode.Map
-            | :? SequenceStart as x ->
-                this.Parse x
-                |> YamlNode.List
-            | :? Scalar as x ->
-                this.Parse x
-                |> YamlNode.String
-            | _ ->
-                failwith "Unsupported YAML structure."
-                
-        member this.Parse (x: Scalar) =
-            let tag = x.Tag
-            let value = x.Value
-            value
-                
-        member this.Parse (x: MappingStart) =
-            let tag = x.Tag
-            let dict = Dictionary<string, YamlNode>()
-            Parser.MoveNext()
-            while Parser.Current.GetType() <> typeof<MappingEnd> do
-                
-                let key = (Parser.Current :?> Scalar).Value
-                Parser.MoveNext()
-                
-                let value = this.Parse()
-                Parser.MoveNext()
-                
-                dict[key] <- value
-                
-            
-            let map =
-                Map.ofDict dict
-                
-            map
-            
-        member this.Parse (x: SequenceStart) =
-            let tag = x.Tag
-            let list = ResizeArray()
-            Parser.MoveNext()
-            while Parser.Current.GetType() <> typeof<SequenceEnd> do
-                let node = this.Parse ()
-                Parser.MoveNext()
-                list.Add node
-                
-            Seq.toList list
+                let node = parseNode parser
+                node
                 
     
     let deserializer =
@@ -180,26 +330,28 @@ module TestCase =
         assert (header = "/***")
                 
         let mutable stop = false
-        let spec = StringBuilder()
+        let yaml = StringBuilder()
                 
         while (not stop) do
             let line = reader.ReadLine()
             if line = "***/" then
                 stop <- true
             else
-                spec.AppendLine line
+                yaml.AppendLine line
                 ()
                 
         let mzn = reader.ReadToEnd()
-        let yaml = string spec
-        let json = deserializer.Deserialize<YamlNode>(new StringReader(yaml))
+        let yaml = string yaml
+        let testCase = deserializer.Deserialize<TestCaseTest>(new StringReader(yaml))
         let name = Path.GetFileNameWithoutExtension filename
         let testCase =
-            { Spec = yaml
-            ; FileName = filename
-            ; FileInfo = FileInfo filename 
-            ; Model = LoadResult.Reference
-            ; Mzn = mzn }
+            { Yaml = yaml
+              Mzn = mzn
+              FileName = filename
+              Name = name
+              Model = LoadResult.Reference
+              Tests = [testCase] }
+
         testCase
         
         

@@ -237,6 +237,17 @@ type Extensions =
         match dict.TryGetValue(key, &value) with
         | true -> value
         | false -> backup
+        
+    [<Extension>]
+    static member TryGet(dict: IDictionary<'k, 'v>, key: 'k) : 'v option =
+        let mutable value = Unchecked.defaultof<'v>
+        match dict.TryGetValue(key, &value) with
+        | true -> Some value
+        | false -> None        
+        
+    [<Extension>]
+    static member Get(dict: IDictionary<'k, 'v>, key: 'k) : 'v =
+        dict[key]        
 
     [<Extension>]
     static member KeySet(dict: IDictionary<'k, 'v>) : Set<'k> =
