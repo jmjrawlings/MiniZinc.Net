@@ -53,6 +53,11 @@ module TestCase =
     type TestCaseResult =
         { status : string
           solution : TestCaseSolution }
+        
+    [<CLIMutable>]
+    type TestCaseSolutionSet =
+        { status : string
+          solution : TestCaseSolution }        
 
     [<CLIMutable>]
     type TestCaseError =
@@ -74,58 +79,10 @@ module TestCase =
         | Float of float
         | List of YamlNode list
         | Map of Map<string, YamlNode>
-
-    let rec parseYaml (parser: IParser) =
-        match parser.Current with
-        | :? MappingStart as x ->
-            parseMap x parser
-            |> YamlNode.Map
-        | :? SequenceStart as x ->
-            parseList x parser
-            |> YamlNode.List
-        | :? Scalar as x ->
-            parseScalar x
-            |> YamlNode.String
-        | _ ->
-            failwith "Unsupported YAML structure."
-            
-    and parseScalar (x: Scalar) =
-        let tag = x.Tag
-        let value = x.Value
-        value
-            
-    and parseMap (x: MappingStart) (parser: IParser) =
-        let tag = x.Tag
-        let dict = Dictionary<string, YamlNode>()
-        parser.MoveNext()
-        while parser.Current.GetType() <> typeof<MappingEnd> do
-            
-            let key = (parser.Current :?> Scalar).Value
-            parser.MoveNext()
-            
-            let value = parseYaml parser
-            parser.MoveNext()
-            
-            dict[key] <- value
-            
         
-        let map =
-            Map.ofDict dict
-            
-        map
+    type TestCaseParser() =
         
-    and parseList (x: SequenceStart) (parser: IParser) =
-        let tag = x.Tag
-        let list = ResizeArray()
-        parser.MoveNext()
-        while parser.Current.GetType() <> typeof<SequenceEnd> do
-            let node = parseYaml parser
-            parser.MoveNext()
-            list.Add node
-            
-        Seq.toList list
-    
-    type YamlParser() =
+        let mutable Parser = Unchecked.defaultof<IParser>
         
         interface IYamlTypeConverter with
 
@@ -136,22 +93,73 @@ module TestCase =
                 ()
 
             member this.ReadYaml(parser, typ) =
-                let node = parseYaml parser
-                node
+                Parser <- parser
+                let result = this.Parse()
+                result
+                    
+
+        member this.Parse () =
+            match Parser.Current with
+            | :? MappingStart as x ->
+                this.Parse x
+                |> YamlNode.Map
+            | :? SequenceStart as x ->
+                this.Parse x
+                |> YamlNode.List
+            | :? Scalar as x ->
+                this.Parse x
+                |> YamlNode.String
+            | _ ->
+                failwith "Unsupported YAML structure."
+                
+        member this.Parse (x: Scalar) =
+            let tag = x.Tag
+            let value = x.Value
+            value
+                
+        member this.Parse (x: MappingStart) =
+            let tag = x.Tag
+            let dict = Dictionary<string, YamlNode>()
+            Parser.MoveNext()
+            while Parser.Current.GetType() <> typeof<MappingEnd> do
+                
+                let key = (Parser.Current :?> Scalar).Value
+                Parser.MoveNext()
+                
+                let value = this.Parse()
+                Parser.MoveNext()
+                
+                dict[key] <- value
+                
+            
+            let map =
+                Map.ofDict dict
+                
+            map
+            
+        member this.Parse (x: SequenceStart) =
+            let tag = x.Tag
+            let list = ResizeArray()
+            Parser.MoveNext()
+            while Parser.Current.GetType() <> typeof<SequenceEnd> do
+                let node = this.Parse ()
+                Parser.MoveNext()
+                list.Add node
+                
+            Seq.toList list
                 
     
     let deserializer =
-        
-        let mutable x = 
-            DeserializerBuilder()
-                .IgnoreFields()
-                .IgnoreUnmatchedProperties()
-                .WithTypeConverter(YamlParser())
-                
-        for tag in ["Test";"Result";"SolutionSet";"Solution";"Duration"] do
-            x <- x.WithTagMapping($"!{tag}", typeof<obj>)
+
+        DeserializerBuilder()
+            .WithTagMapping("!Test", typeof<obj>)
+            .WithTagMapping("!Result", typeof<obj>)
+            .WithTagMapping("!SolutionSet", typeof<obj>)
+            .WithTagMapping("!Solution", typeof<obj>)
+            .WithTagMapping("!Duration", typeof<obj>)
+            .WithTypeConverter(TestCaseParser())
+            .Build()
             
-        x.Build()
           
     let assembly_file =
         Assembly.GetExecutingAssembly().Location
