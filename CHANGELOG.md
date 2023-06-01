@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.0] - 2023-06-01
 - Shared `MiniZinc.Tests` library
-- `TestSuite` are now parsed from embedded yaml 
+- libminizinc `TestSuites` are now parsed from yaml embedded in example models
 - `TestSuite.load` method
 
 ## [0.3.0] - 2023-05-27
