@@ -6,7 +6,7 @@ open MiniZinc.Tests
 open Xunit
 open System.IO
 
-module ExampleTests =
+module IntegrationTests =
    
     let test (name: string) =
         let suite = TestSuite.load name
@@ -31,47 +31,47 @@ module ExampleTests =
 
 
     [<Fact>]
-    let ``test battleships_1`` () =
+    let ``test battleships 1`` () =
         test "battleships_1.mzn"
 
 
     [<Fact>]
-    let ``test battleships_2`` () =
+    let ``test battleships 2`` () =
         test "battleships_2.mzn"
 
 
     [<Fact>]
-    let ``test battleships_3`` () =
+    let ``test battleships 3`` () =
         test "battleships_3.mzn"
 
 
     [<Fact>]
-    let ``test battleships_4`` () =
+    let ``test battleships 4`` () =
         test "battleships_4.mzn"
 
 
     [<Fact>]
-    let ``test battleships_5`` () =
+    let ``test battleships 5`` () =
         test "battleships_5.mzn"
 
 
     [<Fact>]
-    let ``test battleships_7`` () =
+    let ``test battleships 7`` () =
         test "battleships_7.mzn"
 
 
     [<Fact>]
-    let ``test battleships_9`` () =
+    let ``test battleships 9`` () =
         test "battleships_9.mzn"
 
 
     [<Fact>]
-    let ``test blocksworld_instance_1`` () =
+    let ``test blocksworld instance 1`` () =
         test "blocksworld_instance_1.mzn"
 
 
     [<Fact>]
-    let ``test blocksworld_instance_2`` () =
+    let ``test blocksworld instance 2`` () =
         test "blocksworld_instance_2.mzn"
 
 
@@ -86,7 +86,7 @@ module ExampleTests =
 
 
     [<Fact>]
-    let ``test factory_planning_instance`` () =
+    let ``test factory planning instance`` () =
         test "factory_planning_instance.mzn"
 
 
@@ -121,27 +121,27 @@ module ExampleTests =
 
 
     [<Fact>]
-    let ``test latin_squares_fd`` () =
+    let ``test latin squares fd`` () =
         test "latin_squares_fd.mzn"
 
 
     [<Fact>]
-    let ``test magicsq_3`` () =
+    let ``test magicsq 3`` () =
         test "magicsq_3.mzn"
 
 
     [<Fact>]
-    let ``test magicsq_4`` () =
+    let ``test magicsq 4`` () =
         test "magicsq_4.mzn"
 
 
     [<Fact>]
-    let ``test magicsq_5`` () =
+    let ``test magicsq 5`` () =
         test "magicsq_5.mzn"
 
 
     [<Fact>]
-    let ``test multidimknapsack_simple`` () =
+    let ``test multidimknapsack simple`` () =
         test "multidimknapsack_simple.mzn"
 
 
@@ -171,27 +171,27 @@ module ExampleTests =
 
 
     [<Fact>]
-    let ``test product_fd`` () =
+    let ``test product fd`` () =
         test "product_fd.mzn"
 
 
     [<Fact>]
-    let ``test product_lp`` () =
+    let ``test product lp`` () =
         test "product_lp.mzn"
 
 
     [<Fact>]
-    let ``test quasigroup_qg5`` () =
+    let ``test quasigroup qg5`` () =
         test "quasigroup_qg5.mzn"
 
 
     [<Fact>]
-    let ``test queen_cp2`` () =
+    let ``test queen cp2`` () =
         test "queen_cp2.mzn"
 
 
     [<Fact>]
-    let ``test queen_ip`` () =
+    let ``test queen ip`` () =
         test "queen_ip.mzn"
 
 
@@ -201,7 +201,7 @@ module ExampleTests =
 
 
     [<Fact>]
-    let ``test simple_sat`` () =
+    let ``test simple sat`` () =
         test "simple_sat.mzn"
 
 
@@ -221,37 +221,37 @@ module ExampleTests =
 
 
     [<Fact>]
-    let ``test template_design`` () =
+    let ``test template design`` () =
         test "template_design.mzn"
 
 
     [<Fact>]
-    let ``test tenpenki_1`` () =
+    let ``test tenpenki 1`` () =
         test "tenpenki_1.mzn"
 
 
     [<Fact>]
-    let ``test tenpenki_2`` () =
+    let ``test tenpenki 2`` () =
         test "tenpenki_2.mzn"
 
 
     [<Fact>]
-    let ``test tenpenki_3`` () =
+    let ``test tenpenki 3`` () =
         test "tenpenki_3.mzn"
 
 
     [<Fact>]
-    let ``test tenpenki_4`` () =
+    let ``test tenpenki 4`` () =
         test "tenpenki_4.mzn"
 
 
     [<Fact>]
-    let ``test tenpenki_5`` () =
+    let ``test tenpenki 5`` () =
         test "tenpenki_5.mzn"
 
 
     [<Fact>]
-    let ``test tenpenki_6`` () =
+    let ``test tenpenki 6`` () =
         test "tenpenki_6.mzn"
 
 
@@ -271,7 +271,7 @@ module ExampleTests =
 
 
     [<Fact>]
-    let ``test wolf_goat_cabbage`` () =
+    let ``test wolf goat cabbage`` () =
         test "wolf_goat_cabbage.mzn"
 
 

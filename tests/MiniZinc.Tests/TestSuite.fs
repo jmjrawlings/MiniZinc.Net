@@ -116,7 +116,7 @@ module TestSuite =
             
         testCase
         
-    and private parseResult (yaml: Yaml) =
+    and private parseResult (yaml: Yaml) : TestCaseResult =
 
          let status =
              yaml
@@ -148,11 +148,14 @@ module TestSuite =
 
         model
         
-    /// Load the TestSuite from the given file
+    /// Load the TestSuite for the given filename
     let load (filename: string) =
         
         let filepath =
             examples_dir </> filename
+
+        let name =
+            Path.GetFileNameWithoutExtension filename
             
         let modelString, suiteString =
             use reader = new StreamReader(filepath)
@@ -181,9 +184,6 @@ module TestSuite =
             |> Seq.map (Yaml.get "!Test")
             |> Seq.map parseTest
             |> Seq.toList
-
-        let name =
-            Path.GetFileNameWithoutExtension filename
             
         let suite =
             { Mzn = modelString

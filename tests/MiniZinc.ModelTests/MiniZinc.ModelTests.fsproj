@@ -9,7 +9,7 @@
     <ItemGroup>
         <Compile Include="ParseTests.fs" />
         <Compile Include="ModelTests.fs" />
-        <Compile Include="ExampleTests.fs" />
+        <Compile Include="IntegrationTests.fs" />
     </ItemGroup>
     
     <ItemGroup>

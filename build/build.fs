@@ -50,7 +50,7 @@ let examples_dir = test_dir <//> "examples"
 /// and copy all of the example tests into
 /// this repo.
 /// </remarks>
-let download_test_models () =
+let download_libminizinc_test_suite () =
     let minizinc_repo = "https://github.com/MiniZinc/libminizinc"
     let clone_dir = obj <//> "libminizinc"
     let clone_path = "tests/spec/examples"
@@ -90,7 +90,7 @@ let download_test_models () =
 /// test suite we create our own test in a dedicated
 /// module. 
 /// </remarks>
-let create_example_parse_tests () =
+let create_integration_tests () =
         
     let mutable code = """
 namespace MiniZinc.Model.Tests
@@ -100,15 +100,13 @@ open MiniZinc.Tests
 open Xunit
 open System.IO
 
-module ExampleTests =
+module IntegrationTests =
    
     let test (name: string) =
-        let testCase = TestCase.read name
-        let testCase = TestCase.parse testCase
-        let model = testCase.Model
+        let suite = TestSuite.load name
+        let model = TestSuite.parseModel suite
         model.Value.Undeclared.AssertEmpty()
         model.Value.Conflicts.AssertEmpty()
-
 """
     
     let examples =
@@ -116,7 +114,10 @@ module ExampleTests =
         |> DirectoryInfo.getMatchingFiles "*.mzn"
 
     for example in examples do
-        let name = example.NameWithoutExtension
+
+        let name =
+            example.NameWithoutExtension.Replace("_", " ")
+            
         let test_case = $"""
     [<Fact>]
     let ``test {name}`` () =
@@ -126,13 +127,12 @@ module ExampleTests =
         code <- code + "\n" + test_case
     
     let destination =
-        model_test_proj_dir </> "ExampleTests.fs"
+        model_test_proj_dir </> "IntegrationTests.fs"
     
     File.writeString
         false
         destination.FullName
         code
-        
         
 let run_tests() =
     model_test_proj_file.FullName
@@ -143,20 +143,20 @@ let run_tests() =
  
 let init() =
 
-    Target.create "DownloadTestModels" <| fun _ ->
-        download_test_models ()
+    Target.create "DownloadTestSuite" <| fun _ ->
+        download_libminizinc_test_suite ()
         
-    Target.create "CreateExampleParseTests" <| fun _ ->
-        create_example_parse_tests ()
+    Target.create "CreateIntegrationTests" <| fun _ ->
+        create_integration_tests ()
         
     Target.create "RunTests" <| fun _ ->
         run_tests()        
         
     Target.create "All" <| fun _ ->
-        ()        
+        ()
 
-    "DownloadTestModels"
-        ==> "CreateExampleParseTests"
+    "DownloadTestSuite"
+        ==> "CreateIntegrationTests"
         
     "RunTests"
         ==> "All"
