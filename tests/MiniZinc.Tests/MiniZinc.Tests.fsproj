@@ -9,7 +9,7 @@
     <ItemGroup>
         <Compile Include="Prelude.fs" />
         <Compile Include="Yaml.fs" />
-        <Compile Include="TestCase.fs" />
+        <Compile Include="TestSuite.fs" />
     </ItemGroup>
     
     <ItemGroup>

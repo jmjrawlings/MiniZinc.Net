@@ -9,12 +9,10 @@ open System.IO
 module ExampleTests =
    
     let test (name: string) =
-        let testCase = TestCase.read name
-        let testCase =TestCase.parse testCase
-        let model = testCase.Model
+        let suite = TestSuite.load name
+        let model = TestSuite.parseModel suite
         model.Value.Undeclared.AssertEmpty()
         model.Value.Conflicts.AssertEmpty()
-
 
 
     [<Fact>]
