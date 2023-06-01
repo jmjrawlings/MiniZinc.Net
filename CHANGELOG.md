@@ -1,6 +1,19 @@
 # Changelog
 
-## [UNRELEASED]
-- Command line runner
-- Full featured parser
-- All parser tests passing
+## [0.4.0] - 2023-06-01
+- Shared `MiniZinc.Tests` library
+- libminizinc `TestSuites` are now parsed from yaml embedded in example models
+- `TestSuite.load` method
+
+## [0.3.0] - 2023-05-27
+- Recursive loading of included models
+ 
+## [0.2.0] - 2023-05-24
+- Integrate libminizinc test suite 
+- Parser tested against libminizinc
+- Model type and parsing methods
+
+## [0.1.0] - 2023-05-19 
+- MiniZinc AST
+- MiniZinc command line runner
+- MiniZinc parser with manual tests

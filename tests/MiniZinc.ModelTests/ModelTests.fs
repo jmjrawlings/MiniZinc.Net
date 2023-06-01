@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Model.Tests
 
 open MiniZinc
-open MiniZinc.Model
+open MiniZinc.Tests
 open Xunit
 open System.IO
 open System

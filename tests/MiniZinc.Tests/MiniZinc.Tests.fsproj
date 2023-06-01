@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RootNamespace>MiniZinc.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Prelude.fs" />
+        <Compile Include="Yaml.fs" />
+        <Compile Include="TestSuite.fs" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="YamlDotNet" Version="13.1.0" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\MiniZinc.Model\MiniZinc.Model.fsproj" />
+    </ItemGroup>
+
+</Project>

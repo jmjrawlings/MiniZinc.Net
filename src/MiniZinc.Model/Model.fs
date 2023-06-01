@@ -18,6 +18,7 @@ open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
 
+
 type Binding =
     | Undeclared of Expr
     | Unassigned of TypeInst
@@ -97,16 +98,6 @@ module Bindings =
             
         merged
         
-type IncludeOptions =
-    | Reference
-    | Parse of string list
-  
-type ParseOptions =
-    { IncludeOptions: IncludeOptions }
-        
-    static member Default =
-        { IncludeOptions = IncludeOptions.Reference }
-        
 [<AutoOpen>]        
 module rec LoadResult =
 
@@ -136,9 +127,22 @@ module rec LoadResult =
             | _ -> failwithf $"Result was not a success"
         
 
-    
+[<AutoOpen>]    
 module rec Model =
+
+    type IncludeOptions =
+        | Reference
+        | ParseFile of string list
+        | Custom of (string -> LoadResult)
+        
+      
+    type ParseOptions =
+        { IncludeOptions: IncludeOptions }
+            
+        static member Default =
+            { IncludeOptions = IncludeOptions.Reference }
     
+        
     type LoadResult = LoadResult<Model>
                 
     // A MiniZinc model
@@ -322,8 +326,8 @@ module rec Model =
                 
             let result =
                 match model with
-                | Result.Ok model -> LoadResult.Success model
-                | Result.Error error -> LoadResult.ParseError error
+                | Result.Ok model -> Success model
+                | Result.Error error -> ParseError error
                 
             result
             
@@ -369,7 +373,7 @@ module rec Model =
                     | IncludeOptions.Reference ->
                         LoadResult.Reference
 
-                    | IncludeOptions.Parse paths ->
+                    | IncludeOptions.ParseFile paths ->
                         let searchFiles =
                             paths
                             |> List.map (fun dir -> Path.Join(dir, filename))
@@ -383,7 +387,10 @@ module rec Model =
                         | Some path ->
                             parseFile options path
                         | None ->
-                            LoadResult.FileNotFound searchFiles
+                            FileNotFound searchFiles
+                            
+                    | IncludeOptions.Custom func ->
+                        func filename
                             
                 filename, result
                 
@@ -408,7 +415,7 @@ module rec Model =
                 |> Seq.choose (function
                     | LoadResult.Success model -> Some model
                     | _ -> None)
-                |> Seq.fold Model.merge model
+                |> Seq.fold merge model
 
             unified
                 
