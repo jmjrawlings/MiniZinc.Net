@@ -15,7 +15,7 @@ open MiniZinc.Model
 [<AutoOpen>]
 module rec MiniZinc =
     
-    type MiniZinc(executablePath: string, logger: ILogger<MiniZinc>) =
+    type MiniZinc(executablePath: string, logger: ILogger) =
         
         let executablePath =
             match executablePath with
@@ -26,8 +26,10 @@ module rec MiniZinc =
         
         let logger =
             match logger with
-            | null -> NullLoggerFactory.Instance.CreateLogger()
-            | _ -> logger
+            | null ->
+                NullLoggerFactory.Instance.CreateLogger() :> ILogger
+            | _ ->
+                logger
             
         new() =
             MiniZinc("minizinc", null)
@@ -47,7 +49,10 @@ module rec MiniZinc =
                 args
                 |> Seq.map string
                 |> Args.parseMany
-            Command.Create(executablePath, args)
+            let cmd =
+                Command.Create(executablePath, args)
+            logger.LogInformation (string cmd)                
+            cmd
 
         /// Get all installed solvers
         member this.Solvers () =

@@ -1,14 +1,14 @@
-namespace MiniZinc.Solve.Tests
+namespace MiniZinc.Tests
 
 module CommandTests =
 
     open MiniZinc
     open FSharp.Control
-    open MiniZinc.Tests
     open MiniZinc.Command
+    open MiniZinc.Tests
     open Xunit
-    
-    let mz = MiniZinc()
+        
+    let mz = MiniZinc(logger)
     
     [<Fact>]
     let ``parse flag`` () =
