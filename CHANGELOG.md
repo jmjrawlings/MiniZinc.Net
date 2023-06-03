@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+- Added integration tests on solver
+- Refactor Arg/Command/Args constructors around obj[]
+- MiniZinc as a class instead of module
+- `ILogger` can be passed into MiniZinc
+- Command line output is logged
+
+
 ## [0.4.0] - 2023-06-01
 - Shared `MiniZinc.Tests` library
 - libminizinc `TestSuites` are now parsed from yaml embedded in example models

@@ -97,13 +97,24 @@ module Bindings =
             |> ofSeq
             
         merged
-        
-[<AutoOpen>]        
-module rec LoadResult =
 
-    type LoadResult<'t> =
+[<AutoOpen>]    
+module rec Model =
+
+    type IncludeOptions =
+        | Reference
+        | ParseFile of string list
+        | Custom of (string -> LoadResult)
+      
+    type ParseOptions =
+        { IncludeOptions: IncludeOptions }
+            
+        static member Default =
+            { IncludeOptions = IncludeOptions.Reference }
+
+    type LoadResult =
         // Load was successful
-        | Success of 't
+        | Success of Model
         // Could not find the model
         | FileNotFound of string list
         // Parsing failed
@@ -125,28 +136,10 @@ module rec LoadResult =
             match result with
             | Success x -> x
             | _ -> failwithf $"Result was not a success"
-        
-
-[<AutoOpen>]    
-module rec Model =
-
-    type IncludeOptions =
-        | Reference
-        | ParseFile of string list
-        | Custom of (string -> LoadResult)
-        
-      
-    type ParseOptions =
-        { IncludeOptions: IncludeOptions }
-            
-        static member Default =
-            { IncludeOptions = IncludeOptions.Reference }
     
-        
-    type LoadResult = LoadResult<Model>
-                
+                    
     // A MiniZinc model
-    type Model =
+    type Model = 
         { Name        : string
         ; File        : string option
         ; Includes    : Map<string, LoadResult>
@@ -520,9 +513,3 @@ module rec Model =
         // // Load all included models
         // let loadIncludedModels (searchDirs: string seq) (model: Model) =
         //     model
-
-  
-        
-        type LoadResult =
-            LoadResult<Model>
-            

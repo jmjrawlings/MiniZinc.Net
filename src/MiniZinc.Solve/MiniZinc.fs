@@ -1,62 +1,60 @@
 namespace MiniZinc
 
 open System
-open System.Diagnostics
 open System.IO
-open System.Text
 open System.Text.Json
 open System.Text.Json.Nodes
-open System.Threading.Tasks
 open FSharp.Control
 open System.Collections.Generic
-open System.Threading.Channels
+open Microsoft.Extensions.Logging
+open Microsoft.Extensions.Logging.Abstractions
 open MiniZinc.Command
 open MiniZinc.Model
 
-[<AutoOpen>]
-module rec Net =
-    
-    type MiniZinc() =
-            
-        static let mutable executablePath =
-            "minizinc"
-          
-        static member ExecutablePath
-            with get() =
-                executablePath
-            and set value =
-                executablePath <- value
-        
-        /// <summary>
-        /// Create a minizinc command 
-        /// </summary>
-        static member Command() =
-            Command.Create(executablePath)
-            
-        /// <summary>
-        /// Create a minizinc command with the given model
-        /// and extra args 
-        /// </summary>
-        static member Command(model: Model, [<ParamArray>] args: obj[]) =
-            let model_file = MiniZinc.write_model_to_tempfile model
-            let model_arg = MiniZinc.model_arg model_file
-            let command = MiniZinc.Command().AddArgs(model_arg)
-            command
-               
-        /// <summary>
-        /// Create a minizinc command with the given arguments 
-        /// </summary>
-        static member Command([<ParamArray>] args: obj[]) =
-            MiniZinc.Command().AddArgs(args)
 
-        /// <summary>
+[<AutoOpen>]
+module rec MiniZinc =
+    
+    type MiniZinc(executablePath: string, logger: ILogger<MiniZinc>) =
+        
+        let executablePath =
+            match executablePath with
+            | path when String.IsNullOrEmpty path ->
+                "minizinc"
+            | path ->
+                path
+        
+        let logger =
+            match logger with
+            | null -> NullLoggerFactory.Instance.CreateLogger()
+            | _ -> logger
+            
+        new() =
+            MiniZinc("minizinc", null)
+            
+        new(logger) =
+            MiniZinc(null, logger)
+            
+        new (executablePath) =
+            MiniZinc(executablePath, null)
+          
+        member this.ExecutablePath =
+            executablePath
+               
+        /// Create a minizinc command with the given arguments 
+        member this.Command([<ParamArray>] args: obj[]) : Command =
+            let args =
+                args
+                |> Seq.map string
+                |> Args.parseMany
+            Command.Create(executablePath, args)
+
         /// Get all installed solvers
-        /// </summary>
-        static member Solvers () =
+        member this.Solvers () =
             
             task {
                 let! result =
-                    MiniZinc.Command "--solvers-json"
+                    this.Command "--solvers-json"
                     |> Command.exec
                 
                 let options =
@@ -71,45 +69,44 @@ module rec Net =
                 return solvers
             }
         
-        /// <summary>
         /// Find a solver by Id
-        /// </summary>
-        static member GetSolver id =
-            MiniZinc.Solvers ()
+        member this.GetSolver id =
+            this.Solvers ()
             |> Task.map (Map.tryFind id)
             
-        /// <summary>
         /// Get the installed MiniZinc version
-        /// </summary>
-        static member Version() =
-            MiniZinc.Command "--version"
+        member this.Version() =
+            this.Command "--version"
             |> Command.exec
             |> Task.map (fun x -> x.StdOut)
             |> Task.map (Grep.match1 @"version (\d+\.\d+\.\d+)")
             
+        /// Execute minizinc with the given command line args
+        member this.Exec([<ParamArray>] args: obj[]) =
+            this.Command(args).Exec()
+            
+            
     module MiniZinc =
         
         // Write the given model to a tempfile with '.mzn' extension
-        let internal write_model_to_tempfile (model: Model) : FileInfo =
+        let write_model_to_tempfile (model: Model) : FileInfo =
             let path = Path.GetTempFileName()
             let path = Path.ChangeExtension(path, ".mzn")
             File.WriteAllText(path, "")
             let file = FileInfo path
             file
         
-        // Create a cli Arg for the given model file
-        let internal model_arg (file: FileInfo) : Arg =
-            let uri = Uri(file.FullName).AbsolutePath
+        /// Create a cli arg for the given model file
+        let model_arg (filepath: string) : Arg =
+            let uri = Uri(filepath).AbsolutePath
             let arg = Arg.parse $"--model {uri}"
             arg
                             
-        let solve (model: Model) : IAsyncEnumerable<OutputMessage> =
+        let solve (model: Model) (mz: MiniZinc) : IAsyncEnumerable<OutputMessage> =
             
-            let args = Args.Create("--json-stream")
             let model_file = write_model_to_tempfile model
-            let model_arg = model_arg model_file
-            let args = args.Append(model_arg)
-            let command = MiniZinc.Command(args)
+            let model_arg = model_arg model_file.FullName
+            let command = mz.Command("--json-stream", model_arg)
                 
             command
             |> Command.stream
@@ -119,31 +116,27 @@ module rec Net =
                 | _ ->
                     None)
             
-        /// <summary>
         /// Solve the given model and wait
         /// for the best solution only
-        /// </summary>
-        let exec (model: Model) =
-            model
-            |> solve
+        let exec (model: Model) (mz: MiniZinc) =
+            mz
+            |> solve model
             |> TaskSeq.last
             
-        /// <summary>
         /// Analyse the given model
-        /// </summary>
-        let model_types (model: Model) =
-            let command =
-                MiniZinc.Command(model).AddArgs("--model-types-only")
+        let model_types (model: Model) (mz: MiniZinc) =
+            let model_file = write_model_to_tempfile model
+            let model_arg = model_arg model_file.FullName
+            let command = mz.Command(model_arg, "--model-types-only")
             task {
                 let! result = command.Exec()
                 let json = JsonObject.Parse(result.StdOut)
                 return json
             }
             
-        /// <summary>
         /// Analyse the given model
-        /// </summary>
-        let model_interface (model: Model) =
-            let command = MiniZinc.Command(model).AddArgs("--model-interface-only")
-            let result = command.Exec()
+        let model_interface (model: Model) (mz: MiniZinc) =
+            let model_file = write_model_to_tempfile model
+            let model_arg = model_arg model_file.FullName
+            let result = mz.Exec(model_arg, "--model-interface-only")
             result

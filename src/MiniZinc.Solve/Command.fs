@@ -6,10 +6,7 @@ namespace MiniZinc
 
 open System
 open System.Diagnostics
-open System.IO
 open System.Text
-open MiniZinc
-open System.Text.Json
 open System.Threading.Tasks
 open FSharp.Control
 open System.Collections.Generic
@@ -19,7 +16,7 @@ open System.Text.RegularExpressions
 
 
 module rec Command =
-                
+                    
     [<Struct>]
     type StartMessage =
         { ProcessId : int 
@@ -36,29 +33,9 @@ module rec Command =
         { Text: string 
         ; TimeStamp : DateTimeOffset }
         
-        static member make text =
+        static member create text =
             { Text = text
             ; TimeStamp = DateTimeOffset.Now }
-
-        static member make(text, content) =
-            OutputMessage.make(text, DateTimeOffset.Now, content)
-            
-        static member make(text, timestamp, content) =
-            { Text = text
-            ; TimeStamp = timestamp
-            ; Content = content }        
-            
-        static member map f (msg: OutputMessage<'t>) =
-            OutputMessage.make(msg.Text, f msg.Content, msg.TimeStamp)
-            
-        static member withData data msg =
-            OutputMessage.make(msg.Text, msg.TimeStamp, data)
-        
-    and [<Struct>]
-    OutputMessage<'t> =
-        { Text: string
-        ; Content : 't
-        ; TimeStamp : DateTimeOffset }
             
     [<Struct>]
     type CommandMessage =
@@ -67,7 +44,6 @@ module rec Command =
         | Error   of error:OutputMessage
         | Exited  of exit:ExitMessage
         
-    [<Struct>]
     type CommandResult =
         { Command   : string
         ; Args      : string list
@@ -82,37 +58,44 @@ module rec Command =
 
     [<RequireQualifiedAccess>]
     type FlagType = | Short | Long | None
-
-    /// <summary>
+    
     /// A command line argument
-    /// </summary>
-    [<Struct>]
     type Arg =
         internal
-        | FlagOnly of flag:string
+        | FlagOnly of string
         | FlagAndValue of (string*string*string)
-        | ValueOnly of value:string
+        | ValueOnly of string
         
         member this.Flag =
-            match this with
+            Arg.flag this
+            
+        member this.Value =
+            Arg.value this
+            
+        override this.ToString() =
+            Arg.toString this
+           
+    /// A command line argument
+    module Arg =
+
+        let flag arg  =
+            match arg with
             | FlagOnly f | FlagAndValue(f, _, _) -> f
             | _ -> ""
             
-        member this.Value =
-            match this with
+        let value arg =
+            match arg with
             | FlagAndValue (_, _, v) | ValueOnly v -> v
             | _ -> ""
-            
-        override this.ToString() =
-            match this with
+
+        let toString arg =
+            match arg with
             | FlagOnly f -> f
             | FlagAndValue (f,s,v) -> $"{f}{s}{v}"
             | ValueOnly v -> v
                 
-    module Arg =
-
         // Parse the given string as an Arg
-        let parse (s: string) : Arg =
+        let parse (input: string) : Arg =
             let mutable value = ""
             let mutable sep = ""
             let mutable flag = ""
@@ -124,13 +107,13 @@ module rec Command =
             let assign_regex = Regex assign_pattern
             let value_pattern = $"({quoted_pattern})|({unquoted_pattern})|(.*)"
             let value_regex = Regex value_pattern
-            let assign_match = assign_regex.Match s 
+            let assign_match = assign_regex.Match input 
             if assign_match.Success then
                 flag <- assign_match.Groups[1].Value
                 sep <- assign_match.Groups[2].Value
                 value <- assign_match.Groups[3].Value
             else
-                value <- s
+                value <- input
             
             let value_match = value_regex.Match <| value.Trim()
             if value_match.Success then
@@ -154,9 +137,7 @@ module rec Command =
             | "", "", v -> ValueOnly v
             | f, s, v -> FlagAndValue (f, s, v)
             
-    /// <summary>
     /// Command line arguments
-    /// </summary>
     type Args =
         internal
         | Args of Arg list
@@ -175,26 +156,26 @@ module rec Command =
             member this.GetEnumerator() =
                 (this.List :> IEnumerable).GetEnumerator()
                 
-        static member Create([<ParamArray>] args: obj[]) =
+        static member create([<ParamArray>] args: obj[]) =
             args
             |> Seq.map string
             |> Args.parseMany
             
-        member this.Append(arg: Arg) = 
+        member this.append(arg: Arg) = 
             match this with
             | Args xs -> Args (xs @ [arg])
         
-        member this.Append(Args args: Args) = 
+        member this.append(Args args: Args) = 
             match this with
             | Args xs -> Args (xs @ args)
             
-        member this.Append([<ParamArray>] args: obj[]) =
+        member this.append([<ParamArray>] args: obj[]) =
             let args' =
                 args
                 |> Seq.map string
                 |> Args.parseMany
             
-            (this.Append: Args -> Args)(args')
+            (this.append: Args -> Args)(args')
             
         static member (+) (a: Args, b: Args) =
             match a,b with
@@ -207,35 +188,37 @@ module rec Command =
             a + (Args [b])
     
         
+    /// Command line arguments        
     module Args =
         
-        // Empty argument list
+        /// Empty argument list
         let empty =
             Args []
         
-        // Apply a function to the arguments
+        /// Apply the given function to the arguments
         let map f args =
             match args with
             | Args args -> Args (f args)
         
-        // Add an argument
+        /// Add an argument
         let append arg args =
             map (fun args -> args @ [arg]) args
             
-        // Get the list of args            
+        /// Get the list of args            
         let toList args =
             match args with
             | Args args -> args
             
+        /// Return the args as a string
         let toString args =
             args
-            |> toList
-            |> List.map string
+            |> Seq.map string
             |> String.concat " "
             
-        let parse (s: string) =
+        /// Parse arguments from the given string            
+        let parse (input: string) =
             let tokens =
-                s.Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                input.Split(" ", StringSplitOptions.RemoveEmptyEntries)
             let args =
                 tokens
                 |> Seq.map Arg.parse
@@ -243,12 +226,18 @@ module rec Command =
                 |> Args
             args
             
+        /// Parse args from multiple strings
         let parseMany (strings: string seq) =
             strings
             |> Seq.map parse
             |> Seq.collect toList
             |> Seq.toList
             |> Args
+            
+        let ofObsj (objs: obj[]) =
+            objs
+            |> Seq.map string
+            |> parseMany
             
         let ofSeq (args: Arg seq) =
             args
@@ -258,17 +247,10 @@ module rec Command =
         let ofList (args: Arg list) =
             Args args
 
-
+    /// A command to be executed
     type Command =
         { Exe   : string
           Args  : Args }
-        
-        static member Create(exe: string, [<ParamArray>] args: obj[]) =
-            let args = Args.Create(args)
-            { Exe = exe; Args = args; }
-            
-        member this.AddArgs([<ParamArray>] args: obj[]) =
-            { this with Args = this.Args.Append(args) }
             
         member this.Statement =
             Command.statement this
@@ -278,44 +260,58 @@ module rec Command =
             
         member this.Stream() =
             Command.stream this
-    
+            
+        static member Create([<ParamArray>] args: obj[]) =
+            args
+            |> Seq.map string
+            |> Args.parseMany
+            |> Command.ofArgs
         
     module Command =
     
         let empty =
             { Exe = ""; Args = Args.empty; }
-        
+            
+        let create (exe: string) (args: Args) =
+            { Exe = exe; Args = args }
+            
+        let ofArgs (Args.Args args: Args) =
+            match args with
+            | [] ->
+                failwith $"No args given"
+            | exe :: args ->
+                create exe.Value (Args.ofList args)
+                
+        /// Replace the arguments with the given ones
         let withArgs (args: Args) (cmd: Command) =
             { cmd with Args = args }
         
-        /// <summary>
         /// Return the full command line statement of
         /// a command
-        /// </summary>    
         let statement (cmd: Command) =
             let statement = $"{cmd.Exe} {cmd.Args}"  
             statement
 
-        /// <summary>
-        /// Create a System.Diagnostics.Process representing
-        /// the exe and arguments of the given command
-        /// </summary>
+        /// Create a ProcessStartInfo for the given command        
+        let toStartInfo (cmd: Command) =
+            let info = ProcessStartInfo()
+            info.FileName <- cmd.Exe
+            info.RedirectStandardOutput <- true
+            info.RedirectStandardError <- true
+            info.UseShellExecute <- false
+            info.CreateNoWindow <- true
+            for arg in cmd.Args do
+                info.ArgumentList.Add (string arg)
+            info
+        
+        /// Create a new Process for the given command
         let toProcess (cmd: Command) =
             let proc = new Process()
-            proc.StartInfo.FileName <- cmd.Exe
-            proc.StartInfo.RedirectStandardOutput <- true
-            proc.StartInfo.RedirectStandardError <- true
-            proc.StartInfo.UseShellExecute <- false
-            proc.StartInfo.CreateNoWindow <- true
             proc.EnableRaisingEvents <- true
-            for arg in cmd.Args do
-                proc.StartInfo.ArgumentList.Add (string arg)
+            proc.StartInfo <- toStartInfo cmd
             proc
             
-        /// <summary>
-        /// Execute the given command and listen asynchronously
-        /// for messages.
-        /// </summary>
+        /// Start the given command and stream the output back asynchronously
         let stream (cmd: Command) : IAsyncEnumerable<CommandMessage> =
             
             let proc =
@@ -326,10 +322,11 @@ module rec Command =
                 
             let handleData messageType (args: DataReceivedEventArgs) =
                 match args.Data with
-                | null -> ()
+                | null ->
+                    ()
                 | text ->
-                    let message : OutputMessage =
-                        OutputMessage.make(text)
+                    let message =
+                        OutputMessage.create(text)
                     do
                         message
                         |> messageType
@@ -350,7 +347,7 @@ module rec Command =
             proc.ErrorDataReceived.Add (handleData CommandMessage.Error)
             proc.Exited.Add handleExit
             proc.Start()
-
+    
             { ProcessId = proc.Id
             ; TimeStamp = DateTimeOffset.Now }
             |> CommandMessage.Started
@@ -361,10 +358,8 @@ module rec Command =
             channel.Reader.ReadAllAsync()
         
                     
-        /// <summary>
         /// Execute a Command and return full output from
         /// stdout and stderr
-        /// </summary>
         let exec (cmd: Command) =
             let proc = toProcess cmd
             let statement = Command.statement cmd

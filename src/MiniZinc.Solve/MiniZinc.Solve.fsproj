@@ -17,9 +17,18 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="fsharp.control.taskseq" Version="0.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Serilog" Version="2.12.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MiniZinc.Model\MiniZinc.Model.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="JetBrains.ReSharper.TestRunner.Merged">
+      <HintPath>..\..\..\..\AppData\Local\JetBrains\Toolbox\apps\Rider\ch-0\231.9011.39\lib\ReSharperHost\TestRunner\netcoreapp3.0\JetBrains.ReSharper.TestRunner.Merged.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
  

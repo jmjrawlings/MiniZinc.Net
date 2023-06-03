@@ -4,9 +4,7 @@ open System
 open System.Text.Json.Nodes
 open System.Text.Json.Serialization
 
-/// <summary>
 /// An installed MiniZinc solver
-/// </summary>
 type Solver = {
     Id : string
     Name : string
@@ -28,4 +26,4 @@ type Solver = {
     StdFlags : List<string>    
     RequiredFlags : List<string>    
     ExtraFlags: List<List<string>>
-}    
+}

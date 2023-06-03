@@ -10,7 +10,6 @@ in yaml format.
 
 namespace MiniZinc.Tests
 
-open System.Security.Cryptography
 open MiniZinc
 open System
 open System.Collections.Generic
@@ -92,25 +91,25 @@ module rec Yaml =
                 match tag with
                 
                 | _ when event.IsKey ->
-                    Yaml.String value
+                    String value
                 
                 | t when t = "!Duration" ->
-                    Yaml.Duration value
+                    Duration value
                     
                 | t when (string t ) <> "?" ->
-                    Yaml.String value
+                    String value
                     
                 | t when t = "!!set" ->
-                    Yaml.Duration value                
+                    Duration value                
                     
                 | _ when Int32.TryParse(value, &int) ->
-                    Yaml.Int int
+                    Int int
                     
                 | _ when Double.TryParse(value, &float) ->
-                    Yaml.Float float
+                    Float float
                     
                 | _ ->
-                    Yaml.String value
+                    String value
             scalar
         
         /// Parse a Map
@@ -132,9 +131,9 @@ module rec Yaml =
             let node =
                 match tag.IsEmpty with
                 | true ->
-                    Yaml.Mapping map
+                    Mapping map
                 | false ->
-                    Yaml.Tagged (tag.Value, Yaml.Mapping map)
+                    Tagged (tag.Value, Mapping map)
                 
             node
             
@@ -153,9 +152,9 @@ module rec Yaml =
             let node =
                 match tag.IsEmpty with
                 | true -> 
-                    Yaml.Sequence list
+                    Sequence list
                 | false ->
-                    Yaml.Tagged (tag.Value, Yaml.Sequence list)
+                    Tagged (tag.Value, Sequence list)
             node
             
         type Parser() =
@@ -238,5 +237,5 @@ module rec Yaml =
             | Mapping map when map.ContainsKey key ->
                 map[key]
             | _ ->
-                Yaml.Null
+                Null
     
