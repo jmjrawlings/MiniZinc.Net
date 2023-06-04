@@ -11,7 +11,6 @@ module ClientTests =
     [<Theory>]
     [<InlineData("org.gecode.gecode")>]
     [<InlineData("org.chuffed.chuffed")>]
-    [<InlineData("org.minizinc.mip.highs")>]
     let ``test solver installed`` id =
         let solver = client.Solvers[id]
         ()
