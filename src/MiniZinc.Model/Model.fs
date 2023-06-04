@@ -17,6 +17,7 @@ open System
 open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
+open System.Text
 
 
 type Binding =
@@ -138,65 +139,58 @@ module rec Model =
             | _ -> failwithf $"Result was not a success"
     
                     
-    // A MiniZinc model
+    /// A MiniZinc model
     type Model = 
         { Name        : string
         ; File        : string option
+        ; Constraints : ConstraintItem list
         ; Includes    : Map<string, LoadResult>
         ; Bindings    : Map<Id, Binding>
         ; Enums       : Map<string, EnumItem>
         ; Synonyms    : Map<string, TypeInst>
-        ; Constraints : ConstraintItem list
         ; Predicates  : Map<string, PredicateItem>
         ; Functions   : Map<string, FunctionItem>
-        ; Outputs     : OutputItem list
-        ; SolveMethod : SolveMethod
         ; Assigned    : Map<string, TypeInst * Expr>
         ; Unassigned  : Map<string, TypeInst>
         ; Undeclared  : Map<string, Expr> 
-        ; Conflicts   : Map<string, Binding list> }
+        ; Conflicts   : Map<string, Binding list> 
+        ; Outputs     : OutputItem list
+        ; SolveMethod : SolveMethod }
                 
-        /// <summary>
         /// Parse a Model from the given file
-        /// </summary>
         static member ParseFile (filepath: string, options: ParseOptions) =
             Model.parseFile options filepath
             
-        /// <summary>
         /// Parse a Model from the given file
-        /// </summary>
         static member ParseFile (filepath: FileInfo, options: ParseOptions) =
             Model.parseFile options filepath.FullName
 
-        /// <summary>
         /// Parse a Model from the given file
-        /// </summary>
         static member ParseFile (filepath: string) =
             Model.parseFile ParseOptions.Default filepath
             
-        /// <summary>
         /// Parse a Model from the given file
-        /// </summary>
         static member ParseFile (filepath: FileInfo) =
             Model.parseFile ParseOptions.Default filepath.FullName
-            
 
-        /// <summary>
         /// Parse a Model from the given string
-        /// </summary>
         static member ParseString (mzn: string, options: ParseOptions) =
             Model.parseString options mzn
             
-        /// <summary>
         /// Parse a Model from the given string
-        /// </summary>
         static member ParseString (mzn: string) =
             Model.parseString ParseOptions.Default mzn 
+
+        member this.ToString() =
+            ()
             
-                    
+        member this.ToString(x: FunctionItem) =
+            ()
+
+                        
     module Model =
 
-        // An empty model        
+        /// An empty model        
         let empty =
             { Name = ""
             ; File = None
@@ -291,9 +285,7 @@ module rec Model =
                     (fun m -> m.Name)
                     (fun v m -> { m with Name = v })
         
-        /// <summary>
         /// Parse a Model from the given MiniZinc file
-        /// </summary>
         let parseFile (options: ParseOptions) (filepath: string) : LoadResult =
             
             let result =
@@ -305,9 +297,7 @@ module rec Model =
                 
             result
         
-        /// <summary>
         /// Parse a Model from the given MiniZinc model string
-        /// </summary>
         let parseString (options: ParseOptions) (mzn: string) : LoadResult =
                         
             let input, comments =
@@ -325,9 +315,7 @@ module rec Model =
             result
             
         
-        /// <summary>
         /// Create a Model from the given AST
-        /// </summary>
         let fromAst (options: ParseOptions) (ast: Ast) : Model =
                                         
             let bindings = ResizeArray()
@@ -396,7 +384,7 @@ module rec Model =
                             
             // Load the model from these bindings only
             let model =
-                fromBindings map
+                ofBindings map
                 |> Includes_.set inclusions
                 |> Constraints_.set ast.Constraints
                 |> Outputs_.set ast.Outputs                
@@ -412,10 +400,8 @@ module rec Model =
 
             unified
                 
-        /// <summary>
         /// Create a Model from the given Bindings
-        /// </summary>
-        let fromBindings (bindings: Bindings) : Model =
+        let ofBindings (bindings: Bindings) : Model =
                     
             let rec loop bindings model =
                 match bindings with
@@ -461,10 +447,8 @@ module rec Model =
                 
             model
             
-            
-        /// <summary>
+              
         /// Merge two Models
-        /// </summary>
         let merge (a: Model) (b: Model) : Model =
                             
             let bindings =
@@ -486,7 +470,7 @@ module rec Model =
                     | left, right -> right
                 
             let model =
-                fromBindings bindings
+                ofBindings bindings
                 |> Constraints_.set constraints
                 |> Includes_.set includes
                 |> Name_.set name
@@ -494,22 +478,5 @@ module rec Model =
                 
             model
             
-        // // Load an included model, searching for it
-        // // in the given directories
-        // let loadIncluded filename (searchDirs: string seq) (model: Model) =
-        //                 
-        //     let filepath =
-        //         searchDirs
-        //         |> Seq.map (fun dir -> Path.Join(dir, filename))
-        //         |> Seq.filter File.Exists
-        //         |> Seq.tryHead
-        //         |> Result.ofOption $"Could not find {filename} in any of the search directories"
-        //         
-        //     let includeModel =
-        //         filepath
-        //         |> Result.bind (parseFile >> Result.mapError string)
-        //         
-        //     
-        // // Load all included models
-        // let loadIncludedModels (searchDirs: string seq) (model: Model) =
-        //     model
+    let encode (model: Model) =
+        ""
