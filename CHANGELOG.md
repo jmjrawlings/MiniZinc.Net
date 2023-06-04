@@ -3,9 +3,10 @@
 ## Unreleased
 - Added integration tests on solver
 - Refactor Arg/Command/Args constructors around obj[]
-- MiniZinc as a class instead of module
+- `MiniZincClient` instead of `MiniZinc` module
 - `ILogger` can be passed into MiniZinc
-- Command line output is logged
+- Basic logging of commands
+- Renamed `Solve` to `Client` modules throughout
 
 
 ## [0.4.0] - 2023-06-01

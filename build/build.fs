@@ -20,9 +20,9 @@ let model_proj_name = "MiniZinc.Model"
 let model_proj_dir = src_dir <//> model_proj_name
 let model_proj_file = model_proj_dir </> $"{model_proj_name}.fs"
 
-let solve_proj_name = "MiniZinc.Solve"
-let solve_proj_dir = src_dir <//> solve_proj_name
-let solve_proj_file = solve_proj_dir </> $"{solve_proj_name}.fs"
+let client_proj_name = "MiniZinc.Client"
+let client_proj_dir = src_dir <//> client_proj_name
+let client_proj_file = client_proj_dir </> $"{client_proj_name}.fs"
 
 
 let test_dir = root <//> "tests"
@@ -31,9 +31,9 @@ let model_tests_name = "MiniZinc.ModelTests"
 let model_test_proj_dir = test_dir <//> model_tests_name
 let model_test_proj_file = model_test_proj_dir </> $"{model_tests_name}.fsproj"
 
-let solve_tests_name = "MiniZinc.SolveTests"
-let solve_test_proj_dir = test_dir <//> solve_tests_name
-let solve_test_proj_file = solve_test_proj_dir </> $"{solve_tests_name}.fsproj"
+let client_tests_name = "MiniZinc.ClientTests"
+let client_test_proj_dir = test_dir <//> client_tests_name
+let client_test_proj_file = client_test_proj_dir </> $"{client_tests_name}.fsproj"
 
 
 let obj = cwd <//> "obj"
@@ -125,7 +125,7 @@ module IntegrationTests =
 /// <summary>
 /// Create solver integration tests libminizinc suites
 /// </summary>
-let create_solver_integration_tests () =
+let create_client_integration_tests () =
         
     let mutable code = """
 namespace MiniZinc.Tests

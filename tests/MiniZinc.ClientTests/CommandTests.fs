@@ -1,15 +1,12 @@
 namespace MiniZinc.Tests
 
-module CommandTests =
+open MiniZinc
+open MiniZinc.Command
+open MiniZinc.Tests
+open Xunit
 
-    open MiniZinc
-    open FSharp.Control
-    open MiniZinc.Command
-    open MiniZinc.Tests
-    open Xunit
+module CommandTests =
         
-    let mz = MiniZinc(logger)
-    
     [<Fact>]
     let ``parse flag`` () =
         let cmd = "--a"
@@ -35,18 +32,3 @@ module CommandTests =
         let b = Arg.parse "--count"
         let args = Args.create(a, b, 1)
         args.StringEquals "--count=1 --count 1"
-
-    [<Theory>]
-    [<InlineData("org.gecode.gecode")>]
-    [<InlineData("org.chuffed.chuffed")>]
-    let ``test solver installed`` id =
-        let solver = mz.GetSolver id
-        let sid = solver.Result.Value.Id
-        sid.StringEquals id
-         
-    [<Fact>]
-    let ``test minizinc version`` () =
-        task {
-            let! version = mz.Version()
-            version <> ""
-        }

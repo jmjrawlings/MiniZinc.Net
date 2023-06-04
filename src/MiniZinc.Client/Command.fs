@@ -258,6 +258,9 @@ module rec Command =
         member this.Exec() =
             Command.exec this
             
+        member this.ExecSync() =
+            Command.execSync this
+            
         member this.Stream() =
             Command.stream this
             
@@ -266,7 +269,15 @@ module rec Command =
             |> Seq.map string
             |> Args.parseMany
             |> Command.ofArgs
+
+    module CommandResult =
+        let stdout (result: CommandResult) =
+            result.StdOut
         
+        let stderr (result: CommandResult) =
+            result.StdErr
+
+            
     module Command =
     
         let empty =
@@ -358,8 +369,7 @@ module rec Command =
             channel.Reader.ReadAllAsync()
         
                     
-        /// Execute a Command and return full output from
-        /// stdout and stderr
+        /// Execute the given Command 
         let exec (cmd: Command) =
             let proc = toProcess cmd
             let statement = Command.statement cmd
@@ -381,7 +391,6 @@ module rec Command =
                 proc.Start()
                 proc.BeginOutputReadLine()
                 proc.BeginErrorReadLine()
-                proc.WaitForExit()
                         
                 let! _ = complete.Task
                 let end_time = DateTimeOffset.Now
@@ -401,3 +410,40 @@ module rec Command =
                 proc.Dispose()
                 return result
             }
+            
+        /// Execute the given Command synchronously 
+        let execSync (cmd: Command) =
+            use proc = toProcess cmd
+            let statement = Command.statement cmd
+            let stdout = StringBuilder()
+            let stderr = StringBuilder()
+                        
+            let handleData (builder: StringBuilder) (args: DataReceivedEventArgs) =
+                if args.Data <> null then
+                    do builder.Append args.Data
+            
+            proc.OutputDataReceived.Add (handleData stdout)
+            proc.ErrorDataReceived.Add (handleData stderr)
+        
+            let start_time = DateTimeOffset.Now
+            
+            proc.Start()
+            proc.BeginOutputReadLine()
+            proc.BeginErrorReadLine()
+            proc.WaitForExit()
+            
+            let end_time = DateTimeOffset.Now
+            
+            let result =
+                { Command = proc.StartInfo.FileName
+                ; Args = Seq.toList proc.StartInfo.ArgumentList
+                ; Statement = statement 
+                ; StartTime = start_time
+                ; EndTime = end_time
+                ; Duration = end_time - start_time
+                ; ExitCode = proc.ExitCode
+                ; IsError = proc.ExitCode > 0 
+                ; StdOut = string stdout
+                ; StdErr = string stderr }
+            
+            result   
