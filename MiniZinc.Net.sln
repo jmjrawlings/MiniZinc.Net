@@ -11,9 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ACBEE43C
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MiniZinc.ModelTests", "tests\MiniZinc.ModelTests\MiniZinc.ModelTests.fsproj", "{1CA2E092-2320-451D-A4F0-9ED7C7C528CA}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MiniZinc.Solve", "src\MiniZinc.Solve\MiniZinc.Solve.fsproj", "{61C482E2-55E0-405C-AA86-65BCAD089649}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MiniZinc.Client", "src\MiniZinc.Client\MiniZinc.Client.fsproj", "{61C482E2-55E0-405C-AA86-65BCAD089649}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MiniZinc.SolveTests", "tests\MiniZinc.SolveTests\MiniZinc.SolveTests.fsproj", "{1892F059-CC31-4DF0-B13B-00C55DFBCBDD}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MiniZinc.ClientTests", "tests\MiniZinc.ClientTests\MiniZinc.ClientTests.fsproj", "{1892F059-CC31-4DF0-B13B-00C55DFBCBDD}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "build", "build\build.fsproj", "{AED45D06-8F02-471A-99CE-279220CCB529}"
 EndProject

@@ -20,9 +20,9 @@ let model_proj_name = "MiniZinc.Model"
 let model_proj_dir = src_dir <//> model_proj_name
 let model_proj_file = model_proj_dir </> $"{model_proj_name}.fs"
 
-let solve_proj_name = "MiniZinc.Solve"
-let solve_proj_dir = src_dir <//> solve_proj_name
-let solve_proj_file = solve_proj_dir </> $"{solve_proj_name}.fs"
+let client_proj_name = "MiniZinc.Client"
+let client_proj_dir = src_dir <//> client_proj_name
+let client_proj_file = client_proj_dir </> $"{client_proj_name}.fs"
 
 
 let test_dir = root <//> "tests"
@@ -31,9 +31,9 @@ let model_tests_name = "MiniZinc.ModelTests"
 let model_test_proj_dir = test_dir <//> model_tests_name
 let model_test_proj_file = model_test_proj_dir </> $"{model_tests_name}.fsproj"
 
-let solve_tests_name = "MiniZinc.SolveTests"
-let solve_test_proj_dir = test_dir <//> solve_tests_name
-let solve_test_proj_file = solve_test_proj_dir </> $"{solve_tests_name}.fsproj"
+let client_tests_name = "MiniZinc.ClientTests"
+let client_test_proj_dir = test_dir <//> client_tests_name
+let client_test_proj_file = client_test_proj_dir </> $"{client_tests_name}.fsproj"
 
 
 let obj = cwd <//> "obj"
@@ -43,13 +43,6 @@ let examples_dir = test_dir <//> "examples"
 /// <summary>
 /// Download MiniZinc test examples
 /// </summary>
-/// <remarks>
-/// We use the official MiniZinc repository
-/// as a source for our tests.  This task
-/// will download the 'test' branch of the repo
-/// and copy all of the example tests into
-/// this repo.
-/// </remarks>
 let download_libminizinc_test_suite () =
     let minizinc_repo = "https://github.com/MiniZinc/libminizinc"
     let clone_dir = obj <//> "libminizinc"
@@ -85,15 +78,10 @@ let download_libminizinc_test_suite () =
 /// <summary>
 /// Create a test suite from MiniZinc Examples
 /// </summary>
-/// <remarks>
-/// For each model we downloaded from the MiniZinc
-/// test suite we create our own test in a dedicated
-/// module. 
-/// </remarks>
-let create_integration_tests () =
+let create_parser_integration_tests () =
         
     let mutable code = """
-namespace MiniZinc.Model.Tests
+namespace MiniZinc.Tests
 
 open MiniZinc
 open MiniZinc.Tests
@@ -134,6 +122,53 @@ module IntegrationTests =
         destination.FullName
         code
         
+/// <summary>
+/// Create solver integration tests libminizinc suites
+/// </summary>
+let create_client_integration_tests () =
+        
+    let mutable code = """
+namespace MiniZinc.Tests
+
+open MiniZinc
+open MiniZinc.Tests
+open Xunit
+open System.IO
+
+module IntegrationTests =
+   
+    let test (name: string) =
+        let suite = TestSuite.load name
+        let model = TestSuite.parseModel suite
+        model.Value.Undeclared.AssertEmpty()
+        model.Value.Conflicts.AssertEmpty()
+"""
+    
+    let examples =
+        examples_dir
+        |> DirectoryInfo.getMatchingFiles "*.mzn"
+
+    for example in examples do
+
+        let name =
+            example.NameWithoutExtension.Replace("_", " ")
+            
+        let test_case = $"""
+    [<Fact>]
+    let ``test {name}`` () =
+        test "{example.Name}"
+"""
+
+        code <- code + "\n" + test_case
+    
+    let destination =
+        model_test_proj_dir </> "IntegrationTests.fs"
+    
+    File.writeString
+        false
+        destination.FullName
+        code        
+        
 let run_tests() =
     model_test_proj_file.FullName
     |> DotNet.test (fun opts ->
@@ -147,7 +182,7 @@ let init() =
         download_libminizinc_test_suite ()
         
     Target.create "CreateIntegrationTests" <| fun _ ->
-        create_integration_tests ()
+        create_parser_integration_tests ()
         
     Target.create "RunTests" <| fun _ ->
         run_tests()        

@@ -63,3 +63,7 @@ type Extensions() =
         if a <> b then
             failwithf $"{a} does not equal {b}"        
     
+    [<Extension>]
+    static member inline StringEquals(a, b: string) =
+        if (string a) <> b then
+            failwithf $"{a} does not equal {b}"

@@ -6,7 +6,7 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 > 
 > This is pre-release software.
 > 
-> I'm only making it public at this point because I'm quite happy with the parser and I'm sure others can benefit from it.
+> It's only public because I'm quite happy with the parser and I'm sure others can benefit from it.
 > 
 > This is written in F# but the goal is to have an idiomatic C# API also
 

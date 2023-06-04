@@ -7,12 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="Logging.fs" />
         <Compile Include="CommandTests.fs" />
-        <Compile Include="SolveTests.fs" />
+        <Compile Include="ClientTests.fs" />
+        <Compile Include="IntegrationTests.fs" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\MiniZinc.Solve\MiniZinc.Solve.fsproj" />
+      <ProjectReference Include="..\..\src\MiniZinc.Client\MiniZinc.Client.fsproj" />
       <ProjectReference Include="..\MiniZinc.Tests\MiniZinc.Tests.fsproj" />
     </ItemGroup>
 
