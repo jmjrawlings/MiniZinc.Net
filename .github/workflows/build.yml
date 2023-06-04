@@ -20,9 +20,9 @@ jobs:
       - name: Test        
         run: dotnet test $PROJ --no-build
 
-  test-solve:
+  test-client:
     name:
-      Test Solver - v${{ matrix.minizinc-version }}
+      Test Client - v${{ matrix.minizinc-version }}
     runs-on:
       ubuntu-latest
     strategy:
@@ -33,7 +33,7 @@ jobs:
     env:
       MINIZINC_URL: https://github.com/MiniZinc/MiniZincIDE/releases/download/${{ matrix.minizinc-version }}/MiniZincIDE-${{ matrix.minizinc-version }}-x86_64.AppImage
       MINIZINC_VERSION: ${{ matrix.minizinc-version }}
-      PROJ: tests/MiniZinc.SolveTests/MiniZinc.SolveTests.fsproj
+      PROJ: tests/MiniZinc.ClientTests/MiniZinc.ClientTests.fsproj
     steps:
       - uses: actions/checkout@v3
       - name: Add bin/ to PATH
