@@ -1,103 +1,227 @@
-﻿namespace MiniZinc.Encode
+﻿namespace MiniZinc
+
 open System
-open Microsoft.FSharp.Quotations
+open System.Collections.Generic
+open System.Text
 open MiniZinc
 
-type Encode =
+/// Encode MiniZinc to String
+type MiniZincEncoder() =
     
-    static member encode (x: IncludeItem) =
-        string x
+    let mutable indentLevel = 0
+    let contexts = Stack<IDisposable>()
+    let string = StringBuilder()
     
-    static member encode (x: EnumItem) =
-        $"enum {Encode.encode x.Name}"
+    /// Pop the last context off the stack        
+    member private this.pop() =
+        contexts.Pop()
+        this
+            
+    /// Add a new context to the stack            
+    member private this.push context =
+        contexts.Push context
+        this
+
+    /// Add a context for 1 level of indentation            
+    member this.indent () =
+        indentLevel <- indentLevel + 1
+        let context = 
+            { new IDisposable with
+                 member IDisposable.Dispose () =
+                     indentLevel <- indentLevel - 1
+                     () }
+        this.push context
+        
+    /// Add a context that surrounds with the given strings                
+    member this.enclose (prefix: string) (suffix: string) =
+        string.Append prefix
+        let context =
+            { new IDisposable with
+                 member IDisposable.Dispose () =
+                     string.Append suffix
+                     () }
+        this.push context
+        context
+
+    
+    member this.write (s: string) =
+        string.Append s
+        this
+        
+    member this.write (c: char) =
+        string.Append c
+        this
+        
+    member this.writeif (cond: bool) (s: string) =
+        if cond then
+            this.write s
+        else                        
+            this
+        
+    member this.writeln (s: string) =
+        string.AppendLine s
+        this
+        
+    member this.writes (s: string) =
+        string.Append s
+        string.Append " "
+        this
+    
+    member this.write (x: EnumItem) : MiniZincEncoder =
+        this.write "enum "
+        this.write x.Name
+        
+        match x.Cases with
+        | [] ->
+            this
+        | cases ->
+            this.write "{"
+            let n = cases.Length - 1
+            for i, case in Seq.indexed cases do
+                match case with
+                | Name id ->
+                    this.write id
+                | Expr expr ->
+                    this.write expr
+                this.writeif (i < n) ", "
+            this.write "}"
                 
-    static member encode (x: EnumCase) =
+    member this.write ((id, anns, ti): SynonymItem) =
+        this.write "type "
+        this.write id
+        this.write " = "
+        this.write ti
+
+    member this.write (x: Annotations) : MiniZincEncoder =
+        this
+        
+    member this.write (x: TypeInst) : MiniZincEncoder =
+        this.write x.Inst
+        this.write " "
+        this.writeif x.IsSet "set of "
+        this.writeif x.IsOpt "opt "
+        this.write x.Type
+        
+    member this.write (x: Inst) : MiniZincEncoder =
         match x with
-        | Name x -> Encode.encode x
-        | Expr x -> Encode.encode x
-    
-    static member encode (x: SynonymItem) =
-        match x with
-        | (id, anns, ti) ->
-            $"type {Encode.encode id} {Encode.encode anns} = {Encode.encode ti}"
-        ""
+        | Inst.Var ->
+            this.write "var"
+        | Inst.Par ->
+            this.write "par"
+        | _ ->
+            this
         
-    static member encode (x: Annotations) =
-        ""
-        
-    static member encode (x: TypeInst) =
-        ""
-        
-    static member encode (x: Inst) =
-        match x with
-        | Inst.Var -> "var"
-        | Inst.Par -> "par"
-        | _ -> ""
-        
-    static member encode(x: BaseType) =
+    member this.write(x: BaseType) =
         match x with
         | Int ->
-            "int"
+            this.write "int"
         | Bool ->
-            "bool"
+            this.write "bool"
         | String ->
-            "string"
+            this.write "string"
         | Float ->
-            "float"
+            this.write "float"
         | Id s ->
-            s
+            this.write s
         | Variable s ->
-            s
+            this.write s
         | Tuple fields ->
-            fields
-            |> Seq.map Encode.encode
-            |> String.concat ", "
-            |> sprintf "(%s)"
+            this.write "("
+            let n = fields.Length - 1
+            for i, field in Seq.indexed fields do
+                this.write field
+                this.writeif (i < n) ", "
+            this.write ")"
         | Record fields ->
-            fields
-            |> Map.toSeq
-            |> Seq.map (fun (id, ti) -> $"{Encode.encode(ti)}: {id}")
-            |> String.concat ", "
-            |> sprintf "record (%s)"
+            this.write "record("
+            this.write fields
+            this.write ")"            
         | Literal exprs ->
-            exprs
-            |> Seq.map Encode.encode
-            |> String.concat ", "
-            |> sprintf "{%s}"
+            this.write "{"
+            let n = exprs.Length - 1
+            for i, expr in Seq.indexed exprs do
+                this.write expr
+                this.writeif (i < n) ", "
+            this.write "}"
         | Range (lo, hi) ->
-            let los = Encode.encode(lo)
-            let his = Encode.encode(hi)
-            let string = $"{los} .. {his}"
-            string
+            this.write lo
+            this.write ".."
+            this.write hi
         | List ti ->
-            $"list of {Encode.encode(ti)}"
-        | Array (dims, typ) ->            
-            let dims =
-                dims
-                |> Seq.map Encode.encode
-                |> String.concat ", "
-                |> sprintf "[%s]"                
-            let string =
-                $"array[{dims}] of {Encode.encode(typ)}"                
-            string
-        
-    static member encode(x: NumericExpr) =
-        ""
+            this.write "list of "
+            this.write ti
+        | Array (dims, typ) ->
+            this.write "array["
+            let n = dims.Length - 1
+            for (i, dim) in Seq.indexed dims do
+                this.write dim
+                this.writeif (i < n) ", "
+            this.write "] of "
+            this.write typ
+                    
+    member this.write (x: NumericExpr) : MiniZincEncoder =
+        this.write ""
             
-    static member encode (x: Expr) =
-        ""       
+    member this.write (x: Expr) =
+        this.write ""       
         
-    static member encode (x: DeclareItem) =
-        ""
+    member this.write (x: DeclareItem) =
+        this.write ""
         
-    static member encode (x: SolveMethod) =
-        ""
+    member this.write (x: SolveType) =
+        match x with
+        | SolveType.Satisfy -> "satisfy"
+        | SolveType.Minimize -> "minimize"
+        | SolveType.Maximize -> "maximize"
+        | _ -> ""
         
-    static member encode (x: PredicateItem) =
-        ""
+    member this.write (x: PredicateItem) =
+        this.writes "predicate"
+        this.write x.Name
+        this.write "("
+        this.write x.Parameters
+        this.write ")"
+        this
+    
+    member this.write (name: string, ti: TypeInst) =
+        this.write name
+        this.writes ":"
+        this.write ti
         
-    static member encode (x: FunctionItem) =
-        ""
+    member this.write (x: Map<string, TypeInst>) : MiniZincEncoder =
+        let n = x.Count - 1
+        for i, kv in Seq.indexed x do
+            this.write kv.Key
+            this.write ": "
+            this.write kv.Value
+            this.writeif (i < n) ", "
+        this
+    
+    member this.write (x: FunctionItem) =
+        this.writes "function "
+        this.write x.Returns
+        this.write ": "
+        this.write x.Name
+        this.write "(" 
+        this.write x.Parameters
+        this.write ")"
         
-    static member encode (x: CallExpr) =
-        ""
+        match x.Body with
+        | None ->
+            this
+        | Some body ->
+            this.writeln " = "
+            this.indent()
+            this.write body
+            this.pop()
+                
+    member this.write (x: CallExpr) =
+        this.write ""
+        
+    member this.write (ConstraintItem.Constraint expr) =
+        this.write "constraint "
+        this.write expr
+        
+    member this.write (x: IncludeItem) =
+        this.write "include "
+        this.write x.FileName

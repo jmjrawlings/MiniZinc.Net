@@ -703,9 +703,10 @@ module Parsers =
                 })
     
     // <include-item>
-    let include_item : P<string> =
+    let include_item : P<IncludeItem> =
         kw1 "include"
         >>. string_literal
+        |>> (fun s -> {FileName = s})
         <?!> "include-item"
     
     // <var-par>
@@ -911,6 +912,7 @@ module Parsers =
     let constraint_item =
         kw "constraint"
         >>. expr
+        |>> ConstraintItem.Constraint
         <?!> "constraint"
         
     // <annotation-item>
@@ -1188,31 +1190,31 @@ module Parsers =
             | item :: rest ->
                 let loop = loop rest
                 match item with
-                | Include x ->
+                | Item.Include x ->
                     loop { ast with Includes = x :: ast.Includes }
-                | Enum x ->
+                | Item.Enum x ->
                     loop { ast with Enums = x :: ast.Enums }
-                | Synonym x ->
+                | Item.Synonym x ->
                     loop { ast with Synonyms = x :: ast.Synonyms }
-                | Constraint x ->
+                | Item.Constraint x ->
                     loop { ast with Constraints = x :: ast.Constraints }
-                | Assign x ->
+                | Item.Assign x ->
                     loop { ast with Assigns = x :: ast.Assigns }
-                | Declare x ->
+                | Item.Declare x ->
                     loop { ast with Declares = x :: ast.Declares }
-                | Solve x ->
+                | Item.Solve x ->
                     loop { ast with Solves = x :: ast.Solves }
-                | Predicate x ->
+                | Item.Predicate x ->
                     loop { ast with Predicates = x :: ast.Predicates }
-                | Function x ->
+                | Item.Function x ->
                     loop { ast with Functions = x :: ast.Functions }
-                | Test x ->
+                | Item.Test x ->
                     loop { ast with Tests = x :: ast.Tests }
-                | Output x ->
+                | Item.Output x ->
                     loop { ast with Outputs = x :: ast.Outputs }
-                | Annotation x ->
+                | Item.Annotation x ->
                     loop { ast with Annotations = x :: ast.Annotations }
-                | Comment x ->
+                | Item.Comment x ->
                     loop { ast with Comments = x :: ast.Comments }
                 
         let empty =

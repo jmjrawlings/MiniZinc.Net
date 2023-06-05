@@ -296,7 +296,7 @@ and NumericExpr =
     | ArrayAccess of NumericExpr * ArrayAccess list
 
 and IncludeItem =
-    string
+    { FileName: string }
 
 and EnumItem =
     { Name : Id
@@ -363,11 +363,8 @@ and Item =
 and AnnotationItem =
     CallExpr
 
-and Constraint =
-    Expr
-
 and ConstraintItem =
-    Constraint
+    | Constraint of Expr
         
 and PredicateItem =
     OperationItem

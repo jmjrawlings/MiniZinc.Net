@@ -19,6 +19,7 @@ open System.IO
 open System.Runtime.InteropServices
 open System.Text
 
+type EncodingOptions = unit
 
 type Binding =
     | Undeclared of Expr
@@ -378,6 +379,7 @@ module rec Model =
             // Parse included models in parallel
             let inclusions =
                 ast.Includes
+                |> Seq.map (fun incl -> incl.FileName)
                 |> Seq.toArray
                 |> Array.Parallel.map parseIncluded
                 |> Map.ofSeq
@@ -478,5 +480,16 @@ module rec Model =
                 
             model
             
-    let encode (model: Model) =
-        ""
+    let encode (options: EncodingOptions) (model: Model) =
+        let mzn = MiniZincEncoder()
+                
+        for incl in model.Includes.Keys do
+            mzn.write incl
+        
+        for cons in model.Constraints do
+            mzn.write cons
+            
+        for enum in model.Enums.Values do
+            mzn.write enum
+            
+        
