@@ -26,7 +26,7 @@ type Binding =
     | Unassigned of TypeInst
     | Assigned   of TypeInst * Expr
     | Enum       of EnumItem
-    | Synonym    of TypeInst
+    | Synonym    of SynonymItem
     | Predicate  of PredicateItem
     | Function   of FunctionItem
     | Conflict   of Binding list
@@ -102,7 +102,7 @@ module Bindings =
 
 [<AutoOpen>]    
 module rec Model =
-
+    
     type IncludeOptions =
         | Reference
         | ParseFile of string list
@@ -126,7 +126,6 @@ module rec Model =
         
         member this.Value =
             LoadResult.success this
-            
                     
     module LoadResult =
         let map f result =
@@ -138,7 +137,6 @@ module rec Model =
             match result with
             | Success x -> x
             | _ -> failwithf $"Result was not a success"
-    
                     
     /// A MiniZinc model
     type Model = 
@@ -148,7 +146,7 @@ module rec Model =
         ; Includes    : Map<string, LoadResult>
         ; Bindings    : Map<Id, Binding>
         ; Enums       : Map<string, EnumItem>
-        ; Synonyms    : Map<string, TypeInst>
+        ; Synonyms    : Map<string, SynonymItem>
         ; Predicates  : Map<string, PredicateItem>
         ; Functions   : Map<string, FunctionItem>
         ; Assigned    : Map<string, TypeInst * Expr>
@@ -314,22 +312,21 @@ module rec Model =
                 | Result.Error error -> ParseError error
                 
             result
-            
         
         /// Create a Model from the given AST
         let fromAst (options: ParseOptions) (ast: Ast) : Model =
                                         
             let bindings = ResizeArray()
             
-            for id,expr in ast.Assigns do
-                bindings.Add (id, Binding.Undeclared expr)
+            for asn in ast.Assigns do
+                bindings.Add (asn.Name, Binding.Undeclared asn.Expr)
 
-            for id, ti, _, expr in ast.Declares do
-                match expr with
+            for decl in ast.Declares do
+                match decl.Body with
                 | Some value ->
-                    bindings.Add(id, Binding.Assigned (ti, value))
+                    bindings.Add(decl.Name, Binding.Assigned (decl.Type, value))
                 | None ->
-                    bindings.Add(id, Binding.Unassigned ti)
+                    bindings.Add(decl.Name, Binding.Unassigned decl.Type)
                     
             for enum in ast.Enums do
                 bindings.Add (enum.Name, Binding.Enum enum)
@@ -337,11 +334,11 @@ module rec Model =
             for x in ast.Functions do
                 bindings.Add (x.Name, Binding.Function x)
                 
-            for x in ast.Predicates do
-                bindings.Add (x.Name, Binding.Predicate x)
+            for pred in ast.Predicates do
+                bindings.Add (pred.Name, Binding.Predicate pred)
                 
-            for id, _anns, ti in ast.Synonyms do
-                bindings.Add (id, Binding.Synonym ti)
+            for syn in ast.Synonyms do
+                bindings.Add (syn.Id, Binding.Synonym syn)
                 
             let map =
                 Bindings.ofSeq bindings
@@ -448,7 +445,6 @@ module rec Model =
                 loop (Map.toList bindings) empty
                 
             model
-            
               
         /// Merge two Models
         let merge (a: Model) (b: Model) : Model =
@@ -481,15 +477,32 @@ module rec Model =
             model
             
     let encode (options: EncodingOptions) (model: Model) =
+        
         let mzn = MiniZincEncoder()
-                
+                        
         for incl in model.Includes.Keys do
             mzn.write incl
-        
-        for cons in model.Constraints do
-            mzn.write cons
-            
+
         for enum in model.Enums.Values do
             mzn.write enum
             
+        for syn in model.Synonyms.Values do
+            mzn.write syn
+                
+        for cons in model.Constraints do
+            mzn.write cons
+
+        for func in model.Functions.Values do
+            mzn.write func
+            
+        for pred in model.Predicates.Values do
+            mzn.write pred
+            
+        mzn.write model.SolveMethod
+        
+        for output in model.Outputs do
+            mzn.write output
+            
+        mzn.ToString()            
+        
         

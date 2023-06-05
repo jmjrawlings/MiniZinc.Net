@@ -648,25 +648,34 @@ module Parsers =
     
     // <operation-item-tail>
     // eg: even(var int: x) = x mod 2 = 0;
-    let operation_item_tail : P<OperationItem> =
-        pipe4
+    let operation_item_tail =
+        tuple4
             (ps id)
             (ps parameters)
             (ps annotations)
             (opt (ps "=" >>. expr))
-            (fun name pars anns body ->
-                { Name = name
-                ; Parameters = pars
-                ; Annotations = anns 
-                ; Body = body })
         
     // <predicate-item>
     let predicate_item : P<PredicateItem> =
-        kw1 "predicate" >>. operation_item_tail
+        kw1 "predicate"
+        >>. operation_item_tail
+        |>> (fun (id, pars, anns, body) ->
+            { Name = id
+            ; Parameters = pars
+            ; Annotations = anns
+            ; Body = body }
+            )
 
     // <test_item>
     let test_item : P<TestItem> =
-        kw1 "test" >>. operation_item_tail
+        kw1 "test"
+        >>. operation_item_tail
+        |>> (fun (id, pars, anns, body) ->
+            { Name = id
+            ; Parameters = pars
+            ; Annotations = anns
+            ; Body = body }
+            )
         
     // <function-item>
     let function_item : P<FunctionItem> =
@@ -674,11 +683,11 @@ module Parsers =
         >>. ti_expr
         .>> sps ':'
         .>>. operation_item_tail
-        |>> (fun (ti, op) ->
-            { Name = op.Name
+        |>> (fun (ti, (id, pars, anns, body)) ->
+            { Name = id
             ; Returns = ti
-            ; Parameters = op.Parameters
-            ; Body = op.Body })
+            ; Parameters = pars
+            ; Body = body })
     
     // <enum-case>
     // TODO: complex variants
@@ -906,13 +915,16 @@ module Parsers =
             (opt (ps '=' >>. expr))
             (fun (id, ti) anns expr ->
                 let ti, inst = P.ResolveInst ti
-                id, ti, anns, expr)
+                { Name = id
+                ; Type = ti
+                ; Annotations = anns
+                ; Body = expr })
 
     // <constraint-item>
-    let constraint_item =
+    let constraint_item : P<ConstraintItem> =
         kw "constraint"
         >>. expr
-        |>> ConstraintItem.Constraint
+        |>> (fun expr -> {Expr = expr})
         <?!> "constraint"
         
     // <annotation-item>
@@ -1112,7 +1124,7 @@ module Parsers =
             )
         <?!> "expr"
             
-    let solve_method : P<SolveType> =
+    let solve_type : P<SolveType> =
         lookup(
           "satisfy" => SolveType.Satisfy,
           "minimize" => SolveType.Minimize,
@@ -1124,24 +1136,25 @@ module Parsers =
     let solve_item : P<SolveMethod> =
         pipe3
             (kw1 "solve" >>. annotations)
-            (sps solve_method)
+            (sps solve_type)
             (opt expr)
-            (fun annos method obj ->
-                match obj with
-                | Some o ->
-                    { Annotations = annos
-                    ; Method = method
-                    ; Objective = o }
-                    |> SolveMethod.Opt
-                | None ->
-                    { Annotations = annos }
-                    |> SolveMethod.Sat)
+            (fun anns solveType obj ->
+                match (solveType, obj) with
+                | SolveType.Maximize, (Some exp) ->
+                    SolveMethod.Max (exp, anns)
+                | SolveType.Minimize, (Some exp) ->
+                    SolveMethod.Min (exp, anns)
+                | _ ->
+                    SolveMethod.Sat anns
+                )
         <?!> "solve-item"            
         
     // <assign-item>
-    let assign_item =
-        attempt (id .>> sps '=')
-        .>>. expr
+    let assign_item : P<AssignItem> =
+        pipe2
+            (attempt (id .>> sps '='))
+            expr
+            (fun name expr -> {Name = name; Expr = expr})
         <?!> "assign-item"
         
     // <type-inst-syn-item>
@@ -1150,13 +1163,17 @@ module Parsers =
             (kw1 "type" >>. id .>> spaces)
             (ps annotations .>> ps "=")
             ti_expr
-            (fun id anns ty -> id, anns, ty)
+            (fun id anns ti ->
+                { Id = id
+                ; Annotations = anns
+                ; TypeInst = ti })
         <?!> "type-alias"
         
     // <output-item>
     let output_item : P<OutputItem> =
         kw1 "output"
-        >>. expr        
+        >>. expr
+        |>> (fun expr -> {Expr = expr})
         <?!> "output-item"
 
     // <item>

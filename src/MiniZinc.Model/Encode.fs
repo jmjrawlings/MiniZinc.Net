@@ -86,11 +86,11 @@ type MiniZincEncoder() =
                 this.writeif (i < n) ", "
             this.write "}"
                 
-    member this.write ((id, anns, ti): SynonymItem) =
+    member this.write (syn: SynonymItem) =
         this.write "type "
-        this.write id
+        this.write syn.Id
         this.write " = "
-        this.write ti
+        this.write syn.TypeInst
 
     member this.write (x: Annotations) : MiniZincEncoder =
         this
@@ -175,11 +175,11 @@ type MiniZincEncoder() =
         | SolveType.Maximize -> "maximize"
         | _ -> ""
         
-    member this.write (x: PredicateItem) =
+    member this.write (pred: PredicateItem) =
         this.writes "predicate"
-        this.write x.Name
+        this.write pred.Name
         this.write "("
-        this.write x.Parameters
+        this.write pred.Parameters
         this.write ")"
         this
     
@@ -218,10 +218,25 @@ type MiniZincEncoder() =
     member this.write (x: CallExpr) =
         this.write ""
         
-    member this.write (ConstraintItem.Constraint expr) =
+    member this.write (con: ConstraintItem) =
         this.write "constraint "
-        this.write expr
+        this.write con.Expr
         
     member this.write (x: IncludeItem) =
         this.write "include "
         this.write x.FileName
+        
+    member this.write (x: OutputItem) =
+        this.write "output "
+        this.write x.Expr
+        
+    member this.write (x: SolveMethod) =
+        match x with
+        | Sat _ ->
+            this.write "solve satisfy"
+        | Max (expr, _) ->
+            this.write "solve maximize "
+            this.write expr
+        | Min (expr, _) ->
+            this.write "solve minimize "
+            this.write expr

@@ -238,42 +238,31 @@ and TupleExpr =
 and RecordExpr =
     Map<string, Expr>
     
-and SolveSatisfy =
-    { Annotations : Annotations }
-    
-and SolveOptimise =
-    { Annotations : Annotations
-      Method : SolveType
-      Objective : Expr }
-    
 and SolveMethod =
-    | Sat of SolveSatisfy
-    | Opt of SolveOptimise
+    | Sat of Annotations
+    | Min of Expr * Annotations
+    | Max of Expr * Annotations
     
     member this.SolveType =
         match this with
         | Sat _ -> SolveType.Satisfy
-        | Opt o -> o.Method
+        | Min _ -> SolveType.Minimize
+        | Max _ -> SolveType.Maximize
         
     member this.Annotations =
         match this with
-        | Sat s -> s.Annotations
-        | Opt o -> o.Annotations
+        | Sat anns
+        | Min (_, anns)
+        | Max (_, anns) -> anns
         
     static member Satisfy =
-        Sat {Annotations = [] }
+        Sat []
         
     static member Minimize(expr) =
-        { Annotations = []
-        ; Objective =  expr
-        ; Method=SolveType.Minimize  }
-        |> Opt
+        Min (expr, [])
         
     static member Maximize(expr) =
-        { Annotations = []
-        ; Objective =  expr
-        ; Method=SolveType.Maximize  }
-        |> Opt
+        Max (expr, [])
         
 
 and IfThenElseExpr =
@@ -364,19 +353,27 @@ and AnnotationItem =
     CallExpr
 
 and ConstraintItem =
-    | Constraint of Expr
+    { Expr: Expr }
         
 and PredicateItem =
-    OperationItem
+    { Name: string
+      Parameters : Map<string, TypeInst>
+      Annotations : Annotations
+      Body: Expr option }
 
 and TestItem =
-    OperationItem
+    { Name: string
+      Parameters : Map<string, TypeInst>
+      Annotations : Annotations
+      Body: Expr option }
 
 and SynonymItem =
-    Id * Annotations * TypeInst
+    { Id : string
+    ; Annotations : Annotations
+    ; TypeInst: TypeInst }
 
 and OutputItem =
-    Expr
+    { Expr: Expr }
 
 and OperationItem =
     { Name: string
@@ -394,10 +391,14 @@ and Test =
     unit
 
 and AssignItem =
-    string * Expr
+    { Name: string
+    ; Expr: Expr }
 
 and DeclareItem =
-    Id * TypeInst * Annotations * Expr Option
+    { Name: string
+    ; Type: TypeInst
+    ; Annotations: Annotations
+    ; Body: Expr option }
 
 and LetItem =
     | Decl of DeclareItem
