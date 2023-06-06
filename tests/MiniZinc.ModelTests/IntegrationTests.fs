@@ -10,9 +10,15 @@ module IntegrationTests =
    
     let test (name: string) =
         let suite = TestSuite.load name
-        let model = TestSuite.parseModel suite
-        model.Value.Undeclared.AssertEmpty()
-        model.Value.Conflicts.AssertEmpty()
+        let model =
+            match TestSuite.parseModel suite with
+            | Success model -> model
+            | _ -> failwith "xd"
+        let mzn =
+            Model.encode EncodingOptions.Default model
+            
+        model.Undeclared.AssertEmpty()
+        model.Conflicts.AssertEmpty()
 
 
     [<Fact>]

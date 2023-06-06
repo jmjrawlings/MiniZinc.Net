@@ -19,12 +19,14 @@ open System.IO
 open System.Runtime.InteropServices
 open System.Text
 
-type EncodingOptions = unit
+type EncodingOptions =
+    | EncodingOptions
+    static member Default =
+        EncodingOptions
 
 type Binding =
-    | Undeclared of Expr
-    | Unassigned of TypeInst
-    | Assigned   of TypeInst * Expr
+    | Declare    of DeclareItem
+    | Assign     of Expr
     | Enum       of EnumItem
     | Synonym    of SynonymItem
     | Predicate  of PredicateItem
@@ -46,23 +48,73 @@ module Bindings =
         let binding =            
             match prior, value with
             
-            // Assign an unassigned variable    
-            | Some (Unassigned ti), Undeclared expr ->
-                Binding.Assigned (ti, expr)
-                
-            // Assign an unassigned variable    
-            | Some (Undeclared expr), Unassigned ti ->
-                Binding.Assigned (ti, expr)
-                
-            // Update an existing variable                    
-            | Some (Assigned (ti, v1)), Undeclared v2 when v1=v2 ->
-                Binding.Assigned (ti, v1)
-
-            // Assign an unassigned enum                                    
-            | Some (Enum {Cases=[]}), Enum enum ->
-                Binding.Enum enum
+            // Enum assignment
+            | Some (Enum e), Assign expr 
+            | Some (Assign expr), Enum e ->
+                let cases =
+                    [EnumCase.Expr expr]
+                match e.Cases with
+                // Assign new value
+                | [] ->
+                    Binding.Enum { e with Cases = cases}
+                // Existing value                    
+                | old when old = cases ->
+                    Binding.Enum e
+                // Overwritten value
+                | old ->
+                    Binding.Conflict
+                        [ Assign expr
+                        ; Enum e ]
             
-            // Identical
+            // Variable assignment    
+            | Some (Declare var), Assign expr 
+            | Some (Assign expr), Declare var ->
+                match var.Expr with
+                // Assign new value
+                | None ->
+                    Binding.Declare { var with Expr = Some expr }
+                // Existing value                    
+                | Some old when old = expr ->
+                    Assign expr
+                // Overwritten value
+                | Some other ->
+                    Binding.Conflict
+                        [ Assign expr
+                        ; Declare var ]
+                        
+            // Assign an unassigned function
+            | Some (Function f), Assign expr 
+            | Some (Assign expr), Function f ->
+                match f.Body with
+                // Assign new value
+                | None ->
+                    Binding.Function { f with Body = Some expr }
+                // Existing value                    
+                | Some old when old = expr ->
+                    Function f
+                // Overwritten value
+                | old ->
+                    Binding.Conflict
+                        [ Assign expr
+                        ; Function f ]
+                        
+            // Assign an unassigned function
+            | Some (Predicate pred), Assign expr 
+            | Some (Assign expr), Predicate pred ->
+                match pred.Body with
+                // Assign new value
+                | None ->
+                    Binding.Predicate { pred with Body = Some expr }
+                // Existing value                    
+                | Some old when old = expr ->
+                    Predicate pred
+                // Overwritten value
+                | old ->
+                    Binding.Conflict
+                        [ Assign expr
+                        ; Predicate pred ]
+            
+            // Identical binding
             | Some x, y when x = y ->
                 x
 
@@ -149,10 +201,11 @@ module rec Model =
         ; Synonyms    : Map<string, SynonymItem>
         ; Predicates  : Map<string, PredicateItem>
         ; Functions   : Map<string, FunctionItem>
-        ; Assigned    : Map<string, TypeInst * Expr>
+        ; Declares    : Map<string, DeclareItem>
+        ; Assigned    : Map<string, Expr>
         ; Unassigned  : Map<string, TypeInst>
-        ; Undeclared  : Map<string, Expr> 
-        ; Conflicts   : Map<string, Binding list> 
+        ; Undeclared  : Map<string, Expr>
+        ; Conflicts   : Map<string, Binding list>
         ; Outputs     : OutputItem list
         ; SolveMethod : SolveMethod }
                 
@@ -202,9 +255,10 @@ module rec Model =
             ; SolveMethod = SolveMethod.Satisfy
             ; Bindings = Map.empty
             ; Unassigned = Map.empty
-            ; Assigned = Map.empty
+            ; Declares = Map.empty
+            ; Assigned = Map.empty 
             ; Undeclared = Map.empty
-            ; Conflicts = Map.empty 
+            ; Conflicts = Map.empty
             ; Outputs = [] }
 
         [<AutoOpen>]
@@ -233,11 +287,16 @@ module rec Model =
                 Lens.m
                     (fun m -> m.Predicates)
                     (fun v m -> { m with Predicates =  v })
+            
+            let Declared_ =
+                Lens.m
+                    (fun m -> m.Declares)
+                    (fun v m -> { m with Declares = v })
                 
             let Assigned_ =
                 Lens.m
                     (fun m -> m.Assigned)
-                    (fun v m -> { m with Assigned = v })
+                    (fun v m -> { m with Assigned =  v })
                 
             let Unassigned_ =
                 Lens.m
@@ -318,15 +377,11 @@ module rec Model =
                                         
             let bindings = ResizeArray()
             
-            for asn in ast.Assigns do
-                bindings.Add (asn.Name, Binding.Undeclared asn.Expr)
+            for (id, expr) in ast.Assigns do
+                bindings.Add (id, Binding.Assign expr)
 
-            for decl in ast.Declares do
-                match decl.Body with
-                | Some value ->
-                    bindings.Add(decl.Name, Binding.Assigned (decl.Type, value))
-                | None ->
-                    bindings.Add(decl.Name, Binding.Unassigned decl.Type)
+            for var in ast.Declares do
+                bindings.Add (var.Name, Binding.Declare var)
                     
             for enum in ast.Enums do
                 bindings.Add (enum.Name, Binding.Enum enum)
@@ -408,17 +463,19 @@ module rec Model =
                     model
                 | (id, binding) :: rest ->
                     match binding with
-                    | Undeclared s ->
+                    | Assign s ->
                         model
                         |> Undeclared_.add id s 
                         |> loop rest
-                    | Unassigned s ->
+                    | Declare var when var.Expr.IsSome ->
                         model
-                        |> Unassigned_.add id s
+                        |> Declared_.add id var
+                        |> Assigned_.add id var.Expr.Value
                         |> loop rest
-                    | Assigned (ti,expr) ->
+                    | Declare var ->
                         model
-                        |> Assigned_.add id (ti,expr)
+                        |> Declared_.add id var
+                        |> Unassigned_.add id var.Type
                         |> loop rest
                     | Enum e ->
                         model
@@ -498,11 +555,13 @@ module rec Model =
         for pred in model.Predicates.Values do
             mzn.write pred
             
+        for x in model.Declares.Values do
+            ()
+            
         mzn.write model.SolveMethod
         
         for output in model.Outputs do
             mzn.write output
             
-        mzn.ToString()            
-        
+        mzn.Model
         

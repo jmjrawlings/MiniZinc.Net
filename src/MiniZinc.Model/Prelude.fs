@@ -154,6 +154,36 @@ type ListLens<'t, 'u>(getter: 't -> 'u list, setter: 'u list -> 't -> 't) =
             m2
 
 
+// A lens for list 'u' on model 't'    
+type SetLens<'t, 'u when 'u:comparison>(getter: 't -> Set<'u>, setter: Set<'u> -> 't -> 't) =
+    
+    member this.get =
+        getter
+        
+    member this.set =
+        setter
+        
+    member this.map f (m1: 't) =
+        fun m1 ->
+            let v1 = this.get m1
+            let v2 = f v1
+            let m2 = this.set v2 m1
+            m2
+            
+    member this.add (x: 'u) =
+        fun (m1: 't) ->
+            let v1 = this.get m1
+            let v2 = Set.add x v1 
+            let m2 = this.set v2 m1
+            m2
+            
+    member this.remove (x: 'u) =
+        fun (m1: 't) ->
+            let v1 = this.get m1
+            let v2 = Set.remove x v1
+            let m2 = this.set v2 m1
+            m2
+            
             
 // A lens for a Map<'k,'v> field on model 't'
 type MapLens<'t, 'k, 'v when 'k:comparison>(getter: 't -> Map<'k,'v>, setter: Map<'k,'v> -> 't -> 't) =
@@ -226,6 +256,9 @@ module Lens =
     let l get set =
         ListLens(get, set)
         
+    // Create a lens into a Map<'k,'v> field on 't                        
+    let s get set =
+        SetLens(get, set)        
             
         
 [<Extension>]

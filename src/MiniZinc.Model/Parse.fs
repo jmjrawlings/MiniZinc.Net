@@ -918,7 +918,7 @@ module Parsers =
                 { Name = id
                 ; Type = ti
                 ; Annotations = anns
-                ; Body = expr })
+                ; Expr = expr })
 
     // <constraint-item>
     let constraint_item : P<ConstraintItem> =
@@ -1151,10 +1151,9 @@ module Parsers =
         
     // <assign-item>
     let assign_item : P<AssignItem> =
-        pipe2
+        tuple2
             (attempt (id .>> sps '='))
             expr
-            (fun name expr -> {Name = name; Expr = expr})
         <?!> "assign-item"
         
     // <type-inst-syn-item>

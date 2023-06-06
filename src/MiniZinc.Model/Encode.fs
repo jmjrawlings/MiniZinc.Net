@@ -10,7 +10,10 @@ type MiniZincEncoder() =
     
     let mutable indentLevel = 0
     let contexts = Stack<IDisposable>()
-    let string = StringBuilder()
+    let builder = StringBuilder()
+    
+    member this.Model =
+        builder.ToString()
     
     /// Pop the last context off the stack        
     member private this.pop() =
@@ -34,22 +37,21 @@ type MiniZincEncoder() =
         
     /// Add a context that surrounds with the given strings                
     member this.enclose (prefix: string) (suffix: string) =
-        string.Append prefix
+        builder.Append prefix
         let context =
             { new IDisposable with
                  member IDisposable.Dispose () =
-                     string.Append suffix
+                     builder.Append suffix
                      () }
         this.push context
         context
-
     
     member this.write (s: string) =
-        string.Append s
+        builder.Append s
         this
         
     member this.write (c: char) =
-        string.Append c
+        builder.Append c
         this
         
     member this.writeif (cond: bool) (s: string) =
@@ -59,12 +61,12 @@ type MiniZincEncoder() =
             this
         
     member this.writeln (s: string) =
-        string.AppendLine s
+        builder.AppendLine s
         this
         
     member this.writes (s: string) =
-        string.Append s
-        string.Append " "
+        builder.Append s
+        builder.Append " "
         this
     
     member this.write (x: EnumItem) : MiniZincEncoder =

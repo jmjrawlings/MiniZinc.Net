@@ -11,6 +11,7 @@ Some rules have been simplified for ease of use.
 
 namespace MiniZinc
 
+open System
 open System.Diagnostics
 
 type Id = string
@@ -357,15 +358,15 @@ and ConstraintItem =
         
 and PredicateItem =
     { Name: string
-      Parameters : Map<string, TypeInst>
-      Annotations : Annotations
-      Body: Expr option }
-
+    ; Parameters : Map<string, TypeInst>
+    ; Annotations : Annotations
+    ; Body: Expr option }
+       
 and TestItem =
     { Name: string
-      Parameters : Map<string, TypeInst>
-      Annotations : Annotations
-      Body: Expr option }
+    ; Parameters : Map<string, TypeInst>
+    ; Annotations : Annotations
+    ; Body: Expr option }
 
 and SynonymItem =
     { Id : string
@@ -386,19 +387,18 @@ and FunctionItem =
       Returns : TypeInst
       Parameters : Map<string, TypeInst>
       Body: Expr option }
-
+    
 and Test =
     unit
 
 and AssignItem =
-    { Name: string
-    ; Expr: Expr }
+    string * Expr
 
 and DeclareItem =
     { Name: string
     ; Type: TypeInst
     ; Annotations: Annotations
-    ; Body: Expr option }
+    ; Expr: Expr option }
 
 and LetItem =
     | Decl of DeclareItem
