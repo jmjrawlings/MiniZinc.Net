@@ -715,7 +715,7 @@ module Parsers =
     let include_item : P<IncludeItem> =
         kw1 "include"
         >>. string_literal
-        |>> (fun s -> {FileName = s})
+        |>> IncludeItem.Include
         <?!> "include-item"
     
     // <var-par>

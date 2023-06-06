@@ -286,7 +286,7 @@ and NumericExpr =
     | ArrayAccess of NumericExpr * ArrayAccess list
 
 and IncludeItem =
-    { FileName: string }
+    | Include of string
 
 and EnumItem =
     { Name : Id

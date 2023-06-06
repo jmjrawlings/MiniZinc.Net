@@ -431,7 +431,7 @@ module rec Model =
             // Parse included models in parallel
             let inclusions =
                 ast.Includes
-                |> Seq.map (fun incl -> incl.FileName)
+                |> Seq.map (fun (IncludeItem.Include x) -> x)
                 |> Seq.toArray
                 |> Array.Parallel.map parseIncluded
                 |> Map.ofSeq
@@ -536,9 +536,9 @@ module rec Model =
     let encode (options: EncodingOptions) (model: Model) =
         
         let mzn = MiniZincEncoder()
-                        
+                                
         for incl in model.Includes.Keys do
-            mzn.write incl
+            mzn.write (IncludeItem.Include incl)
 
         for enum in model.Enums.Values do
             mzn.write enum

@@ -26,7 +26,7 @@ type MiniZincEncoder() =
         this
 
     /// Add a context for 1 level of indentation            
-    member this.indent () =
+    member this.indented () =
         indentLevel <- indentLevel + 1
         let context = 
             { new IDisposable with
@@ -34,6 +34,14 @@ type MiniZincEncoder() =
                      indentLevel <- indentLevel - 1
                      () }
         this.push context
+        
+    member this.indent() =
+        indentLevel <- indentLevel + 1
+        this
+        
+    member this.dedent() =
+        indentLevel <- indentLevel - 1
+        this       
         
     /// Add a context that surrounds with the given strings                
     member this.enclose (prefix: string) (suffix: string) =
@@ -45,37 +53,55 @@ type MiniZincEncoder() =
                      () }
         this.push context
         context
-    
+
     member this.write (s: string) =
+        for i in 1 .. indentLevel do
+            builder.Append "\t"
         builder.Append s
         this
         
-    member this.write (c: char) =
-        builder.Append c
+    member this.writen (s: string) =
+        builder.AppendLine s
+        this
+
+    member this.writen () =
+        builder.AppendLine ""
+        this
+            
+    member this.writet () =
+        this.write ";"
+        
+    member this.writet (s: string) =
+        this.write s
+        this.write ";"
+        
+    member this.writetn () =
+        builder.AppendLine ";"
         this
         
+    member this.writetn (s: string) =
+        this.write s
+        builder.AppendLine ";"
+        this
+    
     member this.writeif (cond: bool) (s: string) =
         if cond then
             this.write s
         else                        
             this
-        
-    member this.writeln (s: string) =
-        builder.AppendLine s
-        this
-        
+            
     member this.writes (s: string) =
-        builder.Append s
+        this.write s
         builder.Append " "
         this
-    
+        
     member this.write (x: EnumItem) : MiniZincEncoder =
-        this.write "enum "
+        this.writes "enum"
         this.write x.Name
         
         match x.Cases with
         | [] ->
-            this
+            this.writetn()
         | cases ->
             this.write "{"
             let n = cases.Length - 1
@@ -87,12 +113,14 @@ type MiniZincEncoder() =
                     this.write expr
                 this.writeif (i < n) ", "
             this.write "}"
+            this.writetn()
                 
     member this.write (syn: SynonymItem) =
         this.write "type "
         this.write syn.Id
         this.write " = "
         this.write syn.TypeInst
+        this.writetn()
 
     member this.write (x: Annotations) : MiniZincEncoder =
         this
@@ -168,14 +196,27 @@ type MiniZincEncoder() =
         this.write ""       
         
     member this.write (x: DeclareItem) =
-        this.write ""
-        
-    member this.write (x: SolveType) =
+        this.write x.Type
+        this.write ": "
+        this.write x.Name
+        match x.Expr with
+        | None ->
+            this.writetn()
+        | Some expr ->
+            this.write " = "
+            this.write expr
+            this.writetn()
+            
+    member this.write (x: SolveType) : MiniZincEncoder =
         match x with
-        | SolveType.Satisfy -> "satisfy"
-        | SolveType.Minimize -> "minimize"
-        | SolveType.Maximize -> "maximize"
-        | _ -> ""
+        | SolveType.Satisfy ->
+            this.write "satisfy"
+        | SolveType.Minimize ->
+            this.write "minimize"
+        | SolveType.Maximize ->
+            this.write "maximize"
+        | _ ->
+            this
         
     member this.write (pred: PredicateItem) =
         this.writes "predicate"
@@ -183,7 +224,13 @@ type MiniZincEncoder() =
         this.write "("
         this.write pred.Parameters
         this.write ")"
-        this
+        if pred.Body.IsSome then
+            this.writen " = "
+            this.indented()
+            this.write pred.Body.Value
+            this.writetn()
+        else
+            this.writetn()
     
     member this.write (name: string, ti: TypeInst) =
         this.write name
@@ -210,12 +257,13 @@ type MiniZincEncoder() =
         
         match x.Body with
         | None ->
-            this
+            this.writetn()
         | Some body ->
-            this.writeln " = "
+            this.writen " = "
             this.indent()
             this.write body
-            this.pop()
+            this.dedent()
+            this.writetn()
                 
     member this.write (x: CallExpr) =
         this.write ""
@@ -223,22 +271,27 @@ type MiniZincEncoder() =
     member this.write (con: ConstraintItem) =
         this.write "constraint "
         this.write con.Expr
+        this.writetn()
         
-    member this.write (x: IncludeItem) =
+    member this.write (IncludeItem.Include x) =
         this.write "include "
-        this.write x.FileName
+        this.write x
+        this.writetn()
         
     member this.write (x: OutputItem) =
         this.write "output "
         this.write x.Expr
+        this.writetn()
         
     member this.write (x: SolveMethod) =
         match x with
         | Sat _ ->
-            this.write "solve satisfy"
+            this.writetn "solve satisfy"
         | Max (expr, _) ->
             this.write "solve maximize "
             this.write expr
+            this.writetn()
         | Min (expr, _) ->
             this.write "solve minimize "
             this.write expr
+            this.writetn()            
