@@ -6,7 +6,7 @@ open Xunit
 open System.IO
 open System
 
-module ModelTests =
+module ``Model Tests`` =
     
     [<Fact>]
     let ``test binding conflict`` () =
@@ -77,7 +77,7 @@ module ModelTests =
         let model =
             Model.ParseString arg
             
-        assert model.Value.Unassigned.ContainsKey "x"
+        assert model.Model.Unassigned.ContainsKey "x"
         
     [<Theory>]
     [<InlineData("var int: x;x=100;")>]
@@ -86,5 +86,5 @@ module ModelTests =
         let model =
             Model.ParseString arg
         
-        assert model.Value.Unassigned.IsEmpty
+        assert model.Model.Unassigned.IsEmpty
                                         

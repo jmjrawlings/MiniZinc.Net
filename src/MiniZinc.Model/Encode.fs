@@ -5,6 +5,50 @@ open System.Collections.Generic
 open System.Text
 open MiniZinc
 
+module Encode =
+     
+     let operators : Map<int, string> =
+         [ Op.Add, "+"         
+         ; Op.Subtract, "-"          
+         ; Op.Multiply, "*"         
+         ; Op.Divide, "/"                  
+         ; Op.Exponent, "^"         
+         ; Op.TildeAdd, "~+"        
+         ; Op.TildeSubtract, "~-"        
+         ; Op.TildeMultiply, "~*"        
+         ; Op.TildeDivide, "~/"        
+         ; Op.Div, "div"       
+         ; Op.Mod, "mod"       
+         ; Op.TildeDiv, "~div"       
+         ; Op.Equivalent, "<->"       
+         ; Op.Implies, "->"        
+         ; Op.ImpliedBy, "<-"        
+         ; Op.Or, "\/"        
+         ; Op.And, "/\\"       
+         ; Op.LessThanEqual, "<="        
+         ; Op.GreaterThanEqual, ">="        
+         ; Op.EqualEqual, "=="        
+         ; Op.LessThan, "<"         
+         ; Op.GreaterThan, ">"         
+         ; Op.Equal, "="         
+         ; Op.NotEqual, "!="        
+         ; Op.TildeEqual, "~="        
+         ; Op.TildeNotEqual, "~!="       
+         ; Op.DotDot, ".."        
+         ; Op.PlusPlus, "++"        
+         ; Op.Xor, "xor"       
+         ; Op.In, "in"        
+         ; Op.Subset, "subset"    
+         ; Op.Superset, "superset"  
+         ; Op.Union, "union"     
+         ; Op.Diff, "diff"      
+         ; Op.SymDiff, "symdiff"   
+         ; Op.Intersect, "intersect" 
+         ; Op.Default, "default" ]
+         |> List.map (fun (op, s) -> (int op, s))
+         |> Map.ofList
+        
+
 /// Encode MiniZinc to String
 type MiniZincEncoder() =
     
@@ -191,9 +235,172 @@ type MiniZincEncoder() =
                     
     member this.write (x: NumericExpr) : MiniZincEncoder =
         this.write ""
+    
+    member this.write (x: float) =
+        this.write (string x)
+    
+    member this.write (x: bool) =
+        this.write (if x then "true" else "false")
+        
+    member this.write (x: Op) =
+        let s = Encode.operators[int x]
+        this.write s
+
+    member this.write (x: BinaryOp) =
+        let s = Encode.operators[int x]
+        this.write s
+        
+    member this.write (x: UnaryOp) =
+        let s = Encode.operators[int x]
+        this.write s        
+                
+    member this.write (x: SetCompExpr) =
+        this
+        
+    member this.write (SetExpr.Set exprs) =
+        this.write "{"
+        for expr in exprs do
+            this.write expr
+        this.write "}"
+        
+    member this.write (Array1dExpr.Array1d x) =
+        this
+        
+    member this.write (Array2dExpr.Array2d x) =
+        this
+        
+    member this.write (x: ArrayCompExpr) =
+        this
+        
+    member this.write (TupleExpr.Tuple items) =
+        this.write "("
+        for item in items do
+            this.write item
+        this.write ")"
+
+    member this.writeSep (xs: 't list) (write: 't -> MiniZincEncoder) sep =
+        let n = xs.Length
+        let mutable i = 0
+        for x in xs do
+            i <- i + 1
+            write(x)
+            this.writeif (i < n) sep
+        this
+    
+    member this.write (expr: Expr, name: string) =
+        this.write name
+        this.write ": "
+        this.write expr
+        
+    member this.write (RecordExpr.Record fields) =
+        this.write "("
+        this.writeSep fields this.write ", "
+        this.write ")"
+        
+    member this.write ((id, expr): UnaryOpExpr) =
+        match id with
+        | Id_ x -> this.write x
+        | Value_ x -> this.write (int x)
+        this.write " "
+        this.write expr
+    
+        
+        
+    member this.write ((left, op, right): BinaryOpExpr) =
+        this.write left
+        this.write " "
+        op.fold this.write this.write
+        this.write " "
+        this.write right
+        
+    member this.write (x: IfThenElseExpr) =
+        this.write "if "
+        this.write x.If
+        this.write " then "
+        this.write x.Then
+        
+        for ifCase, thenCase in x.ElseIf do
+            this.write "elseif "
+            this.write ifCase
+            this.write " then "
+            this.write thenCase
             
-    member this.write (x: Expr) =
-        this.write ""       
+        this.write " "
+        this.write x.Else
+        this.write " endif"
+        
+    member this.write (x: LetExpr) =
+        this.writen "let {"
+        this.indent()
+        for local in x.Locals do
+            match local with
+            | Decl decl -> this.write decl
+            | Cons cons -> this.write cons
+        this.dedent()
+        this.writetn "} in "
+        this.write x.In
+
+    member this.writesep (sep: string) (xs: 't list) (write: 't -> MiniZincEncoder) : MiniZincEncoder=
+        let n = xs.Length
+        let mutable i = 0
+        for x in xs do
+            i <- i + 1
+            write x
+            this.writeif (i < n) sep
+        this
+        
+    member this.commasep xs write =
+        this.writesep ", " xs write
+            
+    member this.write (x: GenCallExpr) =
+        match x.Name with
+        | Id_ id -> this.write id
+        | Value_ op -> this.write op
+        this.write "("
+        this.commasep x.Generators this.write
+        this.write ")"
+        
+    member this.write (x: Generator) =
+        this
+        //
+        // { Yield : IdOr<WildCard> list
+        // ; From  : Expr
+        // ; Where : Expr option }
+
+    member this.write (IndexExpr.Index (expr, access)) =
+        this.write expr
+        this.write "["
+        this.commasep access this.write
+        this.write "]"
+                        
+    member this.write (x: Expr) : MiniZincEncoder =
+        match x with
+        | Expr.WildCard      x -> this.write "_"  
+        | Expr.Int           x -> this.write (string x)
+        | Expr.Float         x -> this.write x
+        | Expr.Bool          x -> this.write x
+        | Expr.String        x -> this.write x
+        | Expr.Id            x -> this.write x
+        | Expr.Op            x -> this.write x
+        | Expr.Bracketed     x -> this.write x
+        | Expr.Set           x -> this.write x
+        | Expr.SetComp       x -> this.write x
+        | Expr.Array1d       x -> this.write x
+        | Expr.Array1dIndex    -> this
+        | Expr.Array2d       x -> this.write x
+        | Expr.Array2dIndex    -> this
+        | Expr.ArrayComp     x -> this.write x
+        | Expr.ArrayCompIndex  -> this
+        | Expr.Tuple         x -> this.write x
+        | Expr.Record        x -> this.write x
+        | Expr.UnaryOp       x -> this.write x
+        | Expr.BinaryOp      x -> this.write x
+        | Expr.Annotation      -> this
+        | Expr.IfThenElse    x -> this.write x
+        | Expr.Let           x -> this.write x
+        | Expr.Call          x -> this.write x
+        | Expr.GenCall       x -> this.write x 
+        | Expr.Indexed       x -> this.write x
         
     member this.write (x: DeclareItem) =
         this.write x.Type
@@ -226,8 +433,9 @@ type MiniZincEncoder() =
         this.write ")"
         if pred.Body.IsSome then
             this.writen " = "
-            this.indented()
+            this.indent()
             this.write pred.Body.Value
+            this.dedent()
             this.writetn()
         else
             this.writetn()
@@ -240,9 +448,9 @@ type MiniZincEncoder() =
     member this.write (x: Map<string, TypeInst>) : MiniZincEncoder =
         let n = x.Count - 1
         for i, kv in Seq.indexed x do
-            this.write kv.Key
-            this.write ": "
             this.write kv.Value
+            this.write ": "
+            this.write kv.Key
             this.writeif (i < n) ", "
         this
     
@@ -268,12 +476,12 @@ type MiniZincEncoder() =
     member this.write (x: CallExpr) =
         this.write ""
         
-    member this.write (con: ConstraintItem) =
+    member this.write (con: ConstraintItem) : MiniZincEncoder =
         this.write "constraint "
         this.write con.Expr
-        this.writetn()
+        this.writetn ()
         
-    member this.write (IncludeItem.Include x) =
+    member this.write (IncludeItem.Include x) : MiniZincEncoder =
         this.write "include "
         this.write x
         this.writetn()

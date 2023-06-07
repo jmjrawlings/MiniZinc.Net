@@ -4,12 +4,12 @@ open MiniZinc
 open Xunit
 open System.IO
 
-module IntegrationTests =
+module ``Integration Tests`` =
    
     let test (name: string) =
         let suite = TestSuite.load name
         let loaded = TestSuite.parseModel suite
-        let model = loaded.Value
+        let model = loaded.Model
         ()
 
 

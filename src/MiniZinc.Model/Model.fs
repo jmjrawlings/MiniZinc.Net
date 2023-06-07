@@ -23,7 +23,7 @@ type EncodingOptions =
     | EncodingOptions
     static member Default =
         EncodingOptions
-
+ 
 type Binding =
     | Declare    of DeclareItem
     | Assign     of Expr
@@ -176,19 +176,27 @@ module rec Model =
         // Reference only - load has not been attempted
         | Reference
         
-        member this.Value =
-            LoadResult.success this
+        member this.Model =
+            LoadResult.model this
                     
     module LoadResult =
+        
+        /// Map the given function over the result        
         let map f result =
             match result with
             | Success model -> Success (f model)
             | other -> other
             
-        let success result =
+        /// Return the successful model or fail            
+        let model result =
             match result with
             | Success x -> x
             | _ -> failwithf $"Result was not a success"
+            
+        let toOption result =
+            match result with
+            | Success x -> Some x
+            | _ -> None
                     
     /// A MiniZinc model
     type Model = 
@@ -538,7 +546,8 @@ module rec Model =
         let mzn = MiniZincEncoder()
                                 
         for incl in model.Includes.Keys do
-            mzn.write (IncludeItem.Include incl)
+            let item = IncludeItem.Include incl
+            mzn.write item
 
         for enum in model.Enums.Values do
             mzn.write enum

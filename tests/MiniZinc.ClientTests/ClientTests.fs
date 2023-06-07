@@ -4,7 +4,7 @@ open MiniZinc
 open MiniZinc.Tests
 open Xunit
 
-module ClientTests =
+module ``Client Tests`` =
         
     let client = MiniZincClient.Create(logger)
         

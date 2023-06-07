@@ -604,7 +604,8 @@ module Parsers =
     // <array1d-literal>
     let array1d_literal =
         expr
-        |> between(p '[', p ']', p ',', allowTrailing=true) 
+        |> between(p '[', p ']', p ',', allowTrailing=true)
+        |>> Array1dExpr.Array1d
         <?!> "array1d-literal"
             
     // <set-literal>
@@ -613,12 +614,18 @@ module Parsers =
         |> attempt
         <?!> "set-literal"
         
+    // <set-expr>
+    let set_expr : P<SetExpr>=
+        set_literal
+        |>> SetExpr.Set
+        
     // <array2d-literal>
     let array2d_literal =
         
         let row =
             expr
             |> sepBy1(p ',', allowTrailing=true)
+            |>> Array1dExpr.Array1d
             
         let rows =
             let sep =
@@ -630,7 +637,8 @@ module Parsers =
             rows
             |> between(p "[|", p "|]")
                 
-        array        
+        array
+        |>> Array2dExpr.Array2d
         <?!> "array2d-literal"
    
     // <ti-expr-and-id>
@@ -812,7 +820,7 @@ module Parsers =
         ; record_ti   |>> BaseType.Record
         ; tuple_ti    |>> BaseType.Tuple
         ; range_expr  |>> BaseType.Range 
-        ; id       |>> BaseType.Id
+        ; id          |>> BaseType.Id
         ; set_literal |>> BaseType.Literal ]
         |> choice
         <?!> "base-ti-tail"
@@ -967,7 +975,7 @@ module Parsers =
             kw1 "elseif"
             >>. (ps expr)
             .>> (kw1 "then")
-            >>. (ps expr)
+            .>>. (ps expr)
             <?!> "elseif-case"
             
         let else_case =
@@ -1074,7 +1082,7 @@ module Parsers =
           set_comp        |>> Expr.SetComp
           array2d_literal |>> Expr.Array2d
           array1d_literal |>> Expr.Array1d
-          set_literal     |>> Expr.Set
+          set_expr        |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           quoted_op       |>> Expr.Op
           id              |>> Expr.Id
@@ -1090,7 +1098,9 @@ module Parsers =
                 | [] ->
                     head
                 | access ->
-                    Expr.Indexed (head, access)
+                    (head, access)
+                    |> IndexExpr.Index 
+                    |> Expr.Indexed
             )
     
     // <annotation>

@@ -1,24 +1,24 @@
 
-namespace MiniZinc.Model.Tests
+namespace MiniZinc.Tests
 
 open MiniZinc
 open MiniZinc.Tests
 open Xunit
-open System.IO
 
-module IntegrationTests =
+module ``Integration Tests`` =
    
     let test (name: string) =
         let suite = TestSuite.load name
         let model =
-            match TestSuite.parseModel suite with
-            | Success model -> model
-            | _ -> failwith "xd"
+            suite
+            |> TestSuite.parseModel
+            |> LoadResult.model
         let mzn =
             Model.encode EncodingOptions.Default model
             
         model.Undeclared.AssertEmpty()
         model.Conflicts.AssertEmpty()
+        
 
 
     [<Fact>]

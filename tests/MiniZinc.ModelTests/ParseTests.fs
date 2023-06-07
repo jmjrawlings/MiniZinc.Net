@@ -4,7 +4,7 @@ open MiniZinc
 open MiniZinc.Tests
 open Xunit
 
-module ParseTests =
+module ``Parser Tests`` =
             
     // Test parsing the string, it is sanitized first
     let test parser input =

@@ -30,6 +30,11 @@ type IdOr<'T> =
     | Id_ of id:string
     | Value_ of value:'T
 
+    member this.fold fId fValue =
+        match this with
+        | Id_ id -> fId id
+        | Value_ v -> fValue v
+    
     member this.Value =
         match this with
         | Value_ v -> v
@@ -184,15 +189,24 @@ type Expr =
     | ArrayCompIndex
     | Tuple         of TupleExpr
     | Record        of RecordExpr
-    | UnaryOp       of IdOr<UnaryOp> * Expr
-    | BinaryOp      of Expr * IdOr<BinaryOp> * Expr
+    | UnaryOp       of UnaryOpExpr
+    | BinaryOp      of BinaryOpExpr
     | Annotation
     | IfThenElse    of IfThenElseExpr
     | Let           of LetExpr
     | Call          of CallExpr
     | GenCall       of GenCallExpr 
-    | Indexed       of expr:Expr * index: ArrayAccess list
+    | Indexed       of IndexExpr 
 
+and UnaryOpExpr =
+    IdOr<UnaryOp> * Expr
+    
+and BinaryOpExpr =
+    Expr * IdOr<BinaryOp> * Expr
+
+and IndexExpr =
+    | Index of Expr * ArrayAccess list
+    
 and ArrayAccess =
     Expr list
 
@@ -225,19 +239,19 @@ and CallExpr =
     ; Args: Expr list }
 
 and SetExpr =
-    Expr list
+    | Set of Expr list
 
 and Array1dExpr =
-    Expr list
+    | Array1d of Expr list
 
 and Array2dExpr =
-    Array1dExpr list
+    | Array2d of Array1dExpr list
 
 and TupleExpr =
-    Expr list
-
+    | Tuple of Expr list
+    
 and RecordExpr =
-    Map<string, Expr>
+    | Record of (Expr * string) list
     
 and SolveMethod =
     | Sat of Annotations
@@ -269,7 +283,7 @@ and SolveMethod =
 and IfThenElseExpr =
     { If     : Expr
     ; Then   : Expr
-    ; ElseIf : Expr list
+    ; ElseIf : (Expr * Expr) list
     ; Else   : Expr}
 
 and NumericExpr =
