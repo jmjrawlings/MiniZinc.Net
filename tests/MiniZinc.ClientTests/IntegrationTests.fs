@@ -8,8 +8,7 @@ module ``Integration Tests`` =
    
     let test (name: string) =
         let suite = TestSuite.load name
-        let loaded = TestSuite.parseModel suite
-        let model = loaded.Model
+        let model = TestSuite.parseModel suite
         ()
 
 

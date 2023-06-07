@@ -238,6 +238,9 @@ type MiniZincEncoder() =
     
     member this.write (x: float) =
         this.write (string x)
+        
+    member this.write (x: WildCard) =
+        this.write "_"
     
     member this.write (x: bool) =
         this.write (if x then "true" else "false")
@@ -299,12 +302,10 @@ type MiniZincEncoder() =
         
     member this.write ((id, expr): UnaryOpExpr) =
         match id with
-        | Id_ x -> this.write x
-        | Value_ x -> this.write (int x)
+        | IdOr.Id x -> this.write x
+        | IdOr.Val x -> this.write (int x)
         this.write " "
         this.write expr
-    
-        
         
     member this.write ((left, op, right): BinaryOpExpr) =
         this.write left
@@ -349,29 +350,56 @@ type MiniZincEncoder() =
             this.writeif (i < n) sep
         this
         
-    member this.commasep xs write =
-        this.writesep ", " xs write
+    member this.write (x: Generator list) =
+        this.writesep ", " x this.write
             
     member this.write (x: GenCallExpr) =
-        match x.Name with
-        | Id_ id -> this.write id
-        | Value_ op -> this.write op
+        this.write x.Operation
         this.write "("
-        this.commasep x.Generators this.write
+        this.write x.From
+        this.write ")"
+        this.write "("
+        this.write x.Yields
         this.write ")"
         
-    member this.write (x: Generator) =
-        this
-        //
-        // { Yield : IdOr<WildCard> list
-        // ; From  : Expr
-        // ; Where : Expr option }
+    member this.write (x: IdOr<Op>) : MiniZincEncoder =
+        match x with
+        | IdOr.Id x -> this.write x
+        | IdOr.Val x -> this.write x
+        
+    member this.write (x: IdOr<BinaryOp>) =
+        match x with
+        | IdOr.Id x -> this.write x
+        | IdOr.Val x -> this.write x
 
-    member this.write (IndexExpr.Index (expr, access)) =
-        this.write expr
-        this.write "["
-        this.commasep access this.write
-        this.write "]"
+    member this.write (x: IdOr<WildCard>) =
+        match x with
+        | IdOr.Id x -> this.write x
+        | IdOr.Val x -> this.write x        
+        
+    member this.write (x: Generator) =
+        this.writesep ", " x.Yields this.write
+        this.write " | "
+        this.write x.From
+        match x.Where with
+        | Some cond ->
+            this.write " where "
+            this.write cond
+         | None ->
+             this
+    
+    member this.write (x: ArrayAccess) =
+        match x with
+        | ArrayAccess.Access exprs ->
+            this.writesep ", " exprs this.write
+        
+    member this.write (x: IndexExpr) =
+        match x with
+        | IndexExpr.Index (expr, access) ->
+            this.write expr
+            this.write "["
+            this.writesep ", " access this.write
+            this.write "]"
                         
     member this.write (x: Expr) : MiniZincEncoder =
         match x with
@@ -474,17 +502,20 @@ type MiniZincEncoder() =
             this.writetn()
                 
     member this.write (x: CallExpr) =
-        this.write ""
+        this.write x.Function
+        this.write "("
+        this.writesep ", " x.Args this.write
+        this.write ")"
         
-    member this.write (con: ConstraintItem) : MiniZincEncoder =
+    member this.write (x: ConstraintItem) : MiniZincEncoder =
         this.write "constraint "
-        this.write con.Expr
+        this.write x.Expr
         this.writetn ()
         
-    member this.write (IncludeItem.Include x) : MiniZincEncoder =
-        this.write "include "
-        this.write x
-        this.writetn()
+    member this.write (x: IncludeItem) : MiniZincEncoder =
+        match x with
+        | IncludeItem.Include s ->
+            this.writetn $"include \"{s}\""
         
     member this.write (x: OutputItem) =
         this.write "output "

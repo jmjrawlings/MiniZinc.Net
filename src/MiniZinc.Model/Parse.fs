@@ -422,13 +422,13 @@ module Parsers =
     let value_or_quoted_name (p: P<'T>) : P<IdOr<'T>> =
         
         let value =
-            p |>> IdOr.Value_
+            p |>> IdOr.Val
         
         let name =
             simple_id
             |> between('`', '`')
             |> attempt
-            |>> IdOr.Id_
+            |>> IdOr.Id
             
         name <|> value
     
@@ -436,13 +436,13 @@ module Parsers =
     let name_or_quoted_value (p: P<'T>) : P<IdOr<'T>> =
         
         let name =
-            id |>> IdOr.Id_
+            id |>> IdOr.Id
         
         let value =
             p
             |> between(''', ''')
             |> attempt
-            |>> IdOr.Value_
+            |>> IdOr.Val
         
         value <|> name
         
@@ -842,7 +842,7 @@ module Parsers =
             operation
             args
             (fun name args ->
-                { Name=name; Args=args })
+                { Function=name; Args=args })
         |> attempt
         <?!> "call-expr"
         
@@ -855,9 +855,9 @@ module Parsers =
     // <comp-tail>
     let comp_tail : P<Generator list> =
         let var =
-            (wildcard |>> IdOr.Value_)
+            (wildcard |>> IdOr.Val)
             <|>
-            (id |>> IdOr.Id_)
+            (id |>> IdOr.Id)
             <?!> "gen-var"
         let vars =
             var
@@ -872,7 +872,7 @@ module Parsers =
                 (ps expr)
                 (opt where)
                 (fun idents source filter ->
-                    { Yield = idents
+                    { Yields = idents
                     ; From = source
                     ; Where = filter })
             <?!> "generator"
@@ -889,9 +889,9 @@ module Parsers =
             (ps (between('(', ')') comp_tail))
             (between('(', ')') expr)
             (fun name gens expr ->
-                { Name = name
-                ; Generators = gens
-                ; Expr = expr })
+                { Operation = name
+                ; From = gens
+                ; Yields = expr })
         |> attempt
         <?!> "gen-call"
     
@@ -901,7 +901,7 @@ module Parsers =
         |> between('[', ']')
         |> attempt
         |>> (fun (expr, gens) -> 
-             { Yield=expr
+             { Yields=expr
              ; From = gens })
         <?!> "array-comp"
 
@@ -911,7 +911,7 @@ module Parsers =
         |> between('{', '}')
         |> attempt
         |>> (fun (expr, gens) -> 
-             { Yield=expr
+             { Yields=expr
              ; From = gens })
         <?!> "set-comp"
             
@@ -1010,6 +1010,7 @@ module Parsers =
     let array_access : P<ArrayAccess> =
         expr
         |> between(p '[', p ']', p ',', many=true)
+        |>> ArrayAccess.Access
         <?!> "array-access"
         
     // <expr-atom-tail>        
@@ -1026,7 +1027,7 @@ module Parsers =
           call_expr          |>> NumericExpr.Call
           num_un_op          |>> NumericExpr.UnaryOp
           quoted_op          |>> NumericExpr.Op 
-          id              |>> NumericExpr.Id
+          id                 |>> NumericExpr.Id
           ]
         |> choice
         <?!> "num-expr-atom-head"

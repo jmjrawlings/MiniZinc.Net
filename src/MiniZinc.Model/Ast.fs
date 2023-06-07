@@ -25,33 +25,16 @@ type Comment =
     string
 
 [<Struct>]
-// A value of 'T' or an identifier
+// An identifier or a value of 'T
 type IdOr<'T> =
-    | Id_ of id:string
-    | Value_ of value:'T
-
+    | Id of id:string
+    | Val of value:'T
+    
     member this.fold fId fValue =
         match this with
-        | Id_ id -> fId id
-        | Value_ v -> fValue v
+        | Id id -> fId id
+        | Val v -> fValue v
     
-    member this.Value =
-        match this with
-        | Value_ v -> v
-        | _ -> Unchecked.defaultof<'T>
-        
-    member this.Id =
-        match this with
-        | Id_ id -> id
-        | _ -> ""
-        
-    member this.IsId =
-        match this with
-        | Id_ _ -> true | _ -> false
-
-    member this.IsValue =
-        match this with
-        | Value_ _ -> true | _ -> false
               
 type Inst =
     | Var = 0
@@ -208,7 +191,7 @@ and IndexExpr =
     | Index of Expr * ArrayAccess list
     
 and ArrayAccess =
-    Expr list
+    | Access of Expr list
 
 and Annotation =
     Expr
@@ -217,25 +200,25 @@ and Annotations =
     Annotation list
 
 and GenCallExpr =
-    { Name: IdOr<Op>
-    ; Expr : Expr 
-    ; Generators : Generator list }
+    { Operation: IdOr<Op>
+    ; From : Generator list 
+    ; Yields : Expr }
     
 and ArrayCompExpr =
-    { Yield : Expr         
+    { Yields : Expr         
     ; From : Generator list }
 
 and SetCompExpr =
-    { Yield : Expr         
+    { Yields : Expr         
     ; From : Generator list }
 
 and Generator =
-    { Yield : IdOr<WildCard> list
-    ; From  : Expr
+    { Yields : IdOr<WildCard> list
+    ; From  : Expr  
     ; Where : Expr option }
 
 and CallExpr =
-    { Name: IdOr<Op>
+    { Function: IdOr<Op>
     ; Args: Expr list }
 
 and SetExpr =

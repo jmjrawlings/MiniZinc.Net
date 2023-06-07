@@ -134,7 +134,7 @@ module TestSuite =
          ; Variables =  variables }
         
     /// Parse the model for the given TestSuite
-    let parseModel (suite: TestSuite) : LoadResult =
+    let parseModel (suite: TestSuite) : Model =
                 
         let includeOpts =
             IncludeOptions.ParseFile [examples_dir.FullName]
@@ -143,10 +143,11 @@ module TestSuite =
             { ParseOptions.Default with 
                 IncludeOptions =  includeOpts }
     
-        let model =
-            Model.parseString parseOpts suite.Mzn
-
-        model
+        match Model.parseString parseOpts suite.Mzn with
+        | Success model ->
+            model
+        | other ->
+            failwith $"Could not parse model {suite.Name}"
         
     /// Load the TestSuite for the given filename
     let load (filename: string) =

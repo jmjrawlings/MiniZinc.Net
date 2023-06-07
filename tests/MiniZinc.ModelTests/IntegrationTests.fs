@@ -9,17 +9,17 @@ module ``Integration Tests`` =
    
     let test (name: string) =
         let suite = TestSuite.load name
-        let model =
-            suite
-            |> TestSuite.parseModel
-            |> LoadResult.model
-        let mzn =
-            Model.encode EncodingOptions.Default model
-            
-        model.Undeclared.AssertEmpty()
-        model.Conflicts.AssertEmpty()
+        let model = TestSuite.parseModel suite
+        let mzn = Model.encode EncodingOptions.Default model
         
-
+        let roundtrip =
+            match Model.parseString (ParseOptions.Default) mzn with
+            | LoadResult.Success model -> model
+            | other -> failwith (string other)
+            
+        let a = 1
+        ()
+        
 
     [<Fact>]
     let ``test 2DPacking`` () =
