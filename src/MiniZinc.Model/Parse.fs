@@ -799,7 +799,7 @@ module Parsers =
         <?!> "ti-expr"
 
     // <tuple-ti-expr-tail>
-    let tuple_ti =
+    let tuple_ti : P<TypeInst list> =
         kw "tuple"
         >>. between1(p '(', p ')', p ',') ti_expr
         <?!> "tuple-ti"

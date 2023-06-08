@@ -572,5 +572,5 @@ module rec Model =
         for output in model.Outputs do
             mzn.write output
             
-        mzn.Model
+        mzn.String
         

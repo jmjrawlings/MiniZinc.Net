@@ -53,10 +53,12 @@ module Encode =
 type MiniZincEncoder() =
     
     let mutable indentLevel = 0
+
     let contexts = Stack<IDisposable>()
+
     let builder = StringBuilder()
     
-    member this.Model =
+    member this.String =
         builder.ToString()
     
     /// Pop the last context off the stack        
@@ -379,7 +381,7 @@ type MiniZincEncoder() =
         
     member this.write (x: Generator) =
         this.writesep ", " x.Yields this.write
-        this.write " | "
+        this.write " in "
         this.write x.From
         match x.Where with
         | Some cond ->
@@ -533,4 +535,4 @@ type MiniZincEncoder() =
         | Min (expr, _) ->
             this.write "solve minimize "
             this.write expr
-            this.writetn()            
+            this.writetn()
