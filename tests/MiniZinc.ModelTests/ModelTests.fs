@@ -49,7 +49,8 @@ module ``Model Tests`` =
             { Type = BaseType.Int
             ; Inst = Inst.Var
             ; IsSet = false
-            ; IsOpt = false }
+            ; IsArray = false 
+            ; IsOptional = false }
             
         let expr =
             Expr.Int 100

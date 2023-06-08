@@ -547,19 +547,19 @@ module rec Model =
                                 
         for incl in model.Includes.Keys do
             let item = IncludeItem.Include incl
-            mzn.write item
+            mzn.writeIncludeItem item
 
         for enum in model.Enums.Values do
-            mzn.write enum
+            mzn.writeEnum enum
             
         for syn in model.Synonyms.Values do
-            mzn.write syn
+            mzn.writeSynonym syn
                 
         for cons in model.Constraints do
-            mzn.write cons
+            mzn.writeConstraintItem cons
 
         for func in model.Functions.Values do
-            mzn.write func
+            mzn.writeFunction func
             
         for pred in model.Predicates.Values do
             mzn.write pred
@@ -567,10 +567,10 @@ module rec Model =
         for x in model.Declares.Values do
             ()
             
-        mzn.write model.SolveMethod
+        mzn.writeSolve model.SolveMethod
         
         for output in model.Outputs do
-            mzn.write output
+            mzn.writeOutput output
             
         mzn.String
         

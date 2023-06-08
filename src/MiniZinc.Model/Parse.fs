@@ -318,18 +318,18 @@ module Parsers =
             
         static member ResolveInst (ty: BaseType) =
             match ty with
-            | Int 
-            | Bool 
-            | String 
-            | Float 
-            | Id _ 
-            | Literal _ 
-            | Range _
-            | Variable _ ->
+            | BaseType.Int 
+            | BaseType.Bool 
+            | BaseType.String 
+            | BaseType.Float 
+            | BaseType.Id _ 
+            | BaseType.Literal _ 
+            | BaseType.Range _
+            | BaseType.Variable _ ->
                 ty, Inst.Par
             
             // Any var item means a var tuple
-            | Tuple items ->
+            | BaseType.Tuple (TupleType.TupleType items) ->
                 let mutable inst = Inst.Par
                                 
                 let resolved =
@@ -342,35 +342,34 @@ module Parsers =
                         | ty, _ -> ty
                         )
                     
-                (BaseType.Tuple resolved), inst
+                (BaseType.Tuple (TupleType.TupleType resolved)), inst
                     
-            // Any var field means a var record                            
-            | Record fields ->
+            // Any var field means a var record
+            | BaseType.Record (RecordType.RecordType fields) ->
                 let mutable inst = Inst.Par
                                 
                 let resolved =
                     fields
-                    |> Map.map (fun name field ->
+                    |> List.map (fun (name, field) ->
                         match P.ResolveInst field with
                         | ty, Inst.Var ->
                             inst <- Inst.Var
-                            ty
-                        | ty, _ -> ty
+                            name, ty
+                        | ty, _ ->
+                            name, ty
                         )
                     
-                (BaseType.Record resolved), inst
+                (BaseType.Record (RecordType.RecordType resolved)), inst
                 
             // A var item means a var tuple
-            | List itemType ->
+            | BaseType.List (ListType.ListType itemType) ->
                 let ty, inst = P.ResolveInst itemType
-                (BaseType.List ty), inst
+                (BaseType.List (ListType.ListType itemType)), inst
                 
             // A var item means a var array
-            | Array (dims, itemType) ->
+            | BaseType.Array (ArrayType.ArrayType (dims, itemType)) ->
                 let ty, inst = P.ResolveInst itemType
-                (BaseType.Array (dims, ty)), inst
-                
-                
+                (BaseType.Array (ArrayType.ArrayType (dims, ty))), inst
 
     open type P
        
@@ -612,12 +611,12 @@ module Parsers =
     let set_literal : P<SetLiteral>=
         between(p '{', p '}', p ',') expr
         |> attempt
+        |>> SetLiteral.SetLiteral
         <?!> "set-literal"
         
     // <set-expr>
-    let set_expr : P<SetExpr>=
+    let set_expr : P<SetLiteral>=
         set_literal
-        |>> SetExpr.Set
         
     // <array2d-literal>
     let array2d_literal =
@@ -649,10 +648,9 @@ module Parsers =
         |>> (fun (expr, name) -> (name, expr))
         <?> "ti-expr-and-id"    
     
-    let parameters =
+    let parameters : P<Parameters> =
         ti_expr_and_id
         |> between(p '(', p ')', p ',')
-        |>> Map.ofList
     
     // <operation-item-tail>
     // eg: even(var int: x) = x mod 2 = 0;
@@ -759,8 +757,9 @@ module Parsers =
             base_ti_expr_tail
             (fun inst set opt typ ->
                 { Type = typ
-                ; IsOpt = opt
+                ; IsOptional = opt
                 ; IsSet = set
+                ; IsArray = false 
                 ; Inst = inst }
             )
         <?!> "base-ti"
@@ -782,13 +781,15 @@ module Parsers =
             
             let ty, inst =
                 (dims, ty)
+                |> ArrayType.ArrayType
                 |> BaseType.Array
                 |> P.ResolveInst
                 
             { Type = ty
             ; Inst = inst
             ; IsSet = false
-            ; IsOpt = false })
+            ; IsArray = true 
+            ; IsOptional = false })
         <?!> "array-ti-expr"
     
     // <ti-expr>        
@@ -799,16 +800,17 @@ module Parsers =
         <?!> "ti-expr"
 
     // <tuple-ti-expr-tail>
-    let tuple_ti : P<TypeInst list> =
+    let tuple_ti : P<TupleType> =
         kw "tuple"
         >>. between1(p '(', p ')', p ',') ti_expr
+        |>> TupleType.TupleType
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
     let record_ti =
         kw "record"
         >>. between1(p '(', p ')', p ',') ti_expr_and_id
-        |>> Map.ofList
+        |>> RecordType.RecordType
         <?!> "record-ti"
             
     // <base-ti-expr-tail>

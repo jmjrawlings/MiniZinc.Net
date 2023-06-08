@@ -64,18 +64,6 @@ module Map =
             |> Seq.append (Map.toSeq b)
             |> Map.ofSeq
         merged
-        
-
-module Seq =
-    let notLast (xs: 't list) =
-        let n = xs.Length
-        let mutable i = 0
-        seq {
-            for x in xs do
-                i <- i + 1
-                yield (i < n), x
-        }
-        
 
 module Result =
     

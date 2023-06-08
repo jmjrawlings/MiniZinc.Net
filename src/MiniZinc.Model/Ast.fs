@@ -153,7 +153,7 @@ type Op =
     | PlusPlus = 36
     | Default =  37
 
-type Expr =
+type [<RequireQualifiedAccess>] Expr =
     | WildCard      of WildCard  
     | Int           of int
     | Float         of float
@@ -162,7 +162,7 @@ type Expr =
     | Id            of string
     | Op            of Op
     | Bracketed     of Expr
-    | Set           of SetExpr
+    | Set           of SetLiteral
     | SetComp       of SetCompExpr
     | Array1d       of Array1dExpr
     | Array1dIndex
@@ -219,10 +219,7 @@ and Generator =
 
 and CallExpr =
     { Function: IdOr<Op>
-    ; Args: Expr list }
-
-and SetExpr =
-    | Set of Expr list
+    ; Args: Arguments }
 
 and Array1dExpr =
     | Array1d of Expr list
@@ -231,10 +228,10 @@ and Array2dExpr =
     | Array2d of Array1dExpr list
 
 and TupleExpr =
-    | Tuple of Expr list
+    | TupleExpr of Expr list
     
 and RecordExpr =
-    | Record of (Expr * string) list
+    | RecordExpr of (Id * Expr) list
     
 and SolveMethod =
     | Sat of Annotations
@@ -298,9 +295,10 @@ and TypeInst =
     { Type  : BaseType
       Inst  : Inst
       IsSet : bool
-      IsOpt : bool }
+      IsOptional : bool
+      IsArray : bool }
     
-and BaseType = 
+and [<RequireQualifiedAccess>] BaseType =
     | Int
     | Bool
     | String
@@ -315,24 +313,24 @@ and BaseType =
     | Array    of ArrayType
 
  and RecordType =
-     Map<Id, TypeInst>
+     | RecordType of (Id * TypeInst) list
      
 and TupleType =
-    TypeInst list
+    | TupleType of TypeInst list
     
 and Range =
     NumericExpr * NumericExpr
     
 and ListType =
-    TypeInst
+    | ListType of TypeInst
     
 and ArrayType =
-    TypeInst list * TypeInst
+    | ArrayType of TypeInst list * TypeInst
     
 and SetLiteral =
-    Expr list
+    | SetLiteral of Expr list
         
-and Item =
+and [<RequireQualifiedAccess>] Item =
     | Include    of IncludeItem
     | Enum       of EnumItem
     | Synonym    of SynonymItem
@@ -352,16 +350,34 @@ and AnnotationItem =
 
 and ConstraintItem =
     { Expr: Expr }
+    
+and Parameters =
+    Parameter list
+    
+and Parameter =
+    Id * TypeInst
+
+and Argument =
+    Expr
+    
+and NamedArg =
+    Id * Expr
+
+and NamedArgs =
+    NamedArg list
+    
+and Arguments =
+    Argument list
         
 and PredicateItem =
     { Name: string
-    ; Parameters : Map<string, TypeInst>
+    ; Parameters : Parameters
     ; Annotations : Annotations
     ; Body: Expr option }
        
 and TestItem =
     { Name: string
-    ; Parameters : Map<string, TypeInst>
+    ; Parameters : Parameters
     ; Annotations : Annotations
     ; Body: Expr option }
 
@@ -375,21 +391,21 @@ and OutputItem =
 
 and OperationItem =
     { Name: string
-      Parameters : Map<string, TypeInst>
+      Parameters : Parameters
       Annotations : Annotations
       Body: Expr option }
     
 and FunctionItem =
     { Name: string
       Returns : TypeInst
-      Parameters : Map<string, TypeInst>
+      Parameters : Parameters
       Body: Expr option }
     
 and Test =
     unit
 
 and AssignItem =
-    string * Expr
+    NamedArg
 
 and DeclareItem =
     { Name: string
