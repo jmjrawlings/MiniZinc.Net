@@ -562,7 +562,7 @@ module rec Model =
             mzn.writeFunction func
             
         for pred in model.Predicates.Values do
-            mzn.write pred
+            mzn.writePredicate pred
             
         for x in model.Declares.Values do
             ()

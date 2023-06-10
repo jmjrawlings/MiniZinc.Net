@@ -21,15 +21,17 @@ module ``Parser Tests`` =
         ()
             
     // Test parsing the string, it is sanitized first
-    let testRoundtrip (parser: P<'t>) (input: string) (writer: MiniZincEncoder -> 't -> MiniZincEncoder) =
+    let testRoundtrip (parser: P<'t>) (input: string) (writer: MiniZincEncoder -> 't -> unit) =
 
         let source, comments =
             Parse.stripComments input
         
         let parsed =
             match Parse.stringWith parser source with
-            | Ok x -> x
-            | Error err -> failwith (string err)
+            | Ok x ->
+                x
+            | Error err ->
+                failwith (string err)
             
         let encoder = MiniZincEncoder()
         let write = (writer encoder)
@@ -40,8 +42,10 @@ module ``Parser Tests`` =
        
         let roundtrip =
             match Parse.stringWith parser encoded with
-            | Ok x -> x
-            | Error err -> failwith (string err)
+            | Ok x ->
+                x
+            | Error err ->
+                failwith (string err)
         
         ()
         
@@ -103,7 +107,7 @@ module ``Parser Tests`` =
     [<InlineData("tuple(int, string, string): x")>]
     [<InlineData("tuple(X, 'something else', set of Q): Q")>]
     let ``test type inst and id`` arg =
-        testRoundtrip Parsers.ti_expr_and_id arg (fun enc -> enc.write)
+        testRoundtrip Parsers.ti_expr_and_id arg (fun enc -> enc.writeParameter)
             
     [<Theory>]
     [<InlineData("enum A = {A1}")>]
@@ -163,7 +167,7 @@ module ``Parser Tests`` =
     [<InlineData("[1,2,3,];")>]
     [<InlineData("[true, false, X, true];")>]
     let ``test array1d literal`` arg =
-        testRoundtrip Parsers.array1d_literal arg (fun enc -> enc.write)
+        testRoundtrip Parsers.array1d_literal arg (fun enc -> enc.writeArray1d)
         
     
     let ``test generator`` arg =
@@ -172,25 +176,14 @@ module ``Parser Tests`` =
     [<Theory>]
     [<InlineData("var llower..lupper: Production;")>]
     let test_xd arg =
-        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.write)
+        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeDeclare)
         
-    [<Fact>]
-    let ``test array2d literal`` () =
-        let input = """[|
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-     | 0, 0, _, _, _, _, 0, _, _, _, 0
-     | 0, _, 0, _, _, _, _, _, _, _, 0
-     | 0, _, _, _, _, _, _, _, _, _, 0
-     | 0, 0, _, _, _, _, _, _, 0, _, 0
-     | 0, _, _, _, _, _, _, _, _, _, 0
-     | 0, _, 0, _, 0, _, _, _, _, _, 0
-     | 0, _, _, 0, _, _, _, _, _, _, 0
-     | 0, _, _, _, _, _, _, _, _, _, 0
-     | 0, _, _, _, _, _, _, _, _, _, 0
-     | 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-     |]"""
-        testRoundtrip Parsers.array2d_literal input (fun enc -> enc.write)
-        
+    [<Theory>]
+    [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _|]")>]
+    [<InlineData("[| |]")>]
+    [<InlineData("[| true, false, true |]")>]
+    let ``test array2d literal`` arg =
+        testRoundtrip Parsers.array2d_literal arg (fun enc -> enc.writeArray2d)
                 
     [<Theory>]
     [<InlineData("a = array1d(0..z, [x*x | x in 0..z]);")>]
@@ -208,7 +201,7 @@ module ``Parser Tests`` =
             C in {C0 + [-2, -1,  1,  2,  2,  1, -1, -2][i]}
             where R in row /\ C in col
         }"""
-        testRoundtrip Parsers.set_comp input (fun enc -> enc.write)
+        testRoundtrip Parsers.set_comp input (fun enc -> enc.writeSetComp)
 
     [<Theory>]
     [<InlineData("{r | r in {R0 + [-1, -2, -2, -1,  1,  2,  2,  1][i] } }")>]

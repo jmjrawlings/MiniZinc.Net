@@ -8,6 +8,7 @@ Helper functions for the rest of the codebase
 
 namespace MiniZinc
 
+open System
 open System.IO
 open System.Collections.Generic
 open System.Runtime.CompilerServices
@@ -25,6 +26,10 @@ module Prelude =
         match File.Exists x with
         | true -> FileExists (FileInfo x)
         | false -> FileNotFound
+        
+    let notImpl () =
+        raise ( NotImplementedException() )
+        
 
 type File =
     
@@ -89,7 +94,7 @@ module Result =
         match opt with
         | Some v -> Ok v
         | None -> Error err
-            
+           
 
 // A lens for field 'u' on model 't'    
 type Lens<'t, 'u>(getter: 't -> 'u, setter: 'u -> 't -> 't) =
@@ -342,3 +347,5 @@ type Extensions =
     [<Extension>]
     static member Bind(a: Result<'ok, 'err>, f) =
         Result.bind f a
+        
+    

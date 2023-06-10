@@ -90,13 +90,13 @@ module Parsers =
     Adding debug information to the parser is very
     slow so we only enable it for DEBUG
     *)
-    #if TRACE_PARSER
+    // #if TRACE_PARSER
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label <!> label
-    #else
-    let (<?!>) (p: P<'t>) label : P<'t> =
-        p <?> label
-    #endif
+    // #else
+    // let (<?!>) (p: P<'t>) label : P<'t> =
+    //     p <?> label
+    // #endif
                     
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
@@ -624,7 +624,6 @@ module Parsers =
         let row =
             expr
             |> sepBy1(p ',', allowTrailing=true)
-            |>> Array1dExpr.Array1d
             
         let rows =
             let sep =

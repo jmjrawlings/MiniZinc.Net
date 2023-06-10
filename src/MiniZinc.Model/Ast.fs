@@ -225,7 +225,7 @@ and Array1dExpr =
     | Array1d of Expr list
 
 and Array2dExpr =
-    | Array2d of Array1dExpr list
+    | Array2d of (Expr list) list
 
 and TupleExpr =
     | TupleExpr of Expr list
