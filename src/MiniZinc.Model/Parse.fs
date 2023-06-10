@@ -948,8 +948,7 @@ module Parsers =
         (var_decl_item |>> LetItem.Decl)
     
     // <let-expr>
-    let let_expr : P<LetExpr> =
-        
+    let let_expr : P<LetExpr> =        
         kw "let"
         >>. between(p '{', p '}', anyOf ":,") let_item
         .>> sps "in"

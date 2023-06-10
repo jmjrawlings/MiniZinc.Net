@@ -557,20 +557,22 @@ module rec Model =
                 
         for cons in model.Constraints do
             mzn.writeConstraintItem cons
+            mzn.writetn()
 
         for func in model.Functions.Values do
-            mzn.writeFunction func
+            mzn.writeFunctionItem func
             
         for pred in model.Predicates.Values do
             mzn.writePredicate pred
             
         for x in model.Declares.Values do
-            ()
+            mzn.writeDeclareItem x
+            mzn.writetn()
             
-        mzn.writeSolve model.SolveMethod
+        mzn.writeSolveMethod model.SolveMethod
         
         for output in model.Outputs do
-            mzn.writeOutput output
+            mzn.writeOutputItem output
             
         mzn.String
         

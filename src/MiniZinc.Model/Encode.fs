@@ -63,13 +63,9 @@ type MiniZincEncoder() =
         indentLevel <- indentLevel - 1
         
     member this.write (c: char) =
-        for i in 1 .. indentLevel do
-            builder.Append "\t"
         ignore (builder.Append c)
 
     member this.write (s: string) =
-        for i in 1 .. indentLevel do
-            builder.Append "\t"
         ignore (builder.Append s)
         
     member this.writen (s: string) =
@@ -137,23 +133,20 @@ type MiniZincEncoder() =
     member this.writeAnnotations (x: Annotations) =
         ()
        
-    member this.writeTypeInst (x: TypeInst) =
-        match x.IsArray with
+    member this.writeTypeInst (ti: TypeInst) =
+        match ti.IsArray with
         | true ->
-            this.writeType x.Type
-        | false ->    
-            this.writeInst x.Inst
-            this.write " "
-            this.writeIf x.IsSet "set of "
-            this.writeIf x.IsOptional "opt "
-            this.writeType x.Type
-        
-    member this.writeInst (x: Inst) =
-        match x with
-        | Inst.Var ->
-            this.write "var"
-        | _ ->
-            ()
+            this.writeType ti.Type
+        | false ->
+            
+            match ti.Inst with
+            | Inst.Var ->
+                this.write "var "
+            | _ ->
+                ()
+            this.writeIf ti.IsSet "set of "
+            this.writeIf ti.IsOptional "opt "
+            this.writeType ti.Type        
 
     member this.writeTupleType (x: TupleType) =
         match x with
@@ -164,30 +157,18 @@ type MiniZincEncoder() =
         
     member this.writeType(t: BaseType) =
         match t with
-        | BaseType.Int ->
-            this.write "int"
-        | BaseType.Bool ->
-            this.write "bool"
-        | BaseType.String ->
-            this.write "string"
-        | BaseType.Float ->
-            this.write "float"
-        | BaseType.Id x ->
-            this.write x
-        | BaseType.Variable x ->
-            this.write x
-        | BaseType.Record x ->
-            this.writeRecordType x                        
-        | BaseType.Tuple x ->
-            this.writeTupleType x
-        | BaseType.Literal x ->
-            this.writeSetLit x            
-        | BaseType.Range x ->
-            this.writeRange x           
-        | BaseType.List x ->
-            this.writeListType x
-        | BaseType.Array x ->
-            this.writeArrayType x
+        | BaseType.Int ->        this.write "int"
+        | BaseType.Bool ->       this.write "bool"
+        | BaseType.String ->     this.write "string"
+        | BaseType.Float ->      this.write "float"
+        | BaseType.Id x ->       this.write x
+        | BaseType.Variable x -> this.write x
+        | BaseType.Record x ->   this.writeRecordType x                        
+        | BaseType.Tuple x ->    this.writeTupleType x
+        | BaseType.Literal x ->  this.writeSetLit x            
+        | BaseType.Range x ->    this.writeRange x           
+        | BaseType.List x ->     this.writeListType x
+        | BaseType.Array x ->    this.writeArrayType x
 
     member this.writeRange (lo, hi) =
         this.writeNumExpr lo
@@ -208,9 +189,59 @@ type MiniZincEncoder() =
         this.write "{"
         //this.commaSep(exprs, this.writeExpr)
         this.write "}"
+        
+    member this.writeInt (x: int) =
+        this.write(string x)
                     
     member this.writeNumExpr (x: NumericExpr) =
-        ()
+        match x with
+        
+        | Int i ->
+            this.writeInt i
+            
+        | Float f ->
+            this.writeFloat f
+            
+        | Id s ->
+            this.write s
+            
+        | Op op ->
+            this.writeOp(int op)
+            
+        | Bracketed expr ->
+            this.write '('
+            this.writeNumExpr expr
+            this.write ')'
+            
+        | Call expr ->
+            this.writeCall expr
+            
+        | IfThenElse expr ->
+            this.writeIfThenElse expr
+            
+        | Let expr ->
+            this.writeLetExpr expr
+            
+        | UnaryOp(op, expr) ->
+            match op with
+            | IdOr.Id id ->this.write id
+            | IdOr.Val v -> this.writeOp (int v)
+            this.write " "
+            this.writeNumExpr expr
+            
+        | BinaryOp(left, op, right) ->
+            this.writeNumExpr left
+            this.write " "
+            match op with
+            | IdOr.Id id ->this.write id
+            | IdOr.Val v -> this.writeOp (int v)
+            this.write " "
+            this.writeNumExpr right
+            
+        | ArrayAccess(expr, access) ->
+            this.writeNumExpr expr
+            for acc in access do
+                this.writeArrayAccess acc
     
     member this.writeFloat (x: float) =
         this.write (string x)
@@ -223,8 +254,8 @@ type MiniZincEncoder() =
         | true -> this.write "true"
         | false -> this.write "false"
         
-    member this.writeOp (x: Op) =
-        let s = Encode.operators[int x]
+    member this.writeOp (x: int) =
+        let s = Encode.operators[x]
         this.write s
 
     member this.writeBinOp (x: BinaryOp) =
@@ -306,16 +337,22 @@ type MiniZincEncoder() =
         this.writeExpr x.Else
         this.write " endif"
         
-    member this.writeLet (x: LetExpr) =
+    member this.writeLetExpr (x: LetExpr) =
         this.writen "let {"
         this.indent()
-        for local in x.Locals do
-            match local with
-            | Decl decl -> this.writeDeclare decl
-            | Cons cons -> this.writeConstraintItem cons
+        
+        let writeLocal =
+            function
+            | Decl decl -> this.writeDeclareItem(decl)
+            | Cons cons -> this.writeConstraintItem(cons)
+        
+        this.sepBy(";\n", x.Locals, writeLocal)
         this.dedent()
-        this.writetn "} in "
+        this.writen "} in"
+        this.indent()
         this.writeExpr x.In
+        this.writetn()
+        this.dedent()
         
     member this.writeTypeInsts (xs: TypeInst list) : unit=
         this.sepBy (", ", xs, this.writeTypeInst)
@@ -324,7 +361,9 @@ type MiniZincEncoder() =
         this.sepBy(", ", xs, this.writeGenerator)
             
     member this.writeGenCall (x: GenCallExpr) =
-        x.Operation.fold this.write this.writeOp
+        match x.Operation with
+        | IdOr.Id id ->this.write id
+        | IdOr.Val v -> this.writeOp (int v)
         this.write "("
         this.writeGenerators x.From
         this.write ")"
@@ -337,28 +376,26 @@ type MiniZincEncoder() =
         | IdOr.Id id -> this.write id
         | IdOr.Val value -> this.writeWildcard value
     
-    member this.writeGenerator (x: Generator) =
-        this.sepBy(", ", x.Yields, this.writeYield)
+    member this.writeGenerator (gen: Generator) =
+        this.sepBy(", ", gen.Yields, this.writeYield)
         this.write " in "
-        this.writeExpr x.From
-        match x.Where with
+        this.writeExpr gen.From
+        match gen.Where with
         | Some cond ->
             this.write " where "
             this.writeExpr cond
          | None ->
              ()
     
-    member this.writeArrayAccess (ArrayAccess.Access xs) =
-        ()
-        //this.commaSep(exprs, this.writeExpr)
+    member this.writeArrayAccess (ArrayAccess.Access exprs) =
+        this.write '['
+        this.writeExprs exprs
+        this.write ']'
         
-    member this.writeIndexExpr (x: IndexExpr) =
-        match x with
-        | IndexExpr.Index (expr, access) ->
-            this.writeExpr expr
-            this.write '['
-            this.sepBy(", ", access, this.writeArrayAccess)
-            this.write ']'
+    member this.writeIndexExpr (IndexExpr.Index (expr, access)) =
+        this.writeExpr expr
+        for acc in access do
+            this.writeArrayAccess acc
                         
     member this.writeExpr (x: Expr) =
         match x with
@@ -368,7 +405,7 @@ type MiniZincEncoder() =
         | Expr.Bool          x -> this.writeBool x
         | Expr.String        x -> this.write x
         | Expr.Id            x -> this.write x
-        | Expr.Op            x -> this.writeOp x
+        | Expr.Op            x -> this.writeOp (int x)
         | Expr.Bracketed     x -> this.writeExpr x
         | Expr.Set           x -> this.writeSetLit x
         | Expr.SetComp       x -> this.writeSetComp x
@@ -384,25 +421,24 @@ type MiniZincEncoder() =
         | Expr.BinaryOp      x -> this.writeBinaryOp x
         | Expr.Annotation      -> ()
         | Expr.IfThenElse    x -> this.writeIfThenElse x
-        | Expr.Let           x -> this.writeLet x
+        | Expr.Let           x -> this.writeLetExpr x
         | Expr.Call          x -> this.writeCall x
         | Expr.GenCall       x -> this.writeGenCall x 
         | Expr.Indexed       x -> this.writeIndexExpr x
         
-    member this.writeDeclare (x: DeclareItem) =
-        this.writeTypeInst x.Type
+    member this.writeDeclareItem (decl: DeclareItem) =
+        this.writeTypeInst decl.Type
         this.write ": "
-        this.write x.Name
-        match x.Expr with
-        | None ->
-            this.writetn()
+        this.write decl.Name
+        match decl.Expr with
         | Some expr ->
             this.write " = "
             this.writeExpr expr
-            this.writetn()
+        | _ ->
+            ()
             
-    member this.writeSolveType (x: SolveType) =
-        match x with
+    member this.writeSolveType (slv: SolveType) =
+        match slv with
         | SolveType.Satisfy ->
             this.write "satisfy"
         | SolveType.Minimize ->
@@ -427,12 +463,10 @@ type MiniZincEncoder() =
         else
             this.writetn()
         
-    member this.writeRecordType (x: RecordType) =
-        match x with
-        | RecordType.RecordType xs ->
-            this.write "record("
-            this.writeParameters xs
-            this.write ")"
+    member this.writeRecordType (RecordType.RecordType pars) =
+        this.write "record("
+        this.writeParameters pars
+        this.write ")"
             
     member this.writeParameter ((id,ti): Parameter) =
         this.writeTypeInst ti
@@ -442,12 +476,12 @@ type MiniZincEncoder() =
     member this.writeParameters (xs: Parameters) =
         this.sepBy(", ", xs, this.writeParameter)
     
-    member this.writeArg ((id, expr): NamedArg) =
+    member this.writeNamedArg (id: string, expr: Expr) =
         this.write id
         this.write ": "
         this.writeExpr expr
         
-    member this.writeFunction (x: FunctionItem) =
+    member this.writeFunctionItem (x: FunctionItem) =
         this.write "function "
         this.writeTypeInst x.Returns
         this.write ": "
@@ -469,27 +503,26 @@ type MiniZincEncoder() =
     member this.writeCall (x: CallExpr) =
         match x.Function with
         | IdOr.Id s -> this.write s
-        | IdOr.Val v -> this.writeOp v
+        | IdOr.Val v -> this.writeOp (int v)
         this.write "("
-        //this.commaSep(x.Args, this.writeExpr)
+        this.writeExprs x.Args
         this.write ")"
         
     member this.writeConstraintItem (x: ConstraintItem) =
         this.write "constraint "
         this.writeExpr x.Expr
-        this.writetn ()
         
     member this.writeIncludeItem (x: IncludeItem) =
         match x with
         | IncludeItem.Include s ->
             this.writetn $"include \"{s}\""
         
-    member this.writeOutput (x: OutputItem) =
+    member this.writeOutputItem (x: OutputItem) =
         this.write "output "
         this.writeExpr x.Expr
         this.writetn()
         
-    member this.writeSolve (x: SolveMethod) =
+    member this.writeSolveMethod (x: SolveMethod) =
         match x with
         | Sat _ ->
             this.writetn "solve satisfy"

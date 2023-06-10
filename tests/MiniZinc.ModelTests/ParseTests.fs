@@ -155,7 +155,7 @@ module ``Parser Tests`` =
     [<Theory>]
     [<InlineData("let {int: a = 2} in a;")>]
     let ``test let`` arg =
-        testRoundtrip Parsers.expr arg (fun enc -> enc.writeExpr)
+        testRoundtrip Parsers.let_expr arg (fun enc -> enc.writeLetExpr)
         
     [<Theory>]
     [<InlineData("array2d(ROW, COL, []);")>]
@@ -176,7 +176,7 @@ module ``Parser Tests`` =
     [<Theory>]
     [<InlineData("var llower..lupper: Production;")>]
     let test_xd arg =
-        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeDeclare)
+        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeDeclareItem)
         
     [<Theory>]
     [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _|]")>]
