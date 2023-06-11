@@ -11,6 +11,7 @@ Some rules have been simplified for ease of use.
 
 namespace MiniZinc
 
+open System
 open System.Diagnostics
 
 type Id = string
@@ -24,28 +25,16 @@ type Comment =
     string
 
 [<Struct>]
-// A value of 'T' or an identifier
+// An identifier or a value of 'T
 type IdOr<'T> =
-    | Id_ of id:string
-    | Value_ of value:'T
-
-    member this.Value =
+    | Id of id:string
+    | Val of value:'T
+    
+    member this.fold fId fValue =
         match this with
-        | Value_ v -> v
-        | _ -> Unchecked.defaultof<'T>
-        
-    member this.Id =
-        match this with
-        | Id_ id -> id
-        | _ -> ""
-        
-    member this.IsId =
-        match this with
-        | Id_ _ -> true | _ -> false
-
-    member this.IsValue =
-        match this with
-        | Value_ _ -> true | _ -> false
+        | Id id -> fId id
+        | Val v -> fValue v
+    
               
 type Inst =
     | Var = 0
@@ -164,7 +153,7 @@ type Op =
     | PlusPlus = 36
     | Default =  37
 
-type Expr =
+type [<RequireQualifiedAccess>] Expr =
     | WildCard      of WildCard  
     | Int           of int
     | Float         of float
@@ -173,7 +162,7 @@ type Expr =
     | Id            of string
     | Op            of Op
     | Bracketed     of Expr
-    | Set           of SetExpr
+    | Set           of SetLiteral
     | SetComp       of SetCompExpr
     | Array1d       of Array1dExpr
     | Array1dIndex
@@ -183,17 +172,26 @@ type Expr =
     | ArrayCompIndex
     | Tuple         of TupleExpr
     | Record        of RecordExpr
-    | UnaryOp       of IdOr<UnaryOp> * Expr
-    | BinaryOp      of Expr * IdOr<BinaryOp> * Expr
+    | UnaryOp       of UnaryOpExpr
+    | BinaryOp      of BinaryOpExpr
     | Annotation
     | IfThenElse    of IfThenElseExpr
     | Let           of LetExpr
     | Call          of CallExpr
     | GenCall       of GenCallExpr 
-    | Indexed       of expr:Expr * index: ArrayAccess list
+    | Indexed       of IndexExpr 
 
+and UnaryOpExpr =
+    IdOr<UnaryOp> * Expr
+    
+and BinaryOpExpr =
+    Expr * IdOr<BinaryOp> * Expr
+
+and IndexExpr =
+    | Index of Expr * ArrayAccess list
+    
 and ArrayAccess =
-    Expr list
+    | Access of Expr list
 
 and Annotation =
     Expr
@@ -202,84 +200,70 @@ and Annotations =
     Annotation list
 
 and GenCallExpr =
-    { Name: IdOr<Op>
-    ; Expr : Expr 
-    ; Generators : Generator list }
+    { Operation: IdOr<Op>
+    ; From : Generator list 
+    ; Yields : Expr }
     
 and ArrayCompExpr =
-    { Yield : Expr         
+    { Yields : Expr         
     ; From : Generator list }
 
 and SetCompExpr =
-    { Yield : Expr         
+    { Yields : Expr         
     ; From : Generator list }
 
 and Generator =
-    { Yield : IdOr<WildCard> list
-    ; From  : Expr
+    { Yields : IdOr<WildCard> list
+    ; From  : Expr  
     ; Where : Expr option }
 
 and CallExpr =
-    { Name: IdOr<Op>
-    ; Args: Expr list }
-
-and SetExpr =
-    Expr list
+    { Function: IdOr<Op>
+    ; Args: Arguments }
 
 and Array1dExpr =
-    Expr list
+    | Array1d of Expr list
 
 and Array2dExpr =
-    Array1dExpr list
+    | Array2d of (Expr list) list
 
 and TupleExpr =
-    Expr list
-
+    | TupleExpr of Expr list
+    
 and RecordExpr =
-    Map<string, Expr>
-    
-and SolveSatisfy =
-    { Annotations : Annotations }
-    
-and SolveOptimise =
-    { Annotations : Annotations
-      Method : SolveType
-      Objective : Expr }
+    | RecordExpr of (Id * Expr) list
     
 and SolveMethod =
-    | Sat of SolveSatisfy
-    | Opt of SolveOptimise
+    | Sat of Annotations
+    | Min of Expr * Annotations
+    | Max of Expr * Annotations
     
     member this.SolveType =
         match this with
         | Sat _ -> SolveType.Satisfy
-        | Opt o -> o.Method
+        | Min _ -> SolveType.Minimize
+        | Max _ -> SolveType.Maximize
         
     member this.Annotations =
         match this with
-        | Sat s -> s.Annotations
-        | Opt o -> o.Annotations
+        | Sat anns
+        | Min (_, anns)
+        | Max (_, anns) -> anns
         
     static member Satisfy =
-        Sat {Annotations = [] }
+        Sat []
         
     static member Minimize(expr) =
-        { Annotations = []
-        ; Objective =  expr
-        ; Method=SolveType.Minimize  }
-        |> Opt
+        Min (expr, [])
         
     static member Maximize(expr) =
-        { Annotations = []
-        ; Objective =  expr
-        ; Method=SolveType.Maximize  }
-        |> Opt
+        Max (expr, [])
         
 
 and IfThenElseExpr =
     { If     : Expr
     ; Then   : Expr
-    ; ElseIf : Expr list
+    ; ElseIf : (Expr * Expr) list
     ; Else   : Expr}
 
 and NumericExpr =
@@ -296,7 +280,7 @@ and NumericExpr =
     | ArrayAccess of NumericExpr * ArrayAccess list
 
 and IncludeItem =
-    string
+    | Include of string
 
 and EnumItem =
     { Name : Id
@@ -311,9 +295,10 @@ and TypeInst =
     { Type  : BaseType
       Inst  : Inst
       IsSet : bool
-      IsOpt : bool }
+      IsOptional : bool
+      IsArray : bool }
     
-and BaseType = 
+and [<RequireQualifiedAccess>] BaseType =
     | Int
     | Bool
     | String
@@ -328,24 +313,24 @@ and BaseType =
     | Array    of ArrayType
 
  and RecordType =
-     Map<Id, TypeInst>
+     | RecordType of (Id * TypeInst) list
      
 and TupleType =
-    TypeInst list
+    | TupleType of TypeInst list
     
 and Range =
     NumericExpr * NumericExpr
     
 and ListType =
-    TypeInst
+    | ListType of TypeInst
     
 and ArrayType =
-    TypeInst list * TypeInst
+    | ArrayType of TypeInst list * TypeInst
     
 and SetLiteral =
-    Expr list
+    | SetLiteral of Expr list
         
-and Item =
+and [<RequireQualifiedAccess>] Item =
     | Include    of IncludeItem
     | Enum       of EnumItem
     | Synonym    of SynonymItem
@@ -363,44 +348,70 @@ and Item =
 and AnnotationItem =
     CallExpr
 
-and Constraint =
-    Expr
-
 and ConstraintItem =
-    Constraint
+    { Expr: Expr }
+    
+and Parameters =
+    Parameter list
+    
+and Parameter =
+    Id * TypeInst
+
+and Argument =
+    Expr
+    
+and NamedArg =
+    Id * Expr
+
+and NamedArgs =
+    NamedArg list
+    
+and Arguments =
+    Argument list
         
 and PredicateItem =
-    OperationItem
-
+    { Name: string
+    ; Parameters : Parameters
+    ; Annotations : Annotations
+    ; Body: Expr option }
+       
 and TestItem =
-    OperationItem
+    { Name: string
+    ; Parameters : Parameters
+    ; Annotations : Annotations
+    ; Body: Expr option }
 
 and SynonymItem =
-    Id * Annotations * TypeInst
+    { Id : string
+    ; Annotations : Annotations
+    ; TypeInst: TypeInst }
 
 and OutputItem =
-    Expr
+    { Expr: Expr }
 
 and OperationItem =
     { Name: string
-      Parameters : Map<string, TypeInst>
+      Parameters : Parameters
       Annotations : Annotations
       Body: Expr option }
     
 and FunctionItem =
     { Name: string
       Returns : TypeInst
-      Parameters : Map<string, TypeInst>
+      Parameters : Parameters
       Body: Expr option }
-
+    
 and Test =
     unit
 
 and AssignItem =
-    string * Expr
+    NamedArg
 
 and DeclareItem =
-    Id * TypeInst * Annotations * Expr Option
+    { Name: string
+    ; Type: TypeInst
+    ; Annotations: Annotations
+    ; Expr: Expr option }
 
 and LetItem =
     | Decl of DeclareItem

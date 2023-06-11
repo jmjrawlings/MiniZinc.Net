@@ -17,14 +17,18 @@ open System
 open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
+open System.Text
 
-
+type EncodingOptions =
+    | EncodingOptions
+    static member Default =
+        EncodingOptions
+ 
 type Binding =
-    | Undeclared of Expr
-    | Unassigned of TypeInst
-    | Assigned   of TypeInst * Expr
+    | Declare    of DeclareItem
+    | Assign     of Expr
     | Enum       of EnumItem
-    | Synonym    of TypeInst
+    | Synonym    of SynonymItem
     | Predicate  of PredicateItem
     | Function   of FunctionItem
     | Conflict   of Binding list
@@ -44,23 +48,73 @@ module Bindings =
         let binding =            
             match prior, value with
             
-            // Assign an unassigned variable    
-            | Some (Unassigned ti), Undeclared expr ->
-                Binding.Assigned (ti, expr)
-                
-            // Assign an unassigned variable    
-            | Some (Undeclared expr), Unassigned ti ->
-                Binding.Assigned (ti, expr)
-                
-            // Update an existing variable                    
-            | Some (Assigned (ti, v1)), Undeclared v2 when v1=v2 ->
-                Binding.Assigned (ti, v1)
-
-            // Assign an unassigned enum                                    
-            | Some (Enum {Cases=[]}), Enum enum ->
-                Binding.Enum enum
+            // Enum assignment
+            | Some (Enum e), Assign expr 
+            | Some (Assign expr), Enum e ->
+                let cases =
+                    [EnumCase.Expr expr]
+                match e.Cases with
+                // Assign new value
+                | [] ->
+                    Binding.Enum { e with Cases = cases}
+                // Existing value                    
+                | old when old = cases ->
+                    Binding.Enum e
+                // Overwritten value
+                | old ->
+                    Binding.Conflict
+                        [ Assign expr
+                        ; Enum e ]
             
-            // Identical
+            // Variable assignment    
+            | Some (Declare var), Assign expr 
+            | Some (Assign expr), Declare var ->
+                match var.Expr with
+                // Assign new value
+                | None ->
+                    Binding.Declare { var with Expr = Some expr }
+                // Existing value                    
+                | Some old when old = expr ->
+                    Assign expr
+                // Overwritten value
+                | Some other ->
+                    Binding.Conflict
+                        [ Assign expr
+                        ; Declare var ]
+                        
+            // Assign an unassigned function
+            | Some (Function f), Assign expr 
+            | Some (Assign expr), Function f ->
+                match f.Body with
+                // Assign new value
+                | None ->
+                    Binding.Function { f with Body = Some expr }
+                // Existing value                    
+                | Some old when old = expr ->
+                    Function f
+                // Overwritten value
+                | old ->
+                    Binding.Conflict
+                        [ Assign expr
+                        ; Function f ]
+                        
+            // Assign an unassigned function
+            | Some (Predicate pred), Assign expr 
+            | Some (Assign expr), Predicate pred ->
+                match pred.Body with
+                // Assign new value
+                | None ->
+                    Binding.Predicate { pred with Body = Some expr }
+                // Existing value                    
+                | Some old when old = expr ->
+                    Predicate pred
+                // Overwritten value
+                | old ->
+                    Binding.Conflict
+                        [ Assign expr
+                        ; Predicate pred ]
+            
+            // Identical binding
             | Some x, y when x = y ->
                 x
 
@@ -100,7 +154,7 @@ module Bindings =
 
 [<AutoOpen>]    
 module rec Model =
-
+    
     type IncludeOptions =
         | Reference
         | ParseFile of string list
@@ -122,81 +176,81 @@ module rec Model =
         // Reference only - load has not been attempted
         | Reference
         
-        member this.Value =
-            LoadResult.success this
-            
+        member this.Model =
+            LoadResult.model this
                     
     module LoadResult =
+        
+        /// Map the given function over the result        
         let map f result =
             match result with
             | Success model -> Success (f model)
             | other -> other
             
-        let success result =
+        /// Return the successful model or fail            
+        let model result =
             match result with
             | Success x -> x
             | _ -> failwithf $"Result was not a success"
-    
+            
+        let toOption result =
+            match result with
+            | Success x -> Some x
+            | _ -> None
                     
-    // A MiniZinc model
+    /// A MiniZinc model
     type Model = 
         { Name        : string
         ; File        : string option
+        ; Constraints : ConstraintItem list
         ; Includes    : Map<string, LoadResult>
         ; Bindings    : Map<Id, Binding>
         ; Enums       : Map<string, EnumItem>
-        ; Synonyms    : Map<string, TypeInst>
-        ; Constraints : ConstraintItem list
+        ; Synonyms    : Map<string, SynonymItem>
         ; Predicates  : Map<string, PredicateItem>
         ; Functions   : Map<string, FunctionItem>
-        ; Outputs     : OutputItem list
-        ; SolveMethod : SolveMethod
-        ; Assigned    : Map<string, TypeInst * Expr>
+        ; Declares    : Map<string, DeclareItem>
+        ; Assigned    : Map<string, Expr>
         ; Unassigned  : Map<string, TypeInst>
-        ; Undeclared  : Map<string, Expr> 
-        ; Conflicts   : Map<string, Binding list> }
+        ; Undeclared  : Map<string, Expr>
+        ; Conflicts   : Map<string, Binding list>
+        ; Outputs     : OutputItem list
+        ; SolveMethod : SolveMethod }
                 
-        /// <summary>
         /// Parse a Model from the given file
-        /// </summary>
         static member ParseFile (filepath: string, options: ParseOptions) =
             Model.parseFile options filepath
             
-        /// <summary>
         /// Parse a Model from the given file
-        /// </summary>
         static member ParseFile (filepath: FileInfo, options: ParseOptions) =
             Model.parseFile options filepath.FullName
 
-        /// <summary>
         /// Parse a Model from the given file
-        /// </summary>
         static member ParseFile (filepath: string) =
             Model.parseFile ParseOptions.Default filepath
             
-        /// <summary>
         /// Parse a Model from the given file
-        /// </summary>
         static member ParseFile (filepath: FileInfo) =
             Model.parseFile ParseOptions.Default filepath.FullName
-            
 
-        /// <summary>
         /// Parse a Model from the given string
-        /// </summary>
         static member ParseString (mzn: string, options: ParseOptions) =
             Model.parseString options mzn
             
-        /// <summary>
         /// Parse a Model from the given string
-        /// </summary>
         static member ParseString (mzn: string) =
             Model.parseString ParseOptions.Default mzn 
+
+        member this.ToString() =
+            ()
             
-                    
+        member this.ToString(x: FunctionItem) =
+            ()
+
+                        
     module Model =
 
-        // An empty model        
+        /// An empty model        
         let empty =
             { Name = ""
             ; File = None
@@ -209,9 +263,10 @@ module rec Model =
             ; SolveMethod = SolveMethod.Satisfy
             ; Bindings = Map.empty
             ; Unassigned = Map.empty
-            ; Assigned = Map.empty
+            ; Declares = Map.empty
+            ; Assigned = Map.empty 
             ; Undeclared = Map.empty
-            ; Conflicts = Map.empty 
+            ; Conflicts = Map.empty
             ; Outputs = [] }
 
         [<AutoOpen>]
@@ -240,11 +295,16 @@ module rec Model =
                 Lens.m
                     (fun m -> m.Predicates)
                     (fun v m -> { m with Predicates =  v })
+            
+            let Declared_ =
+                Lens.m
+                    (fun m -> m.Declares)
+                    (fun v m -> { m with Declares = v })
                 
             let Assigned_ =
                 Lens.m
                     (fun m -> m.Assigned)
-                    (fun v m -> { m with Assigned = v })
+                    (fun v m -> { m with Assigned =  v })
                 
             let Unassigned_ =
                 Lens.m
@@ -291,9 +351,7 @@ module rec Model =
                     (fun m -> m.Name)
                     (fun v m -> { m with Name = v })
         
-        /// <summary>
         /// Parse a Model from the given MiniZinc file
-        /// </summary>
         let parseFile (options: ParseOptions) (filepath: string) : LoadResult =
             
             let result =
@@ -305,9 +363,7 @@ module rec Model =
                 
             result
         
-        /// <summary>
         /// Parse a Model from the given MiniZinc model string
-        /// </summary>
         let parseString (options: ParseOptions) (mzn: string) : LoadResult =
                         
             let input, comments =
@@ -323,24 +379,17 @@ module rec Model =
                 | Result.Error error -> ParseError error
                 
             result
-            
         
-        /// <summary>
         /// Create a Model from the given AST
-        /// </summary>
         let fromAst (options: ParseOptions) (ast: Ast) : Model =
                                         
             let bindings = ResizeArray()
             
-            for id,expr in ast.Assigns do
-                bindings.Add (id, Binding.Undeclared expr)
+            for (id, expr) in ast.Assigns do
+                bindings.Add (id, Binding.Assign expr)
 
-            for id, ti, _, expr in ast.Declares do
-                match expr with
-                | Some value ->
-                    bindings.Add(id, Binding.Assigned (ti, value))
-                | None ->
-                    bindings.Add(id, Binding.Unassigned ti)
+            for var in ast.Declares do
+                bindings.Add (var.Name, Binding.Declare var)
                     
             for enum in ast.Enums do
                 bindings.Add (enum.Name, Binding.Enum enum)
@@ -348,11 +397,11 @@ module rec Model =
             for x in ast.Functions do
                 bindings.Add (x.Name, Binding.Function x)
                 
-            for x in ast.Predicates do
-                bindings.Add (x.Name, Binding.Predicate x)
+            for pred in ast.Predicates do
+                bindings.Add (pred.Name, Binding.Predicate pred)
                 
-            for id, _anns, ti in ast.Synonyms do
-                bindings.Add (id, Binding.Synonym ti)
+            for syn in ast.Synonyms do
+                bindings.Add (syn.Id, Binding.Synonym syn)
                 
             let map =
                 Bindings.ofSeq bindings
@@ -390,13 +439,14 @@ module rec Model =
             // Parse included models in parallel
             let inclusions =
                 ast.Includes
+                |> Seq.map (fun (IncludeItem.Include x) -> x)
                 |> Seq.toArray
                 |> Array.Parallel.map parseIncluded
                 |> Map.ofSeq
                             
             // Load the model from these bindings only
             let model =
-                fromBindings map
+                ofBindings map
                 |> Includes_.set inclusions
                 |> Constraints_.set ast.Constraints
                 |> Outputs_.set ast.Outputs                
@@ -412,10 +462,8 @@ module rec Model =
 
             unified
                 
-        /// <summary>
         /// Create a Model from the given Bindings
-        /// </summary>
-        let fromBindings (bindings: Bindings) : Model =
+        let ofBindings (bindings: Bindings) : Model =
                     
             let rec loop bindings model =
                 match bindings with
@@ -423,17 +471,19 @@ module rec Model =
                     model
                 | (id, binding) :: rest ->
                     match binding with
-                    | Undeclared s ->
+                    | Assign s ->
                         model
                         |> Undeclared_.add id s 
                         |> loop rest
-                    | Unassigned s ->
+                    | Declare var when var.Expr.IsSome ->
                         model
-                        |> Unassigned_.add id s
+                        |> Declared_.add id var
+                        |> Assigned_.add id var.Expr.Value
                         |> loop rest
-                    | Assigned (ti,expr) ->
+                    | Declare var ->
                         model
-                        |> Assigned_.add id (ti,expr)
+                        |> Declared_.add id var
+                        |> Unassigned_.add id var.Type
                         |> loop rest
                     | Enum e ->
                         model
@@ -460,11 +510,8 @@ module rec Model =
                 loop (Map.toList bindings) empty
                 
             model
-            
-            
-        /// <summary>
+              
         /// Merge two Models
-        /// </summary>
         let merge (a: Model) (b: Model) : Model =
                             
             let bindings =
@@ -486,7 +533,7 @@ module rec Model =
                     | left, right -> right
                 
             let model =
-                fromBindings bindings
+                ofBindings bindings
                 |> Constraints_.set constraints
                 |> Includes_.set includes
                 |> Name_.set name
@@ -494,22 +541,38 @@ module rec Model =
                 
             model
             
-        // // Load an included model, searching for it
-        // // in the given directories
-        // let loadIncluded filename (searchDirs: string seq) (model: Model) =
-        //                 
-        //     let filepath =
-        //         searchDirs
-        //         |> Seq.map (fun dir -> Path.Join(dir, filename))
-        //         |> Seq.filter File.Exists
-        //         |> Seq.tryHead
-        //         |> Result.ofOption $"Could not find {filename} in any of the search directories"
-        //         
-        //     let includeModel =
-        //         filepath
-        //         |> Result.bind (parseFile >> Result.mapError string)
-        //         
-        //     
-        // // Load all included models
-        // let loadIncludedModels (searchDirs: string seq) (model: Model) =
-        //     model
+    let encode (options: EncodingOptions) (model: Model) =
+        
+        let mzn = MiniZincEncoder()
+                                
+        for incl in model.Includes.Keys do
+            let item = IncludeItem.Include incl
+            mzn.writeIncludeItem item
+
+        for enum in model.Enums.Values do
+            mzn.writeEnum enum
+            
+        for syn in model.Synonyms.Values do
+            mzn.writeSynonym syn
+                
+        for cons in model.Constraints do
+            mzn.writeConstraintItem cons
+            mzn.writetn()
+
+        for func in model.Functions.Values do
+            mzn.writeFunctionItem func
+            
+        for pred in model.Predicates.Values do
+            mzn.writePredicate pred
+            
+        for x in model.Declares.Values do
+            mzn.writeDeclareItem x
+            mzn.writetn()
+            
+        mzn.writeSolveMethod model.SolveMethod
+        
+        for output in model.Outputs do
+            mzn.writeOutputItem output
+            
+        mzn.String
+        

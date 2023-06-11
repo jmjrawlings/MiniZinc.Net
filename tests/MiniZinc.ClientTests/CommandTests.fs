@@ -5,7 +5,7 @@ open MiniZinc.Command
 open MiniZinc.Tests
 open Xunit
 
-module CommandTests =
+module ``Command Tests`` =
         
     [<Fact>]
     let ``parse flag`` () =

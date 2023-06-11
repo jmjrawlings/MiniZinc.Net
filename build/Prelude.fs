@@ -37,6 +37,4 @@ module Prelude =
         
     type FileInfo with
         member this.NameWithoutExtension =
-            Path.GetFileNameWithoutExtension this.FullName
-        
-        
+            Path.GetFileNameWithoutExtension this.FullName        

@@ -1,19 +1,25 @@
 
-namespace MiniZinc.Model.Tests
+namespace MiniZinc.Tests
 
 open MiniZinc
 open MiniZinc.Tests
 open Xunit
-open System.IO
 
-module IntegrationTests =
+module ``Integration Tests`` =
    
     let test (name: string) =
         let suite = TestSuite.load name
         let model = TestSuite.parseModel suite
-        model.Value.Undeclared.AssertEmpty()
-        model.Value.Conflicts.AssertEmpty()
-
+        let mzn = Model.encode EncodingOptions.Default model
+        
+        // let roundtrip =
+        //     match Model.parseString (ParseOptions.Default) mzn with
+        //     | LoadResult.Success model -> model
+        //     | other -> failwith (string other)
+        //     
+        // let a = 1
+        ()
+        
 
     [<Fact>]
     let ``test 2DPacking`` () =

@@ -1,13 +1,13 @@
 # Changelog
 
-## Unreleased
-- Added integration tests on solver
-- Refactor Arg/Command/Args constructors around obj[]
+## [0.4.1] - 2023-06-11
+- Scaffold Client integration tests
+- Unified Arg/Command/Args constructors around obj[]
 - `MiniZincClient` instead of `MiniZinc` module
 - `ILogger` can be passed into MiniZinc
 - Basic logging of commands
 - Renamed `Solve` to `Client` modules throughout
-
+- Models can be serialized with `Encode` module
 
 ## [0.4.0] - 2023-06-01
 - Shared `MiniZinc.Tests` library

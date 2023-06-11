@@ -90,13 +90,13 @@ module Parsers =
     Adding debug information to the parser is very
     slow so we only enable it for DEBUG
     *)
-    #if TRACE_PARSER
-    let (<?!>) (p: P<'t>) label : P<'t> =
-        p <?> label <!> label
-    #else
+    // #if TRACE_PARSER
+    // let (<?!>) (p: P<'t>) label : P<'t> =
+    //     p <?> label <!> label
+    // #else
     let (<?!>) (p: P<'t>) label : P<'t> =
         p <?> label
-    #endif
+    // #endif
                     
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
@@ -318,18 +318,18 @@ module Parsers =
             
         static member ResolveInst (ty: BaseType) =
             match ty with
-            | Int 
-            | Bool 
-            | String 
-            | Float 
-            | Id _ 
-            | Literal _ 
-            | Range _
-            | Variable _ ->
+            | BaseType.Int 
+            | BaseType.Bool 
+            | BaseType.String 
+            | BaseType.Float 
+            | BaseType.Id _ 
+            | BaseType.Literal _ 
+            | BaseType.Range _
+            | BaseType.Variable _ ->
                 ty, Inst.Par
             
             // Any var item means a var tuple
-            | Tuple items ->
+            | BaseType.Tuple (TupleType.TupleType items) ->
                 let mutable inst = Inst.Par
                                 
                 let resolved =
@@ -342,35 +342,34 @@ module Parsers =
                         | ty, _ -> ty
                         )
                     
-                (BaseType.Tuple resolved), inst
+                (BaseType.Tuple (TupleType.TupleType resolved)), inst
                     
-            // Any var field means a var record                            
-            | Record fields ->
+            // Any var field means a var record
+            | BaseType.Record (RecordType.RecordType fields) ->
                 let mutable inst = Inst.Par
                                 
                 let resolved =
                     fields
-                    |> Map.map (fun name field ->
+                    |> List.map (fun (name, field) ->
                         match P.ResolveInst field with
                         | ty, Inst.Var ->
                             inst <- Inst.Var
-                            ty
-                        | ty, _ -> ty
+                            name, ty
+                        | ty, _ ->
+                            name, ty
                         )
                     
-                (BaseType.Record resolved), inst
+                (BaseType.Record (RecordType.RecordType resolved)), inst
                 
             // A var item means a var tuple
-            | List itemType ->
+            | BaseType.List (ListType.ListType itemType) ->
                 let ty, inst = P.ResolveInst itemType
-                (BaseType.List ty), inst
+                (BaseType.List (ListType.ListType itemType)), inst
                 
             // A var item means a var array
-            | Array (dims, itemType) ->
+            | BaseType.Array (ArrayType.ArrayType (dims, itemType)) ->
                 let ty, inst = P.ResolveInst itemType
-                (BaseType.Array (dims, ty)), inst
-                
-                
+                (BaseType.Array (ArrayType.ArrayType (dims, ty))), inst
 
     open type P
        
@@ -422,13 +421,13 @@ module Parsers =
     let value_or_quoted_name (p: P<'T>) : P<IdOr<'T>> =
         
         let value =
-            p |>> IdOr.Value_
+            p |>> IdOr.Val
         
         let name =
             simple_id
             |> between('`', '`')
             |> attempt
-            |>> IdOr.Id_
+            |>> IdOr.Id
             
         name <|> value
     
@@ -436,13 +435,13 @@ module Parsers =
     let name_or_quoted_value (p: P<'T>) : P<IdOr<'T>> =
         
         let name =
-            id |>> IdOr.Id_
+            id |>> IdOr.Id
         
         let value =
             p
             |> between(''', ''')
             |> attempt
-            |>> IdOr.Value_
+            |>> IdOr.Val
         
         value <|> name
         
@@ -604,14 +603,20 @@ module Parsers =
     // <array1d-literal>
     let array1d_literal =
         expr
-        |> between(p '[', p ']', p ',', allowTrailing=true) 
+        |> between(p '[', p ']', p ',', allowTrailing=true)
+        |>> Array1dExpr.Array1d
         <?!> "array1d-literal"
             
     // <set-literal>
     let set_literal : P<SetLiteral>=
         between(p '{', p '}', p ',') expr
         |> attempt
+        |>> SetLiteral.SetLiteral
         <?!> "set-literal"
+        
+    // <set-expr>
+    let set_expr : P<SetLiteral>=
+        set_literal
         
     // <array2d-literal>
     let array2d_literal =
@@ -630,7 +635,8 @@ module Parsers =
             rows
             |> between(p "[|", p "|]")
                 
-        array        
+        array
+        |>> Array2dExpr.Array2d
         <?!> "array2d-literal"
    
     // <ti-expr-and-id>
@@ -641,32 +647,40 @@ module Parsers =
         |>> (fun (expr, name) -> (name, expr))
         <?> "ti-expr-and-id"    
     
-    let parameters =
+    let parameters : P<Parameters> =
         ti_expr_and_id
         |> between(p '(', p ')', p ',')
-        |>> Map.ofList
     
     // <operation-item-tail>
     // eg: even(var int: x) = x mod 2 = 0;
-    let operation_item_tail : P<OperationItem> =
-        pipe4
+    let operation_item_tail =
+        tuple4
             (ps id)
             (ps parameters)
             (ps annotations)
             (opt (ps "=" >>. expr))
-            (fun name pars anns body ->
-                { Name = name
-                ; Parameters = pars
-                ; Annotations = anns 
-                ; Body = body })
         
     // <predicate-item>
     let predicate_item : P<PredicateItem> =
-        kw1 "predicate" >>. operation_item_tail
+        kw1 "predicate"
+        >>. operation_item_tail
+        |>> (fun (id, pars, anns, body) ->
+            { Name = id
+            ; Parameters = pars
+            ; Annotations = anns
+            ; Body = body }
+            )
 
     // <test_item>
     let test_item : P<TestItem> =
-        kw1 "test" >>. operation_item_tail
+        kw1 "test"
+        >>. operation_item_tail
+        |>> (fun (id, pars, anns, body) ->
+            { Name = id
+            ; Parameters = pars
+            ; Annotations = anns
+            ; Body = body }
+            )
         
     // <function-item>
     let function_item : P<FunctionItem> =
@@ -674,11 +688,11 @@ module Parsers =
         >>. ti_expr
         .>> sps ':'
         .>>. operation_item_tail
-        |>> (fun (ti, op) ->
-            { Name = op.Name
+        |>> (fun (ti, (id, pars, anns, body)) ->
+            { Name = id
             ; Returns = ti
-            ; Parameters = op.Parameters
-            ; Body = op.Body })
+            ; Parameters = pars
+            ; Body = body })
     
     // <enum-case>
     // TODO: complex variants
@@ -703,9 +717,10 @@ module Parsers =
                 })
     
     // <include-item>
-    let include_item : P<string> =
+    let include_item : P<IncludeItem> =
         kw1 "include"
         >>. string_literal
+        |>> IncludeItem.Include
         <?!> "include-item"
     
     // <var-par>
@@ -741,8 +756,9 @@ module Parsers =
             base_ti_expr_tail
             (fun inst set opt typ ->
                 { Type = typ
-                ; IsOpt = opt
+                ; IsOptional = opt
                 ; IsSet = set
+                ; IsArray = false 
                 ; Inst = inst }
             )
         <?!> "base-ti"
@@ -764,13 +780,15 @@ module Parsers =
             
             let ty, inst =
                 (dims, ty)
+                |> ArrayType.ArrayType
                 |> BaseType.Array
                 |> P.ResolveInst
                 
             { Type = ty
             ; Inst = inst
             ; IsSet = false
-            ; IsOpt = false })
+            ; IsArray = true 
+            ; IsOptional = false })
         <?!> "array-ti-expr"
     
     // <ti-expr>        
@@ -781,16 +799,17 @@ module Parsers =
         <?!> "ti-expr"
 
     // <tuple-ti-expr-tail>
-    let tuple_ti =
+    let tuple_ti : P<TupleType> =
         kw "tuple"
         >>. between1(p '(', p ')', p ',') ti_expr
+        |>> TupleType.TupleType
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
     let record_ti =
         kw "record"
         >>. between1(p '(', p ')', p ',') ti_expr_and_id
-        |>> Map.ofList
+        |>> RecordType.RecordType
         <?!> "record-ti"
             
     // <base-ti-expr-tail>
@@ -802,7 +821,7 @@ module Parsers =
         ; record_ti   |>> BaseType.Record
         ; tuple_ti    |>> BaseType.Tuple
         ; range_expr  |>> BaseType.Range 
-        ; id       |>> BaseType.Id
+        ; id          |>> BaseType.Id
         ; set_literal |>> BaseType.Literal ]
         |> choice
         <?!> "base-ti-tail"
@@ -824,7 +843,7 @@ module Parsers =
             operation
             args
             (fun name args ->
-                { Name=name; Args=args })
+                { Function=name; Args=args })
         |> attempt
         <?!> "call-expr"
         
@@ -837,9 +856,9 @@ module Parsers =
     // <comp-tail>
     let comp_tail : P<Generator list> =
         let var =
-            (wildcard |>> IdOr.Value_)
+            (wildcard |>> IdOr.Val)
             <|>
-            (id |>> IdOr.Id_)
+            (id |>> IdOr.Id)
             <?!> "gen-var"
         let vars =
             var
@@ -854,7 +873,7 @@ module Parsers =
                 (ps expr)
                 (opt where)
                 (fun idents source filter ->
-                    { Yield = idents
+                    { Yields = idents
                     ; From = source
                     ; Where = filter })
             <?!> "generator"
@@ -871,9 +890,9 @@ module Parsers =
             (ps (between('(', ')') comp_tail))
             (between('(', ')') expr)
             (fun name gens expr ->
-                { Name = name
-                ; Generators = gens
-                ; Expr = expr })
+                { Operation = name
+                ; From = gens
+                ; Yields = expr })
         |> attempt
         <?!> "gen-call"
     
@@ -883,7 +902,7 @@ module Parsers =
         |> between('[', ']')
         |> attempt
         |>> (fun (expr, gens) -> 
-             { Yield=expr
+             { Yields=expr
              ; From = gens })
         <?!> "array-comp"
 
@@ -893,7 +912,7 @@ module Parsers =
         |> between('{', '}')
         |> attempt
         |>> (fun (expr, gens) -> 
-             { Yield=expr
+             { Yields=expr
              ; From = gens })
         <?!> "set-comp"
             
@@ -905,12 +924,16 @@ module Parsers =
             (opt (ps '=' >>. expr))
             (fun (id, ti) anns expr ->
                 let ti, inst = P.ResolveInst ti
-                id, ti, anns, expr)
+                { Name = id
+                ; Type = ti
+                ; Annotations = anns
+                ; Expr = expr })
 
     // <constraint-item>
-    let constraint_item =
+    let constraint_item : P<ConstraintItem> =
         kw "constraint"
         >>. expr
+        |>> (fun expr -> {Expr = expr})
         <?!> "constraint"
         
     // <annotation-item>
@@ -925,8 +948,7 @@ module Parsers =
         (var_decl_item |>> LetItem.Decl)
     
     // <let-expr>
-    let let_expr : P<LetExpr> =
-        
+    let let_expr : P<LetExpr> =        
         kw "let"
         >>. between(p '{', p '}', anyOf ":,") let_item
         .>> sps "in"
@@ -953,7 +975,7 @@ module Parsers =
             kw1 "elseif"
             >>. (ps expr)
             .>> (kw1 "then")
-            >>. (ps expr)
+            .>>. (ps expr)
             <?!> "elseif-case"
             
         let else_case =
@@ -988,6 +1010,7 @@ module Parsers =
     let array_access : P<ArrayAccess> =
         expr
         |> between(p '[', p ']', p ',', many=true)
+        |>> ArrayAccess.Access
         <?!> "array-access"
         
     // <expr-atom-tail>        
@@ -1004,7 +1027,7 @@ module Parsers =
           call_expr          |>> NumericExpr.Call
           num_un_op          |>> NumericExpr.UnaryOp
           quoted_op          |>> NumericExpr.Op 
-          id              |>> NumericExpr.Id
+          id                 |>> NumericExpr.Id
           ]
         |> choice
         <?!> "num-expr-atom-head"
@@ -1060,7 +1083,7 @@ module Parsers =
           set_comp        |>> Expr.SetComp
           array2d_literal |>> Expr.Array2d
           array1d_literal |>> Expr.Array1d
-          set_literal     |>> Expr.Set
+          set_expr        |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           quoted_op       |>> Expr.Op
           id              |>> Expr.Id
@@ -1076,7 +1099,9 @@ module Parsers =
                 | [] ->
                     head
                 | access ->
-                    Expr.Indexed (head, access)
+                    (head, access)
+                    |> IndexExpr.Index 
+                    |> Expr.Indexed
             )
     
     // <annotation>
@@ -1110,7 +1135,7 @@ module Parsers =
             )
         <?!> "expr"
             
-    let solve_method : P<SolveType> =
+    let solve_type : P<SolveType> =
         lookup(
           "satisfy" => SolveType.Satisfy,
           "minimize" => SolveType.Minimize,
@@ -1122,24 +1147,24 @@ module Parsers =
     let solve_item : P<SolveMethod> =
         pipe3
             (kw1 "solve" >>. annotations)
-            (sps solve_method)
+            (sps solve_type)
             (opt expr)
-            (fun annos method obj ->
-                match obj with
-                | Some o ->
-                    { Annotations = annos
-                    ; Method = method
-                    ; Objective = o }
-                    |> SolveMethod.Opt
-                | None ->
-                    { Annotations = annos }
-                    |> SolveMethod.Sat)
+            (fun anns solveType obj ->
+                match (solveType, obj) with
+                | SolveType.Maximize, (Some exp) ->
+                    SolveMethod.Max (exp, anns)
+                | SolveType.Minimize, (Some exp) ->
+                    SolveMethod.Min (exp, anns)
+                | _ ->
+                    SolveMethod.Sat anns
+                )
         <?!> "solve-item"            
         
     // <assign-item>
-    let assign_item =
-        attempt (id .>> sps '=')
-        .>>. expr
+    let assign_item : P<AssignItem> =
+        tuple2
+            (attempt (id .>> sps '='))
+            expr
         <?!> "assign-item"
         
     // <type-inst-syn-item>
@@ -1148,13 +1173,17 @@ module Parsers =
             (kw1 "type" >>. id .>> spaces)
             (ps annotations .>> ps "=")
             ti_expr
-            (fun id anns ty -> id, anns, ty)
+            (fun id anns ti ->
+                { Id = id
+                ; Annotations = anns
+                ; TypeInst = ti })
         <?!> "type-alias"
         
     // <output-item>
     let output_item : P<OutputItem> =
         kw1 "output"
-        >>. expr        
+        >>. expr
+        |>> (fun expr -> {Expr = expr})
         <?!> "output-item"
 
     // <item>
@@ -1188,31 +1217,31 @@ module Parsers =
             | item :: rest ->
                 let loop = loop rest
                 match item with
-                | Include x ->
+                | Item.Include x ->
                     loop { ast with Includes = x :: ast.Includes }
-                | Enum x ->
+                | Item.Enum x ->
                     loop { ast with Enums = x :: ast.Enums }
-                | Synonym x ->
+                | Item.Synonym x ->
                     loop { ast with Synonyms = x :: ast.Synonyms }
-                | Constraint x ->
+                | Item.Constraint x ->
                     loop { ast with Constraints = x :: ast.Constraints }
-                | Assign x ->
+                | Item.Assign x ->
                     loop { ast with Assigns = x :: ast.Assigns }
-                | Declare x ->
+                | Item.Declare x ->
                     loop { ast with Declares = x :: ast.Declares }
-                | Solve x ->
+                | Item.Solve x ->
                     loop { ast with Solves = x :: ast.Solves }
-                | Predicate x ->
+                | Item.Predicate x ->
                     loop { ast with Predicates = x :: ast.Predicates }
-                | Function x ->
+                | Item.Function x ->
                     loop { ast with Functions = x :: ast.Functions }
-                | Test x ->
+                | Item.Test x ->
                     loop { ast with Tests = x :: ast.Tests }
-                | Output x ->
+                | Item.Output x ->
                     loop { ast with Outputs = x :: ast.Outputs }
-                | Annotation x ->
+                | Item.Annotation x ->
                     loop { ast with Annotations = x :: ast.Annotations }
-                | Comment x ->
+                | Item.Comment x ->
                     loop { ast with Comments = x :: ast.Comments }
                 
         let empty =

@@ -6,7 +6,7 @@ open Xunit
 open System.IO
 open System
 
-module ModelTests =
+module ``Model Tests`` =
     
     [<Fact>]
     let ``test binding conflict`` () =
@@ -16,8 +16,8 @@ module ModelTests =
         
         let binding =
             Bindings.empty
-            |> Bindings.add "x" (Binding.Undeclared x)
-            |> Bindings.add "x" (Binding.Undeclared y)
+            |> Bindings.add "x" (Binding.Assign x)
+            |> Bindings.add "x" (Binding.Assign y)
             |> Map.find "x"
             
         match binding with
@@ -32,12 +32,12 @@ module ModelTests =
         
         let binding =
             Bindings.empty
-            |> Bindings.add "x" (Binding.Undeclared x)
-            |> Bindings.add "x" (Binding.Undeclared x)
+            |> Bindings.add "x" (Binding.Assign x)
+            |> Bindings.add "x" (Binding.Assign x)
             |> Map.find "x"
             
         match binding with
-        | Binding.Undeclared x ->
+        | Binding.Assign x ->
             ()
         | _ ->
             failwith "xd"
@@ -49,22 +49,23 @@ module ModelTests =
             { Type = BaseType.Int
             ; Inst = Inst.Var
             ; IsSet = false
-            ; IsOpt = false }
+            ; IsArray = false 
+            ; IsOptional = false }
             
         let expr =
             Expr.Int 100
         
         let bindings =
             Bindings.empty
-            |> Bindings.add "x" (Binding.Unassigned ti)
-            |> Bindings.add "x" (Binding.Undeclared expr)
+            |> Bindings.add "x" (Binding.Declare {Name="x"; Annotations = []; Type=ti; Expr=None})
+            |> Bindings.add "x" (Binding.Assign expr)
             
         let binding =
             bindings
             |> Map.find "x"
             
         match binding with
-        | Binding.Assigned (ti_, expr_) ->
+        | Binding.Declare {Type=ti_; Expr = Some expr_} ->
             ti_ ?= ti
             expr_ ?= expr
         | _ ->
@@ -77,7 +78,7 @@ module ModelTests =
         let model =
             Model.ParseString arg
             
-        assert model.Value.Unassigned.ContainsKey "x"
+        assert model.Model.Unassigned.ContainsKey "x"
         
     [<Theory>]
     [<InlineData("var int: x;x=100;")>]
@@ -86,5 +87,5 @@ module ModelTests =
         let model =
             Model.ParseString arg
         
-        assert model.Value.Unassigned.IsEmpty
+        assert model.Model.Unassigned.IsEmpty
                                         
