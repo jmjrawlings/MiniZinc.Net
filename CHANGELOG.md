@@ -1,7 +1,7 @@
 # Changelog
 
 ## UNREALEASED
-
+- Fixed multiple encoding bugs
 
 
 ## [0.4.1] - 2023-06-11
