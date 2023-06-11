@@ -218,14 +218,17 @@ module ``Parser Tests`` =
             input
             (fun enc -> enc.writeGenCall)
         
-    [<Fact>]
-    let ``test output``() =
-        let input = """
-output
-  [ if i = n_stores then "\n]"
-    elseif i mod 5 = 0 then ",\n"
-    else ","
-    endif
-  ];
-  """
-        testParser Parsers.ast input
+    [<Theory>]
+    [<InlineData("""
+    output 
+    [ "Cost = ",  show( obj ), "\n" ] ++ 
+    [ "Pieces = \n\t" ] ++ [show(pieces)] ++ [ "\n" ] ++ 
+    [ "Items = \n\t" ] ++
+    [ show(items[k, i]) ++ if k = K then "\n\t" else " " endif |
+        i in 1..N, k in 1..K ] ++
+    [ "\n" ];""")>]                
+    let ``test output``input =
+        testRoundtrip
+            output_item
+            input
+            (fun enc -> enc.writeOutputItem)
