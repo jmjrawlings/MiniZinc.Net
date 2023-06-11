@@ -379,6 +379,16 @@ module rec Model =
                 | Result.Error error -> ParseError error
                 
             result
+            
+        /// Parse a Model from the given MiniZinc model string
+        let parseExn (options: ParseOptions) (mzn: string) =
+            match parseString options mzn with
+            | LoadResult.Success model ->
+                model
+            | LoadResult.ParseError error ->
+                failwith error.Message
+            | _ ->
+                failwith "xd"
         
         /// Create a Model from the given AST
         let fromAst (options: ParseOptions) (ast: Ast) : Model =

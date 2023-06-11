@@ -208,15 +208,15 @@ module ``Parser Tests`` =
     let ``test set comp`` arg =
         testRoundtrip Parsers.set_comp arg
         
-    [<Fact>]
-    let ``test forall`` () =
-        let input = """
-    forall(i in 1..nb, j in i+1..nb)
-    (
-        card(sets[i] intersect sets[j]) <= 1
-    );
-"""
-        testRoundtrip Parsers.gen_call_expr input (fun enc -> enc.writeGenCall)
+    [<Theory>]
+    [<InlineData("forall( i in 1..nb, j in i+1..nb ) (card(sets[i] intersect sets[j]) <= 1);")>]
+    [<InlineData("sum( k in 1..K ) ( bin[k] );")>]
+    [<InlineData("forall(k in 1 .. K)(is_feasible_packing(bin[k], [item[k, j]j in 1 .. N]));")>]
+    let ``test gencall`` input =
+        testRoundtrip
+            gen_call_expr
+            input
+            (fun enc -> enc.writeGenCall)
         
     [<Fact>]
     let ``test output``() =

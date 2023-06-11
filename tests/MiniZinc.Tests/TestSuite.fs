@@ -135,7 +135,7 @@ module TestSuite =
         
     /// Parse the model for the given TestSuite
     let parseModel (suite: TestSuite) : Model =
-                
+                        
         let includeOpts =
             IncludeOptions.ParseFile [examples_dir.FullName]
         

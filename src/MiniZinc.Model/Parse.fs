@@ -91,12 +91,11 @@ module Parsers =
     slow so we only enable it for DEBUG
     *)
     // #if TRACE_PARSER
-    // let (<?!>) (p: P<'t>) label : P<'t> =
-    //     p <?> label <!> label
-    // #else
     let (<?!>) (p: P<'t>) label : P<'t> =
-        p <?> label
-    // #endif
+        p <?> label <!> label
+    // #else
+    // let (<?!>) (p: P<'t>) label : P<'t> =
+    //     p <?> label
                     
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
@@ -886,9 +885,9 @@ module Parsers =
     // <gen-call-expr>
     let gen_call_expr =
         pipe3
-            (ps id_or_op)
-            (ps (between('(', ')') comp_tail))
-            (between('(', ')') expr)
+            (id_or_op .>> spaces)
+            (ps (between('(', ')') comp_tail))             
+            (ps (between('(', ')') expr))
             (fun name gens expr ->
                 { Operation = name
                 ; From = gens

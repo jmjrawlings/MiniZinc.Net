@@ -29,12 +29,6 @@ type Comment =
 type IdOr<'T> =
     | Id of id:string
     | Val of value:'T
-    
-    member this.fold fId fValue =
-        match this with
-        | Id id -> fId id
-        | Val v -> fValue v
-    
               
 type Inst =
     | Var = 0

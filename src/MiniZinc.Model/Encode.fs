@@ -215,9 +215,15 @@ type MiniZincEncoder() =
         this.write "{"
         this.writeExprs exprs 
         this.write "}"
-        
-    member this.writeInt (x: int) =
-        this.write(string x)
+
+    member inline this.writeIdOrOp<'t when 't :> Enum> (x: IdOr<'t>) =
+        match x with
+        | IdOr.Id id ->
+            this.writeId id
+        | IdOr.Val op ->
+            let x = Convert.ToInt32(op)
+            let s = Encode.operators[x]
+            this.write s
                     
     member this.writeNumExpr (x: NumericExpr) =
         match x with
@@ -249,18 +255,14 @@ type MiniZincEncoder() =
             this.writeLetExpr expr
             
         | UnaryOp(op, expr) ->
-            match op with
-            | IdOr.Id id ->this.write id
-            | IdOr.Val v -> this.writeOp v
+            this.writeIdOrOp op
             this.write " "
             this.writeNumExpr expr
             
         | BinaryOp(left, op, right) ->
             this.writeNumExpr left
             this.write " "
-            match op with
-            | IdOr.Id id ->this.write id
-            | IdOr.Val v -> this.writeOp v
+            this.writeIdOrOp op
             this.write " "
             this.writeNumExpr right
             
@@ -268,6 +270,15 @@ type MiniZincEncoder() =
             this.writeNumExpr expr
             for acc in access do
                 this.writeArrayAccess acc
+    
+    member this.writeId (s: string) =
+        this.write s
+    
+    member this.writeString (s: string) =
+        this.write $"\"{s}\""
+    
+    member this.writeInt (x: int) =
+        this.write(string x)
     
     member this.writeFloat (x: float) =
         this.write (string x)
@@ -280,17 +291,9 @@ type MiniZincEncoder() =
         | true -> this.write "true"
         | false -> this.write "false"
         
-    member this.writeOp (x: System.Enum) =
+    member this.writeOp (x: Enum) =
         let x = Convert.ToInt32(x)
         let s = Encode.operators[x]
-        this.write s
-
-    member this.writeBinOp (x: BinaryOp) =
-        let s = Encode.operators[int x]
-        this.write s
-        
-    member this.writeUnOp (x: UnaryOp) =
-        let s = Encode.operators[int x]
         this.write s
                 
     member this.writeSetComp (x: SetCompExpr) =
@@ -316,6 +319,7 @@ type MiniZincEncoder() =
     member this.writeArrayComp (x: ArrayCompExpr) =
         this.write '['
         this.writeExpr x.Yields
+        this.write " | "
         this.writeGenerators x.From
         this.write ']'
         
@@ -337,14 +341,14 @@ type MiniZincEncoder() =
     member this.writeUnaryOp ((id, expr): UnaryOpExpr) =
         match id with
         | IdOr.Id x -> this.write x
-        | IdOr.Val x -> this.writeUnOp x
+        | IdOr.Val x -> this.writeOp x
         this.write " "
         this.writeExpr expr
         
     member this.writeBinaryOp ((left, op, right): BinaryOpExpr) =
         this.writeExpr left
         this.write " "
-        op.fold this.write this.writeBinOp
+        this.writeIdOrOp op
         this.write " "
         this.writeExpr right
         
@@ -426,32 +430,58 @@ type MiniZincEncoder() =
                         
     member this.writeExpr (x: Expr) =
         match x with
-        | Expr.WildCard      x -> this.write "_"  
-        | Expr.Int           x -> this.write (string x)
-        | Expr.Float         x -> this.writeFloat x
-        | Expr.Bool          x -> this.writeBool x
-        | Expr.String        x -> this.write x
-        | Expr.Id            x -> this.write x
-        | Expr.Op            x -> this.writeOp x
-        | Expr.Bracketed     x -> this.writeExpr x
-        | Expr.Set           x -> this.writeSetLit x
-        | Expr.SetComp       x -> this.writeSetComp x
-        | Expr.Array1d       x -> this.writeArray1d x
-        | Expr.Array2d       x -> this.writeArray2d x
-        | Expr.ArrayComp     x -> this.writeArrayComp x
-        | Expr.Array1dIndex    -> ()
-        | Expr.Array2dIndex    -> ()
-        | Expr.ArrayCompIndex  -> ()
-        | Expr.Tuple         x -> this.writeTuple x
-        | Expr.Record        x -> this.writeRecord x
-        | Expr.UnaryOp       x -> this.writeUnaryOp x
-        | Expr.BinaryOp      x -> this.writeBinaryOp x
-        | Expr.Annotation      -> ()
-        | Expr.IfThenElse    x -> this.writeIfThenElse x
-        | Expr.Let           x -> this.writeLetExpr x
-        | Expr.Call          x -> this.writeCall x
-        | Expr.GenCall       x -> this.writeGenCall x 
-        | Expr.Indexed       x -> this.writeIndexExpr x
+        | Expr.WildCard x ->
+            this.write "_"  
+        | Expr.Int x ->
+            this.writeInt x
+        | Expr.Float x ->
+            this.writeFloat x
+        | Expr.Bool x ->
+            this.writeBool x
+        | Expr.String x ->
+            this.writeString x
+        | Expr.Id x ->
+            this.writeId x
+        | Expr.Op x ->
+            this.writeOp x
+        | Expr.Bracketed x ->
+            this.writeExpr x
+        | Expr.Set x ->
+            this.writeSetLit x
+        | Expr.SetComp x ->
+            this.writeSetComp x
+        | Expr.Array1d x ->
+            this.writeArray1d x
+        | Expr.Array2d x ->
+            this.writeArray2d x
+        | Expr.ArrayComp x ->
+            this.writeArrayComp x
+        | Expr.Array1dIndex ->
+            ()
+        | Expr.Array2dIndex ->
+            ()
+        | Expr.ArrayCompIndex ->
+            ()
+        | Expr.Tuple x ->
+            this.writeTuple x
+        | Expr.Record x ->
+            this.writeRecord x
+        | Expr.UnaryOp x ->
+            this.writeUnaryOp x
+        | Expr.BinaryOp x ->
+            this.writeBinaryOp x
+        | Expr.Annotation ->
+            ()
+        | Expr.IfThenElse x ->
+            this.writeIfThenElse x
+        | Expr.Let x ->
+            this.writeLetExpr x
+        | Expr.Call x ->
+            this.writeCall x
+        | Expr.GenCall x ->
+            this.writeGenCall x 
+        | Expr.Indexed x ->
+            this.writeIndexExpr x
         
     member this.writeDeclareItem (decl: DeclareItem) =
         this.writeTypeInst decl.Type
