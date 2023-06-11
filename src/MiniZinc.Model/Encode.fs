@@ -219,7 +219,7 @@ type MiniZincEncoder() =
     member inline this.writeIdOrOp<'t when 't :> Enum> (x: IdOr<'t>) =
         match x with
         | IdOr.Id id ->
-            this.writeId id
+            this.write $"`{id}`"
         | IdOr.Val op ->
             let x = Convert.ToInt32(op)
             let s = Encode.operators[x]
@@ -359,12 +359,12 @@ type MiniZincEncoder() =
         this.writeExpr x.Then
         
         for ifCase, thenCase in x.ElseIf do
-            this.write "elseif "
+            this.write " elseif "
             this.writeExpr ifCase
             this.write " then "
             this.writeExpr thenCase
             
-        this.write " "
+        this.write " else "
         this.writeExpr x.Else
         this.write " endif"
         
@@ -377,12 +377,12 @@ type MiniZincEncoder() =
             | Decl decl -> this.writeDeclareItem(decl)
             | Cons cons -> this.writeConstraintItem(cons)
         
-        this.sepBy(";\n", x.Locals, writeLocal)
+        this.sepBy(",\n", x.Locals, writeLocal)
         this.dedent()
         this.writen "} in"
         this.indent()
         this.writeExpr x.In
-        this.writetn()
+        this.writen()
         this.dedent()
         
     member this.writeTypeInsts (xs: TypeInst list) : unit=
