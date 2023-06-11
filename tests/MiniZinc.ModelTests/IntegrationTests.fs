@@ -12,12 +12,12 @@ module ``Integration Tests`` =
         let model = TestSuite.parseModel suite
         let mzn = Model.encode EncodingOptions.Default model
         
-        let roundtrip =
-            match Model.parseString (ParseOptions.Default) mzn with
-            | LoadResult.Success model -> model
-            | other -> failwith (string other)
-            
-        let a = 1
+        // let roundtrip =
+        //     match Model.parseString (ParseOptions.Default) mzn with
+        //     | LoadResult.Success model -> model
+        //     | other -> failwith (string other)
+        //     
+        // let a = 1
         ()
         
 

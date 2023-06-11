@@ -91,11 +91,11 @@ module Parsers =
     slow so we only enable it for DEBUG
     *)
     // #if TRACE_PARSER
-    let (<?!>) (p: P<'t>) label : P<'t> =
-        p <?> label <!> label
-    // #else
     // let (<?!>) (p: P<'t>) label : P<'t> =
-    //     p <?> label
+    //     p <?> label <!> label
+    // #else
+    let (<?!>) (p: P<'t>) label : P<'t> =
+        p <?> label
     // #endif
                     
     let opt_or backup p =

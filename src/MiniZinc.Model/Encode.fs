@@ -1,5 +1,6 @@
 ﻿namespace MiniZinc
 
+open System
 open System.Text
 open MiniZinc
 
@@ -7,7 +8,8 @@ module Encode =
      
      let operators : Map<int, string> =
          [ Op.Add, "+"         
-         ; Op.Subtract, "-"          
+         ; Op.Subtract, "-"
+         ; Op.Not, "not"
          ; Op.Multiply, "*"         
          ; Op.Divide, "/"                  
          ; Op.Exponent, "^"         
@@ -45,6 +47,7 @@ module Encode =
          ; Op.Default, "default" ]
          |> List.map (fun (op, s) -> (int op, s))
          |> Map.ofList
+         
 
 /// Encode MiniZinc to String
 type MiniZincEncoder() =
@@ -157,18 +160,41 @@ type MiniZincEncoder() =
         
     member this.writeType(t: BaseType) =
         match t with
-        | BaseType.Int ->        this.write "int"
-        | BaseType.Bool ->       this.write "bool"
-        | BaseType.String ->     this.write "string"
-        | BaseType.Float ->      this.write "float"
-        | BaseType.Id x ->       this.write x
-        | BaseType.Variable x -> this.write x
-        | BaseType.Record x ->   this.writeRecordType x                        
-        | BaseType.Tuple x ->    this.writeTupleType x
-        | BaseType.Literal x ->  this.writeSetLit x            
-        | BaseType.Range x ->    this.writeRange x           
-        | BaseType.List x ->     this.writeListType x
-        | BaseType.Array x ->    this.writeArrayType x
+        | BaseType.Int ->
+            this.write "int"
+            
+        | BaseType.Bool ->
+            this.write "bool"
+            
+        | BaseType.String ->
+            this.write "string"
+            
+        | BaseType.Float ->
+            this.write "float"
+            
+        | BaseType.Id x ->
+            this.write x
+            
+        | BaseType.Variable x ->
+            this.write x
+            
+        | BaseType.Record x ->
+            this.writeRecordType x
+            
+        | BaseType.Tuple x ->
+            this.writeTupleType x
+            
+        | BaseType.Literal x ->
+            this.writeSetLit x
+            
+        | BaseType.Range x ->
+            this.writeRange x
+            
+        | BaseType.List x ->
+            this.writeListType x
+            
+        | BaseType.Array x ->
+            this.writeArrayType x
 
     member this.writeRange (lo, hi) =
         this.writeNumExpr lo
@@ -187,7 +213,7 @@ type MiniZincEncoder() =
                         
     member this.writeSetLit (SetLiteral.SetLiteral exprs) =
         this.write "{"
-        //this.commaSep(exprs, this.writeExpr)
+        this.writeExprs exprs 
         this.write "}"
         
     member this.writeInt (x: int) =
@@ -206,7 +232,7 @@ type MiniZincEncoder() =
             this.write s
             
         | Op op ->
-            this.writeOp(int op)
+            this.writeOp op
             
         | Bracketed expr ->
             this.write '('
@@ -225,7 +251,7 @@ type MiniZincEncoder() =
         | UnaryOp(op, expr) ->
             match op with
             | IdOr.Id id ->this.write id
-            | IdOr.Val v -> this.writeOp (int v)
+            | IdOr.Val v -> this.writeOp v
             this.write " "
             this.writeNumExpr expr
             
@@ -234,7 +260,7 @@ type MiniZincEncoder() =
             this.write " "
             match op with
             | IdOr.Id id ->this.write id
-            | IdOr.Val v -> this.writeOp (int v)
+            | IdOr.Val v -> this.writeOp v
             this.write " "
             this.writeNumExpr right
             
@@ -254,7 +280,8 @@ type MiniZincEncoder() =
         | true -> this.write "true"
         | false -> this.write "false"
         
-    member this.writeOp (x: int) =
+    member this.writeOp (x: System.Enum) =
+        let x = Convert.ToInt32(x)
         let s = Encode.operators[x]
         this.write s
 
@@ -363,7 +390,7 @@ type MiniZincEncoder() =
     member this.writeGenCall (x: GenCallExpr) =
         match x.Operation with
         | IdOr.Id id ->this.write id
-        | IdOr.Val v -> this.writeOp (int v)
+        | IdOr.Val v -> this.writeOp v
         this.write "("
         this.writeGenerators x.From
         this.write ")"
@@ -405,7 +432,7 @@ type MiniZincEncoder() =
         | Expr.Bool          x -> this.writeBool x
         | Expr.String        x -> this.write x
         | Expr.Id            x -> this.write x
-        | Expr.Op            x -> this.writeOp (int x)
+        | Expr.Op            x -> this.writeOp x
         | Expr.Bracketed     x -> this.writeExpr x
         | Expr.Set           x -> this.writeSetLit x
         | Expr.SetComp       x -> this.writeSetComp x
@@ -503,7 +530,7 @@ type MiniZincEncoder() =
     member this.writeCall (x: CallExpr) =
         match x.Function with
         | IdOr.Id s -> this.write s
-        | IdOr.Val v -> this.writeOp (int v)
+        | IdOr.Val v -> this.writeOp v
         this.write "("
         this.writeExprs x.Args
         this.write ")"
