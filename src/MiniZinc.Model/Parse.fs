@@ -73,7 +73,7 @@ module Parsers =
         // The %A for res.Result makes it go onto multiple lines - pad them out correctly
         let replaceStr = "\n" + "".PadRight(max posStr.Length 0) + "".PadRight(max indent 0, '\u2502').PadRight(max msgPadLen 0)
         let correctedStr = msg.Replace("\n", replaceStr)
-        let fullStr = $"%s{posIdentStr} %s{correctedStr}\n"
+        let fullStr = $"%s{posIdentStr} %s{correctedStr}"
 
         stream.UserState.write fullStr
         stream.UserState.Indent <- nextIndent
@@ -579,7 +579,6 @@ module Parsers =
         op builtin_un_op
         .>> spaces
         .>>. expr_atom
-        <?!> "un-op"
 
     let builtin_ops =
         builtin_bin_ops @ builtin_un_ops
@@ -597,7 +596,6 @@ module Parsers =
             .>> sps ".."
             .>>. num_expr
         )
-        <?!> "range-expr"
     
     // <array1d-literal>
     let array1d_literal =
@@ -611,7 +609,6 @@ module Parsers =
         between(p '{', p '}', p ',') expr
         |> attempt
         |>> SetLiteral.SetLiteral
-        <?!> "set-literal"
         
     // <set-expr>
     let set_expr : P<SetLiteral>=
@@ -636,7 +633,6 @@ module Parsers =
                 
         array
         |>> Array2dExpr.Array2d
-        <?!> "array2d-literal"
    
     // <ti-expr-and-id>
     let ti_expr_and_id : P<Id * TypeInst> =
@@ -644,7 +640,6 @@ module Parsers =
         .>> sps ':'
         .>>. id
         |>> (fun (expr, name) -> (name, expr))
-        <?> "ti-expr-and-id"    
     
     let parameters : P<Parameters> =
         ti_expr_and_id
@@ -720,7 +715,6 @@ module Parsers =
         kw1 "include"
         >>. string_literal
         |>> IncludeItem.Include
-        <?!> "include-item"
     
     // <var-par>
     let var_par : P<Inst> =
@@ -730,21 +724,18 @@ module Parsers =
         )
         .>> spaces1
         |> opt_or Inst.Par
-        <?!> "var-par"
         
     // <opt-ti>        
     let opt_ti =
         ps1 "opt"
         >>% true
         |> opt_or false
-        <?!> "opt-ti"
     
     // <set-ti>    
     let set_ti =
         ps1 "set" >>. ps1 "of"
         >>% true
         |> opt_or false
-        <?!> "set-ti"
    
     // <base-ti-expr>
     let base_ti_expr : P<TypeInst> =
@@ -759,9 +750,7 @@ module Parsers =
                 ; IsSet = set
                 ; IsArray = false 
                 ; Inst = inst }
-            )
-        <?!> "base-ti"
-    
+            )    
         
     // <array-ti-expr>        
     let array_ti_expr : P<TypeInst> =
@@ -862,10 +851,8 @@ module Parsers =
         let vars =
             var
             |> sepBy(p ",", many=true)
-            <?!> "gen-vars"
         let where =
             kw1 "where" >>. expr
-            <?!> "gen-where"
         let generator =    
             pipe3
                 (vars .>> sps "in")
@@ -878,9 +865,7 @@ module Parsers =
             <?!> "generator"
             
         generator
-        |> sepBy(p ",", many=true)
-        <?!> "comp_tail"
-       
+        |> sepBy(p ",", many=true)       
             
     // <gen-call-expr>
     let gen_call_expr =
@@ -933,7 +918,6 @@ module Parsers =
         kw "constraint"
         >>. expr
         |>> (fun expr -> {Expr = expr})
-        <?!> "constraint"
         
     // <annotation-item>
     let annotation_item =
@@ -961,27 +945,25 @@ module Parsers =
         let if_case = 
             kw "if"
             >>. expr
-            .>> spaces1
+            .>> spaces
             <?!> "if-case"
             
         let then_case =
             kw "then"
             >>. expr
-            .>> spaces1
-            <?!> "else-case"
+            .>> spaces
             
         let elseif_case =
             kw1 "elseif"
             >>. (ps expr)
             .>> (kw1 "then")
             .>>. (ps expr)
-            <?!> "elseif-case"
             
         let else_case =
-            expr
-            |> between("else", "endif")
-            <?!> "else-case"
-            
+            kw "else"
+            >>. (ps expr)
+            .>> p "endif"
+                        
         pipe4
             if_case
             then_case
@@ -998,7 +980,6 @@ module Parsers =
         op builtin_num_un_op
         .>> spaces
         .>>. num_expr_atom
-        <?!> "num-un-op"
         
     let quoted_op =
         builtin_op
@@ -1014,7 +995,7 @@ module Parsers =
         
     // <expr-atom-tail>        
     let expr_atom_tail =
-        (many (attempt (sp array_access)))
+        many (array_access .>> spaces)
 
     // <num-expr-atom-head>    
     let num_expr_atom_head=
@@ -1029,16 +1010,15 @@ module Parsers =
           id                 |>> NumericExpr.Id
           ]
         |> choice
-        <?!> "num-expr-atom-head"
         
     // <num-expr-atom>        
     num_expr_atom_ref.contents <-
         pipe2
             num_expr_atom_head
-            expr_atom_tail            
+            (sp expr_atom_tail)
             (fun head access ->
                 match access with
-                | []->
+                | [] ->
                     head
                 | _ ->
                     NumericExpr.ArrayAccess (head, access)
@@ -1050,7 +1030,6 @@ module Parsers =
     let num_expr_binop_tail =        
         sps (op builtin_num_bin_op)
         .>>. num_expr
-        <?!> "num-expr-binop-tail"
 
     // <num-expr>
     num_expr_ref.contents <-
@@ -1064,7 +1043,6 @@ module Parsers =
                 | Some (op, right) ->
                     NumericExpr.BinaryOp (head, op, right)
             )
-        <?!> "num-expr"        
         
     // <expr-atom-head>    
     let expr_atom_head=
@@ -1132,7 +1110,6 @@ module Parsers =
                 | Some (op, right) ->
                     Expr.BinaryOp (head, op, right)
             )
-        <?!> "expr"
             
     let solve_type : P<SolveType> =
         lookup(
@@ -1140,7 +1117,6 @@ module Parsers =
           "minimize" => SolveType.Minimize,
           "maximize" => SolveType.Maximize
         )
-        <?!> "solve-method"
         
     // <solve-item>
     let solve_item : P<SolveMethod> =
@@ -1156,15 +1132,13 @@ module Parsers =
                     SolveMethod.Min (exp, anns)
                 | _ ->
                     SolveMethod.Sat anns
-                )
-        <?!> "solve-item"            
+                )            
         
     // <assign-item>
     let assign_item : P<AssignItem> =
         tuple2
             (attempt (id .>> sps '='))
             expr
-        <?!> "assign-item"
         
     // <type-inst-syn-item>
     let alias_item : P<SynonymItem> =
@@ -1176,14 +1150,12 @@ module Parsers =
                 { Id = id
                 ; Annotations = anns
                 ; TypeInst = ti })
-        <?!> "type-alias"
         
     // <output-item>
     let output_item : P<OutputItem> =
         kw1 "output"
         >>. expr
         |>> (fun expr -> {Expr = expr})
-        <?!> "output-item"
 
     // <item>
     let item =

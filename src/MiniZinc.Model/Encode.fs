@@ -374,8 +374,10 @@ type MiniZincEncoder() =
         
         let writeLocal =
             function
-            | Decl decl -> this.writeDeclareItem(decl)
-            | Cons cons -> this.writeConstraintItem(cons)
+            | Decl decl ->
+                this.writeDeclareItem decl
+            | Cons cons ->
+                this.writeConstraintItem cons
         
         this.sepBy(",\n", x.Locals, writeLocal)
         this.dedent()

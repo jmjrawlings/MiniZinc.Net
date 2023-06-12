@@ -169,9 +169,27 @@ module ``Parser Tests`` =
     let ``test array1d literal`` arg =
         testRoundtrip Parsers.array1d_literal arg (fun enc -> enc.writeArray1d)
         
-    
-    let ``test generator`` arg =
-        testRoundtrip Parsers.gen_call_expr arg
+    [<Theory>]
+    [<InlineData("""constraint
+	forall (i in 1..n-1) (
+		if d[i] == d[i+1] then
+			lex_lesseq([p[i,  j] | j in 1..t],
+				[p[i+1,j] | j in 1..t])
+		else
+			true
+		endif
+	);""")>]
+    [<InlineData("""constraint
+	forall(i in 1..n-1) (
+		if d[i] < d[i+1] then
+		       sum (j in 1..t) (p[i,j]*R[j])
+		     < sum (j in 1..t) (p[i+1,j]*R[j])
+		else
+			true
+		endif
+	);""")>]
+    let ``test gen call`` arg =
+        testRoundtrip Parsers.constraint_item arg (fun enc -> enc.writeConstraintItem)
         
     [<Theory>]
     [<InlineData("var llower..lupper: Production;")>]
@@ -207,11 +225,12 @@ module ``Parser Tests`` =
     [<InlineData("{r | r in {R0 + [-1, -2, -2, -1,  1,  2,  2,  1][i] } }")>]
     let ``test set comp`` arg =
         testRoundtrip Parsers.set_comp arg
-        
+
     [<Theory>]
     [<InlineData("forall( i in 1..nb, j in i+1..nb ) (card(sets[i] intersect sets[j]) <= 1);")>]
     [<InlineData("sum( k in 1..K ) ( bin[k] );")>]
-    [<InlineData("forall(k in 1 .. K)(is_feasible_packing(bin[k], [item[k, j]j in 1 .. N]));")>]
+    [<InlineData("forall(k in 1 .. K)(is_feasible_packing(bin[k], [item[k, j] | j in 1 .. N]));")>]
+    [<InlineData("forall (i in 1..n-1) (if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif);")>]
     let ``test gencall`` input =
         testRoundtrip
             gen_call_expr
