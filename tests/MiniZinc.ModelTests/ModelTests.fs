@@ -16,8 +16,8 @@ module ``Model Tests`` =
         
         let binding =
             Bindings.empty
-            |> Bindings.add "x" (Binding.Assign x)
-            |> Bindings.add "x" (Binding.Assign y)
+            |> Bindings.add "x" (Binding.Expr x)
+            |> Bindings.add "x" (Binding.Expr y)
             |> Map.find "x"
             
         match binding with
@@ -32,12 +32,12 @@ module ``Model Tests`` =
         
         let binding =
             Bindings.empty
-            |> Bindings.add "x" (Binding.Assign x)
-            |> Bindings.add "x" (Binding.Assign x)
+            |> Bindings.add "x" (Binding.Expr x)
+            |> Bindings.add "x" (Binding.Expr x)
             |> Map.find "x"
             
         match binding with
-        | Binding.Assign x ->
+        | Binding.Expr x ->
             ()
         | _ ->
             failwith "xd"
@@ -46,7 +46,7 @@ module ``Model Tests`` =
     let ``test assign variable`` () =
         
         let ti =
-            { Type = BaseType.Int
+            { Type = Type.Int
             ; Inst = Inst.Var
             ; IsSet = false
             ; IsArray = false 
@@ -58,7 +58,7 @@ module ``Model Tests`` =
         let bindings =
             Bindings.empty
             |> Bindings.add "x" (Binding.Declare {Name="x"; Annotations = []; Type=ti; Expr=None})
-            |> Bindings.add "x" (Binding.Assign expr)
+            |> Bindings.add "x" (Binding.Expr expr)
             
         let binding =
             bindings

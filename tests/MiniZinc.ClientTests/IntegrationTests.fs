@@ -20,7 +20,7 @@ module ``Integration Tests`` =
 // """
         let mzn = """if true then sum(j in 1..t)(1) else true endif;"""
         let model =
-            Parse.stringWith Parsers.if_else_expr mzn
+            Parse.string Parsers.if_else_expr mzn
             |> Result.get
         ()
     

@@ -10,7 +10,7 @@ module ``Integration Tests`` =
     let test (name: string) =
         let suite = TestSuite.load name
         let model = TestSuite.parseModel suite
-        let mzn = Model.encode EncodingOptions.Default model
+        let mzn = Model.encode EncodeOptions.Default model
         let roundtrip = Model.parseExn ParseOptions.Default mzn
             
         //     

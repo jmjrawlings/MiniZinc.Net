@@ -14,7 +14,7 @@ module ``Parser Tests`` =
             Parse.stripComments input
         
         let parsed =
-            match Parse.stringWith parser source with
+            match Parse.string parser source with
             | Ok x -> x
             | Error err -> failwith (string err)
         
@@ -27,7 +27,7 @@ module ``Parser Tests`` =
             Parse.stripComments input
         
         let parsed =
-            match Parse.stringWith parser source with
+            match Parse.string parser source with
             | Ok x ->
                 x
             | Error err ->
@@ -41,7 +41,7 @@ module ``Parser Tests`` =
             encoder.String
        
         let roundtrip =
-            match Parse.stringWith parser encoded with
+            match Parse.string parser encoded with
             | Ok x ->
                 x
             | Error err ->
@@ -149,7 +149,7 @@ module ``Parser Tests`` =
     [<InlineData("% 12312312")>]
     [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
-        let output = Parse.stringWith Parsers.comment arg
+        let output = Parse.string Parsers.comment arg
         output.AssertOk()
         
     [<Theory>]

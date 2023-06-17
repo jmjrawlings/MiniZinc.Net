@@ -2,6 +2,7 @@
 
 open System
 open System.Text
+open System.Xml.Linq
 open MiniZinc
 
 module Encode =
@@ -128,7 +129,7 @@ type MiniZincEncoder() =
                 
     member this.writeSynonym (syn: SynonymItem) =
         this.write "type "
-        this.write syn.Id
+        this.write syn.Name
         this.write " = "
         this.writeTypeInst syn.TypeInst
         this.writetn()
@@ -158,42 +159,42 @@ type MiniZincEncoder() =
             this.sepBy(", ", fields, this.writeTypeInst)
             this.write ")"
         
-    member this.writeType(t: BaseType) =
+    member this.writeType(t: Type) =
         match t with
-        | BaseType.Int ->
+        | Type.Int ->
             this.write "int"
             
-        | BaseType.Bool ->
+        | Type.Bool ->
             this.write "bool"
             
-        | BaseType.String ->
+        | Type.String ->
             this.write "string"
             
-        | BaseType.Float ->
+        | Type.Float ->
             this.write "float"
             
-        | BaseType.Id x ->
+        | Type.Id x ->
             this.write x
             
-        | BaseType.Variable x ->
+        | Type.Variable x ->
             this.write x
             
-        | BaseType.Record x ->
+        | Type.Record x ->
             this.writeRecordType x
             
-        | BaseType.Tuple x ->
+        | Type.Tuple x ->
             this.writeTupleType x
             
-        | BaseType.Literal x ->
+        | Type.Literal x ->
             this.writeSetLit x
             
-        | BaseType.Range x ->
+        | Type.Range x ->
             this.writeRange x
             
-        | BaseType.List x ->
+        | Type.List x ->
             this.writeListType x
             
-        | BaseType.Array x ->
+        | Type.Array x ->
             this.writeArrayType x
 
     member this.writeRange (lo, hi) =
@@ -371,19 +372,12 @@ type MiniZincEncoder() =
     member this.writeLetExpr (x: LetExpr) =
         this.writen "let {"
         this.indent()
-        
-        let writeLocal =
-            function
-            | Decl decl ->
-                this.writeDeclareItem decl
-            | Cons cons ->
-                this.writeConstraintItem cons
-        
-        this.sepBy(",\n", x.Locals, writeLocal)
+        this.sepBy(",\n", x.Declares, this.writeDeclareItem)
+        this.sepBy(",\n", x.Constraints, this.writeConstraintItem)
         this.dedent()
         this.writen "} in"
         this.indent()
-        this.writeExpr x.In
+        this.writeExpr x.Body
         this.writen()
         this.dedent()
         
@@ -507,21 +501,6 @@ type MiniZincEncoder() =
         | _ ->
             ()
         
-    member this.writePredicate (pred: PredicateItem) =
-        this.write "predicate "
-        this.write pred.Name
-        this.write "("
-        this.writeParameters pred.Parameters
-        this.write ")"
-        if pred.Body.IsSome then
-            this.writen " = "
-            this.indent()
-            this.writeExpr pred.Body.Value
-            this.dedent()
-            this.writetn()
-        else
-            this.writetn()
-        
     member this.writeRecordType (RecordType.RecordType pars) =
         this.write "record("
         this.writeParameters pars
@@ -567,9 +546,9 @@ type MiniZincEncoder() =
         this.writeExprs x.Args
         this.write ")"
         
-    member this.writeConstraintItem (x: ConstraintItem) =
+    member this.writeConstraintItem (ConstraintItem.Constraint expr) =
         this.write "constraint "
-        this.writeExpr x.Expr
+        this.writeExpr expr
         
     member this.writeIncludeItem (x: IncludeItem) =
         match x with

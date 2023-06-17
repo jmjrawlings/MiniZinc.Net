@@ -11,7 +11,6 @@ Some rules have been simplified for ease of use.
 
 namespace MiniZinc
 
-open System
 open System.Diagnostics
 
 type Id = string
@@ -23,6 +22,9 @@ type WildCard =
 
 type Comment =
     string
+    
+type INamed =
+    abstract member Name: string
 
 [<Struct>]
 // An identifier or a value of 'T
@@ -219,7 +221,7 @@ and Array1dExpr =
     | Array1d of Expr list
 
 and Array2dExpr =
-    | Array2d of (Expr list) list
+    | Array2d of Expr list list
 
 and TupleExpr =
     | TupleExpr of Expr list
@@ -281,18 +283,24 @@ and EnumItem =
     ; Annotations : Annotations
     ; Cases : EnumCase list }
     
+    interface INamed with
+        member this.Name = this.Name
+    
 and EnumCase =
     | Name of Id
     | Expr of Expr
     
 and TypeInst =
-    { Type  : BaseType
+    { Type  : Type
       Inst  : Inst
       IsSet : bool
       IsOptional : bool
       IsArray : bool }
     
-and [<RequireQualifiedAccess>] BaseType =
+and ITyped =
+    abstract member TypeInst: TypeInst
+    
+and [<RequireQualifiedAccess>] Type =
     | Int
     | Bool
     | String
@@ -332,7 +340,7 @@ and [<RequireQualifiedAccess>] Item =
     | Assign     of AssignItem
     | Declare    of DeclareItem
     | Solve      of SolveMethod
-    | Predicate  of PredicateItem
+    | Predicate  of FunctionItem
     | Function   of FunctionItem
     | Test       of TestItem
     | Output     of OutputItem
@@ -343,7 +351,7 @@ and AnnotationItem =
     CallExpr
 
 and ConstraintItem =
-    { Expr: Expr }
+    | Constraint of Expr
     
 and Parameters =
     Parameter list
@@ -353,7 +361,7 @@ and Parameter =
 
 and Argument =
     Expr
-    
+  
 and NamedArg =
     Id * Expr
 
@@ -362,24 +370,24 @@ and NamedArgs =
     
 and Arguments =
     Argument list
-        
-and PredicateItem =
-    { Name: string
-    ; Parameters : Parameters
-    ; Annotations : Annotations
-    ; Body: Expr option }
        
 and TestItem =
     { Name: string
     ; Parameters : Parameters
     ; Annotations : Annotations
     ; Body: Expr option }
+    
+    interface INamed with
+        member this.Name = this.Name    
 
 and SynonymItem =
-    { Id : string
+    { Name : string
     ; Annotations : Annotations
     ; TypeInst: TypeInst }
-
+    
+    interface INamed with
+        member this.Name = this.Name
+    
 and OutputItem =
     { Expr: Expr }
 
@@ -391,9 +399,13 @@ and OperationItem =
     
 and FunctionItem =
     { Name: string
-      Returns : TypeInst
-      Parameters : Parameters
-      Body: Expr option }
+    ; Returns : TypeInst
+    ; Annotations : Annotations
+    ; Parameters : Parameters
+    ; Body: Expr option }
+    
+    interface INamed with
+        member this.Name = this.Name
     
 and Test =
     unit
@@ -406,26 +418,22 @@ and DeclareItem =
     ; Type: TypeInst
     ; Annotations: Annotations
     ; Expr: Expr option }
+    
+    interface INamed with
+        member this.Name = this.Name
 
-and LetItem =
-    | Decl of DeclareItem
-    | Cons of ConstraintItem
+and LetLocal =
+    Choice<DeclareItem, ConstraintItem>
     
 and LetExpr =
-    { Locals: LetItem list
-      In: Expr }
+    { Declares : DeclareItem list
+    ; Constraints : ConstraintItem list
+    ; Body: Expr }
     
-type Ast =
-    { Includes:    IncludeItem list 
-    ; Enums:       EnumItem list 
-    ; Synonyms:    SynonymItem list 
-    ; Constraints: ConstraintItem list 
-    ; Assigns:     AssignItem list 
-    ; Declares:    DeclareItem list
-    ; Solves:      SolveMethod list
-    ; Predicates:  PredicateItem list 
-    ; Functions:   FunctionItem list 
-    ; Tests:       TestItem list 
-    ; Outputs:     OutputItem list 
-    ; Annotations: AnnotationItem list 
-    ; Comments:    string list }
+and Ast = Item list    
+    
+    
+    
+    
+    
+    

@@ -1,8 +1,12 @@
 # Changelog
 
-## UNREALEASED
+## UNRELEASED
 - Fixed multiple encoding bugs
-
+- Simplified some `Parser` types
+- New `NameSpace` object
+- Removed `AST` class
+- Refactored `Model` object
+  
 
 ## [0.4.1] - 2023-06-11
 - Scaffold Client integration tests
