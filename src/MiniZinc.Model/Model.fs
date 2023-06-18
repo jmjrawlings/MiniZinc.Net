@@ -158,6 +158,38 @@ module rec Model =
         /// Create a Model from the given AST
         let fromAst (options: ParseOptions) (ast: Ast) : Model =
             
+            let fold (model:Model) (item: Item) =
+                match item with
+                | Item.Include (Include x) ->
+                    { model with Includes = Map.add x LoadResult.Reference model.Includes }
+                | Item.Enum x ->
+                    { model with NameSpace = model.NameSpace.add x }
+                | Item.Synonym x ->
+                    { model with NameSpace = model.NameSpace.add x }
+                | Item.Declare x ->
+                    { model with NameSpace = model.NameSpace.add x }
+                | Item.Predicate x ->
+                    { model with NameSpace = model.NameSpace.add x }
+                | Item.Function x ->
+                    { model with NameSpace = model.NameSpace.add x }
+                | Item.Assign (name, expr) ->
+                    { model with NameSpace = model.NameSpace.add(name, expr) }
+                | Item.Constraint x ->
+                    { model with Constraints = x :: model.Constraints }
+                | Item.Solve x ->
+                    { model with SolveMethod = x} 
+                | Item.Test x ->
+                    model
+                | Item.Output x ->
+                    { model with Outputs = x :: model.Outputs }
+                | Item.Annotation x ->
+                    model
+                | Item.Comment x ->
+                    model
+
+            let model =
+                List.fold fold empty ast 
+                    
             
             // Parse an included model with the given filename "model.mzn"
             let parseIncluded filename =
@@ -187,19 +219,13 @@ module rec Model =
                 filename, result
                 
             // Parse included models in parallel
-            let inclusions =
-                ast.Includes
-                |> Seq.map (fun (IncludeItem.Include x) -> x)
+            let inclusions : Map<string, LoadResult> =
+                model.Includes
+                |> Map.toSeq
+                |> Seq.map fst
                 |> Seq.toArray
                 |> Array.Parallel.map parseIncluded
                 |> Map.ofSeq
-                            
-            // Load the model from these bindings only
-            let model =
-                ofNameSpace map
-                |> Includes_.set inclusions
-                |> Constraints_.set ast.Constraints
-                |> Outputs_.set ast.Outputs                
                 
             // Now merge the model with all inclusions
             let unified =
@@ -348,9 +374,24 @@ module rec Model =
         ; Functions  : Map<string, FunctionItem> 
         ; Conflicts  : Map<string, Binding list> 
         ; Undeclared : Map<string, Expr> }
+                
+        member this.add (x: DeclareItem) =
+            NameSpace.add x.Name (Binding.Declare x) this
+            
+        member this.add (x: EnumItem) =
+            NameSpace.add x.Name (Binding.Enum x) this
+            
+        member this.add (x: SynonymItem) =
+            NameSpace.add x.Name (Binding.Synonym x) this
+
+        member this.add (x: FunctionItem) =
+            NameSpace.add x.Name (Binding.Function x) this
+            
+        member this.add (name: string, x: Expr) : NameSpace =
+            NameSpace.add name (Binding.Expr x) this
         
     module NameSpace =
-        
+                
         /// The empty namespace
         let empty =
             { Bindings   = Map.empty   
@@ -362,7 +403,7 @@ module rec Model =
             ; Undeclared = Map.empty }
 
         /// Add a binding to the namespace
-        let add id value (ns: NameSpace) =
+        let add id (value: Binding) (ns: NameSpace) : NameSpace =
                                                        
             let previous =
                 ns.Bindings.TryFind id
