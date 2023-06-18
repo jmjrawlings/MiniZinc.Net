@@ -237,7 +237,6 @@ module rec Model =
                 |> Seq.fold merge model
 
             unified
-
         /// Merge two Models
         let merge (a: Model) (b: Model) : Model =
                             

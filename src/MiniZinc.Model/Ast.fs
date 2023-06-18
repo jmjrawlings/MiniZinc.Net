@@ -11,6 +11,7 @@ Some rules have been simplified for ease of use.
 
 namespace MiniZinc
 
+open System
 open System.Diagnostics
 
 type Id = string
