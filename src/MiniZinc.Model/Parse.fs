@@ -612,11 +612,7 @@ module Parsers =
     // <set-expr>
     let set_expr : P<SetLiteral>=
         set_literal
-        
-    // <set-expr>
-    let set_expr : P<SetLiteral>=
-        set_literal
-        
+                
     // <array2d-literal>
     let array2d_literal =
         
