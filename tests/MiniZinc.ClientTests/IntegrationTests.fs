@@ -5,6 +5,25 @@ open Xunit
 open System.IO
 
 module ``Integration Tests`` =
+    
+    
+    [<Fact>]
+    let ``test aaaa`` () =
+//         let mzn = """forall(i in 1..n-1)(
+// 		if true
+//         then
+//         sum(j in 1..t)(1)
+//         else
+//         1
+//         endif
+// );
+// """
+        let mzn = """if true then sum(j in 1..t)(1) else true endif;"""
+        let model =
+            Parse.string Parsers.if_else_expr mzn
+            |> Result.get
+        ()
+    
    
     let test (name: string) =
         let suite = TestSuite.load name

@@ -15,13 +15,14 @@ module ``Model Tests`` =
         let y = Expr.Int 2
         
         let binding =
-            Bindings.empty
-            |> Bindings.add "x" (Binding.Assign x)
-            |> Bindings.add "x" (Binding.Assign y)
+            NameSpace.empty
+            |> NameSpace.add "x" (Binding.Expr x)
+            |> NameSpace.add "x" (Binding.Expr y)
+            |> NameSpace.bindings
             |> Map.find "x"
             
         match binding with
-        | Conflict xs ->
+        | Binding.Multiple xs ->
             ()
         | _ ->
             failwith "xd"
@@ -31,13 +32,14 @@ module ``Model Tests`` =
         let x = Expr.Int 1
         
         let binding =
-            Bindings.empty
-            |> Bindings.add "x" (Binding.Assign x)
-            |> Bindings.add "x" (Binding.Assign x)
+            NameSpace.empty
+            |> NameSpace.add "x" (Binding.Expr x)
+            |> NameSpace.add "x" (Binding.Expr x)
+            |> NameSpace.bindings
             |> Map.find "x"
             
         match binding with
-        | Binding.Assign x ->
+        | Binding.Expr x ->
             ()
         | _ ->
             failwith "xd"
@@ -46,7 +48,7 @@ module ``Model Tests`` =
     let ``test assign variable`` () =
         
         let ti =
-            { Type = BaseType.Int
+            { Type = Type.Int
             ; Inst = Inst.Var
             ; IsSet = false
             ; IsArray = false 
@@ -56,9 +58,10 @@ module ``Model Tests`` =
             Expr.Int 100
         
         let bindings =
-            Bindings.empty
-            |> Bindings.add "x" (Binding.Declare {Name="x"; Annotations = []; Type=ti; Expr=None})
-            |> Bindings.add "x" (Binding.Assign expr)
+            NameSpace.empty
+            |> NameSpace.add "x" (Binding.Declare {Name="x"; Annotations = []; Type=ti; Expr=None})
+            |> NameSpace.add "x" (Binding.Expr expr)
+            |> NameSpace.bindings
             
         let binding =
             bindings
@@ -78,7 +81,7 @@ module ``Model Tests`` =
         let model =
             Model.ParseString arg
             
-        assert model.Model.Unassigned.ContainsKey "x"
+        assert model.Model.NameSpace.Undeclared.IsEmpty
         
     [<Theory>]
     [<InlineData("var int: x;x=100;")>]
@@ -87,5 +90,5 @@ module ``Model Tests`` =
         let model =
             Model.ParseString arg
         
-        assert model.Model.Unassigned.IsEmpty
+        assert model.Model.NameSpace.Undeclared.IsEmpty
                                         

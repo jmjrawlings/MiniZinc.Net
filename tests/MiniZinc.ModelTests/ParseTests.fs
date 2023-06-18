@@ -14,7 +14,7 @@ module ``Parser Tests`` =
             Parse.stripComments input
         
         let parsed =
-            match Parse.stringWith parser source with
+            match Parse.string parser source with
             | Ok x -> x
             | Error err -> failwith (string err)
         
@@ -27,7 +27,7 @@ module ``Parser Tests`` =
             Parse.stripComments input
         
         let parsed =
-            match Parse.stringWith parser source with
+            match Parse.string parser source with
             | Ok x ->
                 x
             | Error err ->
@@ -41,7 +41,7 @@ module ``Parser Tests`` =
             encoder.String
        
         let roundtrip =
-            match Parse.stringWith parser encoded with
+            match Parse.string parser encoded with
             | Ok x ->
                 x
             | Error err ->
@@ -149,7 +149,7 @@ module ``Parser Tests`` =
     [<InlineData("% 12312312")>]
     [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
-        let output = Parse.stringWith Parsers.comment arg
+        let output = Parse.string Parsers.comment arg
         output.AssertOk()
         
     [<Theory>]
@@ -169,9 +169,27 @@ module ``Parser Tests`` =
     let ``test array1d literal`` arg =
         testRoundtrip Parsers.array1d_literal arg (fun enc -> enc.writeArray1d)
         
-    
-    let ``test generator`` arg =
-        testRoundtrip Parsers.gen_call_expr arg
+    [<Theory>]
+    [<InlineData("""constraint
+	forall (i in 1..n-1) (
+		if d[i] == d[i+1] then
+			lex_lesseq([p[i,  j] | j in 1..t],
+				[p[i+1,j] | j in 1..t])
+		else
+			true
+		endif
+	);""")>]
+    [<InlineData("""constraint
+	forall(i in 1..n-1) (
+		if d[i] < d[i+1] then
+		       sum (j in 1..t) (p[i,j]*R[j])
+		     < sum (j in 1..t) (p[i+1,j]*R[j])
+		else
+			true
+		endif
+	);""")>]
+    let ``test gen call`` arg =
+        testRoundtrip Parsers.constraint_item arg (fun enc -> enc.writeConstraintItem)
         
     [<Theory>]
     [<InlineData("var llower..lupper: Production;")>]
@@ -189,7 +207,7 @@ module ``Parser Tests`` =
     [<InlineData("a = array1d(0..z, [x*x | x in 0..z]);")>]
     [<InlineData("a = 1..10;")>]
     let ``test range expr `` arg =
-        testParser Parsers.ast arg 
+        testParser Parsers.model arg 
         
     [<Fact>]
     let test_bad () =
@@ -207,25 +225,29 @@ module ``Parser Tests`` =
     [<InlineData("{r | r in {R0 + [-1, -2, -2, -1,  1,  2,  2,  1][i] } }")>]
     let ``test set comp`` arg =
         testRoundtrip Parsers.set_comp arg
+
+    [<Theory>]
+    [<InlineData("forall( i in 1..nb, j in i+1..nb ) (card(sets[i] intersect sets[j]) <= 1);")>]
+    [<InlineData("sum( k in 1..K ) ( bin[k] );")>]
+    [<InlineData("forall(k in 1 .. K)(is_feasible_packing(bin[k], [item[k, j] | j in 1 .. N]));")>]
+    [<InlineData("forall (i in 1..n-1) (if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif);")>]
+    let ``test gencall`` input =
+        testRoundtrip
+            gen_call_expr
+            input
+            (fun enc -> enc.writeGenCall)
         
-    [<Fact>]
-    let ``test forall`` () =
-        let input = """
-    forall(i in 1..nb, j in i+1..nb)
-    (
-        card(sets[i] intersect sets[j]) <= 1
-    );
-"""
-        testRoundtrip Parsers.gen_call_expr input (fun enc -> enc.writeGenCall)
-        
-    [<Fact>]
-    let ``test output``() =
-        let input = """
-output
-  [ if i = n_stores then "\n]"
-    elseif i mod 5 = 0 then ",\n"
-    else ","
-    endif
-  ];
-  """
-        testParser Parsers.ast input
+    [<Theory>]
+    [<InlineData("""
+    output 
+    [ "Cost = ",  show( obj ), "\n" ] ++ 
+    [ "Pieces = \n\t" ] ++ [show(pieces)] ++ [ "\n" ] ++ 
+    [ "Items = \n\t" ] ++
+    [ show(items[k, i]) ++ if k = K then "\n\t" else " " endif |
+        i in 1..N, k in 1..K ] ++
+    [ "\n" ];""")>]                
+    let ``test output``input =
+        testRoundtrip
+            output_item
+            input
+            (fun enc -> enc.writeOutputItem)
