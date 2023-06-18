@@ -401,6 +401,9 @@ module rec Model =
             ; Functions  = Map.empty  
             ; Conflicts  = Map.empty  
             ; Undeclared = Map.empty }
+            
+        let bindings ns =
+            ns.Bindings
 
         /// Add a binding to the namespace
         let add id (value: Binding) (ns: NameSpace) : NameSpace =

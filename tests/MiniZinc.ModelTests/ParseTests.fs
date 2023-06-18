@@ -207,7 +207,7 @@ module ``Parser Tests`` =
     [<InlineData("a = array1d(0..z, [x*x | x in 0..z]);")>]
     [<InlineData("a = 1..10;")>]
     let ``test range expr `` arg =
-        testParser Parsers.ast arg 
+        testParser Parsers.model arg 
         
     [<Fact>]
     let test_bad () =
