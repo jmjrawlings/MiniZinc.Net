@@ -3,12 +3,11 @@
 open MiniZinc
 open MiniZinc.Tests
 open Xunit
-open MiniZinc.Parsers
 
 module ``Parser Tests`` =
     
     // Test parsing the string, it is sanitized first
-    let testParser (parser: P<'t>) (input: string) =
+    let testParser (parser: Parser<'t>) (input: string) =
 
         let source, comments =
             Parse.stripComments input
@@ -21,7 +20,7 @@ module ``Parser Tests`` =
         ()
             
     // Test parsing the string, it is sanitized first
-    let testRoundtrip (parser: P<'t>) (input: string) (writer: MiniZincEncoder -> 't -> unit) =
+    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: MiniZincEncoder -> 't -> unit) =
 
         let source, comments =
             Parse.stripComments input
@@ -233,7 +232,7 @@ module ``Parser Tests`` =
     [<InlineData("forall (i in 1..n-1) (if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif);")>]
     let ``test gencall`` input =
         testRoundtrip
-            gen_call_expr
+            Parsers.gen_call_expr
             input
             (fun enc -> enc.writeGenCall)
         
@@ -248,6 +247,6 @@ module ``Parser Tests`` =
     [ "\n" ];""")>]                
     let ``test output``input =
         testRoundtrip
-            output_item
+            Parsers.output_item
             input
             (fun enc -> enc.writeOutputItem)
