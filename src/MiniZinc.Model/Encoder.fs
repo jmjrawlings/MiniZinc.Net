@@ -2,10 +2,16 @@
 
 open System
 open System.Text
-open System.Xml.Linq
 open MiniZinc
 
-module Encode =
+/// Options used when encoding models 
+type EncodeOptions =
+    | EncodeOptions
+    static member Default =
+        EncodeOptions
+        
+
+module Encoder =
          
     let operators : Map<int, string> =
          [ Op.Add, "+"         
@@ -372,7 +378,7 @@ module Encode =
         member this.writeLetExpr (x: LetExpr) =
             this.writen "let {"
             this.indent()
-            this.sepBy(",\n", x.Declares, this.writeDeclareItem)
+            this.sepBy(",\n", (Seq.toList x.NameSpace.Declared.Values), this.writeDeclareItem)
             this.sepBy(",\n", x.Constraints, this.writeConstraintItem)
             this.dedent()
             this.writen "} in"
@@ -573,48 +579,48 @@ module Encode =
                 this.writeExpr expr
                 this.writetn()
                 
-        type EncodeOptions =
-            | EncodeOptions
-            static member Default =
-                EncodeOptions                
+        
+        
+[<AutoOpen>]
+module Encode =
+    
+    module Model =
 
-        module Model =
+        let encode (options: EncodeOptions) (model: Model) =
+            
+            let mzn = Encoder.MiniZincEncoder()
+                                    
+            for incl in model.Includes.Keys do
+                let item = IncludeItem.Include incl
+                mzn.writeIncludeItem item
 
-            let encode (options: EncodeOptions) (model: Model) =
+            for enum in model.NameSpace.Enums.Values do
+                mzn.writeEnum enum
                 
-                let mzn = MiniZincEncoder()
-                                        
-                for incl in model.Includes.Keys do
-                    let item = IncludeItem.Include incl
-                    mzn.writeIncludeItem item
+            for syn in model.NameSpace.Synonyms.Values do
+                mzn.writeSynonym syn
 
-                for enum in model.NameSpace.Enums.Values do
-                    mzn.writeEnum enum
-                    
-                for syn in model.NameSpace.Synonyms.Values do
-                    mzn.writeSynonym syn
+            for x in model.NameSpace.Declared.Values do
+                mzn.writeDeclareItem x
+                mzn.writetn()
 
-                for x in model.NameSpace.Declared.Values do
-                    mzn.writeDeclareItem x
-                    mzn.writetn()
+            for cons in model.Constraints do
+                mzn.writeConstraintItem cons
+                mzn.writetn()
 
-                for cons in model.Constraints do
-                    mzn.writeConstraintItem cons
-                    mzn.writetn()
-
-                for func in model.NameSpace.Functions.Values do
-                    mzn.writeFunctionItem func
-                            
-                mzn.writeSolveMethod model.SolveMethod
+            for func in model.NameSpace.Functions.Values do
+                mzn.writeFunctionItem func
+                        
+            mzn.writeSolveMethod model.SolveMethod
+            
+            for output in model.Outputs do
+                mzn.writeOutputItem output
                 
-                for output in model.Outputs do
-                    mzn.writeOutputItem output
-                    
-                mzn.String
-                    
-        type Model with
-            member this.Encode(options: EncodeOptions) =
-                Model.encode options this
+            mzn.String
                 
-            member this.Encode() =
-                Model.encode EncodeOptions.Default this                
+    type Model with
+        member this.Encode(options: EncodeOptions) =
+            Model.encode options this
+            
+        member this.Encode() =
+            Model.encode EncodeOptions.Default this

@@ -939,6 +939,7 @@ module Parsers =
         .>> sps "in"
         .>>. expr
         |>> (fun (items, body) ->
+            
             let declares, constraints =
                 items
                 |> List.fold (fun (ds, cs) item ->
@@ -946,8 +947,12 @@ module Parsers =
                     | Choice1Of2 x -> (x::ds, cs)
                     | Choice2Of2 x -> (ds, x::cs)
                 ) ([], [])
+                
+            let nameSpace : NameSpace =
+                (NameSpace.empty, declares)
+                ||> List.fold (fun ns decl -> ns.add decl)
            
-            { Declares = declares
+            { NameSpace = nameSpace
             ; Constraints = constraints
             ; Body=body })
         <?!> "let-expr"
@@ -1192,7 +1197,8 @@ module Parsers =
         >>. sepEndBy1 item (sps ';')
         .>> eof
     
-       
+
+[<AutoOpen>]       
 module rec Parse =
     
     open System.Text.RegularExpressions

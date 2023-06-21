@@ -1,17 +1,18 @@
 ﻿(*
 
-Ast.fs
+Model.fs
 
-A (mostly) 1:1 mapping from the MiniZinc EBNF Grammar found here:
-https://www.minizinc.org/doc-2.7.4/en/spec.html#full-grammar.  
+Domain types for MiniZinc which includes those only used
+in the parsing phase (eg: LetLocal).  This is mostly a 
+1:1 mapping from the MiniZinc Grammar which can be found at
+https://www.minizinc.org/doc-2.7.6/en/spec.html#full-grammar.
 
-Some rules have been simplified for ease of use.
-
+The `Model` type is the core datastructure we will deal with
+past the parsing phase. 
 *)
 
 namespace MiniZinc
 
-open System
 open System.Diagnostics
 
 [<AutoOpen>]
@@ -160,7 +161,8 @@ module rec Model =
         | PlusPlus = 36
         | Default =  37
 
-    type [<RequireQualifiedAccess>] Expr =
+    [<RequireQualifiedAccess>] 
+    type Expr =
         | WildCard      of WildCard  
         | Int           of int
         | Float         of float
@@ -342,8 +344,9 @@ module rec Model =
         
     type SetLiteral =
         | SetLiteral of Expr list
-            
-    type [<RequireQualifiedAccess>] Item =
+         
+    [<RequireQualifiedAccess>]    
+    type Item =
         | Include    of IncludeItem
         | Enum       of EnumItem
         | Synonym    of SynonymItem
@@ -437,7 +440,7 @@ module rec Model =
         Choice<DeclareItem, ConstraintItem>
         
     type LetExpr =
-        { Declares : DeclareItem list
+        { NameSpace : NameSpace
         ; Constraints : ConstraintItem list
         ; Body: Expr }
         
@@ -590,7 +593,13 @@ module rec Model =
                 { result with
                     Bindings = Map.add id newBinding ns.Bindings }
                 
-            nameSpace            
+            nameSpace
+            
+        let addDeclare (decl: DeclareItem) (ns: NameSpace) : NameSpace =
+            add decl.Name (Binding.Declare decl) ns
+            
+        let addFunction (func: FunctionItem) (ns: NameSpace) : NameSpace =
+            add func.Name (Binding.Function func) ns
         
         /// Create a NameSpace from the given bindings        
         let ofSeq (xs: (string * Binding) seq) : NameSpace =
@@ -683,6 +692,7 @@ module rec Model =
         static member Default =
             IncludeOptions.Reference
       
+    /// Options used during model parsing      
     type ParseOptions =
         { IncludeOptions: IncludeOptions }
             

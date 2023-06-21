@@ -6,6 +6,7 @@
 - Unified parsing into `Parse.fs`
 - Unified encoding into `Encode.fs`
 - `Encode.fs` and `Parse.fs` now use type and module extensions to augment the `Model` type
+- Let exprs now contain a `NameSpace`
 
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs

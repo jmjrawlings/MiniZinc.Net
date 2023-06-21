@@ -3,7 +3,7 @@
 open MiniZinc
 open MiniZinc.Tests
 open MiniZinc.Parse
-open MiniZinc.Encode
+open MiniZinc.Encoder
 open Xunit
 
 module ``Parser Tests`` =

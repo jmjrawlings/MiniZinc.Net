@@ -2,8 +2,6 @@
 namespace MiniZinc.Tests
 
 open MiniZinc
-open MiniZinc.Parse
-open MiniZinc.Encode
 open MiniZinc.Tests
 open Xunit
 
