@@ -11,17 +11,12 @@ Abstract Syntax Tree (AST).
 namespace MiniZinc
 
 open System
+open System.IO
 open System.Runtime.InteropServices
 open System.Text
 open FParsec
 open MiniZinc
 
-type ParseError =
-    { Message : string
-    ; Line    : int64
-    ; Column  : int64
-    ; Index   : int64
-    ; Trace   : string }
 
 type ParserState() =
     let sb = StringBuilder()
@@ -311,17 +306,17 @@ type private ParseUtils () =
             let ty, inst = ParseUtils.ResolveInst itemType
             (Type.Array (ArrayType.ArrayType (dims, ty))), inst
 
-    
-[<Struct>]
-type ParseDebugEvent<'a> =
-    | Enter
-    | Leave of Reply<'a>
 
     
 module Parsers =
     
+    [<Struct>]
+    type ParseDebugEvent<'a> =
+        | Enter
+        | Leave of Reply<'a>
+        
     open type ParseUtils
-    
+        
     let addToDebug (stream: CharStream<ParserState>) label event =
         let msgPadLen = 50
         let startIndent = stream.UserState.Indent
@@ -479,17 +474,17 @@ module Parsers =
         |>> enum<NumericUnaryOp>
     
     let builtin_num_bin_ops =
-         [ "+" =!> BinaryOp.Add
-         ; "-" =!> BinaryOp.Subtract 
-         ; "*" =!> BinaryOp.Multiply
-         ; "/" =!> BinaryOp.Divide         
-         ; "^" =!> BinaryOp.Exponent
-         ; "~+" =!> BinaryOp.TildeAdd
-         ; "~-" =!> BinaryOp.TildeSubtract
-         ; "~*" =!> BinaryOp.TildeMultiply
-         ; "~/" =!> BinaryOp.TildeDivide
-         ; "div" =!> BinaryOp.Div
-         ; "mod" =!> BinaryOp.Mod
+         [ "+"    =!> BinaryOp.Add
+         ; "-"    =!> BinaryOp.Subtract 
+         ; "*"    =!> BinaryOp.Multiply
+         ; "/"    =!> BinaryOp.Divide         
+         ; "^"    =!> BinaryOp.Exponent
+         ; "~+"   =!> BinaryOp.TildeAdd
+         ; "~-"   =!> BinaryOp.TildeSubtract
+         ; "~*"   =!> BinaryOp.TildeMultiply
+         ; "~/"   =!> BinaryOp.TildeDivide
+         ; "div"  =!> BinaryOp.Div
+         ; "mod"  =!> BinaryOp.Mod
          ; "~div" =!> BinaryOp.TildeDiv ]
         
     // <builtin-num-bin-op>
@@ -525,7 +520,6 @@ module Parsers =
         ; "intersect" =!> BinaryOp.Intersect
         ; "default"   =!> BinaryOp.Default ]
         @ builtin_num_bin_ops
-        
         
     // <builtin-bin-op>            
     let builtin_bin_op : Parser<BinaryOp> =
@@ -1199,16 +1193,12 @@ module Parsers =
         .>> eof
     
        
-[<RequireQualifiedAccess>]                
-module Parse =
-
+module rec Parse =
+    
     open System.Text.RegularExpressions
     
-    /// <summary>
-    /// Strip comments from the given minizinc model
-    /// </summary>
-    let stripComments (mzn: string) : string * List<Comment> =
-        
+    /// Parse and remove comments from the given minizinc model
+    let parseComments (mzn: string) : string * List<Comment> =
         let comments = ResizeArray<string>()
         let line_comment = "%(.*)$"
         let block_comment = "\/\*([\s\S]*?)\*\/"
@@ -1240,16 +1230,16 @@ module Parse =
         output, comments
         
     // Parse the given string with the given parser
-    let string (parser: Parser<'t>) (input: string) : Result<'t, ParseError> =
+    let parseString (parser: Parser<'t>) (input: string) : Result<'t, ParseError> =
         
         let state = ParserState()
                 
         match runParserOnString parser state "" input with
         
-        | Success (value, _state, _pos) ->
+        | ParserResult.Success (value, _state, _pos) ->
             Result.Ok value
             
-        | Failure (msg, err, state) ->
+        | ParserResult.Failure (msg, err, state) ->
             
             let err =
                 { Message = msg
@@ -1259,29 +1249,135 @@ module Parse =
                 ; Trace = state.Message }
                 
             Result.Error err
-            
-    // Parse the given string with the given parser
-    let model (input: string) : Result<Ast, ParseError> =
-        let result = string Parsers.model input
-        result                
-            
-    // Parse the given file with the given encoding
-    let file (encoding: Encoding) (path: string) : Result<Ast, ParseError> =
-                
-        let state  = ParserState()
+    
+    let parseModelAst (options: ParseOptions) (ast: Ast) : Model =
         
-        match runParserOnFile Parsers.model state path encoding with
+        let fold (model:Model) (item: Item) =
+            match item with
+            | Item.Include (Include x) ->
+                { model with Includes = Map.add x LoadResult.Reference model.Includes }
+            | Item.Enum x ->
+                { model with NameSpace = model.NameSpace.add x }
+            | Item.Synonym x ->
+                { model with NameSpace = model.NameSpace.add x }
+            | Item.Declare x ->
+                { model with NameSpace = model.NameSpace.add x }
+            | Item.Predicate x ->
+                { model with NameSpace = model.NameSpace.add x }
+            | Item.Function x ->
+                { model with NameSpace = model.NameSpace.add x }
+            | Item.Assign (name, expr) ->
+                { model with NameSpace = model.NameSpace.add(name, expr) }
+            | Item.Constraint x ->
+                { model with Constraints = x :: model.Constraints }
+            | Item.Solve x ->
+                { model with SolveMethod = x} 
+            | Item.Test x ->
+                model
+            | Item.Output x ->
+                { model with Outputs = x :: model.Outputs }
+            | Item.Annotation x ->
+                model
+            | Item.Comment x ->
+                model
+
+        let model =
+            List.fold fold Model.empty ast
         
-        | Success (value, _state, _pos) ->
-            Result.Ok value
+        // Parse an included model with the given filename "model.mzn"
+        let parseIncluded filename =
             
-        | Failure (msg, err, state) ->
+            let result =
+                match options.IncludeOptions with
+
+                | IncludeOptions.Reference ->
+                    LoadResult.Reference
+
+                | IncludeOptions.Parse paths ->
+                    let searchFiles =
+                        paths
+                        |> List.map (fun dir -> Path.Join(dir, filename))
             
-            let err =
-                { Message = msg
-                ; Line = err.Position.Line
-                ; Column = err.Position.Column
-                ; Index = err.Position.Index
-                ; Trace = state.Message }
-                
-            Result.Error err
+                    let filepath =
+                        searchFiles
+                        |> List.filter File.Exists
+                        |> List.tryHead
+                        
+                    match filepath with
+                    | Some path ->
+                        parseModelFile options path
+                    | None ->
+                        FileNotFound searchFiles
+                        
+            filename, result
+            
+        // Parse included models in parallel
+        let inclusions : Map<string, LoadResult> =
+            model.Includes
+            |> Map.toSeq
+            |> Seq.map fst
+            |> Seq.toArray
+            |> Array.Parallel.map parseIncluded
+            |> Map.ofSeq
+            
+        // Now merge the model with all inclusions
+        let unified =
+            inclusions
+            |> Map.values
+            |> Seq.choose (function
+                | LoadResult.Success model -> Some model
+                | _ -> None)
+            |> Seq.fold Model.merge model
+
+        unified
+            
+    let parseModelString (options: ParseOptions) (mzn: string) : LoadResult =
+                            
+        let source, comments =
+            parseComments mzn
+        
+        let model =
+            parseString Parsers.model source
+            |> Result.map (parseModelAst options)
+            
+        let result =
+            match model with
+            | Result.Ok model -> LoadResult.Success model
+            | Result.Error error -> LoadResult.ParseError error
+            
+        result
+        
+    let parseModelFile (options: ParseOptions) (filepath: string) : LoadResult =
+        
+        if File.Exists filepath then
+            let mzn = File.ReadAllText filepath
+            let model = parseModelString options mzn
+            model
+        else
+            LoadResult.FileNotFound [filepath]
+    
+    type Model with
+
+        /// Parse a Model from the given file
+        static member ParseFile (filepath: string, options: ParseOptions) =
+            parseModelFile options filepath
+            
+        /// Parse a Model from the given file
+        static member ParseFile (filepath: FileInfo, options: ParseOptions) =
+            parseModelFile options filepath.FullName
+
+        /// Parse a Model from the given file
+        static member ParseFile (filepath: string) =
+            parseModelFile ParseOptions.Default filepath
+            
+        /// Parse a Model from the given file
+        static member ParseFile (filepath: FileInfo) =
+            parseModelFile ParseOptions.Default filepath.FullName
+
+        /// Parse a Model from the given string
+        static member ParseString (mzn: string, options: ParseOptions) =
+            parseModelString options mzn
+            
+        /// Parse a Model from the given string
+        static member ParseString (mzn: string) =
+            parseModelString ParseOptions.Default mzn

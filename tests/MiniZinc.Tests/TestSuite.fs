@@ -57,6 +57,7 @@ open System.Text
 open System.Text.Json
 open MiniZinc
 open MiniZinc.Tests
+open MiniZinc.Parse
 
 type TestSuite =
     { Name : string
@@ -143,7 +144,7 @@ module TestSuite =
             { ParseOptions.Default with 
                 IncludeOptions =  includeOpts }
     
-        match Model.parseString parseOpts suite.Mzn with
+        match Model.ParseString(suite.Mzn, parseOpts) with
         | Success model ->
             model
         | other ->

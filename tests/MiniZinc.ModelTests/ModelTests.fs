@@ -2,6 +2,7 @@
 
 open MiniZinc
 open MiniZinc.Tests
+open MiniZinc.Parse
 open Xunit
 open System.IO
 open System

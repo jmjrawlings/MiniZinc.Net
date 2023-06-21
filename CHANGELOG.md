@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+- Removed `Ast.fs` 
+- Combine `Ast.fs` and `Model.fs`
+- Unified parsing into `Parse.fs`
+- Unified encoding into `Encode.fs`
+- `Encode.fs` and `Parse.fs` now use type and module extensions to augment the `Model` type
+
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs
 - Simplified some `Parser` types

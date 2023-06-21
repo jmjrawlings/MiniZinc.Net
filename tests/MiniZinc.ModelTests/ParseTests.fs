@@ -2,6 +2,8 @@
 
 open MiniZinc
 open MiniZinc.Tests
+open MiniZinc.Parse
+open MiniZinc.Encode
 open Xunit
 
 module ``Parser Tests`` =
@@ -10,10 +12,10 @@ module ``Parser Tests`` =
     let testParser (parser: Parser<'t>) (input: string) =
 
         let source, comments =
-            Parse.stripComments input
+            parseComments input
         
         let parsed =
-            match Parse.string parser source with
+            match parseString parser source with
             | Ok x -> x
             | Error err -> failwith (string err)
         
@@ -23,10 +25,10 @@ module ``Parser Tests`` =
     let testRoundtrip (parser: Parser<'t>) (input: string) (writer: MiniZincEncoder -> 't -> unit) =
 
         let source, comments =
-            Parse.stripComments input
+            parseComments input
         
         let parsed =
-            match Parse.string parser source with
+            match parseString parser source with
             | Ok x ->
                 x
             | Error err ->
@@ -40,7 +42,7 @@ module ``Parser Tests`` =
             encoder.String
        
         let roundtrip =
-            match Parse.string parser encoded with
+            match parseString parser encoded with
             | Ok x ->
                 x
             | Error err ->
@@ -148,7 +150,7 @@ module ``Parser Tests`` =
     [<InlineData("% 12312312")>]
     [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
-        let output = Parse.string Parsers.comment arg
+        let output = parseString Parsers.comment arg
         output.AssertOk()
         
     [<Theory>]

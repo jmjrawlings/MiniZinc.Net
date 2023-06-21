@@ -2,6 +2,8 @@
 namespace MiniZinc.Tests
 
 open MiniZinc
+open MiniZinc.Parse
+open MiniZinc.Encode
 open MiniZinc.Tests
 open Xunit
 
@@ -10,9 +12,8 @@ module ``Integration Tests`` =
     let test (name: string) =
         let suite = TestSuite.load name
         let model = TestSuite.parseModel suite
-        let mzn = Model.encode EncodeOptions.Default model
-        let roundtrip = Model.parseExn ParseOptions.Default mzn
-            
+        let mzn = model.Encode()
+        let roundtrip = Model.ParseString(mzn).Model
         //     
         // let a = 1
         ()
