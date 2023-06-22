@@ -578,7 +578,6 @@ module Encoder =
                 this.write "solve minimize "
                 this.writeExpr expr
                 this.writetn()
-                
         
         
 [<AutoOpen>]

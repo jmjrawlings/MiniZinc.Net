@@ -15,14 +15,20 @@ open MiniZinc.Model
 [<AutoOpen>]
 module rec Client =
     
+    /// <summary>
+    /// A MiniZinc CLI Client 
+    /// </summary>
     type MiniZincClient private (executable: string, logger: ILogger) =
         
         let mutable solvers = Map.empty
-        let mutable version = ""
         
+        let mutable version = ""
+                
+        // Installed solvers by their ID
         member this.Solvers =
             solvers :> IReadOnlyDictionary<string, Solver>
             
+        // MiniZinc CLI Version
         member this.Version =
             version
         
@@ -64,38 +70,41 @@ module rec Client =
                 |> Args.parseMany
             let cmd =
                 Command.Create(executable, args)
-            logger.LogInformation (cmd.Statement)
+            logger.LogInformation cmd.Statement
             cmd
 
         /// Get all installed solvers
         member private this.GetSolvers () =
                         
-            let result =
+            let stdout =
                 this.Command "--solvers-json"
                 |> Command.execSync
                 |> CommandResult.stdout
-                
+               
             let options =
                 let opts = JsonSerializerOptions()
                 opts.PropertyNameCaseInsensitive <- true
                 opts
 
-            let map =
-                JsonSerializer.Deserialize<List<Solver>>(result, options)
+            let result =
+                JsonSerializer.Deserialize<List<Solver>>(stdout, options)
                 |> Map.withKey (fun s -> s.Id)
                 
-            for solver in map.Values do
+            for solver in result.Values do
                 logger.LogInformation("{Id} - {Solver} {Version}", solver.Id, solver.Name, solver.Version)
                 
-            solvers <- map                
+            solvers <- result                
             
         /// Get the installed MiniZinc version
         member private this.GetVersion() =
+            
             let result =
                 this.Command "--version"
                 |> Command.execSync
                 |> CommandResult.stdout
-                |> Grep.match1 @"version (\d+\.\d+\.\d+)"
+                |> Grep.matches @"version (\d+\.\d+\.\d+)"
+                |> List.head
+                
             version <- result
             
         override this.ToString() =

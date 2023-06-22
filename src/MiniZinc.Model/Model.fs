@@ -662,7 +662,7 @@ module rec Model =
                 Map.merge a.Includes b.Includes
 
             let constraints =
-                a.Constraints @ b.Constraints
+                List.distinct (a.Constraints @ b.Constraints)
                                 
             let solveMethod =                
                 match a.SolveMethod, b.SolveMethod with
@@ -678,8 +678,7 @@ module rec Model =
                     SolveMethod = solveMethod
                     NameSpace = nameSpace }
                 
-            model
-            
+            model            
     
     /// Specifies how models referenced with
     /// the "include" directive should be loaded
