@@ -27,7 +27,7 @@ jobs:
       ubuntu-latest
     strategy:
       matrix:
-        minizinc-version: ["2.7.4", "2.6.4", "2.5.5"]
+        minizinc-version: ["2.7.6", "2.6.4", "2.5.5"]
       fail-fast:
         false        
     env:
