@@ -1,11 +1,17 @@
-﻿namespace MiniZinc.Model.Tests
+﻿(*
+
+ModelTests.fs
+
+Tests regarding the creation and manipulation of
+Model objects.
+
+*)
+
+namespace MiniZinc.Tests
 
 open MiniZinc
 open MiniZinc.Tests
-open MiniZinc.Parse
 open Xunit
-open System.IO
-open System
 
 module ``Model Tests`` =
     

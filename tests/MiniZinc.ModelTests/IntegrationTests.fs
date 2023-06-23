@@ -1,4 +1,3 @@
-
 namespace MiniZinc.Tests
 
 open MiniZinc
@@ -12,10 +11,8 @@ module ``Integration Tests`` =
         let model = TestSuite.parseModel suite
         let mzn = model.Encode()
         let roundtrip = Model.ParseString(mzn).Model
-        //     
-        // let a = 1
         ()
-        
+       
 
     [<Fact>]
     let ``test 2DPacking`` () =

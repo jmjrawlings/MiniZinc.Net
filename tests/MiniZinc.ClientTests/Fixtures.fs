@@ -1,10 +1,11 @@
 ﻿namespace MiniZinc.Tests
 
+open System
 open Microsoft.Extensions.Logging
 open Serilog
+open MiniZinc
 
-[<AutoOpen>]
-module Logging =
+type ClientFixture() =
     
     let logger =
             
@@ -19,3 +20,11 @@ module Logging =
         factory
             .AddSerilog(serilogLogger)
             .CreateLogger("MiniZinc")
+            
+    let client =
+        MiniZincClient.Create(logger)
+
+    member this.Client =
+        client
+        
+               

@@ -1,12 +1,21 @@
 # Changelog
 
 ## Unreleased
+
+### Model
 - Removed `Ast.fs` 
 - Combine `Ast.fs` and `Model.fs`
 - Unified parsing into `Parse.fs`
 - Unified encoding into `Encode.fs`
 - `Encode.fs` and `Parse.fs` now use type and module extensions to augment the `Model` type
 - Let exprs now contain a `NameSpace`
+
+### Client
+- `Solve` and `SolveAndWait` methods on `MiniZincClient`
+
+### Tests
+- Refactor client tests to use a fixture
+- Client integration tests solve the models
 
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs

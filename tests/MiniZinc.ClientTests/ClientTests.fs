@@ -1,16 +1,17 @@
 ﻿namespace MiniZinc.Tests
 
 open MiniZinc
-open MiniZinc.Tests
 open Xunit
 
-module ``Client Tests`` =
-        
-    let client = MiniZincClient.Create(logger)
-        
+type ``Client Tests``(fixture: ClientFixture) =
+    
+    let client = fixture.Client
+    
     [<Theory>]
     [<InlineData("org.gecode.gecode")>]
     [<InlineData("org.chuffed.chuffed")>]
-    let ``test solver installed`` id =
+    member this.``test solver installed`` id =
         let solver = client.Solvers[id]
         ()
+        
+    interface IClassFixture<ClientFixture>

@@ -1,9 +1,15 @@
-﻿namespace MiniZinc.Model.Tests
+﻿(*
+
+ModelTests.fs
+
+Tests regarding the creation and manipulation of
+Model objects.
+*)
+
+namespace MiniZinc.Tests
 
 open MiniZinc
 open MiniZinc.Tests
-open MiniZinc.Parse
-open MiniZinc.Encoder
 open Xunit
 
 module ``Parser Tests`` =
@@ -22,7 +28,7 @@ module ``Parser Tests`` =
         ()
             
     // Test parsing the string, it is sanitized first
-    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: MiniZincEncoder -> 't -> unit) =
+    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: Encoder.MiniZincEncoder -> 't -> unit) =
 
         let source, comments =
             parseComments input
@@ -34,7 +40,7 @@ module ``Parser Tests`` =
             | Error err ->
                 failwith (string err)
             
-        let encoder = MiniZincEncoder()
+        let encoder = Encoder.MiniZincEncoder()
         let write = (writer encoder)
         write parsed
         

@@ -24,14 +24,23 @@ module rec Client =
         
         let mutable version = ""
                 
-        // Installed solvers by their ID
+        /// Installed solvers by their ID
         member this.Solvers =
             solvers :> IReadOnlyDictionary<string, Solver>
             
-        // MiniZinc CLI Version
+        /// The MiniZinc CLI Version
         member this.Version =
             version
         
+        /// The MiniZinc executable path
+        member this.ExecutablePath =
+            executable
+            
+        /// <summary>
+        /// Create a new Client
+        /// </summary>
+        /// <param name="executable">The MiniZinc executable path</param>
+        /// <param name="logger">A logger to write to</param>
         static member Create(executable: string, logger: ILogger) =
                     
             let executable =
@@ -53,24 +62,31 @@ module rec Client =
             client.GetSolvers()
             client
                     
+        /// <summary>
+        /// Create a new Client
+        /// </summary>
+        /// <param name="executable">The MiniZinc executable path</param>        
         static member Create(executable: string) =
             MiniZincClient.Create(executable, null)
-            
+
+        /// <summary>
+        /// Create a new Client 
+        /// </summary>
+        /// <param name="logger">A logger to write to</param>            
         static member Create(logger: ILogger) =
             MiniZincClient.Create(null, logger)
-          
-        member this.ExecutablePath =
-            executable
                
-        /// Create a MiniZinc command with the given arguments
+        /// Create a command from the given arguments
         member this.Command([<ParamArray>] args: obj[]) =
+            
             let args =
                 args
                 |> Seq.map string
                 |> Args.parseMany
+                
             let cmd =
                 Command.Create(executable, args)
-            logger.LogInformation cmd.Statement
+                
             cmd
 
         /// Get all installed solvers
@@ -85,19 +101,19 @@ module rec Client =
                 let opts = JsonSerializerOptions()
                 opts.PropertyNameCaseInsensitive <- true
                 opts
-
+                
             let result =
                 JsonSerializer.Deserialize<List<Solver>>(stdout, options)
                 |> Map.withKey (fun s -> s.Id)
                 
             for solver in result.Values do
-                logger.LogInformation("{Id} - {Solver} {Version}", solver.Id, solver.Name, solver.Version)
+                logger.LogInformation("Found solver {Id}: {Solver} {Version}", solver.Id, solver.Name, solver.Version)
                 
             solvers <- result                
             
         /// Get the installed MiniZinc version
         member private this.GetVersion() =
-            
+                        
             let result =
                 this.Command "--version"
                 |> Command.execSync
@@ -105,7 +121,22 @@ module rec Client =
                 |> Grep.matches @"version (\d+\.\d+\.\d+)"
                 |> List.head
                 
+            logger.LogInformation("MiniZinc is v{Version}", result)
             version <- result
+        
+        /// Solve the given model      
+        member this.Solve(model: Model) =
+            MiniZincClient.solve model this
+            
+        /// Solve the given model and wait for the last solution            
+        member this.SolveAndWait(model: Model) =
+            MiniZincClient.solveAndWait model this
+            
+        member this.GetModelTypes(model: Model) =
+            MiniZincClient.model_types model this
+            
+        member this.GetModelInterface(model: Model) =
+            MiniZincClient.model_interface model this
             
         override this.ToString() =
             $"MiniZinc v{version} Client"
@@ -117,7 +148,8 @@ module rec Client =
         let write_model_to_tempfile (model: Model) : FileInfo =
             let path = Path.GetTempFileName()
             let path = Path.ChangeExtension(path, ".mzn")
-            File.WriteAllText(path, "")
+            let mzn = model.Encode()
+            File.WriteAllText(path, mzn)
             let file = FileInfo path
             file
         
@@ -126,9 +158,9 @@ module rec Client =
             let uri = Uri(filepath).AbsolutePath
             let arg = Arg.parse $"--model {uri}"
             arg
-                            
+               
+        /// Solve the given model                            
         let solve (model: Model) (mz: MiniZincClient) : IAsyncEnumerable<OutputMessage> =
-            
             let model_file = write_model_to_tempfile model
             let model_arg = model_arg model_file.FullName
             let command = mz.Command("--json-stream", model_arg)
@@ -140,18 +172,25 @@ module rec Client =
                     Some msg
                 | _ ->
                     None)
-            
+
         /// Solve the given model and wait for the best solution only
-        let exec (model: Model) (mz: MiniZincClient) =
-            mz
-            |> solve model
-            |> TaskSeq.last
+        let solveAndWait (model: Model) (client: MiniZincClient) =
+            
+            let task =
+                client
+                |> solve model
+                |> TaskSeq.last
+                
+            let result =
+                task.Result
+                
+            result                
             
         /// Analyse the given model
-        let model_types (model: Model) (mz: MiniZincClient) =
+        let model_types (model: Model) (client: MiniZincClient) =
             let model_file = write_model_to_tempfile model
             let model_arg = model_arg model_file.FullName
-            let command = mz.Command(model_arg, "--model-types-only")
+            let command = client.Command(model_arg, "--model-types-only")
             let result =
                 command
                 |> Command.exec
@@ -160,9 +199,13 @@ module rec Client =
             result
             
         /// Analyse the given model
-        let model_interface (model: Model) (mz: MiniZincClient) =
+        let model_interface (model: Model) (client: MiniZincClient) =
             let model_file = write_model_to_tempfile model
             let model_arg = model_arg model_file.FullName
-            let command = mz.Command(model_arg, "--model-interface-only")
-            let result = command.Exec()            
+            let command = client.Command(model_arg, "--model-interface-only")
+            let result =
+                command
+                |> Command.exec
+                |> Task.map (fun res -> res.StdOut)
+                |> Task.map JsonObject.Parse
             result
