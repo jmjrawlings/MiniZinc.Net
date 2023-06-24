@@ -1129,27 +1129,27 @@ module Parsers =
                     Expr.BinaryOp (head, op, right)
             )
             
-    let solve_type : Parser<SolveType> =
+    let solve_type : Parser<SolveMethod> =
         lookup(
-          "satisfy" => SolveType.Satisfy,
-          "minimize" => SolveType.Minimize,
-          "maximize" => SolveType.Maximize
+          "satisfy" => SolveMethod.Satisfy,
+          "minimize" => SolveMethod.Minimize,
+          "maximize" => SolveMethod.Maximize
         )
         
     // <solve-item>
-    let solve_item : Parser<SolveMethod> =
+    let solve_item : Parser<SolveItem> =
         pipe3
             (kw1 "solve" >>. annotations)
             (sps solve_type)
             (opt expr)
             (fun anns solveType obj ->
                 match (solveType, obj) with
-                | SolveType.Maximize, Some exp ->
-                    SolveMethod.Max (exp, anns)
-                | SolveType.Minimize, Some exp ->
-                    SolveMethod.Min (exp, anns)
+                | SolveMethod.Maximize, Some exp ->
+                    SolveItem.Max (exp, anns)
+                | SolveMethod.Minimize, Some exp ->
+                    SolveItem.Min (exp, anns)
                 | _ ->
-                    SolveMethod.Sat anns
+                    SolveItem.Sat anns
                 )            
         
     // <assign-item>

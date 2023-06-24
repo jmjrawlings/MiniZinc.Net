@@ -54,7 +54,7 @@ module rec Model =
         | AssignedVar = 2
         | UnassignedVar = 3
                   
-    type SolveType =
+    type SolveMethod =
         | Satisfy = 0
         | Minimize = 1
         | Maximize = 2
@@ -242,16 +242,16 @@ module rec Model =
     type RecordExpr =
         | RecordExpr of (Id * Expr) list
         
-    type SolveMethod =
+    type SolveItem =
         | Sat of Annotations
         | Min of Expr * Annotations
         | Max of Expr * Annotations
         
-        member this.SolveType =
+        member this.SolveMethod =
             match this with
-            | Sat _ -> SolveType.Satisfy
-            | Min _ -> SolveType.Minimize
-            | Max _ -> SolveType.Maximize
+            | Sat _ -> SolveMethod.Satisfy
+            | Min _ -> SolveMethod.Minimize
+            | Max _ -> SolveMethod.Maximize
             
         member this.Annotations =
             match this with
@@ -353,7 +353,7 @@ module rec Model =
         | Constraint of ConstraintItem
         | Assign     of AssignItem
         | Declare    of DeclareItem
-        | Solve      of SolveMethod
+        | Solve      of SolveItem
         | Predicate  of FunctionItem
         | Function   of FunctionItem
         | Test       of TestItem
@@ -635,7 +635,7 @@ module rec Model =
         ; NameSpace   : NameSpace
         ; Constraints : ConstraintItem list
         ; Outputs     : OutputItem list
-        ; SolveMethod : SolveMethod }
+        ; SolveMethod : SolveItem }
                         
     module Model =
 
@@ -645,7 +645,7 @@ module rec Model =
             ; FilePath = None
             ; Includes = Map.empty
             ; NameSpace = NameSpace.empty
-            ; SolveMethod = SolveMethod.Satisfy
+            ; SolveMethod = SolveItem.Satisfy
             ; Constraints = [] 
             ; Outputs = [] }
         
@@ -666,8 +666,8 @@ module rec Model =
                                 
             let solveMethod =                
                 match a.SolveMethod, b.SolveMethod with
-                    | SolveMethod.Sat _ , other
-                    | other, SolveMethod.Sat _ -> other
+                    | SolveItem.Sat _ , other
+                    | other, SolveItem.Sat _ -> other
                     | left, right -> right
                 
             let model =

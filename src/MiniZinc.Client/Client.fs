@@ -94,8 +94,8 @@ module rec Client =
                         
             let stdout =
                 this.Command "--solvers-json"
-                |> Command.execSync
-                |> CommandResult.stdout
+                |> Command.runSync
+                |> Command.stdout
                
             let options =
                 let opts = JsonSerializerOptions()
@@ -116,8 +116,8 @@ module rec Client =
                         
             let result =
                 this.Command "--version"
-                |> Command.execSync
-                |> CommandResult.stdout
+                |> Command.runSync
+                |> Command.stdout
                 |> Grep.matches @"version (\d+\.\d+\.\d+)"
                 |> List.head
                 
@@ -129,14 +129,14 @@ module rec Client =
             MiniZincClient.solve model this
             
         /// Solve the given model and wait for the last solution            
-        member this.SolveAndWait(model: Model) =
-            MiniZincClient.solveAndWait model this
+        member this.SolveSync(model: Model) =
+            MiniZincClient.solveSync model this
             
         member this.GetModelTypes(model: Model) =
-            MiniZincClient.model_types model this
+            MiniZincClient.modelTypes model this
             
         member this.GetModelInterface(model: Model) =
-            MiniZincClient.model_interface model this
+            MiniZincClient.modelInterface model this
             
         override this.ToString() =
             $"MiniZinc v{version} Client"
@@ -174,7 +174,7 @@ module rec Client =
                     None)
 
         /// Solve the given model and wait for the best solution only
-        let solveAndWait (model: Model) (client: MiniZincClient) =
+        let solveSync (model: Model) (client: MiniZincClient) =
             
             let task =
                 client
@@ -187,25 +187,103 @@ module rec Client =
             result                
             
         /// Analyse the given model
-        let model_types (model: Model) (client: MiniZincClient) =
+        let modelTypes (model: Model) (client: MiniZincClient) =
             let model_file = write_model_to_tempfile model
             let model_arg = model_arg model_file.FullName
             let command = client.Command(model_arg, "--model-types-only")
-            let result =
-                command
-                |> Command.exec
-                |> Task.map (fun res -> res.StdOut)
-                |> Task.map JsonObject.Parse
-            result
+            let result = command.RunSync()
+            let stdout = result.StdOut
+            let json = JsonObject.Parse(stdout)
+            json
             
         /// Analyse the given model
-        let model_interface (model: Model) (client: MiniZincClient) =
-            let model_file = write_model_to_tempfile model
-            let model_arg = model_arg model_file.FullName
-            let command = client.Command(model_arg, "--model-interface-only")
+        let modelInterface (model: Model) (client: MiniZincClient) : Result<ModelInterface, string> =
+            
+            let model_file =
+                write_model_to_tempfile model
+                
+            let model_arg =
+                model_arg model_file.FullName
+                
+            let command =
+                client.Command(model_arg, "--model-interface-only")
+                |> Command.runSync
+                
             let result =
                 command
-                |> Command.exec
-                |> Task.map (fun res -> res.StdOut)
-                |> Task.map JsonObject.Parse
-            result
+                |> Command.toResult
+                |> Result.map (fun stdout ->
+
+                    let json =
+                        JsonObject.Parse(stdout)
+                                            
+                    let input =
+                        json["input"].AsObject()
+                        |> parseTypes
+                        
+                    let output =
+                        json["output"].AsObject()
+                        |> parseTypes
+                        
+                    let includes =
+                        json["included_files"].Deserialize<string list>()
+                        
+                    let globals =
+                        json["globals"].Deserialize<string list>()
+                        
+                    let method =
+                        match json["method"].ToString() with
+                        | "sat" -> SolveMethod.Satisfy
+                        | "min" -> SolveMethod.Minimize
+                        | "max" -> SolveMethod.Maximize
+                        | _ -> failwith "xd"
+                        
+                    { Includes = includes
+                    ; Globals = globals
+                    ; Input = input
+                    ; SolveMethod = method 
+                    ; Output = output })
+
+            result                
+            
+        let parseType (node: JsonNode) : TypeInst =
+            
+            let baseType =
+                match node["type"].ToString() with
+                | "int" -> Type.Int
+                | "float" -> Type.Float
+                | "string" -> Type.String
+                | xd -> failwith xd
+
+            let dims =
+                match node["dim"].ToString() with
+                | "" ->
+                    []
+                | n ->
+                    List.replicate (int n) (Type.Int)
+                    
+            let ti =
+                match dims with
+                | [] ->
+                    { Type = baseType
+                    ; IsArray = false
+                    ; IsSet = false
+                    ; Inst = Inst.Var
+                    ; IsOptional = false }
+                | _ ->
+                    { Type = Type.Array (ArrayType.ArrayType (dims, baseType))
+                    ; IsArray = false
+                    ; IsSet = false
+                    ; Inst = Inst.Var
+                    ; IsOptional = false }
+                    
+                    
+            ti
+        
+        let parseTypes (object: JsonObject) =
+            object
+            |> Seq.map (fun kv -> (kv.Key, parseType kv.Value))
+            |> Map.ofSeq
+            
+    // type ModelInterface =
+    //     ()

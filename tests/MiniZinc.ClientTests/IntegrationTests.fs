@@ -5,13 +5,14 @@ open Xunit
 open System.IO
 
 type ``Integration Tests``(fixture: ClientFixture) =
-    
+        
     let client = fixture.Client
             
     let test (name: string) =
         let suite = TestSuite.load name
         let model = TestSuite.parseModel suite
-        let result = client.SolveAndWait(model)
+        let result = client.GetModelInterface(model)
+        //let result = client.GetModelTypes(model)
         ()
         
     interface IClassFixture<ClientFixture>
@@ -229,7 +230,8 @@ type ``Integration Tests``(fixture: ClientFixture) =
         test "tenpenki_1.mzn"
 
 
-    [<Fact(Skip="Slow")>]
+    //[<Fact(Skip="Slow")>]
+    [<Fact>]
     member this. ``test tenpenki 2`` () =
         test "tenpenki_2.mzn"
 

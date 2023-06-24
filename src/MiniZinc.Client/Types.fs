@@ -26,3 +26,10 @@ type Solver = {
     RequiredFlags       : IReadOnlyList<string>    
     ExtraFlags          : IReadOnlyList<IReadOnlyList<string>>
 }
+
+type ModelInterface =
+  { Input       : Map<string, TypeInst>
+  ; Output      : Map<string, TypeInst>
+  ; SolveMethod : SolveMethod
+  ; Includes    : string list
+  ; Globals     : string list }

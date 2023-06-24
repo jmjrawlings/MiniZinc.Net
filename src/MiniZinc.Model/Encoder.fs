@@ -9,7 +9,6 @@ type EncodeOptions =
     | EncodeOptions
     static member Default =
         EncodeOptions
-        
 
 module Encoder =
          
@@ -496,13 +495,13 @@ module Encoder =
             | _ ->
                 ()
                 
-        member this.writeSolveType (slv: SolveType) =
+        member this.writeSolveType (slv: SolveMethod) =
             match slv with
-            | SolveType.Satisfy ->
+            | SolveMethod.Satisfy ->
                 this.write "satisfy"
-            | SolveType.Minimize ->
+            | SolveMethod.Minimize ->
                 this.write "minimize"
-            | SolveType.Maximize ->
+            | SolveMethod.Maximize ->
                 this.write "maximize"
             | _ ->
                 ()
@@ -566,7 +565,7 @@ module Encoder =
             this.writeExpr x.Expr
             this.writetn()
             
-        member this.writeSolveMethod (x: SolveMethod) =
+        member this.writeSolveMethod (x: SolveItem) =
             match x with
             | Sat _ ->
                 this.writetn "solve satisfy"

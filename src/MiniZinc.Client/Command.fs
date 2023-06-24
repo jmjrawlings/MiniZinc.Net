@@ -55,6 +55,9 @@ module rec Command =
         ; StdErr    : string
         ; ExitCode  : int
         ; IsError   : bool }
+        
+        member this.ToResult() =
+            Command.toResult this
 
     [<RequireQualifiedAccess>]
     type FlagType = | Short | Long | None
@@ -255,31 +258,41 @@ module rec Command =
         member this.Statement =
             Command.statement this
             
-        member this.Exec() =
-            Command.exec this
+        /// Run this command            
+        member this.Run() =
+            Command.run this
             
-        member this.ExecSync() =
-            Command.execSync this
-            
+        /// Run this command and wait for it to complete            
+        member this.RunSync() =
+            Command.runSync this
+
+        /// Run this command and yield back messages are they are produced                        
         member this.Stream() =
             Command.stream this
-            
+
+        /// Create a command from the given args            
         static member Create([<ParamArray>] args: obj[]) =
             args
             |> Seq.map string
             |> Args.parseMany
             |> Command.ofArgs
 
-    module CommandResult =
+            
+    module Command =
+
         let stdout (result: CommandResult) =
             result.StdOut
         
         let stderr (result: CommandResult) =
             result.StdErr
-
             
-    module Command =
-    
+        let toResult (result: CommandResult) =
+            match result.ExitCode with
+            | 0 ->
+                Result.Ok result.StdOut
+            | _ ->
+                Result.Error result.StdErr
+            
         let empty =
             { Exe = ""; Args = Args.empty; }
             
@@ -366,11 +379,10 @@ module rec Command =
             
             proc.BeginOutputReadLine()
             proc.BeginErrorReadLine()
-            channel.Reader.ReadAllAsync()
-        
+            channel.Reader.ReadAllAsync()        
                     
         /// Execute the given Command 
-        let exec (cmd: Command) =
+        let run (cmd: Command) =
             let proc = toProcess cmd
             let statement = Command.statement cmd
             let stdout = StringBuilder()
@@ -378,8 +390,11 @@ module rec Command =
             let complete = TaskCompletionSource<bool>()
             
             let handleData (builder: StringBuilder) (args: DataReceivedEventArgs) =
-                if args.Data <> null then
-                    do builder.Append args.Data
+                match args.Data with
+                | null ->
+                    ()
+                | msg ->
+                    ignore (builder.Append msg)
             
             proc.OutputDataReceived.Add (handleData stdout)
             proc.ErrorDataReceived.Add (handleData stderr)
@@ -411,8 +426,8 @@ module rec Command =
                 return result
             }
             
-        /// Execute the given Command synchronously 
-        let execSync (cmd: Command) =
+        /// Execute the given Command and wait for the result 
+        let runSync (cmd: Command) =
             use proc = toProcess cmd
             let statement = Command.statement cmd
             let stdout = StringBuilder()
@@ -446,4 +461,4 @@ module rec Command =
                 ; StdOut = string stdout
                 ; StdErr = string stderr }
             
-            result   
+            result
