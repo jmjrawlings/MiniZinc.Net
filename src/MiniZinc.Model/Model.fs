@@ -26,7 +26,7 @@ module rec Model =
         ; Trace   : string }
     
     type Id = string
-
+    
     [<Struct>]
     [<DebuggerDisplay("_")>]
     type WildCard =
@@ -310,22 +310,24 @@ module rec Model =
           IsOptional : bool
           IsArray : bool }
         
+        static member OfType t =
+            { Type = t; Inst = Inst.Par; IsSet = false; IsOptional = false; IsArray = false }
+        
     type ITyped =
         abstract member TypeInst: TypeInst
-        
-    type [<RequireQualifiedAccess>] Type =
+
+    [<RequireQualifiedAccess>]        
+    type Type =
         | Int
         | Bool
         | String
         | Float
-        | Id       of Id
-        | Variable of Id
-        | Tuple    of TupleType
-        | Record   of RecordType
-        | Literal  of SetLiteral 
-        | Range    of Range
-        | List     of ListType
-        | Array    of ArrayType
+        | Id     of Id
+        | Range  of Range
+        | Set    of SetLiteral
+        | Tuple  of TupleType
+        | Record of RecordType
+        | Array  of ArrayType
 
      type RecordType =
          | RecordType of (Id * TypeInst) list
@@ -336,15 +338,19 @@ module rec Model =
     type Range =
         NumericExpr * NumericExpr
         
-    type ListType =
-        | ListType of TypeInst
+    [<RequireQualifiedAccess>]
+    type ArrayDim =
+        | Int
+        | Id    of Id
+        | Range of Range
+        | Set   of SetLiteral
         
     type ArrayType =
-        | ArrayType of TypeInst list * TypeInst
-        
+        | ArrayType of ArrayDim list * TypeInst
+       
     type SetLiteral =
         | SetLiteral of Expr list
-         
+        
     [<RequireQualifiedAccess>]    
     type Item =
         | Include    of IncludeItem
@@ -354,7 +360,6 @@ module rec Model =
         | Assign     of AssignItem
         | Declare    of DeclareItem
         | Solve      of SolveItem
-        | Predicate  of FunctionItem
         | Function   of FunctionItem
         | Test       of TestItem
         | Output     of OutputItem
