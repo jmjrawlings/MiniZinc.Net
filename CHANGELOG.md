@@ -20,7 +20,8 @@
 - Added `Solve` and `SolveSync` methods on `MiniZincClient`
 - Renamed `Command.Exec` to `Run` and `RunSync`
 - Added support for `--model-interface-only` which returns a `ModelInterface`
-
+- Added support for `--model-types-only` which returns a `ModelTypes`
+ 
 ### Tests
 - Refactor client tests to use a fixture
 - Client integration tests now actually solve the models
