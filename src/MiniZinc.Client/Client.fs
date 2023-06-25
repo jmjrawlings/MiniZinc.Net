@@ -8,8 +8,8 @@ open FSharp.Control
 open System.Collections.Generic
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.Abstractions
-open MiniZinc.Command
-open MiniZinc.Model
+
+open Command
 
 
 [<AutoOpen>]
@@ -190,11 +190,29 @@ module rec Client =
         let modelTypes (model: Model) (client: MiniZincClient) =
             let model_file = write_model_to_tempfile model
             let model_arg = model_arg model_file.FullName
-            let command = client.Command(model_arg, "--model-types-only")
-            let result = command.RunSync()
-            let stdout = result.StdOut
-            let json = JsonObject.Parse(stdout)
-            json
+
+            let command =
+                client.Command(model_arg, "--model-types-only")
+                |> Command.runSync
+                
+            let options =
+                let opts = JsonSerializerOptions()
+                opts.PropertyNameCaseInsensitive <- true
+                opts.Converters.Add(SolveMethodConverter())
+                opts.Converters.Add(ModelInterfaceTypeNameConverter())
+                opts
+                
+            let result =
+                command
+                |> Command.toResult
+                |> Result.map (fun stdout ->
+                    let doc = JsonDocument.Parse(stdout)
+                    let root = doc.RootElement.GetProperty("var_types")
+                    let types = JsonSerializer.Deserialize<ModelTypes>(root, options)
+                    types
+                    )
+                
+            result
             
         /// Analyse the given model
         let modelInterface (model: Model) (client: MiniZincClient) : Result<ModelInterface, string> =
