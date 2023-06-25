@@ -150,7 +150,7 @@ type ``Integration Tests``(fixture: ClientFixture) =
         test "oss.mzn"
 
 
-    [<Fact(Skip="Slow")>]
+    [<Fact>]
     member this. ``test packing`` () =
         test "packing.mzn"
 
@@ -165,12 +165,12 @@ type ``Integration Tests``(fixture: ClientFixture) =
         test "perfsq2.mzn"
 
 
-    [<Fact(Skip="Slow")>]
+    [<Fact>]
     member this. ``test photo`` () =
         test "photo.mzn"
 
 
-    [<Fact(Skip="Slow")>]
+    [<Fact>]
     member this. ``test product fd`` () =
         test "product_fd.mzn"
 
