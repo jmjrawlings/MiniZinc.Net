@@ -3,19 +3,27 @@
 ## Unreleased
 
 ### Model
+- Removed distinction between `Function` and `Predicate` items
+- Removed distinction between `Array` and `List` types
 - Removed `Ast.fs` 
 - Combine `Ast.fs` and `Model.fs`
 - Unified parsing into `Parse.fs`
 - Unified encoding into `Encode.fs`
 - `Encode.fs` and `Parse.fs` now use type and module extensions to augment the `Model` type
 - Let exprs now contain a `NameSpace`
+- Added `ArrayDim` union for array dimensions
+
+### Parser
+- Parser no longer accepts invalid array dimensions
 
 ### Client
-- `Solve` and `SolveAndWait` methods on `MiniZincClient`
+- Added `Solve` and `SolveSync` methods on `MiniZincClient`
+- Renamed `Command.Exec` to `Run` and `RunSync`
+- Added support for `--model-interface-only` which returns a `ModelInterface`
 
 ### Tests
 - Refactor client tests to use a fixture
-- Client integration tests solve the models
+- Client integration tests now actually solve the models
 
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs
