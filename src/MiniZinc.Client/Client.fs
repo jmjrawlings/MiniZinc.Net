@@ -209,81 +209,18 @@ module rec Client =
                 client.Command(model_arg, "--model-interface-only")
                 |> Command.runSync
                 
+            let options =
+                let opts = JsonSerializerOptions()
+                opts.PropertyNameCaseInsensitive <- true
+                opts.Converters.Add(SolveMethodConverter())
+                opts.Converters.Add(ModelInterfaceTypeNameConverter())
+                opts
+                
             let result =
                 command
                 |> Command.toResult
                 |> Result.map (fun stdout ->
-
-                    let json =
-                        JsonObject.Parse(stdout)
-                                            
-                    let input =
-                        json["input"].AsObject()
-                        |> parseTypes
-                        
-                    let output =
-                        json["output"].AsObject()
-                        |> parseTypes
-                        
-                    let includes =
-                        json["included_files"].Deserialize<string list>()
-                        
-                    let globals =
-                        json["globals"].Deserialize<string list>()
-                        
-                    let method =
-                        match json["method"].ToString() with
-                        | "sat" -> SolveMethod.Satisfy
-                        | "min" -> SolveMethod.Minimize
-                        | "max" -> SolveMethod.Maximize
-                        | _ -> failwith "xd"
-                        
-                    { Includes = includes
-                    ; Globals = globals
-                    ; Input = input
-                    ; SolveMethod = method 
-                    ; Output = output })
-
-            result                
-            
-        let parseType (node: JsonNode) : TypeInst =
-            
-            let baseType =
-                match node["type"].ToString() with
-                | "int" -> Type.Int
-                | "float" -> Type.Float
-                | "string" -> Type.String
-                | xd -> failwith xd
-
-            let dims =
-                match node["dim"].ToString() with
-                | "" ->
-                    []
-                | n ->
-                    List.replicate (int n) (Type.Int)
-                    
-            let ti =
-                match dims with
-                | [] ->
-                    { Type = baseType
-                    ; IsArray = false
-                    ; IsSet = false
-                    ; Inst = Inst.Var
-                    ; IsOptional = false }
-                | _ ->
-                    { Type = Type.Array (ArrayType.ArrayType (dims, baseType))
-                    ; IsArray = false
-                    ; IsSet = false
-                    ; Inst = Inst.Var
-                    ; IsOptional = false }
-                    
-                    
-            ti
-        
-        let parseTypes (object: JsonObject) =
-            object
-            |> Seq.map (fun kv -> (kv.Key, parseType kv.Value))
-            |> Map.ofSeq
-            
-    // type ModelInterface =
-    //     ()
+                    JsonSerializer.Deserialize<ModelInterface>(stdout, options)
+                    )
+                
+            result
