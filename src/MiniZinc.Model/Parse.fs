@@ -258,9 +258,8 @@ type private ParseUtils () =
         | Type.String 
         | Type.Float 
         | Type.Id _ 
-        | Type.Literal _ 
-        | Type.Range _
-        | Type.Variable _ ->
+        | Type.Set _ 
+        | Type.Range _ ->
             ty, Inst.Par
         
         // Any var item means a var tuple
@@ -295,11 +294,6 @@ type private ParseUtils () =
                     )
                 
             (Type.Record (RecordType.RecordType resolved)), inst
-            
-        // A var item means a var tuple
-        | Type.List (ListType.ListType itemType) ->
-            let ty, inst = ParseUtils.ResolveInst itemType
-            (Type.List (ListType.ListType itemType)), inst
             
         // A var item means a var array
         | Type.Array (ArrayType.ArrayType (dims, itemType)) ->
@@ -757,8 +751,23 @@ module Parsers =
     // <array-ti-expr>        
     let array_ti_expr : Parser<TypeInst> =
 
-        let dimensions =
+        let dimension =
             ti_expr
+            >>= fun ti ->
+                match ti.Type with
+                | Type.Id id ->
+                    preturn (ArrayDim.Id id)
+                | Type.Int ->
+                    preturn ArrayDim.Int
+                | Type.Range rng ->
+                    preturn (ArrayDim.Range rng)
+                | Type.Set set ->
+                    preturn (ArrayDim.Set set)
+                | other ->
+                    fail $"Bad array dimension {other}"
+        
+        let dimensions =
+            dimension
             |> between(p '[', p ']', p ',')
             <?!> "array-dimensions"
         
@@ -812,7 +821,7 @@ module Parsers =
         ; tuple_ti    |>> Type.Tuple
         ; range_expr  |>> Type.Range 
         ; id          |>> Type.Id
-        ; set_literal |>> Type.Literal ]
+        ; set_literal |>> Type.Set ]
         |> choice
         <?!> "base-ti-tail"
     
@@ -1183,7 +1192,7 @@ module Parsers =
         ; solve_item      |>> Item.Solve
         ; alias_item      |>> Item.Synonym
         ; output_item     |>> Item.Output
-        ; predicate_item  |>> Item.Predicate
+        ; predicate_item  |>> Item.Function
         ; function_item   |>> Item.Function
         ; test_item       |>> Item.Test
         ; annotation_item |>> Item.Annotation        
@@ -1267,8 +1276,6 @@ module rec Parse =
             | Item.Synonym x ->
                 { model with NameSpace = model.NameSpace.add x }
             | Item.Declare x ->
-                { model with NameSpace = model.NameSpace.add x }
-            | Item.Predicate x ->
                 { model with NameSpace = model.NameSpace.add x }
             | Item.Function x ->
                 { model with NameSpace = model.NameSpace.add x }
