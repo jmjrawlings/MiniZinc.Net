@@ -181,39 +181,40 @@ module Encoder =
             | Type.Id x ->
                 this.write x
                 
-            | Type.Variable x ->
-                this.write x
-                
             | Type.Record x ->
                 this.writeRecordType x
                 
             | Type.Tuple x ->
                 this.writeTupleType x
                 
-            | Type.Literal x ->
+            | Type.Set x ->
                 this.writeSetLit x
                 
             | Type.Range x ->
                 this.writeRange x
                 
-            | Type.List x ->
-                this.writeListType x
-                
             | Type.Array x ->
                 this.writeArrayType x
+                
+        member this.writeArrayDim(t: ArrayDim) =
+            match t with
+            | ArrayDim.Int ->
+                this.write "int"
+            | ArrayDim.Id x ->
+                this.write x
+            | ArrayDim.Set x ->
+                this.writeSetLit x
+            | ArrayDim.Range x ->
+                this.writeRange x
 
         member this.writeRange (lo, hi) =
             this.writeNumExpr lo
             this.write ".."
             this.writeNumExpr hi
-        
-        member this.writeListType (ListType.ListType x) =
-            this.write "list of "
-            this.writeTypeInst x
-            
+                    
         member this.writeArrayType (ArrayType.ArrayType (dims, typ)) =
             this.write "array["
-            this.sepBy(", ", dims, this.writeTypeInst)
+            this.sepBy(", ", dims, this.writeArrayDim)
             this.write "] of "
             this.writeTypeInst typ
                             
