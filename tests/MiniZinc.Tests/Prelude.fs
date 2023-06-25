@@ -1,7 +1,9 @@
 ﻿namespace MiniZinc.Tests
 
+open System
 open System.IO
 open System.Runtime.CompilerServices
+open System.Text
 
 
 [<AutoOpen>]
@@ -65,5 +67,7 @@ type Extensions() =
     
     [<Extension>]
     static member inline StringEquals(a, b: string) =
-        if (string a) <> b then
+        if System.String.Equals(string a, b, StringComparison.OrdinalIgnoreCase) then
+            ()
+        else
             failwithf $"{a} does not equal {b}"
