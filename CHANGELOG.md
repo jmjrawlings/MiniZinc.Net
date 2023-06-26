@@ -21,6 +21,10 @@
 - Renamed `Command.Exec` to `Run` and `RunSync`
 - Added support for `--model-interface-only` which returns a `ModelInterface`
 - Added support for `--model-types-only` which returns a `ModelTypes`
+- Split `Client.fs` out into several other files such that each one extends the client in a contained manner
+  - `ModelInterface.fs`
+  - `ModelTypes.fs`
+  - `Solve.fs`
  
 ### Tests
 - Refactor client tests to use a fixture
