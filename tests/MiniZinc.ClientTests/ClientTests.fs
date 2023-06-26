@@ -51,18 +51,16 @@ type ``Client Tests``(fixture: ClientFixture) =
         let d = types.Vars["d"]
         
         a.Dim.AssertEquals(0)
-        a.Type.StringEquals("record")
-        a.FieldTypes["x"].Type.StringEquals("int")
+        a.TypeName.StringEquals("record")
+        a.FieldTypes["x"].TypeName.StringEquals("int")
 
         c.Dim.AssertEquals(0)
-        c.Type.StringEquals("int")
+        c.TypeName.StringEquals("int")
         
         d.Dim.AssertEquals(2)
-        d.Type.AssertEquals(InterfaceTypeName.Float)
+        d.TypeName.StringEquals("float")
         
-        ()        
-        
-        
+        ()
         
         
     interface IClassFixture<ClientFixture>

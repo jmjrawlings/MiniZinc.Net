@@ -263,11 +263,11 @@ type private ParseUtils () =
             ty, Inst.Par
         
         // Any var item means a var tuple
-        | Type.Tuple (TupleType.TupleType items) ->
+        | Type.Tuple x ->
             let mutable inst = Inst.Par
                             
-            let resolved =
-                items
+            let fields =
+                x.Fields
                 |> List.map (fun item ->
                     match ParseUtils.ResolveInst item with
                     | ty, Inst.Var ->
@@ -276,14 +276,14 @@ type private ParseUtils () =
                     | ty, _ -> ty
                     )
                 
-            (Type.Tuple (TupleType.TupleType resolved)), inst
+            (Type.Tuple {Fields = fields}), inst
                 
         // Any var field means a var record
-        | Type.Record (RecordType.RecordType fields) ->
+        | Type.Record x ->
             let mutable inst = Inst.Par
                             
             let resolved =
-                fields
+                x.Fields
                 |> List.map (fun (name, field) ->
                     match ParseUtils.ResolveInst field with
                     | ty, Inst.Var ->
@@ -293,12 +293,12 @@ type private ParseUtils () =
                         name, ty
                     )
                 
-            (Type.Record (RecordType.RecordType resolved)), inst
+            (Type.Record {x with Fields=resolved}), inst
             
         // A var item means a var array
-        | Type.Array (ArrayType.ArrayType (dims, itemType)) ->
-            let ty, inst = ParseUtils.ResolveInst itemType
-            (Type.Array (ArrayType.ArrayType (dims, ty))), inst
+        | Type.Array arr ->
+            let ty, inst = ParseUtils.ResolveInst arr.Elements
+            (Type.Array {arr with Elements = ty}), inst
 
 
     
@@ -598,7 +598,7 @@ module Parsers =
     let set_literal : Parser<SetLiteral>=
         between(p '{', p '}', p ',') expr
         |> attempt
-        |>> SetLiteral.SetLiteral
+        |>> (fun exprs -> {Elements = exprs})
         
     // <set-expr>
     let set_expr : Parser<SetLiteral>=
@@ -778,8 +778,7 @@ module Parsers =
         |>> (fun (dims, ty) ->
             
             let ty, inst =
-                (dims, ty)
-                |> ArrayType.ArrayType
+                { Dimensions = dims; Elements=ty}
                 |> Type.Array
                 |> ParseUtils.ResolveInst
                 
@@ -801,14 +800,14 @@ module Parsers =
     let tuple_ti : Parser<TupleType> =
         kw "tuple"
         >>. between1(p '(', p ')', p ',') ti_expr
-        |>> TupleType.TupleType
+        |>> (fun fields -> {Fields=fields})
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
-    let record_ti =
+    let record_ti : Parser<RecordType> =
         kw "record"
         >>. between1(p '(', p ')', p ',') ti_expr_and_id
-        |>> RecordType.RecordType
+        |>> (fun fields -> {Fields=fields})
         <?!> "record-ti"
             
     // <base-ti-expr-tail>

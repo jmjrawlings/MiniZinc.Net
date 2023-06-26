@@ -329,11 +329,11 @@ module rec Model =
         | Record of RecordType
         | Array  of ArrayType
 
-     type RecordType =
-         | RecordType of (Id * TypeInst) list
+    type RecordType =
+        { Fields: (Id * TypeInst) list }
          
     type TupleType =
-        | TupleType of TypeInst list
+        { Fields: TypeInst list }
         
     type Range =
         NumericExpr * NumericExpr
@@ -346,10 +346,11 @@ module rec Model =
         | Set   of SetLiteral
         
     type ArrayType =
-        | ArrayType of ArrayDim list * TypeInst
+        { Dimensions : ArrayDim list
+        ; Elements: TypeInst }
        
     type SetLiteral =
-        | SetLiteral of Expr list
+        { Elements: Expr list }
         
     [<RequireQualifiedAccess>]    
     type Item =

@@ -11,7 +11,8 @@ type ``Integration Tests``(fixture: ClientFixture) =
     let test (name: string) =
         let suite = TestSuite.load name
         let model = TestSuite.parseModel suite
-        let result = client.GetModelInterface(model)
+        let iface = client.GetModelInterface(model)
+        let types = client.GetModelTypes(model)
         //let result = client.GetModelTypes(model)
         ()
         

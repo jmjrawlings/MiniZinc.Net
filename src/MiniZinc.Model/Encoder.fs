@@ -158,41 +158,30 @@ module Encoder =
                 this.writeType ti.Type        
 
         member this.writeTupleType (x: TupleType) =
-            match x with
-            | TupleType.TupleType fields ->
-                this.write "tuple("
-                this.sepBy(", ", fields, this.writeTypeInst)
-                this.write ")"
+            this.write "tuple("
+            this.sepBy(", ", x.Fields, this.writeTypeInst)
+            this.write ")"
             
-        member this.writeType(t: Type) =
+        member this.writeType (t: Type) =
             match t with
             | Type.Int ->
-                this.write "int"
-                
+                this.write "int"                
             | Type.Bool ->
-                this.write "bool"
-                
+                this.write "bool"                
             | Type.String ->
-                this.write "string"
-                
+                this.write "string"                
             | Type.Float ->
-                this.write "float"
-                
+                this.write "float"                
             | Type.Id x ->
-                this.write x
-                
+                this.write x                
             | Type.Record x ->
-                this.writeRecordType x
-                
+                this.writeRecordType x                
             | Type.Tuple x ->
-                this.writeTupleType x
-                
+                this.writeTupleType x                
             | Type.Set x ->
-                this.writeSetLit x
-                
+                this.writeSetLit x                
             | Type.Range x ->
-                this.writeRange x
-                
+                this.writeRange x                
             | Type.Array x ->
                 this.writeArrayType x
                 
@@ -212,15 +201,15 @@ module Encoder =
             this.write ".."
             this.writeNumExpr hi
                     
-        member this.writeArrayType (ArrayType.ArrayType (dims, typ)) =
+        member this.writeArrayType (arr: ArrayType) =
             this.write "array["
-            this.sepBy(", ", dims, this.writeArrayDim)
+            this.sepBy(", ", arr.Dimensions, this.writeArrayDim)
             this.write "] of "
-            this.writeTypeInst typ
+            this.writeTypeInst arr.Elements
                             
-        member this.writeSetLit (SetLiteral.SetLiteral exprs) =
+        member this.writeSetLit (set: SetLiteral) =
             this.write "{"
-            this.writeExprs exprs 
+            this.writeExprs set.Elements
             this.write "}"
 
         member inline this.writeIdOrOp<'t when 't :> Enum> (x: IdOr<'t>) =
@@ -507,9 +496,9 @@ module Encoder =
             | _ ->
                 ()
             
-        member this.writeRecordType (RecordType.RecordType pars) =
+        member this.writeRecordType (x: RecordType) =
             this.write "record("
-            this.writeParameters pars
+            this.writeParameters x.Fields
             this.write ")"
                 
         member this.writeParameter ((id,ti): Parameter) =
