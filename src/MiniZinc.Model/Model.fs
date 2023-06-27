@@ -729,7 +729,8 @@ module rec Model =
         let model result =
             match result with
             | Success x -> x
-            | _ -> failwithf $"Result was not a success"
+            | ParseError err -> failwithf $"{err}"
+            | other -> failwith "Result was not a Model"
             
         let toOption result =
             match result with
