@@ -29,6 +29,8 @@
 ### Tests
 - Refactor client tests to use a fixture
 - Client integration tests now actually solve the models
+- `ModelTypes` test
+- `ModelInterface` test
 
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs
