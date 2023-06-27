@@ -36,7 +36,7 @@ module rec Command =
         static member create text =
             { Text = text
             ; TimeStamp = DateTimeOffset.Now }
-            
+    
     [<Struct>]
     type CommandMessage =
         | Started of start:StartMessage
@@ -46,7 +46,7 @@ module rec Command =
         
     type CommandResult =
         { Command   : string
-        ; Args      : string list
+        ; Args      : string seq
         ; Statement : string
         ; StartTime : DateTimeOffset
         ; EndTime   : DateTimeOffset
@@ -55,9 +55,6 @@ module rec Command =
         ; StdErr    : string
         ; ExitCode  : int
         ; IsError   : bool }
-        
-        member this.ToResult() =
-            Command.toResult this
 
     [<RequireQualifiedAccess>]
     type FlagType = | Short | Long | None
@@ -118,7 +115,9 @@ module rec Command =
             else
                 value <- input
             
-            let value_match = value_regex.Match <| value.Trim()
+            let value_match =
+                value_regex.Match <| value.Trim()
+                
             if value_match.Success then
                 let quoted = value_match.Groups[1].Value
                 let unquoted = value_match.Groups[2].Value
@@ -285,11 +284,11 @@ module rec Command =
         
         let stderr (result: CommandResult) =
             result.StdErr
-            
-        let toResult (result: CommandResult) =
+                
+        let map f (result: CommandResult) =
             match result.ExitCode with
             | 0 ->
-                Result.Ok result.StdOut
+                Result.Ok (f result)
             | _ ->
                 Result.Error result.StdErr
             
@@ -412,7 +411,7 @@ module rec Command =
                 
                 let result =
                     { Command = proc.StartInfo.FileName
-                    ; Args = Seq.toList proc.StartInfo.ArgumentList
+                    ; Args = proc.StartInfo.ArgumentList |> Seq.toList
                     ; Statement = statement 
                     ; StartTime = start_time
                     ; EndTime = end_time
@@ -451,7 +450,7 @@ module rec Command =
             
             let result =
                 { Command = proc.StartInfo.FileName
-                ; Args = Seq.toList proc.StartInfo.ArgumentList
+                ; Args = proc.StartInfo.ArgumentList |> Seq.toList
                 ; Statement = statement 
                 ; StartTime = start_time
                 ; EndTime = end_time

@@ -40,29 +40,37 @@ module rec Client =
     /// <summary>
     /// A MiniZinc CLI Client 
     /// </summary>
-    type MiniZincClient internal (executable: string, version:string, logger: ILogger) as this =
-                
-        let logger =
-            match logger with
-            | null ->
-                NullLoggerFactory.Instance.CreateLogger() :> ILogger
-            | log -> log
+    type MiniZincClient internal (
+            executable: string,
+            path: FileInfo,
+            version:string,
+            logger: ILogger) as this =
             
         let mutable solvers = Map.empty
         
-        do this.GetSolvers()
+        do
+            this.GetSolvers()
+
+                
+        /// The MiniZinc executable 
+        member this.Executable =
+            executable
+            
+        /// The full path to the executable 
+        member this.Path =
+            path
+            
+        /// The executable directory
+        member this.Directory =
+            path.Directory
+                    
+        /// The MiniZinc CLI Version
+        member this.Version =
+            version
                      
         /// Installed solvers by their ID
         member this.Solvers =
             solvers :> IReadOnlyDictionary<string, Solver>
-            
-        /// The MiniZinc CLI Version
-        member this.Version =
-            version
-        
-        /// The MiniZinc executable path
-        member this.ExecutablePath =
-            executable
             
         /// <summary>
         /// Create a new Client
@@ -70,21 +78,11 @@ module rec Client =
         /// <param name="executable">The MiniZinc executable path</param>
         /// <param name="logger">A logger to write to</param>
         static member Create(executable: string, logger: ILogger) =
-                        
-            let executable =
-                match executable with
-                | path when String.IsNullOrEmpty path ->
-                    "minizinc"
-                | path ->
-                    path
-                    
-            let result =
-                MiniZincClient.create logger executable
-                
-            let client =
-                result.Get()
-                
-            client                    
+            match MiniZincClient.create logger executable with
+            | Result.Ok client ->
+                client
+            | Result.Error err ->
+                failwith $"Could not create a miniznc client: {err}"
                     
         /// <summary>
         /// Create a new Client
@@ -116,13 +114,23 @@ module rec Client =
                 
             cmd
 
+        /// Run a command with the given arguments
+        member this.Run([<ParamArray>] args: obj[]) =
+            let command = this.Command(args)
+            let result = command.Run()
+            result
+            
+        /// Run a command with the given arguments
+        member this.RunSync([<ParamArray>] args: obj[]) =
+            let command = this.Command(args)
+            let result = command.RunSync()
+            result
+        
         /// Get all installed solvers
         member public this.GetSolvers () =
                         
             let stdout =
-                this.Command "--solvers-json"
-                |> Command.runSync
-                |> Command.stdout
+                this.RunSync("--solvers-json").StdOut
                
             let options =
                 let opts = JsonSerializerOptions()
@@ -139,27 +147,41 @@ module rec Client =
             solvers <- result
             
         override this.ToString() =
-            $"MiniZinc v{version} Client"
-            
+            $"MiniZinc Client v{version}"
             
     module MiniZincClient =
         
-        /// Create a new MiniZinc client from the given executable
+        /// Create a new MiniZinc client from the given executable and logger
         let create (logger: ILogger) (executable: string) : Result<MiniZincClient, string> =
+                            
+            let logger =
+                match logger with
+                | null ->
+                    NullLoggerFactory.Instance.CreateLogger() :> ILogger
+                | log -> log
+                
+            let executable =
+                match executable with
+                | _ when String.IsNullOrEmpty(executable) ->
+                    "minizinc"
+                | other ->
+                    other
+                    
+            let path =
+                FileInfo executable
                        
             let client =
-                match Command.Create(executable, "--version").RunSync().ToResult() with
-                | Result.Ok stdout ->
+                Command.Create(executable, "--version")
+                |> Command.runSync
+                |> Command.map (fun result ->
                     
                     let version =
-                        stdout
+                        result.StdOut
                         |> Grep.matches @"version (\d+\.\d+\.\d+)"
                         |> List.head
                         
-                    MiniZincClient(executable, version, logger)
-                    |> Result.Ok
-                    
-                | Result.Error err -> Result.Error err
+                    MiniZincClient(executable, path, version, logger)
+                )
                     
             client
         
