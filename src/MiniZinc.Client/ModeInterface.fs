@@ -25,7 +25,7 @@ module ModelInterface =
                 
             let model_arg =
                 MiniZincClient.model_arg model_file.FullName
-                
+
             let command =
                 client.Command(model_arg, "--model-interface-only")
                 |> Command.runSync
@@ -34,17 +34,19 @@ module ModelInterface =
                 let opts = JsonSerializerOptions()
                 opts.PropertyNameCaseInsensitive <- true
                 opts.Converters.Add(SolveMethodConverter())
-                opts.Converters.Add(ModelInterfaceTypeNameConverter())
+                opts.Converters.Add(TypeInstConverter())
                 opts
                 
             let result =
                 command
-                |> Command.toResult
-                |> Result.map (fun stdout ->
-                    JsonSerializer.Deserialize<ModelInterface>(stdout, options)
+                |> Command.map (fun result ->
+                    let stdout = result.StdOut
+                    let iface = JsonSerializer.Deserialize<ModelInterface>(stdout, options)
+                    iface
                     )
                 
-            result
+            result                
+
 
     type MiniZincClient with
                 

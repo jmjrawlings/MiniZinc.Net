@@ -3,28 +3,11 @@
 open System.Collections.Generic
 open System.Text.Json
 open System.Text.Json.Serialization
-
-type JsonType =
-  { [<JsonPropertyName("type")>]
-    TypeName : JsonTypeName
-    [<JsonPropertyName("dim")>]
-    Dim : int
-    [<JsonPropertyName("dims")>]
-    Dimensions : IReadOnlyList<string>
-    [<JsonPropertyName("set")>]
-    IsSet : bool
-    [<JsonPropertyName("opt")>]
-    IsOpt : bool
-    [<JsonPropertyName("field_types")>]
-    FieldTypes : JsonTypes }
-  
-and JsonTypes =
-    IReadOnlyDictionary<string, JsonType>
+    
 
 type ModelTypes =
-  {
-    Vars: JsonTypes
-  }
+  { Vars: IReadOnlyDictionary<string, TypeInst> }
+ 
 
 [<AutoOpen>]
 module ModelTypes =
@@ -33,7 +16,7 @@ module ModelTypes =
     module MiniZincClient =
         
         /// Analyse the given model
-        let modelTypes (model: Model) (client: MiniZincClient) =
+        let modelTypes (model: Model) (client: MiniZincClient) : Result<ModelTypes, string> =
             
             let model_file =
                 MiniZincClient.write_model_to_tempfile model
@@ -49,13 +32,13 @@ module ModelTypes =
                 let opts = JsonSerializerOptions()
                 opts.PropertyNameCaseInsensitive <- true
                 opts.Converters.Add(SolveMethodConverter())
-                opts.Converters.Add(ModelInterfaceTypeNameConverter())
+                opts.Converters.Add(TypeInstConverter())
                 opts
                 
             let result =
                 command
-                |> Command.toResult
-                |> Result.map (fun stdout ->
+                |> Command.map (fun result ->
+                    let stdout = result.StdOut
                     let doc = JsonDocument.Parse(stdout)
                     let root = doc.RootElement.GetProperty("var_types")
                     let types = JsonSerializer.Deserialize<ModelTypes>(root, options)
