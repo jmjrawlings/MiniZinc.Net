@@ -13,6 +13,7 @@ type ``Integration Tests``(fixture: ClientFixture) =
         let model = TestSuite.parseModel suite
         let iface = client.GetModelInterface(model)
         let types = client.GetModelTypes(model)
+        let solution = client.SolveSync(model)
         //let result = client.GetModelTypes(model)
         ()
         

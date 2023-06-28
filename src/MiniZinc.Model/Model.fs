@@ -461,7 +461,21 @@ module rec Model =
         | Synonym  of SynonymItem
         | Function of FunctionItem
         | Multiple of Binding list
-        
+
+    /// <summary>
+    /// Names bound to expressions (bindings)
+    /// </summary>
+    /// <remarks>
+    /// The purpose of this type is to provide
+    /// access to the expression bound to a particular name
+    /// as well as maintaining strongly typed mappings for
+    /// each possible binding.
+    ///
+    /// The two concrete use cases of namespaces are on
+    /// the Model itself (each MiniZinc model has a global
+    /// namespace), as well as inside of a let expression
+    /// which can add new bindings to from its own namespace.
+    /// </remarks>
     type NameSpace =
         { Bindings   : Map<string, Binding>  
         ; Declared   : Map<string, DeclareItem> 
@@ -471,19 +485,19 @@ module rec Model =
         ; Conflicts  : Map<string, Binding list> 
         ; Undeclared : Map<string, Expr> }
                 
-        member this.add (x: DeclareItem) =
+        member this.Add (x: DeclareItem) =
             NameSpace.add x.Name (Binding.Declare x) this
             
-        member this.add (x: EnumItem) =
+        member this.Add (x: EnumItem) =
             NameSpace.add x.Name (Binding.Enum x) this
             
-        member this.add (x: SynonymItem) =
+        member this.Add (x: SynonymItem) =
             NameSpace.add x.Name (Binding.Synonym x) this
 
-        member this.add (x: FunctionItem) =
+        member this.Add (x: FunctionItem) =
             NameSpace.add x.Name (Binding.Function x) this
             
-        member this.add (name: string, x: Expr) : NameSpace =
+        member this.Add (name: string, x: Expr) : NameSpace =
             NameSpace.add name (Binding.Expr x) this
         
     module NameSpace =

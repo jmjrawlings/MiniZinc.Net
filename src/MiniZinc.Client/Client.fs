@@ -10,14 +10,20 @@ open Microsoft.Extensions.Logging.Abstractions
 
 open Command
 
-/// An installed MiniZinc solver
+/// <summary>
+/// A backend Solver supported by MiniZinc
+/// </summary>
+/// <remarks>
+/// Reflects the information provided by `minizinc --solvers`
+/// </remarks>
 type Solver =
     { Id                 : string
     ; Name               : string
+    ; Description        : string
     ; Version            : string
     ; MznLib             : string
+    ; MznLibVersion      : int
     ; Executable         : string
-    ; Tags               : IReadOnlyList<string>
     ; SupportsMzn        : bool
     ; SupportsFzn        : bool
     ; SupportsNL         : bool
@@ -26,9 +32,8 @@ type Solver =
     ; NeedsStdlibDir     : bool
     ; NeedsPathsFile     : bool
     ; IsGUIApplication   : bool
-    ; MznLibVersion      : int
     ; ExtraInfo          : JsonObject
-    ; Description        : string
+    ; Tags               : IReadOnlyList<string>
     ; StdFlags           : IReadOnlyList<string>    
     ; RequiredFlags      : IReadOnlyList<string>    
     ; ExtraFlags         : IReadOnlyList<IReadOnlyList<string>> }

@@ -958,7 +958,7 @@ module Parsers =
                 
             let nameSpace : NameSpace =
                 (NameSpace.empty, declares)
-                ||> List.fold (fun ns decl -> ns.add decl)
+                ||> List.fold (fun ns decl -> ns.Add decl)
            
             { NameSpace = nameSpace
             ; Constraints = constraints
@@ -1271,15 +1271,15 @@ module rec Parse =
             | Item.Include (Include x) ->
                 { model with Includes = Map.add x LoadResult.Reference model.Includes }
             | Item.Enum x ->
-                { model with NameSpace = model.NameSpace.add x }
+                { model with NameSpace = model.NameSpace.Add x }
             | Item.Synonym x ->
-                { model with NameSpace = model.NameSpace.add x }
+                { model with NameSpace = model.NameSpace.Add x }
             | Item.Declare x ->
-                { model with NameSpace = model.NameSpace.add x }
+                { model with NameSpace = model.NameSpace.Add x }
             | Item.Function x ->
-                { model with NameSpace = model.NameSpace.add x }
+                { model with NameSpace = model.NameSpace.Add x }
             | Item.Assign (name, expr) ->
-                { model with NameSpace = model.NameSpace.add(name, expr) }
+                { model with NameSpace = model.NameSpace.Add(name, expr) }
             | Item.Constraint x ->
                 { model with Constraints = x :: model.Constraints }
             | Item.Solve x ->
