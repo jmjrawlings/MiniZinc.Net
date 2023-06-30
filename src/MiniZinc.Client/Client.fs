@@ -38,7 +38,6 @@ type Solver =
     ; RequiredFlags      : IReadOnlyList<string>    
     ; ExtraFlags         : IReadOnlyList<IReadOnlyList<string>> }
 
-
 [<AutoOpen>]
 module rec Client =
     
@@ -190,14 +189,14 @@ module rec Client =
                     
             client
         
-        /// Write the given model to a tempfile with '.mzn' extension
-        let write_model_to_tempfile (model: Model) : FileInfo =
+        /// Compile the given model to a tempfile with '.mzn' extension
+        let compile (model: Model) : FileInfo =
             
             let path =
                 let tmp = Path.GetTempFileName()
                 Path.ChangeExtension(tmp, ".mzn")
                 
-            let mzn = model.Encode()
+            let mzn = model.Compile()
             File.WriteAllText(path, mzn)
             FileInfo path
         
