@@ -13,7 +13,7 @@
     <Compile Include="Prelude.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Parse.fs" />    
-    <Compile Include="Encoder.fs" />    
+    <Compile Include="Compile.fs" />    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="fparsec" Version="1.1.1" />

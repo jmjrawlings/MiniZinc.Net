@@ -21,7 +21,7 @@ module ModelInterface =
         let modelInterface (model: Model) (client: MiniZincClient) : Result<ModelInterface, string> =
             
             let model_file =
-                MiniZincClient.write_model_to_tempfile model
+                MiniZincClient.compile model
                 
             let model_arg =
                 MiniZincClient.model_arg model_file.FullName

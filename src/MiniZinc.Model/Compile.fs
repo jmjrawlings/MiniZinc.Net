@@ -5,13 +5,13 @@ open System.Text
 open MiniZinc
 
 /// Options used when encoding models 
-type EncodeOptions =
-    | EncodeOptions
+type CompileOptions =
+    | CompileOptions
     static member Default =
-        EncodeOptions
+        CompileOptions
 
-module Encoder =
-         
+module Compiler =
+             
     let operators : Map<int, string> =
          [ Op.Add, "+"         
          ; Op.Subtract, "-"
@@ -574,9 +574,9 @@ module Encode =
     
     module Model =
 
-        let encode (options: EncodeOptions) (model: Model) =
+        let encode (options: CompileOptions) (model: Model) =
             
-            let mzn = Encoder.MiniZincEncoder()
+            let mzn = Compiler.MiniZincEncoder()
                                     
             for incl in model.Includes.Keys do
                 let item = IncludeItem.Include incl
@@ -607,8 +607,9 @@ module Encode =
             mzn.String
                 
     type Model with
-        member this.Encode(options: EncodeOptions) =
+    
+        member this.Compile(options: CompileOptions) =
             Model.encode options this
             
-        member this.Encode() =
-            Model.encode EncodeOptions.Default this
+        member this.Compile() =
+            Model.encode CompileOptions.Default this

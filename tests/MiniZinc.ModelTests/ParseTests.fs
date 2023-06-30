@@ -28,7 +28,7 @@ module ``Parser Tests`` =
         ()
             
     // Test parsing the string, it is sanitized first
-    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: Encoder.MiniZincEncoder -> 't -> unit) =
+    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: Compiler.MiniZincEncoder -> 't -> unit) =
 
         let source, comments =
             parseComments input
@@ -40,7 +40,7 @@ module ``Parser Tests`` =
             | Error err ->
                 failwith (string err)
             
-        let encoder = Encoder.MiniZincEncoder()
+        let encoder = Compiler.MiniZincEncoder()
         let write = (writer encoder)
         write parsed
         

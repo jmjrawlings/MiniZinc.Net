@@ -9,7 +9,7 @@ module ``Integration Tests`` =
     let test (name: string) =
         let suite = TestSuite.load name
         let model = TestSuite.parseModel suite
-        let mzn = model.Encode()
+        let mzn = model.Compile()
         let roundtrip = Model.ParseString(mzn).Model
         ()
        
