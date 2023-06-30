@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.Text.Json
 open System.Text.Json.Nodes
+open System.Text.Json.Serialization
 open FSharp.Control
 open MiniZinc.Command
 
@@ -19,19 +20,7 @@ module rec Solve =
         | Error = 5
         | Unbounded = 6 
         | AllSolutions = 7
-
-    type SolutionType =
-        | Satisfied = 0
-        | Suboptimal = 1
-        | Optimal = 2
     
-    type ObjectiveInfo =
-        | Satisfied
-        | Int of int
-        | Float of float
-        | ConvergingInt of Convergence<int>
-        | ConvergingFloat of Convergence<float>
-        
     type Convergence<'t> =
         { Objective : 't
         ; Bound: 't
@@ -40,33 +29,37 @@ module rec Solve =
         ; AbsoluteDelta: 't
         ; RelativeDelta: float }
         
-    type SolveStatus =
+    type SolutionStatus =
+        | Started 
         | Satisfied
-        | Suboptimal of ObjectiveInfo
-        | Optimal of ObjectiveInfo
+        | SubOptimal of Objective
+        | Optimal of Objective
         | Unsatisfiable
         | Unbounded
         | AllSolutions
         | Timeout of TimeSpan
         | Error of string
         
-    type SolveSummary =
-        { StartTime : DateTime
-        ; EndTime   : DateTime
-        ; Duration  : TimeSpan
-        ; Status    : SolveStatus }
-       
     type Solution =
-        { Variables : Map<string, Expr>
-        ; Type : SolutionType
-        ; Objective : ObjectiveInfo }
+        { Command    : string
+        ; ProcessId  : int
+        ; TotalTime  : TimePeriod
+        ; IterationTime : TimePeriod
+        ; Iteration  : int
+        ; Variables  : Map<string, Expr>
+        ; Statistics : Map<string, JsonValue>
+        ; Status     : SolutionStatus }
+        
+    type Objective =
+        | Int of int
+        | Float of float
         
     module MiniZincClient =
         
         open Command
         
         /// Solve the given model                            
-        let solve (model: Model) (client: MiniZincClient) : IAsyncEnumerable<CommandMessage> =
+        let solve (model: Model) (client: MiniZincClient) : IAsyncEnumerable<Solution> =
 
             let model_mzn =
                 MiniZincClient.compile model
@@ -81,31 +74,85 @@ module rec Solve =
                     "--statistics",
                     model_arg
                 )
+                
+            let startTime =
+                DateTimeOffset.Now
+                
+            let mutable solution = Unchecked.defaultof<Solution>
             
             taskSeq {
                 for msg in command.Stream() do
                     match msg.Status with
+                    
+                    // MiniZinc has started
                     | CommandStatus.Started ->
-                        yield msg
+                        solution <-
+                            { Command = msg.Command
+                            ; ProcessId = msg.ProcessId
+                            ; Iteration = 0
+                            ; TotalTime = TimePeriod.At startTime
+                            ; IterationTime =  TimePeriod.At startTime
+                            ; Variables = Map.empty
+                            ; Statistics = Map.empty 
+                            ; Status = SolutionStatus.Started }
+                        yield solution
+                        
+                    // Standard Output Received
                     | CommandStatus.StdOut ->
                         let json = JsonObject.Parse(msg.Message).AsObject()
                         match json["type"].GetValue<string>() with
                         | "solution" ->
-                            let dzn = (json["output"]["dzn"]).GetValue<string>()
-                            let vars = (parseDataString dzn).Get()
-                            yield msg
+
+                            let dzn =
+                                (json["output"]["dzn"]).GetValue<string>()
+
+                            let vars, obj =
+                                match (parseDataString dzn) with
+                                | Result.Error err ->
+                                    failwith $"{err}"
+                                | Result.Ok map when map.ContainsKey "_objective" ->
+                                    let obj = map["_objective"]
+                                    let vars = Map.remove "_objective" map
+                                    vars, (Some obj)
+                                | Result.Ok map ->
+                                    map, None
+                                    
+                            let status =
+                                match obj with
+                                | Some (Expr.Int i) ->
+                                    SolutionStatus.SubOptimal (Objective.Int i)
+                                | Some (Expr.Float f) ->
+                                    SolutionStatus.SubOptimal (Objective.Float f) 
+                                | _ ->
+                                    SolutionStatus.Satisfied
+
+                            let sol =
+                                { solution with
+                                    Status = status
+                                    Variables = vars
+                                    TotalTime = TimePeriod.Create(startTime, msg.TimeStamp) 
+                                    IterationTime = TimePeriod.Since(solution.IterationTime)
+                                    }
+                                
+                            solution <- sol                                
+                            yield sol
+                            
                         | "statistics" ->
-                            yield msg
+                            let statsJson = json["statistics"]
+                            let stats = JsonSerializer.Deserialize<Map<string, JsonValue>>(statsJson)
+                            let allStats = Map.merge solution.Statistics stats
+                            solution <- { solution with Statistics = allStats }
+                            ()
                         | other ->
-                            yield msg
+                            ()
                     | CommandStatus.StdErr ->
-                        yield msg
+                        ()
                     | CommandStatus.Success ->
-                        yield msg
+                        ()
                     | CommandStatus.Failure ->
-                        yield msg
+                        ()
                     | _ ->
-                        yield msg
+                        ()
                         
             }
             
@@ -143,3 +190,5 @@ module rec Solve =
         member this.SolveSync(model: string) =
             let model = Model.ParseString(model).Model
             MiniZincClient.solveSync model this
+            
+                        
