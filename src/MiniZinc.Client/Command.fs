@@ -26,7 +26,8 @@ module rec Command =
                     
     [<Struct>]
     type CommandMessage =
-        { ProcessId : int
+        { Command   : string
+        ; ProcessId : int
         ; StartTime : DateTimeOffset
         ; TimeStamp : DateTimeOffset
         ; Elapsed   : TimeSpan
@@ -35,8 +36,6 @@ module rec Command =
         
     type CommandResult =
         { Command   : string
-        ; Args      : string seq
-        ; Statement : string
         ; StartTime : DateTimeOffset
         ; EndTime   : DateTimeOffset
         ; Duration  : TimeSpan
@@ -367,7 +366,8 @@ module rec Command =
             proc.Start()
             
             startMessage <-
-                { ProcessId = proc.Id
+                { Command = cmd.Statement
+                ; ProcessId = proc.Id
                 ; Message = ""
                 ; Status = CommandStatus.Started
                 ; StartTime = DateTimeOffset.Now 
@@ -407,11 +407,9 @@ module rec Command =
                         
                 let! _ = complete.Task
                 let end_time = DateTimeOffset.Now
-                
+                                
                 let result =
-                    { Command = proc.StartInfo.FileName
-                    ; Args = proc.StartInfo.ArgumentList |> Seq.toList
-                    ; Statement = statement 
+                    { Command = cmd.Statement
                     ; StartTime = start_time
                     ; EndTime = end_time
                     ; Duration = end_time - start_time
@@ -451,9 +449,7 @@ module rec Command =
             let end_time = DateTimeOffset.Now
             
             let result =
-                { Command = proc.StartInfo.FileName
-                ; Args = proc.StartInfo.ArgumentList |> Seq.toList
-                ; Statement = statement 
+                { Command = statement 
                 ; StartTime = start_time
                 ; EndTime = end_time
                 ; Duration = end_time - start_time
