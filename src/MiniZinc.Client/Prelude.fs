@@ -8,6 +8,7 @@ open System.Text.Json.Serialization
 open System.Text.RegularExpressions
 open System.Threading.Tasks
 open FSharp.Control
+open System
 
 [<AutoOpen>]
 module Prelude =
@@ -185,3 +186,36 @@ module Task =
             let! value = a
             return f value
         }    
+
+type TimePeriod =
+        { StartTime : DateTimeOffset
+        ; EndTime   : DateTimeOffset
+        ; Duration  : TimeSpan }
+        
+        static member Since (startTime: DateTimeOffset) =
+            let now = DateTimeOffset.Now
+            let elapsed = now - startTime
+            { StartTime = startTime
+            ; EndTime = now
+            ; Duration = elapsed }
+            
+        static member Since (period: TimePeriod) =
+            TimePeriod.Since(period.EndTime)
+            
+        static member At time =
+            { StartTime = time
+            ; EndTime = time
+            ; Duration = TimeSpan.Zero }
+            
+        static member Now =
+            TimePeriod.At DateTimeOffset.Now
+            
+        static member Create(startTime, endTime) =
+            if startTime <= endTime then
+                { StartTime = startTime
+                  EndTime = endTime
+                  Duration = endTime - startTime  }        
+            else
+                { StartTime = endTime
+                  EndTime = startTime
+                  Duration = startTime - endTime  }
