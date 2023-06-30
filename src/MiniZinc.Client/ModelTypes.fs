@@ -19,7 +19,7 @@ module ModelTypes =
         let modelTypes (model: Model) (client: MiniZincClient) : Result<ModelTypes, string> =
             
             let model_file =
-                MiniZincClient.write_model_to_tempfile model
+                MiniZincClient.compile model
                 
             let model_arg =
                 MiniZincClient.model_arg model_file.FullName
