@@ -2,6 +2,7 @@
 
 open MiniZinc
 open Xunit
+open FSharp.Control
 
 type ``Client Tests``(fixture: ClientFixture) =
     
@@ -59,6 +60,24 @@ type ``Client Tests``(fixture: ClientFixture) =
         d.IsArray.AssertEquals(true)
         
         ()
+        
+    
+    [<Fact>]
+    member this.``test solve simple`` () =
+        let mzn =
+            """
+            var 0..10: a;
+            var 0..10: b;
+            solve maximize abs(a-b);
+            """
+        let sol =
+            client.Solve(mzn)
+            |> TaskSeq.last
+            
+        let res = sol.Result            
+            
+        ()
+            
         
         
     interface IClassFixture<ClientFixture>
