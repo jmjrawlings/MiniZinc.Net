@@ -1204,7 +1204,12 @@ module Parsers =
         spaces
         >>. sepEndBy1 item (sps ';')
         .>> eof
-    
+        
+    let data : Parser<AssignItem list> =
+        spaces
+        >>. sepEndBy1 assign_item (sps ';')
+        .>> eof
+   
 
 [<AutoOpen>]       
 module rec Parse =
@@ -1367,6 +1372,27 @@ module rec Parse =
             model
         else
             LoadResult.FileNotFound [filepath]
+            
+    let parseDataString (dzn: string) : Result<Map<string, Expr>, ParseError> =
+                            
+        let source, comments =
+            parseComments dzn
+            
+        match parseString Parsers.data source with
+        
+        | Result.Ok assigns ->
+            let map =
+                assigns
+                |> Map.ofSeq
+            Result.Ok map
+            
+        | Result.Error err ->
+            Result.Error err
+            
+    let parseDataFile (filepath: string) =
+        let mzn = File.ReadAllText filepath
+        let data = parseDataString mzn
+        data
     
     type Model with
 
