@@ -61,7 +61,6 @@ type ``Client Tests``(fixture: ClientFixture) =
         
         ()
         
-    
     [<Fact>]
     member this.``test solve simple`` () =
         let mzn =

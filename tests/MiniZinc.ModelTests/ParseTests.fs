@@ -28,7 +28,7 @@ module ``Parser Tests`` =
         ()
             
     // Test parsing the string, it is sanitized first
-    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: Compiler.MiniZincEncoder -> 't -> unit) =
+    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: Encoder -> 't -> unit) =
 
         let source, comments =
             parseComments input
@@ -40,7 +40,7 @@ module ``Parser Tests`` =
             | Error err ->
                 failwith (string err)
             
-        let encoder = Compiler.MiniZincEncoder()
+        let encoder = Encoder()
         let write = (writer encoder)
         write parsed
         
@@ -201,7 +201,7 @@ module ``Parser Tests`` =
     [<Theory>]
     [<InlineData("var llower..lupper: Production;")>]
     let test_xd arg =
-        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeDeclareItem)
+        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeVariable)
         
     [<Theory>]
     [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _|]")>]

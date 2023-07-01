@@ -10,7 +10,7 @@ module ``Integration Tests`` =
         let suite = TestSuite.load name
         let model = TestSuite.parseModel suite
         let mzn = model.Compile()
-        let roundtrip = Model.ParseString(mzn).Model
+        let roundtrip = Model.ParseString(mzn.ModelString).Model
         ()
        
 

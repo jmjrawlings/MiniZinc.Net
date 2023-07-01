@@ -919,7 +919,7 @@ module Parsers =
             (fun (id, ti) anns expr ->
                 let ti, inst = ParseUtils.ResolveInst ti
                 { Name = id
-                ; Type = ti
+                ; TypeInst = ti
                 ; Annotations = anns
                 ; Expr = expr })
 
@@ -1167,7 +1167,7 @@ module Parsers =
             expr
         
     // <type-inst-syn-item>
-    let alias_item : Parser<SynonymItem> =
+    let alias_item : Parser<TypeAlias> =
         pipe3
             (kw1 "type" >>. id .>> spaces)
             (ps annotations .>> ps "=")
@@ -1216,7 +1216,7 @@ module rec Parse =
     
     open System.Text.RegularExpressions
     
-    /// Parse and remove comments from the given minizinc model
+    /// Parse and remove comments from the given model string
     let parseComments (mzn: string) : string * List<Comment> =
         let comments = ResizeArray<string>()
         let line_comment = "%(.*)$"

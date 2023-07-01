@@ -24,7 +24,7 @@ module rec Model =
         ; Column  : int64
         ; Index   : int64
         ; Trace   : string }
-    
+   
     type Id = string
     
     [<Struct>]
@@ -356,7 +356,7 @@ module rec Model =
     type Item =
         | Include    of IncludeItem
         | Enum       of EnumItem
-        | Synonym    of SynonymItem
+        | Synonym    of TypeAlias
         | Constraint of ConstraintItem
         | Assign     of AssignItem
         | Declare    of DeclareItem
@@ -400,14 +400,14 @@ module rec Model =
         interface INamed with
             member this.Name = this.Name    
 
-    type SynonymItem =
+    type TypeAlias =
         { Name : string
         ; Annotations : Annotations
         ; TypeInst: TypeInst }
         
         interface INamed with
             member this.Name = this.Name
-        
+       
     type OutputItem =
         { Expr: Expr }
 
@@ -435,9 +435,15 @@ module rec Model =
 
     type DeclareItem =
         { Name: string
-        ; Type: TypeInst
+        ; TypeInst: TypeInst
         ; Annotations: Annotations
         ; Expr: Expr option }
+        
+        member this.Type =
+            this.TypeInst.Type
+            
+        member this.Inst =
+            this.TypeInst.Inst
         
         interface INamed with
             member this.Name = this.Name
@@ -455,10 +461,10 @@ module rec Model =
     /// Things that a name can be bound to
     [<RequireQualifiedAccess>]
     type Binding =
-        | Declare  of DeclareItem
+        | Variable of DeclareItem
         | Expr     of Expr
         | Enum     of EnumItem
-        | Synonym  of SynonymItem
+        | Type     of TypeAlias
         | Function of FunctionItem
         | Multiple of Binding list
 
@@ -477,44 +483,62 @@ module rec Model =
     /// which can add new bindings to from its own namespace.
     /// </remarks>
     type NameSpace =
-        { Bindings   : Map<string, Binding>  
-        ; Declared   : Map<string, DeclareItem> 
-        ; Enums      : Map<string, EnumItem> 
-        ; Synonyms   : Map<string, SynonymItem> 
-        ; Functions  : Map<string, FunctionItem> 
-        ; Conflicts  : Map<string, Binding list> 
-        ; Undeclared : Map<string, Expr> }
+        { Bindings    : Map<string, Binding>
+        ; Inputs      : Map<string, TypeInst>
+        ; Outputs     : Map<string, TypeInst>
+        ; Variables   : Map<string, DeclareItem>
+        ; Undeclared  : Map<string, Expr>
+        ; Enums       : Map<string, EnumItem> 
+        ; Synonyms    : Map<string, TypeAlias> 
+        ; Functions   : Map<string, FunctionItem>        
+        ; Conflicts   : Map<string, Binding list> }
                 
         member this.Add (x: DeclareItem) =
-            NameSpace.add x.Name (Binding.Declare x) this
+            NameSpace.add x.Name (Binding.Variable x) this
             
         member this.Add (x: EnumItem) =
             NameSpace.add x.Name (Binding.Enum x) this
             
-        member this.Add (x: SynonymItem) =
-            NameSpace.add x.Name (Binding.Synonym x) this
+        member this.Add (x: TypeAlias) =
+            NameSpace.add x.Name (Binding.Type x) this
 
         member this.Add (x: FunctionItem) =
             NameSpace.add x.Name (Binding.Function x) this
             
         member this.Add (name: string, x: Expr) : NameSpace =
             NameSpace.add name (Binding.Expr x) this
+            
+        member this.Remove (name: string) : NameSpace =
+            NameSpace.remove name this
         
     module NameSpace =
                 
         /// The empty namespace
         let empty =
-            { Bindings   = Map.empty   
-            ; Declared   = Map.empty  
+            { Bindings   = Map.empty
+            ; Inputs     = Map.empty
+            ; Outputs    = Map.empty
+            ; Variables  = Map.empty
+            ; Undeclared = Map.empty 
             ; Enums      = Map.empty  
             ; Synonyms   = Map.empty  
             ; Functions  = Map.empty  
-            ; Conflicts  = Map.empty  
-            ; Undeclared = Map.empty }
+            ; Conflicts  = Map.empty }
         
         /// Get the bindings from the NameSpace     
         let bindings ns =
             ns.Bindings
+            
+        /// Remove the binding from the namespace     
+        let remove name ns =
+            { ns with
+                Bindings   = ns.Bindings.Remove name 
+                Outputs  = ns.Outputs.Remove name 
+                Undeclared = ns.Undeclared.Remove name 
+                Enums      = ns.Enums.Remove name 
+                Synonyms   = ns.Synonyms.Remove name 
+                Functions  = ns.Functions.Remove name 
+                Conflicts  = ns.Conflicts.Remove name }
 
         /// Add a binding to the namespace
         let add id (value: Binding) (ns: NameSpace) : NameSpace =
@@ -544,12 +568,12 @@ module rec Model =
                             ; Binding.Enum e ]
                 
                 // Variable assignment    
-                | Some (Binding.Declare var), Binding.Expr expr 
-                | Some (Binding.Expr expr), Binding.Declare var ->
+                | Some (Binding.Variable var), Binding.Expr expr 
+                | Some (Binding.Expr expr), Binding.Variable var ->
                     match var.Expr with
                     // Assign new value
                     | None ->
-                        Binding.Declare { var with Expr = Some expr }
+                        Binding.Variable { var with Expr = Some expr }
                     // Existing value                    
                     | Some old when old = expr ->
                         Binding.Expr expr
@@ -557,7 +581,7 @@ module rec Model =
                     | Some other ->
                         Binding.Multiple
                             [ Binding.Expr expr
-                            ; Binding.Declare var ]
+                            ; Binding.Variable var ]
                             
                 // Assign an unassigned function
                 | Some (Binding.Function f), Binding.Expr expr 
@@ -596,18 +620,34 @@ module rec Model =
 
             let result =
                 match newBinding with
-                | Binding.Declare x ->
-                    { ns with Declared = Map.add id x ns.Declared }
+                | Binding.Variable var ->
+                    match var.Inst, var.Expr with
+                    | Inst.Par, None ->
+                        { ns with
+                            Inputs = Map.add id var.TypeInst ns.Inputs
+                            Variables = Map.add id var ns.Variables }
+                    | Inst.Var, None ->
+                        { ns with
+                            Outputs = Map.add id var.TypeInst ns.Outputs
+                            Variables = Map.add id var ns.Variables }
+                    | _, _ ->
+                        { ns with
+                            Variables = Map.add id var ns.Variables }
                 | Binding.Expr x ->
-                    { ns with Undeclared = Map.add id x ns.Undeclared}
+                    { ns with
+                        Undeclared = Map.add id x ns.Undeclared }
                 | Binding.Enum x ->
-                    { ns with Enums = Map.add id x ns.Enums } 
-                | Binding.Synonym x ->
-                    { ns with Synonyms = Map.add id x ns.Synonyms }
+                    { ns with
+                        Enums = Map.add id x ns.Enums } 
+                | Binding.Type x ->
+                    { ns with
+                        Synonyms = Map.add id x ns.Synonyms }
                 | Binding.Function x ->
-                    { ns with Functions = Map.add id x ns.Functions } 
+                    { ns with
+                        Functions = Map.add id x ns.Functions } 
                 | Binding.Multiple x ->
-                    { ns with Conflicts = Map.add id x ns.Conflicts }
+                    { ns with
+                        Conflicts = Map.add id x ns.Conflicts }
                     
             let nameSpace =
                 { result with
@@ -616,7 +656,7 @@ module rec Model =
             nameSpace
             
         let addDeclare (decl: DeclareItem) (ns: NameSpace) : NameSpace =
-            add decl.Name (Binding.Declare decl) ns
+            add decl.Name (Binding.Variable decl) ns
             
         let addFunction (func: FunctionItem) (ns: NameSpace) : NameSpace =
             add func.Name (Binding.Function func) ns

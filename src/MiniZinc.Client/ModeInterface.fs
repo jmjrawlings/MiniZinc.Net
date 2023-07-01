@@ -20,14 +20,9 @@ module ModelInterface =
         /// Analyse the given model
         let modelInterface (model: Model) (client: MiniZincClient) : Result<ModelInterface, string> =
             
-            let model_file =
-                MiniZincClient.compile model
-                
-            let model_arg =
-                MiniZincClient.model_arg model_file.FullName
-
+            let compiled = client.Compile(model)
             let command =
-                client.Command(model_arg, "--model-interface-only")
+                client.Command(compiled.ModelArg, "--model-interface-only")
                 |> Command.runSync
                 
             let options =

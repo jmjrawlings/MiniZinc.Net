@@ -38,6 +38,15 @@ type Solver =
     ; RequiredFlags      : IReadOnlyList<string>    
     ; ExtraFlags         : IReadOnlyList<IReadOnlyList<string>> }
 
+type CompiledModel =
+    { Model       : Model
+    ; ModelString : string
+    ; ModelFile   : FileInfo
+    ; ModelArg    : Arg
+    ; Warnings    : string list
+    ; Errors      : string list }
+
+
 [<AutoOpen>]
 module rec Client =
     
@@ -150,6 +159,9 @@ module rec Client =
                 
             solvers <- result
             
+        member this.Compile(model: Model) =
+            MiniZincClient.compile model
+            
         override this.ToString() =
             $"MiniZinc Client v{version}"
             
@@ -189,19 +201,28 @@ module rec Client =
                     
             client
         
-        /// Compile the given model to a tempfile with '.mzn' extension
-        let compile (model: Model) : FileInfo =
+        /// Compile a model
+        let compile (model: Model) : CompiledModel =
             
-            let path =
+            let result =
+                model.Compile()
+
+            let modelFile =
                 let tmp = Path.GetTempFileName()
-                Path.ChangeExtension(tmp, ".mzn")
+                let mzn = Path.ChangeExtension(tmp, ".mzn")
+                File.WriteAllText (mzn,result.ModelString)
+                FileInfo mzn
                 
-            let mzn = model.Compile()
-            File.WriteAllText(path, mzn)
-            FileInfo path
-        
-        /// Create a cli arg for the given model file
-        let model_arg (filepath: string) : Arg =
-            let uri = Uri(filepath).AbsolutePath
-            let arg = Arg.parse $"--model {uri}"
-            arg
+            let arg =
+                let uri = Uri(modelFile.FullName).AbsolutePath
+                Arg.parse $"--model {uri}"
+                
+            let compiled =
+                { Model = model
+                ; ModelString = result.ModelString
+                ; ModelFile = modelFile
+                ; ModelArg = arg
+                ; Warnings = result.Warnings
+                ; Errors = result.Errors }
+                
+            compiled
