@@ -12,6 +12,7 @@ open MiniZinc.Command
 module rec Solve =
         
     type StatusType =
+        | Started = -1
         | Satisfied = 0
         | Suboptimal = 1
         | Optimal = 2
@@ -63,6 +64,18 @@ module rec Solve =
         | Timeout of TimeSpan
         | Error of string
         
+        member this.Type =
+            match this with
+            | Started -> StatusType. Started
+            | Satisfied -> StatusType.Satisfied
+            | SubOptimal _ -> StatusType.Suboptimal
+            | Optimal _ -> StatusType.Optimal
+            | Unsatisfiable -> StatusType.Unsatisfiable
+            | Unbounded -> StatusType.Unbounded
+            | AllSolutions -> StatusType.AllSolutions
+            | Timeout _ -> StatusType.Timeout
+            | Error _ -> StatusType.Error
+        
     type Solution =
         { Command     : string
         ; ProcessId   : int
@@ -74,6 +87,9 @@ module rec Solve =
         ; Statistics  : Map<string, JsonValue>
         ; Status      : SolutionStatus }
         
+        member this.StatusType =
+            this.Status.Type
+        
     type Objective =
         | Int of int
         | Float of float
@@ -83,7 +99,8 @@ module rec Solve =
         /// Solve the given model                            
         let solve (compiled: CompiledModel) (client: MiniZincClient) : IAsyncEnumerable<Solution> =
             
-            let model = compiled.Model
+            let model =
+                compiled.Model
             
             let command =
                 client.Command(
