@@ -67,16 +67,24 @@ type ``Client Tests``(fixture: ClientFixture) =
             """
             var 0..10: a;
             var 0..10: b;
+            constraint a < b;
             solve maximize abs(a-b);
             """
-        let sol =
-            client.Solve(mzn)
-            |> TaskSeq.last
-            
-        let res = sol.Result            
-            
+        let sol = client.SolveSync(mzn)
+        sol.Outputs["a"].AssertEquals(Expr.Int 0)
+        sol.Outputs["b"].AssertEquals(Expr.Int 10)
         ()
-            
+        
+    [<Fact>]
+    member this.``test solve unsatisfiable`` () =
+        let mzn =
+            """
+            var 0..5: a;
+            var 6..10: b;
+            constraint a > b;
+            """
+        let sol = client.SolveSync(mzn)
+        sol.StatusType.AssertEquals(StatusType.Unsatisfiable)
         
         
     interface IClassFixture<ClientFixture>
