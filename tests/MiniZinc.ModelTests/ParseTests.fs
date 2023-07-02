@@ -22,8 +22,8 @@ module ``Parser Tests`` =
         
         let parsed =
             match parseString parser source with
-            | Ok x -> x
-            | Error err -> failwith (string err)
+            | Result.Ok x -> x
+            | Result.Error err -> failwith (string err)
         
         ()
             
@@ -35,9 +35,9 @@ module ``Parser Tests`` =
         
         let parsed =
             match parseString parser source with
-            | Ok x ->
+            | Result.Ok x ->
                 x
-            | Error err ->
+            | Result.Error err ->
                 failwith (string err)
             
         let encoder = Encoder()
@@ -49,9 +49,9 @@ module ``Parser Tests`` =
        
         let roundtrip =
             match parseString parser encoded with
-            | Ok x ->
+            | Result.Ok x ->
                 x
-            | Error err ->
+            | Result.Error err ->
                 failwith (string err)
         
         ()

@@ -85,6 +85,6 @@ type ``Client Tests``(fixture: ClientFixture) =
             """
         let sol = client.SolveSync(mzn)
         sol.StatusType.AssertEquals(StatusType.Unsatisfiable)
-        
+        sol.Outputs.Count.AssertEquals(0)
         
     interface IClassFixture<ClientFixture>
