@@ -2,8 +2,8 @@
 
 open MiniZinc
 open Xunit
-open System.IO
 
+[<CollectionDefinition("Integration Tests", DisableParallelization = true)>]
 type ``Integration Tests``(fixture: ClientFixture) =
         
     let client = fixture.Client
@@ -14,7 +14,27 @@ type ``Integration Tests``(fixture: ClientFixture) =
         let iface = client.GetModelInterface(model)
         let types = client.GetModelTypes(model)
         let solution = client.SolveSync(model)
-        //let result = client.GetModelTypes(model)
+        
+        let cases =
+            suite.Tests
+            |> List.collect (fun test -> test.Expected)
+            |> List.filter (fun test -> test.StatusType = solution.StatusType)
+            |> function
+                | [] ->
+                    failwith $"No cases matched result {solution.StatusType}"
+                | xs ->
+                    xs
+                
+        let success =            
+            cases
+            |> List.filter (fun test -> test.Objective = solution.Objective)
+            |> function
+                | [] ->
+                    failwith $"No cases matched objective {solution.Objective}"
+                | xs ->
+                    xs
+        
+        solution.IsSuccess.AssertEquals(true)
         ()
         
     interface IClassFixture<ClientFixture>
