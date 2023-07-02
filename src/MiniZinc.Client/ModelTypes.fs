@@ -6,7 +6,6 @@ open Command
 
 type ModelTypes =
   { Vars: IReadOnlyDictionary<string, TypeInst> }
- 
 
 [<AutoOpen>]
 module ModelTypes =
@@ -14,7 +13,8 @@ module ModelTypes =
     /// Analyse the given model
     let getModelTypes (model: Model) (client: MiniZincClient) : Result<ModelTypes, string> =
         
-        let compiled = client.Compile model
+        let compiled =
+            client.Compile model
 
         let command =
             client.Command(compiled.ModelArg, "--model-types-only")
@@ -45,6 +45,7 @@ module ModelTypes =
             getModelTypes
 
     type MiniZincClient with
-                
+        
+        /// Get the models types as returned by the `--model-types-only` command
         member this.GetModelTypes(model: Model) =
             MiniZincClient.modelTypes model this
