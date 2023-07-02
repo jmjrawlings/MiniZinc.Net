@@ -238,4 +238,25 @@ module rec Yaml =
                 map[key]
             | _ ->
                 Null
-    
+                
+        let rec toExpr yaml =
+            match yaml with
+            | Yaml.String s ->
+                Expr.String s
+            | Yaml.Sequence xs ->
+                match xs.Head with
+                | Yaml.Sequence _ ->
+                    xs
+                    |> List.choose (function
+                        | Yaml.Sequence x -> Some (List.map toExpr x)
+                        | _ -> None)
+                    |> Expr.Array2d
+                | _ ->
+                    xs
+                    |> List.map toExpr
+                    |> Expr.Array1d
+                
+            | Yaml.Int i ->
+                Expr.Int i
+            | _ ->
+                notImpl "xd"

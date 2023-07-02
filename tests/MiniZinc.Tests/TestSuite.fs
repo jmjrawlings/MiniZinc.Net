@@ -73,8 +73,9 @@ and TestCase =
       Expected : TestCaseResult list }
     
 and TestCaseResult =
-    { Status : string
-      Variables : Map<string, Yaml> }
+    { StatusType : StatusType
+      Variables : Map<string, Expr>
+      Objective : Expr option }
 
 and TestCaseError =
     { Type : string
@@ -118,21 +119,29 @@ module TestSuite =
         testCase
         
     and private parseResult (yaml: Yaml) : TestCaseResult =
-
-         let status =
-             yaml
-             |> Yaml.get "status"
-             |> Yaml.toString
-             |> Option.defaultValue "SATISFIED"
+        
+        let statusType =
+            yaml
+            |> Yaml.get "status"
+            |> Yaml.toString
+            |> Option.defaultValue "SATISFIED"
+            |> StatusType.parse
              
-         let variables =
-             yaml
-             |> Yaml.get "solution"
-             |> Yaml.get "!Solution"
-             |> Yaml.toMap
-             
-         { Status = status
-         ; Variables =  variables }
+        let variables, objective =
+            yaml
+            |> Yaml.get "solution"
+            |> Yaml.get "!Solution"
+            |> Yaml.toMap
+            |> Map.map (fun _ -> Yaml.toExpr)
+            |> function
+                | m when m.ContainsKey "objective" ->
+                    (Map.remove "objective" m), (Some m["objective"])
+                | m ->
+                    m, None
+                 
+        { StatusType = statusType
+        ; Objective = objective 
+        ; Variables =  variables }
         
     /// Parse the model for the given TestSuite
     let parseModel (suite: TestSuite) : Model =
@@ -144,7 +153,7 @@ module TestSuite =
             { ParseOptions.Default with 
                 IncludeOptions =  includeOpts }
     
-        match Model.ParseString(suite.Mzn, parseOpts) with
+        match parseModelString parseOpts suite.Mzn with
         | Success model ->
             model
         | other ->

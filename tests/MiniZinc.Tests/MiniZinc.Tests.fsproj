@@ -17,6 +17,7 @@
     </ItemGroup>
     
     <ItemGroup>
+      <ProjectReference Include="..\..\src\MiniZinc.Client\MiniZinc.Client.fsproj" />
       <ProjectReference Include="..\..\src\MiniZinc.Model\MiniZinc.Model.fsproj" />
     </ItemGroup>
 
