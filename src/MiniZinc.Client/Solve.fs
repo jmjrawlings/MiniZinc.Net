@@ -14,7 +14,7 @@ module rec Solve =
     type StatusType =
         | Started = -1
         | Satisfied = 0
-        | Suboptimal = 1
+        | SubOptimal = 1
         | Optimal = 2
         | AllSolutions = 3
         | Unsatisfiable = 4
@@ -24,6 +24,7 @@ module rec Solve =
         | Error = 8
         
     module StatusType =
+
         let parse input =
             match input with
             | "ALL_SOLUTIONS" ->
@@ -36,8 +37,12 @@ module rec Solve =
                 StatusType.Unbounded
             | "UNSAT_OR_UNBOUNDED" ->
                 StatusType.UnsatOrUnbounded
-            | _ ->
-                StatusType.Error
+            | "SATISFIED" ->
+                StatusType.Satisfied
+            | "OPTIMAL" ->
+                StatusType.Optimal
+            | other ->                
+                failwith $"Unexpected statsu type \"{other}\""
                 
         let isSuccess status =
             status <= StatusType.AllSolutions
@@ -56,19 +61,19 @@ module rec Solve =
     type SolutionStatus =
         | Started 
         | Satisfied
-        | SubOptimal of Objective
-        | Optimal of Objective
+        | SubOptimal of Expr
+        | Optimal of Expr
         | Unsatisfiable
         | Unbounded
         | AllSolutions
         | Timeout of TimeSpan
-        | Error of string
+        | Error of JsonObject
         
         member this.Type =
             match this with
             | Started -> StatusType. Started
             | Satisfied -> StatusType.Satisfied
-            | SubOptimal _ -> StatusType.Suboptimal
+            | SubOptimal _ -> StatusType.SubOptimal
             | Optimal _ -> StatusType.Optimal
             | Unsatisfiable -> StatusType.Unsatisfiable
             | Unbounded -> StatusType.Unbounded
@@ -77,22 +82,34 @@ module rec Solve =
             | Error _ -> StatusType.Error
         
     type Solution =
-        { Command     : string
-        ; ProcessId   : int
-        ; TotalTime   : TimePeriod
+        { Command       : string
+        ; ProcessId     : int
+        ; TotalTime     : TimePeriod
         ; IterationTime : TimePeriod
-        ; Iteration   : int
-        ; Decisions   : Map<string, TypeInst>
-        ; Outputs     : Map<string, Expr>
-        ; Statistics  : Map<string, JsonValue>
-        ; Status      : SolutionStatus }
+        ; Iteration     : int
+        ; Decisions     : Map<string, TypeInst>
+        ; Outputs       : Map<string, Expr>
+        ; Statistics    : Map<string, JsonValue>
+        ; Status        : SolutionStatus
+        ; StatusType    : StatusType
+        ; Warnings      : JsonObject list }
         
-        member this.StatusType =
-            this.Status.Type
-        
-    type Objective =
-        | Int of int
-        | Float of float
+        member this.IsSuccess =
+            StatusType.isSuccess this.StatusType
+            
+        member this.IsError =
+            StatusType.isError this.StatusType
+            
+        member this.Objective =
+            match this.Status with
+            | SolutionStatus.SubOptimal obj
+            | SolutionStatus.Optimal obj ->
+                Some obj
+            | _ ->
+                None
+            
+        override this.ToString() =
+            $"<Solution \"{this.StatusType}\""
         
     module MiniZincClient =
         
@@ -106,7 +123,7 @@ module rec Solve =
                 client.Command(
                     "--json-stream",
                     "--output-objective",
-                    "--statistics",
+                    //"--statistics",
                     compiled.ModelArg
                 )
                 
@@ -131,82 +148,132 @@ module rec Solve =
                             ; Decisions = model.NameSpace.Outputs
                             ; Outputs = Map.empty 
                             ; Statistics = Map.empty 
-                            ; Status = SolutionStatus.Started }
+                            ; Status = SolutionStatus.Started
+                            ; StatusType = StatusType.Started 
+                            ; Warnings = [] }
                         yield solution
                         
                     // Standard Output Received
                     | CommandStatus.StdOut ->
                         
-                        let json =
+                        let message =
                             JsonSerializer.Deserialize<JsonObject>(msg.Message)
                             
-                        let outputType =
-                            json["type"].GetValue<string>()
+                        let messageType =
+                            message["type"].GetValue<string>()
                         
-                        match outputType with
-                        
+                        match messageType with
+                                                
+                        // A solution has been found                        
                         | "solution" ->
-
+                            
                             let dataString =
-                                (json["output"]["dzn"]).GetValue<string>()
+                                (message["output"]["dzn"]).GetValue<string>()
 
-                            let assignment, obj =
+                            let outputs, status =
                                 match (parseDataString dataString) with
                                 | Result.Error err ->
-                                    failwith $"{err}"
-                                | Result.Ok map when map.ContainsKey "_objective" ->
-                                    let obj = map["_objective"]
-                                    let vars = Map.remove "_objective" map
-                                    vars, (Some obj)
-                                | Result.Ok map ->
-                                    map, None
-                                    
-                            let status =
-                                match obj with
-                                | Some (Expr.Int i) ->
-                                    SolutionStatus.SubOptimal (Objective.Int i)
-                                | Some (Expr.Float f) ->
-                                    SolutionStatus.SubOptimal (Objective.Float f) 
-                                | _ ->
-                                    SolutionStatus.Satisfied
+                                    failwith $"An error occured while parsing the solution JSON: {err}"
+                                | Result.Ok vars when vars.ContainsKey "_objective" ->
+                                    let obj = vars["_objective"]
+                                    let vars = Map.remove "_objective" vars
+                                    vars, (SolutionStatus.SubOptimal obj)
+                                | Result.Ok vars ->
+                                    vars, SolutionStatus.Satisfied
 
-                            let sol =
+                            solution <-
                                 { solution with
                                     Status = status
-                                    Outputs = assignment
+                                    StatusType = StatusType.Started
+                                    Outputs = outputs
+                                    Iteration = solution.Iteration + 1 
                                     TotalTime = TimePeriod.Create(startTime, msg.TimeStamp) 
                                     IterationTime = TimePeriod.Since(solution.IterationTime) }
-                                
-                            solution <- sol                                
-                            yield sol
+                                                            
+                            yield solution
                             
                         | "statistics" ->
                                 
-                            let stats =
-                                JsonSerializer.Deserialize<Map<string, JsonValue>>(json["statistics"])
+                            let statistics =
+                                message["statistics"]
+                                |> JsonSerializer.Deserialize<Map<string, JsonValue>>
                                 
-                            let allStats =
-                                Map.merge solution.Statistics stats
+                            solution <-
+                                { solution with
+                                    Statistics = Map.merge solution.Statistics statistics }
                                 
-                            solution <- { solution with Statistics = allStats }
                             ()
                             
                         | "status" ->
                             
-                            let status = StatusType.parse
-                            ()
+                            let statusType =
+                                message["status"].GetValue<string>()
+                                |> StatusType.parse
+                            
+                            let status =
+                                match statusType with
+                                | StatusType.Satisfied ->
+                                    SolutionStatus.Satisfied
+                                | StatusType.Optimal->
+                                    match solution.Status with
+                                    | SolutionStatus.SubOptimal obj ->
+                                        SolutionStatus.Optimal obj
+                                    | bad ->
+                                        failwithf $"Unexpected status {bad}"
+                                | StatusType.AllSolutions ->
+                                    SolutionStatus.AllSolutions                                    
+                                | StatusType.Unsatisfiable ->
+                                    SolutionStatus.Unsatisfiable
+                                | StatusType.Unbounded ->
+                                    SolutionStatus.Unbounded
+                                | x ->
+                                    failwithf $"Unexpected status {x}"
+
+                            let iteration =
+                                match StatusType.isSuccess statusType with
+                                | true -> solution.Iteration + 1
+                                | false -> solution.Iteration
+                        
+                            solution <-
+                                { solution with
+                                    Status = status
+                                    StatusType = status.Type
+                                    Iteration = iteration
+                                    TotalTime = TimePeriod.Create(startTime, msg.TimeStamp) 
+                                    IterationTime = TimePeriod.Since(solution.IterationTime) }
+                            
+                        | "error" ->
+
+                            let status =
+                                SolutionStatus.Error message
+                                
+                            solution <-
+                                { solution with
+                                    Status = status
+                                    StatusType = status.Type 
+                                    TotalTime = TimePeriod.Create(startTime, msg.TimeStamp) 
+                                    IterationTime = TimePeriod.Since(solution.IterationTime) }
+                        
+                        | "warning" ->
+                            
+                            let warning =
+                                message
+                            
+                            solution <-
+                                { solution with
+                                    Warnings = message :: solution.Warnings}
                             
                         | other ->
                             notImpl other
                             
                     | CommandStatus.StdErr ->
-                        ()
+                        failwith msg.Message
                     | CommandStatus.Success ->
-                        ()
+                        yield solution
                     | CommandStatus.Failure ->
-                        ()
+                        yield solution
                     | _ ->
-                        ()
+                        failwith msg.Message
             }
             
         /// Solve the given model and wait for the best solution only
