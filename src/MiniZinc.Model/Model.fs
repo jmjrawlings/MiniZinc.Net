@@ -231,10 +231,10 @@ module rec Model =
         ; Args: Arguments }
 
     type Array1dExpr =
-        | Array1d of Expr list
+        Expr list
 
     type Array2dExpr =
-        | Array2d of Expr list list
+        Expr list list
 
     type TupleExpr =
         | TupleExpr of Expr list

@@ -588,10 +588,9 @@ module Parsers =
         )
     
     // <array1d-literal>
-    let array1d_literal =
+    let array1d_literal : Parser<Array1dExpr> =
         expr
         |> between(p '[', p ']', p ',', allowTrailing=true)
-        |>> Array1dExpr.Array1d
         <?!> "array1d-literal"
             
     // <set-literal>
@@ -605,7 +604,7 @@ module Parsers =
         set_literal
                 
     // <array2d-literal>
-    let array2d_literal =
+    let array2d_literal : Parser<Array2dExpr> =
         
         let row =
             expr
@@ -622,7 +621,6 @@ module Parsers =
             |> between(p "[|", p "|]")
                 
         array
-        |>> Array2dExpr.Array2d
    
     // <ti-expr-and-id>
     let ti_expr_and_id : Parser<Id * TypeInst> =

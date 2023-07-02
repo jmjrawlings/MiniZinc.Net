@@ -298,7 +298,7 @@ module rec Encode =
             this.sepBy(", ", x.From, this.writeGenerator)
             this.write '}'
           
-        member this.writeArray1d (Array1dExpr.Array1d exprs) =
+        member this.writeArray1d (exprs: Array1dExpr) =
             this.write "["
             this.writeExprs exprs
             this.write "]"
@@ -306,7 +306,7 @@ module rec Encode =
         member this.writeExprs (exprs: Expr list) =
             this.sepBy(", ", exprs, this.writeExpr)
             
-        member this.writeArray2d (Array2dExpr.Array2d arrays) =
+        member this.writeArray2d (arrays: Array2dExpr) =
             this.write "[|"
             this.sepBy("\n| ", arrays, this.writeExprs)
             this.write "|]"
@@ -435,7 +435,9 @@ module rec Encode =
             | Expr.Op x ->
                 this.writeOp x
             | Expr.Bracketed x ->
+                this.write '('
                 this.writeExpr x
+                this.write ')'
             | Expr.Set x ->
                 this.writeSetLit x
             | Expr.SetComp x ->
