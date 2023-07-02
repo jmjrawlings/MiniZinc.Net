@@ -6,9 +6,10 @@ open System.IO
 open MiniZinc
 
 type CompileOptions =
-    | CompileOptions    
+    { RemoveOutputs: bool }
+    
     static member Default =
-        CompileOptions
+        { RemoveOutputs = true }
 
 type CompileResult =
     { ModelString : string
@@ -30,7 +31,7 @@ type CompileResult =
 module rec Compile =
             
     /// Compile the given model to a tempfile with '.mzn' extension
-    let compileModel (model: Model) : CompileResult =
+    let compileModel (options: CompileOptions) (model: Model) : CompileResult =
         
         let folder (model: CompileResult) (name: string) (binding: Binding) =
             match binding with
@@ -70,13 +71,14 @@ module rec Compile =
             ||> Map.fold folder
             
         let mzn =
-            model.Encode()
+            { model with Outputs = [] }
+            |> Model.encode
             
-        { compiled with ModelString = mzn }
-        
+        { compiled with
+            ModelString = mzn }
 
     /// Compile the Model with extra Data        
-    let compileModelWithData (data: NameSpace) (model: Model) =
+    let compileModelWithData (options: CompileOptions) (data: NameSpace) (model: Model) =
         
         let nameSpace =
             data
@@ -86,7 +88,7 @@ module rec Compile =
             { model with NameSpace = nameSpace }
             
         let compiled =
-            compileModel combined
+            compileModel options combined
             
         compiled
     
@@ -98,23 +100,29 @@ module rec Compile =
             
         let compileWith data model =
             compileModelWithData data model
+            
                 
     type Model with
     
         /// Compile this model 
         member this.Compile() =
-            compileModel this
+            compileModel CompileOptions.Default this
             
         /// Compile this model with the given options
         member this.Compile(options: CompileOptions) =
-            compileModel this
+            compileModel options this
 
         /// Compile this model using the given parameters             
-        member this.Compile(parameters: IDictionary<string, Expr>) =
+        member this.Compile(options: CompileOptions, parameters: IDictionary<string, Expr>) =
             
             let data =
                 parameters
                 |> Seq.map (fun kv -> kv.Key, Binding.Expr kv.Value)
                 |> NameSpace.ofSeq
             
-            compileModelWithData data this        
+            compileModelWithData options data this
+                    
+        /// Compile this model using the given parameters             
+        member this.Compile(parameters: IDictionary<string, Expr>) =
+            this.Compile(CompileOptions.Default, parameters)
+                                        
