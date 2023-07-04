@@ -88,7 +88,7 @@ module ``Model Tests`` =
         let model =
             Model.ParseString arg
             
-        assert model.Model.NameSpace.Undeclared.IsEmpty
+        assert model.Get().NameSpace.Undeclared.IsEmpty
         
     [<Theory>]
     [<InlineData("var int: x;x=100;")>]
@@ -97,5 +97,5 @@ module ``Model Tests`` =
         let model =
             Model.ParseString arg
         
-        assert model.Model.NameSpace.Undeclared.IsEmpty
+        assert model.Get().NameSpace.Undeclared.IsEmpty
                                         

@@ -5,7 +5,6 @@ open System.IO
 open System.Runtime.CompilerServices
 open System.Text
 
-
 [<AutoOpen>]
 module Prelude =
             
@@ -25,10 +24,16 @@ module Prelude =
 type Extensions() =
     
     [<Extension>]
+    static member AssertOk(result: Result<'ok, 'err>, msg: string) =
+        match result with
+        | Ok value -> value
+        | Error err -> failwith $"{msg}: Error was {err}"
+        
+    [<Extension>]
     static member AssertOk(result: Result<'ok, 'err>) =
         match result with
-        | Ok value -> ()
-        | Error err -> failwith $"Expected an ok value but got {err}"
+        | Ok value -> value
+        | Error err -> failwith $"{err}"
         
     [<Extension>]
     static member AssertErr(result: Result<'ok, 'err>) =

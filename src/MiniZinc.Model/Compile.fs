@@ -1,8 +1,6 @@
 ﻿namespace MiniZinc
 
-open System
 open System.Collections.Generic
-open System.IO
 open MiniZinc
 
 type CompileOptions =
@@ -24,12 +22,12 @@ type CompileResult =
 
             
 /// <summary>
-/// Functions that handle preparing
-/// a <see cref="Model">model</see> for solving
+/// Functions that handle preparing a <see cref="Model">model</see>
+/// for solving
 /// </summary>
 [<AutoOpen>]
 module rec Compile =
-            
+                
     /// Compile the given model to a tempfile with '.mzn' extension
     let compileModel (options: CompileOptions) (model: Model) : CompileResult =
         

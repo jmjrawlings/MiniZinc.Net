@@ -27,7 +27,7 @@ type ``Client Tests``(fixture: ClientFixture) =
             array[1..10, B] of var float: e;
             """
             
-        let model = Model.ParseString(mzn).Model
+        let model = Model.ParseString(mzn).Get()
         let iface = client.GetModelInterface(model).Get()
         
         let c = iface.Input["c"]
@@ -50,7 +50,7 @@ type ``Client Tests``(fixture: ClientFixture) =
             array[1..10, B] of var float: e;
             """
             
-        let model = Model.ParseString(mzn).Model
+        let model = Model.ParseString(mzn).Get()
         let types = client.GetModelTypes(model).Get()
         
         let a = types.Vars["B"]

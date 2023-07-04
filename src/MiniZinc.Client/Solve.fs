@@ -296,7 +296,7 @@ module rec Solve =
 
         /// Solve the given model string      
         member this.Solve(model: string) =
-            let model = Model.ParseString(model).Model
+            let model = Model.ParseString(model).Get()
             let compiled = this.Compile(model)
             this.Solve compiled
 
