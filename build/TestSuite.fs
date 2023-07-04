@@ -53,27 +53,29 @@ open System.Text
 [<AutoOpen>]
 module rec TestSuite =
     
-    /// A Test Suite originating from libminizinc's
-    /// test suite which can be found <see href="https://github.com/MiniZinc/libminizinc/blob/master/tests/spec/suites.yml">here</see>
     type TestSuite =
         { SuiteName    : string
         ; IncludeGlobs : string list
-        ; IncludeFiles : string list
+        ; IncludeFiles : FileInfo list
         ; SolveOptions : Map<string, Yaml>
         ; TestCases    : TestCase list }
         
-    /// A Test Case originating from a <see cref="TestSuite">Test Suite</see>     
+        override this.ToString() =
+            $"TestSuite {this.SuiteName} ({this.TestCases.Length} cases)"
+        
     type TestCase = 
         { SuiteName    : string
         ; TestName     : string
-        ; FilePath     : string
+        ; TestFile     : FileInfo
         ; ModelString  : string
-        ; Includes     : string list
+        ; Includes     : FileInfo list
         ; Solvers      : SolverId list
         ; SolveOptions : Map<string, Yaml>
         ; Results      : TestResult list }
+        
+        override this.ToString() =
+            $"TestCase {this.SuiteName} - {this.TestName}"
 
-    /// The expected result of a <see cref="TestCase">TestCase</see>
     type TestResult =
         { StatusType   : StatusType
           Variables    : Map<string, Expr>
@@ -81,6 +83,9 @@ module rec TestSuite =
           ErrorType    : string
           ErrorMessage : string
           ErrorRegex   : string }
+        
+        override this.ToString() =
+            $"TestResult {this.StatusType}"
         
     type SolverId = string
     
@@ -97,25 +102,24 @@ module rec TestSuite =
     let specFile =
         specDir </> "suites.yml"
         
-    /// Parse tests suites
-    let private parseTestSuites () : TestSuite[] =
+    let parseTestSuites () : TestSuite list =
         
-        let mapping =
+        let yamls =
             specFile
             |> Yaml.parseFile
             |> Option.get
             |> Yaml.toMap
             |> Map.map (fun _ -> Yaml.get "!Suite")
-            |> Map.filter (fun key _ -> key = "default")
             
-        let suites =
-            mapping
-            |> Map.toArray
-            |> Array.Parallel.map (fun (name, yaml) -> parseTestSuite name yaml)
+        let testSuites =
+            yamls
+            |> Map.map parseTestSuite
+            |> Map.values
+            |> Seq.toList
     
-        suites
+        testSuites
         
-    let parseTestSuite suiteName (yaml: Yaml) : TestSuite =
+    let private parseTestSuite suiteName (yaml: Yaml) : TestSuite =
         
         let includeGlobs =
             yaml.Get "includes"
@@ -148,7 +152,7 @@ module rec TestSuite =
             { SuiteName = suiteName
             ; TestCases = testCases
             ; IncludeGlobs = includeGlobs
-            ; IncludeFiles = List.map string includeFiles 
+            ; IncludeFiles = includeFiles 
             ; SolveOptions = solveOptions }
             
         suite
@@ -163,8 +167,10 @@ module rec TestSuite =
         let check =
             yaml["check_against"].AsStringList
             
-        let extra_files =
-            yaml["extra_files"].AsStringList
+        let extraFiles =
+            yaml["extra_files"]
+            |> Yaml.toStringList
+            |> List.map FileInfo
             
         let options =
             yaml["options"].AsMap
@@ -177,10 +183,10 @@ module rec TestSuite =
         let testCase = 
             { SuiteName = ""
             ; TestName = ""
-            ; FilePath = ""
+            ; TestFile = FileInfo "."
             ; ModelString = ""
             ; Solvers = solvers
-            ; Includes = extra_files
+            ; Includes = extraFiles
             ; SolveOptions = options 
             ; Results = results }
             
@@ -226,13 +232,13 @@ module rec TestSuite =
         model
             
     /// Load the TestSuite for the given filename
-    let parseTestCases (file: FileInfo) : TestCase list =
+    let private parseTestCases (testFile: FileInfo) : TestCase list =
         
         let testName =
-            Path.GetFileNameWithoutExtension file.FullName
+            Path.GetFileNameWithoutExtension testFile.FullName
             
         let modelString, yamlString =
-            use reader = new StreamReader(file.FullName)
+            use reader = new StreamReader(testFile.FullName)
             let yml = StringBuilder()
             let header = reader.ReadLine()
             let mutable stop = header <> "/***"
@@ -248,7 +254,6 @@ module rec TestSuite =
                     stop <- true
                 | line ->
                     yml.AppendLine line
-                    printfn $"{file.FullName} - {i} - {line}"
                     ()
                 
             let mzn = reader.ReadToEnd()
@@ -264,24 +269,22 @@ module rec TestSuite =
             testYamls
             |> Seq.choose Yaml.parseString
             |> Seq.map (Yaml.get "!Test")
-            |> Seq.filter (fun yml -> yml <> Yaml.Null)
-            |> Seq.map parseTestCase
+            |> Seq.filter (fun yml -> yml <> Null)
+            |> Seq.map parseTestCase 
             |> Seq.map (fun case ->
+                 
+                let includes =
+                    case.Includes
+                    |> List.map (fun fi -> testFile.Directory </> fi.Name)
+                    
                 { case with
+                    Includes = includes
                     TestName = testName
-                    FilePath = file.FullName
+                    TestFile = testFile
                     ModelString = modelString })
             |> Seq.toList
 
         testCases
-        
-    module TestSuite =
-        
-        let load() =
-            parseTestSuites()
-            
-        let parseModel suite =
-            parseTestModel suite
             
     type TestCase with
         member this.Parse() =
