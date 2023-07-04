@@ -691,7 +691,7 @@ module rec Model =
     type Model = 
         { Name        : string
         ; FilePath    : string option
-        ; Includes    : Map<string, LoadResult>
+        ; Includes    : Map<string, IncludedModel>
         ; NameSpace   : NameSpace
         ; Constraints : ConstraintItem list
         ; Outputs     : OutputItem list
@@ -738,55 +738,15 @@ module rec Model =
                     SolveMethod = solveMethod
                     NameSpace = nameSpace }
                 
-            model            
-    
-    /// Specifies how models referenced with
-    /// the "include" directive should be loaded
-    type IncludeOptions =
-        /// Reference only, do not load the model
-        | Reference
-        /// Parse the file, searching the given paths  
-        | Parse of string list
+            model
         
-        static member Default =
-            IncludeOptions.Reference
-      
-    /// Options used during model parsing      
-    type ParseOptions =
-        { IncludeOptions: IncludeOptions }
-            
-        static member Default =
-            { IncludeOptions = IncludeOptions.Reference }
-
-    type LoadResult =
-        /// Load was successful
-        | Success of Model
-        /// Could not find the model
-        | FileNotFound of string list
-        /// Parsing failed
-        | ParseError of ParseError
+    type IncludedModel =
+        
         /// Reference only - load has not been attempted
         | Reference
         
-        member this.Model =
-            LoadResult.model this
-                    
-    module LoadResult =
+        /// Model was parsed and stored in isolation  
+        | Isolated of Model
         
-        /// Map the given function over the result        
-        let map f result =
-            match result with
-            | Success model -> Success (f model)
-            | other -> other
-            
-        /// Return the successful model or fail            
-        let model result =
-            match result with
-            | Success x -> x
-            | ParseError err -> failwithf $"{err}"
-            | other -> failwith "Result was not a Model"
-            
-        let toOption result =
-            match result with
-            | Success x -> Some x
-            | _ -> None            
+        /// Model was parsed and integrated into the referencing model
+        | Integrated of Model

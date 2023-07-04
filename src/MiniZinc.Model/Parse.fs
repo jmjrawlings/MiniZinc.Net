@@ -1267,12 +1267,12 @@ module rec Parse =
                 
             Result.Error err
     
-    let parseModelAst (options: ParseOptions) (ast: Ast) : Model =
+    let parseModelAst (ast: Ast) : Model =
         
         let fold (model:Model) (item: Item) =
             match item with
             | Item.Include (Include x) ->
-                { model with Includes = Map.add x LoadResult.Reference model.Includes }
+                { model with Includes = Map.add x IncludedModel.Reference model.Includes }
             | Item.Enum x ->
                 { model with NameSpace = model.NameSpace.Add x }
             | Item.Synonym x ->
@@ -1298,78 +1298,29 @@ module rec Parse =
 
         let model =
             List.fold fold Model.empty ast
-        
-        // Parse an included model with the given filename "model.mzn"
-        let parseIncluded filename =
             
-            let result =
-                match options.IncludeOptions with
-
-                | IncludeOptions.Reference ->
-                    LoadResult.Reference
-
-                | IncludeOptions.Parse paths ->
-                    let searchFiles =
-                        paths
-                        |> List.map (fun dir -> Path.Join(dir, filename))
+        model
             
-                    let filepath =
-                        searchFiles
-                        |> List.filter File.Exists
-                        |> List.tryHead
-                        
-                    match filepath with
-                    | Some path ->
-                        parseModelFile options path
-                    | None ->
-                        FileNotFound searchFiles
-                        
-            filename, result
-            
-        // Parse included models in parallel
-        let inclusions : Map<string, LoadResult> =
-            model.Includes
-            |> Map.toSeq
-            |> Seq.map fst
-            |> Seq.toArray
-            |> Array.Parallel.map parseIncluded
-            |> Map.ofSeq
-            
-        // Now merge the model with all inclusions
-        let unified =
-            inclusions
-            |> Map.values
-            |> Seq.choose (function
-                | LoadResult.Success model -> Some model
-                | _ -> None)
-            |> Seq.fold Model.merge model
-
-        unified
-            
-    let parseModelString (options: ParseOptions) (mzn: string) : LoadResult =
-                            
+    let parseModelString (mzn: string) : Result<Model, ParseError> =
+                                    
         let source, comments =
             parseComments mzn
         
         let model =
-            parseString Parsers.model source
-            |> Result.map (parseModelAst options)
+            source
+            |> parseString Parsers.model
+            |> Result.map parseModelAst
             
-        let result =
-            match model with
-            | Result.Ok model -> LoadResult.Success model
-            | Result.Error error -> LoadResult.ParseError error
-            
-        result
+        model
         
-    let parseModelFile (options: ParseOptions) (filepath: string) : LoadResult =
+    let parseModelFile (filepath: string) : Result<Model, ParseError> =
         
         if File.Exists filepath then
             let mzn = File.ReadAllText filepath
-            let model = parseModelString options mzn
+            let model = parseModelString mzn
             model
         else
-            LoadResult.FileNotFound [filepath]
+            failwithf $"{filepath} does not exist"
             
     let parseDataString (dzn: string) : Result<Map<string, Expr>, ParseError> =
                             
@@ -1395,25 +1346,13 @@ module rec Parse =
     type Model with
 
         /// Parse a Model from the given file
-        static member ParseFile (filepath: string, options: ParseOptions) =
-            parseModelFile options filepath
-            
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: FileInfo, options: ParseOptions) =
-            parseModelFile options filepath.FullName
-
-        /// Parse a Model from the given file
         static member ParseFile (filepath: string) =
-            parseModelFile ParseOptions.Default filepath
+            parseModelFile filepath
             
         /// Parse a Model from the given file
         static member ParseFile (filepath: FileInfo) =
-            parseModelFile ParseOptions.Default filepath.FullName
+            parseModelFile filepath.FullName
 
         /// Parse a Model from the given string
-        static member ParseString (mzn: string, options: ParseOptions) =
-            parseModelString options mzn
-            
-        /// Parse a Model from the given string
         static member ParseString (mzn: string) =
-            parseModelString ParseOptions.Default mzn
+            parseModelString mzn
