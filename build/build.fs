@@ -9,7 +9,7 @@ open Fake.Core.TargetOperators
 open Fake.Api
 open Fake.BuildServer
 open Fake.Tools
-open MiniZinc.Build
+open MiniZinc
 
 let cwd = di __SOURCE_DIRECTORY__
 let root = cwd.Parent
@@ -37,22 +37,19 @@ let client_test_proj_file = client_test_proj_dir </> $"{client_tests_name}.fspro
 
 
 let obj = cwd <//> "obj"
-let examples_dir = test_dir <//> "examples"
+let libminizinc_suite_dir = test_dir <//> "libminizinc"
 
-
-/// <summary>
-/// Download MiniZinc test examples
-/// </summary>
+/// Download the libminizinc test suite
 let download_libminizinc_test_suite () =
     let minizinc_repo = "https://github.com/MiniZinc/libminizinc"
     let clone_dir = obj <//> "libminizinc"
-    let clone_path = "tests/spec/examples"
-    
+    let clone_path = "tests/spec"
+        
     Directory.delete clone_dir.FullName
     Directory.create clone_dir.FullName
 
-    Directory.delete examples_dir.FullName
-    Directory.create examples_dir.FullName
+    Directory.delete libminizinc_suite_dir.FullName
+    Directory.create libminizinc_suite_dir.FullName
     
     let git = git clone_dir
 
@@ -66,20 +63,20 @@ let download_libminizinc_test_suite () =
         clone_dir <//> clone_path
         |> DirectoryInfo.copyRecursiveToWithFilter
                true
-               (fun dir file -> List.contains file.Extension [".mzn"; ".model"])
-               examples_dir
+               (fun dir file -> List.contains file.Extension [".mzn"; ".model"; ".dzn"; ".yaml"])
+               libminizinc_suite_dir
     
     File.writeNew
-        (examples_dir </> "README.md" |> string)
+        (libminizinc_suite_dir </> "README.md" |> string)
         [$"All of the files in folder were sourced from {minizinc_repo} under {clone_path}"]
      
-    Trace.log $"Downloaded {mzn_files.Length} files to {examples_dir}"
+    Trace.log $"Downloaded {mzn_files.Length} files to {libminizinc_suite_dir}"
     
-/// <summary>
 /// Create a test suite from MiniZinc Examples
-/// </summary>
 let create_parser_integration_tests () =
-        
+    
+    let suite = TestSuite.load()
+            
     let mutable code = """
 namespace MiniZinc.Tests
 
@@ -98,7 +95,7 @@ module IntegrationTests =
 """
     
     let examples =
-        examples_dir
+        libminizinc_suite_dir
         |> DirectoryInfo.getMatchingFiles "*.mzn"
 
     for example in examples do
@@ -122,9 +119,7 @@ module IntegrationTests =
         destination.FullName
         code
         
-/// <summary>
 /// Create solver integration tests libminizinc suites
-/// </summary>
 let create_client_integration_tests () =
         
     let mutable code = """
@@ -145,7 +140,7 @@ module IntegrationTests =
 """
     
     let examples =
-        examples_dir
+        libminizinc_suite_dir
         |> DirectoryInfo.getMatchingFiles "*.mzn"
 
     for example in examples do

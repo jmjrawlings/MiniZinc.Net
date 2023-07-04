@@ -8,12 +8,6 @@
 
     <ItemGroup>
         <Compile Include="Prelude.fs" />
-        <Compile Include="Yaml.fs" />
-        <Compile Include="TestSuite.fs" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <PackageReference Include="YamlDotNet" Version="13.1.0" />
     </ItemGroup>
     
     <ItemGroup>

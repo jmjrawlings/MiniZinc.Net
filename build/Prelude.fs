@@ -1,4 +1,4 @@
-namespace MiniZinc.Build
+namespace MiniZinc
 
 open System
 open System.IO

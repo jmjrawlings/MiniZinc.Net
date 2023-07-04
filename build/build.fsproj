@@ -7,6 +7,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Prelude.fs" />
+    <Compile Include="Yaml.fs" />
+    <Compile Include="TestSuite.fs" />
     <Compile Include="Build.fs" />
   </ItemGroup>
   <ItemGroup>
@@ -22,5 +24,10 @@
     <PackageReference Include="Fake.IO.FileSystem" Version="6.0.0" />
     <PackageReference Include="Fake.Tools.Git" Version="6.0.0" />
     <PackageReference Include="OctoKit" Version="6.0.0" />
+    <PackageReference Include="YamlDotNet" Version="13.1.0" />    
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\MiniZinc.Client\MiniZinc.Client.fsproj" />
+    <ProjectReference Include="..\src\MiniZinc.Model\MiniZinc.Model.fsproj" />
   </ItemGroup>
 </Project>
