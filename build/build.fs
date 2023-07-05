@@ -10,6 +10,7 @@ open Fake.Api
 open Fake.BuildServer
 open Fake.Tools
 open MiniZinc
+open System.Text
 
 let cwd = di __SOURCE_DIRECTORY__
 let root = cwd.Parent
@@ -75,7 +76,27 @@ let download_libminizinc_test_suite () =
 /// Create a test suite from MiniZinc Examples
 let create_parser_integration_tests () =
     
-    let suite = TestSuite.load()
+    let testSuites =
+        parseTestSuites ()
+        
+    let testCases =
+        testSuites
+        |> Seq.filter (fun c -> c.SuiteName <> "default") 
+        |> Seq.collect (fun suite -> suite.TestCases)
+        |> Seq.distinctBy (fun case -> case.TestName)
+        |> Seq.toList
+    
+    let createTest (testCase: TestCase) =
+        
+        let testFile =
+            testCase.TestFile.RelativeTo(test_dir)
+                
+        let body = $"""
+    [<Fact>]
+    let ``test {testCase.TestName}`` () =
+        testParseFile @"{testFile}"
+"""
+        body
             
     let mutable code = """
 namespace MiniZinc.Tests
@@ -86,30 +107,31 @@ open Xunit
 open System.IO
 
 module IntegrationTests =
-   
-    let test (name: string) =
-        let suite = TestSuite.load name
-        let model = TestSuite.parseModel suite
-        model.Value.Undeclared.AssertEmpty()
-        model.Value.Conflicts.AssertEmpty()
+
+    let cwd =
+        Directory.GetCurrentDirectory()
+        |> DirectoryInfo
+        
+    let projectDir =
+        cwd.Parent.Parent.Parent.Parent.Parent
+        
+    let specDir =
+        projectDir <//> "tests" <//> "libminizinc"
+        
+    let testParseFile filePath =
+        let file = projectDir </> filePath
+        let result = parseModelFile file.FullName
+        match result with
+        | Result.Ok model ->
+            ()
+        | Result.Error err ->
+            failwith err.Message
+            
 """
     
-    let examples =
-        libminizinc_suite_dir
-        |> DirectoryInfo.getMatchingFiles "*.mzn"
-
-    for example in examples do
-
-        let name =
-            example.NameWithoutExtension.Replace("_", " ")
-            
-        let test_case = $"""
-    [<Fact>]
-    let ``test {name}`` () =
-        test "{example.Name}"
-"""
-
-        code <- code + "\n" + test_case
+    for case in testCases do
+        let body = createTest case
+        code <- code + body
     
     let destination =
         model_test_proj_dir </> "IntegrationTests.fs"
@@ -137,6 +159,7 @@ module IntegrationTests =
         let model = TestSuite.parseModel suite
         model.Value.Undeclared.AssertEmpty()
         model.Value.Conflicts.AssertEmpty()
+        
 """
     
     let examples =
@@ -149,9 +172,9 @@ module IntegrationTests =
             example.NameWithoutExtension.Replace("_", " ")
             
         let test_case = $"""
-    [<Fact>]
-    let ``test {name}`` () =
-        test "{example.Name}"
+[<Fact>]
+let ``test {name}`` () =
+    test "{example.Name}"
 """
 
         code <- code + "\n" + test_case
