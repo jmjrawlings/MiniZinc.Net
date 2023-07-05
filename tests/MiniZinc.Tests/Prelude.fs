@@ -14,6 +14,7 @@ module Prelude =
         
     let (</>) a b =
         Path.Join(string a, string b)
+        |> FileInfo
     
     let (<//>) a b =
         Path.Join(string a, string b)
