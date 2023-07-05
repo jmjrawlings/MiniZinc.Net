@@ -928,9 +928,12 @@ module Parsers =
         |>> ConstraintItem.Constraint
         
     // <annotation-item>
-    let annotation_item =
+    let annotation_item : Parser<AnnotationItem>=
         kw1 "annotation"
-        >>. call_expr
+        >>. (ps id)
+        .>>. parameters
+        |>> (fun (id, pars) ->
+            {Id = id; Params = pars})
         
     // <let-item>
     let let_item : Parser<LetLocal> =
