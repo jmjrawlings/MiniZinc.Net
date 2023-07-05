@@ -139,8 +139,17 @@ module rec Encode =
             this.writetn()
 
         member this.writeAnnotations (x: Annotations) =
-            ()
-           
+            for ann in x do
+                this.write " :: "
+                this.writeExpr ann
+                
+        member this.writeAnnotationItem (x: AnnotationItem) =
+            this.write "annotation "
+            this.write x.Id
+            this.write "("
+            this.writeParameters x.Params
+            this.write ")"
+                
         member this.writeTypeInst (ti: TypeInst) =
             match ti.IsArray with
             | true ->
