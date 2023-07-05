@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.5.0] - 
 
 ### Model
 - Removed distinction between `Function` and `Predicate` items
@@ -27,10 +27,17 @@
   - `Solve.fs`
  
 ### Tests
-- Refactor client tests to use a fixture
+
+Then entire [libminizinc test suite](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec) is now parsed from the build project.
+Model and client tests are generated directly from these test cases.  Not all tests are
+being used at the moment, the aim is for 100% coverage once the parser and model
+is at parity.
+
+- Refactored client tests to use a fixture
 - Client integration tests now actually solve the models
 - `ModelTypes` test
 - `ModelInterface` test
+ 
 
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs
