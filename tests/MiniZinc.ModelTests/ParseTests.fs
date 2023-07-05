@@ -258,3 +258,12 @@ module ``Parser Tests`` =
             Parsers.output_item
             input
             (fun enc -> enc.writeOutputItem)
+            
+    [<Theory>]
+    [<InlineData("annotation f(string:x)")>]
+    let ``test annotation item`` input =
+        testRoundtrip
+            (Parsers.annotation_item)
+            input
+            (fun enc -> enc.writeAnnotationItem)
+        
