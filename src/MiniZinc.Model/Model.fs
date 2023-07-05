@@ -368,7 +368,7 @@ module rec Model =
         | Comment    of string
 
     type AnnotationItem =
-        CallExpr
+        { Id: string; Params: Parameters }
 
     type ConstraintItem =
         | Constraint of Expr
