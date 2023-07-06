@@ -80,8 +80,7 @@ let create_parser_integration_tests () =
         parseTestSuites ()
         
     let testCases =
-        testSuites
-        |> Seq.filter (fun c -> c.SuiteName <> "default") 
+        testSuites 
         |> Seq.collect (fun suite -> suite.TestCases)
         |> Seq.distinctBy (fun case -> case.TestName)
         |> Seq.toList
@@ -98,8 +97,7 @@ let create_parser_integration_tests () =
 """
         body
             
-    let mutable code = """
-namespace MiniZinc.Tests
+    let mutable code = """namespace MiniZinc.Tests
 
 open MiniZinc
 open MiniZinc.Tests
@@ -125,8 +123,7 @@ module IntegrationTests =
         | Result.Ok model ->
             ()
         | Result.Error err ->
-            failwith err.Message
-            
+            Assert.Fail(err.Message)            
 """
     
     for case in testCases do

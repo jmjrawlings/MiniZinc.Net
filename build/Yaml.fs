@@ -20,7 +20,6 @@ open System.IO
 
 #nowarn "3391"
 
-[<AutoOpen>]
 module rec Yaml =
     
     type Yaml =
@@ -179,28 +178,6 @@ module rec Yaml =
                     let node = parseNode parser
                     parser.MoveNext()
                     node
-
-
-        let deserializer =
-            DeserializerBuilder()
-                .WithTagMapping("!Test", typeof<obj>)
-                .WithTagMapping("!Result", typeof<obj>)
-                .WithTagMapping("!SolutionSet", typeof<obj>)
-                .WithTagMapping("!Solution", typeof<obj>)
-                .WithTagMapping("!Duration", typeof<obj>)
-                .WithTypeConverter(Parser())
-                .Build()
-                
-        let parseString (input: string) : Yaml option =
-            let node = deserializer.Deserialize<Yaml>(input)
-            match box node with
-            | null -> None
-            | _ -> Some node
-            
-        let parseFile (file: FileInfo) =
-            file.FullName
-            |> File.ReadAllText
-            |> parseString
 
         let toList (yaml: Yaml) =
             match yaml with

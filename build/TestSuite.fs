@@ -49,6 +49,8 @@ open System
 open System.IO
 open System.Reflection
 open System.Text
+open YamlDotNet.Serialization
+open Yaml
 
 [<AutoOpen>]
 module rec TestSuite =
@@ -102,11 +104,33 @@ module rec TestSuite =
     let specFile =
         specDir </> "suites.yml"
         
+    let deserializer =
+        DeserializerBuilder()
+            .WithTagMapping("!Test", typeof<obj>)
+            .WithTagMapping("!Result", typeof<obj>)
+            .WithTagMapping("!SolutionSet", typeof<obj>)
+            .WithTagMapping("!Solution", typeof<obj>)
+            .WithTagMapping("!Duration", typeof<obj>)
+            .WithTypeConverter(Yaml.Parser())
+            .Build()
+            
+    let parseString (input: string) : Yaml option =
+        let node = deserializer.Deserialize<Yaml>(input)
+        match box node with
+        | null -> None
+        | _ -> Some node
+        
+    let parseFile (file: FileInfo) =
+        file.FullName
+        |> File.ReadAllText
+        |> parseString
+            
+        
     let parseTestSuites () : TestSuite list =
         
         let yamls =
             specFile
-            |> Yaml.parseFile
+            |> parseFile
             |> Option.get
             |> Yaml.toMap
             |> Map.map (fun _ -> Yaml.get "!Suite")
@@ -267,7 +291,7 @@ module rec TestSuite =
             
         let testCases =
             testYamls
-            |> Seq.choose Yaml.parseString
+            |> Seq.choose parseString
             |> Seq.map (Yaml.get "!Test")
             |> Seq.filter (fun yml -> yml <> Null)
             |> Seq.map parseTestCase 
