@@ -25,19 +25,25 @@
   - `ModelInterface.fs`
   - `ModelTypes.fs`
   - `Solve.fs`
- 
+- Added `SolveOptions` to capture command line flags
+- Added a `compile` step between the model and the solver
+
+
 ### Tests
 
-Then entire [libminizinc test suite](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec) is now parsed from the build project.
-Model and client tests are generated directly from these test cases.  Not all tests are
-being used at the moment, the aim is for 100% coverage once the parser and model
-is at parity.
+Then entire [libminizinc test suite](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec) is now parsed and included in the codebase as integration tests for both the Model and Client.
 
+The generating functions can be found [here](./build/ModelTests.fs) and [here](./build/ClientTests.fs).
+
+The resulting integration tests are:
+- [MiniZinc.ModelTests/IntegrationTests.fs](./tests/MiniZinc.ModelTests/IntegrationTests.fs)
+- [MiniZinc.ClientTests/IntegrationTests.fs](./tests/MiniZinc.ClientTests/IntegrationTests.fs)
+
+Other changes:
 - Refactored client tests to use a fixture
 - Client integration tests now actually solve the models
 - `ModelTypes` test
-- `ModelInterface` test
- 
+- `ModelInterface` test 
 
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs
