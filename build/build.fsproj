@@ -9,7 +9,10 @@
     <Compile Include="Prelude.fs" />
     <Compile Include="Yaml.fs" />
     <Compile Include="TestSuite.fs" />
-    <Compile Include="Build.fs" />
+    <Compile Include="LibMiniZinc.fs" />
+    <Compile Include="ModelTests.fs" />
+    <Compile Include="ClientTests.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Fake.Api.GitHub" Version="6.0.0" />
@@ -23,6 +26,7 @@
     <PackageReference Include="Fake.DotNet.Cli" Version="6.0.0" />
     <PackageReference Include="Fake.IO.FileSystem" Version="6.0.0" />
     <PackageReference Include="Fake.Tools.Git" Version="6.0.0" />
+    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="OctoKit" Version="6.0.0" />
     <PackageReference Include="YamlDotNet" Version="13.1.0" />    
   </ItemGroup>

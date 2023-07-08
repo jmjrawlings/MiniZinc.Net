@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.Runtime.InteropServices
 open System.Text.Json
 open System.Text.Json.Nodes
 open System.Text.Json.Serialization
@@ -10,6 +11,26 @@ open MiniZinc.Command
 
 [<AutoOpen>]
 module rec Solve =
+        
+    type SolveOptions =
+        { Solver : string
+        ; Timeout : TimeSpan }
+        
+        static member Default =
+            SolveOptions.create "gecode"
+            
+        static member Create(
+            solver: string,
+            timeout: TimeSpan) =
+            { Solver = solver
+            ; Timeout = timeout }
+        
+    module SolveOptions =
+        
+        let create solver =
+            { Solver = solver
+            ; Timeout = TimeSpan.Zero }
+    
         
     type StatusType =
         | Started = -1
@@ -114,7 +135,7 @@ module rec Solve =
     module MiniZincClient =
         
         /// Solve the given model                            
-        let solve (compiled: CompiledModel) (client: MiniZincClient) : IAsyncEnumerable<Solution> =
+        let solve (compiled: CompiledModel) (options: SolveOptions) (client: MiniZincClient) : IAsyncEnumerable<Solution> =
             
             let model =
                 compiled.Model
@@ -123,6 +144,7 @@ module rec Solve =
                 client.Command(
                     "--json-stream",
                     "--output-objective",
+                    $"--solver {options.Solver}",
                     //"--statistics",
                     compiled.ModelArg
                 )
@@ -173,7 +195,7 @@ module rec Solve =
                             let outputs, status =
                                 match (parseDataString dataString) with
                                 | Result.Error err ->
-                                    failwith $"An error occured while parsing the solution JSON: {err}"
+                                    failwith $"An error occured while parsing the solution dzn:\n{err}"
                                 | Result.Ok vars when vars.ContainsKey "_objective" ->
                                     let obj = vars["_objective"]
                                     let vars = Map.remove "_objective" vars
@@ -277,11 +299,11 @@ module rec Solve =
             }
             
         /// Solve the given model and wait for the best solution only
-        let solveSync (model: CompiledModel) (client: MiniZincClient) =
+        let solveSync (model: CompiledModel) (options: SolveOptions) (client: MiniZincClient) =
             
             let solution =
                 client
-                |> MiniZincClient.solve model
+                |> MiniZincClient.solve model options
                 |> TaskSeq.last
                 |> fun x -> x.Result
                 
@@ -289,38 +311,45 @@ module rec Solve =
 
 
     type MiniZincClient with
-    
+        
         /// Solve the given model string      
-        member this.Solve(model: CompiledModel) =
-            MiniZincClient.solve model this
+        member this.Solve(model: CompiledModel, options: SolveOptions) =
+            MiniZincClient.solve model options this
+
+        /// Solve the given model string      
+        member this.Solve(model: string, options: SolveOptions) =
+            let model = Model.ParseString(model).Get()
+            let compiled = this.Compile(model)
+            this.Solve(compiled, options)
 
         /// Solve the given model string      
         member this.Solve(model: string) =
-            let model = Model.ParseString(model).Get()
-            let compiled = this.Compile(model)
-            this.Solve compiled
-
+            this.Solve(model, SolveOptions.Default)
+        
         /// Solve the given model
-        member this.Solve(model: Model) =
+        member this.Solve(model: Model, options: SolveOptions) =
             let compiled = this.Compile(model)
-            this.Solve(compiled)
+            this.Solve(compiled, options)
+            
+        member this.Solve(model: Model) =
+            this.Solve(model, SolveOptions.Default)
            
-        /// Solve the given model and wait for the last solution            
+        /// Solve the given model and wait for the last solution
+        member this.SolveSync(model: Model, options: SolveOptions) =
+            
+            let solution =
+                this.Solve(model, options)
+                |> TaskSeq.last
+                |> fun x -> x.Result
+            
+            solution
+            
         member this.SolveSync(model: Model) =
+            this.SolveSync(model, SolveOptions.Default)
+         
+        member this.SolveSync(mzn: string, options) =
+            let model = Model.ParseString(mzn).Get()
+            this.SolveSync(model, options)
             
-            let solution =
-                this.Solve(model)
-                |> TaskSeq.last
-                |> fun x -> x.Result
-            
-            solution
-            
-        /// Solve the given model and wait for the last solution            
-        member this.SolveSync(model: string) =
-
-            let solution =
-                this.Solve(model)
-                |> TaskSeq.last
-                |> fun x -> x.Result
-            
-            solution
+        member this.SolveSync(mzn: string) =
+            this.SolveSync(mzn, SolveOptions.Default)            
