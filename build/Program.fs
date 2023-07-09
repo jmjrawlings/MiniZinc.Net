@@ -10,26 +10,25 @@ open Fake.Api
 open Fake.BuildServer
 open Fake.Tools
 open MiniZinc
+open MiniZinc.Tests
 open System.Text
 
 let obj = cwd <//> "obj"
 
 let createClientIntegrationTests() =
-    let suites = parseTestSuites()
-    ClientTests.create suites
+    ClientTests.create ()
 
-let createParserIntegrationTests() =
-    let suites = parseTestSuites()        
-    ParserTests.create suites
-        
+let createParserIntegrationTests() =      
+    ParserTests.create ()
+            
 let downloadLibMiniZincTestSuite() =    
-    LibMiniZinc.downloadTestSuite()
+    LibMiniZinc.downloadTests()
     
  
 let init() =
 
     Target.create "DownloadTestSuite" <| fun _ ->
-        LibMiniZinc.downloadTestSuite()
+        LibMiniZinc.downloadTests()
         
     Target.create "CreateClientIntegrationTests" <| fun _ ->
         createClientIntegrationTests()

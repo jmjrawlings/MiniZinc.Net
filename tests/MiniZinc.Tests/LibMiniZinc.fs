@@ -1,5 +1,5 @@
 ﻿(*
-TestSuite.fs
+LibMiniZinc.fs
 
 Load and parse the suite of tests used by libminizinc which
 can be found [here](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec)
@@ -40,7 +40,7 @@ expected: # The obtained result must match one of these
   regex: .*type-inst must be par set.* # Regex the start of the string must match (run with M and S flags)
 ***/
 *)
-namespace MiniZinc
+namespace MiniZinc.Tests
 
 #nowarn "0025"
 
@@ -52,57 +52,46 @@ open System.Text
 open YamlDotNet.Serialization
 open Yaml
 
-[<AutoOpen>]
-module rec TestSuite =
-    
-    type TestSuite =
-        { SuiteName    : string
-        ; IncludeGlobs : string list
-        ; IncludeFiles : FileInfo list
-        ; SolveOptions : Map<string, Yaml>
-        ; TestCases    : TestCase list }
-        
-        override this.ToString() =
-            $"TestSuite {this.SuiteName} ({this.TestCases.Length} cases)"
-        
-    type TestCase = 
-        { SuiteName    : string
-        ; TestName     : string
-        ; TestFile     : FileInfo
-        ; ModelString  : string
-        ; Includes     : FileInfo list
-        ; Solvers      : SolverId list
-        ; SolveOptions : Map<string, Yaml>
-        ; Results      : TestResult list }
-        
-        override this.ToString() =
-            $"TestCase {this.SuiteName} - {this.TestName}"
+type TestSpec =
+    Map<string, TestSuite>
 
-    type TestResult =
-        { StatusType   : StatusType
-          Variables    : Map<string, Expr>
-          Objective    : Expr option
-          ErrorType    : string
-          ErrorMessage : string
-          ErrorRegex   : string }
-        
-        override this.ToString() =
-            $"TestResult {this.StatusType}"
-        
-    type SolverId = string
+and TestSuite =
+    { SuiteName    : string
+    ; IncludeGlobs : string list
+    ; IncludeFiles : FileInfo list
+    ; SolveOptions : Map<string, Yaml>
+    ; TestCases    : TestCase [] }
     
-    let private assembly_file =
-        Assembly.GetExecutingAssembly().Location
-        |> Path.GetFullPath
-        |> FileInfo
+    override this.ToString() =
+        $"<TestSuite \"{this.SuiteName}\" ({this.TestCases.Length} cases)>"
+    
+and TestCase = 
+    { SuiteName    : string
+    ; TestName     : string
+    ; TestFile     : FileInfo
+    ; TestPath     : string 
+    ; ModelString  : string
+    ; Includes     : FileInfo list
+    ; Solvers      : string list
+    ; SolveOptions : Map<string, Yaml>
+    ; Results      : TestResult list }
+    
+    override this.ToString() =
+        $"<Test \"{this.TestFile.Name}\">"
+
+and TestResult =
+    { StatusType   : StatusType
+      Variables    : Map<string, Expr>
+      Objective    : Expr option
+      ErrorType    : string
+      ErrorMessage : string
+      ErrorRegex   : string }
+    
+    override this.ToString() =
+        $"<TestResult \"{this.StatusType}\">"
             
-    let specDir =
-        assembly_file.Directory.Parent.Parent.Parent.Parent
-        <//> "tests"
-        <//> "libminizinc"
-        
-    let specFile =
-        specDir </> "suites.yml"
+
+module private rec TestSuite =
         
     let deserializer =
         DeserializerBuilder()
@@ -114,7 +103,7 @@ module rec TestSuite =
             .WithTypeConverter(Yaml.Parser())
             .Build()
             
-    let parseString (input: string) : Yaml option =
+    let parseYamlString (input: string) : Yaml option =
         let node = deserializer.Deserialize<Yaml>(input)
         match box node with
         | null -> None
@@ -123,11 +112,13 @@ module rec TestSuite =
     let parseFile (file: FileInfo) =
         file.FullName
         |> File.ReadAllText
-        |> parseString
+        |> parseYamlString
+        
+    let parseTestSpec (specFile: FileInfo) : TestSpec =
+        
+        let specDir =
+            specFile.Directory
             
-        
-    let parseTestSuites () : TestSuite list =
-        
         let yamls =
             specFile
             |> parseFile
@@ -137,13 +128,11 @@ module rec TestSuite =
             
         let testSuites =
             yamls
-            |> Map.map parseTestSuite
-            |> Map.values
-            |> Seq.toList
+            |> Map.map (parseTestSuite specDir)
     
         testSuites
         
-    let private parseTestSuite suiteName (yaml: Yaml) : TestSuite =
+    let parseTestSuite directory suiteName (yaml: Yaml) : TestSuite =
         
         let includeGlobs =
             yaml.Get "includes"
@@ -152,7 +141,7 @@ module rec TestSuite =
             
         let includeFiles =
             includeGlobs
-            |> Seq.collect (fun glob -> Directory.GetFiles(specDir.FullName, glob, SearchOption.AllDirectories))
+            |> Seq.collect (fun glob -> Directory.GetFiles(directory.FullName, glob, SearchOption.AllDirectories))
             |> Seq.map FileInfo
             |> Seq.filter (fun fi -> fi.Extension = ".mzn")
             |> Seq.toList
@@ -165,12 +154,12 @@ module rec TestSuite =
         let testCases =
             includeFiles
             |> Seq.toArray
-            |> Array.Parallel.collect (parseTestCases >> Seq.toArray)
+            |> Seq.collect parseTestCases
             |> Seq.map (fun case ->
                 {case with
                     SolveOptions = solveOptions
                     SuiteName = suiteName })
-            |> Seq.toList
+            |> Seq.toArray
             
         let suite =
             { SuiteName = suiteName
@@ -183,7 +172,7 @@ module rec TestSuite =
         
                 
     /// Parse a TestCase from the given yaml
-    let private parseTestCase (yaml: Yaml) : TestCase =
+    let parseTestCase (yaml: Yaml) : TestCase =
         
         let solvers =
             yaml["solvers"].AsStringList
@@ -208,6 +197,7 @@ module rec TestSuite =
             { SuiteName = ""
             ; TestName = ""
             ; TestFile = FileInfo "."
+            ; TestPath = ""
             ; ModelString = ""
             ; Solvers = solvers
             ; Includes = extraFiles
@@ -217,7 +207,7 @@ module rec TestSuite =
         testCase
 
     /// Parse the TestCaseResult from the given suite yaml            
-    let private parseTestResult (yaml: Yaml) : TestResult =
+    let parseTestResult (yaml: Yaml) : TestResult =
         
         let statusType =
             yaml
@@ -244,19 +234,9 @@ module rec TestSuite =
         ; ErrorType = ""
         ; ErrorMessage = ""
         ; ErrorRegex = "" }
-        
-    /// Parse the model for the given TestSuite
-    let private parseTestModel (test: TestCase) : Model =
-        
-        let model =
-            test.ModelString
-            |> parseModelString
-            |> Result.get
-            
-        model
             
     /// Load the TestSuite for the given filename
-    let private parseTestCases (testFile: FileInfo) : TestCase list =
+    let parseTestCases (testFile: FileInfo) : TestCase list =
         
         let testName =
             Path.GetFileNameWithoutExtension testFile.FullName
@@ -291,7 +271,7 @@ module rec TestSuite =
             
         let testCases =
             testYamls
-            |> Seq.choose parseString
+            |> Seq.choose parseYamlString
             |> Seq.map (Yaml.get "!Test")
             |> Seq.filter (fun yml -> yml <> Null)
             |> Seq.map parseTestCase 
@@ -309,7 +289,15 @@ module rec TestSuite =
             |> Seq.toList
 
         testCases
+        
             
-    type TestCase with
-        member this.Parse() =
-            parseTestModel this
+module LibMiniZinc =
+    
+    let testDir =
+        tests_dir <//> "libminizinc"
+        
+    let testSuiteFile =
+        testDir </> "suites.yml"
+    
+    let testSpec =
+        TestSuite.parseTestSpec testSuiteFile

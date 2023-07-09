@@ -2,21 +2,23 @@
 
 open Fake.IO
 open Fake.Core
+open MiniZinc.Tests
 
 module LibMiniZinc =
     
     let repo_url = "https://github.com/MiniZinc/libminizinc"
             
-    let clone_dir = obj <//> "libminizinc"
+    let clone_dir = "obj/libminizinc"
         
     let clone_path = "tests/spec"
-    
-    let test_suite_dir = test_dir <//> "libminizinc"
-                    
-    let downloadTestSuite () =
+               
+    let test_suite_dir = LibMiniZinc.testDir
+                            
+    /// Download  
+    let downloadTests () =
             
-        Directory.delete clone_dir.FullName
-        Directory.create clone_dir.FullName
+        Directory.delete clone_dir
+        Directory.create clone_dir
                 
         Directory.delete test_suite_dir.FullName
         Directory.create test_suite_dir.FullName

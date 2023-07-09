@@ -1,10 +1,15 @@
-﻿namespace MiniZinc
-open System
-open System.IO
+﻿(*
+ClientTests.fs
+
+Generates XUnit test classes from the LibMiniZinc test suite.
+*)
+
+namespace MiniZinc
 open Humanizer
 open Fake.IO
 open Fake.Core
 open System.Text
+open MiniZinc.Tests
 
 module ClientTests =
         
@@ -17,79 +22,52 @@ module ClientTests =
     let tests_file =
         project_dir </> "IntegrationTests.fs"
                 
-    let create (suites: TestSuite list) =
-                
+    let create () =
+                        
         let testSuites =
-            parseTestSuites ()
+            LibMiniZinc.testSpec
+            |> Map.values
             |> Seq.filter (fun suite -> suite.SuiteName <> "default")
             //|> Seq.take 1
             |> Seq.toList
             
-        let mutable source = """namespace MiniZinc.Tests
-
-open MiniZinc
-open MiniZinc.Tests
-open Xunit
-open System.IO
-
-module ``Integration Tests`` =
-
-    let cwd =
-        Directory.GetCurrentDirectory()
-        |> DirectoryInfo
-        
-    let projectDir =
-        cwd.Parent.Parent.Parent.Parent.Parent
-        
-    let libminizincDir =
-        projectDir <//> "tests" <//> "libminizinc"
-       
-    type IntegrationTestSuite(fixture: ClientFixture) =
-    
-        let client = fixture.Client
-                
-        let fail msg =
-            Assert.Fail(msg)
-            failwith ""
-            
-        interface IClassFixture<ClientFixture>            
-            
-        member _.test filePath solver =
-                
-            let file =
-                libminizincDir </> filePath
-            
-            let options =
-                SolveOptions.create solver
-                
-            let model =
-                match parseModelFile file.FullName with
-                | Result.Ok model ->
-                    model
-                | Result.Error err ->
-                    fail err.Message
-                    
-            let solution =
-                client.SolveSync(model, options)
-                
+        let source = StringBuilder()
+        let mutable tab = 0
+        let indent () = tab <- tab + 1
+        let dedent () = tab <- tab - 1
+        let write (msg: string) =
+            for i in 0 .. tab do
+                source.Append "    "
+            source.AppendLine msg
             ()
-"""
-
+        let writeln() =
+            source.AppendLine()
+            
+        write "namespace MiniZinc.ClientTests"
+        write "open MiniZinc.Tests"
+        write "open Xunit"
+        writeln()
+        
         for testSuite in testSuites do
-
+            
             let className =
                 testSuite.SuiteName.Humanize(LetterCasing.Title)
                 
-            let mutable suiteSource = $"""
+            write $"type ``{className}``(fixture: ClientFixture) ="
+            indent()
+            write "inherit IntegrationTestSuite(fixture)"
+            writeln()
             
-    type ``{className}``(fixture: ClientFixture) =
-        inherit IntegrationTestSuite(fixture)                
-"""
+            write $"override this.Name with get() ="
+            indent()
+            write $"\"{testSuite.SuiteName}\""
+            dedent()
+            writeln()
 
             let mutable lastName = ""
             let mutable count = 1
              
-            for testCase in testSuite.TestCases do
+            for i, testCase in Seq.indexed testSuite.TestCases do
                                 
                 let testFile =
                     testCase.TestFile.RelativeTo(LibMiniZinc.test_suite_dir)
@@ -110,24 +88,21 @@ module ``Integration Tests`` =
                     
                 lastName <- methodName
                 Trace.log methodName
-                    
-                let testSource = StringBuilder()
-                let write tabs (msg: string) =
-                    for i in 0 .. tabs do
-                        testSource.Append "    "
-                    testSource.AppendLine msg                    
-                    ()
                 
-                write 2 ""
-                write 2 "[<Theory>]"
+                write "[<Theory>]"
                 for solver in solvers do
-                    write 2 $"[<InlineData(\"{solver}\")>]"
-                write 2 $"member this.``{methodName}`` solver ="
-                write 3 $"this.test @\"{testFile}\" solver"
-                suiteSource <- $"{suiteSource}{string testSource}"
-            
-            source <- source + "\n" + suiteSource
+                    write $"[<InlineData(\"{solver}\")>]"
+                write $"member this.``{methodName}`` solver ="
+                indent()
+                write $"let testCase = this.Suite.TestCases[{i}]"
+                write $"this.test testCase solver"
+                writeln()
+                dedent()
+            dedent()
+            writeln()
         source
+        
+        let source = string source 
         
         File.writeString
             false

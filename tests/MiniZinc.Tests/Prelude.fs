@@ -2,8 +2,8 @@
 
 open System
 open System.IO
+open System.Reflection
 open System.Runtime.CompilerServices
-open System.Text
 
 [<AutoOpen>]
 module Prelude =
@@ -19,6 +19,17 @@ module Prelude =
     let (<//>) a b =
         Path.Join(string a, string b)
         |> DirectoryInfo
+        
+    let private assembly =
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetFullPath
+        |> FileInfo
+        
+    let project_dir =
+        assembly.Directory.Parent.Parent.Parent.Parent.Parent
+        
+    let tests_dir =
+        project_dir <//> "tests"
         
         
 [<Extension>]
@@ -73,7 +84,7 @@ type Extensions() =
     
     [<Extension>]
     static member inline StringEquals(a, b: string) =
-        if System.String.Equals(string a, b, StringComparison.OrdinalIgnoreCase) then
+        if String.Equals(string a, b, StringComparison.OrdinalIgnoreCase) then
             ()
         else
             failwithf $"{a} does not equal {b}"

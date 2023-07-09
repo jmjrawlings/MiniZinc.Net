@@ -1,6 +1,13 @@
-﻿namespace MiniZinc
+﻿(* 
+ModelTests.fs
+
+Generates XUnit parsing tests for each test in the
+libminizinc test suite
+*)
+
+namespace MiniZinc
 open Fake.IO
-open Fake.Core
+open MiniZinc.Tests
 
 module ParserTests =
     
@@ -13,12 +20,13 @@ module ParserTests =
     let tests_file =
         project_dir </> "IntegrationTests.fs"
     
-    let create (testSuites: TestSuite list) =
+    let create () =
                     
         let testCases =
-            testSuites 
+            LibMiniZinc.testSpec
+            |> Map.values
             |> Seq.collect (fun suite -> suite.TestCases)
-            |> Seq.distinctBy (fun case -> case.TestName)
+            |> Seq.distinctBy (fun case -> case.TestPath)
             |> Seq.toList
         
         let createTest (testCase: TestCase) =

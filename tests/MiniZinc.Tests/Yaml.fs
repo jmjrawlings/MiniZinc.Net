@@ -8,7 +8,7 @@ in yaml format.
 
 *)
 
-namespace MiniZinc
+namespace MiniZinc.Tests
 
 open MiniZinc
 open System
@@ -16,7 +16,6 @@ open System.Collections.Generic
 open YamlDotNet.Core
 open YamlDotNet.Core.Events
 open YamlDotNet.Serialization
-open System.IO
 
 #nowarn "3391"
 
