@@ -26,13 +26,13 @@ module ParserTests =
             LibMiniZinc.testSpec
             |> Map.values
             |> Seq.collect (fun suite -> suite.TestCases)
-            |> Seq.distinctBy (fun case -> case.TestPath)
+            |> Seq.distinctBy (fun case -> case.TestName)
             |> Seq.toList
         
         let createTest (testCase: TestCase) =
             
             let testFile =
-                testCase.TestFile.RelativeTo(test_dir)
+                testCase.TestFile.RelativeTo(LibMiniZinc.testDir)
                     
             let body = $"""
         [<Fact>]
@@ -49,19 +49,9 @@ module ParserTests =
     open System.IO
 
     module IntegrationTests =
-
-        let cwd =
-            Directory.GetCurrentDirectory()
-            |> DirectoryInfo
-            
-        let projectDir =
-            cwd.Parent.Parent.Parent.Parent.Parent
-            
-        let specDir =
-            projectDir <//> "tests" <//> "libminizinc"
             
         let testParseFile filePath =
-            let file = projectDir </> filePath
+            let file = LibMiniZinc.testDir </> filePath
             let result = parseModelFile file.FullName
             match result with
             | Result.Ok model ->
@@ -70,8 +60,8 @@ module ParserTests =
                 Assert.Fail(err.Message)            
     """
         
-        for case in testCases do
-            let body = createTest case
+        for testCase in testCases do
+            let body = createTest testCase
             source <- source + body
            
         source

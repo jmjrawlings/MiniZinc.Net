@@ -26,7 +26,8 @@ module Prelude =
         |> FileInfo
         
     let project_dir =
-        assembly.Directory.Parent.Parent.Parent.Parent.Parent
+        let dir = assembly.Directory.Parent.Parent.Parent.Parent.Parent
+        dir
         
     let tests_dir =
         project_dir <//> "tests"

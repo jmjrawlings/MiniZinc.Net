@@ -23,7 +23,6 @@ let createParserIntegrationTests() =
             
 let downloadLibMiniZincTestSuite() =    
     LibMiniZinc.downloadTests()
-    
  
 let init() =
 
