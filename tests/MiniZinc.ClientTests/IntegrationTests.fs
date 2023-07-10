@@ -5,7 +5,8 @@
     type ``No Chain Compression``(fixture: ClientFixture) =
         inherit IntegrationTestSuite(fixture)
 
-        override this.Name with get() = "no-chain-compression"
+        override this.Name with get() =
+            "no-chain-compression"
 
         [<Theory>]
         [<InlineData("gecode")>]
@@ -356,7 +357,8 @@
     type ``No Half Reifications``(fixture: ClientFixture) =
         inherit IntegrationTestSuite(fixture)
 
-        override this.Name with get() = "no-half-reifications"
+        override this.Name with get() =
+            "no-half-reifications"
 
         [<Theory>]
         [<InlineData("gecode")>]
@@ -707,7 +709,8 @@
     type ``No Mip Domains``(fixture: ClientFixture) =
         inherit IntegrationTestSuite(fixture)
 
-        override this.Name with get() = "no-mip-domains"
+        override this.Name with get() =
+            "no-mip-domains"
 
         [<Theory>]
         [<InlineData("gecode")>]
@@ -1058,7 +1061,8 @@
     type ``Optimize 0``(fixture: ClientFixture) =
         inherit IntegrationTestSuite(fixture)
 
-        override this.Name with get() = "optimize-0"
+        override this.Name with get() =
+            "optimize-0"
 
         [<Theory>]
         [<InlineData("gecode")>]
@@ -1409,7 +1413,8 @@
     type ``Optimize 2``(fixture: ClientFixture) =
         inherit IntegrationTestSuite(fixture)
 
-        override this.Name with get() = "optimize-2"
+        override this.Name with get() =
+            "optimize-2"
 
         [<Theory>]
         [<InlineData("gecode")>]
@@ -1760,7 +1765,8 @@
     type ``Optimize 3``(fixture: ClientFixture) =
         inherit IntegrationTestSuite(fixture)
 
-        override this.Name with get() = "optimize-3"
+        override this.Name with get() =
+            "optimize-3"
 
         [<Theory>]
         [<InlineData("gecode")>]
