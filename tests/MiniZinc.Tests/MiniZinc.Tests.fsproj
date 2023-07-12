@@ -9,15 +9,16 @@
     <ItemGroup>
         <Compile Include="Prelude.fs" />
         <Compile Include="Yaml.fs" />
-        <Compile Include="TestSuite.fs" />
+        <Compile Include="LibMiniZinc.fs" />
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="YamlDotNet" Version="13.1.0" />
-    </ItemGroup>
-    
-    <ItemGroup>
+      <ProjectReference Include="..\..\src\MiniZinc.Client\MiniZinc.Client.fsproj" />
       <ProjectReference Include="..\..\src\MiniZinc.Model\MiniZinc.Model.fsproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="YamlDotNet" Version="13.1.1" />
     </ItemGroup>
 
 </Project>

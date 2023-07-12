@@ -12,8 +12,10 @@
   <ItemGroup>
     <Compile Include="Prelude.fs" />
     <Compile Include="Command.fs" />
+    <Compile Include="Client.fs" />
+    <Compile Include="ModelTypes.fs" />
+    <Compile Include="ModeInterface.fs" />
     <Compile Include="Solve.fs" />
-    <Compile Include="MiniZinc.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="fsharp.control.taskseq" Version="0.3.0" />

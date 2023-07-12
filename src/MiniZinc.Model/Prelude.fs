@@ -27,8 +27,8 @@ module Prelude =
         | true -> FileExists (FileInfo x)
         | false -> FileNotFound
         
-    let notImpl () =
-        raise ( NotImplementedException() )
+    let notImpl msg =
+        raise ( NotImplementedException(msg) )
         
 
 type File =

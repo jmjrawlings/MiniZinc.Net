@@ -1,39 +1,46 @@
-﻿namespace MiniZinc.Model.Tests
+﻿(*
+
+ModelTests.fs
+
+Tests regarding the creation and manipulation of
+Model objects.
+*)
+
+namespace MiniZinc.Tests
 
 open MiniZinc
 open MiniZinc.Tests
 open Xunit
-open MiniZinc.Parsers
 
 module ``Parser Tests`` =
     
     // Test parsing the string, it is sanitized first
-    let testParser (parser: P<'t>) (input: string) =
+    let testParser (parser: Parser<'t>) (input: string) =
 
         let source, comments =
-            Parse.stripComments input
+            parseComments input
         
         let parsed =
-            match Parse.string parser source with
-            | Ok x -> x
-            | Error err -> failwith (string err)
+            match parseString parser source with
+            | Result.Ok x -> x
+            | Result.Error err -> failwith (string err)
         
         ()
             
     // Test parsing the string, it is sanitized first
-    let testRoundtrip (parser: P<'t>) (input: string) (writer: MiniZincEncoder -> 't -> unit) =
+    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: Encoder -> 't -> unit) =
 
         let source, comments =
-            Parse.stripComments input
+            parseComments input
         
         let parsed =
-            match Parse.string parser source with
-            | Ok x ->
+            match parseString parser source with
+            | Result.Ok x ->
                 x
-            | Error err ->
+            | Result.Error err ->
                 failwith (string err)
             
-        let encoder = MiniZincEncoder()
+        let encoder = Encoder()
         let write = (writer encoder)
         write parsed
         
@@ -41,10 +48,10 @@ module ``Parser Tests`` =
             encoder.String
        
         let roundtrip =
-            match Parse.string parser encoded with
-            | Ok x ->
+            match parseString parser encoded with
+            | Result.Ok x ->
                 x
-            | Error err ->
+            | Result.Error err ->
                 failwith (string err)
         
         ()
@@ -149,7 +156,7 @@ module ``Parser Tests`` =
     [<InlineData("% 12312312")>]
     [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
-        let output = Parse.string Parsers.comment arg
+        let output = parseString Parsers.comment arg
         output.AssertOk()
         
     [<Theory>]
@@ -194,7 +201,7 @@ module ``Parser Tests`` =
     [<Theory>]
     [<InlineData("var llower..lupper: Production;")>]
     let test_xd arg =
-        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeDeclareItem)
+        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeVariable)
         
     [<Theory>]
     [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _|]")>]
@@ -233,7 +240,7 @@ module ``Parser Tests`` =
     [<InlineData("forall (i in 1..n-1) (if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif);")>]
     let ``test gencall`` input =
         testRoundtrip
-            gen_call_expr
+            Parsers.gen_call_expr
             input
             (fun enc -> enc.writeGenCall)
         
@@ -248,6 +255,15 @@ module ``Parser Tests`` =
     [ "\n" ];""")>]                
     let ``test output``input =
         testRoundtrip
-            output_item
+            Parsers.output_item
             input
             (fun enc -> enc.writeOutputItem)
+            
+    [<Theory>]
+    [<InlineData("annotation f(string:x)")>]
+    let ``test annotation item`` input =
+        testRoundtrip
+            (Parsers.annotation_item)
+            input
+            (fun enc -> enc.writeAnnotationItem)
+        

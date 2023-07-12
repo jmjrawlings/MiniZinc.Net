@@ -2,14 +2,8 @@
 
 Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
 
-> **IMPORTANT**
-> 
-> This is pre-release software.
-> 
-> It's only public because I'm quite happy with the parser and I'm sure others can benefit from it.
-> 
-> This is written in F# but the goal is to have an idiomatic C# API also
-
+> This is an unofficial API under heavy development.  
+> See the [Project Board](https://github.com/users/jmjrawlings/projects/1/views/2) for details. 
 
 ## Immediate Goals
 
@@ -42,7 +36,9 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
       - They are pretty clunky honestly and not fun to build
 
 - Comprehensive examples and walkthroughs
- 
+- Nuget package
+
+
 ## Quickstart
 
 - Download [.NET6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)

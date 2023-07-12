@@ -1,417 +1,553 @@
-﻿
-(*
+﻿(*
 
 Model.fs
 
-Contains the primary types and functions we will use to
-create, analyze and manipulate MiniZinc models.
+Domain types for MiniZinc which includes those only used
+in the parsing phase (eg: LetLocal).  This is mostly a 
+1:1 mapping from the MiniZinc Grammar which can be found at
+https://www.minizinc.org/doc-2.7.6/en/spec.html#full-grammar.
 
-The AST is cumbersome to manipulate directly so this module forms
-an API over the top of it.  We can readily convert between Model and 
-AST as required.
-
+The `Model` type is the core datastructure we will deal with
+past the parsing phase. 
 *)
 
 namespace MiniZinc
 
-open System
-open System.Collections.Generic
 open System.Diagnostics
-open System.IO
-open System.Runtime.InteropServices
-open System.Text
 
-#nowarn "40"
-
-[<AutoOpen>]    
+[<AutoOpen>]
 module rec Model =
-
-    /// A MiniZinc model
-    type Model = 
-        { Name        : string
-        ; FilePath    : string option
-        ; Includes    : Map<string, LoadResult>
-        ; NameSpace   : NameSpace
-        ; Constraints : ConstraintItem list
-        ; Outputs     : OutputItem list
-        ; SolveMethod : SolveMethod }
-                
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: string, options: ParseOptions) =
-            Model.parseFile options filepath
-            
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: FileInfo, options: ParseOptions) =
-            Model.parseFile options filepath.FullName
-
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: string) =
-            Model.parseFile ParseOptions.Default filepath
-            
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: FileInfo) =
-            Model.parseFile ParseOptions.Default filepath.FullName
-
-        /// Parse a Model from the given string
-        static member ParseString (mzn: string, options: ParseOptions) =
-            Model.parseString options mzn
-            
-        /// Parse a Model from the given string
-        static member ParseString (mzn: string) =
-            Model.parseString ParseOptions.Default mzn 
-
-        member this.ToString() =
-            ()
-            
-        member this.ToString(x: FunctionItem) =
-            ()
-                        
-    module Model =
-
-        /// An empty model        
-        let empty : Model =
-            { Name = ""
-            ; FilePath = None
-            ; Includes = Map.empty
-            ; NameSpace = NameSpace.empty
-            ; SolveMethod = SolveMethod.Satisfy
-            ; Constraints = [] 
-            ; Outputs = [] }
-
-        [<AutoOpen>]
-        module Lenses =
-
-            let NameSpace_ =
-                Lens.v
-                    (fun m -> m.NameSpace)
-                    (fun v m -> { m with NameSpace = v })
-                    
-            let SolveMethod_ =
-                Lens.v
-                    (fun m -> m.SolveMethod)
-                    (fun v m -> { m with SolveMethod = v })
-                    
-            let Includes_ =
-                Lens.m
-                    (fun m -> m.Includes)
-                    (fun v m -> { m with Includes = v })
-                    
-            let Outputs_ =
-                Lens.v
-                    (fun m -> m.Outputs)
-                    (fun v m -> { m with Outputs = v })
-                    
-            let Constraints_ : ListLens<Model, ConstraintItem> =
-                Lens.l
-                    (fun m -> m.Constraints)
-                    (fun v m -> { m with Constraints =  v })
-            
-            let File_ : Lens<Model, string option> = 
-                Lens.v
-                    (fun m -> m.FilePath)
-                    (fun v m -> { m with FilePath = v })
-                    
-            let Name_ : Lens<Model, string> =
-                Lens.v
-                    (fun m -> m.Name)
-                    (fun v m -> { m with Name = v })
-        
-        /// Parse a Model from the given MiniZinc file
-        let parseFile (options: ParseOptions) (filepath: string) : LoadResult =
-            
-            let result =
-                match File.read filepath with
-                | Ok string ->
-                    parseString options string
-                | Error _ ->
-                    FileNotFound [filepath]
-                
-            result
-        
-        /// Parse a Model from the given MiniZinc model string
-        let parseString (options: ParseOptions) (mzn: string) : LoadResult =
-                        
-            let input, comments =
-                Parse.stripComments mzn
-            
-            let model =
-                Parse.model input
-                |> Result.map (fromAst options)
-                
-            let result =
-                match model with
-                | Result.Ok model -> Success model
-                | Result.Error error -> ParseError error
-                
-            result
-            
-        /// Parse a Model from the given MiniZinc model string
-        let parseExn (options: ParseOptions) (mzn: string) =
-            match parseString options mzn with
-            | LoadResult.Success model ->
-                model
-            | LoadResult.ParseError error ->
-                failwith error.Message
-            | _ ->
-                failwith "xd"
-        
-        /// Create a Model from the given AST
-        let fromAst (options: ParseOptions) (ast: Ast) : Model =
-            
-            let fold (model:Model) (item: Item) =
-                match item with
-                | Item.Include (Include x) ->
-                    { model with Includes = Map.add x LoadResult.Reference model.Includes }
-                | Item.Enum x ->
-                    { model with NameSpace = model.NameSpace.add x }
-                | Item.Synonym x ->
-                    { model with NameSpace = model.NameSpace.add x }
-                | Item.Declare x ->
-                    { model with NameSpace = model.NameSpace.add x }
-                | Item.Predicate x ->
-                    { model with NameSpace = model.NameSpace.add x }
-                | Item.Function x ->
-                    { model with NameSpace = model.NameSpace.add x }
-                | Item.Assign (name, expr) ->
-                    { model with NameSpace = model.NameSpace.add(name, expr) }
-                | Item.Constraint x ->
-                    { model with Constraints = x :: model.Constraints }
-                | Item.Solve x ->
-                    { model with SolveMethod = x} 
-                | Item.Test x ->
-                    model
-                | Item.Output x ->
-                    { model with Outputs = x :: model.Outputs }
-                | Item.Annotation x ->
-                    model
-                | Item.Comment x ->
-                    model
-
-            let model =
-                List.fold fold empty ast 
-                    
-            
-            // Parse an included model with the given filename "model.mzn"
-            let parseIncluded filename =
-                
-                let result =
-                    match options.IncludeOptions with
-
-                    | IncludeOptions.Reference ->
-                        LoadResult.Reference
-
-                    | IncludeOptions.Parse paths ->
-                        let searchFiles =
-                            paths
-                            |> List.map (fun dir -> Path.Join(dir, filename))
-                
-                        let filepath =
-                            searchFiles
-                            |> List.filter File.Exists
-                            |> List.tryHead
-                            
-                        match filepath with
-                        | Some path ->
-                            parseFile options path
-                        | None ->
-                            FileNotFound searchFiles
-                            
-                filename, result
-                
-            // Parse included models in parallel
-            let inclusions : Map<string, LoadResult> =
-                model.Includes
-                |> Map.toSeq
-                |> Seq.map fst
-                |> Seq.toArray
-                |> Array.Parallel.map parseIncluded
-                |> Map.ofSeq
-                
-            // Now merge the model with all inclusions
-            let unified =
-                inclusions
-                |> Map.values
-                |> Seq.choose (function
-                    | LoadResult.Success model -> Some model
-                    | _ -> None)
-                |> Seq.fold merge model
-
-            unified
-        /// Merge two Models
-        let merge (a: Model) (b: Model) : Model =
-                            
-            let nameSpace =
-                NameSpace.merge a.NameSpace b.NameSpace
-                
-            let name =
-                $"{a.Name} and {b.Name}"
-                
-            let includes =
-                Map.merge a.Includes b.Includes
-
-            let constraints =
-                a.Constraints @ b.Constraints
-                                
-            let solveMethod =                
-                match a.SolveMethod, b.SolveMethod with
-                    | SolveMethod.Sat _ , other
-                    | other, SolveMethod.Sat _ -> other
-                    | left, right -> right
-                
-            let model =
-                { empty with
-                    Name = name
-                    Includes = includes
-                    Constraints = constraints
-                    SolveMethod = solveMethod
-                    NameSpace = nameSpace }
-                
-            model
-            
-    let encode (options: EncodeOptions) (model: Model) =
-        
-        let mzn = MiniZincEncoder()
-                                
-        for incl in model.Includes.Keys do
-            let item = IncludeItem.Include incl
-            mzn.writeIncludeItem item
-
-        for enum in model.NameSpace.Enums.Values do
-            mzn.writeEnum enum
-            
-        for syn in model.NameSpace.Synonyms.Values do
-            mzn.writeSynonym syn
-
-        for x in model.NameSpace.Declared.Values do
-            mzn.writeDeclareItem x
-            mzn.writetn()
-
-        for cons in model.Constraints do
-            mzn.writeConstraintItem cons
-            mzn.writetn()
-
-        for func in model.NameSpace.Functions.Values do
-            mzn.writeFunctionItem func
-                    
-        mzn.writeSolveMethod model.SolveMethod
-        
-        for output in model.Outputs do
-            mzn.writeOutputItem output
-            
-        mzn.String
-        
-        
-    type EncodeOptions =
-        | EncodeOptions
-        static member Default =
-            EncodeOptions
     
-    /// Specifies how models referenced with
-    /// the "include" directive should be loaded
-    type IncludeOptions =
-        /// Reference only, do not load the model
-        | Reference
-        /// Parse the file, searching the given paths  
-        | Parse of string list
-        
-        static member Default =
-            IncludeOptions.Reference
-      
-    type ParseOptions =
-        { IncludeOptions: IncludeOptions }
-            
-        static member Default =
-            { IncludeOptions = IncludeOptions.Reference }
+    type ParseError =
+        { Message : string
+        ; Line    : int64
+        ; Column  : int64
+        ; Index   : int64
+        ; Trace   : string }
+   
+    type Id = string
+    
+    [<Struct>]
+    [<DebuggerDisplay("_")>]
+    type WildCard =
+        | WildCard
 
-    type LoadResult =
-        /// Load was successful
-        | Success of Model
-        /// Could not find the model
-        | FileNotFound of string list
-        /// Parsing failed
-        | ParseError of ParseError
-        /// Reference only - load has not been attempted
-        | Reference
+    type Comment =
+        string
         
-        member this.Model =
-            LoadResult.model this
-                    
-    module LoadResult =
+    type INamed =
+        abstract member Name: string
+
+    [<Struct>]
+    // An identifier or a value of 'T
+    type IdOr<'T> =
+        | Id of id:string
+        | Val of value:'T
+                  
+    type Inst =
+        | Var = 0
+        | Par = 1
         
-        /// Map the given function over the result        
-        let map f result =
-            match result with
-            | Success model -> Success (f model)
-            | other -> other
+    type VarKind =
+        | AssignedPar = 0
+        | UnassignedPar = 1
+        | AssignedVar = 2
+        | UnassignedVar = 3
+                  
+    type SolveMethod =
+        | Satisfy = 0
+        | Minimize = 1
+        | Maximize = 2
+
+    type NumericUnaryOp =
+        | Add = 0
+        | Subtract = 1
+        
+    type UnaryOp =
+        | Add = 0
+        | Subtract = 1
+        | Not = 2
+
+    type NumericBinaryOp =
+        | Add = 0
+        | Subtract = 1
+        | Multiply = 3
+        | Divide = 4
+        | Div = 5
+        | Mod = 6
+        | Exp = 7
+        | TildeAdd = 8
+        | TildeSubtract = 9
+        | TildeMultiply = 10
+        | TildeDivide = 11
+        | TildeDiv = 12
+        
+    type BinaryOp =
+        | Add = 0
+        | Subtract = 1
+        | Multiply = 3
+        | Divide = 4
+        | Div = 5
+        | Mod = 6
+        | Exponent = 7
+        | TildeAdd = 8
+        | TildeSubtract = 9
+        | TildeMultiply = 10
+        | TildeDivide = 11
+        | TildeDiv = 12
+        | Equivalent = 13 
+        | Implies = 14
+        | ImpliedBy = 15
+        | Or = 16
+        | Xor = 17  
+        | And = 18
+        | LessThanEqual = 19 
+        | GreaterThanEqual = 20 
+        | EqualEqual = 21
+        | LessThan =  22
+        | GreaterThan = 23
+        | Equal = 24
+        | NotEqual = 25  
+        | TildeEqual = 26 
+        | TildeNotEqual = 27  
+        | In = 28
+        | Subset = 29 
+        | Superset = 30
+        | Union = 31
+        | Diff = 32
+        | SymDiff = 33 
+        | DotDot = 34
+        | Intersect = 35 
+        | PlusPlus = 36
+        | Default =  37
+
+    type Op =     
+        | Add = 0
+        | Subtract = 1
+        | Not = 2
+        | Multiply = 3
+        | Divide = 4
+        | Div = 5
+        | Mod = 6
+        | Exponent = 7
+        | TildeAdd = 8
+        | TildeSubtract = 9
+        | TildeMultiply = 10
+        | TildeDivide = 11
+        | TildeDiv = 12
+        | Equivalent = 13 
+        | Implies = 14
+        | ImpliedBy = 15
+        | Or = 16
+        | Xor = 17  
+        | And = 18
+        | LessThanEqual = 19 
+        | GreaterThanEqual = 20 
+        | EqualEqual = 21
+        | LessThan =  22
+        | GreaterThan = 23
+        | Equal = 24
+        | NotEqual = 25  
+        | TildeEqual = 26 
+        | TildeNotEqual = 27  
+        | In = 28
+        | Subset = 29 
+        | Superset = 30
+        | Union = 31
+        | Diff = 32
+        | SymDiff = 33 
+        | DotDot = 34
+        | Intersect = 35 
+        | PlusPlus = 36
+        | Default =  37
+
+    [<RequireQualifiedAccess>] 
+    type Expr =
+        | WildCard      of WildCard  
+        | Int           of int
+        | Float         of float
+        | Bool          of bool
+        | String        of string
+        | Id            of string
+        | Op            of Op
+        | Bracketed     of Expr
+        | Set           of SetLiteral
+        | SetComp       of SetCompExpr
+        | Array1d       of Array1dExpr
+        | Array1dIndex
+        | Array2d       of Array2dExpr
+        | Array2dIndex
+        | ArrayComp     of ArrayCompExpr
+        | ArrayCompIndex
+        | Tuple         of TupleExpr
+        | Record        of RecordExpr
+        | UnaryOp       of UnaryOpExpr
+        | BinaryOp      of BinaryOpExpr
+        | Annotation
+        | IfThenElse    of IfThenElseExpr
+        | Let           of LetExpr
+        | Call          of CallExpr
+        | GenCall       of GenCallExpr 
+        | Indexed       of IndexExpr 
+
+    type UnaryOpExpr =
+        IdOr<UnaryOp> * Expr
+        
+    type BinaryOpExpr =
+        Expr * IdOr<BinaryOp> * Expr
+
+    type IndexExpr =
+        | Index of Expr * ArrayAccess list
+        
+    type ArrayAccess =
+        | Access of Expr list
+
+    type Annotation =
+        Expr
+
+    type Annotations =
+        Annotation list
+
+    type GenCallExpr =
+        { Operation: IdOr<Op>
+        ; From : Generator list 
+        ; Yields : Expr }
+        
+    type ArrayCompExpr =
+        { Yields : Expr         
+        ; From : Generator list }
+
+    type SetCompExpr =
+        { Yields : Expr         
+        ; From : Generator list }
+
+    type Generator =
+        { Yields : IdOr<WildCard> list
+        ; From  : Expr  
+        ; Where : Expr option }
+
+    type CallExpr =
+        { Function: IdOr<Op>
+        ; Args: Arguments }
+
+    type Array1dExpr =
+        Expr list
+
+    type Array2dExpr =
+        Expr list list
+
+    type TupleExpr =
+        | TupleExpr of Expr list
+        
+    type RecordExpr =
+        | RecordExpr of (Id * Expr) list
+        
+    type SolveItem =
+        | Sat of Annotations
+        | Min of Expr * Annotations
+        | Max of Expr * Annotations
+        
+        member this.SolveMethod =
+            match this with
+            | Sat _ -> SolveMethod.Satisfy
+            | Min _ -> SolveMethod.Minimize
+            | Max _ -> SolveMethod.Maximize
             
-        /// Return the successful model or fail            
-        let model result =
-            match result with
-            | Success x -> x
-            | _ -> failwithf $"Result was not a success"
+        member this.Annotations =
+            match this with
+            | Sat anns
+            | Min (_, anns)
+            | Max (_, anns) -> anns
             
-        let toOption result =
-            match result with
-            | Success x -> Some x
-            | _ -> None
+        static member Satisfy =
+            Sat []
+            
+        static member Minimize(expr) =
+            Min (expr, [])
+            
+        static member Maximize(expr) =
+            Max (expr, [])
+            
+
+    type IfThenElseExpr =
+        { If     : Expr
+        ; Then   : Expr
+        ; ElseIf : (Expr * Expr) list
+        ; Else   : Expr}
+
+    type NumericExpr =
+        | Int         of int
+        | Float       of float
+        | Id          of Id
+        | Op          of Op
+        | Bracketed   of NumericExpr
+        | Call        of CallExpr
+        | IfThenElse  of IfThenElseExpr
+        | Let         of LetExpr
+        | UnaryOp     of IdOr<NumericUnaryOp> * NumericExpr
+        | BinaryOp    of NumericExpr * IdOr<NumericBinaryOp> * NumericExpr
+        | ArrayAccess of NumericExpr * ArrayAccess list
+
+    type IncludeItem =
+        | Include of string
+
+    type EnumItem =
+        { Name : Id
+        ; Annotations : Annotations
+        ; Cases : EnumCase list }
+        
+        interface INamed with
+            member this.Name = this.Name
+        
+    type EnumCase =
+        | Name of Id
+        | Expr of Expr
+        
+    type TypeInst =
+        { Type  : Type
+          Inst  : Inst
+          IsSet : bool
+          IsOptional : bool
+          IsArray : bool }
+        
+        static member OfType t =
+            { Type = t; Inst = Inst.Par; IsSet = false; IsOptional = false; IsArray = false }
+        
+    type ITyped =
+        abstract member TypeInst: TypeInst
+
+    [<RequireQualifiedAccess>]        
+    type Type =
+        | Int
+        | Bool
+        | String
+        | Float
+        | Id     of Id
+        | Range  of Range
+        | Set    of SetLiteral
+        | Tuple  of TupleType
+        | Record of RecordType
+        | Array  of ArrayType
+
+    type RecordType =
+        { Fields: (Id * TypeInst) list }
+         
+    type TupleType =
+        { Fields: TypeInst list }
+        
+    type Range =
+        NumericExpr * NumericExpr
+        
+    [<RequireQualifiedAccess>]
+    type ArrayDim =
+        | Int
+        | Id    of Id
+        | Range of Range
+        | Set   of SetLiteral
+        
+    type ArrayType =
+        { Dimensions : ArrayDim list
+        ; Elements: TypeInst }
+       
+    type SetLiteral =
+        { Elements: Expr list }
+        
+    [<RequireQualifiedAccess>]    
+    type Item =
+        | Include    of IncludeItem
+        | Enum       of EnumItem
+        | Synonym    of TypeAlias
+        | Constraint of ConstraintItem
+        | Assign     of AssignItem
+        | Declare    of DeclareItem
+        | Solve      of SolveItem
+        | Function   of FunctionItem
+        | Test       of TestItem
+        | Output     of OutputItem
+        | Annotation of AnnotationItem
+        | Comment    of string
+
+    type AnnotationItem =
+        { Id: string; Params: Parameters }
+
+    type ConstraintItem =
+        | Constraint of Expr
+        
+    type Parameters =
+        Parameter list
+        
+    type Parameter =
+        Id * TypeInst
+
+    type Argument =
+        Expr
+      
+    type NamedArg =
+        Id * Expr
+
+    type NamedArgs =
+        NamedArg list
+        
+    type Arguments =
+        Argument list
+           
+    type TestItem =
+        { Name: string
+        ; Parameters : Parameters
+        ; Annotations : Annotations
+        ; Body: Expr option }
+        
+        interface INamed with
+            member this.Name = this.Name    
+
+    type TypeAlias =
+        { Name : string
+        ; Annotations : Annotations
+        ; TypeInst: TypeInst }
+        
+        interface INamed with
+            member this.Name = this.Name
+       
+    type OutputItem =
+        { Expr: Expr }
+
+    type OperationItem =
+        { Name: string
+          Parameters : Parameters
+          Annotations : Annotations
+          Body: Expr option }
+        
+    type FunctionItem =
+        { Name: string
+        ; Returns : TypeInst
+        ; Annotations : Annotations
+        ; Parameters : Parameters
+        ; Body: Expr option }
+        
+        interface INamed with
+            member this.Name = this.Name
+        
+    type Test =
+        unit
+
+    type AssignItem =
+        NamedArg
+
+    type DeclareItem =
+        { Name: string
+        ; TypeInst: TypeInst
+        ; Annotations: Annotations
+        ; Expr: Expr option }
+        
+        member this.Type =
+            this.TypeInst.Type
+            
+        member this.Inst =
+            this.TypeInst.Inst
+        
+        interface INamed with
+            member this.Name = this.Name
+
+    type LetLocal =
+        Choice<DeclareItem, ConstraintItem>
+        
+    type LetExpr =
+        { NameSpace : NameSpace
+        ; Constraints : ConstraintItem list
+        ; Body: Expr }
+        
+    type Ast = Item list
 
     /// Things that a name can be bound to
     [<RequireQualifiedAccess>]
     type Binding =
-        | Declare  of DeclareItem
+        | Variable of DeclareItem
         | Expr     of Expr
         | Enum     of EnumItem
-        | Synonym  of SynonymItem
+        | Type     of TypeAlias
         | Function of FunctionItem
         | Multiple of Binding list
-        
+
+    /// <summary>
+    /// Names bound to expressions (bindings)
+    /// </summary>
+    /// <remarks>
+    /// The purpose of this type is to provide
+    /// access to the expression bound to a particular name
+    /// as well as maintaining strongly typed mappings for
+    /// each possible binding.
+    ///
+    /// The two concrete use cases of namespaces are on
+    /// the Model itself (each MiniZinc model has a global
+    /// namespace), as well as inside of a let expression
+    /// which can add new bindings to from its own namespace.
+    /// </remarks>
     type NameSpace =
-        { Bindings   : Map<string, Binding>  
-        ; Declared   : Map<string, DeclareItem> 
-        ; Enums      : Map<string, EnumItem> 
-        ; Synonyms   : Map<string, SynonymItem> 
-        ; Functions  : Map<string, FunctionItem> 
-        ; Conflicts  : Map<string, Binding list> 
-        ; Undeclared : Map<string, Expr> }
+        { Bindings    : Map<string, Binding>
+        ; Inputs      : Map<string, TypeInst>
+        ; Outputs     : Map<string, TypeInst>
+        ; Variables   : Map<string, DeclareItem>
+        ; Undeclared  : Map<string, Expr>
+        ; Enums       : Map<string, EnumItem> 
+        ; Synonyms    : Map<string, TypeAlias> 
+        ; Functions   : Map<string, FunctionItem>        
+        ; Conflicts   : Map<string, Binding list> }
                 
-        member this.add (x: DeclareItem) =
-            NameSpace.add x.Name (Binding.Declare x) this
+        member this.Add (x: DeclareItem) =
+            NameSpace.add x.Name (Binding.Variable x) this
             
-        member this.add (x: EnumItem) =
+        member this.Add (x: EnumItem) =
             NameSpace.add x.Name (Binding.Enum x) this
             
-        member this.add (x: SynonymItem) =
-            NameSpace.add x.Name (Binding.Synonym x) this
+        member this.Add (x: TypeAlias) =
+            NameSpace.add x.Name (Binding.Type x) this
 
-        member this.add (x: FunctionItem) =
+        member this.Add (x: FunctionItem) =
             NameSpace.add x.Name (Binding.Function x) this
             
-        member this.add (name: string, x: Expr) : NameSpace =
+        member this.Add (name: string, x: Expr) : NameSpace =
             NameSpace.add name (Binding.Expr x) this
+            
+        member this.Remove (name: string) : NameSpace =
+            NameSpace.remove name this
         
     module NameSpace =
                 
         /// The empty namespace
         let empty =
-            { Bindings   = Map.empty   
-            ; Declared   = Map.empty  
+            { Bindings   = Map.empty
+            ; Inputs     = Map.empty
+            ; Outputs    = Map.empty
+            ; Variables  = Map.empty
+            ; Undeclared = Map.empty 
             ; Enums      = Map.empty  
             ; Synonyms   = Map.empty  
             ; Functions  = Map.empty  
-            ; Conflicts  = Map.empty  
-            ; Undeclared = Map.empty }
-            
+            ; Conflicts  = Map.empty }
+        
+        /// Get the bindings from the NameSpace     
         let bindings ns =
             ns.Bindings
+            
+        /// Remove the binding from the namespace     
+        let remove name ns =
+            { ns with
+                Bindings   = ns.Bindings.Remove name 
+                Outputs  = ns.Outputs.Remove name 
+                Undeclared = ns.Undeclared.Remove name 
+                Enums      = ns.Enums.Remove name 
+                Synonyms   = ns.Synonyms.Remove name 
+                Functions  = ns.Functions.Remove name 
+                Conflicts  = ns.Conflicts.Remove name }
 
         /// Add a binding to the namespace
         let add id (value: Binding) (ns: NameSpace) : NameSpace =
                                                        
-            let previous =
+            let oldBinding =
                 ns.Bindings.TryFind id
                 
-            let binding =            
-                match previous, value with
+            let newBinding =            
+                match oldBinding, value with
                 
                 // Enum assignment
                 | Some (Binding.Enum e), Binding.Expr expr 
@@ -432,12 +568,12 @@ module rec Model =
                             ; Binding.Enum e ]
                 
                 // Variable assignment    
-                | Some (Binding.Declare var), Binding.Expr expr 
-                | Some (Binding.Expr expr), Binding.Declare var ->
+                | Some (Binding.Variable var), Binding.Expr expr 
+                | Some (Binding.Expr expr), Binding.Variable var ->
                     match var.Expr with
                     // Assign new value
                     | None ->
-                        Binding.Declare { var with Expr = Some expr }
+                        Binding.Variable { var with Expr = Some expr }
                     // Existing value                    
                     | Some old when old = expr ->
                         Binding.Expr expr
@@ -445,19 +581,22 @@ module rec Model =
                     | Some other ->
                         Binding.Multiple
                             [ Binding.Expr expr
-                            ; Binding.Declare var ]
+                            ; Binding.Variable var ]
                             
                 // Assign an unassigned function
                 | Some (Binding.Function f), Binding.Expr expr 
                 | Some (Binding.Expr expr), Binding.Function f ->
                     match f.Body with
-                    // Assign new value
+                    
+                    // Assign a new value
                     | None ->
                         Binding.Function { f with Body = Some expr }
-                    // Existing value                    
+                        
+                    // No change in value                    
                     | Some old when old = expr ->
                         Binding.Function f
-                    // Overwritten value
+                        
+                    // Overwrite existing value?
                     | old ->
                         Binding.Multiple
                             [ Binding.Expr expr
@@ -480,34 +619,60 @@ module rec Model =
                     value
 
             let result =
-                match binding with
-                | Binding.Declare x ->
-                    { ns with Declared = Map.add id x ns.Declared }
+                match newBinding with
+                | Binding.Variable var ->
+                    match var.Inst, var.Expr with
+                    | Inst.Par, None ->
+                        { ns with
+                            Inputs = Map.add id var.TypeInst ns.Inputs
+                            Variables = Map.add id var ns.Variables }
+                    | Inst.Var, None ->
+                        { ns with
+                            Outputs = Map.add id var.TypeInst ns.Outputs
+                            Variables = Map.add id var ns.Variables }
+                    | _, _ ->
+                        { ns with
+                            Variables = Map.add id var ns.Variables }
                 | Binding.Expr x ->
-                    { ns with Undeclared = Map.add id x ns.Undeclared}
+                    { ns with
+                        Undeclared = Map.add id x ns.Undeclared }
                 | Binding.Enum x ->
-                    { ns with Enums = Map.add id x ns.Enums } 
-                | Binding.Synonym x ->
-                    { ns with Synonyms = Map.add id x ns.Synonyms }
+                    { ns with
+                        Enums = Map.add id x ns.Enums } 
+                | Binding.Type x ->
+                    { ns with
+                        Synonyms = Map.add id x ns.Synonyms }
                 | Binding.Function x ->
-                    { ns with Functions = Map.add id x ns.Functions } 
+                    { ns with
+                        Functions = Map.add id x ns.Functions } 
                 | Binding.Multiple x ->
-                    { ns with Conflicts = Map.add id x ns.Conflicts }
+                    { ns with
+                        Conflicts = Map.add id x ns.Conflicts }
                     
-            let result =
-                { result with
-                    Bindings = Map.add id binding ns.Bindings }
-                
-            result            
-                
-        let ofSeq xs =
-            
             let nameSpace =
-                (empty, xs)
-                ||> Seq.fold (fun ns (name, binding) -> add name binding ns)
+                { result with
+                    Bindings = Map.add id newBinding ns.Bindings }
                 
             nameSpace
             
+        let addDeclare (decl: DeclareItem) (ns: NameSpace) : NameSpace =
+            add decl.Name (Binding.Variable decl) ns
+            
+        let addFunction (func: FunctionItem) (ns: NameSpace) : NameSpace =
+            add func.Name (Binding.Function func) ns
+        
+        /// Create a NameSpace from the given bindings        
+        let ofSeq (xs: (string * Binding) seq) : NameSpace =
+            
+            let fold ns (name, binding) =
+                add name binding ns
+            
+            let nameSpace =
+                Seq.fold fold empty xs
+                
+            nameSpace
+            
+        /// Return the bindings as a sequence  
         let toSeq (ns: NameSpace) =
             ns.Bindings
             |> Map.toSeq
@@ -520,4 +685,68 @@ module rec Model =
                 |> ofSeq
                 
             merged
+            
+            
+    /// A MiniZinc model
+    type Model = 
+        { Name        : string
+        ; FilePath    : string option
+        ; Includes    : Map<string, IncludedModel>
+        ; NameSpace   : NameSpace
+        ; Constraints : ConstraintItem list
+        ; Outputs     : OutputItem list
+        ; SolveMethod : SolveItem }
+                        
+    module Model =
+
+        /// An empty model        
+        let empty : Model =
+            { Name = ""
+            ; FilePath = None
+            ; Includes = Map.empty
+            ; NameSpace = NameSpace.empty
+            ; SolveMethod = SolveItem.Satisfy
+            ; Constraints = [] 
+            ; Outputs = [] }
         
+        /// Merge two Models
+        let merge (a: Model) (b: Model) : Model =
+                            
+            let nameSpace =
+                NameSpace.merge a.NameSpace b.NameSpace
+                
+            let name =
+                $"{a.Name} and {b.Name}"
+                
+            let includes =
+                Map.merge a.Includes b.Includes
+
+            let constraints =
+                List.distinct (a.Constraints @ b.Constraints)
+                                
+            let solveMethod =                
+                match a.SolveMethod, b.SolveMethod with
+                    | SolveItem.Sat _ , other
+                    | other, SolveItem.Sat _ -> other
+                    | left, right -> right
+                
+            let model =
+                { empty with
+                    Name = name
+                    Includes = includes
+                    Constraints = constraints
+                    SolveMethod = solveMethod
+                    NameSpace = nameSpace }
+                
+            model
+        
+    type IncludedModel =
+        
+        /// Reference only - load has not been attempted
+        | Reference
+        
+        /// Model was parsed and stored in isolation  
+        | Isolated of Model
+        
+        /// Model was parsed and integrated into the referencing model
+        | Integrated of Model
