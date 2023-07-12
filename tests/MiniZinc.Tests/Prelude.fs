@@ -20,14 +20,22 @@ module Prelude =
         Path.Join(string a, string b)
         |> DirectoryInfo
         
-    let private assembly =
-        Assembly.GetExecutingAssembly().Location
-        |> Path.GetFullPath
-        |> FileInfo
-        
+    let getProjectDir() =
+        let assembly =
+            Assembly.GetExecutingAssembly().Location
+            |> Path.GetFullPath
+            |> FileInfo
+            
+        let mutable sln = assembly.Directory </> "MiniZinc.Net.sln"
+                                      
+        while (not sln.Exists) do 
+            let dir = sln.Directory.Parent
+            sln <- dir </> sln.Name
+            
+        sln.Directory
+            
     let project_dir =
-        let dir = assembly.Directory.Parent.Parent.Parent.Parent.Parent
-        dir
+        getProjectDir()
         
     let tests_dir =
         project_dir <//> "tests"
