@@ -47,7 +47,9 @@ module ClientTests =
         write "open MiniZinc.Tests"
         write "open Xunit"
         writeln()
-        
+        write "module ``Integration Tests`` = "
+        indent()
+
         for testSuite in testSuites do
             
             let className =
