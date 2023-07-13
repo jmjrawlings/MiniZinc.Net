@@ -429,8 +429,10 @@ module rec Encode =
                             
         member this.writeExpr (x: Expr) =
             match x with
-            | Expr.WildCard x ->
-                this.write "_"  
+            | Expr.WildCard _ ->
+                this.write "_"
+            | Expr.Absent _ ->
+                this.write "<>"
             | Expr.Int x ->
                 this.writeInt x
             | Expr.Float x ->
@@ -483,6 +485,7 @@ module rec Encode =
                 this.writeGenCall x 
             | Expr.Indexed x ->
                 this.writeIndexExpr x
+                             
             
         member this.writeVariable (decl: DeclareItem) =
             this.writeTypeInst decl.TypeInst

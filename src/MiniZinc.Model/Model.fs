@@ -27,13 +27,15 @@ module rec Model =
    
     type Id = string
     
+    type Comment = string
+    
     [<Struct>]
     [<DebuggerDisplay("_")>]
-    type WildCard =
-        | WildCard
-
-    type Comment =
-        string
+    type WildCard = | WildCard
+            
+    [<Struct>]
+    [<DebuggerDisplay("<>")>]
+    type Absent = | Absent
         
     type INamed =
         abstract member Name: string
@@ -163,7 +165,8 @@ module rec Model =
 
     [<RequireQualifiedAccess>] 
     type Expr =
-        | WildCard      of WildCard  
+        | WildCard      of WildCard
+        | Absent        of Absent
         | Int           of int
         | Float         of float
         | Bool          of bool
@@ -188,7 +191,7 @@ module rec Model =
         | Let           of LetExpr
         | Call          of CallExpr
         | GenCall       of GenCallExpr 
-        | Indexed       of IndexExpr 
+        | Indexed       of IndexExpr
 
     type UnaryOpExpr =
         IdOr<UnaryOp> * Expr
@@ -323,7 +326,7 @@ module rec Model =
         | String
         | Float
         | Id     of Id
-        | Range  of Range
+        | Range  of RangeExpr
         | Set    of SetLiteral
         | Tuple  of TupleType
         | Record of RecordType
@@ -335,14 +338,14 @@ module rec Model =
     type TupleType =
         { Fields: TypeInst list }
         
-    type Range =
+    type RangeExpr =
         NumericExpr * NumericExpr
         
     [<RequireQualifiedAccess>]
     type ArrayDim =
         | Int
         | Id    of Id
-        | Range of Range
+        | Range of RangeExpr
         | Set   of SetLiteral
         
     type ArrayType =

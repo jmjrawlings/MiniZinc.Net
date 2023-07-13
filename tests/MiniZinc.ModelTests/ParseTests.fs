@@ -173,6 +173,8 @@ module ``Parser Tests`` =
     [<InlineData("[];")>]
     [<InlineData("[1,2,3,];")>]
     [<InlineData("[true, false, X, true];")>]
+    [<InlineData("[1, _, 3, _, 5]")>]
+    [<InlineData("[<>, _, 10, q]")>]
     let ``test array1d literal`` arg =
         testRoundtrip Parsers.array1d_literal arg (fun enc -> enc.writeArray1d)
         
@@ -266,4 +268,4 @@ module ``Parser Tests`` =
             (Parsers.annotation_item)
             input
             (fun enc -> enc.writeAnnotationItem)
-        
+    

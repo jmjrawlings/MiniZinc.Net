@@ -350,15 +350,10 @@ module Parsers =
             addToDebug stream label (Leave reply)
             reply
             
-    (*
-    Adding debug information to the parser is very
-    slow so we only enable it for DEBUG
-    *)
-    // let (<?!>) (p: P<'t>) label : P<'t> =
-    //     p <?> label <!> label
-    // #else
     let (<?!>) (p: Parser<'t>) label : Parser<'t> =
-        p <?> label
+        p
+        <?> label
+        <!> label
                     
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
@@ -580,12 +575,13 @@ module Parsers =
         |>> enum<Op>
         
     // 0 .. 10
-    let range_expr : Parser<Range> =
+    let range_expr : Parser<RangeExpr> =
         attempt (
             num_expr
             .>> sps ".."
             .>>. num_expr
         )
+        <?!> "range-expr"
     
     // <array1d-literal>
     let array1d_literal : Parser<Array1dExpr> =
@@ -847,7 +843,10 @@ module Parsers =
         p '_'
         >>. notFollowedBy letter
         >>% WildCard.WildCard
-        
+    
+    let absent : Parser<Absent> =
+        attempt (p "<>")
+        >>% Absent
         
     // <comp-tail>
     let comp_tail : Parser<Generator list> =
@@ -1073,11 +1072,13 @@ module Parsers =
         
     // <expr-atom-head>    
     let expr_atom_head=
-        [ float_literal   |>> Expr.Float
+        [
+          float_literal   |>> Expr.Float
           int_literal     |>> Expr.Int
           bool_literal    |>> Expr.Bool
           string_literal  |>> Expr.String
           wildcard        |>> Expr.WildCard
+          absent            |>> Expr.Absent
           bracketed expr  |>> Expr.Bracketed
           let_expr        |>> Expr.Let
           if_else_expr    |>> Expr.IfThenElse
