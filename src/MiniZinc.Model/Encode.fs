@@ -138,11 +138,26 @@ module rec Encode =
             this.writeTypeInst syn.TypeInst
             this.writetn()
 
+        member this.writeAnnotation (x: Annotation) =
+            this.write " :: "
+            match x with
+            | Annotation.Name id ->
+                this.write id
+            | Annotation.Call (id, args) ->
+                this.write id
+                this.write '('
+                this.writeExprs args
+                this.write ')'
+        
         member this.writeAnnotations (x: Annotations) =
-            for ann in x do
-                this.write " :: "
-                this.writeExpr ann
-                
+            match x with
+            | [] ->
+                ()
+            | anns ->
+                this.write " "
+                for ann in anns do
+                    this.writeAnnotation ann
+                    
         member this.writeAnnotationItem (x: AnnotationItem) =
             this.write "annotation "
             this.write x.Id
@@ -554,9 +569,10 @@ module rec Encode =
             this.writeExprs x.Args
             this.write ")"
             
-        member this.writeConstraintItem (ConstraintItem.Constraint expr) =
+        member this.writeConstraintItem (x: ConstraintItem) =
             this.write "constraint "
-            this.writeExpr expr
+            this.writeExpr x.Expr
+            this.writeAnnotations x.Annotations
             
         member this.writeIncludeItem (x: IncludeItem) =
             match x with

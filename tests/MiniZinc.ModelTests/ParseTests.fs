@@ -161,6 +161,9 @@ module ``Parser Tests`` =
         
     [<Theory>]
     [<InlineData("let {int: a = 2} in a;")>]
+    [<InlineData("let {int: x = ceil(z);} in x;")>]
+    [<InlineData("let {constraint x < 100;} in x;")>]
+    [<InlineData("let {int: x = ceil(z);constraint x < 100;} in x;")>]
     let ``test let`` arg =
         testRoundtrip Parsers.let_expr arg (fun enc -> enc.writeLetExpr)
         
@@ -269,3 +272,7 @@ module ``Parser Tests`` =
             input
             (fun enc -> enc.writeAnnotationItem)
     
+    [<Fact>]
+    let ``tet xd `` ()=
+        let input = ":: add_to_output :: mzn_break_here"
+        testRoundtrip (Parsers.annotations) input (fun enc -> enc.writeAnnotations)

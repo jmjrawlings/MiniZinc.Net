@@ -206,8 +206,9 @@ module rec Model =
         | Access of Expr list
 
     type Annotation =
-        Expr
-
+        | Name of Id
+        | Call of Id * Expr list
+        
     type Annotations =
         Annotation list
 
@@ -374,7 +375,8 @@ module rec Model =
         { Id: string; Params: Parameters }
 
     type ConstraintItem =
-        | Constraint of Expr
+        { Expr: Expr
+        ; Annotations: Annotations }
         
     type Parameters =
         Parameter list

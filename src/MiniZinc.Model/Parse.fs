@@ -35,7 +35,6 @@ type ParserState() =
 type Parser<'t> =
     Parser<'t, ParserState>
 
-
 /// <summary>
 /// Overloaded methods that clean up parsing code a bit
 /// </summary>
@@ -686,15 +685,18 @@ module Parsers =
     // <enum-item>
     // TODO: complex constructors
     let enum_item : Parser<EnumItem> =
+        
         let members =
             enum_case
             |> between(p '{', p '}', p ',')
             
-        pipe3
-            (kw1 "enum" >>. id .>> sps '=')
+        pipe5
+            (kw1 "enum")
+            (ps id)
+            (ps '=')
             (ps annotations)
             (opt_or [] members)
-            (fun name anns cases ->
+            (fun _ name _ anns cases ->
                 { Name = name
                 ; Annotations = anns
                 ; Cases = List.map EnumCase.Name cases
@@ -848,6 +850,17 @@ module Parsers =
         attempt (p "<>")
         >>% Absent
         
+    let ann_literal : Parser<Annotation> =
+    
+        let args =
+            expr
+            |> between1(p '(', p ')', p ',')
+            |> opt
+
+        id .>>. args |>> function
+          | id, None -> Annotation.Name id
+          | id, Some xs -> Annotation.Call (id, xs)
+        
     // <comp-tail>
     let comp_tail : Parser<Generator list> =
         let var =
@@ -922,29 +935,46 @@ module Parsers =
 
     // <constraint-item>
     let constraint_item : Parser<ConstraintItem> =
-        kw "constraint"
-        >>. expr
-        |>> ConstraintItem.Constraint
-        
+        pipe3
+          (kw "constraint")
+          (ps expr)
+          annotations
+          (fun _ expr anns ->
+              { Expr = expr
+              ; Annotations = anns })
+            
     // <annotation-item>
     let annotation_item : Parser<AnnotationItem>=
-        kw1 "annotation"
-        >>. (ps id)
-        .>>. parameters
-        |>> (fun (id, pars) ->
+        pipe3
+          (kw1 "annotation")
+          (ps id)
+          parameters
+          (fun _ id pars ->
             {Id = id; Params = pars})
         
     // <let-item>
     let let_item : Parser<LetLocal> =
-        (var_decl_item |>> Choice1Of2)
-        <|>
-        (constraint_item |>> Choice2Of2)
+        choice
+         [constraint_item |>> Choice2Of2
+          var_decl_item   |>> Choice1Of2 ]
     
     // <let-expr>
-    let let_expr : Parser<LetExpr> =        
-        kw "let"
-        >>. between(p '{', p '}', anyOf ":,") let_item
-        .>> sps "in"
+    let let_expr : Parser<LetExpr> =
+        
+        let item =
+            let_item
+            .>> spaces
+            .>> (opt (anyOf ";,"))
+            .>> spaces
+    
+        let items =
+            item
+            |> many1
+            |> between('{', '}')
+        
+        (kw "let")
+        >>. items
+        .>> (sps "in")
         .>>. expr
         |>> (fun (items, body) ->
             
@@ -1108,15 +1138,10 @@ module Parsers =
                     |> IndexExpr.Index 
                     |> Expr.Indexed
             )
-    
-    // <annotation>
-    let annotation : Parser<Annotation> =
-        ps "::"
-        >>. expr_atom_impl
             
     // <annotations>
     annotations_ref.contents <-
-        many annotation
+        many (ps "::" >>. ann_literal .>> spaces)
     
     // <expr-atom>        
     expr_atom_ref.contents <-
@@ -1148,11 +1173,12 @@ module Parsers =
         
     // <solve-item>
     let solve_item : Parser<SolveItem> =
-        pipe3
-            (kw1 "solve" >>. annotations)
-            (sps solve_type)
+        pipe4
+            (kw1 "solve")
+            (ps annotations)
+            (ps solve_type)
             (opt expr)
-            (fun anns solveType obj ->
+            (fun _ anns solveType obj ->
                 match (solveType, obj) with
                 | SolveMethod.Maximize, Some exp ->
                     SolveItem.Max (exp, anns)
@@ -1170,11 +1196,13 @@ module Parsers =
         
     // <type-inst-syn-item>
     let alias_item : Parser<TypeAlias> =
-        pipe3
-            (kw1 "type" >>. id .>> spaces)
-            (ps annotations .>> ps "=")
+        pipe5
+            (kw1 "type")
+            (ps id)
+            (ps annotations)
+            (ps "=")
             ti_expr
-            (fun id anns ti ->
+            (fun _ id anns _ ti ->
                 { Name = id
                 ; Annotations = anns
                 ; TypeInst = ti })
