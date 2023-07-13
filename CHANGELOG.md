@@ -1,6 +1,8 @@
 # Changelog
 
-## [0.5.0] - 
+## [0.5.0] -
+
+A big step forward.
 
 ### Model
 - Removed distinction between `Function` and `Predicate` items
@@ -10,12 +12,17 @@
 - Unified parsing into `Parse.fs`
 - Unified encoding into `Encode.fs`
 - `Encode.fs` and `Parse.fs` now use type and module extensions to augment the `Model` type
-- Let exprs now contain a `NameSpace`
+- `let-exprs` now contain a `NameSpace`
 - Added `ArrayDim` union for array dimensions
+- Added the absent value `<>`
+- Added annotations for `ConstraintItems` 
 
 ### Parser
 - Parser no longer accepts invalid array dimensions
-
+- Added support for the absent value `<>`
+- Fixed a bug where `let-expr` that contained constraints would not parse properly
+- Added support for `annotations`
+ 
 ### Client
 - Added `Solve` and `SolveSync` methods on `MiniZincClient`
 - Renamed `Command.Exec` to `Run` and `RunSync`
