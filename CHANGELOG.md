@@ -38,6 +38,7 @@ A big step forward.
 ### Bugfixes
 - Fixed a bug where `let-expr` that contained constraints would not parse properly
 - Fixed a bug where the parser would fail for `call-expr` with no arguments
+- Fixed a bug where the parser required `else` cases on `if-then-expr`
 
 
 ### Tests
