@@ -20,9 +20,9 @@ A big step forward.
 ### Parser
 - Parser no longer accepts invalid array dimensions
 - Added support for the absent value `<>`
-- Fixed a bug where `let-expr` that contained constraints would not parse properly
 - Added support for `annotations`
- 
+- Added a `NamedTypeInst` to capture (Id, TypeInst, Annotations)
+
 ### Client
 - Added `Solve` and `SolveSync` methods on `MiniZincClient`
 - Renamed `Command.Exec` to `Run` and `RunSync`
@@ -34,6 +34,10 @@ A big step forward.
   - `Solve.fs`
 - Added `SolveOptions` to capture command line flags
 - Added a `compile` step between the model and the solver
+
+### Bugfixes
+- Fixed a bug where `let-expr` that contained constraints would not parse properly
+- Fixed a bug where the parser would fail for `call-expr` with no arguments
 
 
 ### Tests
