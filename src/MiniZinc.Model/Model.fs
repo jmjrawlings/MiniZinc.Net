@@ -204,11 +204,10 @@ module rec Model =
         
     type ArrayAccess =
         | Access of Expr list
-
-    type Annotation =
-        | Name of Id
-        | Call of Id * Expr list
         
+    type Annotation = 
+        Expr
+                
     type Annotations =
         Annotation list
 
@@ -279,22 +278,27 @@ module rec Model =
         ; ElseIf : (Expr * Expr) list
         ; Else   : Expr}
 
-    type NumericExpr =
+    [<RequireQualifiedAccess>]
+    type NumExpr =
         | Int         of int
         | Float       of float
         | Id          of Id
         | Op          of Op
-        | Bracketed   of NumericExpr
+        | Bracketed   of NumExpr
         | Call        of CallExpr
         | IfThenElse  of IfThenElseExpr
         | Let         of LetExpr
-        | UnaryOp     of IdOr<NumericUnaryOp> * NumericExpr
-        | BinaryOp    of NumericExpr * IdOr<NumericBinaryOp> * NumericExpr
-        | ArrayAccess of NumericExpr * ArrayAccess list
+        | UnaryOp     of IdOr<NumericUnaryOp> * NumExpr
+        | BinaryOp    of NumExpr * IdOr<NumericBinaryOp> * NumExpr
+        | ArrayAccess of NumExpr * ArrayAccess list
 
     type IncludeItem =
         | Include of string
 
+    type AnnotationItem =
+        | Name of Id
+        | Call of Id * Parameters
+    
     type EnumItem =
         { Name : Id
         ; Annotations : Annotations
@@ -316,6 +320,11 @@ module rec Model =
         
         static member OfType t =
             { Type = t; Inst = Inst.Par; IsSet = false; IsOptional = false; IsArray = false }
+    
+    type NamedTypeInst =
+        { Name : string
+        ; TypeInst : TypeInst
+        ; Annotations : Annotations }
         
     type ITyped =
         abstract member TypeInst: TypeInst
@@ -326,6 +335,7 @@ module rec Model =
         | Bool
         | String
         | Float
+        | Ann
         | Id     of Id
         | Range  of RangeExpr
         | Set    of SetLiteral
@@ -334,13 +344,13 @@ module rec Model =
         | Array  of ArrayType
 
     type RecordType =
-        { Fields: (Id * TypeInst) list }
+        { Fields: NamedTypeInst list }
          
     type TupleType =
         { Fields: TypeInst list }
         
     type RangeExpr =
-        NumericExpr * NumericExpr
+        NumExpr * NumExpr
         
     [<RequireQualifiedAccess>]
     type ArrayDim =
@@ -371,9 +381,6 @@ module rec Model =
         | Annotation of AnnotationItem
         | Comment    of string
 
-    type AnnotationItem =
-        { Id: string; Params: Parameters }
-
     type ConstraintItem =
         { Expr: Expr
         ; Annotations: Annotations }
@@ -382,7 +389,7 @@ module rec Model =
         Parameter list
         
     type Parameter =
-        Id * TypeInst
+        NamedTypeInst
 
     type Argument =
         Expr

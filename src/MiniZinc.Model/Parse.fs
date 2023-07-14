@@ -257,7 +257,8 @@ type private ParseUtils () =
         | Type.String 
         | Type.Float 
         | Type.Id _ 
-        | Type.Set _ 
+        | Type.Set _
+        | Type.Ann
         | Type.Range _ ->
             ty, Inst.Par
         
@@ -283,13 +284,13 @@ type private ParseUtils () =
                             
             let resolved =
                 x.Fields
-                |> List.map (fun (name, field) ->
-                    match ParseUtils.ResolveInst field with
-                    | ty, Inst.Var ->
+                |> List.map (fun field ->
+                    match ParseUtils.ResolveInst field.TypeInst with
+                    | ti, Inst.Var ->
                         inst <- Inst.Var
-                        name, ty
-                    | ty, _ ->
-                        name, ty
+                        { field with TypeInst = ti }
+                    | ti, _ ->
+                        { field with TypeInst = ti }
                     )
                 
             (Type.Record {x with Fields=resolved}), inst
@@ -543,15 +544,15 @@ module Parsers =
 
     // <num-expr>    
     let num_expr, num_expr_ref =
-        createParserForwardedToRef<NumericExpr, ParserState>()
+        createParserForwardedToRef<NumExpr, ParserState>()
         
     // <num-expr-atom>
     let num_expr_atom, num_expr_atom_ref =
-        createParserForwardedToRef<NumericExpr, ParserState>()
+        createParserForwardedToRef<NumExpr, ParserState>()
         
     // <num-expr-atom>
-    let annotations, annotations_ref =
-        createParserForwardedToRef<Annotations, ParserState>()
+    let annotation, annotation_ref =
+        createParserForwardedToRef<Annotation, ParserState>()
                 
     let bracketed x =
         between('(', ')' , ws=true) x
@@ -616,18 +617,26 @@ module Parsers =
             |> between(p "[|", p "|]")
                 
         array
+        
+    // <annotations>        
+    let annotations : Parser<Annotations> =
+        many (annotation .>> spaces)        
    
     // <ti-expr-and-id>
-    let ti_expr_and_id : Parser<Id * TypeInst> =
-        ti_expr
-        .>> sps ':'
-        .>>. id
-        |>> (fun (expr, name) -> (name, expr))
+    let ti_expr_and_id : Parser<NamedTypeInst> =
+        pipe3
+            (ti_expr .>> sps ':')
+            (id .>> spaces)
+            annotations
+            (fun ti name anns ->
+                { TypeInst = ti
+                ; Name=name
+                ; Annotations=anns })
     
     let parameters : Parser<Parameters> =
         ti_expr_and_id
         |> between(p '(', p ')', p ',')
-    
+
     // <operation-item-tail>
     // eg: even(var int: x) = x mod 2 = 0;
     let operation_item_tail =
@@ -812,6 +821,7 @@ module Parsers =
         ; kw "int"    >>% Type.Int
         ; kw "string" >>% Type.String
         ; kw "float"  >>% Type.Float
+        ; kw "ann"    >>% Type.Ann
         ; record_ti   |>> Type.Record
         ; tuple_ti    |>> Type.Tuple
         ; range_expr  |>> Type.Range 
@@ -830,7 +840,7 @@ module Parsers =
             ps id_or_op
             
         let args =
-            between1(p '(', p ')', p ',') expr
+            between(p '(', p ')', p ',') expr
             <?!> "call-args"
         
         pipe2
@@ -849,17 +859,6 @@ module Parsers =
     let absent : Parser<Absent> =
         attempt (p "<>")
         >>% Absent
-        
-    let ann_literal : Parser<Annotation> =
-    
-        let args =
-            expr
-            |> between1(p '(', p ')', p ',')
-            |> opt
-
-        id .>>. args |>> function
-          | id, None -> Annotation.Name id
-          | id, Some xs -> Annotation.Call (id, xs)
         
     // <comp-tail>
     let comp_tail : Parser<Generator list> =
@@ -922,15 +921,14 @@ module Parsers =
             
     // <declare-item>
     let var_decl_item : Parser<DeclareItem> =
-        pipe3
+        pipe2
             (ps ti_expr_and_id)
-            (ps annotations)
             (opt (ps '=' >>. expr))
-            (fun (id, ti) anns expr ->
-                let ti, inst = ParseUtils.ResolveInst ti
-                { Name = id
+            (fun nti expr ->
+                let ti, inst = ParseUtils.ResolveInst nti.TypeInst
+                { Name = nti.Name
                 ; TypeInst = ti
-                ; Annotations = anns
+                ; Annotations = nti.Annotations
                 ; Expr = expr })
 
     // <constraint-item>
@@ -948,9 +946,12 @@ module Parsers =
         pipe3
           (kw1 "annotation")
           (ps id)
-          parameters
-          (fun _ id pars ->
-            {Id = id; Params = pars})
+          (opt parameters)
+          (fun _ id ->
+            function
+            | None -> AnnotationItem.Name id
+            | Some xs -> AnnotationItem.Call (id, xs))
+          
         
     // <let-item>
     let let_item : Parser<LetLocal> =
@@ -1055,15 +1056,15 @@ module Parsers =
 
     // <num-expr-atom-head>    
     let num_expr_atom_head=
-        [ float_literal      |>> NumericExpr.Float
-          int_literal        |>> NumericExpr.Int
-          bracketed num_expr |>> NumericExpr.Bracketed
-          let_expr           |>> NumericExpr.Let
-          if_else_expr       |>> NumericExpr.IfThenElse
-          call_expr          |>> NumericExpr.Call
-          num_un_op          |>> NumericExpr.UnaryOp
-          quoted_op          |>> NumericExpr.Op 
-          id                 |>> NumericExpr.Id
+        [ float_literal      |>> NumExpr.Float
+          int_literal        |>> NumExpr.Int
+          bracketed num_expr |>> NumExpr.Bracketed
+          let_expr           |>> NumExpr.Let
+          if_else_expr       |>> NumExpr.IfThenElse
+          call_expr          |>> NumExpr.Call
+          num_un_op          |>> NumExpr.UnaryOp
+          quoted_op          |>> NumExpr.Op 
+          id                 |>> NumExpr.Id
           ]
         |> choice
         
@@ -1077,7 +1078,7 @@ module Parsers =
                 | [] ->
                     head
                 | _ ->
-                    NumericExpr.ArrayAccess (head, access)
+                    NumExpr.ArrayAccess (head, access)
                 
             )
         <?!> "num-expr-atom"
@@ -1097,7 +1098,7 @@ module Parsers =
                 | None ->
                     head
                 | Some (op, right) ->
-                    NumericExpr.BinaryOp (head, op, right)
+                    NumExpr.BinaryOp (head, op, right)
             )
         
     // <expr-atom-head>    
@@ -1124,8 +1125,13 @@ module Parsers =
           id              |>> Expr.Id
           ]
         |> choice
-
-    let expr_atom_impl =
+            
+    // <annotations>
+    annotation_ref.contents <-
+        ps "::" >>. expr
+    
+    // <expr-atom>        
+    expr_atom_ref.contents <-
         pipe2
             expr_atom_head
             expr_atom_tail
@@ -1138,14 +1144,6 @@ module Parsers =
                     |> IndexExpr.Index 
                     |> Expr.Indexed
             )
-            
-    // <annotations>
-    annotations_ref.contents <-
-        many (ps "::" >>. ann_literal .>> spaces)
-    
-    // <expr-atom>        
-    expr_atom_ref.contents <-
-        expr_atom_impl
             
     // <expr-binop-tail>
     let expr_binop_tail =

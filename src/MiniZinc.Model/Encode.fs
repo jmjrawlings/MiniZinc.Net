@@ -139,15 +139,8 @@ module rec Encode =
             this.writetn()
 
         member this.writeAnnotation (x: Annotation) =
-            this.write " :: "
-            match x with
-            | Annotation.Name id ->
-                this.write id
-            | Annotation.Call (id, args) ->
-                this.write id
-                this.write '('
-                this.writeExprs args
-                this.write ')'
+            this.write " ::"
+            this.writeExpr x
         
         member this.writeAnnotations (x: Annotations) =
             match x with
@@ -160,10 +153,12 @@ module rec Encode =
                     
         member this.writeAnnotationItem (x: AnnotationItem) =
             this.write "annotation "
-            this.write x.Id
-            this.write "("
-            this.writeParameters x.Params
-            this.write ")"
+            match x with
+            | AnnotationItem.Name id ->
+                this.write id
+            | AnnotationItem.Call (id, pars) ->
+                this.write id
+                this.writeParameters pars
                 
         member this.writeTypeInst (ti: TypeInst) =
             match ti.IsArray with
@@ -194,7 +189,9 @@ module rec Encode =
             | Type.String ->
                 this.write "string"                
             | Type.Float ->
-                this.write "float"                
+                this.write "float"
+            | Type.Ann ->
+                this.write "ann"
             | Type.Id x ->
                 this.write x                
             | Type.Record x ->
@@ -244,48 +241,48 @@ module rec Encode =
                 let s = operators[x]
                 this.write s
                         
-        member this.writeNumExpr (x: NumericExpr) =
+        member this.writeNumExpr (x: NumExpr) =
             match x with
             
-            | Int i ->
+            | NumExpr.Int i ->
                 this.writeInt i
                 
-            | Float f ->
+            | NumExpr.Float f ->
                 this.writeFloat f
                 
-            | Id s ->
+            | NumExpr.Id s ->
                 this.write s
                 
-            | Op op ->
+            | NumExpr.Op op ->
                 this.writeOp op
                 
-            | Bracketed expr ->
+            | NumExpr.Bracketed expr ->
                 this.write '('
                 this.writeNumExpr expr
                 this.write ')'
                 
-            | Call expr ->
+            | NumExpr.Call expr ->
                 this.writeCall expr
                 
-            | IfThenElse expr ->
+            | NumExpr.IfThenElse expr ->
                 this.writeIfThenElse expr
                 
-            | Let expr ->
+            | NumExpr.Let expr ->
                 this.writeLetExpr expr
                 
-            | UnaryOp(op, expr) ->
+            | NumExpr.UnaryOp(op, expr) ->
                 this.writeIdOrOp op
                 this.write " "
                 this.writeNumExpr expr
                 
-            | BinaryOp(left, op, right) ->
+            | NumExpr.BinaryOp(left, op, right) ->
                 this.writeNumExpr left
                 this.write " "
                 this.writeIdOrOp op
                 this.write " "
                 this.writeNumExpr right
                 
-            | ArrayAccess(expr, access) ->
+            | NumExpr.ArrayAccess(expr, access) ->
                 this.writeNumExpr expr
                 for acc in access do
                     this.writeArrayAccess acc
@@ -390,7 +387,7 @@ module rec Encode =
         member this.writeLetExpr (x: LetExpr) =
             this.writen "let {"
             this.indent()
-            this.sepBy(",\n", (Seq.toList x.NameSpace.Variables.Values), this.writeVariable)
+            this.sepBy(",\n", (Seq.toList x.NameSpace.Variables.Values), this.writeDeclare)
             this.sepBy(",\n", x.Constraints, this.writeConstraintItem)
             this.dedent()
             this.writen "} in"
@@ -502,7 +499,7 @@ module rec Encode =
                 this.writeIndexExpr x
                              
             
-        member this.writeVariable (decl: DeclareItem) =
+        member this.writeDeclare (decl: DeclareItem) =
             this.writeTypeInst decl.TypeInst
             this.write ": "
             this.write decl.Name
@@ -525,17 +522,19 @@ module rec Encode =
                 ()
             
         member this.writeRecordType (x: RecordType) =
-            this.write "record("
+            this.write "record"
             this.writeParameters x.Fields
-            this.write ")"
                 
-        member this.writeParameter ((id,ti): Parameter) =
-            this.writeTypeInst ti
+        member this.writeParameter (p: Parameter) =
+            this.writeTypeInst p.TypeInst
             this.write ": "
-            this.write id
+            this.write p.Name
+            this.writeAnnotations p.Annotations
                 
         member this.writeParameters (xs: Parameters) =
+            this.write '('
             this.sepBy(", ", xs, this.writeParameter)
+            this.write ')'
         
         member this.writeNamedArg (id: string, expr: Expr) =
             this.write id
@@ -547,9 +546,7 @@ module rec Encode =
             this.writeTypeInst x.Returns
             this.write ": "
             this.write x.Name
-            this.write "(" 
             this.writeParameters x.Parameters
-            this.write ")"
             
             match x.Body with
             | None ->
@@ -615,7 +612,7 @@ module rec Encode =
                 enc.writeSynonym syn
 
             for x in model.NameSpace.Variables.Values do
-                enc.writeVariable x
+                enc.writeDeclare x
                 enc.writetn()
 
             for cons in model.Constraints do

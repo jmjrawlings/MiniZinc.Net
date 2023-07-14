@@ -105,7 +105,11 @@ module Prelude =
                                 let fieldName = x.Key
                                 let fieldType = x.Value.AsObject()
                                 let fieldTi = parse fieldType
-                                (fieldName, fieldTi))
+                                let field : NamedTypeInst =
+                                    { Name=fieldName
+                                    ; TypeInst=fieldTi
+                                    ; Annotations=[] }
+                                field)
                             |> Seq.toList
                             
                         Type.Record { Fields = fields }
