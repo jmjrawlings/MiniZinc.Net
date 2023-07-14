@@ -337,8 +337,7 @@ module rec Model =
         | Float
         | Ann
         | Id     of Id
-        | Range  of RangeExpr
-        | Set    of SetLiteral
+        | Set    of Expr // TODO confirm with MiniZinc team
         | Tuple  of TupleType
         | Record of RecordType
         | Array  of ArrayType
@@ -355,9 +354,8 @@ module rec Model =
     [<RequireQualifiedAccess>]
     type ArrayDim =
         | Int
-        | Id    of Id
-        | Range of RangeExpr
-        | Set   of SetLiteral
+        | Id of Id
+        | Set of Expr
         
     type ArrayType =
         { Dimensions : ArrayDim list

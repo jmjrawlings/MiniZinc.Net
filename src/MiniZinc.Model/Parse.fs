@@ -258,8 +258,7 @@ type private ParseUtils () =
         | Type.Float 
         | Type.Id _ 
         | Type.Set _
-        | Type.Ann
-        | Type.Range _ ->
+        | Type.Ann ->
             ty, Inst.Par
         
         // Any var item means a var tuple
@@ -764,10 +763,8 @@ module Parsers =
                     preturn (ArrayDim.Id id)
                 | Type.Int ->
                     preturn ArrayDim.Int
-                | Type.Range rng ->
-                    preturn (ArrayDim.Range rng)
-                | Type.Set set ->
-                    preturn (ArrayDim.Set set)
+                | Type.Set x ->
+                    preturn (ArrayDim.Set x)
                 | other ->
                     fail $"Bad array dimension {other}"
         
@@ -824,9 +821,8 @@ module Parsers =
         ; kw "ann"    >>% Type.Ann
         ; record_ti   |>> Type.Record
         ; tuple_ti    |>> Type.Tuple
-        ; range_expr  |>> Type.Range 
-        ; id          |>> Type.Id
-        ; set_literal |>> Type.Set ]
+        ; expr        |>> Type.Set 
+        ; id          |>> Type.Id ]
         |> choice
         <?!> "base-ti-tail"
     

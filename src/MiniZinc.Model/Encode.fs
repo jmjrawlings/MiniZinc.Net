@@ -199,9 +199,7 @@ module rec Encode =
             | Type.Tuple x ->
                 this.writeTupleType x                
             | Type.Set x ->
-                this.writeSetLit x                
-            | Type.Range x ->
-                this.writeRange x                
+                this.writeExpr x
             | Type.Array x ->
                 this.writeArrayType x
                 
@@ -212,9 +210,7 @@ module rec Encode =
             | ArrayDim.Id x ->
                 this.write x
             | ArrayDim.Set x ->
-                this.writeSetLit x
-            | ArrayDim.Range x ->
-                this.writeRange x
+                this.writeExpr x
 
         member this.writeRange (lo, hi) =
             this.writeNumExpr lo
