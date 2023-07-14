@@ -276,7 +276,7 @@ module rec Model =
         { If     : Expr
         ; Then   : Expr
         ; ElseIf : (Expr * Expr) list
-        ; Else   : Expr}
+        ; Else   : Expr option}
 
     [<RequireQualifiedAccess>]
     type NumExpr =

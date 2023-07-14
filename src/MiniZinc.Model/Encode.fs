@@ -377,7 +377,8 @@ module rec Encode =
                 this.writeExpr thenCase
                 
             this.write " else "
-            this.writeExpr x.Else
+            if x.Else.IsSome then
+                this.writeExpr x.Else.Value
             this.write " endif"
             
         member this.writeLetExpr (x: LetExpr) =

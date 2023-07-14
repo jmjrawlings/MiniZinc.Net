@@ -994,35 +994,20 @@ module Parsers =
         
     // <if-then-else-expr>
     let if_else_expr : Parser<IfThenElseExpr> =
-        
-        let if_case = 
-            kw "if"
+                
+        let case keyword =
+            kw keyword
             >>. expr
             .>> spaces
-            <?!> "if-case"
+            <?!> $"{keyword}-case"
             
-        let then_case =
-            kw "then"
-            >>. expr
-            .>> spaces
-            
-        let elseif_case =
-            kw1 "elseif"
-            >>. (ps expr)
-            .>> (kw1 "then")
-            .>>. (ps expr)
-            
-        let else_case =
-            kw "else"
-            >>. (ps expr)
-            .>> p "endif"
-                        
-        pipe4
-            if_case
-            then_case
-            (many elseif_case)
-            else_case
-            (fun if_ then_ elseif_ else_ ->
+        pipe5
+            (case "if")
+            (case "then")
+            (many (case "elseif" .>>. case "then"))
+            (opt (case "else"))
+            (p "endif")
+            (fun if_ then_ elseif_ else_ _ ->
                 { If = if_
                 ; Then = then_
                 ; ElseIf = elseif_
