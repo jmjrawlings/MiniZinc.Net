@@ -117,30 +117,42 @@ module rec Encode =
             
             match x.Cases with
             | [] ->
-                this.writetn()
+                ()
             | cases ->
                 this.write " = {"
                 let n = cases.Length - 1
                 for i, case in Seq.indexed cases do
-                    match case with
-                    | Name id ->
-                        this.write id
-                    | Expr expr ->
-                        this.writeExpr expr
+                    this.writeEnumCase case
                     this.writeIf (i < n) ", "
                 this.write "}"
-                this.writetn()
-                    
+                
+        member this.writeEnumCase (ecase: EnumCase) =
+            match ecase with
+            | EnumCase.Name id ->
+                this.write id
+            | EnumCase.Anon expr ->
+                this.write "_("
+                this.writeExpr expr
+                this.write ")"
+            | EnumCase.Call (id, expr) ->
+                this.write $"{id}("
+                this.writeExpr expr
+                this.write ")"
+    
         member this.writeSynonym (syn: TypeAlias) =
             this.write "type "
             this.write syn.Name
             this.write " = "
             this.writeTypeInst syn.TypeInst
-            this.writetn()
 
         member this.writeAnnotation (x: Annotation) =
             this.write " ::"
-            this.writeExpr x
+            this.write x.Name
+            match x.Args with
+            | [] ->
+                ()
+            | args ->
+                this.writeArgs args
         
         member this.writeAnnotations (x: Annotations) =
             match x with
@@ -283,9 +295,6 @@ module rec Encode =
                 for acc in access do
                     this.writeArrayAccess acc
         
-        member this.writeId (s: string) =
-            this.write s
-        
         member this.writeString (s: string) =
             this.write $"\"{s}\""
         
@@ -336,10 +345,8 @@ module rec Encode =
             this.write ']'
             
         member this.writeTuple (TupleExpr.TupleExpr exprs) =
-            this.write "("
-            this.sepBy(", ", exprs, this.writeExpr)
-            this.write ")"
-        
+            this.writeArgs exprs
+            
         member this.writeRecordField (id: Id, expr: Expr) =
             this.write id
             this.write ": "
@@ -384,8 +391,8 @@ module rec Encode =
         member this.writeLetExpr (x: LetExpr) =
             this.writen "let {"
             this.indent()
-            this.sepBy(",\n", (Seq.toList x.NameSpace.Variables.Values), this.writeDeclare)
-            this.sepBy(",\n", x.Constraints, this.writeConstraintItem)
+            this.sepBy(",\n", x.Declares, this.writeDeclare)
+            this.sepBy(",\n", x.Constraints, this.writeConstraint)
             this.dedent()
             this.writen "} in"
             this.indent()
@@ -451,7 +458,7 @@ module rec Encode =
             | Expr.String x ->
                 this.writeString x
             | Expr.Id x ->
-                this.writeId x
+                this.write x
             | Expr.Op x ->
                 this.writeOp x
             | Expr.Bracketed x ->
@@ -482,8 +489,6 @@ module rec Encode =
                 this.writeUnaryOp x
             | Expr.BinaryOp x ->
                 this.writeBinaryOp x
-            | Expr.Annotation ->
-                ()
             | Expr.IfThenElse x ->
                 this.writeIfThenElse x
             | Expr.Let x ->
@@ -494,6 +499,7 @@ module rec Encode =
                 this.writeGenCall x 
             | Expr.Indexed x ->
                 this.writeIndexExpr x
+                    
                              
             
         member this.writeDeclare (decl: DeclareItem) =
@@ -538,7 +544,7 @@ module rec Encode =
             this.write ": "
             this.writeExpr expr
             
-        member this.writeFunctionItem (x: FunctionItem) =
+        member this.writeFunction (x: FunctionItem) =
             this.write "function "
             this.writeTypeInst x.Returns
             this.write ": "
@@ -546,24 +552,27 @@ module rec Encode =
             this.writeParameters x.Parameters
             
             match x.Body with
-            | None ->
-                this.writetn()
             | Some body ->
                 this.writen " = "
                 this.indent()
                 this.writeExpr body
                 this.dedent()
-                this.writetn()
+            | _ ->
+                ()
                     
         member this.writeCall (x: CallExpr) =
             match x.Function with
             | IdOr.Id s -> this.write s
             | IdOr.Val v -> this.writeOp v
+            
+            this.writeArgs x.Args
+            
+        member this.writeArgs (args: Expr list) =
             this.write "("
-            this.writeExprs x.Args
+            this.writeExprs args
             this.write ")"
             
-        member this.writeConstraintItem (x: ConstraintItem) =
+        member this.writeConstraint (x: ConstraintItem) =
             this.write "constraint "
             this.writeExpr x.Expr
             this.writeAnnotations x.Annotations
@@ -571,63 +580,23 @@ module rec Encode =
         member this.writeIncludeItem (x: IncludeItem) =
             match x with
             | IncludeItem.Include s ->
-                this.writetn $"include \"{s}\""
+                this.write $"include \"{s}\""
             
         member this.writeOutputItem (x: OutputItem) =
             this.write "output "
             this.writeExpr x.Expr
-            this.writetn()
             
         member this.writeSolveMethod (x: SolveItem) =
+            this.write "solve"
+            this.writeAnnotations x.Annotations
             match x with
             | Sat _ ->
-                this.writetn "solve satisfy"
+                this.write "satisfy"
             | Max (expr, _) ->
-                this.write "solve maximize "
+                this.write "maximize "
                 this.writeExpr expr
-                this.writetn()
             | Min (expr, _) ->
-                this.write "solve minimize "
+                this.write "minimize "
                 this.writeExpr expr
-                this.writetn()
                 
-    module Model =
-                
-        /// Encode the given model as a string
-        let encode (model: Model) =
-            
-            let enc = Encoder()
-                                                
-            for incl in model.Includes.Keys do
-                let item = IncludeItem.Include incl
-                enc.writeIncludeItem item
-
-            for enum in model.NameSpace.Enums.Values do
-                enc.writeEnum enum
-                
-            for syn in model.NameSpace.Synonyms.Values do
-                enc.writeSynonym syn
-
-            for x in model.NameSpace.Variables.Values do
-                enc.writeDeclare x
-                enc.writetn()
-
-            for cons in model.Constraints do
-                enc.writeConstraintItem cons
-                enc.writetn()
-
-            for func in model.NameSpace.Functions.Values do
-                enc.writeFunctionItem func
-                        
-            enc.writeSolveMethod model.SolveMethod
-            
-            for output in model.Outputs do
-                enc.writeOutputItem output
-                
-            enc.String
-
-                
-    type Model with
     
-        member this.Encode() =
-            Model.encode this

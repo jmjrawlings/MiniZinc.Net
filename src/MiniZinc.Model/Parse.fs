@@ -593,10 +593,6 @@ module Parsers =
         between(p '{', p '}', p ',') expr
         |> attempt
         |>> (fun exprs -> {Elements = exprs})
-        
-    // <set-expr>
-    let set_expr : Parser<SetLiteral>=
-        set_literal
                 
     // <array2d-literal>
     let array2d_literal : Parser<Array2dExpr> =
@@ -631,9 +627,13 @@ module Parsers =
                 { TypeInst = ti
                 ; Name=name
                 ; Annotations=anns })
-    
+        
     let parameters : Parser<Parameters> =
         ti_expr_and_id
+        |> between(p '(', p ')', p ',')
+        
+    let arguments : Parser<Expr list> =
+        expr
         |> between(p '(', p ')', p ',')
 
     // <operation-item-tail>
@@ -686,29 +686,29 @@ module Parsers =
             ; Body = body })
     
     // <enum-case>
-    // TODO: complex variants
-    let enum_case : Parser<string> =
+    let enum_case : Parser<EnumCase> =
         id
+        |>> EnumCase.Name
           
     // <enum-item>
     // TODO: complex constructors
     let enum_item : Parser<EnumItem> =
         
-        let members =
+        let enum_cases =
             enum_case
             |> between(p '{', p '}', p ',')
             
-        pipe5
-            (kw1 "enum")
-            (ps id)
-            (ps '=')
-            (ps annotations)
-            (opt_or [] members)
-            (fun _ name _ anns cases ->
+        let enum_name =
+            kw1 "enum" >>. id .>> spaces
+            
+        pipe3
+            enum_name
+            annotations
+            (opt_or [] (ps '=' >>. enum_cases))
+            (fun name anns cases ->
                 { Name = name
                 ; Annotations = anns
-                ; Cases = List.map EnumCase.Name cases
-                })
+                ; Cases = cases })
     
     // <include-item>
     let include_item : Parser<IncludeItem> =
@@ -983,11 +983,11 @@ module Parsers =
                     | Choice2Of2 x -> (ds, x::cs)
                 ) ([], [])
                 
-            let nameSpace : NameSpace =
-                (NameSpace.empty, declares)
-                ||> List.fold (fun ns decl -> ns.Add decl)
-           
-            { NameSpace = nameSpace
+            // let nameSpace : NameSpace =
+            //     (NameSpace.empty, declares)
+            //     ||> List.fold (fun ns decl -> ns.Add decl)
+            //
+            { Declares = declares
             ; Constraints = constraints
             ; Body=body })
         <?!> "let-expr"
@@ -1090,7 +1090,7 @@ module Parsers =
           bool_literal    |>> Expr.Bool
           string_literal  |>> Expr.String
           wildcard        |>> Expr.WildCard
-          absent            |>> Expr.Absent
+          absent          |>> Expr.Absent
           bracketed expr  |>> Expr.Bracketed
           let_expr        |>> Expr.Let
           if_else_expr    |>> Expr.IfThenElse
@@ -1100,7 +1100,7 @@ module Parsers =
           set_comp        |>> Expr.SetComp
           array2d_literal |>> Expr.Array2d
           array1d_literal |>> Expr.Array1d
-          set_expr        |>> Expr.Set
+          set_literal     |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           quoted_op       |>> Expr.Op
           id              |>> Expr.Id
@@ -1109,7 +1109,11 @@ module Parsers =
             
     // <annotations>
     annotation_ref.contents <-
-        ps "::" >>. expr
+        pipe2
+            ( p "::" >>. spaces >>. id .>> spaces)
+            (opt_or [] arguments)
+            (fun name args ->
+                { Name = name; Args = args })
     
     // <expr-atom>        
     expr_atom_ref.contents <-
@@ -1236,8 +1240,10 @@ module rec Parse =
                 
                 let comment =
                     match m.Groups[1], m.Groups[2] with
+                    // Line comment
                     | m, _ when m.Success ->
                         m.Value
+                    // Block comment
                     | _, m when m.Success ->
                         m.Value
                     | _ ->
@@ -1277,61 +1283,6 @@ module rec Parse =
                 ; Trace = state.Message }
                 
             Result.Error err
-    
-    let parseModelAst (ast: Ast) : Model =
-        
-        let fold (model:Model) (item: Item) =
-            match item with
-            | Item.Include (Include x) ->
-                { model with Includes = Map.add x IncludedModel.Reference model.Includes }
-            | Item.Enum x ->
-                { model with NameSpace = model.NameSpace.Add x }
-            | Item.Synonym x ->
-                { model with NameSpace = model.NameSpace.Add x }
-            | Item.Declare x ->
-                { model with NameSpace = model.NameSpace.Add x }
-            | Item.Function x ->
-                { model with NameSpace = model.NameSpace.Add x }
-            | Item.Assign (name, expr) ->
-                { model with NameSpace = model.NameSpace.Add(name, expr) }
-            | Item.Constraint x ->
-                { model with Constraints = x :: model.Constraints }
-            | Item.Solve x ->
-                { model with SolveMethod = x} 
-            | Item.Test x ->
-                model
-            | Item.Output x ->
-                { model with Outputs = x :: model.Outputs }
-            | Item.Annotation x ->
-                model
-            | Item.Comment x ->
-                model
-
-        let model =
-            List.fold fold Model.empty ast
-            
-        model
-            
-    let parseModelString (mzn: string) : Result<Model, ParseError> =
-                                    
-        let source, comments =
-            parseComments mzn
-        
-        let model =
-            source
-            |> parseString Parsers.model
-            |> Result.map parseModelAst
-            
-        model
-        
-    let parseModelFile (filepath: string) : Result<Model, ParseError> =
-        
-        if File.Exists filepath then
-            let mzn = File.ReadAllText filepath
-            let model = parseModelString mzn
-            model
-        else
-            failwithf $"{filepath} does not exist"
             
     let parseDataString (dzn: string) : Result<Map<string, Expr>, ParseError> =
                             
@@ -1354,16 +1305,4 @@ module rec Parse =
         let data = parseDataString mzn
         data
     
-    type Model with
 
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: string) =
-            parseModelFile filepath
-            
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: FileInfo) =
-            parseModelFile filepath.FullName
-
-        /// Parse a Model from the given string
-        static member ParseString (mzn: string) =
-            parseModelString mzn
