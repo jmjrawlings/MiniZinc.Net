@@ -11,6 +11,7 @@ namespace MiniZinc.Tests
 open MiniZinc
 open MiniZinc.Tests
 open Xunit
+open FParsec
 
 module ``Parser Tests`` =
     
@@ -30,6 +31,8 @@ module ``Parser Tests`` =
     // Test parsing the string, it is sanitized first
     let testRoundtrip (parser: Parser<'t>) (input: string) (writer: Encoder -> 't -> unit) =
 
+        let parser = parser .>> eof
+        
         let source, comments =
             parseComments input
         
@@ -45,7 +48,7 @@ module ``Parser Tests`` =
         write parsed
         
         let encoded =
-            encoder.String
+            encoder.String.Trim()
        
         let roundtrip =
             match parseString parser encoded with
@@ -120,6 +123,7 @@ module ``Parser Tests`` =
     [<InlineData("enum A = {A1}")>]
     [<InlineData("enum B = {_A, _B, _C}")>]
     [<InlineData("enum C = {  'One', 'Two',   'Three'}")>]
+    [<InlineData("enum D")>]
     let ``test enum`` arg =
         testRoundtrip Parsers.enum_item arg (fun enc -> enc.writeEnum)
     
@@ -150,7 +154,7 @@ module ``Parser Tests`` =
     [<InlineData("100 / 1.0")>]
     [<InlineData("A `something` B")>]
     let ``test num binary op`` arg =
-        testRoundtrip Parsers.num_expr_atom_head arg (fun enc -> enc.writeNumExpr)
+        testRoundtrip Parsers.expr arg (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("% 12312312")>]
@@ -160,22 +164,22 @@ module ``Parser Tests`` =
         output.AssertOk()
         
     [<Theory>]
-    [<InlineData("let {int: a = 2} in a;")>]
-    [<InlineData("let {int: x = ceil(z);} in x;")>]
-    [<InlineData("let {constraint x < 100;} in x;")>]
-    [<InlineData("let {int: x = ceil(z);constraint x < 100;} in x;")>]
+    [<InlineData("let {int: a = 2} in a")>]
+    [<InlineData("let {int: x = ceil(z);} in x")>]
+    [<InlineData("let {constraint x < 100;} in x")>]
+    [<InlineData("let {int: x = ceil(z);constraint x < 100;} in x")>]
     let ``test let`` arg =
         testRoundtrip Parsers.let_expr arg (fun enc -> enc.writeLetExpr)
         
     [<Theory>]
-    [<InlineData("array2d(ROW, COL, []);")>]
+    [<InlineData("array2d(ROW, COL, [])")>]
     let ``test call`` arg =
         testRoundtrip Parsers.call_expr arg (fun enc -> enc.writeCall)
         
     [<Theory>]
-    [<InlineData("[];")>]
-    [<InlineData("[1,2,3,];")>]
-    [<InlineData("[true, false, X, true];")>]
+    [<InlineData("[]")>]
+    [<InlineData("[1,2,3,]")>]
+    [<InlineData("[true, false, X, true]")>]
     [<InlineData("[1, _, 3, _, 5]")>]
     [<InlineData("[<>, _, 10, q]")>]
     let ``test array1d literal`` arg =
@@ -190,7 +194,7 @@ module ``Parser Tests`` =
 		else
 			true
 		endif
-	);""")>]
+	)""")>]
     [<InlineData("""constraint
 	forall(i in 1..n-1) (
 		if d[i] < d[i+1] then
@@ -199,14 +203,14 @@ module ``Parser Tests`` =
 		else
 			true
 		endif
-	);""")>]
+	)""")>]
     let ``test gen call`` arg =
-        testRoundtrip Parsers.constraint_item arg (fun enc -> enc.writeConstraintItem)
+        testRoundtrip Parsers.constraint_item arg (fun enc -> enc.writeConstraint)
         
     [<Theory>]
-    [<InlineData("var llower..lupper: Production;")>]
+    [<InlineData("var llower..lupper: Production")>]
     let test_xd arg =
-        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeVariable)
+        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeDeclare)
         
     [<Theory>]
     [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _|]")>]
@@ -239,10 +243,10 @@ module ``Parser Tests`` =
         testRoundtrip Parsers.set_comp arg
 
     [<Theory>]
-    [<InlineData("forall( i in 1..nb, j in i+1..nb ) (card(sets[i] intersect sets[j]) <= 1);")>]
-    [<InlineData("sum( k in 1..K ) ( bin[k] );")>]
-    [<InlineData("forall(k in 1 .. K)(is_feasible_packing(bin[k], [item[k, j] | j in 1 .. N]));")>]
-    [<InlineData("forall (i in 1..n-1) (if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif);")>]
+    [<InlineData("forall( i in 1..nb, j in i+1..nb ) (card(sets[i] intersect sets[j]) <= 1)")>]
+    [<InlineData("sum( k in 1..K ) ( bin[k] )")>]
+    [<InlineData("forall(k in 1 .. K)(is_feasible_packing(bin[k], [item[k, j] | j in 1 .. N]))")>]
+    [<InlineData("forall (i in 1..n-1) (if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif)")>]
     let ``test gencall`` input =
         testRoundtrip
             Parsers.gen_call_expr
@@ -257,7 +261,7 @@ module ``Parser Tests`` =
     [ "Items = \n\t" ] ++
     [ show(items[k, i]) ++ if k = K then "\n\t" else " " endif |
         i in 1..N, k in 1..K ] ++
-    [ "\n" ];""")>]                
+    [ "\n" ]""")>]                
     let ``test output``input =
         testRoundtrip
             Parsers.output_item
@@ -276,3 +280,10 @@ module ``Parser Tests`` =
     let ``tet xd `` ()=
         let input = ":: add_to_output :: mzn_break_here"
         testRoundtrip (Parsers.annotations) input (fun enc -> enc.writeAnnotations)
+        
+    [<Fact>]
+    let ``test output 2`` () =
+        testRoundtrip
+            Parsers.output_item
+            """output ["% a = ", show(a), ";\n", "b = ", show(b), ";\n"]"""
+            (fun enc -> enc.writeOutputItem)
