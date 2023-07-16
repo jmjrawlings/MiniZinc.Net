@@ -301,14 +301,14 @@ module rec Ast =
     type EnumItem =
         { Name : Id
         ; Annotations : Annotations
-        ; Cases : EnumCase list }
+        ; Cases : EnumCases list }
         
         interface INamed with
             member this.Name = this.Name
         
     [<RequireQualifiedAccess>]        
-    type EnumCase =
-        | Name of Id
+    type EnumCases =
+        | Names of Id list
         | Anon of Expr
         | Call of Id * Expr
         

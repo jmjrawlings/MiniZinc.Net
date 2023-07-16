@@ -160,22 +160,13 @@ type private ParseUtils () =
         ) =
             ParseUtils.sepBy(pDelim, many=many, allowTrailing=allowTrailing)
             >> ParseUtils.between(pStart, pEnd, ws=true)
-
-    static member between1 (
-            pStart : Parser<_>,
-            pEnd : Parser<_>,
-            pDelim : Parser<_>,
-            [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
-        ) =
-            ParseUtils.between(pStart, pEnd, pDelim, many=true, allowTrailing=allowTrailing)
-
-                
+        
     // Parse 'p' separated by 'delim'.  Whitespace is consumed  
     static member sepBy (
             pDelim : Parser<_>,
             [<Optional; DefaultParameterValue(false)>] many : bool,
             [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
-        ) =
+        ) : Parser<'t> -> Parser<'t list> =
         
         fun p ->
             
@@ -685,21 +676,37 @@ module Parsers =
             ; Parameters = pars
             ; Body = body })
     
-    // <enum-case>
-    let enum_case : Parser<EnumCase> =
-        id
-        |>> EnumCase.Name
+        
+    let enum_cases : Parser<EnumCases list> =
+                
+        let names =
+            id
+            |> between(p '{', p '}', p ',')
+            |>> EnumCases.Names
+    
+        let anon =
+            choice [ p "_"; p "anon_enum"]
+            >>. spaces
+            >>. between('(', ')') expr
+            |>> EnumCases.Anon
+            
+        let call =
+            (ps id)
+            .>>. between('(', ')') expr
+            |>> EnumCases.Call
+            
+        [ names; anon; call ]
+        |> choice
+        |> sepBy(p "++")
+        
           
     // <enum-item>
     // TODO: complex constructors
     let enum_item : Parser<EnumItem> =
-        
-        let enum_cases =
-            enum_case
-            |> between(p '{', p '}', p ',')
             
         let enum_name =
             kw1 "enum" >>. id .>> spaces
+            
             
         pipe3
             enum_name
@@ -801,14 +808,14 @@ module Parsers =
     // <tuple-ti-expr-tail>
     let tuple_ti : Parser<TupleType> =
         kw "tuple"
-        >>. between1(p '(', p ')', p ',') ti_expr
+        >>. between(p '(', p ')', p ',', many=true) ti_expr
         |>> (fun fields -> {Fields=fields})
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
     let record_ti : Parser<RecordType> =
         kw "record"
-        >>. between1(p '(', p ')', p ',') ti_expr_and_id
+        >>. between(p '(', p ')', p ',', many=true) ti_expr_and_id
         |>> (fun fields -> {Fields=fields})
         <?!> "record-ti"
             

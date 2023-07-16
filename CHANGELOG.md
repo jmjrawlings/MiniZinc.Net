@@ -22,6 +22,7 @@ A big step forward.
 - Added support for the absent value `<>`
 - Added support for `annotations`
 - Added a `NamedTypeInst` to capture (Id, TypeInst, Annotations)
+- Added support for complex enum constructors
 
 ### Client
 - Added `Solve` and `SolveSync` methods on `MiniZincClient`
@@ -39,6 +40,8 @@ A big step forward.
 - Fixed a bug where `let-expr` that contained constraints would not parse properly
 - Fixed a bug where the parser would fail for `call-expr` with no arguments
 - Fixed a bug where the parser required `else` cases on `if-then-expr`
+- Fixed a bug where the parser would fail for empty `enum` declarations
+- Fixed some inconsistencies in the parser test suite
 
 
 ### Tests
