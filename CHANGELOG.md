@@ -1,21 +1,40 @@
 # Changelog
 
-## [0.5.0] -
+## [0.5.0] -  2023-07-16
 
-A big step forward.
+The major milestone of this release is (almost) full integration with the [libminizinc test suite](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec).
+
+As part of the [Build Project](./build/build.fsproj) we now do the following:
+- Clone libminizinc
+- Copy the test spec directory
+- Generate our own F# test cases for the Model/Parser
+- Generate our own F# test cases for the Client
+
+The functions responsible for generating the F# tests can be found here:
+- [ModelTests.fs](./build/ModelTests.fs)
+- [ClientTests.fs](./build/ClientTests.fs)
+
+The resulting integration tests are:
+- [MiniZinc.ModelTests/IntegrationTests.fs](./tests/MiniZinc.ModelTests/IntegrationTests.fs)
+- [MiniZinc.ClientTests/IntegrationTests.fs](./tests/MiniZinc.ClientTests/IntegrationTests.fs)
+
+We are **NOT** passing all of these tests yet.  The unit tests and examples test every strange dark corner and 
+murky edge case of MiniZinc syntax which is exactly what we want but is going to take some time to get
+100% coverage. 
+
+I'll be plugging away on failing tests with a goal of 100% compliance for the next minor release. 
+
 
 ### Model
 - Removed distinction between `Function` and `Predicate` items
 - Removed distinction between `Array` and `List` types
-- Removed `Ast.fs` 
-- Combine `Ast.fs` and `Model.fs`
 - Unified parsing into `Parse.fs`
 - Unified encoding into `Encode.fs`
-- `Encode.fs` and `Parse.fs` now use type and module extensions to augment the `Model` type
 - `let-exprs` now contain a `NameSpace`
 - Added `ArrayDim` union for array dimensions
 - Added the absent value `<>`
-- Added annotations for `ConstraintItems` 
+- Added annotations for `ConstraintItems`
+- Added `EnumCases` union to capture valid types
 
 ### Parser
 - Parser no longer accepts invalid array dimensions
@@ -42,23 +61,6 @@ A big step forward.
 - Fixed a bug where the parser required `else` cases on `if-then-expr`
 - Fixed a bug where the parser would fail for empty `enum` declarations
 - Fixed some inconsistencies in the parser test suite
-
-
-### Tests
-
-Then entire [libminizinc test suite](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec) is now parsed and included in the codebase as integration tests for both the Model and Client.
-
-The generating functions can be found [here](./build/ModelTests.fs) and [here](./build/ClientTests.fs).
-
-The resulting integration tests are:
-- [MiniZinc.ModelTests/IntegrationTests.fs](./tests/MiniZinc.ModelTests/IntegrationTests.fs)
-- [MiniZinc.ClientTests/IntegrationTests.fs](./tests/MiniZinc.ClientTests/IntegrationTests.fs)
-
-Other changes:
-- Refactored client tests to use a fixture
-- Client integration tests now actually solve the models
-- `ModelTypes` test
-- `ModelInterface` test 
 
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs
