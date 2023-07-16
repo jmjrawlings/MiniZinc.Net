@@ -13,6 +13,7 @@ be wrapped up and exposed through the `Model` class
 namespace MiniZinc
 
 open System.Diagnostics
+open System.IO
 
 [<AutoOpen>]
 module rec Ast =
@@ -290,9 +291,6 @@ module rec Ast =
         | BinaryOp    of NumExpr * IdOr<NumericBinaryOp> * NumExpr
         | ArrayAccess of NumExpr * ArrayAccess list
 
-    type IncludeItem =
-        | Include of string
-
     [<RequireQualifiedAccess>]
     type AnnotationItem =
         | Name of Id
@@ -364,6 +362,37 @@ module rec Ast =
        
     type SetLiteral =
         { Elements: Expr list }
+        
+    type IncludeItem =
+        { Name: string
+        ; File: FileInfo option
+        ; Integrated : bool }
+        
+        static member Create(file: FileInfo) =
+            match file.Exists with
+            | true ->
+                { Name = file.Name
+                ; File = Some file
+                ; Integrated = false }
+            | false ->
+                { Name = file.Name
+                ; File = None
+                ; Integrated = false }
+        
+        static member Create(file: string) =
+            IncludeItem.Create (FileInfo file)
+            
+        static member Create(dir: DirectoryInfo, name: string) =
+            let path = Path.Join(dir.FullName, name)
+            IncludeItem.Create(path)
+            
+    module IncludeItem =
+        let resolve (dir: DirectoryInfo) (item: IncludeItem) =
+            match item.File with
+            | Some fi when fi.Exists ->
+                item
+            | _ ->
+                IncludeItem.Create(dir, item.Name)
         
     [<RequireQualifiedAccess>]    
     type Item =

@@ -676,7 +676,7 @@ module Parsers =
             ; Parameters = pars
             ; Body = body })
     
-        
+    // <enum-case-list>    
     let enum_cases : Parser<EnumCases list> =
                 
         let names =
@@ -698,15 +698,12 @@ module Parsers =
         [ names; anon; call ]
         |> choice
         |> sepBy(p "++")
-        
           
     // <enum-item>
-    // TODO: complex constructors
     let enum_item : Parser<EnumItem> =
             
         let enum_name =
             kw1 "enum" >>. id .>> spaces
-            
             
         pipe3
             enum_name
@@ -721,7 +718,7 @@ module Parsers =
     let include_item : Parser<IncludeItem> =
         kw1 "include"
         >>. string_literal
-        |>> IncludeItem.Include
+        |>> IncludeItem.Create
     
     // <var-par>
     let var_par : Parser<Inst> =

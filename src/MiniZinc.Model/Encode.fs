@@ -581,9 +581,7 @@ module rec Encode =
             this.writeAnnotations x.Annotations
             
         member this.writeIncludeItem (x: IncludeItem) =
-            match x with
-            | IncludeItem.Include s ->
-                this.write $"include \"{s}\""
+            this.write $"include \"{x.Name}\""
             
         member this.writeOutputItem (x: OutputItem) =
             this.write "output "

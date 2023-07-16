@@ -228,7 +228,7 @@ module rec Model =
     type Model = 
         { Name        : string
         ; FilePath    : string option
-        ; Includes    : Map<string, IncludedModel>
+        ; Includes    : Map<string, IncludeItem>
         ; NameSpace   : NameSpace
         ; Constraints : ConstraintItem list
         ; Outputs     : OutputItem list
@@ -278,11 +278,11 @@ module rec Model =
             model
                     
         let fromAst (ast: Ast) : Model =
-            
+                        
             let fold (model:Model) (item: Item) =
                 match item with
-                | Item.Include (Include x) ->
-                    { model with Includes = Map.add x IncludedModel.Reference model.Includes }
+                | Item.Include x ->
+                    { model with Includes = model.Includes.Add (x.Name, x) }
                 | Item.Enum x ->
                     { model with NameSpace = model.NameSpace.Add x }
                 | Item.Synonym x ->
@@ -316,8 +316,7 @@ module rec Model =
             
             let enc = Encoder()
                                                 
-            for incl in model.Includes.Keys do
-                let item = IncludeItem.Include incl
+            for item in model.Includes.Values do
                 enc.writeIncludeItem item
                 enc.writetn()
 
@@ -364,24 +363,14 @@ module rec Model =
         model
         
     let parseModelFile (filepath: string) : Result<Model, ParseError> =
-        
+                
         if File.Exists filepath then
             let mzn = File.ReadAllText filepath
             let model = parseModelString mzn
             model
         else
             failwithf $"{filepath} does not exist"
-        
-    type IncludedModel =
-        
-        /// Reference only - load has not been attempted
-        | Reference
-        
-        /// Model was parsed and stored in isolation  
-        | Isolated of Model
-        
-        /// Model was parsed and integrated into the referencing model
-        | Integrated of Model
+       
         
     type Model with
 
