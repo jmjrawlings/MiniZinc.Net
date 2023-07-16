@@ -11,10 +11,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Prelude.fs" />
-    <Compile Include="Ast.fs" />
+    <Compile Include="Ast.fs" />    
     <Compile Include="Parse.fs" />    
     <Compile Include="Encode.fs" />    
-    <Compile Include="Model.fs" />    
+    <Compile Include="Model.fs" />
+    <Compile Include="Compile.fs" />    
+    <Compile Include="Include.fs" />    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="fparsec" Version="1.1.1" />

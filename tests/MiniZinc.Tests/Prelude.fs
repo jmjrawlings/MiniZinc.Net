@@ -1,8 +1,9 @@
 ﻿namespace MiniZinc.Tests
 
+open System
 open System.IO
+open System.Reflection
 open System.Runtime.CompilerServices
-
 
 [<AutoOpen>]
 module Prelude =
@@ -13,20 +14,47 @@ module Prelude =
         
     let (</>) a b =
         Path.Join(string a, string b)
+        |> FileInfo
     
     let (<//>) a b =
         Path.Join(string a, string b)
         |> DirectoryInfo
+        
+    let getProjectDir() =
+        let assembly =
+            Assembly.GetExecutingAssembly().Location
+            |> Path.GetFullPath
+            |> FileInfo
+            
+        let mutable sln = assembly.Directory </> "MiniZinc.Net.sln"
+                                      
+        while (not sln.Exists) do 
+            let dir = sln.Directory.Parent
+            sln <- dir </> sln.Name
+            
+        sln.Directory
+            
+    let project_dir =
+        getProjectDir()
+        
+    let tests_dir =
+        project_dir <//> "tests"
         
         
 [<Extension>]
 type Extensions() =
     
     [<Extension>]
+    static member AssertOk(result: Result<'ok, 'err>, msg: string) =
+        match result with
+        | Ok value -> value
+        | Error err -> failwith $"{msg}: Error was {err}"
+        
+    [<Extension>]
     static member AssertOk(result: Result<'ok, 'err>) =
         match result with
-        | Ok value -> ()
-        | Error err -> failwith $"Expected an ok value but got {err}"
+        | Ok value -> value
+        | Error err -> failwith $"{err}"
         
     [<Extension>]
     static member AssertErr(result: Result<'ok, 'err>) =
@@ -65,5 +93,7 @@ type Extensions() =
     
     [<Extension>]
     static member inline StringEquals(a, b: string) =
-        if (string a) <> b then
+        if String.Equals(string a, b, StringComparison.OrdinalIgnoreCase) then
+            ()
+        else
             failwithf $"{a} does not equal {b}"

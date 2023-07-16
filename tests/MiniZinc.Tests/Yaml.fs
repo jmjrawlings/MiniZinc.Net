@@ -19,7 +19,6 @@ open YamlDotNet.Serialization
 
 #nowarn "3391"
 
-[<AutoOpen>]
 module rec Yaml =
     
     type Yaml =
@@ -61,7 +60,11 @@ module rec Yaml =
             
         member this.Get key =
             Yaml.get key this
-
+            
+        member this.TryGet key =
+            match this.Get key with
+            | Yaml.Null -> None
+            | x -> Some x
     
     module Yaml =
         
@@ -175,21 +178,6 @@ module rec Yaml =
                     parser.MoveNext()
                     node
 
-
-        let deserializer =
-            DeserializerBuilder()
-                .WithTagMapping("!Test", typeof<obj>)
-                .WithTagMapping("!Result", typeof<obj>)
-                .WithTagMapping("!SolutionSet", typeof<obj>)
-                .WithTagMapping("!Solution", typeof<obj>)
-                .WithTagMapping("!Duration", typeof<obj>)
-                .WithTypeConverter(Parser())
-                .Build()
-                
-        let parse (input: string) =
-            let node = deserializer.Deserialize<Yaml>(input)
-            node
-
         let toList (yaml: Yaml) =
             match yaml with
             | Sequence xs -> xs
@@ -238,4 +226,25 @@ module rec Yaml =
                 map[key]
             | _ ->
                 Null
-    
+                
+        let rec toExpr yaml =
+            match yaml with
+            | Yaml.String s ->
+                Expr.String s
+            | Yaml.Sequence xs ->
+                match xs.Head with
+                | Yaml.Sequence _ ->
+                    xs
+                    |> List.choose (function
+                        | Yaml.Sequence x -> Some (List.map toExpr x)
+                        | _ -> None)
+                    |> Expr.Array2d
+                | _ ->
+                    xs
+                    |> List.map toExpr
+                    |> Expr.Array1d
+                
+            | Yaml.Int i ->
+                Expr.Int i
+            | _ ->
+                notImpl "xd"

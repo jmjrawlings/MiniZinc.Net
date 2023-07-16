@@ -1,5 +1,67 @@
 # Changelog
 
+## [0.5.0] -  2023-07-16
+
+The major milestone of this release is (almost) full integration with the [libminizinc test suite](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec).
+
+As part of the [Build Project](./build/build.fsproj) we now do the following:
+- Clone libminizinc
+- Copy the test spec directory
+- Generate our own F# test cases for the Model/Parser
+- Generate our own F# test cases for the Client
+
+The functions responsible for generating the F# tests can be found here:
+- [ModelTests.fs](./build/ModelTests.fs)
+- [ClientTests.fs](./build/ClientTests.fs)
+
+The resulting integration tests are:
+- [MiniZinc.ModelTests/IntegrationTests.fs](./tests/MiniZinc.ModelTests/IntegrationTests.fs)
+- [MiniZinc.ClientTests/IntegrationTests.fs](./tests/MiniZinc.ClientTests/IntegrationTests.fs)
+
+We are **NOT** passing all of these tests yet.  The unit tests and examples test every strange dark corner and 
+murky edge case of MiniZinc syntax which is exactly what we want but is going to take some time to get
+100% coverage. 
+
+I'll be plugging away on failing tests with a goal of 100% compliance for the next minor release. 
+
+
+### Model
+- Removed distinction between `Function` and `Predicate` items
+- Removed distinction between `Array` and `List` types
+- Unified parsing into `Parse.fs`
+- Unified encoding into `Encode.fs`
+- `let-exprs` now contain a `NameSpace`
+- Added `ArrayDim` union for array dimensions
+- Added the absent value `<>`
+- Added annotations for `ConstraintItems`
+- Added `EnumCases` union to capture valid types
+
+### Parser
+- Parser no longer accepts invalid array dimensions
+- Added support for the absent value `<>`
+- Added support for `annotations`
+- Added a `NamedTypeInst` to capture (Id, TypeInst, Annotations)
+- Added support for complex enum constructors
+
+### Client
+- Added `Solve` and `SolveSync` methods on `MiniZincClient`
+- Renamed `Command.Exec` to `Run` and `RunSync`
+- Added support for `--model-interface-only` which returns a `ModelInterface`
+- Added support for `--model-types-only` which returns a `ModelTypes`
+- Split `Client.fs` out into several other files such that each one extends the client in a contained manner
+  - `ModelInterface.fs`
+  - `ModelTypes.fs`
+  - `Solve.fs`
+- Added `SolveOptions` to capture command line flags
+- Added a `compile` step between the model and the solver
+
+### Bugfixes
+- Fixed a bug where `let-expr` that contained constraints would not parse properly
+- Fixed a bug where the parser would fail for `call-expr` with no arguments
+- Fixed a bug where the parser required `else` cases on `if-then-expr`
+- Fixed a bug where the parser would fail for empty `enum` declarations
+- Fixed some inconsistencies in the parser test suite
+
 ## [0.4.2] - 2023-06-18
 - Fixed multiple encoding bugs
 - Simplified some `Parser` types

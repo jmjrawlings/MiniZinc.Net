@@ -16,38 +16,26 @@ open System.Text.RegularExpressions
 
 
 module rec Command =
+        
+    type CommandStatus =
+        | Started = 0
+        | StdOut = 1
+        | StdErr = 2
+        | Success = 3
+        | Failure = 4
                     
     [<Struct>]
-    type StartMessage =
-        { ProcessId : int 
-        ; TimeStamp : DateTimeOffset }
-        
-    [<Struct>]
-    type ExitMessage =
-        { ExitCode  : int
-        ; IsError   : bool
-        ; TimeStamp : DateTimeOffset }
-        
-    [<Struct>]
-    type OutputMessage =
-        { Text: string 
-        ; TimeStamp : DateTimeOffset }
-        
-        static member create text =
-            { Text = text
-            ; TimeStamp = DateTimeOffset.Now }
-            
-    [<Struct>]
     type CommandMessage =
-        | Started of start:StartMessage
-        | Output  of output:OutputMessage
-        | Error   of error:OutputMessage
-        | Exited  of exit:ExitMessage
+        { Command   : string
+        ; ProcessId : int
+        ; StartTime : DateTimeOffset
+        ; TimeStamp : DateTimeOffset
+        ; Elapsed   : TimeSpan
+        ; Message   : string
+        ; Status    : CommandStatus }
         
     type CommandResult =
         { Command   : string
-        ; Args      : string list
-        ; Statement : string
         ; StartTime : DateTimeOffset
         ; EndTime   : DateTimeOffset
         ; Duration  : TimeSpan
@@ -115,7 +103,9 @@ module rec Command =
             else
                 value <- input
             
-            let value_match = value_regex.Match <| value.Trim()
+            let value_match =
+                value_regex.Match <| value.Trim()
+                
             if value_match.Success then
                 let quoted = value_match.Groups[1].Value
                 let unquoted = value_match.Groups[2].Value
@@ -255,31 +245,41 @@ module rec Command =
         member this.Statement =
             Command.statement this
             
-        member this.Exec() =
-            Command.exec this
+        /// Run this command            
+        member this.Run() =
+            Command.run this
             
-        member this.ExecSync() =
-            Command.execSync this
-            
+        /// Run this command and wait for it to complete            
+        member this.RunSync() =
+            Command.runSync this
+
+        /// Run this command and yield back messages are they are produced                        
         member this.Stream() =
             Command.stream this
-            
+
+        /// Create a command from the given args            
         static member Create([<ParamArray>] args: obj[]) =
             args
             |> Seq.map string
             |> Args.parseMany
             |> Command.ofArgs
 
-    module CommandResult =
+            
+    module Command =
+
         let stdout (result: CommandResult) =
             result.StdOut
         
         let stderr (result: CommandResult) =
             result.StdErr
-
+                
+        let map f (result: CommandResult) =
+            match result.ExitCode with
+            | 0 ->
+                Result.Ok (f result)
+            | _ ->
+                Result.Error result.StdErr
             
-    module Command =
-    
         let empty =
             { Exe = ""; Args = Args.empty; }
             
@@ -331,46 +331,56 @@ module rec Command =
             let channel =
                 Channel.CreateUnbounded<CommandMessage>()
                 
-            let handleData messageType (args: DataReceivedEventArgs) =
+            let mutable startMessage =
+                Unchecked.defaultof<CommandMessage>
+                
+            let handleData status (args: DataReceivedEventArgs) =
                 match args.Data with
                 | null ->
                     ()
                 | text ->
                     let message =
-                        OutputMessage.create(text)
-                    do
-                        message
-                        |> messageType
-                        |> channel.Writer.TryWrite 
+                        { startMessage with
+                            Message = text
+                            Status = status
+                            TimeStamp = DateTimeOffset.Now
+                            Elapsed = DateTimeOffset.Now - startMessage.StartTime }
+
+                    channel.Writer.TryWrite message
+                    |> ignore
                     
             let handleExit _ =
                 let message =
-                    CommandMessage.Exited {
-                        ExitCode = proc.ExitCode
-                        IsError = proc.ExitCode > 0
-                        TimeStamp = DateTimeOffset.Now  
-                    }
+                    { startMessage with
+                        Status = if proc.ExitCode > 0 then CommandStatus.Success else CommandStatus.Failure
+                        TimeStamp = DateTimeOffset.Now
+                        Elapsed = DateTimeOffset.Now - startMessage.StartTime }
+                    
                 proc.Dispose()
                 channel.Writer.TryWrite message
                 channel.Writer.Complete()
 
-            proc.OutputDataReceived.Add (handleData CommandMessage.Output)
-            proc.ErrorDataReceived.Add (handleData CommandMessage.Error)
+            proc.OutputDataReceived.Add (handleData CommandStatus.StdOut)
+            proc.ErrorDataReceived.Add (handleData CommandStatus.StdErr)
             proc.Exited.Add handleExit
             proc.Start()
-    
-            { ProcessId = proc.Id
-            ; TimeStamp = DateTimeOffset.Now }
-            |> CommandMessage.Started
-            |> channel.Writer.TryWrite
             
+            startMessage <-
+                { Command = cmd.Statement
+                ; ProcessId = proc.Id
+                ; Message = ""
+                ; Status = CommandStatus.Started
+                ; StartTime = DateTimeOffset.Now 
+                ; TimeStamp = DateTimeOffset.Now
+                ; Elapsed = TimeSpan.Zero }
+            
+            channel.Writer.TryWrite startMessage
             proc.BeginOutputReadLine()
             proc.BeginErrorReadLine()
-            channel.Reader.ReadAllAsync()
-        
+            channel.Reader.ReadAllAsync()        
                     
         /// Execute the given Command 
-        let exec (cmd: Command) =
+        let run (cmd: Command) =
             let proc = toProcess cmd
             let statement = Command.statement cmd
             let stdout = StringBuilder()
@@ -378,8 +388,11 @@ module rec Command =
             let complete = TaskCompletionSource<bool>()
             
             let handleData (builder: StringBuilder) (args: DataReceivedEventArgs) =
-                if args.Data <> null then
-                    do builder.Append args.Data
+                match args.Data with
+                | null ->
+                    ()
+                | msg ->
+                    ignore (builder.Append msg)
             
             proc.OutputDataReceived.Add (handleData stdout)
             proc.ErrorDataReceived.Add (handleData stderr)
@@ -394,11 +407,9 @@ module rec Command =
                         
                 let! _ = complete.Task
                 let end_time = DateTimeOffset.Now
-                
+                                
                 let result =
-                    { Command = proc.StartInfo.FileName
-                    ; Args = Seq.toList proc.StartInfo.ArgumentList
-                    ; Statement = statement 
+                    { Command = cmd.Statement
                     ; StartTime = start_time
                     ; EndTime = end_time
                     ; Duration = end_time - start_time
@@ -411,16 +422,19 @@ module rec Command =
                 return result
             }
             
-        /// Execute the given Command synchronously 
-        let execSync (cmd: Command) =
+        /// Execute the given Command and wait for the result 
+        let runSync (cmd: Command) =
             use proc = toProcess cmd
             let statement = Command.statement cmd
             let stdout = StringBuilder()
             let stderr = StringBuilder()
                         
             let handleData (builder: StringBuilder) (args: DataReceivedEventArgs) =
-                if args.Data <> null then
-                    do builder.Append args.Data
+                match args.Data with
+                | null ->
+                    ()
+                | msg ->
+                    ignore (builder.Append msg)
             
             proc.OutputDataReceived.Add (handleData stdout)
             proc.ErrorDataReceived.Add (handleData stderr)
@@ -435,9 +449,7 @@ module rec Command =
             let end_time = DateTimeOffset.Now
             
             let result =
-                { Command = proc.StartInfo.FileName
-                ; Args = Seq.toList proc.StartInfo.ArgumentList
-                ; Statement = statement 
+                { Command = statement 
                 ; StartTime = start_time
                 ; EndTime = end_time
                 ; Duration = end_time - start_time
@@ -446,4 +458,4 @@ module rec Command =
                 ; StdOut = string stdout
                 ; StdErr = string stderr }
             
-            result   
+            result

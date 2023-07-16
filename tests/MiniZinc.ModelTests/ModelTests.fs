@@ -1,10 +1,17 @@
-﻿namespace MiniZinc.Model.Tests
+﻿(*
+
+ModelTests.fs
+
+Tests regarding the creation and manipulation of
+Model objects.
+
+*)
+
+namespace MiniZinc.Tests
 
 open MiniZinc
 open MiniZinc.Tests
 open Xunit
-open System.IO
-open System
 
 module ``Model Tests`` =
     
@@ -59,7 +66,7 @@ module ``Model Tests`` =
         
         let bindings =
             NameSpace.empty
-            |> NameSpace.add "x" (Binding.Declare {Name="x"; Annotations = []; Type=ti; Expr=None})
+            |> NameSpace.add "x" (Binding.Variable {Name="x"; Annotations = []; TypeInst=ti; Expr=None})
             |> NameSpace.add "x" (Binding.Expr expr)
             |> NameSpace.bindings
             
@@ -68,7 +75,7 @@ module ``Model Tests`` =
             |> Map.find "x"
             
         match binding with
-        | Binding.Declare {Type=ti_; Expr = Some expr_} ->
+        | Binding.Variable {TypeInst=ti_; Expr = Some expr_} ->
             ti_ ?= ti
             expr_ ?= expr
         | _ ->
@@ -81,7 +88,7 @@ module ``Model Tests`` =
         let model =
             Model.ParseString arg
             
-        assert model.Model.NameSpace.Undeclared.IsEmpty
+        assert model.Get().NameSpace.Undeclared.IsEmpty
         
     [<Theory>]
     [<InlineData("var int: x;x=100;")>]
@@ -90,5 +97,5 @@ module ``Model Tests`` =
         let model =
             Model.ParseString arg
         
-        assert model.Model.NameSpace.Undeclared.IsEmpty
+        assert model.Get().NameSpace.Undeclared.IsEmpty
                                         
