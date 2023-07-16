@@ -592,6 +592,7 @@ module rec Encode =
         member this.writeSolveMethod (x: SolveItem) =
             this.write "solve"
             this.writeAnnotations x.Annotations
+            this.write " "
             match x with
             | Sat _ ->
                 this.write "satisfy"
