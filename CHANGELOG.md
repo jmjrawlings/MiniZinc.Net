@@ -4,13 +4,13 @@
 
 ## Parser
 - Added support for Tuple and Record literals
-
+- Added support for tuple and record field access
 
 ## Client
 - Changed `ILogger` to `ILogger<T>`
 - Added basic logging of compile
 - Changed `CommandResult` and `Arg` to structs
-
+ 
 
 ## [0.5.0] -  2023-07-16
 
