@@ -25,7 +25,7 @@ module rec Ast =
         ; Index   : int64
         ; Trace   : string }
    
-    type Id = string
+    type Ident = string
     
     type Comment = string
     
@@ -171,11 +171,13 @@ module rec Ast =
         | Float         of float
         | Bool          of bool
         | String        of string
-        | Id            of string
+        | Ident         of string
         | Op            of Op
         | Bracketed     of Expr
         | Set           of SetLiteral
         | SetComp       of SetCompExpr
+        | RecordAccess  of RecordAccess
+        | TupleAccess   of TupleAccess
         | Array1d       of Array1dExpr
         | Array1dIndex
         | Array2d       of Array2dExpr
@@ -202,10 +204,16 @@ module rec Ast =
         | Index of Expr * ArrayAccess list
         
     type ArrayAccess =
-        | Access of Expr list
+        Expr list
+
+    type RecordAccess =
+        Ident * string
+        
+    type TupleAccess =
+        Ident * uint8
 
     type Annotation =
-        { Name: Id; Args: Expr list }
+        { Name: Ident; Args: Expr list }
                 
     type Annotations =
         Annotation list
@@ -242,7 +250,7 @@ module rec Ast =
         Expr list
         
     type RecordExpr =
-        (Id * Expr) list
+        (Ident * Expr) list
         
     type SolveItem =
         | Sat of Annotations
@@ -281,10 +289,12 @@ module rec Ast =
     type NumExpr =
         | Int         of int
         | Float       of float
-        | Id          of Id
+        | Id          of Ident
         | Op          of Op
         | Bracketed   of NumExpr
         | Call        of CallExpr
+        | RecordAccess of RecordAccess
+        | TupleAccess of TupleAccess
         | IfThenElse  of IfThenElseExpr
         | Let         of LetExpr
         | UnaryOp     of IdOr<NumericUnaryOp> * NumExpr
@@ -293,11 +303,11 @@ module rec Ast =
 
     [<RequireQualifiedAccess>]
     type AnnotationItem =
-        | Name of Id
-        | Call of Id * Parameters
+        | Name of Ident
+        | Call of Ident * Parameters
     
     type EnumItem =
-        { Name : Id
+        { Name : Ident
         ; Annotations : Annotations
         ; Cases : EnumCases list }
         
@@ -306,9 +316,9 @@ module rec Ast =
         
     [<RequireQualifiedAccess>]        
     type EnumCases =
-        | Names of Id list
+        | Names of Ident list
         | Anon of Expr
-        | Call of Id * Expr
+        | Call of Ident * Expr
         
     type TypeInst =
         { Type  : Type
@@ -335,7 +345,7 @@ module rec Ast =
         | String
         | Float
         | Ann
-        | Id     of Id
+        | Id     of Ident
         | Set    of Expr // TODO confirm with MiniZinc team
         | Tuple  of TupleType
         | Record of RecordType
@@ -353,7 +363,7 @@ module rec Ast =
     [<RequireQualifiedAccess>]
     type ArrayDim =
         | Int
-        | Id of Id
+        | Id of Ident
         | Set of Expr
         
     type ArrayType =
@@ -423,7 +433,7 @@ module rec Ast =
         Expr
       
     type NamedArg =
-        Id * Expr
+        Ident * Expr
 
     type NamedArgs =
         NamedArg list
