@@ -348,7 +348,6 @@ module rec Model =
                 
             enc.String
 
-
                             
     let parseModelString (mzn: string) : Result<Model, ParseError> =
                                     
@@ -357,7 +356,7 @@ module rec Model =
         
         let model =
             source
-            |> parseString Parsers.model
+            |> parseWith Parsers.ast
             |> Result.map Model.fromAst
             
         model
