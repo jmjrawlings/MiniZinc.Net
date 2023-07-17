@@ -1085,6 +1085,20 @@ module Parsers =
                 | Some (op, right) ->
                     NumExpr.BinaryOp (head, op, right)
             )
+            
+    // <tuple-literal>
+    let tuple_literal : Parser<TupleExpr> =
+        expr
+        |> between(p '(', p ')', p ',', many=true, allowTrailing=true)
+        |> attempt
+        <?!> "tuple-lit"
+          
+    // <record-literal>
+    let record_literal : Parser<RecordExpr> =
+        (id  .>> sps ':' .>>. expr)
+        |> between(p '(', p ')', p ',', many=true, allowTrailing=true)
+        |> attempt
+        <?!> "record-lit"
         
     // <expr-atom-head>    
     let expr_atom_head=
@@ -1095,13 +1109,15 @@ module Parsers =
           string_literal  |>> Expr.String
           wildcard        |>> Expr.WildCard
           absent          |>> Expr.Absent
+          record_literal  |>> Expr.Record
+          tuple_literal   |>> Expr.Tuple
           bracketed expr  |>> Expr.Bracketed
           let_expr        |>> Expr.Let
           if_else_expr    |>> Expr.IfThenElse
           gen_call_expr   |>> Expr.GenCall
           call_expr       |>> Expr.Call
           array_comp      |>> Expr.ArrayComp
-          set_comp        |>> Expr.SetComp
+          set_comp        |>> Expr.SetComp          
           array2d_literal |>> Expr.Array2d
           array1d_literal |>> Expr.Array1d
           set_literal     |>> Expr.Set
@@ -1217,7 +1233,7 @@ module Parsers =
         ; block_comment   |>> Item.Comment ]
         |> choice
                       
-    let model : Parser<Ast> =
+    let ast : Parser<Ast> =
         spaces
         >>. sepEndBy1 item (sps ';')
         .>> eof
@@ -1229,7 +1245,7 @@ module Parsers =
    
 
 [<AutoOpen>]       
-module rec Parse =
+module Parse =
     
     open System.Text.RegularExpressions
     
@@ -1267,8 +1283,8 @@ module rec Parse =
         let comments = Seq.toList comments
         output, comments
         
-    // Parse the given string with the given parser
-    let parseString (parser: Parser<'t>) (input: string) : Result<'t, ParseError> =
+    // Parse a string with the given parser
+    let parseWith (parser: Parser<'t>) (input: string) : Result<'t, ParseError> =
         
         let state = ParserState()
                 
@@ -1287,26 +1303,20 @@ module rec Parse =
                 ; Trace = state.Message }
                 
             Result.Error err
-            
-    let parseDataString (dzn: string) : Result<Map<string, Expr>, ParseError> =
+    
+    /// Parse '.dzn' style model data from a string        
+    let parseDataString (dzn: string) : Result<AssignItem list, ParseError> =
                             
         let source, comments =
             parseComments dzn
             
-        match parseString Parsers.data source with
-        
-        | Result.Ok assigns ->
-            let map =
-                assigns
-                |> Map.ofSeq
-            Result.Ok map
+        let result =
+            parseWith Parsers.data source
             
-        | Result.Error err ->
-            Result.Error err
+        result            
             
-    let parseDataFile (filepath: string) =
-        let mzn = File.ReadAllText filepath
-        let data = parseDataString mzn
+    /// Parse a '.dzn' model data file            
+    let parseDataFile (filepath: string) : Result<AssignItem list, ParseError> =
+        let dzn = File.ReadAllText filepath
+        let data = parseDataString dzn
         data
-    
-

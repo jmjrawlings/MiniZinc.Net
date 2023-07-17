@@ -239,10 +239,10 @@ module rec Ast =
         Expr list list
 
     type TupleExpr =
-        | TupleExpr of Expr list
+        Expr list
         
     type RecordExpr =
-        | RecordExpr of (Id * Expr) list
+        (Id * Expr) list
         
     type SolveItem =
         | Sat of Annotations

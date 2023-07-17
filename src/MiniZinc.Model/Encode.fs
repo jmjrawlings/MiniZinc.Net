@@ -347,17 +347,17 @@ module rec Encode =
             this.writeGenerators x.From
             this.write ']'
             
-        member this.writeTuple (TupleExpr.TupleExpr exprs) =
-            this.writeArgs exprs
+        member this.writeTuple (tuple: TupleExpr) =
+            this.writeArgs tuple
             
         member this.writeRecordField (id: Id, expr: Expr) =
             this.write id
             this.write ": "
             this.writeExpr expr
             
-        member this.writeRecord (RecordExpr.RecordExpr fields) =
+        member this.writeRecord (record: RecordExpr) =
             this.write "("
-            this.writeSep(", ", fields, this.writeRecordField)
+            this.writeSep(", ", record, this.writeRecordField)
             this.write ")"
 
         member this.writeUnaryOp ((id, expr): UnaryOpExpr) =
