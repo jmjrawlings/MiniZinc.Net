@@ -3,6 +3,7 @@
 open MiniZinc
 open Xunit
 open FSharp.Control
+open System.IO
 
 type ``Client Tests``(fixture: ClientFixture) =
     
@@ -88,3 +89,19 @@ type ``Client Tests``(fixture: ClientFixture) =
         sol.Outputs.Count.AssertEquals(0)
         
     interface IClassFixture<ClientFixture>
+    
+    [<Fact>]
+    member this.``test included model`` () =
+         
+         let tempPath = Path.GetTempFileName()
+         let tempFile = FileInfo tempPath
+         File.WriteAllText(tempPath, "int: a = 10;")
+         
+         let mzn = $"""
+         include "{tempFile.Name}";
+         var int: b;
+         constraint b < a;"""
+         let model = Model.ParseString(mzn).Get()
+         let result = client.SolveSync(model)
+         result.IsError.AssertEquals(false)
+         
