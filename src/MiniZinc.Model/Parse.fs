@@ -348,14 +348,14 @@ module Parsers =
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
        
-    let simple_id : Parser<Id> = 
+    let simple_id : Parser<Ident> = 
         regex "_?[A-Za-z][A-Za-z0-9_]*"
 
-    let quoted_id : Parser<Id> =
+    let quoted_id : Parser<Ident> =
         regex "'[^'\x0A\x0D\x00]+'"
         
     // <ident>
-    let id : Parser<Id> =
+    let ident : Parser<Ident> =
         regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
         <?!> "identifier"
 
@@ -410,7 +410,8 @@ module Parsers =
     let name_or_quoted_value (p: Parser<'T>) : Parser<IdOr<'T>> =
         
         let name =
-            id |>> IdOr.Id
+            ident
+            |>> IdOr.Id
         
         let value =
             p
@@ -434,7 +435,8 @@ module Parsers =
         
     // <float-literal>        
     let float_literal : Parser<float> =
-        regex "[0-9]+\.[0-9]+"
+        """[0-9]+"."[0-9]+|[0-9]+"."[0-9]+[Ee][-+]?[0-9]+|[0-9]+[Ee][-+]?[0-9]+|0[xX]([0-9a-fA-F]*"."[0-9a-fA-F]+|[0-9a-fA-F]+".")([pP][+-]?[0-9]+)|(0[xX][0-9a-fA-F]+[pP][+-]?[0-9]+)"""
+        |> regex 
         |>> float
         
     // <string-literal>
@@ -545,7 +547,7 @@ module Parsers =
         createParserForwardedToRef<Annotation, ParserState>()
                 
     let bracketed x =
-        between('(', ')' , ws=true) x
+        between('(', ')') x
 
     let op p =
         value_or_quoted_name p
@@ -612,7 +614,7 @@ module Parsers =
     let ti_expr_and_id : Parser<NamedTypeInst> =
         pipe3
             (ti_expr .>> sps ':')
-            (id .>> spaces)
+            (ident .>> spaces)
             annotations
             (fun ti name anns ->
                 { TypeInst = ti
@@ -631,7 +633,7 @@ module Parsers =
     // eg: even(var int: x) = x mod 2 = 0;
     let operation_item_tail =
         tuple4
-            (ps id)
+            (ps ident)
             (ps parameters)
             (ps annotations)
             (opt (ps "=" >>. expr))
@@ -680,7 +682,7 @@ module Parsers =
     let enum_cases : Parser<EnumCases list> =
                 
         let names =
-            id
+            ident
             |> between(p '{', p '}', p ',')
             |>> EnumCases.Names
     
@@ -691,7 +693,7 @@ module Parsers =
             |>> EnumCases.Anon
             
         let call =
-            (ps id)
+            (ps ident)
             .>>. between('(', ')') expr
             |>> EnumCases.Call
             
@@ -703,7 +705,7 @@ module Parsers =
     let enum_item : Parser<EnumItem> =
             
         let enum_name =
-            kw1 "enum" >>. id .>> spaces
+            kw1 "enum" >>. ident .>> spaces
             
         pipe3
             enum_name
@@ -826,7 +828,7 @@ module Parsers =
         ; record_ti   |>> Type.Record
         ; tuple_ti    |>> Type.Tuple
         ; expr        |>> Type.Set 
-        ; id          |>> Type.Id ]
+        ; ident          |>> Type.Id ]
         |> choice
         <?!> "base-ti-tail"
     
@@ -865,7 +867,7 @@ module Parsers =
         let var =
             (wildcard |>> IdOr.Val)
             <|>
-            (id |>> IdOr.Id)
+            (ident |>> IdOr.Id)
             <?!> "gen-var"
         let vars =
             var
@@ -945,7 +947,7 @@ module Parsers =
     let annotation_item : Parser<AnnotationItem>=
         pipe3
           (kw1 "annotation")
-          (ps id)
+          (ps ident)
           (opt parameters)
           (fun _ id ->
             function
@@ -1023,21 +1025,29 @@ module Parsers =
         .>> spaces
         .>>. num_expr_atom
         
-    let quoted_op =
+    let quoted_op : Parser<Op> =
         builtin_op
         |> between(''', ''')
         |> attempt
     
-    // <array-acces-tail>
+    // <array-access-tail>
     let array_access : Parser<ArrayAccess> =
         expr
         |> between(p '[', p ']', p ',', many=true)
-        |>> ArrayAccess.Access
         <?!> "array-access"
+        
+    let field_access ifTuple ifItem =
+        ident
+        .>> sps '.'
+        >>= (fun id ->
+            (puint8 |>> fun item -> ifTuple (id, item))
+            <|>
+            (ident |>> fun field -> ifItem (id, field)))
+        <?!> "item-access"
         
     // <expr-atom-tail>        
     let expr_atom_tail =
-        many (array_access .>> spaces)
+        many (ps array_access)
 
     // <num-expr-atom-head>    
     let num_expr_atom_head=
@@ -1046,18 +1056,20 @@ module Parsers =
           bracketed num_expr |>> NumExpr.Bracketed
           let_expr           |>> NumExpr.Let
           if_else_expr       |>> NumExpr.IfThenElse
+          field_access           NumExpr.TupleAccess
+                                 NumExpr.RecordAccess
           call_expr          |>> NumExpr.Call
           num_un_op          |>> NumExpr.UnaryOp
           quoted_op          |>> NumExpr.Op 
-          id                 |>> NumExpr.Id
+          ident              |>> NumExpr.Id
           ]
         |> choice
         
     // <num-expr-atom>        
     num_expr_atom_ref.contents <-
         pipe2
-            num_expr_atom_head
-            (sp expr_atom_tail)
+            (num_expr_atom_head .>> spaces)
+            expr_atom_tail
             (fun head access ->
                 match access with
                 | [] ->
@@ -1070,14 +1082,17 @@ module Parsers =
         
     // <num-expr-binop-tail>
     let num_expr_binop_tail =        
-        sps (op builtin_num_bin_op)
+        (op builtin_num_bin_op)
+        .>> spaces
         .>>. num_expr
-
+        |> attempt
+        |> opt
+       
     // <num-expr>
     num_expr_ref.contents <-
         pipe2
             num_expr_atom
-            (opt <| attempt num_expr_binop_tail)
+            num_expr_binop_tail
             (fun head tail ->
                 match tail with
                 | None ->
@@ -1096,7 +1111,7 @@ module Parsers =
           
     // <record-literal>
     let record_literal : Parser<RecordExpr> =
-        (id  .>> sps ':' .>>. expr)
+        (ident  .>> sps ':' .>>. expr)
         |> between(p '(', p ')', p ',', many=true, allowTrailing=true)
         |> attempt
         <?!> "record-lit"
@@ -1116,6 +1131,8 @@ module Parsers =
           let_expr        |>> Expr.Let
           if_else_expr    |>> Expr.IfThenElse
           gen_call_expr   |>> Expr.GenCall
+          field_access        Expr.TupleAccess
+                              Expr.RecordAccess
           call_expr       |>> Expr.Call
           array_comp      |>> Expr.ArrayComp
           set_comp        |>> Expr.SetComp          
@@ -1124,14 +1141,14 @@ module Parsers =
           set_literal     |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           quoted_op       |>> Expr.Op
-          id              |>> Expr.Id
+          ident           |>> Expr.Ident
           ]
         |> choice
             
     // <annotations>
     annotation_ref.contents <-
         pipe2
-            ( p "::" >>. spaces >>. id .>> spaces)
+            ( ps "::" >>. ident .>> spaces)
             (opt_or [] arguments)
             (fun name args ->
                 { Name = name; Args = args })
@@ -1195,14 +1212,14 @@ module Parsers =
     // <assign-item>
     let assign_item : Parser<AssignItem> =
         tuple2
-            (attempt (id .>> sps '='))
+            (attempt (ident .>> sps '='))
             expr
         
     // <type-inst-syn-item>
     let alias_item : Parser<TypeAlias> =
         pipe5
             (kw1 "type")
-            (ps id)
+            (ps ident)
             (ps annotations)
             (ps "=")
             ti_expr

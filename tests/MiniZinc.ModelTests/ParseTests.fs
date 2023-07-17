@@ -67,7 +67,7 @@ module ``Parser Tests`` =
     [<InlineData("aN4m3w1thnumb3r5")>]
     [<InlineData("'A name with Quotes'")>]
     let ``test identifier`` arg =
-        testRoundtrip Parsers.id arg (fun enc -> enc.write)
+        testRoundtrip Parsers.ident arg (fun enc -> enc.write)
         
     [<Theory>]
     [<InlineData("int")>]
@@ -294,3 +294,12 @@ module ``Parser Tests`` =
             Parsers.var_decl_item
             """tuple(1..3): x = (4,)"""
             (fun enc -> enc.writeDeclare)
+
+    [<Theory>]
+    [<InlineData("x.1")>]
+    [<InlineData("x.b")>]
+    let ``test item access`` mzn =
+        testRoundtrip
+            Parsers.expr
+            mzn
+            (fun enc -> enc.writeExpr)

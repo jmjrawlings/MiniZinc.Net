@@ -76,6 +76,9 @@ module rec Encode =
         member this.write (s: string) =
             ignore (builder.Append s)
             
+        member this.write (i: int) =
+            ignore (builder.Append i)
+            
         member this.writen (s: string) =
             ignore (builder.AppendLine s)
 
@@ -297,6 +300,12 @@ module rec Encode =
                 this.writeNumExpr expr
                 for acc in access do
                     this.writeArrayAccess acc
+                    
+            | NumExpr.RecordAccess x ->
+                this.writeRecordAccess x
+                
+            | NumExpr.TupleAccess x ->
+                this.writeTupleAccess x
         
         member this.writeString (s: string) =
             this.write $"\"{s}\""
@@ -350,7 +359,7 @@ module rec Encode =
         member this.writeTuple (tuple: TupleExpr) =
             this.writeArgs tuple
             
-        member this.writeRecordField (id: Id, expr: Expr) =
+        member this.writeRecordField (id: Ident, expr: Expr) =
             this.write id
             this.write ": "
             this.writeExpr expr
@@ -366,6 +375,17 @@ module rec Encode =
             | IdOr.Val x -> this.writeOp x
             this.write " "
             this.writeExpr expr
+            
+        member this.writeRecordAccess ((id, field): RecordAccess) =
+            this.write id
+            this.write '.'
+            this.write field
+            
+        member this.writeTupleAccess ((id, item): TupleAccess) =
+            this.write id
+            this.write '.'
+            builder.Append item
+            ()
             
         member this.writeBinaryOp ((left, op, right): BinaryOpExpr) =
             this.writeExpr left
@@ -436,7 +456,7 @@ module rec Encode =
              | None ->
                  ()
         
-        member this.writeArrayAccess (ArrayAccess.Access exprs) =
+        member this.writeArrayAccess (exprs: ArrayAccess) =
             this.write '['
             this.writeExprs exprs
             this.write ']'
@@ -460,7 +480,7 @@ module rec Encode =
                 this.writeBool x
             | Expr.String x ->
                 this.writeString x
-            | Expr.Id x ->
+            | Expr.Ident x ->
                 this.write x
             | Expr.Op x ->
                 this.writeOp x
@@ -488,6 +508,10 @@ module rec Encode =
                 this.writeTuple x
             | Expr.Record x ->
                 this.writeRecord x
+            | Expr.RecordAccess x ->
+                this.writeRecordAccess x
+            | Expr.TupleAccess x ->
+                this.writeTupleAccess x                
             | Expr.UnaryOp x ->
                 this.writeUnaryOp x
             | Expr.BinaryOp x ->
@@ -502,8 +526,6 @@ module rec Encode =
                 this.writeGenCall x 
             | Expr.Indexed x ->
                 this.writeIndexExpr x
-                    
-                             
             
         member this.writeDeclare (decl: DeclareItem) =
             this.writeTypeInst decl.TypeInst
