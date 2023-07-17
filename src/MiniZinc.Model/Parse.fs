@@ -1087,6 +1087,7 @@ module Parsers =
             )
             
     // <tuple-literal>
+    // TODO - Required trailing comma if tuple is 1 element
     let tuple_literal : Parser<TupleExpr> =
         expr
         |> between(p '(', p ')', p ',', many=true, allowTrailing=true)

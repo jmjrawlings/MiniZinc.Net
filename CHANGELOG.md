@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.1] - UNRELEASED
+
+## Parser
+- Added support for Tuple and Record literals
+
+
+## Client
+- Changed `ILogger` to `ILogger<T>`
+- Added basic logging of compile
+- Changed `CommandResult` and `Arg` to structs
+
+
 ## [0.5.0] -  2023-07-16
 
 The major milestone of this release is (almost) full integration with the [libminizinc test suite](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec).
