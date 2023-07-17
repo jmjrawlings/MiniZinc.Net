@@ -34,6 +34,7 @@ module rec Command =
         ; Message   : string
         ; Status    : CommandStatus }
         
+    [<Struct>]        
     type CommandResult =
         { Command   : string
         ; StartTime : DateTimeOffset
@@ -48,17 +49,11 @@ module rec Command =
     type FlagType = | Short | Long | None
     
     /// A command line argument
+    [<Struct>]
     type Arg =
-        internal
-        | FlagOnly of string
-        | FlagAndValue of (string*string*string)
-        | ValueOnly of string
-        
-        member this.Flag =
-            Arg.flag this
-            
-        member this.Value =
-            Arg.value this
+        { Flag: string
+        ; Value : string
+        ; Sep: string }
             
         override this.ToString() =
             Arg.toString this
@@ -66,21 +61,20 @@ module rec Command =
     /// A command line argument
     module Arg =
 
-        let flag arg  =
-            match arg with
-            | FlagOnly f | FlagAndValue(f, _, _) -> f
-            | _ -> ""
-            
-        let value arg =
-            match arg with
-            | FlagAndValue (_, _, v) | ValueOnly v -> v
-            | _ -> ""
+        let flag arg =
+            match arg.Flag with
+            | null -> "" | x -> x
 
+        let value arg =
+            match arg.Value with
+            | null -> "" | x -> x
+
+        let sep arg =
+            match arg.Sep with
+            | null -> "" | x -> x
+            
         let toString arg =
-            match arg with
-            | FlagOnly f -> f
-            | FlagAndValue (f,s,v) -> $"{f}{s}{v}"
-            | ValueOnly v -> v
+            $"{flag arg}{sep arg}{value arg}"
                 
         // Parse the given string as an Arg
         let parse (input: string) : Arg =
@@ -121,11 +115,7 @@ module rec Command =
                     | _ ->
                         ""
                         
-            match (flag, sep, value) with
-            | "", "", "" -> ValueOnly ""
-            | f, "", "" -> FlagOnly f
-            | "", "", v -> ValueOnly v
-            | f, s, v -> FlagAndValue (f, s, v)
+            { Flag=flag; Sep=sep; Value=value }
             
     /// Command line arguments
     type Args =
@@ -428,7 +418,7 @@ module rec Command =
             let statement = Command.statement cmd
             let stdout = StringBuilder()
             let stderr = StringBuilder()
-                        
+                                    
             let handleData (builder: StringBuilder) (args: DataReceivedEventArgs) =
                 match args.Data with
                 | null ->
@@ -438,7 +428,7 @@ module rec Command =
             
             proc.OutputDataReceived.Add (handleData stdout)
             proc.ErrorDataReceived.Add (handleData stderr)
-        
+                    
             let start_time = DateTimeOffset.Now
             
             proc.Start()
