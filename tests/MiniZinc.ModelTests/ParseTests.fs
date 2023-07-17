@@ -22,7 +22,7 @@ module ``Parser Tests`` =
             parseComments input
         
         let parsed =
-            match parseString parser source with
+            match parseWith parser source with
             | Result.Ok x -> x
             | Result.Error err -> failwith (string err)
         
@@ -37,7 +37,7 @@ module ``Parser Tests`` =
             parseComments input
         
         let parsed =
-            match parseString parser source with
+            match parseWith parser source with
             | Result.Ok x ->
                 x
             | Result.Error err ->
@@ -51,7 +51,7 @@ module ``Parser Tests`` =
             encoder.String.Trim()
        
         let roundtrip =
-            match parseString parser encoded with
+            match parseWith parser encoded with
             | Result.Ok x ->
                 x
             | Result.Error err ->
@@ -160,7 +160,7 @@ module ``Parser Tests`` =
     [<InlineData("% 12312312")>]
     [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
-        let output = parseString Parsers.comment arg
+        let output = parseWith Parsers.comment arg
         output.AssertOk()
         
     [<Theory>]
@@ -223,7 +223,7 @@ module ``Parser Tests`` =
     [<InlineData("a = array1d(0..z, [x*x | x in 0..z]);")>]
     [<InlineData("a = 1..10;")>]
     let ``test range expr `` arg =
-        testParser Parsers.model arg 
+        testParser Parsers.ast arg 
         
     [<Fact>]
     let test_bad () =
@@ -287,3 +287,10 @@ module ``Parser Tests`` =
             Parsers.output_item
             """output ["% a = ", show(a), ";\n", "b = ", show(b), ";\n"]"""
             (fun enc -> enc.writeOutputItem)
+            
+    [<Fact>]
+    let ``test tuple ti`` ()=
+        testRoundtrip
+            Parsers.var_decl_item
+            """tuple(1..3): x = (4,)"""
+            (fun enc -> enc.writeDeclare)
