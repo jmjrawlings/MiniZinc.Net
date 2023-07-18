@@ -135,7 +135,7 @@ module Prelude =
                     |> List.map (fun node ->
                         match string node with
                         | "int" -> Type.Int
-                        | x -> Type.Id x
+                        | x -> Type.Ident x
                         )
                         
                 let baseTi =

@@ -176,8 +176,9 @@ module rec Ast =
         | Bracketed     of Expr
         | Set           of SetLiteral
         | SetComp       of SetCompExpr
-        | RecordAccess  of RecordAccess
-        | TupleAccess   of TupleAccess
+        | RecordAccess  of string * Expr
+        | TupleAccess   of uint8 * Expr
+        | ArrayAccess   of ArrayAccess * Expr
         | Array1d       of Array1dExpr
         | Array1dIndex
         | Array2d       of Array2dExpr
@@ -191,26 +192,16 @@ module rec Ast =
         | IfThenElse    of IfThenElseExpr
         | Let           of LetExpr
         | Call          of CallExpr
-        | GenCall       of GenCallExpr 
-        | Indexed       of IndexExpr
+        | GenCall       of GenCallExpr
 
     type UnaryOpExpr =
         IdOr<UnaryOp> * Expr
         
     type BinaryOpExpr =
         Expr * IdOr<BinaryOp> * Expr
-
-    type IndexExpr =
-        | Index of Expr * ArrayAccess list
         
     type ArrayAccess =
         Expr list
-
-    type RecordAccess =
-        Ident * string
-        
-    type TupleAccess =
-        Ident * uint8
 
     type Annotation =
         { Name: Ident; Args: Expr list }
@@ -237,9 +228,11 @@ module rec Ast =
         ; Where : Expr option }
 
     type CallExpr =
-        { Function: IdOr<Op>
-        ; Args: Arguments }
-
+        IdOr<Op> * Arguments
+        
+    type OperatorCall<'t when 't: enum<int>> =
+        't * Arguments
+        
     type Array1dExpr =
         Expr list
 
@@ -293,13 +286,14 @@ module rec Ast =
         | Op          of Op
         | Bracketed   of NumExpr
         | Call        of CallExpr
-        | RecordAccess of RecordAccess
-        | TupleAccess of TupleAccess
+        | RecordAccess of string * NumExpr
+        | TupleAccess of uint8 * NumExpr
         | IfThenElse  of IfThenElseExpr
         | Let         of LetExpr
         | UnaryOp     of IdOr<NumericUnaryOp> * NumExpr
         | BinaryOp    of NumExpr * IdOr<NumericBinaryOp> * NumExpr
-        | ArrayAccess of NumExpr * ArrayAccess list
+        | ArrayAccess of ArrayAccess * NumExpr
+        
 
     [<RequireQualifiedAccess>]
     type AnnotationItem =
@@ -345,7 +339,7 @@ module rec Ast =
         | String
         | Float
         | Ann
-        | Id     of Ident
+        | Ident  of Ident
         | Set    of Expr // TODO confirm with MiniZinc team
         | Tuple  of TupleType
         | Record of RecordType

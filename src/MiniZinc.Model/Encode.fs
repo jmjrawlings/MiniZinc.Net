@@ -79,6 +79,9 @@ module rec Encode =
         member this.write (i: int) =
             ignore (builder.Append i)
             
+        member this.write (i: uint8) =
+            ignore (builder.Append i)
+            
         member this.writen (s: string) =
             ignore (builder.AppendLine s)
 
@@ -210,7 +213,7 @@ module rec Encode =
                 this.write "float"
             | Type.Ann ->
                 this.write "ann"
-            | Type.Id x ->
+            | Type.Ident x ->
                 this.write x                
             | Type.Record x ->
                 this.writeRecordType x                
@@ -284,28 +287,33 @@ module rec Encode =
             | NumExpr.Let expr ->
                 this.writeLetExpr expr
                 
-            | NumExpr.UnaryOp(op, expr) ->
+            | NumExpr.UnaryOp (op, expr) ->
                 this.writeIdOrOp op
                 this.write " "
                 this.writeNumExpr expr
                 
-            | NumExpr.BinaryOp(left, op, right) ->
+            | NumExpr.BinaryOp (left, op, right) ->
                 this.writeNumExpr left
                 this.write " "
                 this.writeIdOrOp op
                 this.write " "
                 this.writeNumExpr right
                 
-            | NumExpr.ArrayAccess(expr, access) ->
+            | NumExpr.ArrayAccess (access, expr) ->
                 this.writeNumExpr expr
-                for acc in access do
-                    this.writeArrayAccess acc
-                    
-            | NumExpr.RecordAccess x ->
-                this.writeRecordAccess x
+                this.write '['
+                this.writeExprs access
+                this.write ']'
+                                    
+            | NumExpr.RecordAccess (field, expr) ->
+                this.writeNumExpr expr
+                this.write "."
+                this.write field
                 
-            | NumExpr.TupleAccess x ->
-                this.writeTupleAccess x
+            | NumExpr.TupleAccess (item, expr) ->
+                this.writeNumExpr expr
+                this.write "."
+                this.write item
         
         member this.writeString (s: string) =
             this.write $"\"{s}\""
@@ -375,17 +383,6 @@ module rec Encode =
             | IdOr.Val x -> this.writeOp x
             this.write " "
             this.writeExpr expr
-            
-        member this.writeRecordAccess ((id, field): RecordAccess) =
-            this.write id
-            this.write '.'
-            this.write field
-            
-        member this.writeTupleAccess ((id, item): TupleAccess) =
-            this.write id
-            this.write '.'
-            builder.Append item
-            ()
             
         member this.writeBinaryOp ((left, op, right): BinaryOpExpr) =
             this.writeExpr left
@@ -460,11 +457,6 @@ module rec Encode =
             this.write '['
             this.writeExprs exprs
             this.write ']'
-            
-        member this.writeIndexExpr (IndexExpr.Index (expr, access)) =
-            this.writeExpr expr
-            for acc in access do
-                this.writeArrayAccess acc
                             
         member this.writeExpr (x: Expr) =
             match x with
@@ -508,10 +500,14 @@ module rec Encode =
                 this.writeTuple x
             | Expr.Record x ->
                 this.writeRecord x
-            | Expr.RecordAccess x ->
-                this.writeRecordAccess x
-            | Expr.TupleAccess x ->
-                this.writeTupleAccess x                
+            | Expr.RecordAccess (field, expr) ->
+                this.writeExpr expr
+                this.write "."
+                this.write field
+            | Expr.TupleAccess (item, expr) ->
+                this.writeExpr expr
+                this.write "."
+                this.write item                
             | Expr.UnaryOp x ->
                 this.writeUnaryOp x
             | Expr.BinaryOp x ->
@@ -524,8 +520,11 @@ module rec Encode =
                 this.writeCall x
             | Expr.GenCall x ->
                 this.writeGenCall x 
-            | Expr.Indexed x ->
-                this.writeIndexExpr x
+            | Expr.ArrayAccess (access, expr) ->
+                this.writeExpr expr
+                this.write '['
+                this.writeExprs access
+                this.write ']'
             
         member this.writeDeclare (decl: DeclareItem) =
             this.writeTypeInst decl.TypeInst
@@ -585,12 +584,12 @@ module rec Encode =
             | _ ->
                 ()
                     
-        member this.writeCall (x: CallExpr) =
-            match x.Function with
+        member this.writeCall (ident, args) =
+            match ident with
             | IdOr.Id s -> this.write s
             | IdOr.Val v -> this.writeOp v
             
-            this.writeArgs x.Args
+            this.writeArgs args
             
         member this.writeArgs (args: Expr list) =
             this.write "("

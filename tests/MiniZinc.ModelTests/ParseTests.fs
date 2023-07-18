@@ -186,26 +186,11 @@ module ``Parser Tests`` =
         testRoundtrip Parsers.array1d_literal arg (fun enc -> enc.writeArray1d)
         
     [<Theory>]
-    [<InlineData("""constraint
-	forall (i in 1..n-1) (
-		if d[i] == d[i+1] then
-			lex_lesseq([p[i,  j] | j in 1..t],
-				[p[i+1,j] | j in 1..t])
-		else
-			true
-		endif
-	)""")>]
-    [<InlineData("""constraint
-	forall(i in 1..n-1) (
-		if d[i] < d[i+1] then
-		       sum (j in 1..t) (p[i,j]*R[j])
-		     < sum (j in 1..t) (p[i+1,j]*R[j])
-		else
-			true
-		endif
-	)""")>]
-    let ``test gen call`` arg =
-        testRoundtrip Parsers.constraint_item arg (fun enc -> enc.writeConstraint)
+    [<InlineData("""forall (i in 1..n-1) (true)""")>]
+    let ``test gen call`` mzn =
+        testRoundtrip
+            Parsers.gen_call_expr
+            mzn (fun enc -> enc.writeGenCall)
         
     [<Theory>]
     [<InlineData("var llower..lupper: Production")>]
