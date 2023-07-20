@@ -39,7 +39,7 @@ let init() =
         ()
 
     "DownloadTestSuite"
-        ==> "CreateIntegrationTests"
+        ==> "CreateClientIntegrationTests"
         
     "DownloadTestSuite"
         ==> "CreateParserIntegrationTests"
