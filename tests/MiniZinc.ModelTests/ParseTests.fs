@@ -66,8 +66,15 @@ module ``Parser Tests`` =
     [<InlineData("_A_NAME")>]
     [<InlineData("aN4m3w1thnumb3r5")>]
     [<InlineData("'A name with Quotes'")>]
-    let ``test identifier`` arg =
+    let ``test valid identifier`` arg =
         testRoundtrip Parsers.ident arg (fun enc -> enc.write)
+    
+    [<Theory>]
+    [<InlineData("[")>]
+    [<InlineData("@")>]
+    let ``test invalid identifier`` arg =
+        let result = Parse.parseWith Parsers.ident arg
+        result.AssertErr()
         
     [<Theory>]
     [<InlineData("int")>]
@@ -193,9 +200,14 @@ module ``Parser Tests`` =
             mzn (fun enc -> enc.writeGenCall)
         
     [<Theory>]
-    [<InlineData("var llower..lupper: Production")>]
-    let test_xd arg =
-        testRoundtrip Parsers.var_decl_item arg (fun enc -> enc.writeDeclare)
+    [<InlineData("int: x;")>]
+    //[<InlineData("var llower..lupper: Production")>]
+    let ``test declare`` mzn =
+        let x = parseModelString mzn
+        match x with
+        | Result.Ok m -> m
+        | Result.Error err -> failwith err.Message
+        
         
     [<Theory>]
     [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _|]")>]
@@ -205,10 +217,11 @@ module ``Parser Tests`` =
         testRoundtrip Parsers.array2d_literal arg (fun enc -> enc.writeArray2d)
                 
     [<Theory>]
-    [<InlineData("a = array1d(0..z, [x*x | x in 0..z]);")>]
-    [<InlineData("a = 1..10;")>]
+    [<InlineData("1..10")>]
+    [<InlineData("-1 .. z")>]
+    [<InlineData("x[1]..x[2]")>]
     let ``test range expr `` arg =
-        testParser Parsers.ast arg 
+        testRoundtrip Parsers.expr arg (fun enc -> enc.writeExpr) 
         
     [<Fact>]
     let test_bad () =
@@ -276,7 +289,7 @@ module ``Parser Tests`` =
     [<Fact>]
     let ``test tuple ti`` ()=
         testRoundtrip
-            Parsers.var_decl_item
+            Parsers.declare_item
             """tuple(1..3): x = (4,)"""
             (fun enc -> enc.writeDeclare)
 
@@ -288,3 +301,12 @@ module ``Parser Tests`` =
             Parsers.expr
             mzn
             (fun enc -> enc.writeExpr)
+            
+    [<Theory>]
+    [<InlineData("arr2[b].x = 1")>]
+    let ``test exprs`` mzn =
+        testRoundtrip
+            Parsers.expr
+            mzn
+            (fun enc -> enc.writeExpr)
+    

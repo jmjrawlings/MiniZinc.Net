@@ -204,7 +204,7 @@ module rec Ast =
         Expr list
 
     type Annotation =
-        { Name: Ident; Args: Expr list }
+        Expr
                 
     type Annotations =
         Annotation list
@@ -293,12 +293,6 @@ module rec Ast =
         | UnaryOp     of IdOr<NumericUnaryOp> * NumExpr
         | BinaryOp    of NumExpr * IdOr<NumericBinaryOp> * NumExpr
         | ArrayAccess of ArrayAccess * NumExpr
-        
-
-    [<RequireQualifiedAccess>]
-    type AnnotationItem =
-        | Name of Ident
-        | Call of Ident * Parameters
     
     type EnumItem =
         { Name : Ident
@@ -315,19 +309,16 @@ module rec Ast =
         | Call of Ident * Expr
         
     type TypeInst =
-        { Type  : Type
+        { Name  : string
+          Type  : Type
+          Annotations : Annotations
           Inst  : Inst
           IsSet : bool
           IsOptional : bool
           IsArray : bool }
         
         static member OfType t =
-            { Type = t; Inst = Inst.Par; IsSet = false; IsOptional = false; IsArray = false }
-    
-    type NamedTypeInst =
-        { Name : string
-        ; TypeInst : TypeInst
-        ; Annotations : Annotations }
+            { Type = t; Inst = Inst.Par; IsSet = false; IsOptional = false; IsArray = false; Name = ""; Annotations = [] }
         
     type ITyped =
         abstract member TypeInst: TypeInst
@@ -346,7 +337,7 @@ module rec Ast =
         | Array  of ArrayType
 
     type RecordType =
-        { Fields: NamedTypeInst list }
+        { Fields: TypeInst list }
          
     type TupleType =
         { Fields: TypeInst list }
@@ -407,21 +398,15 @@ module rec Ast =
         | Assign     of AssignItem
         | Declare    of DeclareItem
         | Solve      of SolveItem
-        | Function   of FunctionItem
         | Test       of TestItem
         | Output     of OutputItem
-        | Annotation of AnnotationItem
+        | Function   of FunctionItem
+        | Annotation of Expr
         | Comment    of string
 
     type ConstraintItem =
         { Expr: Expr
         ; Annotations: Annotations }
-        
-    type Parameters =
-        Parameter list
-        
-    type Parameter =
-        NamedTypeInst
 
     type Argument =
         Expr
@@ -437,7 +422,7 @@ module rec Ast =
            
     type TestItem =
         { Name: string
-        ; Parameters : Parameters
+        ; Parameters : TypeInst list
         ; Annotations : Annotations
         ; Body: Expr option }
         
@@ -455,17 +440,11 @@ module rec Ast =
     type OutputItem =
         { Expr: Expr }
 
-    type OperationItem =
-        { Name: string
-          Parameters : Parameters
-          Annotations : Annotations
-          Body: Expr option }
-        
     type FunctionItem =
         { Name: string
         ; Returns : TypeInst
         ; Annotations : Annotations
-        ; Parameters : Parameters
+        ; Parameters : TypeInst list
         ; Body: Expr option }
         
         interface INamed with
@@ -478,19 +457,7 @@ module rec Ast =
         NamedArg
 
     type DeclareItem =
-        { Name: string
-        ; TypeInst: TypeInst
-        ; Annotations: Annotations
-        ; Expr: Expr option }
-        
-        member this.Type =
-            this.TypeInst.Type
-            
-        member this.Inst =
-            this.TypeInst.Inst
-        
-        interface INamed with
-            member this.Name = this.Name
+        TypeInst * Expr option
 
     type LetLocal =
         Choice<DeclareItem, ConstraintItem>

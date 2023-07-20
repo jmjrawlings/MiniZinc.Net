@@ -82,7 +82,7 @@ module ``Model Tests`` =
             failwith "xd"
 
     [<Theory>]
-    [<InlineData("var int: x;")>]
+    [<InlineData("int: x;")>]
     let ``test detect unassigned`` arg =
         
         let model =

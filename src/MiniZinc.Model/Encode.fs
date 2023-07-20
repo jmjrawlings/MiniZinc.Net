@@ -156,12 +156,7 @@ module rec Encode =
 
         member this.writeAnnotation (x: Annotation) =
             this.write " ::"
-            this.write x.Name
-            match x.Args with
-            | [] ->
-                ()
-            | args ->
-                this.writeArgs args
+            this.writeExpr x
         
         member this.writeAnnotations (x: Annotations) =
             match x with
@@ -172,14 +167,9 @@ module rec Encode =
                 for ann in anns do
                     this.writeAnnotation ann
                     
-        member this.writeAnnotationItem (x: AnnotationItem) =
+        member this.writeAnnotationItem (x: Expr) =
             this.write "annotation "
-            match x with
-            | AnnotationItem.Name id ->
-                this.write id
-            | AnnotationItem.Call (id, pars) ->
-                this.write id
-                this.writeParameters pars
+            this.writeExpr x
                 
         member this.writeTypeInst (ti: TypeInst) =
             match ti.IsArray with
@@ -526,11 +516,11 @@ module rec Encode =
                 this.writeExprs access
                 this.write ']'
             
-        member this.writeDeclare (decl: DeclareItem) =
-            this.writeTypeInst decl.TypeInst
+        member this.writeDeclare ((ti, expr): DeclareItem) =
+            this.writeTypeInst ti
             this.write ": "
-            this.write decl.Name
-            match decl.Expr with
+            this.write ti.Name
+            match expr with
             | Some expr ->
                 this.write " = "
                 this.writeExpr expr
@@ -552,13 +542,13 @@ module rec Encode =
             this.write "record"
             this.writeParameters x.Fields
                 
-        member this.writeParameter (p: Parameter) =
-            this.writeTypeInst p.TypeInst
+        member this.writeParameter (ti: TypeInst) =
+            this.writeTypeInst ti
             this.write ": "
-            this.write p.Name
-            this.writeAnnotations p.Annotations
+            this.write ti.Name
+            this.writeAnnotations ti.Annotations
                 
-        member this.writeParameters (xs: Parameters) =
+        member this.writeParameters (xs: TypeInst list) =
             this.write '('
             this.writeSep(", ", xs, this.writeParameter)
             this.write ')'
