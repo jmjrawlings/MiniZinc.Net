@@ -169,8 +169,8 @@ module rec Encode =
                 
         member this.writeInst (inst: Inst) =
             match inst with
-            | Inst.Var -> this.write "var"
-            | Inst.Any -> this.write "any"
+            | Inst.Var -> this.write "var "
+            | Inst.Any -> this.write "any "
             | _ -> ()
                 
         member this.writeTypeInst (ti: TypeInst) =
