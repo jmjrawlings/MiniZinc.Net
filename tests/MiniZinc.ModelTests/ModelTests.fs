@@ -55,29 +55,24 @@ module ``Model Tests`` =
     let ``test assign variable`` () =
         
         let ti =
-            { Type = Type.Int
-            ; Inst = Inst.Var
-            ; IsSet = false
-            ; IsArray = false 
-            ; IsOptional = false }
+            { TypeInst.Empty with
+                Name = "x"
+                Type = Type.Int
+                Inst = Inst.Var }
             
         let expr =
             Expr.Int 100
         
         let bindings =
             NameSpace.empty
-            |> NameSpace.add "x" (Binding.Variable {Name="x"; Annotations = []; TypeInst=ti; Expr=None})
+            |> NameSpace.addDeclare ti
             |> NameSpace.add "x" (Binding.Expr expr)
             |> NameSpace.bindings
             
-        let binding =
-            bindings
-            |> Map.find "x"
-            
+        let binding = bindings["x"]
         match binding with
-        | Binding.Variable {TypeInst=ti_; Expr = Some expr_} ->
-            ti_ ?= ti
-            expr_ ?= expr
+        | Binding.Variable v ->
+            v.Value.Value ?= expr
         | _ ->
             failwith "xd"
 

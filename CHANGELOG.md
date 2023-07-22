@@ -5,12 +5,19 @@
 ## Parser
 - Added support for Tuple and Record literals
 - Added support for tuple and record field access
+- Combined `keyword1` and `keyword` parsing
+- Added support for instanced variables `$T` in `TypeInsts`
+- Simplified enum parsing
+- Removed some unused parsers and AST cases
 
+## Model
+- Added support for instanced variables `$T` in `TypeInsts`
+ 
 ## Client
 - Changed `ILogger` to `ILogger<T>`
 - Added basic logging of compile
 - Changed `CommandResult` and `Arg` to structs
- 
+
 
 ## [0.5.0] -  2023-07-16
 
