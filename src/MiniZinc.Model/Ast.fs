@@ -49,6 +49,7 @@ module rec Ast =
     type Inst =
         | Var = 0
         | Par = 1
+        | Any = 2
         
     type VarKind =
         | AssignedPar = 0
@@ -172,7 +173,6 @@ module rec Ast =
         | Bool          of bool
         | String        of string
         | Ident         of string
-        | Op            of Op
         | Bracketed     of Expr
         | Set           of SetLiteral
         | SetComp       of SetCompExpr
@@ -280,21 +280,20 @@ module rec Ast =
 
     [<RequireQualifiedAccess>]
     type NumExpr =
-        | Int         of int
-        | Float       of float
-        | Id          of Ident
-        | Op          of Op
-        | Bracketed   of NumExpr
-        | Call        of CallExpr
+        | Int          of int
+        | Float        of float
+        | Id           of Ident
+        | Bracketed    of NumExpr
+        | Call         of CallExpr
         | RecordAccess of string * NumExpr
-        | TupleAccess of uint8 * NumExpr
-        | IfThenElse  of IfThenElseExpr
-        | Let         of LetExpr
-        | UnaryOp     of IdOr<NumericUnaryOp> * NumExpr
-        | BinaryOp    of NumExpr * IdOr<NumericBinaryOp> * NumExpr
-        | ArrayAccess of ArrayAccess * NumExpr
+        | TupleAccess  of uint8 * NumExpr
+        | IfThenElse   of IfThenElseExpr
+        | Let          of LetExpr
+        | UnaryOp      of IdOr<NumericUnaryOp> * NumExpr
+        | BinaryOp     of NumExpr * IdOr<NumericBinaryOp> * NumExpr
+        | ArrayAccess  of ArrayAccess * NumExpr
     
-    type EnumItem =
+    type EnumType =
         { Name : Ident
         ; Annotations : Annotations
         ; Cases : EnumCases list }
@@ -309,16 +308,27 @@ module rec Ast =
         | Call of Ident * Expr
         
     type TypeInst =
-        { Name  : string
-          Type  : Type
+        { Name : string
+          Type : Type
           Annotations : Annotations
-          Inst  : Inst
+          Inst : Inst
           IsSet : bool
           IsOptional : bool
-          IsArray : bool }
+          IsArray : bool
+          IsInstanced : bool
+          Value : Expr option }
         
-        static member OfType t =
-            { Type = t; Inst = Inst.Par; IsSet = false; IsOptional = false; IsArray = false; Name = ""; Annotations = [] }
+        static member Empty =
+            { Type = Type.Ident ""
+            ; Inst = Inst.Par
+            ; IsSet = false
+            ; IsOptional = false
+            ; IsArray = false
+            ; IsInstanced = false
+            ; Name = ""
+            ; Annotations = []
+            ; Value = None }
+            
         
     type ITyped =
         abstract member TypeInst: TypeInst
@@ -330,25 +340,18 @@ module rec Ast =
         | String
         | Float
         | Ann
+        | Instanced of Ident
         | Ident  of Ident
         | Set    of Expr // TODO confirm with MiniZinc team
-        | Tuple  of TupleType
-        | Record of RecordType
+        | Tuple  of TypeInst list
+        | Record of TypeInst list
         | Array  of ArrayType
-
-    type RecordType =
-        { Fields: TypeInst list }
-         
-    type TupleType =
-        { Fields: TypeInst list }
-        
-    type RangeExpr =
-        NumExpr * NumExpr
         
     [<RequireQualifiedAccess>]
+    [<Struct>]
     type ArrayDim =
         | Int
-        | Id of Ident
+        | Id of id:Ident
         | Set of Expr
         
     type ArrayType =
@@ -392,19 +395,19 @@ module rec Ast =
     [<RequireQualifiedAccess>]    
     type Item =
         | Include    of IncludeItem
-        | Enum       of EnumItem
+        | Enum       of EnumType
         | Synonym    of TypeAlias
-        | Constraint of ConstraintItem
-        | Assign     of AssignItem
-        | Declare    of DeclareItem
+        | Constraint of ConstraintExpr
+        | Assign     of AssignExpr
+        | Declare    of TypeInst
         | Solve      of SolveItem
         | Test       of TestItem
-        | Output     of OutputItem
-        | Function   of FunctionItem
-        | Annotation of Expr
+        | Output     of Expr
+        | Function   of FunctionType
+        | Annotation of AnnotationType
         | Comment    of string
 
-    type ConstraintItem =
+    type ConstraintExpr =
         { Expr: Expr
         ; Annotations: Annotations }
 
@@ -436,11 +439,12 @@ module rec Ast =
         
         interface INamed with
             member this.Name = this.Name
-       
-    type OutputItem =
-        { Expr: Expr }
 
-    type FunctionItem =
+    type AnnotationType =
+        { Name: string
+        ; Params: TypeInst list }
+    
+    type FunctionType =
         { Name: string
         ; Returns : TypeInst
         ; Annotations : Annotations
@@ -453,18 +457,15 @@ module rec Ast =
     type Test =
         unit
 
-    type AssignItem =
+    type AssignExpr =
         NamedArg
 
-    type DeclareItem =
-        TypeInst * Expr option
-
     type LetLocal =
-        Choice<DeclareItem, ConstraintItem>
+        Choice<TypeInst, ConstraintExpr>
         
     type LetExpr =
-        { Declares: DeclareItem list
-        ; Constraints : ConstraintItem list
+        { Declares: TypeInst list
+        ; Constraints : ConstraintExpr list
         ; Body: Expr }
         
     type Ast = Item list    
@@ -472,11 +473,11 @@ module rec Ast =
     /// Things that a name can be bound to
     [<RequireQualifiedAccess>]
     type Binding =
-        | Variable of DeclareItem
+        | Variable of TypeInst
         | Expr     of Expr
-        | Enum     of EnumItem
+        | Enum     of EnumType
         | Type     of TypeAlias
-        | Function of FunctionItem
+        | Function of FunctionType
         | Multiple of Binding list
 
     /// <summary>
@@ -497,9 +498,9 @@ module rec Ast =
         { Bindings    : Map<string, Binding>
         ; Inputs      : Map<string, TypeInst>
         ; Outputs     : Map<string, TypeInst>
-        ; Variables   : Map<string, DeclareItem>
+        ; Variables   : Map<string, TypeInst>
         ; Undeclared  : Map<string, Expr>
-        ; Enums       : Map<string, EnumItem> 
+        ; Enums       : Map<string, EnumType> 
         ; Synonyms    : Map<string, TypeAlias> 
-        ; Functions   : Map<string, FunctionItem>        
+        ; Functions   : Map<string, FunctionType>        
         ; Conflicts   : Map<string, Binding list> }

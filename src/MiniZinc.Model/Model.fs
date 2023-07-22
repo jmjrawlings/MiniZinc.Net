@@ -95,10 +95,10 @@ module rec Model =
                 // Variable assignment    
                 | Some (Binding.Variable var), Binding.Expr expr 
                 | Some (Binding.Expr expr), Binding.Variable var ->
-                    match var.Expr with
+                    match var.Value with
                     // Assign new value
                     | None ->
-                        Binding.Variable { var with Expr = Some expr }
+                        Binding.Variable { var with Value = Some expr }
                     // Existing value                    
                     | Some old when old = expr ->
                         Binding.Expr expr
@@ -138,19 +138,19 @@ module rec Model =
 
             let result =
                 match newBinding with
-                | Binding.Variable var ->
-                    match var.Inst, var.Expr with
+                | Binding.Variable ti ->
+                    match ti.Inst, ti.Value with
                     | Inst.Par, None ->
                         { ns with
-                            Inputs = Map.add id var.TypeInst ns.Inputs
-                            Variables = Map.add id var ns.Variables }
+                            Inputs = Map.add id ti ns.Inputs
+                            Variables = Map.add id ti ns.Variables }
                     | Inst.Var, None ->
                         { ns with
-                            Outputs = Map.add id var.TypeInst ns.Outputs
-                            Variables = Map.add id var ns.Variables }
+                            Outputs = Map.add id ti ns.Outputs
+                            Variables = Map.add id ti ns.Variables }
                     | _, _ ->
                         { ns with
-                            Variables = Map.add id var ns.Variables }
+                            Variables = Map.add id ti ns.Variables }
                 | Binding.Expr x ->
                     { ns with
                         Undeclared = Map.add id x ns.Undeclared }
@@ -173,10 +173,10 @@ module rec Model =
                 
             nameSpace
             
-        let addDeclare (decl: DeclareItem) (ns: NameSpace) : NameSpace =
+        let addDeclare (decl: TypeInst) (ns: NameSpace) : NameSpace =
             add decl.Name (Binding.Variable decl) ns
             
-        let addFunction (func: FunctionItem) (ns: NameSpace) : NameSpace =
+        let addFunction (func: FunctionType) (ns: NameSpace) : NameSpace =
             add func.Name (Binding.Function func) ns
         
         /// Create a NameSpace from the given bindings        
@@ -206,16 +206,16 @@ module rec Model =
     
     type NameSpace with
                 
-        member this.Add (x: DeclareItem) =
+        member this.Add (x: TypeInst) =
             NameSpace.add x.Name (Binding.Variable x) this
             
-        member this.Add (x: EnumItem) =
+        member this.Add (x: EnumType) =
             NameSpace.add x.Name (Binding.Enum x) this
             
         member this.Add (x: TypeAlias) =
             NameSpace.add x.Name (Binding.Type x) this
 
-        member this.Add (x: FunctionItem) =
+        member this.Add (x: FunctionType) =
             NameSpace.add x.Name (Binding.Function x) this
             
         member this.Add (name: string, x: Expr) : NameSpace =
@@ -230,8 +230,8 @@ module rec Model =
         ; FilePath    : string option
         ; Includes    : Map<string, IncludeItem>
         ; NameSpace   : NameSpace
-        ; Constraints : ConstraintItem list
-        ; Outputs     : OutputItem list
+        ; Constraints : ConstraintExpr list
+        ; Outputs     : Expr list
         ; SolveMethod : SolveItem }
                         
     module Model =
@@ -321,7 +321,7 @@ module rec Model =
                 enc.writetn()
 
             for enum in model.NameSpace.Enums.Values do
-                enc.writeEnum enum
+                enc.writeEnumType enum
                 enc.writetn()
                 
             for syn in model.NameSpace.Synonyms.Values do
@@ -343,7 +343,7 @@ module rec Model =
             enc.writeSolveMethod model.SolveMethod
             
             for output in model.Outputs do
-                enc.writeOutputItem output
+                enc.writeOutput output
                 enc.writetn()
                 
             enc.String

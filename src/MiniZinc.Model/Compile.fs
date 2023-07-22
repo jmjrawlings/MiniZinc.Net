@@ -33,7 +33,7 @@ module rec Compile =
         
         let folder (model: CompileResult) (name: string) (binding: Binding) =
             match binding with
-            | Binding.Variable d when d.Inst = Inst.Par && d.Expr.IsNone->
+            | Binding.Variable d when d.Inst = Inst.Par && d.Value.IsNone->
                 $"Unassigned parameter \"{name}\""
                 |> model.Err
             | Binding.Expr expr ->

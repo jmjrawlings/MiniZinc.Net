@@ -105,16 +105,13 @@ module Prelude =
                                 let fieldName = x.Key
                                 let fieldType = x.Value.AsObject()
                                 let fieldTi = parse fieldType
-                                let field : NamedTypeInst =
-                                    { Name=fieldName
-                                    ; TypeInst=fieldTi
-                                    ; Annotations=[] }
-                                field)
+                                { fieldTi with Name = fieldName }
+                                )
                             |> Seq.toList
                             
-                        Type.Record { Fields = fields }
+                        Type.Record fields 
                     | "record" ->
-                        Type.Record { Fields = [] }
+                        Type.Record []
                     | "float" -> 
                         Type.Float
                     | "string" ->
@@ -139,20 +136,19 @@ module Prelude =
                         )
                         
                 let baseTi =
-                    { IsSet = isSet
-                    ; IsOptional = isOpt
-                    ; IsArray = false 
-                    ; Inst = inst
-                    ; Type = type' }
+                    { TypeInst.Empty with
+                        IsSet = isSet
+                        IsOptional = isOpt
+                        Inst = inst
+                        Type = type' }
                         
                 let ti =
                     match isArray with
                     | true ->
-                        { IsSet = false
-                        ; IsOptional = false
-                        ; IsArray = true 
-                        ; Inst = inst
-                        ; Type = Type.Array { Elements = baseTi; Dimensions=[] } }
+                        { TypeInst.Empty with
+                            IsArray = true
+                            Inst = inst
+                            Type = Type.Array { Elements = baseTi; Dimensions=[] } }
                     | false ->
                         baseTi
                 ti
