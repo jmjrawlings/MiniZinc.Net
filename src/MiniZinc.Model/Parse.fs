@@ -297,12 +297,13 @@ module Parsers =
     /// eg `keyword "function"` would not match the
     /// string "function1" 
     let keyword (name: string) : Parser<string> =
-        s name
-        .>> notFollowedBy (
-            satisfy (fun c ->
-                Char.IsDigit c || Char.IsLetter c || c = '_')
-            )
-        |> attempt
+        attempt(
+            pstring name
+            .>> notFollowedBy (
+                satisfy (fun c ->
+                    Char.IsDigit c || Char.IsLetter c || c = '_')
+                )
+        )
         .>> ws
         
     let keywordL (name: string) : Parser<string> =
@@ -322,8 +323,17 @@ module Parsers =
         <|> block_comment
         |>> (fun s -> s.Trim())
         
-    let (=>) (key: string) value =
-        keyword key >>% value
+    // Parse the keyword and return the value
+    let (=>) (key: string) (value: 't) =
+        keyword key
+        >>% value
+    
+    // Parse the given operator and return the value
+    // where value is an enum
+    let (=!>) (operator: string) (value: 't) =
+        pstring operator
+        |> attempt
+        >>% value
             
     let value_or_quoted_name (parser: Parser<'T>) : Parser<IdOr<'T>> =
         
@@ -333,7 +343,6 @@ module Parsers =
         let name =
             simple_id
             |> betweenWs '`'
-            |> attempt
             |>> IdOr.Id
             
         name <|> value
@@ -376,8 +385,8 @@ module Parsers =
         |> between (c '"') (c '"')
     
     let builtin_num_un_ops =
-        [ "+" => Op.Add
-        ; "-" => Op.Subtract ]
+        [ "+" =!> Op.Add
+        ; "-" =!> Op.Subtract ]
         
     // <builtin-num-un-op>
     let builtin_num_un_op =
@@ -387,18 +396,18 @@ module Parsers =
         <?!> "builtin-num-un-op"
     
     let builtin_num_bin_ops =
-         [ "+"    => Op.Add
-         ; "-"    => Op.Subtract 
-         ; "*"    => Op.Multiply
-         ; "/"    => Op.Divide         
-         ; "^"    => Op.Exponent
-         ; "~+"   => Op.TildeAdd
-         ; "~-"   => Op.TildeSubtract
-         ; "~*"   => Op.TildeMultiply
-         ; "~/"   => Op.TildeDivide
-         ; "div"  => Op.Div
-         ; "mod"  => Op.Mod
-         ; "~div" => Op.TildeDiv ]
+         [ "+"    =!> Op.Add
+         ; "-"    =!> Op.Subtract 
+         ; "*"    =!> Op.Multiply
+         ; "/"    =!> Op.Divide         
+         ; "^"    =!> Op.Exponent
+         ; "~+"   =!> Op.TildeAdd
+         ; "~-"   =!> Op.TildeSubtract
+         ; "~*"   =!> Op.TildeMultiply
+         ; "~/"   =!> Op.TildeDivide
+         ; "div"  =!> Op.Div
+         ; "mod"  =!> Op.Mod
+         ; "~div" =!> Op.TildeDiv ]
         
     // <builtin-num-bin-op>
     let builtin_num_bin_op =
@@ -408,31 +417,31 @@ module Parsers =
          <?!> "num-bin-op"
             
     let builtin_bin_ops = 
-        [ "<->"       => Op.Equivalent
-        ; "->"        => Op.Implies
-        ; "<-"        => Op.ImpliedBy
-        ; "\/"        => Op.Or
-        ; "/\\"       => Op.And
-        ; "<="        => Op.LessThanEqual
-        ; ">="        => Op.GreaterThanEqual
-        ; "=="        => Op.EqualEqual
-        ; "<"         => Op.LessThan
-        ; ">"         => Op.GreaterThan
-        ; "="         => Op.Equal
-        ; "!="        => Op.NotEqual
-        ; "~="        => Op.TildeEqual
-        ; "~!="       => Op.TildeNotEqual
-        ; ".."        => Op.DotDot
-        ; "++"        => Op.PlusPlus
-        ; "xor"       => Op.Xor
-        ; "in"        => Op.In
-        ; "subset"    => Op.Subset
-        ; "superset"  => Op.Superset
-        ; "union"     => Op.Union
-        ; "diff"      => Op.Diff
-        ; "symdiff"   => Op.SymDiff
-        ; "intersect" => Op.Intersect
-        ; "default"   => Op.Default ]
+        [ "<->"       =!> Op.Equivalent
+        ; "->"        =!> Op.Implies
+        ; "<-"        =!> Op.ImpliedBy
+        ; "\/"        =!> Op.Or
+        ; "/\\"       =!> Op.And
+        ; "<="        =!> Op.LessThanEqual
+        ; ">="        =!> Op.GreaterThanEqual
+        ; "=="        =!> Op.EqualEqual
+        ; "<"         =!> Op.LessThan
+        ; ">"         =!> Op.GreaterThan
+        ; "="         =!> Op.Equal
+        ; "!="        =!> Op.NotEqual
+        ; "~="        =!> Op.TildeEqual
+        ; "~!="       =!> Op.TildeNotEqual
+        ; ".."        =!> Op.DotDot
+        ; "++"        =!> Op.PlusPlus
+        ; "xor"       =!> Op.Xor
+        ; "in"        =!> Op.In
+        ; "subset"    =!> Op.Subset
+        ; "superset"  =!> Op.Superset
+        ; "union"     =!> Op.Union
+        ; "diff"      =!> Op.Diff
+        ; "symdiff"   =!> Op.SymDiff
+        ; "intersect" =!> Op.Intersect
+        ; "default"   =!> Op.Default ]
         @ builtin_num_bin_ops
         
     // <builtin-bin-op>            
@@ -440,10 +449,11 @@ module Parsers =
         builtin_bin_ops
         |> choice
         |>> (int >> enum<BinaryOp>)
+        <?!> "binop"
         
     let builtin_un_ops =
         builtin_num_un_ops
-        @ ["not" => Op.Not]
+        @ ["not" =!> Op.Not]
 
     // <builtin-un-op>           
     let builtin_un_op : Parser<UnaryOp> =
@@ -670,8 +680,9 @@ module Parsers =
     
     // <set-ti>    
     let set_ti =
-        keyword "set"
-        >>. keyword "of"
+        pstring "set"
+        >>. ws1
+        >>. pstring "of"
         >>% true
         <|> preturn false
            
@@ -979,14 +990,16 @@ module Parsers =
         
     let quoted_op : Parser<Op> =
         builtin_op
-        |> betweenWs '''
+        |> between (c ''') (c ''')
         |> attempt
     
     let tuple_access_tail =
-        cw '.' >>. puint8 |> attempt
+        attempt (cw '.' >>. puint8)
+        <?!> "tuple-access"
         
     let record_access_tail =
-        cw '.' >>. ident |> attempt
+        attempt (cw '.' >>. ident)
+        <?!> "record-access"
         
     let array_access_tail =
         expr
@@ -1066,7 +1079,7 @@ module Parsers =
         |> attempt
         
     // <expr-atom-head>    
-    let expr_atom_head=
+    let expr_atom_head : Parser<Expr> =
         [
           float_literal   |>> Expr.Float
           int_literal     |>> Expr.Int
@@ -1090,6 +1103,7 @@ module Parsers =
           ident           |>> Expr.Ident
           ]
         |> choice
+        <?!> "expr-atom-head"
             
     let string_annotation : Parser<string> =
         sw "::" >>. string_literal
@@ -1122,12 +1136,14 @@ module Parsers =
                     Expr.BinaryOp (head, operator, tail)
             )
             
-        binop <|> preturn head
+        binop
+        <|> preturn head
             
     // <expr>
     expr_ref.contents <-
         expr_atom
         >>== expr_binop_tail
+        <?!> "expr"
             
     let solve_type : Parser<SolveMethod> =
         choice
@@ -1154,9 +1170,9 @@ module Parsers =
         
     // <assign-item>
     let assign_item : Parser<AssignExpr> =
-        (ident .>> ws .>> cw '=')
-        |> attempt
+        attempt (ident .>> ws .>> cw '=')
         .>>. expr
+        <?!> "assign-item"
         
     // <type-inst-syn-item>
     let alias_item : Parser<TypeAlias> =
@@ -1198,9 +1214,9 @@ module Parsers =
         ; predicate_item  |>> Item.Function
         ; function_item   |>> Item.Function
         ; test_item       |>> Item.Test
-        ; annotation_item |>> Item.Annotation        
+        ; annotation_item |>> Item.Annotation
         ; assign_item     |>> Item.Assign
-        ; declare_item    
+        ; declare_item
         ; block_comment   |>> Item.Comment ]
         |> choice
                       
@@ -1258,8 +1274,8 @@ module Parse =
         
         let state = ParserState()
                         
-        match runParserOnString (Parsers.ws >>. parser) state "" input with
-        
+        match runParserOnString parser state "" input with
+                
         | ParserResult.Success (value, _state, _pos) ->
             Result.Ok value
             
