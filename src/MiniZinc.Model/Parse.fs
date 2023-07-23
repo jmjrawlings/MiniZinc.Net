@@ -1219,13 +1219,21 @@ module Parsers =
         |> choice
                       
     let ast : Parser<Ast> =
+        
+        let sep =
+            ws .>> skipChar ';' .>> ws
+        
         ws
-        >>. many (item .>> ws .>> c ';' .>> ws)
+        >>. sepEndBy item sep
         .>> eof
         
     let data : Parser<AssignExpr list> =
+        
+        let sep =
+            ws .>> skipChar ';' .>> ws
+        
         ws
-        >>. many (assign_item .>> ws .>> c ';')
+        >>. sepBy(sep) assign_item 
         .>> eof
         
         
