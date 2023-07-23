@@ -92,7 +92,7 @@ type Extensions() =
             failwithf $"{a} does not equal {b}"        
     
     [<Extension>]
-    static member inline StringEquals(a, b: string) =
+    static member inline AssertStringEquals(a, b: string) =
         if String.Equals(string a, b, StringComparison.OrdinalIgnoreCase) then
             ()
         else

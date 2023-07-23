@@ -14,33 +14,22 @@ open Xunit
 open FParsec
 
 module ``Parser Tests`` =
-    
-    // Test parsing the string, it is sanitized first
-    let testParser (parser: Parser<'t>) (input: string) =
-
-        let source, comments =
-            parseComments input
-        
-        let parsed =
-            match parseWith parser source with
-            | Result.Ok x -> x
-            | Result.Error err -> failwith (string err)
-        
-        ()
             
-    // Test parsing the string, it is sanitized first
-    let testRoundtrip (parser: Parser<'t>) (input: string) (writer: Encoder -> 't -> unit) =
+    // Test parsing the string
+    let testRoundtrip (parser: Parser<'t>) (mzn: string) (writer: Encoder -> 't -> unit) =
 
-        let parser = parser .>> eof
-        
-        let source, comments =
-            parseComments input
+        let parser =
+            Parsers.ws >>.
+            parser
+            .>> Parsers.ws
+            .>> eof
         
         let parsed =
-            match parseWith parser source with
+            match parseWith parser mzn with
             | Result.Ok x ->
                 x
             | Result.Error err ->
+                let trace = err.Trace
                 failwith (string err)
             
         let encoder = Encoder()
@@ -78,12 +67,13 @@ module ``Parser Tests`` =
         
     [<Theory>]
     [<InlineData("int")>]
+    [<InlineData("any")>]
     [<InlineData("var int")>]
-    [<InlineData("var set of int")>]
     [<InlineData("opt bool")>]
     [<InlineData("set of opt float")>]
     [<InlineData("var X")>]
     [<InlineData("par set of 'something weird'")>]
+    [<InlineData("var set of string")>]
     let ``test base type inst`` arg =
         testRoundtrip Parsers.base_ti_expr arg (fun enc -> enc.writeTypeInst)
         
@@ -97,13 +87,13 @@ module ``Parser Tests`` =
     [<InlineData("record(a: int, bool:b)")>]
     [<InlineData("record(c: X, set of int: d)")>]
     let ``test record type inst`` arg =
-        testParser Parsers.record_ti arg
+        testRoundtrip Parsers.record_ti arg (fun enc -> enc.writeRecordType)
                 
     [<Theory>]
     [<InlineData("tuple(int, string, string)")>]
     [<InlineData("tuple(X, 'something else', set of Q)")>]
     let ``test tuple type inst`` arg =
-        testParser Parsers.tuple_ti arg
+        testRoundtrip Parsers.tuple_ti arg (fun enc -> enc.writeTupleType)
         
     [<Theory>]
     [<InlineData("var set of bool: xd")>]
@@ -119,6 +109,7 @@ module ``Parser Tests`` =
     [<InlineData("par set of 'something weird': okay")>]
     [<InlineData("array[int] of int: A_B_C")>]
     [<InlineData("array[int,int] of var float: _A2")>]
+    [<InlineData("array[5..9] of set of bool: x2")>]
     [<InlineData("record(a: int, bool:b): 'asdf '")>]
     [<InlineData("record(c: X, set of int: d): asdf")>]
     [<InlineData("tuple(int, string, string): x")>]
@@ -132,7 +123,7 @@ module ``Parser Tests`` =
     [<InlineData("enum C = {  'One', 'Two',   'Three'}")>]
     [<InlineData("enum D")>]
     let ``test enum`` arg =
-        testRoundtrip Parsers.enum_item arg (fun enc -> enc.writeEnum)
+        testRoundtrip Parsers.enum_item arg (fun enc -> enc.writeEnumType)
     
     [<Theory>]
     [<InlineData("type A = record(a: int)")>]
@@ -165,9 +156,14 @@ module ``Parser Tests`` =
         
     [<Theory>]
     [<InlineData("% 12312312")>]
-    [<InlineData("/* wsomethign */")>]
     let ``test comments`` arg =
-        let output = parseWith Parsers.comment arg
+        let output = parseWith Parsers.line_comment arg
+        output.AssertOk()
+        
+    [<Theory>]
+    [<InlineData("/* something */")>]
+    let ``test block comment`` arg =
+        let output = parseWith Parsers.block_comment arg
         output.AssertOk()
         
     [<Theory>]
@@ -254,17 +250,21 @@ module ``Parser Tests`` =
     [<Theory>]
     [<InlineData("""
     output 
-    [ "Cost = ",  show( obj ), "\n" ] ++ 
-    [ "Pieces = \n\t" ] ++ [show(pieces)] ++ [ "\n" ] ++ 
-    [ "Items = \n\t" ] ++
-    [ show(items[k, i]) ++ if k = K then "\n\t" else " " endif |
-        i in 1..N, k in 1..K ] ++
-    [ "\n" ]""")>]                
+        [ "Cost = ",  show( obj ), "\n" ] ++ 
+        [ "Pieces = \n\t" ] ++ [show(pieces)] ++ [ "\n" ] ++ 
+        [ "Items = \n\t" ] ++
+        [ show(items[k, i]) ++ if k = K then "\n\t" else " " endif |
+            i in 1..N, k in 1..K ] ++
+        [ "\n" ]
+    """)>]
+    [<InlineData("""
+        output ["% a = ", show(a), ";\n", "b = ", show(b), ";\n"]
+    """)>]
     let ``test output``input =
         testRoundtrip
             Parsers.output_item
             input
-            (fun enc -> enc.writeOutputItem)
+            (fun enc -> enc.writeOutput)
             
     [<Theory>]
     [<InlineData("annotation f(string:x)")>]
@@ -272,7 +272,7 @@ module ``Parser Tests`` =
         testRoundtrip
             (Parsers.annotation_item)
             input
-            (fun enc -> enc.writeAnnotationItem)
+            (fun enc -> enc.writeDeclareAnnotation)
     
     [<Fact>]
     let ``tet xd `` ()=
@@ -280,18 +280,11 @@ module ``Parser Tests`` =
         testRoundtrip (Parsers.annotations) input (fun enc -> enc.writeAnnotations)
         
     [<Fact>]
-    let ``test output 2`` () =
-        testRoundtrip
-            Parsers.output_item
-            """output ["% a = ", show(a), ";\n", "b = ", show(b), ";\n"]"""
-            (fun enc -> enc.writeOutputItem)
-            
-    [<Fact>]
     let ``test tuple ti`` ()=
         testRoundtrip
             Parsers.declare_item
-            """tuple(1..3): x = (4,)"""
-            (fun enc -> enc.writeDeclare)
+            "tuple(1..3): x = (4,)"
+            (fun enc -> enc.writeItem)
 
     [<Theory>]
     [<InlineData("x.1")>]
@@ -303,10 +296,20 @@ module ``Parser Tests`` =
             (fun enc -> enc.writeExpr)
             
     [<Theory>]
-    [<InlineData("arr2[b].x = 1")>]
+    [<InlineData("1..8")>]
     let ``test exprs`` mzn =
         testRoundtrip
-            Parsers.expr
+            Parsers.ti_expr
             mzn
-            (fun enc -> enc.writeExpr)
+            (fun enc -> enc.writeTypeInst)
     
+    [<Fact>]
+    let ``test comment`` () =
+        let mzn = """
+/* this is a block comment */
+% this is a string comment
+/* this is a % comment in a comment */
+int a = 1;% this is % another /* comment
+"""
+        let statement, comments = Parse.parseComments mzn
+        statement.AssertStringEquals("int a = 1;")

@@ -170,7 +170,6 @@ module rec Encode =
         member this.writeInst (inst: Inst) =
             match inst with
             | Inst.Var -> this.write "var "
-            | Inst.Any -> this.write "any "
             | _ -> ()
                 
         member this.writeTypeInst (ti: TypeInst) =
@@ -200,6 +199,8 @@ module rec Encode =
                 this.write "float"
             | Type.Ann ->
                 this.write "ann"
+            | Type.Any ->
+                this.write "any"
             | Type.Ident x
             | Type.Instanced x ->
                 this.write x                
@@ -590,7 +591,9 @@ module rec Encode =
         member this.writeConstraint (x: ConstraintExpr) =
             this.write "constraint "
             this.writeExpr x.Expr
-            this.writeAnnotations x.Annotations
+            for ann in x.Annotations do
+                this.write ":: "
+                this.write ann
             
         member this.writeIncludeItem (x: IncludeItem) =
             this.write $"include \"{x.Name}\""

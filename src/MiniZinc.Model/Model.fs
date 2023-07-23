@@ -350,7 +350,7 @@ module rec Model =
 
                             
     let parseModelString (mzn: string) : Result<Model, ParseError> =
-                                    
+                                            
         let source, comments =
             parseComments mzn
         

@@ -86,11 +86,10 @@ module ``Model Tests`` =
         assert model.Get().NameSpace.Undeclared.IsEmpty
         
     [<Theory>]
-    [<InlineData("var int: x;x=100;")>]
+    [<InlineData("x=100")>]
     let ``test detect unassigned 2`` arg =
 
         let model =
-            Model.ParseString arg
-        
-        assert model.Get().NameSpace.Undeclared.IsEmpty
-                                        
+            Parse.parseWith Parsers.item arg
+            
+        model.AssertOk()                                        

@@ -176,6 +176,7 @@ module Parsers =
             | Type.Ident _ 
             | Type.Set _
             | Type.Instanced _
+            | Type.Any
             | Type.Ann ->
                 ty, Inst.Par
             
@@ -308,20 +309,6 @@ module Parsers =
         
     let keywordL (name: string) : Parser<string> =
         keyword name <?!> name
-    
-    let line_comment : Parser<string> =
-        c '%' >>.
-        manyCharsTill (noneOf "\r\n") (skipNewline <|> eof)
-        <?!> "line-comment"
-
-    let block_comment : Parser<string> =
-        regex "\/\*([\s\S]*?)\*\/"
-        <?!> "block-comment"
-
-    let comment : Parser<string> =
-        line_comment
-        <|> block_comment
-        |>> (fun s -> s.Trim())
         
     // Parse the keyword and return the value
     let (=>) (key: string) (value: 't) =
@@ -361,6 +348,7 @@ module Parsers =
             |>> IdOr.Val
         
         value <|> name
+    
         
     // <int-literal>
     let int_literal =
@@ -384,6 +372,15 @@ module Parsers =
         manySatisfy (fun c -> c <> '"')
         |> between (c '"') (c '"')
     
+    
+    let string_annotation : Parser<string> =
+        sw "::" >>. string_literal
+        
+    let string_annotations : Parser<string list> =
+        string_annotation
+        .>> ws
+        |> many
+        
     let builtin_num_un_ops =
         [ "+" =!> Op.Add
         ; "-" =!> Op.Subtract ]
@@ -434,13 +431,13 @@ module Parsers =
         ; ".."        =!> Op.DotDot
         ; "++"        =!> Op.PlusPlus
         ; "xor"       =!> Op.Xor
+        ; "intersect" =!> Op.Intersect
         ; "in"        =!> Op.In
         ; "subset"    =!> Op.Subset
         ; "superset"  =!> Op.Superset
         ; "union"     =!> Op.Union
         ; "diff"      =!> Op.Diff
         ; "symdiff"   =!> Op.SymDiff
-        ; "intersect" =!> Op.Intersect
         ; "default"   =!> Op.Default ]
         @ builtin_num_bin_ops
         
@@ -540,31 +537,39 @@ module Parsers =
                 
         array
         
-    // <annotations>        
+    // <annotations>
+    // eg: `:: output :: x(2)`
     let annotations : Parser<Annotations> =
         many (annotation .>> ws)
-   
+    
     // <ti-expr-and-id>
+    // eg: `var int: x`
     let ti_expr_and_id : Parser<TypeInst> =
         pipe(
             ti_expr,
             c ':',
             ident,
-            fun ti _ id -> { ti with Name = id } 
+            annotations,
+            fun ti _ id anns ->
+                { ti with
+                    Name = id
+                    Annotations = anns } 
         )
         
+    // eg: `(int: a, var bool: b)`
     let parameters : Parser<TypeInst list> =
         ti_expr_and_id
         |> betweenSep(c '(', c ')', c ',')
         <?!> "named-args"
         
+    // eg: `(1, 2, "abc")`
     let tupled_args : Parser<Expr list> =
         expr
         |> betweenSep(c '(', c ')', c ',')
         <?!> "tupled-args"
 
     // <operation-item-tail>
-    // eg: even(var int: x) = x mod 2 = 0;
+    // eg: `even(var int: x) = x mod 2 = 0`
     let operation_item_tail =
         tuple(
             parameters,
@@ -573,6 +578,7 @@ module Parsers =
         )
         
     // <predicate-item>
+    // eg: `predicate isOk(int x) = x > 2`
     let predicate_item : Parser<FunctionType> =
         pipe(
             keyword "predicate",
@@ -670,7 +676,6 @@ module Parsers =
         choice
             [ "var" => Inst.Var
             ; "par" => Inst.Par
-            ; "any" => Inst.Any
             ; preturn  Inst.Par ]
         
     // <opt-ti>        
@@ -769,16 +774,17 @@ module Parsers =
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ keyword "bool"   >>% Type.Bool
-        ; keyword "int"    >>% Type.Int
-        ; keyword "string" >>% Type.String
-        ; keyword "float"  >>% Type.Float
-        ; keyword "ann"    >>% Type.Ann
-        ; record_ti        |>> Type.Record
-        ; tuple_ti         |>> Type.Tuple
-        ; expr             |>> Type.Set
-        ; instanced_type   |>> Type.Instanced
-        ; ident            |>> Type.Ident ]
+        [ "int"          => Type.Int
+        ; "bool"         => Type.Bool
+        ; "string"       => Type.String
+        ; "float"        => Type.Float
+        ; "ann"          => Type.Ann
+        ; "any"          => Type.Any    
+        ; record_ti      |>> Type.Record
+        ; tuple_ti       |>> Type.Tuple
+        ; expr           |>> Type.Set
+        ; instanced_type |>> Type.Instanced
+        ; ident          |>> Type.Ident ]
         |> choice
         <?!> "base-ti-tail"
     
@@ -787,10 +793,11 @@ module Parsers =
     
     // <call-expr>
     let call_expr : Parser<CallExpr> =
-        tuple(
-            id_or_op,
-            betweenSep(c '(', c ')', c ',') expr)
-        |> attempt
+        
+        
+        attempt (id_or_op .>> ws .>> (followedBy (c '(')))
+        .>> ws
+        .>>. tupled_args
         <?!> "call-expr"
         
     let wildcard : Parser<WildCard> =
@@ -901,7 +908,7 @@ module Parsers =
         pipe(
             keyword "constraint",
             expr,
-            annotations,
+            string_annotations,
             fun _ expr anns ->
               { Expr = expr
               ; Annotations = anns }
@@ -1105,14 +1112,6 @@ module Parsers =
         |> choice
         <?!> "expr-atom-head"
             
-    let string_annotation : Parser<string> =
-        sw "::" >>. string_literal
-        
-    let string_annotations : Parser<string list> =
-        string_annotation
-        .>> ws
-        |> many
-        
     // <annotations>
     annotation_ref.contents <-
         sw "::" 
@@ -1216,8 +1215,7 @@ module Parsers =
         ; test_item       |>> Item.Test
         ; annotation_item |>> Item.Annotation
         ; assign_item     |>> Item.Assign
-        ; declare_item
-        ; block_comment   |>> Item.Comment ]
+        ; declare_item  ]
         |> choice
                       
     let ast : Parser<Ast> =
@@ -1229,45 +1227,45 @@ module Parsers =
         ws
         >>. many (assign_item .>> ws .>> c ';')
         .>> eof
+        
+        
+    [<Struct>]        
+    type Statement =
+        | Comment of c:string
+        | Statement of s:string
+        
+    let line_comment : Parser<string> =
+        pchar '%' >>. restOfLine true
+        
+    let block_comment : Parser<string> =
+        let pStart = attempt <| skipString "/*"
+        let pEnd = attempt <| skipString "*/"
+        pStart >>. manyCharsTill anyChar pEnd
+        
+    let non_comment : Parser<string> =
+        let pEnd =
+            (skipChar '%')
+            <|> (attempt (skipString "/*"))
+            <|> eof
+        
+        many1CharsTill anyChar (followedBy pEnd)
+        
+    let statement = 
+        [ line_comment  |>> Comment
+        ; block_comment |>> Comment
+        ; non_comment   |>> Statement ] 
+        |> choice
+        
+    let statements =
+        ws
+        >>. many (statement .>> ws)
+        .>> eof
+        
+        
+open Parsers
 
 [<AutoOpen>]       
 module Parse =
-    
-    open System.Text.RegularExpressions
-    
-    /// Parse and remove comments from the given model string
-    let parseComments (mzn: string) : string * List<Comment> =
-        let comments = ResizeArray<string>()
-        let line_comment = "%(.*)$"
-        let block_comment = "\/\*([\s\S]*?)\*\/"
-        let pattern = $"{line_comment}|{block_comment}"
-        let evaluator =
-            MatchEvaluator(fun m ->
-                
-                let comment =
-                    match m.Groups[1], m.Groups[2] with
-                    // Line comment
-                    | m, _ when m.Success ->
-                        m.Value
-                    // Block comment
-                    | _, m when m.Success ->
-                        m.Value
-                    | _ ->
-                        ""
-                if not (String.IsNullOrWhiteSpace comment) then
-                    comments.Add comment
-                        
-                ""
-            )
-        
-        let output =
-            Regex.Replace(mzn, pattern, evaluator, RegexOptions.Multiline)
-
-        let output =
-            output.Trim()
-        
-        let comments = Seq.toList comments
-        output, comments
         
     // Parse a string with the given parser
     let parseWith (parser: Parser<'t>) (input: string) : Result<'t, ParseError> =
@@ -1289,7 +1287,28 @@ module Parse =
                 ; Trace = state.Message }
                 
             Result.Error err
-    
+
+    /// Parse and remove comments from the given model string
+    let parseComments (mzn: string) : string * List<Comment> =
+        let comments = ResizeArray<string>()
+        let statements = ResizeArray<string>()
+                
+        match parseWith Parsers.statements mzn with
+        | Result.Ok xs ->
+            for x in xs do
+                match x with
+                | Comment c ->
+                    comments.Add c
+                | Statement s ->
+                    statements.Add s
+        | Result.Error err ->
+            failwith err.Message
+            
+        let comments = Seq.toList comments
+        let statement = String.Join("\n", statements)
+        statement, comments            
+
+        
     /// Parse '.dzn' style model data from a string        
     let parseDataString (dzn: string) : Result<AssignExpr list, ParseError> =
                             

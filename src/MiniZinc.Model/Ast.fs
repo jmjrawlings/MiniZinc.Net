@@ -49,7 +49,6 @@ module rec Ast =
     type Inst =
         | Var = 0
         | Par = 1
-        | Any = 2
         
     type VarKind =
         | AssignedPar = 0
@@ -340,6 +339,7 @@ module rec Ast =
         | String
         | Float
         | Ann
+        | Any 
         | Instanced of Ident
         | Ident  of Ident
         | Set    of Expr // TODO confirm with MiniZinc team
@@ -409,7 +409,7 @@ module rec Ast =
 
     type ConstraintExpr =
         { Expr: Expr
-        ; Annotations: Annotations }
+        ; Annotations: string list }
 
     type Argument =
         Expr
