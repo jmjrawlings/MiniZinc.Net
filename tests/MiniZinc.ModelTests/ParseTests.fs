@@ -59,6 +59,15 @@ module ``Parser Tests`` =
         testRoundtrip Parsers.ident arg (fun enc -> enc.write)
     
     [<Theory>]
+    [<InlineData("abc")>]
+    [<InlineData("Escaped single \\\'quotes\\\' are fine.")>]
+    [<InlineData("Escaped double \\\"quotes\\\" are fine.")>]
+    let ``test string literal`` mzn =
+        let p = Parsers.string_lit_contents >>. eof
+        let result = Parse.parseWith p mzn
+        result.AssertOk()
+    
+    [<Theory>]
     [<InlineData("[")>]
     [<InlineData("@")>]
     let ``test invalid identifier`` arg =
@@ -115,7 +124,7 @@ module ``Parser Tests`` =
     [<InlineData("tuple(int, string, string): x")>]
     [<InlineData("tuple(X, 'something else', set of Q): Q")>]
     let ``test type inst and id`` arg =
-        testRoundtrip Parsers.ti_expr_and_id arg (fun enc -> enc.writeParameter)
+        testRoundtrip Parsers.named_ti arg (fun enc -> enc.writeParameter)
             
     [<Theory>]
     [<InlineData("enum A = {A1}")>]
@@ -204,10 +213,11 @@ module ``Parser Tests`` =
         | Result.Ok m -> m
         | Result.Error err -> failwith err.Message
         
-        
     [<Theory>]
-    [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _|]")>]
     [<InlineData("[| |]")>]
+    [<InlineData("[| one_item |]")>]
+    [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _||]")>]
+    [<InlineData("[|1,2,3,4 | 5,6,7,8 | 9,10,11,12  |    |]")>]
     [<InlineData("[| true, false, true |]")>]
     let ``test array2d literal`` arg =
         testRoundtrip Parsers.array2d_literal arg (fun enc -> enc.writeArray2d)
@@ -296,20 +306,24 @@ module ``Parser Tests`` =
             (fun enc -> enc.writeExpr)
             
     [<Theory>]
-    [<InlineData("1..8")>]
+    [<InlineData("int:a::add_to_output = product([|2, 2 | 2, 2|])")>]
     let ``test exprs`` mzn =
         testRoundtrip
-            Parsers.ti_expr
+            Parsers.declare_item
             mzn
-            (fun enc -> enc.writeTypeInst)
+            (fun enc -> enc.writeItem)
     
-    [<Fact>]
-    let ``test comment`` () =
-        let mzn = """
-/* this is a block comment */
-% this is a string comment
-/* this is a % comment in a comment */
-int a = 1;% this is % another /* comment
-"""
+    [<Theory>]
+    [<InlineData("/* this is a block comment */")>]
+    [<InlineData("% this is a line comment */")>]
+    [<InlineData("/* this has % things /  in it */")>]
+    let ``test comment`` mzn =
         let statement, comments = Parse.parseComments mzn
-        statement.AssertStringEquals("int a = 1;")
+        statement.AssertEmpty("")
+        
+    [<Fact>]
+    let ``test xd`` () =
+        let mzn = """output ["Escaped single \'quotes\' are fine."];"""
+        let model = parseModelString mzn
+        model.AssertOk()
+        

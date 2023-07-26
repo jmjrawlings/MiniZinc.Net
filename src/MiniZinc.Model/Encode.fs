@@ -233,9 +233,9 @@ module rec Encode =
             this.write "] of "
             this.writeTypeInst arr.Elements
                             
-        member this.writeSetLit (set: SetLiteral) =
+        member this.writeSetLit (set: Expr list) =
             this.write "{"
-            this.writeExprs set.Elements
+            this.writeExprs set
             this.write "}"
 
         member inline this.writeIdOrOp<'t when 't :> Enum> (x: IdOr<'t>) =
@@ -556,10 +556,15 @@ module rec Encode =
             this.write ": "
             this.writeExpr expr
             
-        member this.writeOutput (x: Expr) =
+        member this.writeOutput (x: OutputExpr) =
             this.write "output "
-            this.writeExpr x            
-            
+            match x.Annotation with
+            | Some ann ->
+                this.writeAnnotation (Expr.String ann)
+            | _ ->
+                ()
+            this.writeExpr x.Expr                
+                
         member this.writeFunction (x: FunctionType) =
             this.write "function "
             this.writeTypeInst x.Returns
@@ -591,9 +596,7 @@ module rec Encode =
         member this.writeConstraint (x: ConstraintExpr) =
             this.write "constraint "
             this.writeExpr x.Expr
-            for ann in x.Annotations do
-                this.write ":: "
-                this.write ann
+            this.writeAnnotations x.Annotations
             
         member this.writeIncludeItem (x: IncludeItem) =
             this.write $"include \"{x.Name}\""

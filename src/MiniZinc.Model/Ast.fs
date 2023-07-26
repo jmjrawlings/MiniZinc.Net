@@ -173,7 +173,7 @@ module rec Ast =
         | String        of string
         | Ident         of string
         | Bracketed     of Expr
-        | Set           of SetLiteral
+        | Set           of Expr list
         | SetComp       of SetCompExpr
         | RecordAccess  of string * Expr
         | TupleAccess   of uint8 * Expr
@@ -357,9 +357,6 @@ module rec Ast =
     type ArrayType =
         { Dimensions : ArrayDim list
         ; Elements: TypeInst }
-       
-    type SetLiteral =
-        { Elements: Expr list }
         
     type IncludeItem =
         { Name: string
@@ -402,14 +399,14 @@ module rec Ast =
         | Declare    of TypeInst
         | Solve      of SolveItem
         | Test       of TestItem
-        | Output     of Expr
+        | Output     of OutputExpr
         | Function   of FunctionType
         | Annotation of AnnotationType
         | Comment    of string
 
     type ConstraintExpr =
         { Expr: Expr
-        ; Annotations: string list }
+        ; Annotations: Annotations }
 
     type Argument =
         Expr
@@ -442,15 +439,17 @@ module rec Ast =
 
     type AnnotationType =
         { Name: string
-        ; Params: TypeInst list }
+        ; Params: TypeInst list
+        ; Body: Expr option }
     
     type FunctionType =
         { Name: string
         ; Returns : TypeInst
         ; Annotations : Annotations
         ; Parameters : TypeInst list
+        ; Ann : string
         ; Body: Expr option }
-        
+                
         interface INamed with
             member this.Name = this.Name
         
@@ -460,6 +459,9 @@ module rec Ast =
     type AssignExpr =
         NamedArg
 
+    type OutputExpr =
+        { Expr: Expr; Annotation: string option }
+        
     type LetLocal =
         Choice<TypeInst, ConstraintExpr>
         

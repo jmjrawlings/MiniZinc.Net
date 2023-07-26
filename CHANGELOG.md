@@ -9,6 +9,10 @@
 - Added support for instanced variables `$T` in `TypeInsts`
 - Simplified enum parsing
 - Removed some unused parsers and AST cases
+- Added support for annotations on Output expressions
+- Added support for bodies in Annotation types
+- Fixed several bugs in comments preprocessing
+- Replace identifier parsing with inbuilt FParsec `identifier` which should be more performant (tests coming soon(tm))
 
 ## Model
 - Added support for instanced variables `$T` in `TypeInsts`

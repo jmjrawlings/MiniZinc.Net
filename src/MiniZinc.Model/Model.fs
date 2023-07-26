@@ -14,6 +14,7 @@ past the parsing phase.
 namespace MiniZinc
 
 open System.IO
+open FParsec.CharParsers
 
 [<AutoOpen>]
 module rec Model =
@@ -231,7 +232,7 @@ module rec Model =
         ; Includes    : Map<string, IncludeItem>
         ; NameSpace   : NameSpace
         ; Constraints : ConstraintExpr list
-        ; Outputs     : Expr list
+        ; Outputs     : OutputExpr list
         ; SolveMethod : SolveItem }
                         
     module Model =
@@ -347,7 +348,6 @@ module rec Model =
                 enc.writetn()
                 
             enc.String
-
                             
     let parseModelString (mzn: string) : Result<Model, ParseError> =
                                             
