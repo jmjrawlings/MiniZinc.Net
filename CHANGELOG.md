@@ -1,6 +1,8 @@
 # Changelog
 
-## [0.5.1] - UNRELEASED
+## [0.6.0] - 2023-07-26
+
+Further progress towards full test coverage.
 
 ## Parser
 - Added support for Tuple and Record literals
@@ -12,18 +14,23 @@
 - Added support for annotations on Output expressions
 - Added support for bodies in Annotation types
 - Fixed several bugs in comments preprocessing
-- Replace identifier parsing with inbuilt FParsec `identifier` which should be more performant (tests coming soon(tm))
+- Replaced identifier parsing with the FParsec's `identifier`
+- Replaced integer and float parsing with FParsec's `numberLiteral`
+- Removed the `NumExpr` class entirely as it was just a subset of `Expr`
 
 ## Model
 - Added support for instanced variables `$T` in `TypeInsts`
  
 ## Client
 - Changed `ILogger` to `ILogger<T>`
-- Added basic logging of compile
+- Added basic logging to `compile`
 - Changed `CommandResult` and `Arg` to structs
 
+## Bugfixes
+- Many that I forget to write down
 
-## [0.5.0] -  2023-07-16
+
+## [0.5.0] - 2023-07-16
 
 The major milestone of this release is (almost) full integration with the [libminizinc test suite](https://github.com/MiniZinc/libminizinc/tree/master/tests/spec).
 
