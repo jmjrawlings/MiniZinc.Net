@@ -148,13 +148,13 @@ module ``Parser Tests`` =
     [<InlineData("(1)")>]
     [<InlineData("(  (3))")>]
     let ``test num expr atom simple`` arg =
-        testRoundtrip Parsers.num_expr_atom_head arg (fun enc -> enc.writeNumExpr)
+        testRoundtrip Parsers.num_expr_atom_head arg (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("-100")>]
     [<InlineData("+300.2")>]
     let ``test num unary op`` arg =
-        testRoundtrip Parsers.num_expr_atom_head arg (fun enc -> enc.writeNumExpr)
+        testRoundtrip Parsers.num_expr_atom_head arg (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("100 + 100")>]

@@ -314,23 +314,11 @@ module Parsers =
         
         value <|> name
     
-        
-    // <int-literal>
-    let int_literal =
-        many1Satisfy Char.IsDigit
-        |>> int
-    
-    // <bool-literal>    
+    // <bool-literal>
     let bool_literal : Parser<bool> =
         choice
             [ "true" => true
             ; "false" => false ]
-        
-    // <float-literal>        
-    let float_literal : Parser<float> =
-        "[0-9]+\.[0-9]+"
-        |> regex 
-        |>> float        
         
     let string_lit_contents : Parser<string> =
          
@@ -345,9 +333,24 @@ module Parsers =
             (satisfy (fun c -> c <> '"')
             <|>
             quoted_string)
-        
+                
+    let number_lit : Parser<Expr> =
+        let format =
+           NumberLiteralOptions.AllowMinusSign
+           ||| NumberLiteralOptions.AllowFraction
+           ||| NumberLiteralOptions.AllowExponent
+
+        numberLiteral format "number"
+        |>> function
+                | nl when nl.IsInteger ->
+                    Expr.Int (int32 nl.String)
+                | nl ->
+                    Expr.Float (float nl.String)
+                    
+                        
+            
     // <string-literal>
-    let string_literal : Parser<string> =
+    let string_lit : Parser<string> =
             
         between
             (pchar '\"')
@@ -357,7 +360,7 @@ module Parsers =
     
     let string_annotation : Parser<string> =
         skip "::"
-        >>. string_literal
+        >>. string_lit
         |>> sprintf "\"%s\""
         
     let builtin_num_un_ops =
@@ -368,7 +371,7 @@ module Parsers =
     let builtin_num_un_op =
         builtin_num_un_ops
         |> choice
-        |>> (int >> enum<NumericUnaryOp>)
+        |>> (int >> enum<UnaryOp>)
         <?!> "builtin-num-un-op"
     
     let builtin_num_bin_ops =
@@ -389,7 +392,7 @@ module Parsers =
     let builtin_num_bin_op =
          builtin_num_bin_ops
          |> choice
-         |>> (int >> enum<NumericBinaryOp>)
+         |>> (int >> enum<BinaryOp>)
          <?!> "num-bin-op"
             
     let builtin_bin_ops = 
@@ -454,12 +457,12 @@ module Parsers =
         createParserForwardedToRef<Expr, ParserState>()
 
     // <num-expr>    
-    let (num_expr: Parser<NumExpr>, num_expr_ref) =
-        createParserForwardedToRef<NumExpr, ParserState>()
+    let (num_expr: Parser<Expr>, num_expr_ref) =
+        createParserForwardedToRef<Expr, ParserState>()
         
     // <num-expr-atom>
-    let (num_expr_atom: Parser<NumExpr>, num_expr_atom_ref) =
-        createParserForwardedToRef<NumExpr, ParserState>()
+    let (num_expr_atom: Parser<Expr>, num_expr_atom_ref) =
+        createParserForwardedToRef<Expr, ParserState>()
         
     // <num-expr-atom>
     let (annotation: Parser<Annotation>, annotation_ref) =
@@ -517,7 +520,32 @@ module Parsers =
             |> betweenWs ("[|", "|]")
                 
         array
+    
+    // eg: ```1..10```
+    // eg: ```1 .. (a = 10)```
+    // We make a special case here so it can be attempted
+    // before the float parser
+    let number_range : Parser<Expr> =
         
+        let left = 
+            pint32
+            .>> ws
+            .>> skipChar '.'
+            .>> skipChar '.'
+            |>> Expr.Int
+            |> attempt
+            
+        let right =
+            num_expr
+            
+        pipe(
+            left,
+            right,
+            fun left right ->
+                let op = IdOr.Val BinaryOp.DotDot
+                Expr.BinaryOp(left, op, right)
+                )
+            
     // <annotations>
     // eg: `:: output :: x(2)`
     let annotations : Parser<Annotations> =
@@ -678,7 +706,7 @@ module Parsers =
     // <include-item>
     let include_item : Parser<IncludeItem> =
         keyword "include"
-        >>. string_literal
+        >>. string_lit
         |>> IncludeItem.Create
     
     // <var-par>
@@ -1042,48 +1070,37 @@ module Parsers =
             |> choice
         (tail >>== expr_atom_tail)
         <|>
-        preturn expr    
+        preturn expr
     
     // <num-expr-atom-head>    
-    let num_expr_atom_head=
-        [ float_literal      |>> NumExpr.Float
-          int_literal        |>> NumExpr.Int
-          bracketed num_expr |>> NumExpr.Bracketed
-          let_expr           |>> NumExpr.Let
-          if_else_expr       |>> NumExpr.IfThenElse
-          call_expr          |>> NumExpr.Call
-          num_un_op          |>> NumExpr.UnaryOp
-          ident              |>> NumExpr.Id
+    let num_expr_atom_head : Parser<Expr> =
+        [ number_range 
+          number_lit 
+          bracketed num_expr |>> Expr.Bracketed
+          let_expr           |>> Expr.Let
+          if_else_expr       |>> Expr.IfThenElse
+          call_expr          |>> Expr.Call
+          num_un_op          |>> Expr.UnaryOp
+          ident              |>> Expr.Ident
           ]
         |> choice
         <?!> "num-expr-head"
-        
-    // <num-expr-atom-tail>
-    let rec num_expr_atom_tail (expr: NumExpr) : Parser<NumExpr> =
-        let tail =
-            [ tuple_access_tail |>> fun i -> NumExpr.TupleAccess(i, expr)
-              record_access_tail |>> fun f -> NumExpr.RecordAccess(f, expr)
-              array_access_tail |>> fun xs -> NumExpr.ArrayAccess(xs, expr) ]
-            |> choice
-        (tail >>== num_expr_atom_tail)
-        <|>
-        preturn expr
-            
+                    
     // <num-expr-atom>        
     num_expr_atom_ref.contents <-
         num_expr_atom_head
-        >>== num_expr_atom_tail
+        >>== expr_atom_tail
         <?!> "num-expr-atom"
         
     // <num-expr-binop-tail>
-    let num_expr_binop_tail (head: NumExpr) =
+    let num_expr_binop_tail (head: Expr) =
         
         let binop =
             pipe(
                 op builtin_num_bin_op,
                 num_expr,
                 fun operator tail ->
-                    NumExpr.BinaryOp (head, operator, tail)
+                    Expr.BinaryOp (head, operator, tail)
             )
             
         binop <|> preturn head
@@ -1111,10 +1128,10 @@ module Parsers =
     // <expr-atom-head>    
     let expr_atom_head : Parser<Expr> =
         [
-          float_literal   |>> Expr.Float
-          int_literal     |>> Expr.Int
+          number_range
+          number_lit
           bool_literal    |>> Expr.Bool
-          string_literal  |>> Expr.String
+          string_lit      |>> Expr.String
           wildcard        |>> Expr.WildCard
           absent          |>> Expr.Absent
           record_literal  |>> Expr.Record
@@ -1294,7 +1311,7 @@ module Parsers =
     let statement =
         [ line_comment  |>> Comment
         ; block_comment |>> Comment
-        ; string_literal |>> Statement
+        ; string_lit |>> Statement
         ; non_comment   |>> Statement ] 
         |> choice
         

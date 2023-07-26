@@ -175,9 +175,9 @@ module rec Ast =
         | Bracketed     of Expr
         | Set           of Expr list
         | SetComp       of SetCompExpr
-        | RecordAccess  of string * Expr
-        | TupleAccess   of uint8 * Expr
-        | ArrayAccess   of ArrayAccess * Expr
+        | RecordAccess  of RecordAccessExpr
+        | TupleAccess   of TupleAccessExpr
+        | ArrayAccess   of ArrayAccessExpr
         | Array1d       of Array1dExpr
         | Array1dIndex
         | Array2d       of Array2dExpr
@@ -187,18 +187,30 @@ module rec Ast =
         | Tuple         of TupleExpr
         | Record        of RecordExpr
         | UnaryOp       of UnaryOpExpr
-        | BinaryOp      of BinaryOpExpr
+        | BinaryOp      of BinaryOpExpr 
         | IfThenElse    of IfThenElseExpr
         | Let           of LetExpr
         | Call          of CallExpr
         | GenCall       of GenCallExpr
 
-    type UnaryOpExpr =
-        IdOr<UnaryOp> * Expr
-        
+    type CallExpr =
+        IdOr<Op> * Expr list
+    
+    type RecordAccessExpr =
+        string * Expr
+    
+    type TupleAccessExpr =
+        uint8 * Expr
+    
+    type ArrayAccessExpr =
+        ArrayAccess * Expr
+    
     type BinaryOpExpr =
         Expr * IdOr<BinaryOp> * Expr
         
+    type UnaryOpExpr =
+        IdOr<UnaryOp> * Expr
+    
     type ArrayAccess =
         Expr list
 
@@ -225,12 +237,6 @@ module rec Ast =
         { Yields : IdOr<WildCard> list
         ; From  : Expr  
         ; Where : Expr option }
-
-    type CallExpr =
-        IdOr<Op> * Arguments
-        
-    type OperatorCall<'t when 't: enum<int>> =
-        't * Arguments
         
     type Array1dExpr =
         Expr list
@@ -242,7 +248,7 @@ module rec Ast =
         Expr list
         
     type RecordExpr =
-        (Ident * Expr) list
+        NamedExpr list
         
     type SolveItem =
         | Sat of Annotations
@@ -277,20 +283,20 @@ module rec Ast =
         ; ElseIf : (Expr * Expr) list
         ; Else   : Expr option}
 
-    [<RequireQualifiedAccess>]
-    type NumExpr =
-        | Int          of int
-        | Float        of float
-        | Id           of Ident
-        | Bracketed    of NumExpr
-        | Call         of CallExpr
-        | RecordAccess of string * NumExpr
-        | TupleAccess  of uint8 * NumExpr
-        | IfThenElse   of IfThenElseExpr
-        | Let          of LetExpr
-        | UnaryOp      of IdOr<NumericUnaryOp> * NumExpr
-        | BinaryOp     of NumExpr * IdOr<NumericBinaryOp> * NumExpr
-        | ArrayAccess  of ArrayAccess * NumExpr
+    // [<RequireQualifiedAccess>]
+    // type NumExpr =
+    //     | Int          of int
+    //     | Float        of float
+    //     | Id           of Ident
+    //     | Bracketed    of NumExpr
+    //     | Call         of CallExpr
+    //     | RecordAccess of string * NumExpr
+    //     | TupleAccess  of uint8 * NumExpr
+    //     | IfThenElse   of IfThenElseExpr
+    //     | Let          of LetExpr
+    //     | UnaryOp      of IdOr<NumericUnaryOp> * NumExpr
+    //     | BinaryOp     of NumExpr * IdOr<NumericBinaryOp> * NumExpr
+    //     | ArrayAccess  of ArrayAccess * NumExpr
     
     type EnumType =
         { Name : Ident
@@ -407,18 +413,9 @@ module rec Ast =
     type ConstraintExpr =
         { Expr: Expr
         ; Annotations: Annotations }
-
-    type Argument =
-        Expr
       
-    type NamedArg =
+    type NamedExpr =
         Ident * Expr
-
-    type NamedArgs =
-        NamedArg list
-        
-    type Arguments =
-        Argument list
            
     type TestItem =
         { Name: string
@@ -457,7 +454,7 @@ module rec Ast =
         unit
 
     type AssignExpr =
-        NamedArg
+        NamedExpr
 
     type OutputExpr =
         { Expr: Expr; Annotation: string option }

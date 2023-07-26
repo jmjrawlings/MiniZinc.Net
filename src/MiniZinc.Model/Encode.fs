@@ -221,11 +221,6 @@ module rec Encode =
                 this.write x
             | ArrayDim.Set x ->
                 this.writeExpr x
-
-        member this.writeRange (lo, hi) =
-            this.writeNumExpr lo
-            this.write ".."
-            this.writeNumExpr hi
                     
         member this.writeArrayType (arr: ArrayType) =
             this.write "array["
@@ -247,59 +242,6 @@ module rec Encode =
                 let s = operators[x]
                 this.write s
                         
-        member this.writeNumExpr (x: NumExpr) =
-            match x with
-            
-            | NumExpr.Int i ->
-                this.writeInt i
-                
-            | NumExpr.Float f ->
-                this.writeFloat f
-                
-            | NumExpr.Id s ->
-                this.write s
-                
-            | NumExpr.Bracketed expr ->
-                this.write '('
-                this.writeNumExpr expr
-                this.write ')'
-                
-            | NumExpr.Call expr ->
-                this.writeCall expr
-                
-            | NumExpr.IfThenElse expr ->
-                this.writeIfThenElse expr
-                
-            | NumExpr.Let expr ->
-                this.writeLetExpr expr
-                
-            | NumExpr.UnaryOp (op, expr) ->
-                this.writeIdOrOp op
-                this.write " "
-                this.writeNumExpr expr
-                
-            | NumExpr.BinaryOp (left, op, right) ->
-                this.writeNumExpr left
-                this.write " "
-                this.writeIdOrOp op
-                this.write " "
-                this.writeNumExpr right
-                
-            | NumExpr.ArrayAccess (access, expr) ->
-                this.writeNumExpr expr
-                this.write '['
-                this.writeExprs access
-                this.write ']'
-                                    
-            | NumExpr.RecordAccess (field, expr) ->
-                this.writeNumExpr expr
-                this.write "."
-                this.write field
-                
-            | NumExpr.TupleAccess (item, expr) ->
-                this.writeNumExpr expr
-                this.write "."
-                this.write item
         
         member this.writeString (s: string) =
             this.write $"\"{s}\""
