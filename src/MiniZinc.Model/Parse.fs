@@ -12,6 +12,7 @@ namespace MiniZinc
 
 open System
 open System.IO
+open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System.Text
 open FParsec
@@ -34,263 +35,6 @@ type ParserState() =
 
 type Parser<'t> =
     Parser<'t, ParserState>
-
-/// <summary>
-/// Overloaded methods that clean up parsing code a bit
-/// </summary>
-/// <remarks>
-/// The shorthand used here is:
-/// - p: parse
-/// - s: space
-/// - 1: at least 1
-///
-/// And so `sp1` would be "at least one space followed by p" etc
-///
-/// All of the overload just make calling easier instead of
-/// having to wrap chars and strings in `pchar` and `pstring`
-/// respectively
-/// </remarks>
-type private ParseUtils () =
-    
-    // parse 
-    static member p (x: char): Parser<char> =
-        pchar x
-        
-    // parse 
-    static member p (x: string) : Parser<string> =
-        pstring x
-    
-    // parse spaces
-    static member ps (x: Parser<'t>) : Parser<'t> =
-        x .>> spaces
-    
-    // parse spaces    
-    static member ps (x: string) : Parser<string> =
-        pstring x .>> spaces
-        
-    // parse spaces
-    static member ps (x: char) : Parser<char> =
-        pchar x .>> spaces
-    
-    // parse spaces1
-    static member ps1 (x: Parser<'t>) : Parser<'t> =
-        x .>> spaces1
-    
-    // parse spaces1    
-    static member ps1 (x: string) : Parser<string> =
-        pstring x .>> spaces1
-
-    // parse spaces1                        
-    static member ps1 (x: char) : Parser<char> =
-        pchar x .>> spaces1            
-    
-    // space parse space    
-    static member sps (x: Parser<'t>) : Parser<'t> =
-        between spaces spaces x
-    
-    // space parse space
-    static member sps (x: string) : Parser<string> =
-        ParseUtils.sps (pstring x)
-        
-    // space parse space            
-    static member sps (c: char) : Parser<char> =
-        ParseUtils.sps (pchar c)
-        
-    // space1 parse space1
-    static member sps1 (x: Parser<'t>) : Parser<'t> =
-        between spaces1 spaces1 x
-
-    // space1 parse space1        
-    static member sps1 (x: string) : Parser<string> =
-        ParseUtils.sps1 (pstring x)
-        
-    // space1 parse space1
-    static member sps1 (c: char) : Parser<char> =
-        ParseUtils.sps1 (pchar c)
-    
-    // space parse     
-    static member sp (x: Parser<'t>) : Parser<'t> =
-        spaces >>. x
-
-    // space parse     
-    static member sp (c: char) =
-        ParseUtils.sp (pchar c)
-
-    // space parse     
-    static member sp (s: string) =
-        ParseUtils.sp (pstring s)
-        
-    // space1 parse
-    static member sp1 (x: Parser<'t>) : Parser<'t> =
-        spaces1 >>. x
-        
-    // space1 parse
-    static member sp1 (c: char) =
-        ParseUtils.sp1 (pchar c)
-        
-    // space1 parse            
-    static member sp1 (s: string) =
-        ParseUtils.sp1 (pstring s)
-
-    // Parse between 'start' and 'end' with optional whitespace 
-    static member between (
-            pStart : Parser<_>,
-            pEnd : Parser<_>,
-            [<Optional; DefaultParameterValue(true)>] ws : bool
-        ) =
-            let pStart', pEnd' =
-                match ws with
-                | true -> (pStart .>> spaces), (spaces >>. pEnd)
-                | false -> pStart, pEnd
-            between pStart' pEnd'
-            
-    static member between(a: string, b: string, [<Optional; DefaultParameterValue(true)>] ws : bool) =
-        ParseUtils.between(pstring a, pstring b, ws=ws)
-        
-    static member between(a: char, b: char, [<Optional; DefaultParameterValue(true)>] ws : bool) =
-        ParseUtils.between(pchar a, pchar b, ws=ws)
-
-    // Parse 0 or more 'p' between 'start' and 'end' with optional whitespace            
-    static member between (
-            pStart : Parser<_>,
-            pEnd : Parser<_>,
-            pDelim : Parser<_>,
-            [<Optional; DefaultParameterValue(false)>] many : bool,
-            [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
-        ) =
-            ParseUtils.sepBy(pDelim, many=many, allowTrailing=allowTrailing)
-            >> ParseUtils.between(pStart, pEnd, ws=true)
-        
-    // Parse 'p' separated by 'delim'.  Whitespace is consumed  
-    static member sepBy (
-            pDelim : Parser<_>,
-            [<Optional; DefaultParameterValue(false)>] many : bool,
-            [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
-        ) : Parser<'t> -> Parser<'t list> =
-        
-        fun p ->
-            
-            let p' =
-                p .>> spaces
-                
-            let pDelim' =
-                pDelim .>> spaces
-                
-            let items : Parser<'t list> =    
-                match many, allowTrailing with
-                | false, false ->
-                    sepBy p' pDelim'
-                | false, true ->
-                    sepEndBy p' pDelim'
-                | true, false ->
-                    sepBy1 p' pDelim'
-                | true, true ->
-                    sepEndBy1 p' pDelim'
-                    
-            items                    
-
-    static member sepBy1 (
-            pDelim : Parser<_>,
-            [<Optional; DefaultParameterValue(false)>] allowTrailing : bool
-        ) =
-        ParseUtils.sepBy(pDelim, many=true, allowTrailing=allowTrailing)
-    
-    static member lookup([<ParamArray>] parsers: Parser<'t>[]) =
-        choice parsers
-        
-    // Parse an Operator            
-    static member pOp<'T when 'T:enum<int>>(symbol: string, value: 'T) : Parser<int> =
-        let first = symbol.Chars 0
-        let p =
-            match Char.IsLetter first with
-            // Words (eg: diff) handled via keyword
-            | true ->
-                attempt (
-                   pstring symbol
-                   .>> notFollowedBy letter
-                )
-            | false ->
-                pstring symbol
-        let v = LanguagePrimitives.EnumToValue value                    
-        p >>% v            
-
-    /// <summary>
-    /// Determine the correct Inst for the given TypeInst
-    /// </summary>
-    /// <remarks>
-    /// The purpose of this step is to correctly identify
-    /// which TypeInsts are 'var' versus 'par' at every level.
-    ///
-    /// Consider the two examples:
-    /// array[1..3] of record(var bool: a): x;
-    /// array[1..3] of var record(bool: b): y;
-    ///
-    /// Both are decision variables however only the second example
-    /// would be given a TypeInst with Inst == Var.
-    ///
-    /// This function returns the typeinst with the correctly
-    /// inferred Inst for every TypeInst and its children.
-    /// </remarks>
-    static member ResolveInst (ti: TypeInst) =
-        match ParseUtils.ResolveInst ti.Type with
-        // If the type is a Var it overrides the setting here
-        | ty, Inst.Var ->
-            { ti with Type = ty; Inst = Inst.Var }, Inst.Var
-        // Otherwise use the existing value
-        | ty, _ ->
-            { ti with Type = ty; }, ti.Inst
-            
-        
-    static member ResolveInst (ty: Type) =
-        match ty with
-        | Type.Int 
-        | Type.Bool 
-        | Type.String 
-        | Type.Float 
-        | Type.Id _ 
-        | Type.Set _
-        | Type.Ann ->
-            ty, Inst.Par
-        
-        // Any var item means a var tuple
-        | Type.Tuple x ->
-            let mutable inst = Inst.Par
-                            
-            let fields =
-                x.Fields
-                |> List.map (fun item ->
-                    match ParseUtils.ResolveInst item with
-                    | ty, Inst.Var ->
-                        inst <- Inst.Var
-                        ty
-                    | ty, _ -> ty
-                    )
-                
-            (Type.Tuple {Fields = fields}), inst
-                
-        // Any var field means a var record
-        | Type.Record x ->
-            let mutable inst = Inst.Par
-                            
-            let resolved =
-                x.Fields
-                |> List.map (fun field ->
-                    match ParseUtils.ResolveInst field.TypeInst with
-                    | ti, Inst.Var ->
-                        inst <- Inst.Var
-                        { field with TypeInst = ti }
-                    | ti, _ ->
-                        { field with TypeInst = ti }
-                    )
-                
-            (Type.Record {x with Fields=resolved}), inst
-            
-        // A var item means a var array
-        | Type.Array arr ->
-            let ty, inst = ParseUtils.ResolveInst arr.Elements
-            (Type.Array {arr with Elements = ty}), inst
-
-
     
 module Parsers =
     
@@ -298,8 +42,150 @@ module Parsers =
     type ParseDebugEvent<'a> =
         | Enter
         | Leave of Reply<'a>
+
+    let ws = spaces
+    
+    let ws1 = spaces1
+    
+    let (>>==) a b =
+        (a .>> ws) >>= b
         
-    open type ParseUtils
+    type private P () =
+        
+        // Skip char and whitespace
+        static member skip(c: char) =
+            skipChar c .>> ws
+
+        // Skip string and whitespace        
+        static member skip(s: string) =
+            skipString s  .>> ws
+                
+        // Between with whitespace
+        static member betweenWs (pStart : Parser<_>, pEnd : Parser<_>) =
+            between (pStart .>> ws) (ws >>. pEnd)
+                
+        // Between chars with whitespace                
+        static member betweenWs (s: char, e: char) =
+            P.betweenWs (skipChar s, skipChar e)
+            
+        // Between strings with whitespace
+        static member betweenWs (s: string, e: string) =
+            P.betweenWs (skipString s, skipString e)
+        
+        // Between chars with whitespace        
+        static member betweenWs (s: string) =
+            P.betweenWs(s,s)
+        
+        // Between chars with whitespace    
+        static member betweenWs (c: char) =
+            P.betweenWs(c, c)
+
+        static member pipe(a: Parser<'a>, b: Parser<'b>, f) =
+            pipe2 (a .>> ws) b f
+               
+        static member pipe(a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, f) =
+            pipe3 (a .>> ws) (b .>> ws) c f
+            
+        static member pipe(a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, d: Parser<'d>, f) =
+            pipe4 (a .>> ws) (b .>> ws) (c .>> ws) d f
+            
+        static member pipe(a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, d: Parser<'d>, e: Parser<'e>, f) =
+            pipe5 (a .>> ws) (b .>> ws) (c .>> ws) (d .>> ws) e f
+        
+        static member tuple(a: Parser<'a>, b: Parser<'b>) =
+            tuple2 (a .>> ws) b
+               
+        static member tuple(a: Parser<'a>, b: Parser<'b>, c: Parser<'c>) =
+            tuple3 (a .>> ws) (b .>> ws) c
+            
+        static member commaSep p =
+            sepEndBy (p .>> ws) (P.skip ',')
+            
+        static member commaSep1 p =
+            sepEndBy1 (p .>> ws) (P.skip ',')
+            
+        static member betweenBrackets p =
+            P.betweenWs('(', ')') p
+            
+        /// Determine the correct Inst for the given TypeInst
+        /// </summary>
+        /// <remarks>
+        /// The purpose of this step is to correctly identify
+        /// which TypeInsts are 'var' versus 'par' at every level.
+        ///
+        /// Consider the two examples:
+        /// array[1..3] of record(var bool: a): x;
+        /// array[1..3] of var record(bool: b): y;
+        ///
+        /// Both are decision variables however only the second example
+        /// would be given a TypeInst with Inst == Var.
+        ///
+        /// This function returns the typeinst with the correctly
+        /// inferred Inst for every TypeInst and its children.
+        /// </remarks>
+        static member ResolveInst (ti: TypeInst) =
+            match P.ResolveInst ti.Type with
+            // If the type is a Var it overrides the setting here
+            | ty, Inst.Var ->
+                { ti with Type = ty; Inst = Inst.Var }, Inst.Var
+            // Otherwise use the existing value
+            | ty, _ ->
+                { ti with Type = ty; }, ti.Inst
+            
+        static member ResolveInst (ty: Type) =
+            match ty with
+            | Type.Int 
+            | Type.Bool 
+            | Type.String 
+            | Type.Float 
+            | Type.Ident _ 
+            | Type.Set _
+            | Type.Instanced _
+            | Type.Any
+            | Type.Ann ->
+                ty, Inst.Par
+            
+            // Any var item means a var tuple
+            | Type.Tuple x ->
+                let mutable inst = Inst.Par
+                                
+                let fields =
+                    x
+                    |> List.map (fun item ->
+                        match P.ResolveInst item with
+                        | ti, Inst.Par ->
+                            ti
+                        | ti, _ ->
+                            inst <- Inst.Var
+                            ti
+                        )
+                    
+                (Type.Tuple fields), inst
+                    
+            // Any var field means a var record
+            | Type.Record x ->
+                let mutable inst = Inst.Par
+                                
+                let resolved =
+                    x
+                    |> List.map (fun field ->
+                        match P.ResolveInst field with
+                        | ti, Inst.Par ->
+                            ti
+                        | ti, _ ->
+                            inst <- Inst.Var
+                            ti
+                        )
+                    
+                (Type.Record resolved), inst
+                
+            // A var item means a var array
+            | Type.Array arr ->
+                let ty, inst = P.ResolveInst arr.Elements
+                (Type.Array {arr with Elements = ty}), inst
+        
+            
+    open type P
         
     let addToDebug (stream: CharStream<ParserState>) label event =
         let msgPadLen = 50
@@ -340,7 +226,7 @@ module Parsers =
             addToDebug stream label (Leave reply)
             reply
             
-    let (<?!>) (p: Parser<'t>) label : Parser<'t> =
+    let (<?!>) (p: Parser<'t>) (label : string) : Parser<'t> =
         p
         <?> label
         <!> label
@@ -348,60 +234,67 @@ module Parsers =
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
        
-    let simple_id : Parser<Id> = 
-        regex "_?[A-Za-z][A-Za-z0-9_]*"
+    let simple_ident : Parser<Ident> =
+        let options = IdentifierOptions(isAsciiIdStart = fun c -> c = '_' || Char.IsLetter c )
+        identifier options
 
-    let quoted_id : Parser<Id> =
-        regex "'[^'\x0A\x0D\x00]+'"
+    let quoted_ident : Parser<Ident> =
+        between
+            (skipChar '\'')
+            (skipChar '\'')
+            (many1Chars (noneOf "'\x0A\x0D\x00"))
+            |>> (fun s -> $"\'{s}\'")
+                
+    let ident : Parser<Ident> =
+        simple_ident <|> quoted_ident
         
-    // <ident>
-    let id : Parser<Id> =
-        regex "_?[A-Za-z][A-Za-z0-9_]*|'[^'\x0A\x0D\x00]+'"
-        <?!> "identifier"
-
-    // Parse a keyword, ensures its not a part of a larger string
-    let kw (name: string) =
-        attempt (
-            p name
-            .>> notFollowedBy letter
-            .>> spaces
-        )
+    let s (str: string) =
+        pstring str
         
-    // Parse a keyword, ensures its not a part of a larger string
-    let kw1 (name: string) =
-        attempt (
-            p name
-            .>> notFollowedBy letter
-            >>. spaces1
+    let c (chr : char) =
+        pchar chr
+        
+    // let cw (chr: char) =
+    //     pchar chr >>. ws
+        
+    /// Parse the given keyword
+    /// Care is taken here that the given string is
+    /// not part of a large string
+    /// eg `keyword "function"` would not match the
+    /// string "function1" 
+    let keyword (name: string) =
+        attempt(
+            skipString name
+            .>> notFollowedBy (
+                satisfy (fun c ->
+                    Char.IsDigit c || Char.IsLetter c || c = '_')
+                )
         )
+        .>> ws
+        
+    let keywordL (name: string) =
+        keyword name <?!> name
+        
+    // Parse the keyword and return the value
+    let (=>) (key: string) (value: 't) =
+        keyword key
+        >>% value
     
-    let line_comment : Parser<string> =
-        p '%' >>.
-        manyCharsTill (noneOf "\r\n") (skipNewline <|> eof)
-
-    let block_comment : Parser<string> =
-        regex "\/\*([\s\S]*?)\*\/"
-
-    let comment : Parser<string> =
-        line_comment
-        <|> block_comment
-        |>> (fun s -> s.Trim())
-        
-    let (=>) (key: string) value =
-        pstring key >>% value
-        
-    let (=!>)(key: string) (value: 'T) =
-        pOp(key, value)
+    // Parse the given operator and return the value
+    // where value is an enum
+    let (=!>) (operator: string) (value: 't) =
+        pstring operator
+        |> attempt
+        >>% value
             
-    let value_or_quoted_name (p: Parser<'T>) : Parser<IdOr<'T>> =
+    let value_or_quoted_name (parser: Parser<'T>) : Parser<IdOr<'T>> =
         
         let value =
-            p |>> IdOr.Val
+            parser |>> IdOr.Val
         
         let name =
-            simple_id
-            |> between('`', '`')
-            |> attempt
+            simple_ident
+            |> betweenWs '`'
             |>> IdOr.Id
             
         name <|> value
@@ -410,111 +303,142 @@ module Parsers =
     let name_or_quoted_value (p: Parser<'T>) : Parser<IdOr<'T>> =
         
         let name =
-            id |>> IdOr.Id
+            ident
+            |>> IdOr.Id
         
         let value =
             p
-            |> between(''', ''')
+            |> betweenWs '''
             |> attempt
             |>> IdOr.Val
         
         value <|> name
-        
-    // <int-literal>
-    let int_literal =
-        many1Satisfy Char.IsDigit
-        |>> int
     
-    // <bool-literal>    
+    // <bool-literal>
     let bool_literal : Parser<bool> =
-        lookup(
-            "true" => true,
-            "false" => false
+        choice
+            [ "true" => true
+            ; "false" => false ]
+        
+    let string_lit_contents : Parser<string> =
+         
+        let quoted_string =
+            attempt (
+                previousCharSatisfies (fun c -> c = '\\')
+                >>. pchar '"'
             )
+            <?!> "escaped-quote"
         
-    // <float-literal>        
-    let float_literal : Parser<float> =
-        regex "[0-9]+\.[0-9]+"
-        |>> float
-        
+        manyChars 
+            (satisfy (fun c -> c <> '"')
+            <|>
+            quoted_string)
+                
+    let number_lit : Parser<Expr> =
+        let format =
+           NumberLiteralOptions.AllowMinusSign
+           ||| NumberLiteralOptions.AllowFraction
+           ||| NumberLiteralOptions.AllowExponent
+
+        numberLiteral format "number"
+        |>> function
+                | nl when nl.IsInteger ->
+                    Expr.Int (int32 nl.String)
+                | nl ->
+                    Expr.Float (float nl.String)
+                    
+                        
+            
     // <string-literal>
-    let string_literal : Parser<string> =
-        manySatisfy (fun c -> c <> '"')
-        |> between('"', '"')
+    let string_lit : Parser<string> =
+            
+        between
+            (pchar '\"')
+            (pchar '\"')
+            string_lit_contents
+            <?!> "string-lit"
     
+    let string_annotation : Parser<string> =
+        skip "::"
+        >>. string_lit
+        |>> sprintf "\"%s\""
+        
     let builtin_num_un_ops =
-        [ "+" =!> NumericBinaryOp.Add
-        ; "-" =!> NumericBinaryOp.Subtract ]
+        [ "+" =!> Op.Add
+        ; "-" =!> Op.Subtract ]
         
     // <builtin-num-un-op>
     let builtin_num_un_op =
         builtin_num_un_ops
         |> choice
-        |>> enum<NumericUnaryOp>
+        |>> (int >> enum<UnaryOp>)
+        <?!> "builtin-num-un-op"
     
     let builtin_num_bin_ops =
-         [ "+"    =!> BinaryOp.Add
-         ; "-"    =!> BinaryOp.Subtract 
-         ; "*"    =!> BinaryOp.Multiply
-         ; "/"    =!> BinaryOp.Divide         
-         ; "^"    =!> BinaryOp.Exponent
-         ; "~+"   =!> BinaryOp.TildeAdd
-         ; "~-"   =!> BinaryOp.TildeSubtract
-         ; "~*"   =!> BinaryOp.TildeMultiply
-         ; "~/"   =!> BinaryOp.TildeDivide
-         ; "div"  =!> BinaryOp.Div
-         ; "mod"  =!> BinaryOp.Mod
-         ; "~div" =!> BinaryOp.TildeDiv ]
+         [ "+"    =!> Op.Add
+         ; "-"    =!> Op.Subtract 
+         ; "*"    =!> Op.Multiply
+         ; "/"    =!> Op.Divide         
+         ; "^"    =!> Op.Exponent
+         ; "~+"   =!> Op.TildeAdd
+         ; "~-"   =!> Op.TildeSubtract
+         ; "~*"   =!> Op.TildeMultiply
+         ; "~/"   =!> Op.TildeDivide
+         ; "div"  =!> Op.Div
+         ; "mod"  =!> Op.Mod
+         ; "~div" =!> Op.TildeDiv ]
         
     // <builtin-num-bin-op>
     let builtin_num_bin_op =
          builtin_num_bin_ops
          |> choice
-         |>> enum<NumericBinaryOp>
+         |>> (int >> enum<BinaryOp>)
+         <?!> "num-bin-op"
             
     let builtin_bin_ops = 
-        [ "<->"       =!> BinaryOp.Equivalent
-        ; "->"        =!> BinaryOp.Implies
-        ; "<-"        =!> BinaryOp.ImpliedBy
-        ; "\/"        =!> BinaryOp.Or
-        ; "/\\"       =!> BinaryOp.And
-        ; "<="        =!> BinaryOp.LessThanEqual
-        ; ">="        =!> BinaryOp.GreaterThanEqual
-        ; "=="        =!> BinaryOp.EqualEqual
-        ; "<"         =!> BinaryOp.LessThan
-        ; ">"         =!> BinaryOp.GreaterThan
-        ; "="         =!> BinaryOp.Equal
-        ; "!="        =!> BinaryOp.NotEqual
-        ; "~="        =!> BinaryOp.TildeEqual
-        ; "~!="       =!> BinaryOp.TildeNotEqual
-        ; ".."        =!> BinaryOp.DotDot
-        ; "++"        =!> BinaryOp.PlusPlus
-        ; "xor"       =!> BinaryOp.Xor
-        ; "in"        =!> BinaryOp.In
-        ; "subset"    =!> BinaryOp.Subset
-        ; "superset"  =!> BinaryOp.Superset
-        ; "union"     =!> BinaryOp.Union
-        ; "diff"      =!> BinaryOp.Diff
-        ; "symdiff"   =!> BinaryOp.SymDiff
-        ; "intersect" =!> BinaryOp.Intersect
-        ; "default"   =!> BinaryOp.Default ]
+        [ "<->"       =!> Op.Equivalent
+        ; "->"        =!> Op.Implies
+        ; "<-"        =!> Op.ImpliedBy
+        ; "\/"        =!> Op.Or
+        ; "/\\"       =!> Op.And
+        ; "<="        =!> Op.LessThanEqual
+        ; ">="        =!> Op.GreaterThanEqual
+        ; "=="        =!> Op.EqualEqual
+        ; "<"         =!> Op.LessThan
+        ; ">"         =!> Op.GreaterThan
+        ; "="         =!> Op.Equal
+        ; "!="        =!> Op.NotEqual
+        ; "~="        =!> Op.TildeEqual
+        ; "~!="       =!> Op.TildeNotEqual
+        ; ".."        =!> Op.DotDot
+        ; "++"        =!> Op.PlusPlus
+        ; "xor"       =!> Op.Xor
+        ; "intersect" =!> Op.Intersect
+        ; "in"        =!> Op.In
+        ; "subset"    =!> Op.Subset
+        ; "superset"  =!> Op.Superset
+        ; "union"     =!> Op.Union
+        ; "diff"      =!> Op.Diff
+        ; "symdiff"   =!> Op.SymDiff
+        ; "default"   =!> Op.Default ]
         @ builtin_num_bin_ops
         
     // <builtin-bin-op>            
     let builtin_bin_op : Parser<BinaryOp> =
         builtin_bin_ops
         |> choice
-        |>> enum<BinaryOp>
+        |>> (int >> enum<BinaryOp>)
+        <?!> "binop"
         
     let builtin_un_ops =
         builtin_num_un_ops
-        @ ["not" =!> UnaryOp.Not]
+        @ ["not" =!> Op.Not]
 
     // <builtin-un-op>           
     let builtin_un_op : Parser<UnaryOp> =
         builtin_un_ops
         |> choice
-        |>> enum<UnaryOp>
+        |>> (int >> enum<UnaryOp>)
 
     // <ti-expr>
     let ti_expr, ti_expr_ref =
@@ -525,35 +449,36 @@ module Parsers =
         createParserForwardedToRef<Type, ParserState>()
         
     // <expr>
-    let expr, expr_ref =
+    let (expr : Parser<Expr>, expr_ref) =
         createParserForwardedToRef<Expr, ParserState>()
     
     // <expr-atom>        
-    let expr_atom, expr_atom_ref =
+    let (expr_atom: Parser<Expr>), expr_atom_ref =
         createParserForwardedToRef<Expr, ParserState>()
 
     // <num-expr>    
-    let num_expr, num_expr_ref =
-        createParserForwardedToRef<NumExpr, ParserState>()
+    let (num_expr: Parser<Expr>, num_expr_ref) =
+        createParserForwardedToRef<Expr, ParserState>()
         
     // <num-expr-atom>
-    let num_expr_atom, num_expr_atom_ref =
-        createParserForwardedToRef<NumExpr, ParserState>()
+    let (num_expr_atom: Parser<Expr>, num_expr_atom_ref) =
+        createParserForwardedToRef<Expr, ParserState>()
         
     // <num-expr-atom>
-    let annotation, annotation_ref =
+    let (annotation: Parser<Annotation>, annotation_ref) =
         createParserForwardedToRef<Annotation, ParserState>()
                 
     let bracketed x =
-        between('(', ')' , ws=true) x
+        betweenWs('(', ')') x
 
     let op p =
         value_or_quoted_name p
         
     let un_op =
         op builtin_un_op
-        .>> spaces
+        .>> ws
         .>>. expr_atom
+        <?!> "un-op"
 
     let builtin_ops =
         builtin_bin_ops @ builtin_un_ops
@@ -562,202 +487,265 @@ module Parsers =
     let builtin_op : Parser<Op> =
         builtin_ops
         |> choice
-        |>> enum<Op>
-        
-    // 0 .. 10
-    let range_expr : Parser<RangeExpr> =
-        attempt (
-            num_expr
-            .>> sps ".."
-            .>>. num_expr
-        )
-        <?!> "range-expr"
     
     // <array1d-literal>
     let array1d_literal : Parser<Array1dExpr> =
-        expr
-        |> between(p '[', p ']', p ',', allowTrailing=true)
+        sepEndBy expr (skip ',')
+        |> betweenWs ('[', ']')
         <?!> "array1d-literal"
             
     // <set-literal>
-    let set_literal : Parser<SetLiteral>=
-        between(p '{', p '}', p ',') expr
-        |> attempt
-        |>> (fun exprs -> {Elements = exprs})
+    let set_literal : Parser<Expr list>=
+        commaSep expr
+        |> betweenWs('{', '}')
                 
     // <array2d-literal>
     let array2d_literal : Parser<Array2dExpr> =
         
         let row =
-            expr
-            |> sepBy1(p ',', allowTrailing=true)
+            commaSep1 expr
+            
+        let rowSep =
+            attempt (
+                skipChar '|'
+                >>. notFollowedBy (skipChar ']')
+            )
+            >>. ws
             
         let rows =
-            let sep =
-                attempt (p '|' >>. notFollowedBy (p ']'))
-            row
-            |> sepBy(sep, allowTrailing=true)
-        
+            sepEndBy (row .>> ws) rowSep
+            
         let array =
             rows
-            |> between(p "[|", p "|]")
+            |> betweenWs ("[|", "|]")
                 
         array
+    
+    // eg: ```1..10```
+    // eg: ```1 .. (a = 10)```
+    // We make a special case here so it can be attempted
+    // before the float parser
+    let number_range : Parser<Expr> =
         
-    // <annotations>        
+        let left = 
+            pint32
+            .>> ws
+            .>> skipChar '.'
+            .>> skipChar '.'
+            |>> Expr.Int
+            |> attempt
+            
+        let right =
+            num_expr
+            
+        pipe(
+            left,
+            right,
+            fun left right ->
+                let op = IdOr.Val BinaryOp.DotDot
+                Expr.BinaryOp(left, op, right)
+                )
+            
+    // <annotations>
+    // eg: `:: output :: x(2)`
     let annotations : Parser<Annotations> =
-        many (annotation .>> spaces)        
-   
+        many (annotation .>> ws)
+    
+    // <annotations>
+    // eg: `:: output :: x(2)`
+    let ann_capture : Parser<Ident> =
+        keyword "ann"
+        >>. skip ':'
+        >>. ident
+    
+    // A TypeInst with a name
     // <ti-expr-and-id>
-    let ti_expr_and_id : Parser<NamedTypeInst> =
-        pipe3
-            (ti_expr .>> sps ':')
-            (id .>> spaces)
-            annotations
-            (fun ti name anns ->
-                { TypeInst = ti
-                ; Name=name
-                ; Annotations=anns })
+    // eg: `var int: x`
+    let named_ti : Parser<TypeInst> =
+        pipe(
+            ti_expr,
+            skipChar ':',
+            ident,
+            fun ti _ id ->
+                { ti with
+                    Name = id } 
+        )
         
-    let parameters : Parser<Parameters> =
-        ti_expr_and_id
-        |> between(p '(', p ')', p ',')
+    // A TypeInst with an optional name
+    // eg: function(int, a:bool)                
+    let parameter_ti : Parser<TypeInst> =
+        pipe(
+            ti_expr,
+            opt_or "" (skip ':' >>. ident),
+            annotations,
+            fun ti id anns ->
+                { ti with
+                    Name = id
+                    Annotations = anns }
+        )
         
-    let arguments : Parser<Expr list> =
+    let assign_tail : Parser<Expr> =
+        skipMany1 (pchar '=')
+        >>. ws
+        >>. expr
+        
+    // eg: `(int: a, var bool: b)`        
+    let parameters : Parser<TypeInst list> =
+        parameter_ti
+        |> commaSep
+        |> betweenWs('(', ')')
+        <?!> "parameters"
+        
+    // eg: `(1, 2, "abc")`
+    let tupled_args : Parser<Expr list> =
         expr
-        |> between(p '(', p ')', p ',')
-
-    // <operation-item-tail>
-    // eg: even(var int: x) = x mod 2 = 0;
-    let operation_item_tail =
-        tuple4
-            (ps id)
-            (ps parameters)
-            (ps annotations)
-            (opt (ps "=" >>. expr))
+        |> commaSep
+        |> betweenWs('(', ')')
+        <?!> "tupled-args"
         
     // <predicate-item>
-    let predicate_item : Parser<FunctionItem> =
-        kw1 "predicate"
-        >>. operation_item_tail
-        |>> (fun (id, pars, anns, body) ->
-            { Name = id
-            ; Parameters = pars
-            ; Annotations = anns
-            ; Returns =
-                { Type = Type.Bool
-                ; Inst = Inst.Var
-                ; IsSet = false 
-                ; IsOptional = false
-                ; IsArray = false }
-            ; Body = body } )
+    // eg: `predicate isOk(int x) = x > 2`
+    let predicate_item : Parser<FunctionType> =
+        pipe(
+            keyword "predicate"
+            >>. ident,
+            parameters,
+            opt_or "" ann_capture,
+            annotations,
+            opt assign_tail,
+            fun id pars ann anns body ->
+                { Name = id
+                ; Parameters = pars
+                ; Ann = ann
+                ; Annotations = anns
+                ; Returns =
+                    { TypeInst.Empty
+                        with
+                            Type = Type.Bool
+                            Inst = Inst.Var  }
+                ; Body = body })
+        <?!> "predicate"
 
     // <test_item>
     let test_item : Parser<TestItem> =
-        kw1 "test"
-        >>. operation_item_tail
-        |>> (fun (id, pars, anns, body) ->
-            { Name = id
-            ; Parameters = pars
-            ; Annotations = anns
-            ; Body = body }
-            )
+        pipe(
+            keyword "test",
+            ident,
+            parameters,
+            annotations,
+            opt assign_tail,
+            fun _ id pars anns body ->
+                { Name = id
+                ; Parameters = pars
+                ; Annotations = anns
+                ; Body = body }
+                )
+        <?!> "test"
         
     // <function-item>
-    let function_item : Parser<FunctionItem> =
-        kw1 "function"
-        >>. ti_expr
-        .>> sps ':'
-        .>>. operation_item_tail
-        |>> (fun (ti, (id, pars, anns, body)) ->
-            { Name = id
-            ; Returns = ti
-            ; Annotations = anns 
-            ; Parameters = pars
-            ; Body = body })
+    (*
+    TODO - combine this with variable parsing because the optional function keyword is making it hard
+    *)
+    let function_item : Parser<FunctionType> =
+        pipe(
+            keyword "function"
+            >>. named_ti,
+            parameters,
+            opt_or "" ann_capture,
+            annotations,
+            opt assign_tail,
+            (fun ti pars ann anns body ->
+                { Name = ti.Name
+                ; Returns = { ti with Name = ""}
+                ; Ann = ann
+                ; Annotations = anns 
+                ; Parameters = pars
+                ; Body = body })
+        )
+        <?!> "function"
     
-        
+    // <enum-case-list>    
     let enum_cases : Parser<EnumCases list> =
                 
-        let names =
-            id
-            |> between(p '{', p '}', p ',')
+        let enum_names : Parser<EnumCases> =
+            ident
+            |> commaSep
+            |> betweenWs('{', '}')
             |>> EnumCases.Names
-    
-        let anon =
-            choice [ p "_"; p "anon_enum"]
-            >>. spaces
-            >>. between('(', ')') expr
+
+        let anon_enum : Parser<EnumCases> =
+            choice [ s "_"; s "anon_enum"]
+            >>. ws
+            >>. betweenWs('(', ')') expr
             |>> EnumCases.Anon
             
-        let call =
-            (ps id)
-            .>>. between('(', ')') expr
+        let enum_call : Parser<EnumCases> =
+            ident
+            .>>. betweenWs('(', ')') expr
             |>> EnumCases.Call
-            
-        [ names; anon; call ]
-        |> choice
-        |> sepBy(p "++")
         
+        let enum_case =
+            [ enum_names; anon_enum; enum_call ]
+            |> choice
+            .>> ws
+            
+        sepBy enum_case (skip "++")
           
     // <enum-item>
-    // TODO: complex constructors
-    let enum_item : Parser<EnumItem> =
-            
-        let enum_name =
-            kw1 "enum" >>. id .>> spaces
-            
-            
-        pipe3
-            enum_name
-            annotations
-            (opt_or [] (ps '=' >>. enum_cases))
-            (fun name anns cases ->
+    let enum_item : Parser<EnumType> =            
+        pipe(
+            keyword "enum",
+            ident,
+            annotations,
+            (opt_or [] (skip '=' >>. enum_cases)),
+            fun _ name anns cases ->
                 { Name = name
                 ; Annotations = anns
                 ; Cases = cases })
     
     // <include-item>
     let include_item : Parser<IncludeItem> =
-        kw1 "include"
-        >>. string_literal
-        |>> IncludeItem.Include
+        keyword "include"
+        >>. string_lit
+        |>> IncludeItem.Create
     
     // <var-par>
-    let var_par : Parser<Inst> =
-        lookup(
-            "var" => Inst.Var,
-            "par" => Inst.Par
-        )
-        .>> spaces1
-        |> opt_or Inst.Par
+    let inst : Parser<Inst> =
+        choice
+            [ "var" => Inst.Var
+            ; "par" => Inst.Par
+            ; preturn  Inst.Par ]
         
     // <opt-ti>        
     let opt_ti =
-        ps1 "opt"
-        >>% true
-        |> opt_or false
+        "opt" => true
+        <|> preturn false
     
     // <set-ti>    
     let set_ti =
-        ps1 "set" >>. ps1 "of"
+        keyword "set"
+        >>. keyword "of"
         >>% true
-        |> opt_or false
-   
+        <|> preturn false
+           
     // <base-ti-expr>
     let base_ti_expr : Parser<TypeInst> =
-        pipe4
-            var_par
-            set_ti
-            opt_ti
-            base_ti_expr_tail
-            (fun inst set opt typ ->
+        pipe(
+            inst,
+            set_ti,
+            opt_ti,
+            base_ti_expr_tail,
+            fun inst set opt typ ->
                 { Type = typ
+                ; Name = ""
                 ; IsOptional = opt
                 ; IsSet = set
-                ; IsArray = false 
-                ; Inst = inst }
-            )    
+                ; IsArray = false
+                ; Annotations = [] 
+                ; Inst = inst
+                ; Value = None
+                ; IsInstanced = false }
+        )
         
     // <array-ti-expr>        
     let array_ti_expr : Parser<TypeInst> =
@@ -766,7 +754,7 @@ module Parsers =
             ti_expr
             >>= fun ti ->
                 match ti.Type with
-                | Type.Id id ->
+                | Type.Ident id ->
                     preturn (ArrayDim.Id id)
                 | Type.Int ->
                     preturn ArrayDim.Int
@@ -777,25 +765,27 @@ module Parsers =
         
         let dimensions =
             dimension
-            |> between(p '[', p ']', p ',')
+            |> commaSep
+            |> betweenWs ('[', ']')
             <?!> "array-dimensions"
         
-        ps  "array"
-        >>.  dimensions
-        .>>  sps1 "of"
-        .>>. base_ti_expr
-        |>> (fun (dims, ty) ->
-            
-            let ty, inst =
-                { Dimensions = dims; Elements=ty}
-                |> Type.Array
-                |> ParseUtils.ResolveInst
-                
-            { Type = ty
-            ; Inst = inst
-            ; IsSet = false
-            ; IsArray = true 
-            ; IsOptional = false })
+        pipe(
+            keyword "array",
+            dimensions,
+            keyword "of",
+            base_ti_expr,
+            fun _ dims _ ty ->
+                let ty, inst =
+                    { Dimensions = dims; Elements=ty}
+                    |> Type.Array
+                    |> P.ResolveInst
+                    
+                let ti =
+                    { TypeInst.Empty with
+                        Type = ty
+                        Inst = inst
+                        IsArray = true }
+                ti)        
         <?!> "array-ti-expr"
     
     // <ti-expr>        
@@ -806,30 +796,45 @@ module Parsers =
         <?!> "ti-expr"
 
     // <tuple-ti-expr-tail>
-    let tuple_ti : Parser<TupleType> =
-        kw "tuple"
-        >>. between(p '(', p ')', p ',', many=true) ti_expr
-        |>> (fun fields -> {Fields=fields})
+    let tuple_ti : Parser<TypeInst list> =
+        
+        let fields =
+            ti_expr
+            |> commaSep1
+            |> betweenWs ('(', ')')
+        
+        keyword "tuple" 
+        >>. fields
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
-    let record_ti : Parser<RecordType> =
-        kw "record"
-        >>. between(p '(', p ')', p ',', many=true) ti_expr_and_id
-        |>> (fun fields -> {Fields=fields})
+    let record_ti : Parser<TypeInst list> =
+        
+        let fields =
+            named_ti
+            |> commaSep1
+            |> betweenWs('(', ')')
+            
+        keyword "record"
+        >>. fields
         <?!> "record-ti"
+    
+    let instanced_type : Parser<string> =
+        c '$' >>. ident
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ kw "bool"   >>% Type.Bool
-        ; kw "int"    >>% Type.Int
-        ; kw "string" >>% Type.String
-        ; kw "float"  >>% Type.Float
-        ; kw "ann"    >>% Type.Ann
-        ; record_ti   |>> Type.Record
-        ; tuple_ti    |>> Type.Tuple
-        ; expr        |>> Type.Set 
-        ; id          |>> Type.Id ]
+        [ "int"          => Type.Int
+        ; "bool"         => Type.Bool
+        ; "string"       => Type.String
+        ; "float"        => Type.Float
+        ; "ann"          => Type.Ann
+        ; "any"          => Type.Any    
+        ; record_ti      |>> Type.Record
+        ; tuple_ti       |>> Type.Tuple
+        ; expr           |>> Type.Set
+        ; instanced_type |>> Type.Instanced
+        ; ident          |>> Type.Ident ]
         |> choice
         <?!> "base-ti-tail"
     
@@ -838,74 +843,71 @@ module Parsers =
     
     // <call-expr>
     let call_expr : Parser<CallExpr> =
-        
-        let operation =
-            ps id_or_op
-            
-        let args =
-            between(p '(', p ')', p ',') expr
-            <?!> "call-args"
-        
-        pipe2
-            operation
-            args
-            (fun name args ->
-                { Function=name; Args=args })
-        |> attempt
+        attempt (id_or_op .>> ws .>> (followedBy (c '(')))
+        .>> ws
+        .>>. tupled_args
         <?!> "call-expr"
         
     let wildcard : Parser<WildCard> =
-        p '_'
+        skip '_'
         >>. notFollowedBy letter
         >>% WildCard.WildCard
     
     let absent : Parser<Absent> =
-        attempt (p "<>")
+        attempt (skip "<>")
         >>% Absent
         
     // <comp-tail>
     let comp_tail : Parser<Generator list> =
-        let var =
-            (wildcard |>> IdOr.Val)
-            <|>
-            (id |>> IdOr.Id)
+        
+        let gen_var =
+            [ wildcard |>> IdOr.Val 
+            ; ident    |>> IdOr.Id ]
+            |> choice
             <?!> "gen-var"
-        let vars =
-            var
-            |> sepBy(p ",", many=true)
-        let where =
-            kw1 "where" >>. expr
+            
+        let gen_vars =
+            gen_var
+            |> commaSep1            
+            <?!> "gen-vars"
+            
+        let gen_where =
+            keyword "where"
+            >>. expr
+            <?!> "gen-where"
+            
         let generator =    
-            pipe3
-                (vars .>> sps "in")
-                (ps expr)
-                (opt where)
-                (fun idents source filter ->
+            pipe(
+                gen_vars,
+                skip "in",
+                expr,
+                opt gen_where,
+                (fun idents _ source filter ->
                     { Yields = idents
                     ; From = source
                     ; Where = filter })
-            <?!> "generator"
+            )
             
         generator
-        |> sepBy(p ",", many=true)       
+        |> commaSep1       
             
     // <gen-call-expr>
     let gen_call_expr =
-        pipe3
-            (id_or_op .>> spaces)
-            (ps (between('(', ')') comp_tail))             
-            (ps (between('(', ')') expr))
-            (fun name gens expr ->
+        pipe(
+            id_or_op,
+            betweenWs('(', ')') comp_tail,
+            betweenWs('(', ')') expr,
+            fun name gens expr ->
                 { Operation = name
                 ; From = gens
-                ; Yields = expr })
+                ; Yields = expr }
+        )
         |> attempt
-        <?!> "gen-call"
     
     // <array-comp>
     let array_comp : Parser<ArrayCompExpr> =
-        (expr .>> sps '|' .>>. comp_tail)
-        |> between('[', ']')
+        tuple(expr, skip '|' >>. comp_tail) 
+        |> betweenWs ('[', ']')
         |> attempt
         |>> (fun (expr, gens) -> 
              { Yields=expr
@@ -914,261 +916,288 @@ module Parsers =
 
     // <set-comp>
     let set_comp : Parser<SetCompExpr> =
-        (expr .>> sps '|' .>>. comp_tail)
-        |> between('{', '}')
+        tuple(expr, skip '|' >>. comp_tail)
+        |> betweenWs('{', '}')
         |> attempt
         |>> (fun (expr, gens) -> 
-             { Yields=expr
+             { Yields = expr
              ; From = gens })
-        <?!> "set-comp"
             
     // <declare-item>
-    let var_decl_item : Parser<DeclareItem> =
-        pipe2
-            (ps ti_expr_and_id)
-            (opt (ps '=' >>. expr))
-            (fun nti expr ->
-                let ti, inst = ParseUtils.ResolveInst nti.TypeInst
-                { Name = nti.Name
-                ; TypeInst = ti
-                ; Annotations = nti.Annotations
-                ; Expr = expr })
+    let declare_item : Parser<Item> =
+        pipe(
+            named_ti,
+            opt parameters,
+            annotations,
+            opt assign_tail,
+            fun ti args anns expr ->
+                let ti, inst = P.ResolveInst ti
+                match args with
+                // No arguments, not a function
+                | None ->
+                    Item.Declare
+                        { ti with
+                            Annotations = anns
+                            Value=expr }
+                // Arguments, must be a function                    
+                | Some args ->
+                    Item.Function
+                        { Name = ti.Name
+                        ; Returns = {ti with Name = ""}
+                        ; Ann = ""
+                        ; Annotations = anns
+                        ; Parameters = args 
+                        ; Body = expr}
+        )
+        <?!> "declare-item"
 
     // <constraint-item>
-    let constraint_item : Parser<ConstraintItem> =
-        pipe3
-          (kw "constraint")
-          (ps expr)
-          annotations
-          (fun _ expr anns ->
+    let constraint_item : Parser<ConstraintExpr> =
+        pipe(
+            keyword "constraint",
+            expr,
+            annotations,
+            fun _ expr anns ->
               { Expr = expr
-              ; Annotations = anns })
-            
-    // <annotation-item>
-    let annotation_item : Parser<AnnotationItem>=
-        pipe3
-          (kw1 "annotation")
-          (ps id)
-          (opt parameters)
-          (fun _ id ->
-            function
-            | None -> AnnotationItem.Name id
-            | Some xs -> AnnotationItem.Call (id, xs))
-          
-        
+              ; Annotations = anns }
+        )
+       
     // <let-item>
     let let_item : Parser<LetLocal> =
-        choice
-         [constraint_item |>> Choice2Of2
-          var_decl_item   |>> Choice1Of2 ]
+            
+        let let_declare =
+            declare_item
+            >>= function
+              | Item.Declare x ->
+                  preturn (Choice1Of2 x)
+              | other ->
+                  fail $"{other} not allowed in let locals"
+                                    
+        let let_constraint =
+            constraint_item
+            |>> Choice2Of2
+            
+        // Let constraint must go first            
+        let_constraint <|> let_declare
     
     // <let-expr>
     let let_expr : Parser<LetExpr> =
-        
+                
         let item =
-            let_item
-            .>> spaces
-            .>> (opt (anyOf ";,"))
-            .>> spaces
+            let_item .>> ws .>> opt (anyOf ";,")
     
         let items =
-            item
-            |> many1
-            |> between('{', '}')
+            many1 (item .>> ws)
+            |> betweenWs('{', '}')
         
-        (kw "let")
-        >>. items
-        .>> (sps "in")
-        .>>. expr
-        |>> (fun (items, body) ->
-            
-            let declares, constraints =
-                items
-                |> List.fold (fun (ds, cs) item ->
-                    match item with
-                    | Choice1Of2 x -> (x::ds, cs)
-                    | Choice2Of2 x -> (ds, x::cs)
-                ) ([], [])
+        pipe(
+            keyword "let",
+            items,
+            keyword "in",
+            expr,
+            (fun _a items _b body ->
+                let declares, constraints =
+                    items
+                    |> List.fold (fun (ds, cs) item ->
+                        match item with
+                        | Choice1Of2 x -> (x::ds, cs)
+                        | Choice2Of2 x -> (ds, x::cs)
+                    ) ([], [])
                 
-            // let nameSpace : NameSpace =
-            //     (NameSpace.empty, declares)
-            //     ||> List.fold (fun ns decl -> ns.Add decl)
-            //
-            { Declares = declares
-            ; Constraints = constraints
-            ; Body=body })
+                // let nameSpace : NameSpace =
+                //     (NameSpace.empty, declares)
+                //     ||> List.fold (fun ns decl -> ns.Add decl)
+                //
+                { Declares = declares
+                ; Constraints = constraints
+                ; Body=body }
+                ))
         <?!> "let-expr"
         
     // <if-then-else-expr>
     let if_else_expr : Parser<IfThenElseExpr> =
                 
-        let case keyword =
-            kw keyword
+        let case word =
+            keyword word
             >>. expr
-            .>> spaces
-            <?!> $"{keyword}-case"
+           .>> ws
+            <?!> $"{word}-case"
             
-        pipe5
-            (case "if")
-            (case "then")
-            (many (case "elseif" .>>. case "then"))
-            (opt (case "else"))
-            (p "endif")
-            (fun if_ then_ elseif_ else_ _ ->
+        pipe(
+            case "if",
+            case "then",
+            many (case "elseif" .>>. case "then"),
+            opt (case "else"),
+            s "endif",
+            fun if_ then_ elseif_ else_ _ ->
                 { If = if_
                 ; Then = then_
                 ; ElseIf = elseif_
-                ; Else = else_ })    
+                ; Else = else_ }
+        )
     
     // <num-un-op>    
     let num_un_op =
-        op builtin_num_un_op
-        .>> spaces
-        .>>. num_expr_atom
+        tuple(
+            op builtin_num_un_op,
+            num_expr_atom
+        )
         
-    let quoted_op =
+    let quoted_op : Parser<Op> =
         builtin_op
-        |> between(''', ''')
+        |> between (c ''') (c ''')
         |> attempt
     
-    // <array-acces-tail>
-    let array_access : Parser<ArrayAccess> =
-        expr
-        |> between(p '[', p ']', p ',', many=true)
-        |>> ArrayAccess.Access
-        <?!> "array-access"
+    let tuple_access_tail =
+        attempt (skip '.' >>. puint8)
+        <?!> "tuple-access"
         
-    // <expr-atom-tail>        
-    let expr_atom_tail =
-        many (array_access .>> spaces)
-
+    let record_access_tail =
+        attempt (skip '.' >>. ident)
+        <?!> "record-access"
+        
+    let array_access_tail =
+        expr
+        |> commaSep1
+        |> betweenWs ('[', ']')
+    
+    // <expr-atom-tail>
+    let rec expr_atom_tail expr : Parser<Expr> =
+        let tail =
+            [ tuple_access_tail |>> fun i -> Expr.TupleAccess(i, expr)
+              record_access_tail |>> fun f -> Expr.RecordAccess(f, expr)
+              array_access_tail |>> fun xs -> Expr.ArrayAccess(xs, expr) ]
+            |> choice
+        (tail >>== expr_atom_tail)
+        <|>
+        preturn expr
+    
     // <num-expr-atom-head>    
-    let num_expr_atom_head=
-        [ float_literal      |>> NumExpr.Float
-          int_literal        |>> NumExpr.Int
-          bracketed num_expr |>> NumExpr.Bracketed
-          let_expr           |>> NumExpr.Let
-          if_else_expr       |>> NumExpr.IfThenElse
-          call_expr          |>> NumExpr.Call
-          num_un_op          |>> NumExpr.UnaryOp
-          quoted_op          |>> NumExpr.Op 
-          id                 |>> NumExpr.Id
+    let num_expr_atom_head : Parser<Expr> =
+        [ number_range 
+          number_lit 
+          bracketed num_expr |>> Expr.Bracketed
+          let_expr           |>> Expr.Let
+          if_else_expr       |>> Expr.IfThenElse
+          call_expr          |>> Expr.Call
+          num_un_op          |>> Expr.UnaryOp
+          ident              |>> Expr.Ident
           ]
         |> choice
-        
+        <?!> "num-expr-head"
+                    
     // <num-expr-atom>        
     num_expr_atom_ref.contents <-
-        pipe2
-            num_expr_atom_head
-            (sp expr_atom_tail)
-            (fun head access ->
-                match access with
-                | [] ->
-                    head
-                | _ ->
-                    NumExpr.ArrayAccess (head, access)
-                
-            )
+        num_expr_atom_head
+        >>== expr_atom_tail
         <?!> "num-expr-atom"
         
     // <num-expr-binop-tail>
-    let num_expr_binop_tail =        
-        sps (op builtin_num_bin_op)
-        .>>. num_expr
-
+    let num_expr_binop_tail (head: Expr) =
+        
+        let binop =
+            pipe(
+                op builtin_num_bin_op,
+                num_expr,
+                fun operator tail ->
+                    Expr.BinaryOp (head, operator, tail)
+            )
+            
+        binop <|> preturn head
+       
     // <num-expr>
     num_expr_ref.contents <-
-        pipe2
-            num_expr_atom
-            (opt <| attempt num_expr_binop_tail)
-            (fun head tail ->
-                match tail with
-                | None ->
-                    head
-                | Some (op, right) ->
-                    NumExpr.BinaryOp (head, op, right)
-            )
+        num_expr_atom
+        >>== num_expr_binop_tail
+            
+    // <tuple-literal>
+    // TODO - Required trailing comma if tuple is 1 element
+    let tuple_literal : Parser<TupleExpr> =
+        expr
+        |> commaSep1
+        |> betweenBrackets 
+        |> attempt
+          
+    // <record-literal>
+    let record_literal : Parser<RecordExpr> =
+        tuple(ident, skip ':' >>. expr)
+        |> commaSep1
+        |> betweenBrackets 
+        |> attempt
         
     // <expr-atom-head>    
-    let expr_atom_head=
+    let expr_atom_head : Parser<Expr> =
         [
-          float_literal   |>> Expr.Float
-          int_literal     |>> Expr.Int
+          number_range
+          number_lit
           bool_literal    |>> Expr.Bool
-          string_literal  |>> Expr.String
+          string_lit      |>> Expr.String
           wildcard        |>> Expr.WildCard
           absent          |>> Expr.Absent
+          record_literal  |>> Expr.Record
+          tuple_literal   |>> Expr.Tuple
           bracketed expr  |>> Expr.Bracketed
           let_expr        |>> Expr.Let
           if_else_expr    |>> Expr.IfThenElse
           gen_call_expr   |>> Expr.GenCall
           call_expr       |>> Expr.Call
           array_comp      |>> Expr.ArrayComp
-          set_comp        |>> Expr.SetComp
+          set_comp        |>> Expr.SetComp          
           array2d_literal |>> Expr.Array2d
           array1d_literal |>> Expr.Array1d
           set_literal     |>> Expr.Set
           un_op           |>> Expr.UnaryOp
-          quoted_op       |>> Expr.Op
-          id              |>> Expr.Id
+          ident           |>> Expr.Ident
           ]
         |> choice
+        <?!> "expr-atom-head"
             
     // <annotations>
     annotation_ref.contents <-
-        pipe2
-            ( p "::" >>. spaces >>. id .>> spaces)
-            (opt_or [] arguments)
-            (fun name args ->
-                { Name = name; Args = args })
+        skip "::"
+        >>. expr_atom_head
+        >>== expr_atom_tail
+        <?!> "annotation"
     
     // <expr-atom>        
     expr_atom_ref.contents <-
-        pipe2
-            expr_atom_head
-            expr_atom_tail
-            (fun head tail ->
-                match tail with
-                | [] ->
-                    head
-                | access ->
-                    (head, access)
-                    |> IndexExpr.Index 
-                    |> Expr.Indexed
-            )
+        expr_atom_head
+        >>== expr_atom_tail
             
     // <expr-binop-tail>
-    let expr_binop_tail =
-        sps (op builtin_bin_op) .>>. expr
+    let expr_binop_tail (head: Expr) =
+        
+        let binop =
+            pipe(
+                op builtin_bin_op,
+                expr,
+                fun operator tail ->
+                    Expr.BinaryOp (head, operator, tail)
+            )
+            
+        binop
+        <|> preturn head
             
     // <expr>
     expr_ref.contents <-
-        pipe2
-            expr_atom
-            (opt <| attempt expr_binop_tail)
-            (fun head tail ->
-                match tail with
-                | None ->
-                    head
-                | Some (op, right) ->
-                    Expr.BinaryOp (head, op, right)
-            )
+        expr_atom
+        >>== expr_binop_tail
+        <?!> "expr"
             
     let solve_type : Parser<SolveMethod> =
-        lookup(
-          "satisfy" => SolveMethod.Satisfy,
-          "minimize" => SolveMethod.Minimize,
-          "maximize" => SolveMethod.Maximize
-        )
+        choice
+          [ "satisfy" => SolveMethod.Satisfy
+          ; "minimize" => SolveMethod.Minimize
+          ; "maximize" => SolveMethod.Maximize ]
         
     // <solve-item>
     let solve_item : Parser<SolveItem> =
-        pipe4
-            (kw1 "solve")
-            (ps annotations)
-            (ps solve_type)
-            (opt expr)
-            (fun _ anns solveType obj ->
+        pipe(
+            keyword "solve",
+            annotations,
+            solve_type,
+            opt expr,
+            fun _ anns solveType obj ->
                 match (solveType, obj) with
                 | SolveMethod.Maximize, Some exp ->
                     SolveItem.Max (exp, anns)
@@ -1176,32 +1205,51 @@ module Parsers =
                     SolveItem.Min (exp, anns)
                 | _ ->
                     SolveItem.Sat anns
-                )            
+                )
         
     // <assign-item>
-    let assign_item : Parser<AssignItem> =
-        tuple2
-            (attempt (id .>> sps '='))
-            expr
+    // eg ```a = 1;```
+    // eg ```b == func(4);```
+    let assign_item : Parser<AssignExpr> =
+        attempt (ident .>> ws .>> followedBy (pchar '='))
+        .>>. assign_tail
+        <?!> "assign-item"
         
     // <type-inst-syn-item>
     let alias_item : Parser<TypeAlias> =
-        pipe5
-            (kw1 "type")
-            (ps id)
-            (ps annotations)
-            (ps "=")
-            ti_expr
-            (fun _ id anns _ ti ->
+        pipe(
+            keyword "type",
+            ident,
+            annotations,
+            skip "=",
+            ti_expr,
+            fun _ id anns _ ti ->
                 { Name = id
                 ; Annotations = anns
                 ; TypeInst = ti })
         
     // <output-item>
-    let output_item : Parser<OutputItem> =
-        kw1 "output"
-        >>. expr
-        |>> (fun expr -> {Expr = expr})
+    let output_item : Parser<OutputExpr> =
+        pipe(
+            keyword "output",
+            opt string_annotation,
+            expr,
+            fun _ ann expr ->
+                { Expr = expr
+                ; Annotation = ann })
+        
+    // <annotation_item>
+    let annotation_item : Parser<AnnotationType> =
+        pipe(
+            keyword "annotation",
+            ident,
+            opt_or [] parameters,
+            opt assign_tail,
+            fun _ name pars body ->
+                { Name = name
+                ; Body = body
+                ; Params = pars })
+        <?!> "annotation-type"
 
     // <item>
     let item =
@@ -1214,69 +1262,77 @@ module Parsers =
         ; predicate_item  |>> Item.Function
         ; function_item   |>> Item.Function
         ; test_item       |>> Item.Test
-        ; annotation_item |>> Item.Annotation        
+        ; annotation_item |>> Item.Annotation
         ; assign_item     |>> Item.Assign
-        ; var_decl_item   |>> Item.Declare
-        ; block_comment   |>> Item.Comment ]
+        ; declare_item  ]
         |> choice
                       
-    let model : Parser<Ast> =
-        spaces
-        >>. sepEndBy1 item (sps ';')
+    let ast : Parser<Ast> =
+        
+        let sep =
+            ws .>> skipChar ';' .>> ws
+        
+        ws
+        >>. sepEndBy item sep
         .>> eof
         
-    let data : Parser<AssignItem list> =
-        spaces
-        >>. sepEndBy1 assign_item (sps ';')
+    let data : Parser<AssignExpr list> =
+        
+        let sep =
+            skip ';'
+            
+        ws
+        >>. sepEndBy (assign_item .>> ws) (skip ';')
+        .>> ws 
         .>> eof
-   
+        
+    [<Struct>]        
+    type Statement =
+        | Comment of c:string
+        | Statement of s:string
+        
+    let line_comment : Parser<string> =
+        skip '%' >>. restOfLine true
+        
+    let block_comment : Parser<string> =
+        let pStart = attempt <| skip "/*"
+        let pEnd = attempt <| skipString "*/"
+        pStart
+        >>. manyCharsTill anyChar pEnd
+        
+    let non_comment : Parser<string> =
+        let pEnd =
+            (skipChar '%')
+            <|> (attempt (skipString "/*"))
+            <|> eof
+        
+        many1CharsTill anyChar (followedBy pEnd)
+        
+    let statement =
+        [ line_comment  |>> Comment
+        ; block_comment |>> Comment
+        ; string_lit |>> Statement
+        ; non_comment   |>> Statement ] 
+        |> choice
+        
+    let statements =
+        ws
+        >>. many (statement .>> ws)
+        .>> eof
+        
+        
+open Parsers
 
 [<AutoOpen>]       
-module rec Parse =
-    
-    open System.Text.RegularExpressions
-    
-    /// Parse and remove comments from the given model string
-    let parseComments (mzn: string) : string * List<Comment> =
-        let comments = ResizeArray<string>()
-        let line_comment = "%(.*)$"
-        let block_comment = "\/\*([\s\S]*?)\*\/"
-        let pattern = $"{line_comment}|{block_comment}"
-        let evaluator =
-            MatchEvaluator(fun m ->
-                
-                let comment =
-                    match m.Groups[1], m.Groups[2] with
-                    // Line comment
-                    | m, _ when m.Success ->
-                        m.Value
-                    // Block comment
-                    | _, m when m.Success ->
-                        m.Value
-                    | _ ->
-                        ""
-                if not (String.IsNullOrWhiteSpace comment) then
-                    comments.Add comment
-                        
-                ""
-            )
+module Parse =
         
-        let output =
-            Regex.Replace(mzn, pattern, evaluator, RegexOptions.Multiline)
-
-        let output =
-            output.Trim()
-        
-        let comments = Seq.toList comments
-        output, comments
-        
-    // Parse the given string with the given parser
-    let parseString (parser: Parser<'t>) (input: string) : Result<'t, ParseError> =
+    // Parse a string with the given parser
+    let parseWith (parser: Parser<'t>) (input: string) : Result<'t, ParseError> =
         
         let state = ParserState()
-                
+                        
         match runParserOnString parser state "" input with
-        
+                
         | ParserResult.Success (value, _state, _pos) ->
             Result.Ok value
             
@@ -1290,26 +1346,132 @@ module rec Parse =
                 ; Trace = state.Message }
                 
             Result.Error err
+
+    /// Parse and remove comments from the given model string
+    // let parseComments (mzn: string) : string * List<Comment> =
+    //     let comments = ResizeArray<string>()
+    //     let statements = ResizeArray<string>()
+    //             
+    //     match parseWith Parsers.statements mzn with
+    //     | Result.Ok xs ->
+    //         for x in xs do
+    //             match x with
+    //             | Comment c ->
+    //                 comments.Add c
+    //             | Statement s ->
+    //                 statements.Add s
+    //     | Result.Error err ->
+    //         failwith err.Message
+    //         
+    //     let comments = Seq.toList comments
+    //     let statement = String.Join("\n", statements)
+    //     statement, comments
+    
+    [<Struct>]
+    type PPX =
+        | Mzn
+        | LineComment
+        | BlockOpenCheck
+        | BlockCloseCheck
+        | Block
+        | StringLit
+        | StringEscape
+        
+    // Parse and remove comments from the given model string
+    let parseComments (mzn: string) : string * string =
+        let comments = StringBuilder()
+        let source = StringBuilder()
+        let chars = mzn.AsSpan()
+        let mutable state = PPX.Mzn
+        let mutable char = 'a'
+        
+        for c in chars do
+            match state, c with
             
-    let parseDataString (dzn: string) : Result<Map<string, Expr>, ParseError> =
+            | PPX.LineComment, '\n' ->
+                source.AppendLine()
+                state <- PPX.Mzn
+                
+            | PPX.LineComment, _ ->
+                comments.Append c
+                state <- PPX.LineComment
+                
+            | PPX.Mzn, '%' ->
+                state <- PPX.LineComment
+                
+            | PPX.Mzn, '/' ->
+                state <- PPX.BlockOpenCheck
+                
+            | PPX.BlockOpenCheck, '*' ->
+                state <- PPX.Block
+                
+            | PPX.BlockOpenCheck, _ ->
+                source.Append '/'
+                source.Append c
+                state <- PPX.Mzn
+                ()
+            
+            | PPX.Block, '*' ->
+                state <- PPX.BlockCloseCheck
+                
+            | PPX.BlockCloseCheck, '/' ->
+                state <- PPX.Mzn
+            
+            | PPX.BlockCloseCheck, _ ->
+                comments.Append '*'
+                state <- PPX.Block
+               
+            | PPX.Block, _ ->
+                comments.Append c
+                state <- PPX.Block
+                
+            | PPX.Mzn, '"' ->
+                source.Append '"'
+                state <- PPX.StringLit
+                
+            | PPX.StringLit, '\\' ->
+                source.Append '\\'
+                state <- PPX.StringEscape
+                
+            | PPX.StringEscape, _ ->
+                source.Append c
+                state <- PPX.StringLit
+                
+            | PPX.StringLit, '"' ->
+                source.Append '"'
+                state <- PPX.Mzn
+                
+            | PPX.StringLit, _ ->
+                source.Append c
+                ()
+                
+            | PPX.Mzn, '\n' when char = '\n' ->
+                ()
+                
+            | PPX.Mzn, _ ->
+                source.Append c
+                ()
+    
+            char <- c                
+                
+
+        let source = source.ToString().Trim()
+        let comments = comments.ToString()
+        source, comments
+         
+    /// Parse '.dzn' style model data from a string        
+    let parseDataString (dzn: string) : Result<AssignExpr list, ParseError> =
                             
         let source, comments =
             parseComments dzn
             
-        match parseString Parsers.data source with
-        
-        | Result.Ok assigns ->
-            let map =
-                assigns
-                |> Map.ofSeq
-            Result.Ok map
+        let result =
+            parseWith Parsers.data source
             
-        | Result.Error err ->
-            Result.Error err
+        result            
             
-    let parseDataFile (filepath: string) =
-        let mzn = File.ReadAllText filepath
-        let data = parseDataString mzn
+    /// Parse a '.dzn' model data file            
+    let parseDataFile (filepath: string) : Result<AssignExpr list, ParseError> =
+        let dzn = File.ReadAllText filepath
+        let data = parseDataString dzn
         data
-    
-

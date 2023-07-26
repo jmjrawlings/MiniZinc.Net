@@ -8,4 +8,4 @@ expected: !Result
 
 solve satisfy;
 
-output ["Escaped single \'quotes' are fine."];
+output ["Escaped single \'quotes\' are fine."];

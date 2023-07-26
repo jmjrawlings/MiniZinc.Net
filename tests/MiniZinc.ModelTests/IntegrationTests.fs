@@ -10,8 +10,12 @@
             let file = LibMiniZinc.testDir </> filePath
             let result = parseModelFile file.FullName
             match result with
-            | Result.Ok model -> ()
-            | Result.Error err -> Assert.Fail(err.Message)
+            | Result.Ok model ->
+                ()
+            | Result.Error err ->
+                let trace = err.Trace
+                let msg = err.Message
+                Assert.Fail(msg)
 
         module ``Unit`` =
 

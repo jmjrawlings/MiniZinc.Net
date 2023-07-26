@@ -8,6 +8,9 @@ open System.Text.Json.Nodes
 open System.Text.Json.Serialization
 open FSharp.Control
 open MiniZinc.Command
+open Microsoft.Extensions.Logging
+open Microsoft.Extensions.Logging.Abstractions
+
 
 [<AutoOpen>]
 module rec Solve =
@@ -63,7 +66,7 @@ module rec Solve =
             | "OPTIMAL" ->
                 StatusType.Optimal
             | other ->                
-                failwith $"Unexpected statsu type \"{other}\""
+                failwith $"Unexpected status type \"{other}\""
                 
         let isSuccess status =
             status <= StatusType.AllSolutions
@@ -139,6 +142,8 @@ module rec Solve =
             
             let model =
                 compiled.Model
+                
+            client.Logger.LogInformation("Solving model {Name}", model.Name)
             
             let command =
                 client.Command(
@@ -191,9 +196,13 @@ module rec Solve =
                             
                             let dataString =
                                 (message["output"]["dzn"]).GetValue<string>()
+                            
+                            let data =
+                                parseDataString dataString
+                                |> Result.map Map.ofSeq
 
                             let outputs, status =
-                                match (parseDataString dataString) with
+                                match data with
                                 | Result.Error err ->
                                     failwith $"An error occured while parsing the solution dzn:\n{err}"
                                 | Result.Ok vars when vars.ContainsKey "_objective" ->
@@ -222,7 +231,8 @@ module rec Solve =
                                 
                             solution <-
                                 { solution with
-                                    Statistics = Map.merge solution.Statistics statistics }
+                                    Statistics =
+                                        Map.merge solution.Statistics statistics }
                                 
                             ()
                             

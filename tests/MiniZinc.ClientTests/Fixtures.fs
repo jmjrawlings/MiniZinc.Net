@@ -7,21 +7,33 @@ open MiniZinc
 open Xunit
 open System.IO
 
+module Fixture =
+    
+    let mutable logger: ILogger<MiniZincClient> = Unchecked.defaultof<ILogger<MiniZincClient>>
+    
+    let getLogger () =
+        match logger with
+        | null ->
+            let serilogLogger =
+                LoggerConfiguration()
+                    .WriteTo.Console()
+                    .CreateLogger()
+                    
+            Log.Logger <- serilogLogger
+                                        
+            let factory =
+                LoggerFactory.Create(fun b -> ignore (b.AddSerilog serilogLogger))
+                
+            logger <-
+                factory.CreateLogger<MiniZincClient>()
+            logger
+        | _ ->
+            logger
+
 type ClientFixture() =
     
     let logger =
-            
-        let serilogLogger =
-            LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateLogger()
-                
-        let factory =
-            new LoggerFactory()
-        
-        factory
-            .AddSerilog(serilogLogger)
-            .CreateLogger("MiniZinc")
+        Fixture.getLogger()
             
     let client =
         MiniZincClient.Create(logger)

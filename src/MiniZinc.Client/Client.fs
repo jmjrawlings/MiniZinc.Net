@@ -46,7 +46,6 @@ type CompiledModel =
     ; Warnings    : string list
     ; Errors      : string list }
 
-
 [<AutoOpen>]
 module rec Client =
     
@@ -57,13 +56,15 @@ module rec Client =
             executable: string,
             path: FileInfo,
             version:string,
-            logger: ILogger) as this =
+            logger: ILogger<MiniZincClient>) as this =
             
         let mutable solvers = Map.empty
         
         do
             this.GetSolvers()
 
+        member this.Logger =
+            logger
                 
         /// The MiniZinc executable 
         member this.Executable =
@@ -90,7 +91,7 @@ module rec Client =
         /// </summary>
         /// <param name="executable">The MiniZinc executable path</param>
         /// <param name="logger">A logger to write to</param>
-        static member Create(executable: string, logger: ILogger) =
+        static member Create(executable: string, logger: ILogger<MiniZincClient>) =
             match MiniZincClient.create logger executable with
             | Result.Ok client ->
                 client
@@ -107,7 +108,7 @@ module rec Client =
         /// <summary>
         /// Create a new Client 
         /// </summary>
-        static member Create(logger: ILogger) =
+        static member Create(logger: ILogger<MiniZincClient>) =
             MiniZincClient.Create(null, logger)
             
         /// Create a new Client 
@@ -122,10 +123,12 @@ module rec Client =
                 |> Seq.map string
                 |> Args.parseMany
                 
-            let cmd =
+            let command =
                 Command.Create(executable, args)
                 
-            cmd
+            logger.LogInformation(command.Statement)
+                
+            command
 
         /// Run a command with the given arguments
         member this.Run([<ParamArray>] args: obj[]) =
@@ -160,7 +163,7 @@ module rec Client =
             solvers <- result
             
         member this.Compile(model: Model) =
-            MiniZincClient.compile model
+            MiniZincClient.compile model this
             
         override this.ToString() =
             $"MiniZinc Client v{version}"
@@ -168,12 +171,12 @@ module rec Client =
     module MiniZincClient =
         
         /// Create a new MiniZinc client from the given executable and logger
-        let create (logger: ILogger) (executable: string) : Result<MiniZincClient, string> =
+        let create (logger: ILogger<MiniZincClient>) (executable: string) : Result<MiniZincClient, string> =
                             
             let logger =
                 match logger with
                 | null ->
-                    NullLoggerFactory.Instance.CreateLogger() :> ILogger
+                    NullLoggerFactory.Instance.CreateLogger<MiniZincClient>()
                 | log -> log
                 
             let executable =
@@ -202,10 +205,22 @@ module rec Client =
             client
         
         /// Compile a model
-        let compile (model: Model) : CompiledModel =
-            
+        let compile (model: Model) (client: MiniZincClient) : CompiledModel =
+                                
+            let nameSpaceBindings = model.NameSpace.Bindings
+            client.Logger.LogInformation(
+                "Compiling model {Name} with {Bindings} bindings and {Constraints} constraints",
+                model.Name,
+                model.NameSpace.Bindings.Count,
+                model.Constraints.Length)
+                
             let result =
                 model.Compile()
+                
+            client.Logger.LogInformation(
+                "Compilation produced {Warns} warnings and {Errors} errors",
+                result.Warnings.Length,
+                result.Errors.Length)
 
             let modelFile =
                 let tmp = Path.GetTempFileName()
@@ -216,6 +231,8 @@ module rec Client =
             let arg =
                 let uri = Uri(modelFile.FullName).AbsolutePath
                 Arg.parse $"--model {uri}"
+                
+            client.Logger.LogInformation("Compiled model to {Path}", modelFile.FullName)
                 
             let compiled =
                 { Model = model

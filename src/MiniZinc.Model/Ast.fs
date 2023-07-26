@@ -13,6 +13,7 @@ be wrapped up and exposed through the `Model` class
 namespace MiniZinc
 
 open System.Diagnostics
+open System.IO
 
 [<AutoOpen>]
 module rec Ast =
@@ -24,7 +25,7 @@ module rec Ast =
         ; Index   : int64
         ; Trace   : string }
    
-    type Id = string
+    type Ident = string
     
     type Comment = string
     
@@ -170,11 +171,13 @@ module rec Ast =
         | Float         of float
         | Bool          of bool
         | String        of string
-        | Id            of string
-        | Op            of Op
+        | Ident         of string
         | Bracketed     of Expr
-        | Set           of SetLiteral
+        | Set           of Expr list
         | SetComp       of SetCompExpr
+        | RecordAccess  of RecordAccessExpr
+        | TupleAccess   of TupleAccessExpr
+        | ArrayAccess   of ArrayAccessExpr
         | Array1d       of Array1dExpr
         | Array1dIndex
         | Array2d       of Array2dExpr
@@ -184,27 +187,35 @@ module rec Ast =
         | Tuple         of TupleExpr
         | Record        of RecordExpr
         | UnaryOp       of UnaryOpExpr
-        | BinaryOp      of BinaryOpExpr
+        | BinaryOp      of BinaryOpExpr 
         | IfThenElse    of IfThenElseExpr
         | Let           of LetExpr
         | Call          of CallExpr
-        | GenCall       of GenCallExpr 
-        | Indexed       of IndexExpr
+        | GenCall       of GenCallExpr
 
-    type UnaryOpExpr =
-        IdOr<UnaryOp> * Expr
-        
+    type CallExpr =
+        IdOr<Op> * Expr list
+    
+    type RecordAccessExpr =
+        string * Expr
+    
+    type TupleAccessExpr =
+        uint8 * Expr
+    
+    type ArrayAccessExpr =
+        ArrayAccess * Expr
+    
     type BinaryOpExpr =
         Expr * IdOr<BinaryOp> * Expr
-
-    type IndexExpr =
-        | Index of Expr * ArrayAccess list
         
+    type UnaryOpExpr =
+        IdOr<UnaryOp> * Expr
+    
     type ArrayAccess =
-        | Access of Expr list
+        Expr list
 
     type Annotation =
-        { Name: Id; Args: Expr list }
+        Expr
                 
     type Annotations =
         Annotation list
@@ -226,11 +237,7 @@ module rec Ast =
         { Yields : IdOr<WildCard> list
         ; From  : Expr  
         ; Where : Expr option }
-
-    type CallExpr =
-        { Function: IdOr<Op>
-        ; Args: Arguments }
-
+        
     type Array1dExpr =
         Expr list
 
@@ -238,10 +245,10 @@ module rec Ast =
         Expr list list
 
     type TupleExpr =
-        | TupleExpr of Expr list
+        Expr list
         
     type RecordExpr =
-        | RecordExpr of (Id * Expr) list
+        NamedExpr list
         
     type SolveItem =
         | Sat of Annotations
@@ -276,30 +283,23 @@ module rec Ast =
         ; ElseIf : (Expr * Expr) list
         ; Else   : Expr option}
 
-    [<RequireQualifiedAccess>]
-    type NumExpr =
-        | Int         of int
-        | Float       of float
-        | Id          of Id
-        | Op          of Op
-        | Bracketed   of NumExpr
-        | Call        of CallExpr
-        | IfThenElse  of IfThenElseExpr
-        | Let         of LetExpr
-        | UnaryOp     of IdOr<NumericUnaryOp> * NumExpr
-        | BinaryOp    of NumExpr * IdOr<NumericBinaryOp> * NumExpr
-        | ArrayAccess of NumExpr * ArrayAccess list
-
-    type IncludeItem =
-        | Include of string
-
-    [<RequireQualifiedAccess>]
-    type AnnotationItem =
-        | Name of Id
-        | Call of Id * Parameters
+    // [<RequireQualifiedAccess>]
+    // type NumExpr =
+    //     | Int          of int
+    //     | Float        of float
+    //     | Id           of Ident
+    //     | Bracketed    of NumExpr
+    //     | Call         of CallExpr
+    //     | RecordAccess of string * NumExpr
+    //     | TupleAccess  of uint8 * NumExpr
+    //     | IfThenElse   of IfThenElseExpr
+    //     | Let          of LetExpr
+    //     | UnaryOp      of IdOr<NumericUnaryOp> * NumExpr
+    //     | BinaryOp     of NumExpr * IdOr<NumericBinaryOp> * NumExpr
+    //     | ArrayAccess  of ArrayAccess * NumExpr
     
-    type EnumItem =
-        { Name : Id
+    type EnumType =
+        { Name : Ident
         ; Annotations : Annotations
         ; Cases : EnumCases list }
         
@@ -308,24 +308,32 @@ module rec Ast =
         
     [<RequireQualifiedAccess>]        
     type EnumCases =
-        | Names of Id list
+        | Names of Ident list
         | Anon of Expr
-        | Call of Id * Expr
+        | Call of Ident * Expr
         
     type TypeInst =
-        { Type  : Type
-          Inst  : Inst
+        { Name : string
+          Type : Type
+          Annotations : Annotations
+          Inst : Inst
           IsSet : bool
           IsOptional : bool
-          IsArray : bool }
+          IsArray : bool
+          IsInstanced : bool
+          Value : Expr option }
         
-        static member OfType t =
-            { Type = t; Inst = Inst.Par; IsSet = false; IsOptional = false; IsArray = false }
-    
-    type NamedTypeInst =
-        { Name : string
-        ; TypeInst : TypeInst
-        ; Annotations : Annotations }
+        static member Empty =
+            { Type = Type.Ident ""
+            ; Inst = Inst.Par
+            ; IsSet = false
+            ; IsOptional = false
+            ; IsArray = false
+            ; IsInstanced = false
+            ; Name = ""
+            ; Annotations = []
+            ; Value = None }
+            
         
     type ITyped =
         abstract member TypeInst: TypeInst
@@ -337,74 +345,81 @@ module rec Ast =
         | String
         | Float
         | Ann
-        | Id     of Id
+        | Any 
+        | Instanced of Ident
+        | Ident  of Ident
         | Set    of Expr // TODO confirm with MiniZinc team
-        | Tuple  of TupleType
-        | Record of RecordType
+        | Tuple  of TypeInst list
+        | Record of TypeInst list
         | Array  of ArrayType
-
-    type RecordType =
-        { Fields: NamedTypeInst list }
-         
-    type TupleType =
-        { Fields: TypeInst list }
-        
-    type RangeExpr =
-        NumExpr * NumExpr
         
     [<RequireQualifiedAccess>]
+    [<Struct>]
     type ArrayDim =
         | Int
-        | Id of Id
+        | Id of id:Ident
         | Set of Expr
         
     type ArrayType =
         { Dimensions : ArrayDim list
         ; Elements: TypeInst }
-       
-    type SetLiteral =
-        { Elements: Expr list }
+        
+    type IncludeItem =
+        { Name: string
+        ; File: FileInfo option
+        ; Integrated : bool }
+        
+        static member Create(file: FileInfo) =
+            match file.Exists with
+            | true ->
+                { Name = file.Name
+                ; File = Some file
+                ; Integrated = false }
+            | false ->
+                { Name = file.Name
+                ; File = None
+                ; Integrated = false }
+        
+        static member Create(file: string) =
+            IncludeItem.Create (FileInfo file)
+            
+        static member Create(dir: DirectoryInfo, name: string) =
+            let path = Path.Join(dir.FullName, name)
+            IncludeItem.Create(path)
+            
+    module IncludeItem =
+        let resolve (dir: DirectoryInfo) (item: IncludeItem) =
+            match item.File with
+            | Some fi when fi.Exists ->
+                item
+            | _ ->
+                IncludeItem.Create(dir, item.Name)
         
     [<RequireQualifiedAccess>]    
     type Item =
         | Include    of IncludeItem
-        | Enum       of EnumItem
+        | Enum       of EnumType
         | Synonym    of TypeAlias
-        | Constraint of ConstraintItem
-        | Assign     of AssignItem
-        | Declare    of DeclareItem
+        | Constraint of ConstraintExpr
+        | Assign     of AssignExpr
+        | Declare    of TypeInst
         | Solve      of SolveItem
-        | Function   of FunctionItem
         | Test       of TestItem
-        | Output     of OutputItem
-        | Annotation of AnnotationItem
+        | Output     of OutputExpr
+        | Function   of FunctionType
+        | Annotation of AnnotationType
         | Comment    of string
 
-    type ConstraintItem =
+    type ConstraintExpr =
         { Expr: Expr
         ; Annotations: Annotations }
-        
-    type Parameters =
-        Parameter list
-        
-    type Parameter =
-        NamedTypeInst
-
-    type Argument =
-        Expr
       
-    type NamedArg =
-        Id * Expr
-
-    type NamedArgs =
-        NamedArg list
-        
-    type Arguments =
-        Argument list
+    type NamedExpr =
+        Ident * Expr
            
     type TestItem =
         { Name: string
-        ; Parameters : Parameters
+        ; Parameters : TypeInst list
         ; Annotations : Annotations
         ; Body: Expr option }
         
@@ -418,53 +433,38 @@ module rec Ast =
         
         interface INamed with
             member this.Name = this.Name
-       
-    type OutputItem =
-        { Expr: Expr }
 
-    type OperationItem =
+    type AnnotationType =
         { Name: string
-          Parameters : Parameters
-          Annotations : Annotations
-          Body: Expr option }
-        
-    type FunctionItem =
+        ; Params: TypeInst list
+        ; Body: Expr option }
+    
+    type FunctionType =
         { Name: string
         ; Returns : TypeInst
         ; Annotations : Annotations
-        ; Parameters : Parameters
+        ; Parameters : TypeInst list
+        ; Ann : string
         ; Body: Expr option }
-        
+                
         interface INamed with
             member this.Name = this.Name
         
     type Test =
         unit
 
-    type AssignItem =
-        NamedArg
+    type AssignExpr =
+        NamedExpr
 
-    type DeclareItem =
-        { Name: string
-        ; TypeInst: TypeInst
-        ; Annotations: Annotations
-        ; Expr: Expr option }
+    type OutputExpr =
+        { Expr: Expr; Annotation: string option }
         
-        member this.Type =
-            this.TypeInst.Type
-            
-        member this.Inst =
-            this.TypeInst.Inst
-        
-        interface INamed with
-            member this.Name = this.Name
-
     type LetLocal =
-        Choice<DeclareItem, ConstraintItem>
+        Choice<TypeInst, ConstraintExpr>
         
     type LetExpr =
-        { Declares: DeclareItem list
-        ; Constraints : ConstraintItem list
+        { Declares: TypeInst list
+        ; Constraints : ConstraintExpr list
         ; Body: Expr }
         
     type Ast = Item list    
@@ -472,11 +472,11 @@ module rec Ast =
     /// Things that a name can be bound to
     [<RequireQualifiedAccess>]
     type Binding =
-        | Variable of DeclareItem
+        | Variable of TypeInst
         | Expr     of Expr
-        | Enum     of EnumItem
+        | Enum     of EnumType
         | Type     of TypeAlias
-        | Function of FunctionItem
+        | Function of FunctionType
         | Multiple of Binding list
 
     /// <summary>
@@ -497,9 +497,9 @@ module rec Ast =
         { Bindings    : Map<string, Binding>
         ; Inputs      : Map<string, TypeInst>
         ; Outputs     : Map<string, TypeInst>
-        ; Variables   : Map<string, DeclareItem>
+        ; Variables   : Map<string, TypeInst>
         ; Undeclared  : Map<string, Expr>
-        ; Enums       : Map<string, EnumItem> 
+        ; Enums       : Map<string, EnumType> 
         ; Synonyms    : Map<string, TypeAlias> 
-        ; Functions   : Map<string, FunctionItem>        
+        ; Functions   : Map<string, FunctionType>        
         ; Conflicts   : Map<string, Binding list> }

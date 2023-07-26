@@ -14,6 +14,7 @@ past the parsing phase.
 namespace MiniZinc
 
 open System.IO
+open FParsec.CharParsers
 
 [<AutoOpen>]
 module rec Model =
@@ -95,10 +96,10 @@ module rec Model =
                 // Variable assignment    
                 | Some (Binding.Variable var), Binding.Expr expr 
                 | Some (Binding.Expr expr), Binding.Variable var ->
-                    match var.Expr with
+                    match var.Value with
                     // Assign new value
                     | None ->
-                        Binding.Variable { var with Expr = Some expr }
+                        Binding.Variable { var with Value = Some expr }
                     // Existing value                    
                     | Some old when old = expr ->
                         Binding.Expr expr
@@ -138,19 +139,19 @@ module rec Model =
 
             let result =
                 match newBinding with
-                | Binding.Variable var ->
-                    match var.Inst, var.Expr with
+                | Binding.Variable ti ->
+                    match ti.Inst, ti.Value with
                     | Inst.Par, None ->
                         { ns with
-                            Inputs = Map.add id var.TypeInst ns.Inputs
-                            Variables = Map.add id var ns.Variables }
+                            Inputs = Map.add id ti ns.Inputs
+                            Variables = Map.add id ti ns.Variables }
                     | Inst.Var, None ->
                         { ns with
-                            Outputs = Map.add id var.TypeInst ns.Outputs
-                            Variables = Map.add id var ns.Variables }
+                            Outputs = Map.add id ti ns.Outputs
+                            Variables = Map.add id ti ns.Variables }
                     | _, _ ->
                         { ns with
-                            Variables = Map.add id var ns.Variables }
+                            Variables = Map.add id ti ns.Variables }
                 | Binding.Expr x ->
                     { ns with
                         Undeclared = Map.add id x ns.Undeclared }
@@ -173,10 +174,10 @@ module rec Model =
                 
             nameSpace
             
-        let addDeclare (decl: DeclareItem) (ns: NameSpace) : NameSpace =
+        let addDeclare (decl: TypeInst) (ns: NameSpace) : NameSpace =
             add decl.Name (Binding.Variable decl) ns
             
-        let addFunction (func: FunctionItem) (ns: NameSpace) : NameSpace =
+        let addFunction (func: FunctionType) (ns: NameSpace) : NameSpace =
             add func.Name (Binding.Function func) ns
         
         /// Create a NameSpace from the given bindings        
@@ -206,16 +207,16 @@ module rec Model =
     
     type NameSpace with
                 
-        member this.Add (x: DeclareItem) =
+        member this.Add (x: TypeInst) =
             NameSpace.add x.Name (Binding.Variable x) this
             
-        member this.Add (x: EnumItem) =
+        member this.Add (x: EnumType) =
             NameSpace.add x.Name (Binding.Enum x) this
             
         member this.Add (x: TypeAlias) =
             NameSpace.add x.Name (Binding.Type x) this
 
-        member this.Add (x: FunctionItem) =
+        member this.Add (x: FunctionType) =
             NameSpace.add x.Name (Binding.Function x) this
             
         member this.Add (name: string, x: Expr) : NameSpace =
@@ -228,10 +229,10 @@ module rec Model =
     type Model = 
         { Name        : string
         ; FilePath    : string option
-        ; Includes    : Map<string, IncludedModel>
+        ; Includes    : Map<string, IncludeItem>
         ; NameSpace   : NameSpace
-        ; Constraints : ConstraintItem list
-        ; Outputs     : OutputItem list
+        ; Constraints : ConstraintExpr list
+        ; Outputs     : OutputExpr list
         ; SolveMethod : SolveItem }
                         
     module Model =
@@ -278,11 +279,11 @@ module rec Model =
             model
                     
         let fromAst (ast: Ast) : Model =
-            
+                        
             let fold (model:Model) (item: Item) =
                 match item with
-                | Item.Include (Include x) ->
-                    { model with Includes = Map.add x IncludedModel.Reference model.Includes }
+                | Item.Include x ->
+                    { model with Includes = model.Includes.Add (x.Name, x) }
                 | Item.Enum x ->
                     { model with NameSpace = model.NameSpace.Add x }
                 | Item.Synonym x ->
@@ -316,13 +317,12 @@ module rec Model =
             
             let enc = Encoder()
                                                 
-            for incl in model.Includes.Keys do
-                let item = IncludeItem.Include incl
+            for item in model.Includes.Values do
                 enc.writeIncludeItem item
                 enc.writetn()
 
             for enum in model.NameSpace.Enums.Values do
-                enc.writeEnum enum
+                enc.writeEnumType enum
                 enc.writetn()
                 
             for syn in model.NameSpace.Synonyms.Values do
@@ -344,44 +344,32 @@ module rec Model =
             enc.writeSolveMethod model.SolveMethod
             
             for output in model.Outputs do
-                enc.writeOutputItem output
+                enc.writeOutput output
                 enc.writetn()
                 
             enc.String
-
-
                             
     let parseModelString (mzn: string) : Result<Model, ParseError> =
-                                    
+                                            
         let source, comments =
             parseComments mzn
         
         let model =
             source
-            |> parseString Parsers.model
+            |> parseWith Parsers.ast
             |> Result.map Model.fromAst
             
         model
         
     let parseModelFile (filepath: string) : Result<Model, ParseError> =
-        
+                
         if File.Exists filepath then
             let mzn = File.ReadAllText filepath
             let model = parseModelString mzn
             model
         else
             failwithf $"{filepath} does not exist"
-        
-    type IncludedModel =
-        
-        /// Reference only - load has not been attempted
-        | Reference
-        
-        /// Model was parsed and stored in isolation  
-        | Isolated of Model
-        
-        /// Model was parsed and integrated into the referencing model
-        | Integrated of Model
+       
         
     type Model with
 
