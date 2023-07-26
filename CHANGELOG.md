@@ -13,10 +13,10 @@ Further progress towards full test coverage.
 - Removed some unused parsers and AST cases
 - Added support for annotations on Output expressions
 - Added support for bodies in Annotation types
-- Fixed several bugs in comments preprocessing
 - Replaced identifier parsing with the FParsec's `identifier`
 - Replaced integer and float parsing with FParsec's `numberLiteral`
 - Removed the `NumExpr` class entirely as it was just a subset of `Expr`
+- Rewrote `parseComments` entirely to correctly handle line comments, block comments, escaped quotes etc
 
 ## Model
 - Added support for instanced variables `$T` in `TypeInsts`
@@ -27,7 +27,7 @@ Further progress towards full test coverage.
 - Changed `CommandResult` and `Arg` to structs
 
 ## Bugfixes
-- Many that I forget to write down
+- Fixed several bugs related to comment preprocessing
 
 
 ## [0.5.0] - 2023-07-16
