@@ -30,7 +30,7 @@ module ``Parser Tests`` =
                 x
             | Result.Error err ->
                 let trace = err.Trace
-                failwith (string err)
+                failwith $"Could not parse the model:\n{err.Message}\n{err.Trace}"
             
         let encoder = Encoder()
         let write = (writer encoder)
@@ -44,7 +44,7 @@ module ``Parser Tests`` =
             | Result.Ok x ->
                 x
             | Result.Error err ->
-                failwith (string err)
+                failwith $"Could not roundtrip the mzn:\n{err.Message}\n{err.Trace}"
         
         ()
         
