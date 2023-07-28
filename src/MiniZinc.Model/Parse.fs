@@ -107,84 +107,6 @@ module Parsers =
         static member betweenBrackets p =
             P.betweenWs('(', ')') p
             
-        /// Determine the correct Inst for the given TypeInst
-        /// </summary>
-        /// <remarks>
-        /// The purpose of this step is to correctly identify
-        /// which TypeInsts are 'var' versus 'par' at every level.
-        ///
-        /// Consider the two examples:
-        /// array[1..3] of record(var bool: a): x;
-        /// array[1..3] of var record(bool: b): y;
-        ///
-        /// Both are decision variables however only the second example
-        /// would be given a TypeInst with Inst == Var.
-        ///
-        /// This function returns the typeinst with the correctly
-        /// inferred Inst for every TypeInst and its children.
-        /// </remarks>
-        static member ResolveInst (ti: TypeInst) =
-            match P.ResolveInst ti.Type with
-            // If the type is a Var it overrides the setting here
-            | ty, Inst.Var ->
-                { ti with Type = ty; Inst = Inst.Var }, Inst.Var
-            // Otherwise use the existing value
-            | ty, _ ->
-                { ti with Type = ty; }, ti.Inst
-            
-        static member ResolveInst (ty: Type) =
-            match ty with
-            | Type.Int 
-            | Type.Bool 
-            | Type.String 
-            | Type.Float 
-            | Type.Ident _ 
-            | Type.Set _
-            | Type.Instanced _
-            | Type.Any
-            | Type.Ann ->
-                ty, Inst.Par
-            
-            // Any var item means a var tuple
-            | Type.Tuple x ->
-                let mutable inst = Inst.Par
-                                
-                let fields =
-                    x
-                    |> List.map (fun item ->
-                        match P.ResolveInst item with
-                        | ti, Inst.Par ->
-                            ti
-                        | ti, _ ->
-                            inst <- Inst.Var
-                            ti
-                        )
-                    
-                (Type.Tuple fields), inst
-                    
-            // Any var field means a var record
-            | Type.Record x ->
-                let mutable inst = Inst.Par
-                                
-                let resolved =
-                    x
-                    |> List.map (fun field ->
-                        match P.ResolveInst field with
-                        | ti, Inst.Par ->
-                            ti
-                        | ti, _ ->
-                            inst <- Inst.Var
-                            ti
-                        )
-                    
-                (Type.Record resolved), inst
-                
-            // A var item means a var array
-            | Type.Array arr ->
-                let ty, inst = P.ResolveInst arr.Elements
-                (Type.Array {arr with Elements = ty}), inst
-        
-            
     open type P
         
     let addToDebug (stream: CharStream<ParserState>) label event =
@@ -230,7 +152,101 @@ module Parsers =
         p
         <?> label
         <!> label
-                    
+
+    
+    /// Determine the correct Inst for the given TypeInst
+    /// </summary>
+    /// <remarks>
+    /// The purpose of this step is to correctly identify
+    /// which TypeInsts are 'var' versus 'par' at every level.
+    ///
+    /// Consider the two examples:
+    /// array[1..3] of record(var bool: a): x;
+    /// array[1..3] of var record(bool: b): y;
+    ///
+    /// Both are decision variables however only the second example
+    /// would be given a TypeInst with Inst == Var.
+    ///
+    /// This function returns the TypeInst with the correctly
+    /// inferred Vars 
+    /// </remarks>
+    let rec resolveTypeInst (ti: TypeInst) =
+        match resolveType ti.Type with
+        // If the type is a Var it overrides the setting here
+        | ty, true ->
+            { ti with Type = ty; IsVar = true }
+        // Otherwise use the existing value
+        | ty, _ ->
+            { ti with Type = ty; }
+            
+    and resolveType (ty: Type) =
+        match ty with
+        | Type.Int 
+        | Type.Bool 
+        | Type.String 
+        | Type.Float 
+        | Type.Ident _ 
+        | Type.Set _
+        | Type.Generic _
+        | Type.Any
+        | Type.Ann ->
+            ty, false
+        
+        // Any var field means a var tuple
+        | Type.Tuple x ->
+            let mutable isVar = false
+            let fields =
+                x
+                |> List.map (fun field ->
+                    match resolveTypeInst field with
+                    | ti when ti.IsVar ->
+                        isVar <- true
+                        ti
+                    | ti ->
+                        ti
+                    )
+                
+            (Type.Tuple fields), isVar
+                
+        // Any var field means a var record
+        | Type.Record x ->
+            let mutable isVar = false
+            
+            let resolved =
+                x
+                |> List.map (fun field ->
+                    let ti = resolveTypeInst field
+                    if ti.IsVar then
+                        isVar <- true
+                    ti)
+                
+            (Type.Record resolved), isVar
+            
+        | Type.Array (i, ti) ->
+            let ti = resolveTypeInst ti
+            (Type.Array (i, ti)), ti.IsVar
+            
+        | Type.Array2D (i, j, ti) ->
+            let ti = resolveTypeInst ti
+            (Type.Array2D (i, j, ti)), ti.IsVar
+            
+        | Type.Array3D (i, j, k, ti) ->
+            let ti = resolveTypeInst ti
+            (Type.Array3D (i, j, k, ti)), ti.IsVar
+        
+        | Type.Array4D (i, j, k, l, ti) ->
+            let ti = resolveTypeInst ti
+            (Type.Array4D (i, j, k, l, ti)), ti.IsVar
+        
+        | Type.Array5D (i, j, k, l, m, ti) ->
+            let ti = resolveTypeInst ti
+            (Type.Array5D (i, j, k, l, m, ti)), ti.IsVar
+            
+        | Type.Array6D (i, j, k, l, m, n, ti) ->
+            let ti = resolveTypeInst ti
+            (Type.Array6D (i, j, k, l, m, n, ti)), ti.IsVar
+
+                        
     let opt_or backup p =
         (opt p) |>> Option.defaultValue backup
        
@@ -489,9 +505,10 @@ module Parsers =
         |> choice
     
     // <array1d-literal>
-    let array1d_literal : Parser<Array1dExpr> =
+    let array1d_literal =
         sepEndBy expr (skip ',')
         |> betweenWs ('[', ']')
+        |>> Array.ofList
         <?!> "array1d-literal"
             
     // <set-literal>
@@ -500,8 +517,8 @@ module Parsers =
         |> betweenWs('{', '}')
                 
     // <array2d-literal>
-    let array2d_literal : Parser<Array2dExpr> =
-        
+    let array2d_literal : Parser<Expr[,]>=
+                
         let row =
             commaSep1 expr
             
@@ -513,11 +530,17 @@ module Parsers =
             >>. ws
             
         let rows =
-            sepEndBy (row .>> ws) rowSep
+            sepEndBy row rowSep
             
         let array =
             rows
             |> betweenWs ("[|", "|]")
+            >>= (fun exprs ->
+                try
+                    preturn (array2D exprs)
+                with
+                | exn ->
+                    fail exn.Message)
                 
         array
     
@@ -622,7 +645,7 @@ module Parsers =
                     { TypeInst.Empty
                         with
                             Type = Type.Bool
-                            Inst = Inst.Var  }
+                            IsVar = true  }
                 ; Body = body })
         <?!> "predicate"
 
@@ -710,11 +733,11 @@ module Parsers =
         |>> IncludeItem.Create
     
     // <var-par>
-    let inst : Parser<Inst> =
+    let isVar : Parser<bool> =
         choice
-            [ "var" => Inst.Var
-            ; "par" => Inst.Par
-            ; preturn  Inst.Par ]
+            [ "var" => true
+            ; "par" => false
+            ; preturn  false ]
         
     // <opt-ti>        
     let opt_ti =
@@ -731,7 +754,7 @@ module Parsers =
     // <base-ti-expr>
     let base_ti_expr : Parser<TypeInst> =
         pipe(
-            inst,
+            isVar,
             set_ti,
             opt_ti,
             base_ti_expr_tail,
@@ -742,7 +765,7 @@ module Parsers =
                 ; IsSet = set
                 ; IsArray = false
                 ; Annotations = [] 
-                ; Inst = inst
+                ; IsVar = inst
                 ; Value = None
                 ; IsInstanced = false }
         )
@@ -774,18 +797,33 @@ module Parsers =
             dimensions,
             keyword "of",
             base_ti_expr,
-            fun _ dims _ ty ->
-                let ty, inst =
-                    { Dimensions = dims; Elements=ty}
-                    |> Type.Array
-                    |> P.ResolveInst
-                    
-                let ti =
-                    { TypeInst.Empty with
-                        Type = ty
-                        Inst = inst
-                        IsArray = true }
-                ti)        
+            fun _ dims _ ti ->
+                (dims, resolveTypeInst ti))
+        >>= (fun (dims, ti) ->
+                let arr ty =
+                    preturn
+                        { TypeInst.Empty with
+                            IsArray = true
+                            IsVar = ti.IsVar
+                            Type = ty }
+                        
+                match dims with
+
+                | [i] ->
+                    arr <| Type.Array (i, ti)
+                | [i;j] ->
+                    arr <| Type.Array2D (i, j, ti)
+                | [i;j;k]->
+                    arr <| Type.Array3D (i, j, k, ti)
+                | [i;j;k;l]->
+                    arr <| Type.Array4D (i, j, k, l, ti)
+                | [i;j;k;l;m] ->
+                    arr <| Type.Array5D (i, j, k, l, m, ti)
+                | [i;j;k;l;m;n] ->
+                    arr <| Type.Array6D (i, j, k, l, m, n, ti)
+                | xs ->
+                    fail $"Number of array dimension must be between 1 and 6 (got {xs.Length})."
+        )        
         <?!> "array-ti-expr"
     
     // <ti-expr>        
@@ -833,7 +871,7 @@ module Parsers =
         ; record_ti      |>> Type.Record
         ; tuple_ti       |>> Type.Tuple
         ; expr           |>> Type.Set
-        ; instanced_type |>> Type.Instanced
+        ; instanced_type |>> Type.Generic
         ; ident          |>> Type.Ident ]
         |> choice
         <?!> "base-ti-tail"
@@ -931,7 +969,7 @@ module Parsers =
             annotations,
             opt assign_tail,
             fun ti args anns expr ->
-                let ti, inst = P.ResolveInst ti
+                let ti = resolveTypeInst ti
                 match args with
                 // No arguments, not a function
                 | None ->
@@ -1128,12 +1166,12 @@ module Parsers =
     // <expr-atom-head>    
     let expr_atom_head : Parser<Expr> =
         [
+          wildcard        |>> Expr.WildCard
+          absent          |>> Expr.Absent
           number_range
           number_lit
           bool_literal    |>> Expr.Bool
           string_lit      |>> Expr.String
-          wildcard        |>> Expr.WildCard
-          absent          |>> Expr.Absent
           record_literal  |>> Expr.Record
           tuple_literal   |>> Expr.Tuple
           bracketed expr  |>> Expr.Bracketed
@@ -1143,8 +1181,8 @@ module Parsers =
           call_expr       |>> Expr.Call
           array_comp      |>> Expr.ArrayComp
           set_comp        |>> Expr.SetComp          
-          array2d_literal |>> Expr.Array2d
-          array1d_literal |>> Expr.Array1d
+          array2d_literal |>> Expr.Array2D
+          array1d_literal |>> Expr.Array1D
           set_literal     |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           ident           |>> Expr.Ident

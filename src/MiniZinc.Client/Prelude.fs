@@ -79,9 +79,8 @@ module Prelude =
             
             let rec parse (obj: JsonObject) : TypeInst =
                 
-                let inst =
-                    Inst.Par
-                
+                let isVar = false
+                                
                 let isSet =
                     obj.TryGet("set")
                     |> Option.bind Json.tryGetValue<bool>
@@ -139,7 +138,7 @@ module Prelude =
                     { TypeInst.Empty with
                         IsSet = isSet
                         IsOptional = isOpt
-                        Inst = inst
+                        IsVar = isVar
                         Type = type' }
                         
                 let ti =
@@ -147,8 +146,9 @@ module Prelude =
                     | true ->
                         { TypeInst.Empty with
                             IsArray = true
-                            Inst = inst
-                            Type = Type.Array { Elements = baseTi; Dimensions=[] } }
+                            IsVar = isVar
+                            //Type = Type.Array { Elements = baseTi; Dimensions=[] } }
+                            }
                     | false ->
                         baseTi
                 ti

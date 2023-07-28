@@ -102,20 +102,15 @@ module rec Encode =
             this.write s
             this.writetn()
         
-        member this.writeIf (cond: bool) (s: string) =
-            if cond then
-                this.write s
-
-        member this.writeSep (sep: string, xs: 't list, write: 't -> unit) =
-            if xs.IsEmpty then
-                ()
-            else
-                let n = xs.Length
-                for i in 0 .. n - 2 do
-                    write xs[i]
+        member this.writeSep (sep: string, xs: 't seq, write: 't -> unit) =
+            let n = Seq.length xs 
+            let mutable i = 0
+            for x in xs do
+                i <- i + 1
+                write x
+                if i < n then
                     this.write sep
-                write xs[n-1]
-                ()
+            ()
                 
         member this.writeColl (left:string, right:string, sep: string, xs: 't list, write: 't -> unit) =
             this.write left
@@ -167,20 +162,18 @@ module rec Encode =
                 for ann in anns do
                     this.writeAnnotation ann
                 
-        member this.writeInst (inst: Inst) =
-            match inst with
-            | Inst.Var -> this.write "var "
-            | _ -> ()
-                
         member this.writeTypeInst (ti: TypeInst) =
             match ti.IsArray with
             | true ->
                 this.writeType ti.Type
             | false ->
-                this.writeInst ti.Inst
-                this.writeIf ti.IsSet "set of "
-                this.writeIf ti.IsOptional "opt "
-                this.writeType ti.Type        
+                if ti.IsVar then
+                    this.write "var "
+                if ti.IsSet then
+                    this.write "set of "
+                if ti.IsOptional then
+                    this.write "opt "
+                this.writeType ti.Type
 
         member this.writeTupleType fields =
             this.write "tuple("
@@ -202,7 +195,7 @@ module rec Encode =
             | Type.Any ->
                 this.write "any"
             | Type.Ident x
-            | Type.Instanced x ->
+            | Type.Generic x ->
                 this.write x                
             | Type.Record x ->
                 this.writeRecordType x                
@@ -210,8 +203,18 @@ module rec Encode =
                 this.writeTupleType x                
             | Type.Set x ->
                 this.writeExpr x
-            | Type.Array x ->
-                this.writeArrayType x
+            | Type.Array (i, ti) ->
+                this.writeArrayType(ti, i)
+            | Type.Array2D (i, j, ti) ->
+                this.writeArrayType(ti, i, j)
+            | Type.Array3D (i, j, k, ti) ->
+                this.writeArrayType(ti, i, j, k)
+            | Type.Array4D (i, j, k, l, ti) ->
+                this.writeArrayType(ti, i, j, k, l)
+            | Type.Array5D (i, j, k, l, m, ti) ->
+                this.writeArrayType(ti, i, j, k, l, m)
+            | Type.Array6D (i, j, k, l, m, n, ti) ->
+                this.writeArrayType(ti, i, j, k, l, m, n)
                 
         member this.writeArrayDim(t: ArrayDim) =
             match t with
@@ -222,11 +225,11 @@ module rec Encode =
             | ArrayDim.Set x ->
                 this.writeExpr x
                     
-        member this.writeArrayType (arr: ArrayType) =
+        member this.writeArrayType (elements: TypeInst, [<ParamArray>]dimensions: ArrayDim[]) =
             this.write "array["
-            this.writeSep(", ", arr.Dimensions, this.writeArrayDim)
+            this.writeSep(", ", dimensions, this.writeArrayDim)
             this.write "] of "
-            this.writeTypeInst arr.Elements
+            this.writeTypeInst elements
                             
         member this.writeSetLit (set: Expr list) =
             this.write "{"
@@ -272,19 +275,42 @@ module rec Encode =
             this.writeSep(", ", x.From, this.writeGenerator)
             this.write '}'
           
-        member this.writeArray1d (exprs: Array1dExpr) =
+        member this.writeArray1d (exprs: Expr[]) =
             this.write "["
             this.writeExprs exprs
             this.write "]"
             
-        member this.writeExprs (exprs: Expr list) =
+        member this.writeExprs(exprs: Expr seq) =
             this.writeSep(", ", exprs, this.writeExpr)
             
-        member this.writeArray2d (arrays: Array2dExpr) =
+        member this.writeArray2d (array: Expr[,]) =
             this.write "[|"
-            this.writeSep("\n| ", arrays, this.writeExprs)
+            let I = Array2D.length1 array
+            let J = Array2D.length2 array
+            for i in 0 .. I-1 do
+                let a = Array2D.map
+                let row = array.[i,*]
+                this.writeExprs(row)
+                this.write "\n|"
+                    
             this.write "|]"
             
+        member this.writeArray3d (array: Expr[,,]) =
+            let I = Array3D.length1 array
+            let J = Array3D.length2 array
+            let K = Array3D.length3 array
+            this.write $"array3d(1..{I}, 1..{J}, 1..{K}, "
+            for i in 0 .. I - 1 do
+                for j in 0 .. J - 1 do
+                    for k in 0 .. K - 1 do
+                        this.writeExpr (array.[i, j, k])
+                        this.write ", "
+                
+            // Remove trailing comma
+            builder.Remove(builder.Length - 2, 2)
+            this.write ")"
+            ()
+           
         member this.writeArrayComp (x: ArrayCompExpr) =
             this.write '['
             this.writeExpr x.Yields
@@ -410,15 +436,17 @@ module rec Encode =
                 this.writeSetLit x
             | Expr.SetComp x ->
                 this.writeSetComp x
-            | Expr.Array1d x ->
+            | Expr.Array1D x ->
                 this.writeArray1d x
-            | Expr.Array2d x ->
+            | Expr.Array2D x ->
                 this.writeArray2d x
+            | Expr.Array3D x ->
+                this.writeArray3d x
             | Expr.ArrayComp x ->
                 this.writeArrayComp x
-            | Expr.Array1dIndex ->
+            | Expr.Array1DIndex ->
                 ()
-            | Expr.Array2dIndex ->
+            | Expr.Array2DIndex ->
                 ()
             | Expr.ArrayCompIndex ->
                 ()

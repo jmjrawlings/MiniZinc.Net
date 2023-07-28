@@ -140,12 +140,12 @@ module rec Model =
             let result =
                 match newBinding with
                 | Binding.Variable ti ->
-                    match ti.Inst, ti.Value with
-                    | Inst.Par, None ->
+                    match ti.IsVar, ti.Value with
+                    | false, None ->
                         { ns with
                             Inputs = Map.add id ti ns.Inputs
                             Variables = Map.add id ti ns.Variables }
-                    | Inst.Var, None ->
+                    | true, None ->
                         { ns with
                             Outputs = Map.add id ti ns.Outputs
                             Variables = Map.add id ti ns.Variables }

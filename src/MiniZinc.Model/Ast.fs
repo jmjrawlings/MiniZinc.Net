@@ -12,8 +12,10 @@ be wrapped up and exposed through the `Model` class
 
 namespace MiniZinc
 
+open System
 open System.Diagnostics
 open System.IO
+open Microsoft.FSharp.Collections
 
 [<AutoOpen>]
 module rec Ast =
@@ -32,7 +34,7 @@ module rec Ast =
     [<Struct>]
     [<DebuggerDisplay("_")>]
     type WildCard = | WildCard
-            
+                
     [<Struct>]
     [<DebuggerDisplay("<>")>]
     type Absent = | Absent
@@ -45,10 +47,6 @@ module rec Ast =
     type IdOr<'T> =
         | Id of id:string
         | Val of value:'T
-                  
-    type Inst =
-        | Var = 0
-        | Par = 1
         
     type VarKind =
         | AssignedPar = 0
@@ -178,10 +176,11 @@ module rec Ast =
         | RecordAccess  of RecordAccessExpr
         | TupleAccess   of TupleAccessExpr
         | ArrayAccess   of ArrayAccessExpr
-        | Array1d       of Array1dExpr
-        | Array1dIndex
-        | Array2d       of Array2dExpr
-        | Array2dIndex
+        | Array1D       of Expr[]
+        | Array1DIndex
+        | Array2D       of Expr [,]
+        | Array2DIndex
+        | Array3D       of Expr [,,]
         | ArrayComp     of ArrayCompExpr
         | ArrayCompIndex
         | Tuple         of TupleExpr
@@ -237,12 +236,6 @@ module rec Ast =
         { Yields : IdOr<WildCard> list
         ; From  : Expr  
         ; Where : Expr option }
-        
-    type Array1dExpr =
-        Expr list
-
-    type Array2dExpr =
-        Expr list list
 
     type TupleExpr =
         Expr list
@@ -316,16 +309,20 @@ module rec Ast =
         { Name : string
           Type : Type
           Annotations : Annotations
-          Inst : Inst
+          IsVar : bool
           IsSet : bool
           IsOptional : bool
           IsArray : bool
           IsInstanced : bool
           Value : Expr option }
         
+        /// True if this TypeInst is a parameter (not a variable)
+        member this.IsPar =
+            not this.IsVar
+        
         static member Empty =
             { Type = Type.Ident ""
-            ; Inst = Inst.Par
+            ; IsVar = false
             ; IsSet = false
             ; IsOptional = false
             ; IsArray = false
@@ -346,23 +343,24 @@ module rec Ast =
         | Float
         | Ann
         | Any 
-        | Instanced of Ident
-        | Ident  of Ident
-        | Set    of Expr // TODO confirm with MiniZinc team
-        | Tuple  of TypeInst list
-        | Record of TypeInst list
-        | Array  of ArrayType
-        
+        | Generic   of Ident
+        | Ident     of Ident
+        | Set       of Expr
+        | Tuple     of TypeInst list
+        | Record    of TypeInst list
+        | Array     of ArrayDim * TypeInst
+        | Array2D   of ArrayDim * ArrayDim * TypeInst
+        | Array3D   of ArrayDim * ArrayDim * ArrayDim * TypeInst
+        | Array4D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
+        | Array5D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
+        | Array6D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
+       
     [<RequireQualifiedAccess>]
     [<Struct>]
     type ArrayDim =
         | Int
         | Id of id:Ident
         | Set of Expr
-        
-    type ArrayType =
-        { Dimensions : ArrayDim list
-        ; Elements: TypeInst }
         
     type IncludeItem =
         { Name: string
