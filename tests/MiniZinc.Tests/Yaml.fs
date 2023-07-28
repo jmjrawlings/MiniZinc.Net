@@ -238,11 +238,13 @@ module rec Yaml =
                     |> List.choose (function
                         | Yaml.Sequence x -> Some (List.map toExpr x)
                         | _ -> None)
-                    |> Expr.Array2d
+                    |> array2D
+                    |> Expr.Array2D
                 | _ ->
                     xs
-                    |> List.map toExpr
-                    |> Expr.Array1d
+                    |> Seq.map toExpr
+                    |> Array.ofSeq
+                    |> Expr.Array1D
                 
             | Yaml.Int i ->
                 Expr.Int i
