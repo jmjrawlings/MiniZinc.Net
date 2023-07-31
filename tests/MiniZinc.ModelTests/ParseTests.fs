@@ -186,7 +186,7 @@ module ``Parser Tests`` =
     [<Theory>]
     [<InlineData("array2d(ROW, COL, [])")>]
     let ``test call`` arg =
-        testRoundtrip Parsers.call_expr arg (fun enc -> enc.writeCall)
+        testRoundtrip Parsers.call_expr arg (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("[]")>]
@@ -195,7 +195,23 @@ module ``Parser Tests`` =
     [<InlineData("[1, _, 3, _, 5]")>]
     [<InlineData("[<>, _, 10, q]")>]
     let ``test array1d literal`` arg =
-        testRoundtrip Parsers.array1d_literal arg (fun enc -> enc.writeArray1d)
+        testRoundtrip Parsers.array1d_lit arg (fun enc -> enc.writeArray1dLit)
+    
+    [<Theory>]
+    [<InlineData("[| |]")>]
+    [<InlineData("[| one_item |]")>]
+    [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _||]")>]
+    [<InlineData("[|1,2,3,4 | 5,6,7,8 | 9,10,11,12  |    |]")>]
+    [<InlineData("[| true, false, true |]")>]
+    let ``test array2d literal`` arg =
+        testRoundtrip Parsers.array2d_lit arg (fun enc -> enc.writeArray2dLit)
+    
+    [<Theory>]
+    [<InlineData("[| | | |]")>]
+    [<InlineData("[| | one_item | |]")>]
+    [<InlineData("[| | 1, 2 |, | 3, 4 | |]")>]
+    let ``test array3d literal`` arg =
+        testRoundtrip Parsers.array2d_lit arg (fun enc -> enc.writeArray2dLit)
         
     [<Theory>]
     [<InlineData("""forall (i in 1..n-1) (true)""")>]
@@ -213,14 +229,6 @@ module ``Parser Tests`` =
         | Result.Ok m -> m
         | Result.Error err -> failwith err.Message
         
-    [<Theory>]
-    [<InlineData("[| |]")>]
-    [<InlineData("[| one_item |]")>]
-    [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _||]")>]
-    [<InlineData("[|1,2,3,4 | 5,6,7,8 | 9,10,11,12  |    |]")>]
-    [<InlineData("[| true, false, true |]")>]
-    let ``test array2d literal`` arg =
-        testRoundtrip Parsers.array2d_literal arg (fun enc -> enc.writeArray2d)
                 
     [<Theory>]
     [<InlineData("1..10")>]

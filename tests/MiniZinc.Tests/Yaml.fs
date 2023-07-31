@@ -239,12 +239,12 @@ module rec Yaml =
                         | Yaml.Sequence x -> Some (List.map toExpr x)
                         | _ -> None)
                     |> array2D
-                    |> Expr.Array2D
+                    |> Expr.Array2DLit
                 | _ ->
                     xs
                     |> Seq.map toExpr
                     |> Array.ofSeq
-                    |> Expr.Array1D
+                    |> Expr.Array1DLit
                 
             | Yaml.Int i ->
                 Expr.Int i

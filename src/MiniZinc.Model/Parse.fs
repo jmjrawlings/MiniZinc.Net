@@ -102,7 +102,15 @@ module Parsers =
             sepEndBy (p .>> ws) (P.skip ',')
             
         static member commaSep1 p =
-            sepEndBy1 (p .>> ws) (P.skip ',')
+            P.delimitedBy1 (',') p
+        
+        static member delimitedBy(c:char) =
+            fun p ->
+                sepEndBy (p .>> ws) (P.skip c)
+        
+        static member delimitedBy1(c:char) =
+            fun p ->
+                sepEndBy1 (p .>> ws) (P.skip c)
             
         static member betweenBrackets p =
             P.betweenWs('(', ')') p
@@ -222,9 +230,9 @@ module Parsers =
                 
             (Type.Record resolved), isVar
             
-        | Type.Array (i, ti) ->
+        | Type.Array1D (i, ti) ->
             let ti = resolveTypeInst ti
-            (Type.Array (i, ti)), ti.IsVar
+            (Type.Array1D (i, ti)), ti.IsVar
             
         | Type.Array2D (i, j, ti) ->
             let ti = resolveTypeInst ti
@@ -503,47 +511,79 @@ module Parsers =
     let builtin_op : Parser<Op> =
         builtin_ops
         |> choice
-    
-    // <array1d-literal>
-    let array1d_literal =
-        sepEndBy expr (skip ',')
-        |> betweenWs ('[', ']')
-        |>> Array.ofList
-        <?!> "array1d-literal"
             
     // <set-literal>
     let set_literal : Parser<Expr list>=
         commaSep expr
         |> betweenWs('{', '}')
-                
-    // <array2d-literal>
-    let array2d_literal : Parser<Expr[,]>=
-                
-        let row =
-            commaSep1 expr
-            
-        let rowSep =
-            attempt (
-                skipChar '|'
-                >>. notFollowedBy (skipChar ']')
-            )
-            >>. ws
-            
-        let rows =
-            sepEndBy row rowSep
-            
-        let array =
-            rows
-            |> betweenWs ("[|", "|]")
-            >>= (fun exprs ->
-                try
-                    preturn (array2D exprs)
-                with
-                | exn ->
-                    fail exn.Message)
-                
-        array
+        
+    let array_row =
+        commaSep1 expr
+        <?!> "array-row"
     
+    let array_sep =
+        attempt (
+            skipChar '|'
+            .>> (notFollowedBy (skipChar ']'))
+        )
+        >>. ws
+        <?!> "array-sep"
+    
+    // <array1d-literal>
+    let array1d_lit =                 
+        sepEndBy expr (skip ',')
+        |> betweenWs ('[', ']')
+        |>> Array.ofList
+        |> attempt
+        <?!> "array1d"
+                    
+    // <array2d-literal>
+    let array2d_lit : Parser<Expr[,]>=
+        
+        let array_rows =
+            sepEndBy array_row array_sep
+            
+        array_rows
+        |> betweenWs ("[|", "|]")
+        >>= (fun exprs ->
+            try
+                preturn (array2D exprs)
+            with
+            | exn ->
+                fail exn.Message)
+        |> attempt
+        <?!> "array2d"
+    
+    // <array3d-literal>
+    let array3d_lit : Parser<Expr[,,]>=
+                
+        let sub_array =
+            delimitedBy('|') array_row
+        
+        let array_rows =
+            delimitedBy1(',') sub_array
+            
+        array_rows
+        |> betweenWs ("[|", "|]")
+        >>= (fun exprs ->
+            
+            try
+                let I = exprs.Length
+                let J = if I > 0 then exprs[0].Length else 0
+                let K = if J > 0 then exprs[0].[0].Length else 0
+                let array = Array3D.zeroCreate I J K
+                for i,x in Seq.indexed exprs do
+                    for j,y in Seq.indexed x do
+                        for k, z in Seq.indexed y do
+                            array[i,j,k] <- z
+                preturn array                            
+            with
+            | exn ->
+                fail $"Bad array dimensions"
+            )
+        |> attempt
+        <?!> "array3d"
+            
     // eg: ```1..10```
     // eg: ```1 .. (a = 10)```
     // We make a special case here so it can be attempted
@@ -770,31 +810,31 @@ module Parsers =
                 ; IsInstanced = false }
         )
         
+    // let array_dim : Parser<ArrayDim> =
+    //     ti_expr
+    //     >>= fun ti ->
+    //         match ti.Type with
+    //         | Type.Ident id ->
+    //             preturn (ArrayDim.Id id)
+    //         | Type.Int ->
+    //             preturn ArrayDim.Int
+    //         | Type.Set x ->
+    //             preturn (ArrayDim.Set x)
+    //         | other ->
+    //             fail $"Bad array dimension {other}"
+        
     // <array-ti-expr>        
     let array_ti_expr : Parser<TypeInst> =
-
-        let dimension =
-            ti_expr
-            >>= fun ti ->
-                match ti.Type with
-                | Type.Ident id ->
-                    preturn (ArrayDim.Id id)
-                | Type.Int ->
-                    preturn ArrayDim.Int
-                | Type.Set x ->
-                    preturn (ArrayDim.Set x)
-                | other ->
-                    fail $"Bad array dimension {other}"
-        
-        let dimensions =
-            dimension
+                
+        let array_dims =
+            expr
             |> commaSep
             |> betweenWs ('[', ']')
             <?!> "array-dimensions"
         
         pipe(
             keyword "array",
-            dimensions,
+            array_dims,
             keyword "of",
             base_ti_expr,
             fun _ dims _ ti ->
@@ -808,9 +848,9 @@ module Parsers =
                             Type = ty }
                         
                 match dims with
-
+ 
                 | [i] ->
-                    arr <| Type.Array (i, ti)
+                    arr <| Type.Array1D (i, ti)
                 | [i;j] ->
                     arr <| Type.Array2D (i, j, ti)
                 | [i;j;k]->
@@ -880,10 +920,32 @@ module Parsers =
         name_or_quoted_value builtin_op
     
     // <call-expr>
-    let call_expr : Parser<CallExpr> =
-        attempt (id_or_op .>> ws .>> (followedBy (c '(')))
+    let call_expr : Parser<Expr> =
+        id_or_op
+        .>> ws
+        .>> followedBy (c '(')
+        |> attempt
         .>> ws
         .>>. tupled_args
+        |>> (fun (name, args) ->
+            // Handle some special known cases of function application
+            match name, args with
+            | (Id "array1d"), [i; Expr.Array1DLit arr] ->
+                Expr.Array1D (i, arr)
+            | (Id "array2d"), [i; j; Expr.Array1DLit arr] ->
+                Expr.Array2D (i, j, arr)
+            | (Id "array3d"), [i; j; k; Expr.Array1DLit arr] ->
+                Expr.Array3D (i, j, k, arr)
+            | (Id "array4d"), [i; j; k; l; Expr.Array1DLit arr] ->
+                Expr.Array4D (i, j, k, l, arr)
+            | (Id "array5d"), [i; j; k; l; m; Expr.Array1DLit arr] ->
+                Expr.Array5D (i, j, k, l, m, arr)
+            | (Id "array6d"), [i; j; k;l;m;n; Expr.Array1DLit arr] ->
+                Expr.Array6D (i, j, k, l, m, n, arr)
+            | _, _ ->
+                Expr.Call(name,args)
+        )
+        
         <?!> "call-expr"
         
     let wildcard : Parser<WildCard> =
@@ -1117,7 +1179,7 @@ module Parsers =
           bracketed num_expr |>> Expr.Bracketed
           let_expr           |>> Expr.Let
           if_else_expr       |>> Expr.IfThenElse
-          call_expr          |>> Expr.Call
+          call_expr          
           num_un_op          |>> Expr.UnaryOp
           ident              |>> Expr.Ident
           ]
@@ -1178,11 +1240,12 @@ module Parsers =
           let_expr        |>> Expr.Let
           if_else_expr    |>> Expr.IfThenElse
           gen_call_expr   |>> Expr.GenCall
-          call_expr       |>> Expr.Call
+          call_expr
           array_comp      |>> Expr.ArrayComp
-          set_comp        |>> Expr.SetComp          
-          array2d_literal |>> Expr.Array2D
-          array1d_literal |>> Expr.Array1D
+          set_comp        |>> Expr.SetComp
+          array3d_lit     |>> Expr.Array3DLit
+          array2d_lit     |>> Expr.Array2DLit
+          array1d_lit     |>> Expr.Array1DLit
           set_literal     |>> Expr.Set
           un_op           |>> Expr.UnaryOp
           ident           |>> Expr.Ident

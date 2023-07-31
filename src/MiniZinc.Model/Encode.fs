@@ -203,7 +203,7 @@ module rec Encode =
                 this.writeTupleType x                
             | Type.Set x ->
                 this.writeExpr x
-            | Type.Array (i, ti) ->
+            | Type.Array1D (i, ti) ->
                 this.writeArrayType(ti, i)
             | Type.Array2D (i, j, ti) ->
                 this.writeArrayType(ti, i, j)
@@ -216,18 +216,18 @@ module rec Encode =
             | Type.Array6D (i, j, k, l, m, n, ti) ->
                 this.writeArrayType(ti, i, j, k, l, m, n)
                 
-        member this.writeArrayDim(t: ArrayDim) =
-            match t with
-            | ArrayDim.Int ->
-                this.write "int"
-            | ArrayDim.Id x ->
-                this.write x
-            | ArrayDim.Set x ->
-                this.writeExpr x
+        // member this.writeArrayDim(t: ArrayDim) =
+        //     match t with
+        //     | ArrayDim.Int ->
+        //         this.write "int"
+        //     | ArrayDim.Id x ->
+        //         this.write x
+        //     | ArrayDim.Set x ->
+        //         this.writeExpr x
                     
         member this.writeArrayType (elements: TypeInst, [<ParamArray>]dimensions: ArrayDim[]) =
             this.write "array["
-            this.writeSep(", ", dimensions, this.writeArrayDim)
+            this.writeExprs(dimensions)
             this.write "] of "
             this.writeTypeInst elements
                             
@@ -275,7 +275,7 @@ module rec Encode =
             this.writeSep(", ", x.From, this.writeGenerator)
             this.write '}'
           
-        member this.writeArray1d (exprs: Expr[]) =
+        member this.writeArray1dLit (exprs: Expr[]) =
             this.write "["
             this.writeExprs exprs
             this.write "]"
@@ -283,33 +283,30 @@ module rec Encode =
         member this.writeExprs(exprs: Expr seq) =
             this.writeSep(", ", exprs, this.writeExpr)
             
-        member this.writeArray2d (array: Expr[,]) =
+        member this.writeArray2dLit (array: Expr[,]) =
             this.write "[|"
             let I = Array2D.length1 array
             let J = Array2D.length2 array
             for i in 0 .. I-1 do
-                let a = Array2D.map
                 let row = array.[i,*]
                 this.writeExprs(row)
                 this.write "\n|"
                     
             this.write "|]"
             
-        member this.writeArray3d (array: Expr[,,]) =
+        member this.writeArray3dLit (array: Expr[,,]) =
+            this.write "[|"
             let I = Array3D.length1 array
             let J = Array3D.length2 array
             let K = Array3D.length3 array
-            this.write $"array3d(1..{I}, 1..{J}, 1..{K}, "
             for i in 0 .. I - 1 do
+                this.write '|'
                 for j in 0 .. J - 1 do
-                    for k in 0 .. K - 1 do
-                        this.writeExpr (array.[i, j, k])
-                        this.write ", "
-                
-            // Remove trailing comma
-            builder.Remove(builder.Length - 2, 2)
-            this.write ")"
-            ()
+                    let row = array.[i,j,*]
+                    this.writeExprs(row)
+                    this.write '|'
+                    
+            this.write "|]"            
            
         member this.writeArrayComp (x: ArrayCompExpr) =
             this.write '['
@@ -318,7 +315,7 @@ module rec Encode =
             this.writeGenerators x.From
             this.write ']'
             
-        member this.writeTuple (tuple: TupleExpr) =
+        member this.writeTupleExpr (tuple: TupleExpr) =
             this.writeArgs tuple
             
         member this.writeRecordField (id: Ident, expr: Expr) =
@@ -326,7 +323,7 @@ module rec Encode =
             this.write ": "
             this.writeExpr expr
             
-        member this.writeRecord (record: RecordExpr) =
+        member this.writeRecordExpr (record: RecordExpr) =
             this.write "("
             this.writeSep(", ", record, this.writeRecordField)
             this.write ")"
@@ -436,24 +433,18 @@ module rec Encode =
                 this.writeSetLit x
             | Expr.SetComp x ->
                 this.writeSetComp x
-            | Expr.Array1D x ->
-                this.writeArray1d x
-            | Expr.Array2D x ->
-                this.writeArray2d x
-            | Expr.Array3D x ->
-                this.writeArray3d x
+            | Expr.Array1DLit x ->
+                this.writeArray1dLit x
+            | Expr.Array2DLit x ->
+                this.writeArray2dLit x
+            | Expr.Array3DLit x ->
+                this.writeArray3dLit x
             | Expr.ArrayComp x ->
                 this.writeArrayComp x
-            | Expr.Array1DIndex ->
-                ()
-            | Expr.Array2DIndex ->
-                ()
-            | Expr.ArrayCompIndex ->
-                ()
             | Expr.Tuple x ->
-                this.writeTuple x
+                this.writeTupleExpr x
             | Expr.Record x ->
-                this.writeRecord x
+                this.writeRecordExpr x
             | Expr.RecordAccess (field, expr) ->
                 this.writeExpr expr
                 this.write "."
@@ -479,6 +470,27 @@ module rec Encode =
                 this.write '['
                 this.writeExprs access
                 this.write ']'
+            | Expr.Array1D(i, arr) ->
+                this.writeArray(arr, i)
+            | Expr.Array2D(i, j, arr) ->
+                this.writeArray(arr, i, j)                
+            | Expr.Array3D(i, j, k, arr) ->
+                this.writeArray(arr, i, j, k)
+            | Expr.Array4D(i, j, k, l, arr) ->
+                this.writeArray(arr, i, j, k, l)
+            | Expr.Array5D(i, j, k, l, m, arr) ->
+                this.writeArray(arr, i, j, k, l, m)                
+            | Expr.Array6D(i, j, k, l, m, n, arr) ->
+                this.writeArray(arr, i, j, k, l, m, n)
+            
+        member this.writeArray(array: Expr[], [<ParamArray>] index_sets: Expr[]) =
+            let n = index_sets.Length
+            this.write $"array{n}d("
+            for expr in index_sets do
+                this.writeExpr expr
+                this.write ", "
+            this.writeArray1dLit array
+            this.write ")"
             
         member this.writeDeclare (ti: TypeInst) =
             this.writeTypeInst ti

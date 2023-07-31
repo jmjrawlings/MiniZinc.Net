@@ -187,35 +187,43 @@ module Task =
             return f value
         }    
 
+[<Struct>]
 type TimePeriod =
-        { StartTime : DateTimeOffset
-        ; EndTime   : DateTimeOffset
-        ; Duration  : TimeSpan }
+    { StartTime : DateTimeOffset
+    ; EndTime   : DateTimeOffset
+    ; Duration  : TimeSpan }
+    
+    static member Since (startTime: DateTimeOffset) =
+        let now = DateTimeOffset.Now
+        let elapsed = now - startTime
+        { StartTime = startTime
+        ; EndTime = now
+        ; Duration = elapsed }
         
-        static member Since (startTime: DateTimeOffset) =
-            let now = DateTimeOffset.Now
-            let elapsed = now - startTime
+    static member Since (period: TimePeriod) =
+        TimePeriod.Since(period.EndTime)
+        
+    static member At time =
+        { StartTime = time
+        ; EndTime = time
+        ; Duration = TimeSpan.Zero }
+        
+    static member Now =
+        TimePeriod.At DateTimeOffset.Now
+        
+    static member Create(startTime, endTime) =
+        if startTime <= endTime then
             { StartTime = startTime
-            ; EndTime = now
-            ; Duration = elapsed }
+              EndTime = endTime
+              Duration = endTime - startTime  }        
+        else
+            { StartTime = endTime
+              EndTime = startTime
+              Duration = startTime - endTime  }
             
-        static member Since (period: TimePeriod) =
-            TimePeriod.Since(period.EndTime)
             
-        static member At time =
-            { StartTime = time
-            ; EndTime = time
-            ; Duration = TimeSpan.Zero }
-            
-        static member Now =
-            TimePeriod.At DateTimeOffset.Now
-            
-        static member Create(startTime, endTime) =
-            if startTime <= endTime then
-                { StartTime = startTime
-                  EndTime = endTime
-                  Duration = endTime - startTime  }        
-            else
-                { StartTime = endTime
-                  EndTime = startTime
-                  Duration = startTime - endTime  }
+type MiniZincException(message: string, description: string) =
+        inherit Exception(message)
+        
+        member _.Description =
+            description                

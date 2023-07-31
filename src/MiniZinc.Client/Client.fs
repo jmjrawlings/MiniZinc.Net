@@ -96,8 +96,9 @@ module rec Client =
             | Result.Ok client ->
                 client
             | Result.Error err ->
-                failwith $"Could not create a miniznc client: {err}"
-                    
+                let exn = MiniZincException("Could not create a miniznc client", err)
+                raise exn
+
         /// <summary>
         /// Create a new Client
         /// </summary>

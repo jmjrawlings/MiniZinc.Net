@@ -176,13 +176,16 @@ module rec Ast =
         | RecordAccess  of RecordAccessExpr
         | TupleAccess   of TupleAccessExpr
         | ArrayAccess   of ArrayAccessExpr
-        | Array1D       of Expr[]
-        | Array1DIndex
-        | Array2D       of Expr [,]
-        | Array2DIndex
-        | Array3D       of Expr [,,]
+        | Array1DLit    of Expr[]
+        | Array2DLit    of Expr[,]
+        | Array3DLit    of Expr[,,]
+        | Array1D       of ArrayDim * Expr[]
+        | Array2D       of ArrayDim * ArrayDim * Expr[]
+        | Array3D       of ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array4D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array5D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array6D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
         | ArrayComp     of ArrayCompExpr
-        | ArrayCompIndex
         | Tuple         of TupleExpr
         | Record        of RecordExpr
         | UnaryOp       of UnaryOpExpr
@@ -191,7 +194,7 @@ module rec Ast =
         | Let           of LetExpr
         | Call          of CallExpr
         | GenCall       of GenCallExpr
-
+    
     type CallExpr =
         IdOr<Op> * Expr list
     
@@ -348,19 +351,14 @@ module rec Ast =
         | Set       of Expr
         | Tuple     of TypeInst list
         | Record    of TypeInst list
-        | Array     of ArrayDim * TypeInst
+        | Array1D   of ArrayDim * TypeInst
         | Array2D   of ArrayDim * ArrayDim * TypeInst
         | Array3D   of ArrayDim * ArrayDim * ArrayDim * TypeInst
         | Array4D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
         | Array5D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
         | Array6D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
        
-    [<RequireQualifiedAccess>]
-    [<Struct>]
-    type ArrayDim =
-        | Int
-        | Id of id:Ident
-        | Set of Expr
+    type ArrayDim = Expr
         
     type IncludeItem =
         { Name: string
@@ -492,12 +490,18 @@ module rec Ast =
     /// which can add new bindings to from its own namespace.
     /// </remarks>
     type NameSpace =
-        { Bindings    : Map<string, Binding>
-        ; Inputs      : Map<string, TypeInst>
-        ; Outputs     : Map<string, TypeInst>
-        ; Variables   : Map<string, TypeInst>
-        ; Undeclared  : Map<string, Expr>
-        ; Enums       : Map<string, EnumType> 
-        ; Synonyms    : Map<string, TypeAlias> 
-        ; Functions   : Map<string, FunctionType>        
-        ; Conflicts   : Map<string, Binding list> }
+        { Bindings   : Map<string, Binding>
+        ; Declared   : Map<string, TypeInst>
+        ; Undeclared : Map<string, Expr>
+        ; Enums      : Map<string, EnumType> 
+        ; Synonyms   : Map<string, TypeAlias> 
+        ; Functions  : Map<string, FunctionType>        
+        ; Conflicts  : Map<string, Binding list> }
+        
+        member this.Variables =
+            this.Declared
+            |> Map.filter (fun _ x -> x.IsVar)
+            
+        member this.Parameters =
+            this.Declared
+            |> Map.filter (fun _ x -> x.IsPar)
