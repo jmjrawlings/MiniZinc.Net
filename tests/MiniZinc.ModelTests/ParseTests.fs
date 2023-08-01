@@ -31,9 +31,11 @@ module ``Parser Tests`` =
             | Result.Error err ->
                 let trace = err.Trace
                 failwith $"""
-Could not parse the test model:
+Failed to parse the test model:
+---------------------------------------------------------
 
 {mzn}
+
 ---------------------------------------------------------
 
 {err.Message}
@@ -54,7 +56,7 @@ Could not parse the test model:
             x
         | Result.Error err ->
             failwith $"""
-Could not parse the roundtripped MZN:
+Failed to parse the roundtripped MZN:
 ---------------------------------------------------------
 Original:
 
