@@ -58,7 +58,7 @@ module ``Model Tests`` =
             { TypeInst.Empty with
                 Name = "x"
                 Type = Type.Int
-                Inst = Inst.Var }
+                IsVar = true }
             
         let expr =
             Expr.Int 100

@@ -30,7 +30,19 @@ module ``Parser Tests`` =
                 x
             | Result.Error err ->
                 let trace = err.Trace
-                failwith (string err)
+                failwith $"""
+Failed to parse the test model:
+---------------------------------------------------------
+
+{mzn}
+
+---------------------------------------------------------
+
+{err.Message}
+
+{err.Trace}
+
+"""
             
         let encoder = Encoder()
         let write = (writer encoder)
@@ -39,15 +51,28 @@ module ``Parser Tests`` =
         let encoded =
             encoder.String.Trim()
        
-        let roundtrip =
-            match parseWith parser encoded with
-            | Result.Ok x ->
-                x
-            | Result.Error err ->
-                failwith (string err)
-        
-        ()
-        
+        match parseWith parser encoded with
+        | Result.Ok x ->
+            x
+        | Result.Error err ->
+            failwith $"""
+Failed to parse the roundtripped MZN:
+---------------------------------------------------------
+Original:
+
+{mzn}
+
+---------------------------------------------------------
+Encoded:
+
+{encoded}
+
+---------------------------------------------------------
+
+{err.Message}
+
+{err.Trace}
+"""
     
     [<Theory>]
     [<InlineData("a")>]
@@ -186,7 +211,7 @@ module ``Parser Tests`` =
     [<Theory>]
     [<InlineData("array2d(ROW, COL, [])")>]
     let ``test call`` arg =
-        testRoundtrip Parsers.call_expr arg (fun enc -> enc.writeCall)
+        testRoundtrip Parsers.call_expr arg (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("[]")>]
@@ -195,7 +220,32 @@ module ``Parser Tests`` =
     [<InlineData("[1, _, 3, _, 5]")>]
     [<InlineData("[<>, _, 10, q]")>]
     let ``test array1d literal`` arg =
-        testRoundtrip Parsers.array1d_literal arg (fun enc -> enc.writeArray1d)
+        testRoundtrip Parsers.array1d_lit arg (fun enc -> enc.writeArray1dLit)
+    
+    [<Theory>]
+    [<InlineData("[| |]")>]
+    [<InlineData("[| one_item |]")>]
+    [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _||]")>]
+    [<InlineData("[|1,2,3,4 | 5,6,7,8 | 9,10,11,12  |    |]")>]
+    [<InlineData("[| true, false, true |]")>]
+    let ``test array2d literal`` arg =
+        testRoundtrip Parsers.array2d_lit arg (fun enc -> enc.writeArray2dLit)
+    
+    [<Theory>]
+    [<InlineData("[| | | |]", 1, 1, 0)>]
+    [<InlineData("[| | one_item | |]", 1, 1, 1)>]
+    [<InlineData("[| | 1, 2 |, | 3, 4 | |]", 2, 1, 2)>]
+    [<InlineData("[| | 1, 2 | 3, 4|, | 5, 6|7, 8| |]", 2, 2, 2)>]
+    let ``test array3d literal`` (mzn, i, j, k) =
+        let array =
+            testRoundtrip
+                Parsers.array3d_lit
+                mzn
+                (fun enc -> enc.writeArray3dLit)
+        
+        i.AssertEquals(Array3D.length1 array)
+        j.AssertEquals(Array3D.length2 array)
+        k.AssertEquals(Array3D.length3 array)
         
     [<Theory>]
     [<InlineData("""forall (i in 1..n-1) (true)""")>]
@@ -213,14 +263,6 @@ module ``Parser Tests`` =
         | Result.Ok m -> m
         | Result.Error err -> failwith err.Message
         
-    [<Theory>]
-    [<InlineData("[| |]")>]
-    [<InlineData("[| one_item |]")>]
-    [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _||]")>]
-    [<InlineData("[|1,2,3,4 | 5,6,7,8 | 9,10,11,12  |    |]")>]
-    [<InlineData("[| true, false, true |]")>]
-    let ``test array2d literal`` arg =
-        testRoundtrip Parsers.array2d_literal arg (fun enc -> enc.writeArray2d)
                 
     [<Theory>]
     [<InlineData("1..10")>]

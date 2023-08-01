@@ -11,7 +11,6 @@ open MiniZinc.Command
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.Abstractions
 
-
 [<AutoOpen>]
 module rec Solve =
         
@@ -111,7 +110,7 @@ module rec Solve =
         ; TotalTime     : TimePeriod
         ; IterationTime : TimePeriod
         ; Iteration     : int
-        ; Decisions     : Map<string, TypeInst>
+        ; Variables     : Map<string, TypeInst>
         ; Outputs       : Map<string, Expr>
         ; Statistics    : Map<string, JsonValue>
         ; Status        : SolutionStatus
@@ -172,12 +171,13 @@ module rec Solve =
                             ; Iteration = 0
                             ; TotalTime = TimePeriod.At startTime
                             ; IterationTime =  TimePeriod.At startTime
-                            ; Decisions = model.NameSpace.Outputs
+                            ; Variables = model.NameSpace.Variables
                             ; Outputs = Map.empty 
                             ; Statistics = Map.empty 
                             ; Status = SolutionStatus.Started
                             ; StatusType = StatusType.Started 
                             ; Warnings = [] }
+                            
                         yield solution
                         
                     // Standard Output Received
@@ -204,7 +204,10 @@ module rec Solve =
                             let outputs, status =
                                 match data with
                                 | Result.Error err ->
-                                    failwith $"An error occured while parsing the solution dzn:\n{err}"
+                                    let exn = MiniZincException(
+                                        $"Could not parse the solution string",
+                                        err.Message)
+                                    raise exn
                                 | Result.Ok vars when vars.ContainsKey "_objective" ->
                                     let obj = vars["_objective"]
                                     let vars = Map.remove "_objective" vars
@@ -244,20 +247,26 @@ module rec Solve =
                             
                             let status =
                                 match statusType with
+                                
                                 | StatusType.Satisfied ->
                                     SolutionStatus.Satisfied
+                                    
                                 | StatusType.Optimal->
                                     match solution.Status with
                                     | SolutionStatus.SubOptimal obj ->
                                         SolutionStatus.Optimal obj
                                     | bad ->
                                         failwithf $"Unexpected status {bad}"
+                                        
                                 | StatusType.AllSolutions ->
-                                    SolutionStatus.AllSolutions                                    
+                                    SolutionStatus.AllSolutions
+                                    
                                 | StatusType.Unsatisfiable ->
                                     SolutionStatus.Unsatisfiable
+                                    
                                 | StatusType.Unbounded ->
                                     SolutionStatus.Unbounded
+                                    
                                 | x ->
                                     failwithf $"Unexpected status {x}"
 
@@ -300,10 +309,13 @@ module rec Solve =
                             
                     | CommandStatus.StdErr ->
                         failwith msg.Message
+                        
                     | CommandStatus.Success ->
                         yield solution
+                        
                     | CommandStatus.Failure ->
                         yield solution
+                        
                     | _ ->
                         failwith msg.Message
             }

@@ -5,17 +5,29 @@
     open System.IO
 
     module IntegrationTests =
-
+        
         let test filePath =
             let file = LibMiniZinc.testDir </> filePath
+            let mzn = File.ReadAllText file.FullName
             let result = parseModelFile file.FullName
             match result with
             | Result.Ok model ->
                 ()
             | Result.Error err ->
-                let trace = err.Trace
-                let msg = err.Message
-                Assert.Fail(msg)
+                failwith $"""
+Failed to parse the example model "{file.Name}"
+-----------------------------------------------
+
+{mzn}
+
+-----------------------------------------------
+
+{err.Message}
+
+{err.Trace}
+
+-----------------------------------------------"""
+
 
         module ``Unit`` =
 

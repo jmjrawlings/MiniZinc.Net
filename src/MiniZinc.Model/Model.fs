@@ -24,9 +24,7 @@ module rec Model =
         /// The empty namespace
         let empty =
             { Bindings   = Map.empty
-            ; Inputs     = Map.empty
-            ; Outputs    = Map.empty
-            ; Variables  = Map.empty
+            ; Declared  = Map.empty
             ; Undeclared = Map.empty 
             ; Enums      = Map.empty  
             ; Synonyms   = Map.empty  
@@ -40,8 +38,8 @@ module rec Model =
         /// Remove the binding from the namespace     
         let remove name ns =
             { ns with
-                Bindings   = ns.Bindings.Remove name 
-                Outputs  = ns.Outputs.Remove name 
+                Bindings   = ns.Bindings.Remove name
+                Declared  = ns.Declared.Remove name
                 Undeclared = ns.Undeclared.Remove name 
                 Enums      = ns.Enums.Remove name 
                 Synonyms   = ns.Synonyms.Remove name 
@@ -140,18 +138,8 @@ module rec Model =
             let result =
                 match newBinding with
                 | Binding.Variable ti ->
-                    match ti.Inst, ti.Value with
-                    | Inst.Par, None ->
-                        { ns with
-                            Inputs = Map.add id ti ns.Inputs
-                            Variables = Map.add id ti ns.Variables }
-                    | Inst.Var, None ->
-                        { ns with
-                            Outputs = Map.add id ti ns.Outputs
-                            Variables = Map.add id ti ns.Variables }
-                    | _, _ ->
-                        { ns with
-                            Variables = Map.add id ti ns.Variables }
+                    { ns with
+                        Declared = Map.add id ti ns.Declared }
                 | Binding.Expr x ->
                     { ns with
                         Undeclared = Map.add id x ns.Undeclared }
@@ -234,6 +222,7 @@ module rec Model =
         ; Constraints : ConstraintExpr list
         ; Outputs     : OutputExpr list
         ; SolveMethod : SolveItem }
+        
                         
     module Model =
 
@@ -329,7 +318,7 @@ module rec Model =
                 enc.writeSynonym syn
                 enc.writetn()
 
-            for x in model.NameSpace.Variables.Values do
+            for x in model.NameSpace.Declared.Values do
                 enc.writeDeclare x
                 enc.writetn()
 
