@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1] - 2023-08-01
+
+## Added
+- Support for 3D array literals
+- Improved testing error messages
+
+ 
 ## [0.6.0] - 2023-07-26
 
 Further progress towards full test coverage.
