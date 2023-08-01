@@ -30,7 +30,17 @@ module ``Parser Tests`` =
                 x
             | Result.Error err ->
                 let trace = err.Trace
-                failwith $"Could not parse the model:\n{err.Message}\n{err.Trace}"
+                failwith $"""
+Could not parse the test model:
+
+{mzn}
+---------------------------------------------------------
+
+{err.Message}
+
+{err.Trace}
+
+"""
             
         let encoder = Encoder()
         let write = (writer encoder)
@@ -39,15 +49,28 @@ module ``Parser Tests`` =
         let encoded =
             encoder.String.Trim()
        
-        let roundtrip =
-            match parseWith parser encoded with
-            | Result.Ok x ->
-                x
-            | Result.Error err ->
-                failwith $"Could not roundtrip the mzn:\n{err.Message}\n{err.Trace}"
-        
-        ()
-        
+        match parseWith parser encoded with
+        | Result.Ok x ->
+            x
+        | Result.Error err ->
+            failwith $"""
+Could not parse the roundtripped MZN:
+---------------------------------------------------------
+Original:
+
+{mzn}
+
+---------------------------------------------------------
+Encoded:
+
+{encoded}
+
+---------------------------------------------------------
+
+{err.Message}
+
+{err.Trace}
+"""
     
     [<Theory>]
     [<InlineData("a")>]
@@ -207,11 +230,20 @@ module ``Parser Tests`` =
         testRoundtrip Parsers.array2d_lit arg (fun enc -> enc.writeArray2dLit)
     
     [<Theory>]
-    [<InlineData("[| | | |]")>]
-    [<InlineData("[| | one_item | |]")>]
-    [<InlineData("[| | 1, 2 |, | 3, 4 | |]")>]
-    let ``test array3d literal`` arg =
-        testRoundtrip Parsers.array2d_lit arg (fun enc -> enc.writeArray2dLit)
+    [<InlineData("[| | | |]", 1, 1, 0)>]
+    [<InlineData("[| | one_item | |]", 1, 1, 1)>]
+    [<InlineData("[| | 1, 2 |, | 3, 4 | |]", 2, 1, 2)>]
+    [<InlineData("[| | 1, 2 | 3, 4|, | 5, 6|7, 8| |]", 2, 2, 2)>]
+    let ``test array3d literal`` (mzn, i, j, k) =
+        let array =
+            testRoundtrip
+                Parsers.array3d_lit
+                mzn
+                (fun enc -> enc.writeArray3dLit)
+        
+        i.AssertEquals(Array3D.length1 array)
+        j.AssertEquals(Array3D.length2 array)
+        k.AssertEquals(Array3D.length3 array)
         
     [<Theory>]
     [<InlineData("""forall (i in 1..n-1) (true)""")>]

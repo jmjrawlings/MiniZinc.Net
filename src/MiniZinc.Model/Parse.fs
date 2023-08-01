@@ -44,7 +44,7 @@ module Parsers =
         | Leave of Reply<'a>
 
     let ws = spaces
-    
+        
     let ws1 = spaces1
     
     let (>>==) a b =
@@ -80,37 +80,43 @@ module Parsers =
         static member betweenWs (c: char) =
             P.betweenWs(c, c)
 
-        static member pipe(a: Parser<'a>, b: Parser<'b>, f) =
+        static member pipe (a: Parser<'a>, b: Parser<'b>, f) =
             pipe2 (a .>> ws) b f
                
-        static member pipe(a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, f) =
+        static member pipe (a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, f) =
             pipe3 (a .>> ws) (b .>> ws) c f
             
-        static member pipe(a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, d: Parser<'d>, f) =
+        static member pipe (a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, d: Parser<'d>, f) =
             pipe4 (a .>> ws) (b .>> ws) (c .>> ws) d f
             
-        static member pipe(a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, d: Parser<'d>, e: Parser<'e>, f) =
+        static member pipe (a: Parser<'a>, b: Parser<'b>, c: Parser<'c>, d: Parser<'d>, e: Parser<'e>, f) =
             pipe5 (a .>> ws) (b .>> ws) (c .>> ws) (d .>> ws) e f
         
-        static member tuple(a: Parser<'a>, b: Parser<'b>) =
+        static member tuple (a: Parser<'a>, b: Parser<'b>) =
             tuple2 (a .>> ws) b
                
-        static member tuple(a: Parser<'a>, b: Parser<'b>, c: Parser<'c>) =
+        static member tuple (a: Parser<'a>, b: Parser<'b>, c: Parser<'c>) =
             tuple3 (a .>> ws) (b .>> ws) c
             
-        static member commaSep p =
-            sepEndBy (p .>> ws) (P.skip ',')
+        static member commaSep (p: Parser<'t>) : Parser<'t list> =
+            P.delimitedBy(',') p
             
-        static member commaSep1 p =
-            P.delimitedBy1 (',') p
+        static member commaSep1 (p: Parser<'t>) : Parser<'t list> =
+            P.delimitedBy1(',') p
         
-        static member delimitedBy(c:char) =
+        static member delimitedBy (d: Parser<'d>) : Parser<'t> -> Parser<'t list> =
             fun p ->
-                sepEndBy (p .>> ws) (P.skip c)
+                sepEndBy (p .>> ws) (d >>. ws)
+            
+        static member delimitedBy (c:char) =
+            P.delimitedBy (pchar c)
+        
+        static member delimitedBy1 (d: Parser<'d>) : Parser<'t> -> Parser<'t list> =
+            fun p ->
+                sepEndBy1 (p .>> ws) (d >>. ws)
         
         static member delimitedBy1(c:char) =
-            fun p ->
-                sepEndBy1 (p .>> ws) (P.skip c)
+            P.delimitedBy1 (pchar c)
             
         static member betweenBrackets p =
             P.betweenWs('(', ')') p
@@ -517,7 +523,7 @@ module Parsers =
         commaSep expr
         |> betweenWs('{', '}')
         
-    let array_row =
+    let array_row : Parser<Expr list> =
         commaSep1 expr
         <?!> "array-row"
     
@@ -555,15 +561,33 @@ module Parsers =
         <?!> "array2d"
     
     // <array3d-literal>
-    let array3d_lit : Parser<Expr[,,]>=
-                
-        let sub_array =
-            delimitedBy('|') array_row
+    // ```
+    // array[1..2, 1..2, 1..2] of int: xd;
+    // xd = [| | 1, 2 |, | 3, 4 | |];
+    // ```
+    let array3d_lit : Parser<Expr[,,]> =
         
-        let array_rows =
-            delimitedBy1(',') sub_array
+        // Separate rows in the sub matrices
+        // eg: ```            
+        let row_sep =
+            attempt (
+                skip '|'
+                .>> (followedBy (noneOf "|,"))
+            )
+            <?!> "array3d-sep"
             
-        array_rows
+        let row =
+            commaSep expr
+            <?!> "array3d-row"
+
+        let nested_matrix : Parser<Expr list list> =
+            row
+            |> delimitedBy row_sep
+            |> betweenWs('|', '|')
+            <?!> "array3d-matrix"
+                        
+        nested_matrix
+        |> commaSep1
         |> betweenWs ("[|", "|]")
         >>= (fun exprs ->
             
