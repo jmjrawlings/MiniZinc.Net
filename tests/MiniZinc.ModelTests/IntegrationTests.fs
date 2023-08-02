@@ -9,23 +9,20 @@
         let test filePath =
             let file = LibMiniZinc.testDir </> filePath
             let mzn = File.ReadAllText file.FullName
-            let result = parseModelFile file.FullName
+            let string, comments = parseComments mzn
+            let result = parseModelString string
             match result with
             | Result.Ok model ->
                 ()
             | Result.Error err ->
                 failwith $"""
-Failed to parse the example model "{file.Name}"
------------------------------------------------
-
-{mzn}
-
------------------------------------------------
+Failed to parse "{file.Name}":
 
 {err.Message}
-
+----------------------------------------------
+{string}
+-----------------------------------------------
 {err.Trace}
-
 -----------------------------------------------"""
 
 

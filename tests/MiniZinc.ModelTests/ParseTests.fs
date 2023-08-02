@@ -110,24 +110,33 @@ Encoded:
     [<InlineData("var set of string")>]
     let ``test base type inst`` arg =
         testRoundtrip Parsers.base_ti_expr arg (fun enc -> enc.writeTypeInst)
-        
+       
     [<Theory>]
     [<InlineData("array[int] of int")>]
     [<InlineData("array[int,int] of var float")>]
-    let ``test array type inst`` arg =
-        testRoundtrip Parsers.array_ti_expr arg (fun enc -> enc.writeTypeInst)
+    let ``test array type inst`` mzn =
+        testRoundtrip
+            Parsers.array_ti_expr
+            mzn
+            (fun enc -> enc.writeTypeInst)
         
     [<Theory>]
     [<InlineData("record(a: int, bool:b)")>]
     [<InlineData("record(c: X, set of int: d)")>]
-    let ``test record type inst`` arg =
-        testRoundtrip Parsers.record_ti arg (fun enc -> enc.writeRecordType)
+    let ``test record type inst`` mzn =
+        testRoundtrip
+            Parsers.base_ti_expr_tail
+            mzn
+            (fun enc -> enc.writeType)
                 
     [<Theory>]
     [<InlineData("tuple(int, string, string)")>]
     [<InlineData("tuple(X, 'something else', set of Q)")>]
-    let ``test tuple type inst`` arg =
-        testRoundtrip Parsers.tuple_ti arg (fun enc -> enc.writeTupleType)
+    let ``test tuple type inst`` mzn =
+        testRoundtrip
+            Parsers.base_ti_expr_tail
+            mzn
+            (fun enc -> enc.writeType)
         
     [<Theory>]
     [<InlineData("var set of bool: xd")>]
