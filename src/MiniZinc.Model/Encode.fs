@@ -175,11 +175,6 @@ module rec Encode =
                     this.write "opt "
                 this.writeType ti.Type
 
-        member this.writeTupleType fields =
-            this.write "tuple("
-            this.writeSep(", ", fields, this.writeTypeInst)
-            this.write ")"
-            
         member this.writeType (t: Type) =
             match t with
             | Type.Int ->
@@ -194,15 +189,24 @@ module rec Encode =
                 this.write "ann"
             | Type.Any ->
                 this.write "any"
+            | Type.Range (lo, hi) ->
+                this.writeExpr lo
+                this.write " .. "
+                this.writeExpr hi
             | Type.Ident x
             | Type.Generic x ->
                 this.write x                
-            | Type.Record x ->
-                this.writeRecordType x                
-            | Type.Tuple x ->
-                this.writeTupleType x                
+            | Type.Record fields ->
+                this.write "record"
+                this.writeParameters fields               
+            | Type.Tuple fields ->
+                this.write "tuple("
+                this.writeSep(", ", fields, this.writeTypeInst)
+                this.write ")"
             | Type.Set x ->
-                this.writeExpr x
+                this.write '{'
+                this.writeExprs x
+                this.write '}'
             | Type.Array1D (i, ti) ->
                 this.writeArrayType(ti, i)
             | Type.Array2D (i, j, ti) ->
@@ -522,10 +526,6 @@ module rec Encode =
             | _ ->
                 ()
             
-        member this.writeRecordType fields =
-            this.write "record"
-            this.writeParameters fields
-                
         member this.writeParameter (ti: TypeInst) =
             this.writeTypeInst ti
             this.write ": "

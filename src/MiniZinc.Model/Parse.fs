@@ -18,6 +18,120 @@ open System.Text
 open FParsec
 open MiniZinc
 
+module rec Keyword =
+
+    type Keyword =
+        | NONE = -1
+        | ANNOTATION = 0
+        | ANN = 1
+        | ANY = 2
+        | ARRAY = 3 
+        | BOOL = 4 
+        | CASE = 5
+        | CONSTRAINT = 6 
+        | DIFF = 7
+        | DIV = 8
+        | ELSE = 9
+        | ELSEIF = 10
+        | ENDIF = 11
+        | ENUM = 12
+        | FALSE = 13
+        | FLOAT = 14
+        | FUNCTION = 15 
+        | IF = 16
+        | IN = 17
+        | INCLUDE = 18 
+        | INT = 19
+        | INTERSECT = 20 
+        | LET = 21
+        | LIST = 22
+        | MAXIMIZE = 23 
+        | MINIMIZE = 24
+        | MOD = 25
+        | NOT = 26
+        | OF = 27
+        | OP = 28
+        | OPT = 29
+        | OUTPUT = 30
+        | PAR = 31
+        | PREDICATE = 32 
+        | RECORD = 33
+        | SATISFY = 34
+        | SET = 35
+        | SOLVE = 36
+        | STRING = 37
+        | SUBSET = 38
+        | SUPERSET = 39
+        | SYMDIFF = 40
+        | TEST = 41
+        | THEN = 42
+        | TRUE = 43      
+        | TUPLE = 44
+        | TYPE = 45
+        | UNION = 46       
+        | VAR = 47
+        | WHERE = 48
+        | XOR = 49
+        
+    module Keyword =
+    
+        let map =
+            Map.ofList [
+                ("annotation", Keyword.ANNOTATION)
+                ("any", Keyword.ANY)
+                ("array", Keyword.ARRAY)
+                ("bool", Keyword.BOOL)
+                ("case", Keyword.CASE)
+                ("constraint", Keyword.CONSTRAINT)
+                ("diff", Keyword.DIFF)
+                ("div", Keyword.DIV)
+                ("else", Keyword.ELSE)
+                ("elseif", Keyword.ELSEIF)
+                ("endif", Keyword.ENDIF)
+                ("enum", Keyword.ENUM)
+                ("false", Keyword.FALSE)
+                ("float", Keyword.FLOAT)
+                ("function", Keyword.FUNCTION)
+                ("if", Keyword.IF)
+                ("in", Keyword.IN)
+                ("include", Keyword.INCLUDE)
+                ("int", Keyword.INT)
+                ("intersect", Keyword.INTERSECT)
+                ("let", Keyword.LET)
+                ("list", Keyword.LIST)
+                ("maximize", Keyword.MAXIMIZE)
+                ("minimize", Keyword.MINIMIZE)
+                ("mod", Keyword.MOD)
+                ("not", Keyword.NOT)
+                ("of", Keyword.OF)
+                ("op", Keyword.OP)
+                ("opt", Keyword.OPT)
+                ("output", Keyword.OUTPUT)
+                ("par", Keyword.PAR)
+                ("predicate", Keyword.PREDICATE)
+                ("record", Keyword.RECORD)
+                ("satisfy", Keyword.SATISFY)
+                ("set", Keyword.SET)
+                ("solve", Keyword.SOLVE)
+                ("string", Keyword.STRING)
+                ("subset", Keyword.SUBSET)
+                ("superset", Keyword.SUPERSET)
+                ("symdiff", Keyword.SYMDIFF)
+                ("test", Keyword.TEST)
+                ("then", Keyword.THEN)
+                ("true", Keyword.TRUE)
+                ("tuple", Keyword.TUPLE)
+                ("type", Keyword.TYPE)
+                ("union", Keyword.UNION)
+                ("var", Keyword.VAR)
+                ("where", Keyword.WHERE)
+                ("xor", Keyword.XOR) ]
+            
+        let lookup key =
+            let mutable value = Keyword.NONE
+            map.TryGetValue(key, &value)
+            value
+
 
 type ParserState() =
     let sb = StringBuilder()
@@ -37,6 +151,8 @@ type Parser<'t> =
     Parser<'t, ParserState>
     
 module Parsers =
+    
+    open Keyword
     
     [<Struct>]
     type ParseDebugEvent<'a> =
@@ -203,6 +319,7 @@ module Parsers =
         | Type.Set _
         | Type.Generic _
         | Type.Any
+        | Type.Range _
         | Type.Ann ->
             ty, false
         
@@ -479,23 +596,23 @@ module Parsers =
         createParserForwardedToRef<Type, ParserState>()
         
     // <expr>
-    let (expr : Parser<Expr>, expr_ref) =
+    let expr, expr_ref =
         createParserForwardedToRef<Expr, ParserState>()
     
     // <expr-atom>        
-    let (expr_atom: Parser<Expr>), expr_atom_ref =
+    let expr_atom, expr_atom_ref =
         createParserForwardedToRef<Expr, ParserState>()
 
     // <num-expr>    
-    let (num_expr: Parser<Expr>, num_expr_ref) =
+    let num_expr, num_expr_ref =
         createParserForwardedToRef<Expr, ParserState>()
         
     // <num-expr-atom>
-    let (num_expr_atom: Parser<Expr>, num_expr_atom_ref) =
+    let num_expr_atom, num_expr_atom_ref =
         createParserForwardedToRef<Expr, ParserState>()
         
     // <num-expr-atom>
-    let (annotation: Parser<Annotation>, annotation_ref) =
+    let annotation, annotation_ref =
         createParserForwardedToRef<Annotation, ParserState>()
                 
     let bracketed x =
@@ -519,7 +636,7 @@ module Parsers =
         |> choice
             
     // <set-literal>
-    let set_literal : Parser<Expr list>=
+    let set_literal : Parser<Expr list> =
         commaSep expr
         |> betweenWs('{', '}')
         
@@ -898,47 +1015,77 @@ module Parsers =
         <?!> "ti-expr"
 
     // <tuple-ti-expr-tail>
-    let tuple_ti : Parser<TypeInst list> =
-        
-        let fields =
-            ti_expr
-            |> commaSep1
-            |> betweenWs ('(', ')')
-        
-        keyword "tuple" 
-        >>. fields
+    let tuple_ti : Parser<Type> =
+        ti_expr
+        |> commaSep1
+        |> betweenWs ('(', ')')
+        |>> Type.Tuple
         <?!> "tuple-ti"
             
     // <record-ti-expr-tail>
-    let record_ti : Parser<TypeInst list> =
-        
-        let fields =
-            named_ti
-            |> commaSep1
-            |> betweenWs('(', ')')
-            
-        keyword "record"
-        >>. fields
+    let record_ti : Parser<Type> =
+        named_ti
+        |> commaSep1
+        |> betweenWs('(', ')')
+        |>> Type.Record
         <?!> "record-ti"
+        
+    // eg: ```1..10```
+    // eg: ```1 .. (a = 10)```
+    // We make a special case here so it can be attempted
+    // before the float parser
+    let range_ti : Parser<Type> =
+        num_expr
+        >>= (fun expr ->
+            match expr with
+            | Expr.BinaryOp (left, Val BinaryOp.DotDot, right) ->
+                Type.Range (left, right)
+                |> preturn
+            | other ->
+                fail $"Expected range, got {other}")
     
     let instanced_type : Parser<string> =
         c '$' >>. ident
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        [ "int"          => Type.Int
-        ; "bool"         => Type.Bool
-        ; "string"       => Type.String
-        ; "float"        => Type.Float
-        ; "ann"          => Type.Ann
-        ; "any"          => Type.Any    
-        ; record_ti      |>> Type.Record
-        ; tuple_ti       |>> Type.Tuple
-        ; expr           |>> Type.Set
-        ; instanced_type |>> Type.Generic
-        ; ident          |>> Type.Ident ]
-        |> choice
-        <?!> "base-ti-tail"
+        
+        let parser: Parser<Type> =
+             fun stream ->
+                let stateTag = stream.StateTag
+                let reply = ident stream
+                
+                // identifier was found
+                if reply.Status = Ok then
+                  match Keyword.lookup reply.Result with
+                  | Keyword.INT    -> Reply(Type.Int)
+                  | Keyword.BOOL   -> Reply(Type.Bool)
+                  | Keyword.FLOAT  -> Reply(Type.Float)
+                  | Keyword.STRING -> Reply(Type.String)
+                  | Keyword.ANN    -> Reply(Type.Ann)
+                  | Keyword.ANY    -> Reply(Type.Any)
+                  | Keyword.RECORD -> record_ti stream
+                  | Keyword.TUPLE  -> tuple_ti stream
+                  | _              -> Reply(Type.Ident reply.Result)
+                                   
+                // Not an identifier
+                elif reply.Status = Error && stateTag = stream.StateTag then 
+                  match stream.Peek() with
+                  | '{' ->
+                      (set_literal |>> Type.Set) stream
+                  | _ ->
+                      range_ti stream
+                      
+                // error within identifier string
+                else 
+                  Reply(reply.Status, reply.Error)
+                  
+        parser                  
+        // choice
+        // [ keyword
+        //   set_literal    |>> Type.Set
+        //   instanced_type |>> Type.Generic ]
+        // <?!> "base-ti-tail"
     
     let id_or_op =
         name_or_quoted_value builtin_op

@@ -348,7 +348,8 @@ module rec Ast =
         | Any 
         | Generic   of Ident
         | Ident     of Ident
-        | Set       of Expr
+        | Set       of Expr list
+        | Range     of Expr * Expr
         | Tuple     of TypeInst list
         | Record    of TypeInst list
         | Array1D   of ArrayDim * TypeInst
