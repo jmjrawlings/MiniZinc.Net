@@ -198,6 +198,14 @@ Encoded:
         testRoundtrip Parsers.expr arg (fun enc -> enc.writeExpr)
         
     [<Theory>]
+    [<InlineData("predicate(var $T: x)")>]
+    let ``test generic param`` mzn =
+        testRoundtrip
+            Parsers.predicate_item
+            mzn
+            (fun enc -> enc.writeItem)                
+        
+    [<Theory>]
     [<InlineData("% 12312312")>]
     let ``test comments`` arg =
         let output = parseWith Parsers.line_comment arg

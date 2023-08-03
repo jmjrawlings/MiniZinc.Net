@@ -296,18 +296,16 @@ module Parsers =
         stream.UserState.Indent <- nextIndent
 
     // Add debug info to the given parser
-    let (<!>) (p: Parser<'t>) label : Parser<'t> =
+    let (<!>) (p: Parser<'t>) (label: string) : Parser<'t> =
+        let error = expected label
         fun stream ->
+            let stateTag = stream.StateTag
             addToDebug stream label Enter
-            let reply = p stream
+            let mutable reply = p stream
+            if stateTag = stream.StateTag then
+                reply.Error <- error
             addToDebug stream label (Leave reply)
             reply
-            
-    let (<?!>) (p: Parser<'t>) (label : string) : Parser<'t> =
-        p
-        <?> label
-        <!> label
-
     
     /// Determine the correct Inst for the given TypeInst
     /// </summary>
@@ -419,12 +417,6 @@ module Parsers =
                 
     let ident : Parser<Ident> =
         simple_ident <|> quoted_ident
-        
-    let s (str: string) =
-        pstring str
-        
-    let c (chr : char) =
-        pchar chr
     
     let (=>) (kw: Keyword) b =
         let name = Keyword.byValue[kw]
@@ -478,7 +470,7 @@ module Parsers =
                 previousCharSatisfies (fun c -> c = '\\')
                 >>. pchar '"'
             )
-            <?!> "escaped-quote"
+            <!> "escaped-quote"
         
         manyChars 
             (satisfy (fun c -> c <> '"')
@@ -507,7 +499,7 @@ module Parsers =
             (pchar '\"')
             (pchar '\"')
             string_lit_contents
-            <?!> "string-lit"
+            <!> "string-lit"
     
     let string_annotation : Parser<string> =
         skip "::"
@@ -523,7 +515,7 @@ module Parsers =
         builtin_num_un_ops
         |> choice
         |>> (int >> enum<UnaryOp>)
-        <?!> "builtin-num-un-op"
+        <!> "builtin-num-un-op"
     
     let builtin_num_bin_ops =
          [ "+"    =!> Op.Add
@@ -544,7 +536,7 @@ module Parsers =
          builtin_num_bin_ops
          |> choice
          |>> (int >> enum<BinaryOp>)
-         <?!> "num-bin-op"
+         <!> "num-bin-op"
             
     let builtin_bin_ops = 
         [ "<->"       =!> Op.Equivalent
@@ -579,7 +571,7 @@ module Parsers =
         builtin_bin_ops
         |> choice
         |>> (int >> enum<BinaryOp>)
-        <?!> "binop"
+        <!> "binop"
         
     let builtin_un_ops =
         builtin_num_un_ops
@@ -629,7 +621,7 @@ module Parsers =
         op builtin_un_op
         .>> ws
         .>>. expr_atom
-        <?!> "un-op"
+        <!> "un-op"
 
     let builtin_ops =
         builtin_bin_ops @ builtin_un_ops
@@ -646,7 +638,7 @@ module Parsers =
         
     let array_row : Parser<Expr list> =
         commaSep1 expr
-        <?!> "array-row"
+        <!> "array-row"
     
     let array_sep =
         attempt (
@@ -654,7 +646,7 @@ module Parsers =
             .>> (notFollowedBy (skipChar ']'))
         )
         >>. ws
-        <?!> "array-sep"
+        <!> "array-sep"
     
     // <array1d-literal>
     let array1d_lit =                 
@@ -662,7 +654,7 @@ module Parsers =
         |> betweenWs ('[', ']')
         |>> Array.ofList
         |> attempt
-        <?!> "array1d"
+        <!> "array1d"
                     
     // <array2d-literal>
     let array2d_lit : Parser<Expr[,]>=
@@ -679,7 +671,7 @@ module Parsers =
             | exn ->
                 fail exn.Message)
         |> attempt
-        <?!> "array2d"
+        <!> "array2d"
     
     // <array3d-literal>
     // ```
@@ -695,17 +687,17 @@ module Parsers =
                 skip '|'
                 .>> (followedBy (noneOf "|,"))
             )
-            <?!> "array3d-sep"
+            <!> "array3d-sep"
             
         let row =
             commaSep expr
-            <?!> "array3d-row"
+            <!> "array3d-row"
 
         let nested_matrix : Parser<Expr list list> =
             row
             |> delimitedBy row_sep
             |> betweenWs('|', '|')
-            <?!> "array3d-matrix"
+            <!> "array3d-matrix"
                         
         nested_matrix
         |> commaSep1
@@ -727,7 +719,7 @@ module Parsers =
                 fail $"Bad array dimensions"
             )
         |> attempt
-        <?!> "array3d"
+        <!> "array3d"
             
     // eg: ```1..10```
     // eg: ```1 .. (a = 10)```
@@ -803,14 +795,14 @@ module Parsers =
         parameter_ti
         |> commaSep
         |> betweenWs('(', ')')
-        <?!> "parameters"
+        <!> "parameters"
         
     // eg: `(1, 2, "abc")`
     let tupled_args : Parser<Expr list> =
         expr
         |> commaSep
         |> betweenWs('(', ')')
-        <?!> "tupled-args"
+        <!> "tupled-args"
         
     // <predicate-item>
     // eg: `predicate isOk(int x) = x > 2`
@@ -834,7 +826,7 @@ module Parsers =
                 ; Body = body }
                 |> Item.Function
                 )
-        <?!> "predicate"
+        <!> "predicate"
 
     // <test_item>
     let test_item : Parser<Item> =
@@ -850,7 +842,7 @@ module Parsers =
                 ; Body = body }
                 |> Item.Test
                 )
-        <?!> "test"
+        <!> "test"
         
     // <function-item>
     (*
@@ -873,7 +865,7 @@ module Parsers =
                 |> Item.Function
                 )
         )
-        <?!> "function"
+        <!> "function"
     
     // <enum-case-list>    
     let enum_cases : Parser<EnumCases list> =
@@ -885,8 +877,8 @@ module Parsers =
             |>> EnumCases.Names
 
         let anon_enum : Parser<EnumCases> =
-            choice [ s "_"; s "anon_enum"]
-            >>. ws
+            skip "_"
+            <|> skip "anon_enum"
             >>. betweenWs('(', ')') expr
             |>> EnumCases.Anon
             
@@ -964,7 +956,7 @@ module Parsers =
             expr
             |> commaSep
             |> betweenWs ('[', ']')
-            <?!> "array-dimensions"
+            <!> "array-dimensions"
         
         pipe(
             skip Keyword.ARRAY,
@@ -998,14 +990,14 @@ module Parsers =
                 | xs ->
                     fail $"Number of array dimension must be between 1 and 6 (got {xs.Length})."
         )        
-        <?!> "array-ti-expr"
+        <!> "array-ti-expr"
     
     // <ti-expr>        
     ti_expr_ref.contents <-
         [ array_ti_expr
         ; base_ti_expr  ]
         |> choice
-        <?!> "ti-expr"
+        <!> "ti-expr"
 
     // <tuple-ti-expr-tail>
     let tuple_ti : Parser<Type> =
@@ -1013,7 +1005,7 @@ module Parsers =
         |> commaSep1
         |> betweenWs ('(', ')')
         |>> Type.Tuple
-        <?!> "tuple-ti"
+        <!> "tuple-ti"
             
     // <record-ti-expr-tail>
     let record_ti : Parser<Type> =
@@ -1021,7 +1013,7 @@ module Parsers =
         |> commaSep1
         |> betweenWs('(', ')')
         |>> Type.Record
-        <?!> "record-ti"
+        <!> "record-ti"
         
     // eg: ```1..10```
     // eg: ```1 .. (a = 10)```
@@ -1066,6 +1058,12 @@ module Parsers =
                   match stream.Peek() with
                   | '{' ->
                       (set_literal |>> Type.Set) stream
+                  | '$' when stream.Skip('$') ->
+                      match ident stream with
+                      | reply when reply.Status = Ok ->
+                          Reply(Type.Generic reply.Result)
+                      | x ->
+                          Reply(reply.Status, reply.Error)
                   | _ ->
                       range_ti stream
                       
@@ -1073,12 +1071,7 @@ module Parsers =
                 else 
                   Reply(reply.Status, reply.Error)
                   
-        parser                  
-        // choice
-        // [ keyword
-        //   set_literal    |>> Type.Set
-        //   instanced_type |>> Type.Generic ]
-        // <?!> "base-ti-tail"
+        parser
     
     let id_or_op =
         name_or_quoted_value builtin_op
@@ -1087,7 +1080,7 @@ module Parsers =
     let call_expr : Parser<Expr> =
         id_or_op
         .>> ws
-        .>> followedBy (c '(')
+        .>> followedBy (skipChar '(')
         |> attempt
         .>> ws
         .>>. tupled_args
@@ -1110,7 +1103,7 @@ module Parsers =
                 Expr.Call(name,args)
         )
         
-        <?!> "call-expr"
+        <!> "call-expr"
         
     let wildcard : Parser<WildCard> =
         skip '_'
@@ -1128,17 +1121,17 @@ module Parsers =
             [ wildcard |>> IdOr.Val 
             ; ident    |>> IdOr.Id ]
             |> choice
-            <?!> "gen-var"
+            <!> "gen-var"
             
         let gen_vars =
             gen_var
             |> commaSep1            
-            <?!> "gen-vars"
+            <!> "gen-vars"
             
         let gen_where =
             skip "where "
             >>. expr
-            <?!> "gen-where"
+            <!> "gen-where"
             
         let generator =    
             pipe(
@@ -1176,7 +1169,7 @@ module Parsers =
         |>> (fun (expr, gens) -> 
              { Yields=expr
              ; From = gens })
-        <?!> "array-comp"
+        <!> "array-comp"
 
     // <set-comp>
     let set_comp : Parser<SetCompExpr> =
@@ -1213,7 +1206,7 @@ module Parsers =
                         ; Parameters = args 
                         ; Body = expr}
         )
-        <?!> "declare-item"
+        <!> "declare-item"
 
     let constraint_tail : Parser<ConstraintExpr> =
         pipe(
@@ -1280,7 +1273,7 @@ module Parsers =
                 ; Constraints = constraints
                 ; Body=body }
                 ))
-        <?!> "let-expr"
+        <!> "let-expr"
         
     // <if-then-else-expr>
     let if_else_expr : Parser<IfThenElseExpr> =
@@ -1289,7 +1282,7 @@ module Parsers =
             skip word
             >>. expr
            .>> ws
-            <?!> $"{word}-case"
+            <!> $"{word}-case"
             
         pipe(
             case Keyword.IF,
@@ -1313,16 +1306,16 @@ module Parsers =
         
     let quoted_op : Parser<Op> =
         builtin_op
-        |> between (c ''') (c ''')
+        |> between (skipChar ''') (skipChar ''')
         |> attempt
     
     let tuple_access_tail =
         attempt (skip '.' >>. puint8)
-        <?!> "tuple-access"
+        <!> "tuple-access"
         
     let record_access_tail =
         attempt (skip '.' >>. ident)
-        <?!> "record-access"
+        <!> "record-access"
         
     let array_access_tail =
         expr
@@ -1352,13 +1345,13 @@ module Parsers =
           ident              |>> Expr.Ident
           ]
         |> choice
-        <?!> "num-expr-head"
+        <!> "num-expr-head"
                     
     // <num-expr-atom>        
     num_expr_atom_ref.contents <-
         num_expr_atom_head
         >>== expr_atom_tail
-        <?!> "num-expr-atom"
+        <!> "num-expr-atom"
         
     // <num-expr-binop-tail>
     let num_expr_binop_tail (head: Expr) =
@@ -1419,14 +1412,14 @@ module Parsers =
           ident           |>> Expr.Ident
           ]
         |> choice
-        <?!> "expr-atom-head"
+        <!> "expr-atom-head"
             
     // <annotations>
     annotation_ref.contents <-
         skip "::"
         >>. expr_atom_head
         >>== expr_atom_tail
-        <?!> "annotation"
+        <!> "annotation"
     
     // <expr-atom>        
     expr_atom_ref.contents <-
@@ -1451,7 +1444,7 @@ module Parsers =
     expr_ref.contents <-
         expr_atom
         >>== expr_binop_tail
-        <?!> "expr"
+        <!> "expr"
             
     let solve_type : Parser<SolveMethod> =
         choice
@@ -1481,7 +1474,7 @@ module Parsers =
     let assign_item : Parser<AssignExpr> =
         attempt (ident .>> ws .>> followedBy (pchar '='))
         .>>. assign_tail
-        <?!> "assign-item"
+        <!> "assign-item"
         
     // <type-inst-syn-item>
     let alias_item : Parser<Item> =
@@ -1519,7 +1512,7 @@ module Parsers =
                 ; Body = body
                 ; Params = pars }
                 |> Item.Annotation)
-        <?!> "annotation-type"
+        <!> "annotation-type"
 
     // <item>
     let item : Parser<Item> =
