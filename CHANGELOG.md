@@ -1,11 +1,16 @@
 # Changelog
 
+## [0.6.2] - UNRELEASED
+
+## Changed
+- Refactored the `Item` parser for improved performance
+
+
 ## [0.6.1] - 2023-08-01
 
 ## Added
 - Support for 3D array literals
 - Improved testing error messages
-
  
 ## [0.6.0] - 2023-07-26
 

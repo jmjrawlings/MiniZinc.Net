@@ -106,19 +106,19 @@ Encoded:
     [<InlineData("opt bool")>]
     [<InlineData("set of opt float")>]
     [<InlineData("var X")>]
+    let ``test base type inst`` mzn =
+        testRoundtrip Parsers.base_ti_expr mzn (fun enc -> enc.writeTypeInst)
+    
     [<InlineData("par set of 'something weird'")>]
     [<InlineData("var set of string")>]
-    let ``test base type inst`` arg =
+    let ``test set type inst`` arg =
         testRoundtrip Parsers.base_ti_expr arg (fun enc -> enc.writeTypeInst)
        
     [<Theory>]
     [<InlineData("array[int] of int")>]
     [<InlineData("array[int,int] of var float")>]
     let ``test array type inst`` mzn =
-        testRoundtrip
-            Parsers.array_ti_expr
-            mzn
-            (fun enc -> enc.writeTypeInst)
+        testRoundtrip Parsers.array_ti_expr mzn (fun enc -> enc.writeTypeInst)
         
     [<Theory>]
     [<InlineData("record(a: int, bool:b)")>]
@@ -166,14 +166,14 @@ Encoded:
     [<InlineData("enum C = {  'One', 'Two',   'Three'}")>]
     [<InlineData("enum D")>]
     let ``test enum`` arg =
-        testRoundtrip Parsers.enum_item arg (fun enc -> enc.writeEnumType)
+        testRoundtrip Parsers.item arg (fun enc -> enc.writeItem)
     
     [<Theory>]
     [<InlineData("type A = record(a: int)")>]
     [<InlineData("type B = int")>]
     [<InlineData("type C = tuple(bool, tuple(int, string))")>]
     let ``test type alias`` arg =
-        testRoundtrip Parsers.alias_item arg (fun enc -> enc.writeSynonym)
+        testRoundtrip Parsers.item arg (fun enc -> enc.writeItem)
         
     [<Theory>]
     [<InlineData("1")>]
@@ -303,10 +303,7 @@ Encoded:
     [<InlineData("forall(k in 1 .. K)(is_feasible_packing(bin[k], [item[k, j] | j in 1 .. N]))")>]
     [<InlineData("forall (i in 1..n-1) (if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif)")>]
     let ``test gencall`` input =
-        testRoundtrip
-            Parsers.gen_call_expr
-            input
-            (fun enc -> enc.writeGenCall)
+        testRoundtrip Parsers.gen_call_expr input (fun enc -> enc.writeGenCall)
         
     [<Theory>]
     [<InlineData("""
@@ -321,48 +318,34 @@ Encoded:
     [<InlineData("""
         output ["% a = ", show(a), ";\n", "b = ", show(b), ";\n"]
     """)>]
-    let ``test output``input =
-        testRoundtrip
-            Parsers.output_item
-            input
-            (fun enc -> enc.writeOutput)
+    let ``test output`` mzn =
+        testRoundtrip Parsers.item mzn (fun enc -> enc.writeItem)
             
     [<Theory>]
     [<InlineData("annotation f(string:x)")>]
     let ``test annotation item`` input =
-        testRoundtrip
-            (Parsers.annotation_item)
-            input
-            (fun enc -> enc.writeDeclareAnnotation)
+        testRoundtrip Parsers.item input (fun enc -> enc.writeItem)
     
     [<Fact>]
-    let ``tet xd `` ()=
+    let ``test xd `` ()=
         let input = ":: add_to_output :: mzn_break_here"
-        testRoundtrip (Parsers.annotations) input (fun enc -> enc.writeAnnotations)
+        testRoundtrip Parsers.annotations input (fun enc -> enc.writeAnnotations)
         
-    [<Fact>]
-    let ``test tuple ti`` ()=
-        testRoundtrip
-            Parsers.declare_item
-            "tuple(1..3): x = (4,)"
-            (fun enc -> enc.writeItem)
-
+    [<Theory>]
+    [<InlineData("tuple(1..3): x = (4,)")>]
+    let ``test tuple ti`` mzn =
+        testRoundtrip Parsers.item mzn (fun enc -> enc.writeItem)
+            
     [<Theory>]
     [<InlineData("x.1")>]
     [<InlineData("x.b")>]
     let ``test item access`` mzn =
-        testRoundtrip
-            Parsers.expr
-            mzn
-            (fun enc -> enc.writeExpr)
+        testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
             
     [<Theory>]
     [<InlineData("int:a::add_to_output = product([|2, 2 | 2, 2|])")>]
     let ``test exprs`` mzn =
-        testRoundtrip
-            Parsers.declare_item
-            mzn
-            (fun enc -> enc.writeItem)
+        testRoundtrip Parsers.declare_item mzn (fun enc -> enc.writeItem)
     
     [<Theory>]
     [<InlineData("/* this is a block comment */")>]

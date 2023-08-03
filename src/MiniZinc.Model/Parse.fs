@@ -75,7 +75,7 @@ module rec Keyword =
         
     module Keyword =
     
-        let map =
+        let byName =
             Map.ofList [
                 ("annotation", Keyword.ANNOTATION)
                 ("any", Keyword.ANY)
@@ -126,11 +126,18 @@ module rec Keyword =
                 ("var", Keyword.VAR)
                 ("where", Keyword.WHERE)
                 ("xor", Keyword.XOR) ]
+        
+        let byValue =
+            byName
+            |> Map.toSeq
+            |> Seq.map (fun (k,v) -> (v,k))
+            |> Map.ofSeq
             
         let lookup key =
             let mutable value = Keyword.NONE
-            map.TryGetValue(key, &value)
+            byName.TryGetValue(key, &value)
             value
+            
 
 
 type ParserState() =
@@ -171,10 +178,28 @@ module Parsers =
         // Skip char and whitespace
         static member skip(c: char) =
             skipChar c .>> ws
+            
+        // Skip char and whitespace
+        static member skip1(c: char) =
+            skipChar c .>> ws1
 
+        // Skip char and whitespace
+        static member skip(k: Keyword) =
+            let name = Keyword.byValue[k]
+            skipString name >>. ws
+        
+        // Skip char and whitespace
+        static member skip1(k: Keyword) =
+            let name = Keyword.byValue[k]
+            skipString name >>. ws1
+        
         // Skip string and whitespace        
         static member skip(s: string) =
             skipString s  .>> ws
+            
+        // Skip string and whitespace        
+        static member skip1(s: string) =
+            skipString s .>> ws1
                 
         // Between with whitespace
         static member betweenWs (pStart : Parser<_>, pEnd : Parser<_>) =
@@ -400,39 +425,18 @@ module Parsers =
         
     let c (chr : char) =
         pchar chr
-        
-    // let cw (chr: char) =
-    //     pchar chr >>. ws
-        
-    /// Parse the given keyword
-    /// Care is taken here that the given string is
-    /// not part of a large string
-    /// eg `keyword "function"` would not match the
-    /// string "function1" 
-    let keyword (name: string) =
-        attempt(
-            skipString name
-            .>> notFollowedBy (
-                satisfy (fun c ->
-                    Char.IsDigit c || Char.IsLetter c || c = '_')
-                )
-        )
-        .>> ws
-        
-    let keywordL (name: string) =
-        keyword name <?!> name
-        
-    // Parse the keyword and return the value
-    let (=>) (key: string) (value: 't) =
-        keyword key
-        >>% value
+    
+    let (=>) (kw: Keyword) b =
+        let name = Keyword.byValue[kw]
+        stringReturn name b
+    
+    let (==>) (kw: Keyword) b =
+        skip1 kw >>. (preturn b)
     
     // Parse the given operator and return the value
     // where value is an enum
     let (=!>) (operator: string) (value: 't) =
-        pstring operator
-        |> attempt
-        >>% value
+         attempt (stringReturn operator value)
             
     let value_or_quoted_name (parser: Parser<'T>) : Parser<IdOr<'T>> =
         
@@ -464,8 +468,8 @@ module Parsers =
     // <bool-literal>
     let bool_literal : Parser<bool> =
         choice
-            [ "true" => true
-            ; "false" => false ]
+            [ Keyword.TRUE  => true
+            ; Keyword.FALSE => false ]
         
     let string_lit_contents : Parser<string> =
          
@@ -758,7 +762,7 @@ module Parsers =
     // <annotations>
     // eg: `:: output :: x(2)`
     let ann_capture : Parser<Ident> =
-        keyword "ann"
+        skip1 "ann"
         >>. skip ':'
         >>. ident
     
@@ -789,10 +793,11 @@ module Parsers =
         )
         
     let assign_tail : Parser<Expr> =
-        skipMany1 (pchar '=')
+        skipChar '='
+        >>. (opt <| skipChar '=')
         >>. ws
         >>. expr
-        
+       
     // eg: `(int: a, var bool: b)`        
     let parameters : Parser<TypeInst list> =
         parameter_ti
@@ -809,10 +814,9 @@ module Parsers =
         
     // <predicate-item>
     // eg: `predicate isOk(int x) = x > 2`
-    let predicate_item : Parser<FunctionType> =
+    let predicate_item : Parser<Item> =
         pipe(
-            keyword "predicate"
-            >>. ident,
+            ident,
             parameters,
             opt_or "" ann_capture,
             annotations,
@@ -827,22 +831,24 @@ module Parsers =
                         with
                             Type = Type.Bool
                             IsVar = true  }
-                ; Body = body })
+                ; Body = body }
+                |> Item.Function
+                )
         <?!> "predicate"
 
     // <test_item>
-    let test_item : Parser<TestItem> =
+    let test_item : Parser<Item> =
         pipe(
-            keyword "test",
             ident,
             parameters,
             annotations,
             opt assign_tail,
-            fun _ id pars anns body ->
+            fun id pars anns body ->
                 { Name = id
                 ; Parameters = pars
                 ; Annotations = anns
                 ; Body = body }
+                |> Item.Test
                 )
         <?!> "test"
         
@@ -850,10 +856,9 @@ module Parsers =
     (*
     TODO - combine this with variable parsing because the optional function keyword is making it hard
     *)
-    let function_item : Parser<FunctionType> =
+    let function_item : Parser<Item> =
         pipe(
-            keyword "function"
-            >>. named_ti,
+            named_ti,
             parameters,
             opt_or "" ann_capture,
             annotations,
@@ -864,7 +869,9 @@ module Parsers =
                 ; Ann = ann
                 ; Annotations = anns 
                 ; Parameters = pars
-                ; Body = body })
+                ; Body = body }
+                |> Item.Function
+                )
         )
         <?!> "function"
     
@@ -896,46 +903,45 @@ module Parsers =
         sepBy enum_case (skip "++")
           
     // <enum-item>
-    let enum_item : Parser<EnumType> =            
+    let enum_item : Parser<Item> =            
         pipe(
-            keyword "enum",
             ident,
             annotations,
             (opt_or [] (skip '=' >>. enum_cases)),
-            fun _ name anns cases ->
+            fun name anns cases ->
                 { Name = name
                 ; Annotations = anns
-                ; Cases = cases })
+                ; Cases = cases }
+                |> Item.Enum)
     
     // <include-item>
-    let include_item : Parser<IncludeItem> =
-        keyword "include"
-        >>. string_lit
-        |>> IncludeItem.Create
+    let include_item : Parser<Item> =
+        string_lit
+        |>> (IncludeItem.Create >> Item.Include)
     
     // <var-par>
-    let isVar : Parser<bool> =
+    let is_var =
         choice
-            [ "var" => true
-            ; "par" => false
-            ; preturn  false ]
+            [ Keyword.VAR ==> true
+            ; Keyword.PAR ==> false
+            ; preturn   false ]
         
     // <opt-ti>        
     let opt_ti =
-        "opt" => true
+        Keyword.OPT ==> true
         <|> preturn false
     
     // <set-ti>    
     let set_ti =
-        keyword "set"
-        >>. keyword "of"
+        skip1 Keyword.SET
+        >>. skip Keyword.OF
         >>% true
         <|> preturn false
            
     // <base-ti-expr>
     let base_ti_expr : Parser<TypeInst> =
         pipe(
-            isVar,
+            is_var,
             set_ti,
             opt_ti,
             base_ti_expr_tail,
@@ -951,19 +957,6 @@ module Parsers =
                 ; IsInstanced = false }
         )
         
-    // let array_dim : Parser<ArrayDim> =
-    //     ti_expr
-    //     >>= fun ti ->
-    //         match ti.Type with
-    //         | Type.Ident id ->
-    //             preturn (ArrayDim.Id id)
-    //         | Type.Int ->
-    //             preturn ArrayDim.Int
-    //         | Type.Set x ->
-    //             preturn (ArrayDim.Set x)
-    //         | other ->
-    //             fail $"Bad array dimension {other}"
-        
     // <array-ti-expr>        
     let array_ti_expr : Parser<TypeInst> =
                 
@@ -974,9 +967,9 @@ module Parsers =
             <?!> "array-dimensions"
         
         pipe(
-            keyword "array",
+            skip Keyword.ARRAY,
             array_dims,
-            keyword "of",
+            skip Keyword.OF,
             base_ti_expr,
             fun _ dims _ ti ->
                 (dims, resolveTypeInst ti))
@@ -1042,10 +1035,10 @@ module Parsers =
                 Type.Range (left, right)
                 |> preturn
             | other ->
-                fail $"Expected range, got {other}")
+                fail $"Expected range but got {other}")
     
     let instanced_type : Parser<string> =
-        c '$' >>. ident
+        skipChar '$' >>. ident
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
@@ -1143,7 +1136,7 @@ module Parsers =
             <?!> "gen-vars"
             
         let gen_where =
-            keyword "where"
+            skip "where "
             >>. expr
             <?!> "gen-where"
             
@@ -1222,16 +1215,19 @@ module Parsers =
         )
         <?!> "declare-item"
 
-    // <constraint-item>
-    let constraint_item : Parser<ConstraintExpr> =
+    let constraint_tail : Parser<ConstraintExpr> =
         pipe(
-            keyword "constraint",
             expr,
             annotations,
-            fun _ expr anns ->
+            fun expr anns ->
               { Expr = expr
               ; Annotations = anns }
         )
+        
+    // <constraint-item>
+    let constraint_item =
+        constraint_tail |>> Item.Constraint
+    
        
     // <let-item>
     let let_item : Parser<LetLocal> =
@@ -1245,7 +1241,8 @@ module Parsers =
                   fail $"{other} not allowed in let locals"
                                     
         let let_constraint =
-            constraint_item
+            skip Keyword.CONSTRAINT
+            >>. constraint_tail
             |>> Choice2Of2
             
         // Let constraint must go first            
@@ -1262,9 +1259,9 @@ module Parsers =
             |> betweenWs('{', '}')
         
         pipe(
-            keyword "let",
+            skip "let",
             items,
-            keyword "in",
+            skip "in",
             expr,
             (fun _a items _b body ->
                 let declares, constraints =
@@ -1288,18 +1285,18 @@ module Parsers =
     // <if-then-else-expr>
     let if_else_expr : Parser<IfThenElseExpr> =
                 
-        let case word =
-            keyword word
+        let case (word: Keyword) =
+            skip word
             >>. expr
            .>> ws
             <?!> $"{word}-case"
             
         pipe(
-            case "if",
-            case "then",
-            many (case "elseif" .>>. case "then"),
-            opt (case "else"),
-            s "endif",
+            case Keyword.IF,
+            case Keyword.THEN,
+            many (case Keyword.ELSEIF .>>. case Keyword.THEN),
+            opt (case Keyword.ELSE),
+            skip Keyword.ENDIF,
             fun if_ then_ elseif_ else_ _ ->
                 { If = if_
                 ; Then = then_
@@ -1458,18 +1455,17 @@ module Parsers =
             
     let solve_type : Parser<SolveMethod> =
         choice
-          [ "satisfy" => SolveMethod.Satisfy
-          ; "minimize" => SolveMethod.Minimize
-          ; "maximize" => SolveMethod.Maximize ]
+          [ Keyword.SATISFY => SolveMethod.Satisfy
+          ; Keyword.MINIMIZE => SolveMethod.Minimize
+          ; Keyword.MAXIMIZE => SolveMethod.Maximize ]
         
     // <solve-item>
-    let solve_item : Parser<SolveItem> =
+    let solve_item : Parser<Item> =
         pipe(
-            keyword "solve",
             annotations,
             solve_type,
             opt expr,
-            fun _ anns solveType obj ->
+            fun anns solveType obj ->
                 match (solveType, obj) with
                 | SolveMethod.Maximize, Some exp ->
                     SolveItem.Max (exp, anns)
@@ -1477,7 +1473,7 @@ module Parsers =
                     SolveItem.Min (exp, anns)
                 | _ ->
                     SolveItem.Sat anns
-                )
+                |> Item.Solve)
         
     // <assign-item>
     // eg ```a = 1;```
@@ -1488,57 +1484,92 @@ module Parsers =
         <?!> "assign-item"
         
     // <type-inst-syn-item>
-    let alias_item : Parser<TypeAlias> =
+    let alias_item : Parser<Item> =
         pipe(
-            keyword "type",
             ident,
             annotations,
-            skip "=",
+            skip '=',
             ti_expr,
-            fun _ id anns _ ti ->
+            fun id anns _ ti ->
                 { Name = id
                 ; Annotations = anns
-                ; TypeInst = ti })
+                ; TypeInst = ti }
+                |> Item.Synonym
+                )
+        
         
     // <output-item>
-    let output_item : Parser<OutputExpr> =
+    let output_item : Parser<Item> =
         pipe(
-            keyword "output",
             opt string_annotation,
             expr,
-            fun _ ann expr ->
+            fun ann expr ->
                 { Expr = expr
-                ; Annotation = ann })
+                ; Annotation = ann }
+                |> Item.Output)
         
     // <annotation_item>
-    let annotation_item : Parser<AnnotationType> =
+    let annotation_item : Parser<Item> =
         pipe(
-            keyword "annotation",
             ident,
             opt_or [] parameters,
             opt assign_tail,
-            fun _ name pars body ->
+            fun name pars body ->
                 { Name = name
                 ; Body = body
-                ; Params = pars })
+                ; Params = pars }
+                |> Item.Annotation)
         <?!> "annotation-type"
 
     // <item>
-    let item =
-        [ enum_item       |>> Item.Enum
-        ; constraint_item |>> Item.Constraint
-        ; include_item    |>> Item.Include
-        ; solve_item      |>> Item.Solve
-        ; alias_item      |>> Item.Synonym
-        ; output_item     |>> Item.Output
-        ; predicate_item  |>> Item.Function
-        ; function_item   |>> Item.Function
-        ; test_item       |>> Item.Test
-        ; annotation_item |>> Item.Annotation
-        ; assign_item     |>> Item.Assign
-        ; declare_item  ]
-        |> choice
-                      
+    let item : Parser<Item> =
+        let err = expected "item"
+        let ident = ident .>> ws
+        fun stream ->
+            let state = stream.State
+            let tag = stream.StateTag
+            let reply = ident stream
+            
+            // identifier was found
+            if reply.Status = Ok then
+              match Keyword.lookup reply.Result with
+              | Keyword.ENUM ->
+                  enum_item stream
+              | Keyword.CONSTRAINT ->
+                  constraint_item stream
+              | Keyword.INCLUDE ->
+                  include_item stream
+              | Keyword.SOLVE ->
+                  solve_item stream
+              | Keyword.TYPE ->
+                  alias_item stream
+              | Keyword.OUTPUT ->
+                  output_item stream
+              | Keyword.PREDICATE ->
+                  predicate_item stream
+              | Keyword.FUNCTION ->
+                  function_item stream
+              | Keyword.TEST ->
+                  test_item stream
+              | Keyword.ANNOTATION ->
+                  annotation_item stream
+              | Keyword.NONE when stream.Peek() = '=' ->
+                  let id = reply.Result
+                  match assign_tail stream with
+                  | r when r.Status = ReplyStatus.Ok ->
+                      let assign = (id, r.Result)
+                      let item = Item.Assign assign
+                      Reply(item)
+                  | r ->
+                      Reply(r.Status, r.Error)
+              | _keyword ->
+                  stream.BacktrackTo(state)
+                  declare_item stream
+
+            // error within identifier string
+            else 
+              Reply(reply.Status, reply.Error)
+                          
     let ast : Parser<Ast> =
         
         let sep =
@@ -1618,26 +1649,6 @@ module Parse =
                 ; Trace = state.Message }
                 
             Result.Error err
-
-    /// Parse and remove comments from the given model string
-    // let parseComments (mzn: string) : string * List<Comment> =
-    //     let comments = ResizeArray<string>()
-    //     let statements = ResizeArray<string>()
-    //             
-    //     match parseWith Parsers.statements mzn with
-    //     | Result.Ok xs ->
-    //         for x in xs do
-    //             match x with
-    //             | Comment c ->
-    //                 comments.Add c
-    //             | Statement s ->
-    //                 statements.Add s
-    //     | Result.Error err ->
-    //         failwith err.Message
-    //         
-    //     let comments = Seq.toList comments
-    //     let statement = String.Join("\n", statements)
-    //     statement, comments
     
     [<Struct>]
     type PPX =
@@ -1738,7 +1749,7 @@ module Parse =
             parseComments dzn
             
         let result =
-            parseWith Parsers.data source
+            parseWith data source
             
         result            
             
