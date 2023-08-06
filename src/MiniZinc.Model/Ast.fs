@@ -172,7 +172,7 @@ module rec Ast =
         | Ident         of string
         | Bracketed     of Expr
         | Set           of Expr list
-        | SetComp       of SetCompExpr
+        | SetComp       of CompExpr
         | RecordAccess  of RecordAccessExpr
         | TupleAccess   of TupleAccessExpr
         | ArrayAccess   of ArrayAccessExpr
@@ -185,7 +185,7 @@ module rec Ast =
         | Array4D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
         | Array5D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
         | Array6D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | ArrayComp     of ArrayCompExpr
+        | ArrayComp     of CompExpr
         | Tuple         of TupleExpr
         | Record        of RecordExpr
         | UnaryOp       of UnaryOpExpr
@@ -211,7 +211,7 @@ module rec Ast =
         Expr * IdOr<BinaryOp> * Expr
         
     type UnaryOpExpr =
-        IdOr<UnaryOp> * Expr
+        UnaryOp * Expr
     
     type ArrayAccess =
         Expr list
@@ -223,17 +223,14 @@ module rec Ast =
         Annotation list
 
     type GenCallExpr =
-        { Operation: IdOr<Op>
+        { Id : string
         ; From : Generator list 
         ; Yields : Expr }
         
-    type ArrayCompExpr =
-        { Yields : Expr         
-        ; From : Generator list }
-
-    type SetCompExpr =
-        { Yields : Expr         
-        ; From : Generator list }
+    type CompExpr =
+        { Yields : Expr
+        ; IsSet  : bool
+        ; From   : Generator list }
 
     type Generator =
         { Yields : IdOr<WildCard> list
@@ -359,7 +356,7 @@ module rec Ast =
         | Array5D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
         | Array6D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
        
-    type ArrayDim = Expr
+    type ArrayDim = Type
         
     type IncludeItem =
         { Name: string

@@ -17,9 +17,10 @@ open System.Runtime.InteropServices
 open System.Text
 open FParsec
 open MiniZinc
+open FParsec.Primitives
 
-module rec Keyword =
-
+module Keyword =
+    
     type Keyword =
         | NONE = -1
         | ANNOTATION = 0
@@ -74,72 +75,127 @@ module rec Keyword =
         | XOR = 49
         
     module Keyword =
+        
+        let list = [
+            ("annotation", Keyword.ANNOTATION)
+            ("any", Keyword.ANY)
+            ("array", Keyword.ARRAY)
+            ("bool", Keyword.BOOL)
+            ("case", Keyword.CASE)
+            ("constraint", Keyword.CONSTRAINT)
+            ("diff", Keyword.DIFF)
+            ("div", Keyword.DIV)
+            ("else", Keyword.ELSE)
+            ("elseif", Keyword.ELSEIF)
+            ("endif", Keyword.ENDIF)
+            ("enum", Keyword.ENUM)
+            ("false", Keyword.FALSE)
+            ("float", Keyword.FLOAT)
+            ("function", Keyword.FUNCTION)
+            ("if", Keyword.IF)
+            ("in", Keyword.IN)
+            ("include", Keyword.INCLUDE)
+            ("int", Keyword.INT)
+            ("intersect", Keyword.INTERSECT)
+            ("let", Keyword.LET)
+            ("list", Keyword.LIST)
+            ("maximize", Keyword.MAXIMIZE)
+            ("minimize", Keyword.MINIMIZE)
+            ("mod", Keyword.MOD)
+            ("not", Keyword.NOT)
+            ("of", Keyword.OF)
+            ("op", Keyword.OP)  
+            ("opt", Keyword.OPT)
+            ("output", Keyword.OUTPUT)
+            ("par", Keyword.PAR)
+            ("predicate", Keyword.PREDICATE)
+            ("record", Keyword.RECORD)
+            ("satisfy", Keyword.SATISFY)
+            ("set", Keyword.SET)
+            ("solve", Keyword.SOLVE)
+            ("string", Keyword.STRING)
+            ("subset", Keyword.SUBSET)
+            ("superset", Keyword.SUPERSET)
+            ("symdiff", Keyword.SYMDIFF)
+            ("test", Keyword.TEST)
+            ("then", Keyword.THEN)
+            ("true", Keyword.TRUE)
+            ("tuple", Keyword.TUPLE)
+            ("type", Keyword.TYPE)
+            ("union", Keyword.UNION)
+            ("var", Keyword.VAR)
+            ("where", Keyword.WHERE)
+            ("xor", Keyword.XOR) ]
     
         let byName =
-            Map.ofList [
-                ("annotation", Keyword.ANNOTATION)
-                ("any", Keyword.ANY)
-                ("array", Keyword.ARRAY)
-                ("bool", Keyword.BOOL)
-                ("case", Keyword.CASE)
-                ("constraint", Keyword.CONSTRAINT)
-                ("diff", Keyword.DIFF)
-                ("div", Keyword.DIV)
-                ("else", Keyword.ELSE)
-                ("elseif", Keyword.ELSEIF)
-                ("endif", Keyword.ENDIF)
-                ("enum", Keyword.ENUM)
-                ("false", Keyword.FALSE)
-                ("float", Keyword.FLOAT)
-                ("function", Keyword.FUNCTION)
-                ("if", Keyword.IF)
-                ("in", Keyword.IN)
-                ("include", Keyword.INCLUDE)
-                ("int", Keyword.INT)
-                ("intersect", Keyword.INTERSECT)
-                ("let", Keyword.LET)
-                ("list", Keyword.LIST)
-                ("maximize", Keyword.MAXIMIZE)
-                ("minimize", Keyword.MINIMIZE)
-                ("mod", Keyword.MOD)
-                ("not", Keyword.NOT)
-                ("of", Keyword.OF)
-                ("op", Keyword.OP)
-                ("opt", Keyword.OPT)
-                ("output", Keyword.OUTPUT)
-                ("par", Keyword.PAR)
-                ("predicate", Keyword.PREDICATE)
-                ("record", Keyword.RECORD)
-                ("satisfy", Keyword.SATISFY)
-                ("set", Keyword.SET)
-                ("solve", Keyword.SOLVE)
-                ("string", Keyword.STRING)
-                ("subset", Keyword.SUBSET)
-                ("superset", Keyword.SUPERSET)
-                ("symdiff", Keyword.SYMDIFF)
-                ("test", Keyword.TEST)
-                ("then", Keyword.THEN)
-                ("true", Keyword.TRUE)
-                ("tuple", Keyword.TUPLE)
-                ("type", Keyword.TYPE)
-                ("union", Keyword.UNION)
-                ("var", Keyword.VAR)
-                ("where", Keyword.WHERE)
-                ("xor", Keyword.XOR) ]
+            Map.ofList list
         
         let byValue =
-            byName
-            |> Map.toSeq
+            list
             |> Seq.map (fun (k,v) -> (v,k))
             |> Map.ofSeq
             
         let lookup key =
-            let mutable value = Keyword.NONE
-            byName.TryGetValue(key, &value)
-            value
+            let mutable word = Keyword.NONE
+            byName.TryGetValue(key, &word)
+            word
             
+            
+module Operator =
+    
+    let list =
+        [ ("+", Op.Add)
+          ("-", Op.Subtract)
+          ("*", Op.Multiply)
+          ("/", Op.Divide)       
+          ("^", Op.Exponent)
+          ("~+", Op.TildeAdd)
+          ("~-", Op.TildeSubtract)
+          ("~*", Op.TildeMultiply)
+          ("~/", Op.TildeDivide)
+          ("div", Op.Div)
+          ("mod", Op.Mod)
+          ("~div", Op.TildeDiv) 
+          ("<->", Op.Equivalent)
+          ("->", Op.Implies)
+          ("<-", Op.ImpliedBy)
+          ("\/", Op.Or)
+          ("/\\", Op.And)
+          ("<=", Op.LessThanEqual)
+          (">=", Op.GreaterThanEqual)
+          ("==", Op.EqualEqual)
+          ("<", Op.LessThan)
+          (">", Op.GreaterThan)
+          ("=", Op.Equal)
+          ("!=", Op.NotEqual)
+          ("~=", Op.TildeEqual)
+          ("~!=", Op.TildeNotEqual)
+          ("..", Op.DotDot)
+          ("++", Op.PlusPlus)
+          ("xor", Op.Xor)
+          ("intersect", Op.Intersect)
+          ("in", Op.In)
+          ("subset", Op.Subset)
+          ("superset", Op.Superset)
+          ("union", Op.Union)
+          ("diff", Op.Diff)
+          ("symdiff", Op.SymDiff)
+          ("default", Op.Default)
+          ("not", Op.Not) ]
+    
+    let byName =
+        Map.ofList list
+    
+    let byValue =
+        list
+        |> Seq.map (fun (k,v) -> (v,k))
+        |> Map.ofSeq
 
-
+    let byInt =
+        list
+        |> Seq.map (fun (k,v) -> (int v,k))
+        |> Map.ofSeq
+    
 type ParserState() =
     let sb = StringBuilder()
     let mutable indent = 0
@@ -414,9 +470,26 @@ module Parsers =
             (skipChar '\'')
             (many1Chars (noneOf "'\x0A\x0D\x00"))
             |>> (fun s -> $"\'{s}\'")
-                
+               
     let ident : Parser<Ident> =
         simple_ident <|> quoted_ident
+    
+    [<Struct>]
+    // An identifier or a value of 'T
+    type IdentOrWord =
+        | Ident of id:string
+        | Word of word:Keyword
+        
+    let ident_or_keyword : Parser<IdentOrWord> =        
+        fun stream ->
+            let reply = ident stream
+            if reply.Status <> Ok then
+                Reply(reply.Status, reply.Error)
+            else
+                let mutable word = Keyword.NONE
+                if Keyword.byName.TryGetValue(reply.Result, &word)
+                then Reply(Word word)
+                else Reply(Ident reply.Result)
     
     let (=>) (kw: Keyword) b =
         let name = Keyword.byValue[kw]
@@ -430,35 +503,21 @@ module Parsers =
     let (=!>) (operator: string) (value: 't) =
          attempt (stringReturn operator value)
             
-    let value_or_quoted_name (parser: Parser<'T>) : Parser<IdOr<'T>> =
-        
-        let value =
-            parser |>> IdOr.Val
-        
-        let name =
-            simple_ident
-            |> betweenWs '`'
-            |>> IdOr.Id
-            
-        name <|> value
-    
-      
     let name_or_quoted_value (p: Parser<'T>) : Parser<IdOr<'T>> =
-        
+                        
         let name =
             ident
             |>> IdOr.Id
         
         let value =
             p
-            |> betweenWs '''
-            |> attempt
+            |> between (skipChar ''') (skipChar ''') 
             |>> IdOr.Val
         
         value <|> name
     
     // <bool-literal>
-    let bool_literal : Parser<bool> =
+    let bool_lit : Parser<bool> =
         choice
             [ Keyword.TRUE  => true
             ; Keyword.FALSE => false ]
@@ -610,68 +669,19 @@ module Parsers =
     // <num-expr-atom>
     let annotation, annotation_ref =
         createParserForwardedToRef<Annotation, ParserState>()
-                
-    let bracketed x =
-        betweenWs('(', ')') x
 
-    let op p =
-        value_or_quoted_name p
+    /// Parse the operator or its quoted name
+    let op (parser: Parser<'T>) : Parser<IdOr<'T>> =
         
-    let un_op =
-        op builtin_un_op
-        .>> ws
-        .>>. expr_atom
-        <!> "un-op"
-
-    let builtin_ops =
-        builtin_bin_ops @ builtin_un_ops
-
-    // <builtin-op>            
-    let builtin_op : Parser<Op> =
-        builtin_ops
-        |> choice
+        let value =
+            parser |>> IdOr.Val
+        
+        let name =
+            simple_ident
+            |> betweenWs '`'
+            |>> IdOr.Id
             
-    // <set-literal>
-    let set_literal : Parser<Expr list> =
-        commaSep expr
-        |> betweenWs('{', '}')
-        
-    let array_row : Parser<Expr list> =
-        commaSep1 expr
-        <!> "array-row"
-    
-    let array_sep =
-        attempt (
-            skipChar '|'
-            .>> (notFollowedBy (skipChar ']'))
-        )
-        >>. ws
-        <!> "array-sep"
-    
-    // <array1d-literal>
-    let array1d_lit =                 
-        sepEndBy expr (skip ',')
-        |> betweenWs ('[', ']')
-        |>> Array.ofList
-        |> attempt
-        <!> "array1d"
-                    
-    // <array2d-literal>
-    let array2d_lit : Parser<Expr[,]>=
-        
-        let array_rows =
-            sepEndBy array_row array_sep
-            
-        array_rows
-        |> betweenWs ("[|", "|]")
-        >>= (fun exprs ->
-            try
-                preturn (array2D exprs)
-            with
-            | exn ->
-                fail exn.Message)
-        |> attempt
-        <!> "array2d"
+        name <|> value
     
     // <array3d-literal>
     // ```
@@ -725,8 +735,8 @@ module Parsers =
     // eg: ```1 .. (a = 10)```
     // We make a special case here so it can be attempted
     // before the float parser
-    let number_range : Parser<Expr> =
-        
+    let numeric_range : Parser<Expr> =
+                
         let left = 
             pint32
             .>> ws
@@ -953,7 +963,7 @@ module Parsers =
     let array_ti_expr : Parser<TypeInst> =
                 
         let array_dims =
-            expr
+            base_ti_expr_tail
             |> commaSep
             |> betweenWs ('[', ']')
             <!> "array-dimensions"
@@ -1034,76 +1044,62 @@ module Parsers =
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-        
-        let parser: Parser<Type> =
-             fun stream ->
-                let stateTag = stream.StateTag
-                let reply = ident stream
-                
-                // identifier was found
-                if reply.Status = Ok then
-                  match Keyword.lookup reply.Result with
-                  | Keyword.INT    -> Reply(Type.Int)
-                  | Keyword.BOOL   -> Reply(Type.Bool)
-                  | Keyword.FLOAT  -> Reply(Type.Float)
-                  | Keyword.STRING -> Reply(Type.String)
-                  | Keyword.ANN    -> Reply(Type.Ann)
-                  | Keyword.ANY    -> Reply(Type.Any)
-                  | Keyword.RECORD -> record_ti stream
-                  | Keyword.TUPLE  -> tuple_ti stream
-                  | _              -> Reply(Type.Ident reply.Result)
-                                   
-                // Not an identifier
-                elif reply.Status = Error && stateTag = stream.StateTag then 
-                  match stream.Peek() with
-                  | '{' ->
-                      (set_literal |>> Type.Set) stream
-                  | '$' when stream.Skip('$') ->
-                      match ident stream with
-                      | reply when reply.Status = Ok ->
-                          Reply(Type.Generic reply.Result)
-                      | x ->
-                          Reply(reply.Status, reply.Error)
-                  | _ ->
-                      range_ti stream
+                         
+        let set_ti =
+            expr
+            |> commaSep
+            |> betweenWs('{', '}')
+            |>> Type.Set
+            
+        let generic =
+            skipChar '$' >>. ident |>> Type.Generic
+         
+        fun stream ->
+            let stateTag = stream.StateTag
+            let reply = ident_or_keyword stream
+            
+            if reply.Status = Ok then
+              match reply.Result with
+              | Word Keyword.INT    -> Reply(Type.Int)
+              | Word Keyword.BOOL   -> Reply(Type.Bool)
+              | Word Keyword.FLOAT  -> Reply(Type.Float)
+              | Word Keyword.STRING -> Reply(Type.String)
+              | Word Keyword.ANN    -> Reply(Type.Ann)
+              | Word Keyword.ANY    -> Reply(Type.Any)
+              | Word Keyword.RECORD -> record_ti stream
+              | Word Keyword.TUPLE  -> tuple_ti stream
+              | Word other          -> Reply(ReplyStatus.Error, messageError "Unexected keyword {other}")
+              | Ident id            -> Reply(Type.Ident id)
                       
-                // error within identifier string
-                else 
-                  Reply(reply.Status, reply.Error)
+            elif reply.Status = Error && stateTag = stream.StateTag then
+              match stream.Peek() with
+              | '{' -> set_ti stream
+              | '$' -> generic stream
+              | _x  -> range_ti stream
                   
-        parser
+            else 
+              Reply(reply.Status, reply.Error)
     
-    let id_or_op =
-        name_or_quoted_value builtin_op
-    
-    // <call-expr>
-    let call_expr : Parser<Expr> =
-        id_or_op
-        .>> ws
-        .>> followedBy (skipChar '(')
-        |> attempt
-        .>> ws
-        .>>. tupled_args
-        |>> (fun (name, args) ->
-            // Handle some special known cases of function application
-            match name, args with
-            | (Id "array1d"), [i; Expr.Array1DLit arr] ->
-                Expr.Array1D (i, arr)
-            | (Id "array2d"), [i; j; Expr.Array1DLit arr] ->
-                Expr.Array2D (i, j, arr)
-            | (Id "array3d"), [i; j; k; Expr.Array1DLit arr] ->
-                Expr.Array3D (i, j, k, arr)
-            | (Id "array4d"), [i; j; k; l; Expr.Array1DLit arr] ->
-                Expr.Array4D (i, j, k, l, arr)
-            | (Id "array5d"), [i; j; k; l; m; Expr.Array1DLit arr] ->
-                Expr.Array5D (i, j, k, l, m, arr)
-            | (Id "array6d"), [i; j; k;l;m;n; Expr.Array1DLit arr] ->
-                Expr.Array6D (i, j, k, l, m, n, arr)
-            | _, _ ->
-                Expr.Call(name,args)
-        )
-        
-        <!> "call-expr"
+        //
+        // |>> (fun (name, args) ->
+        //     // Handle some special known cases of function application
+        //     match name, args with
+        //     | (Id "array1d"), [i; Expr.Array1DLit arr] ->
+        //         Expr.Array1D (i, arr)
+        //     | (Id "array2d"), [i; j; Expr.Array1DLit arr] ->
+        //         Expr.Array2D (i, j, arr)
+        //     | (Id "array3d"), [i; j; k; Expr.Array1DLit arr] ->
+        //         Expr.Array3D (i, j, k, arr)
+        //     | (Id "array4d"), [i; j; k; l; Expr.Array1DLit arr] ->
+        //         Expr.Array4D (i, j, k, l, arr)
+        //     | (Id "array5d"), [i; j; k; l; m; Expr.Array1DLit arr] ->
+        //         Expr.Array5D (i, j, k, l, m, arr)
+        //     | (Id "array6d"), [i; j; k;l;m;n; Expr.Array1DLit arr] ->
+        //         Expr.Array6D (i, j, k, l, m, n, arr)
+        //     | _, _ ->
+        //         Expr.Call(name,args)
+        // )
+        // <!> "call-expr"
         
     let wildcard : Parser<WildCard> =
         skip '_'
@@ -1146,40 +1142,21 @@ module Parsers =
             )
             
         generator
-        |> commaSep1       
+        |> commaSep1
             
     // <gen-call-expr>
     let gen_call_expr =
         pipe(
-            id_or_op,
+            ident,
             betweenWs('(', ')') comp_tail,
             betweenWs('(', ')') expr,
             fun name gens expr ->
-                { Operation = name
+                { Id = name
                 ; From = gens
                 ; Yields = expr }
         )
         |> attempt
     
-    // <array-comp>
-    let array_comp : Parser<ArrayCompExpr> =
-        tuple(expr, skip '|' >>. comp_tail) 
-        |> betweenWs ('[', ']')
-        |> attempt
-        |>> (fun (expr, gens) -> 
-             { Yields=expr
-             ; From = gens })
-        <!> "array-comp"
-
-    // <set-comp>
-    let set_comp : Parser<SetCompExpr> =
-        tuple(expr, skip '|' >>. comp_tail)
-        |> betweenWs('{', '}')
-        |> attempt
-        |>> (fun (expr, gens) -> 
-             { Yields = expr
-             ; From = gens })
-            
     // <declare-item>
     let declare_item : Parser<Item> =
         pipe(
@@ -1242,7 +1219,7 @@ module Parsers =
         let_constraint <|> let_declare
     
     // <let-expr>
-    let let_expr : Parser<LetExpr> =
+    let let_expr : Parser<Expr> =
                 
         let item =
             let_item .>> ws .>> opt (anyOf ";,")
@@ -1252,11 +1229,10 @@ module Parsers =
             |> betweenWs('{', '}')
         
         pipe(
-            skip "let",
             items,
             skip "in",
             expr,
-            (fun _a items _b body ->
+            (fun items _b body ->
                 let declares, constraints =
                     items
                     |> List.fold (fun (ds, cs) item ->
@@ -1272,11 +1248,12 @@ module Parsers =
                 { Declares = declares
                 ; Constraints = constraints
                 ; Body=body }
+                |> Expr.Let
                 ))
         <!> "let-expr"
         
     // <if-then-else-expr>
-    let if_else_expr : Parser<IfThenElseExpr> =
+    let if_else_expr : Parser<Expr> =
                 
         let case (word: Keyword) =
             skip word
@@ -1295,6 +1272,7 @@ module Parsers =
                 ; Then = then_
                 ; ElseIf = elseif_
                 ; Else = else_ }
+                |> Expr.IfThenElse
         )
     
     // <num-un-op>    
@@ -1304,11 +1282,6 @@ module Parsers =
             num_expr_atom
         )
         
-    let quoted_op : Parser<Op> =
-        builtin_op
-        |> between (skipChar ''') (skipChar ''')
-        |> attempt
-    
     let tuple_access_tail =
         attempt (skip '.' >>. puint8)
         <!> "tuple-access"
@@ -1335,17 +1308,61 @@ module Parsers =
     
     // <num-expr-atom-head>    
     let num_expr_atom_head : Parser<Expr> =
-        [ number_range 
-          number_lit 
-          bracketed num_expr |>> Expr.Bracketed
-          let_expr           |>> Expr.Let
-          if_else_expr       |>> Expr.IfThenElse
-          call_expr          
-          num_un_op          |>> Expr.UnaryOp
-          ident              |>> Expr.Ident
-          ]
-        |> choice
-        <!> "num-expr-head"
+
+        let numeric =
+            numeric_range
+            <|> number_lit
+                            
+        let bracketed =
+            betweenWs('(', ')') num_expr
+            |>> Expr.Bracketed
+            
+        let call_expr =
+            tupled_args
+            |>> (fun args -> Expr.Call <| (Id "", args))
+            
+        let plus =
+            skip '+'
+            >>. num_expr_atom
+            |>> (fun expr -> Expr.UnaryOp (UnaryOp.Add, expr))
+            
+        let minus =
+            skip '-'
+            >>. num_expr_atom
+            |>> (fun expr -> Expr.UnaryOp (UnaryOp.Subtract, expr))
+        
+        let id =
+            ident_or_keyword .>> ws
+        
+        fun stream ->
+            let tag = stream.StateTag
+            match id stream with
+            | r when r.Status = Ok ->
+                match r.Result with
+                | Word Keyword.LET ->
+                    let_expr stream
+                | Word Keyword.IF ->
+                    if_else_expr stream
+                | Ident id ->
+                    stream.SkipWhitespace()
+                    match stream.Peek() with
+                    | '(' ->
+                        stream.SkipWhitespace()
+                        call_expr stream
+                    | _z ->
+                        Reply(Expr.Ident id)
+                | _z ->
+                    failwith "xd"
+                        
+            | _ when stream.StateTag = tag ->
+                match stream.Peek() with
+                | '(' -> bracketed stream
+                | '+' -> plus stream
+                | '-' -> minus stream
+                | _other -> numeric stream
+            
+            | r ->
+                Reply(r.Status, r.Error)
                     
     // <num-expr-atom>        
     num_expr_atom_ref.contents <-
@@ -1373,46 +1390,313 @@ module Parsers =
             
     // <tuple-literal>
     // TODO - Required trailing comma if tuple is 1 element
-    let tuple_literal : Parser<TupleExpr> =
+    let tuple_lit : Parser<Expr> =
         expr
         |> commaSep1
         |> betweenBrackets 
         |> attempt
+        |>> Expr.Tuple
           
     // <record-literal>
-    let record_literal : Parser<RecordExpr> =
+    let record_lit : Parser<Expr> =
         tuple(ident, skip ':' >>. expr)
         |> commaSep1
         |> betweenBrackets 
         |> attempt
+        |>> Expr.Record
         
     // <expr-atom-head>    
     let expr_atom_head : Parser<Expr> =
-        [
-          wildcard        |>> Expr.WildCard
-          absent          |>> Expr.Absent
-          number_range
-          number_lit
-          bool_literal    |>> Expr.Bool
-          string_lit      |>> Expr.String
-          record_literal  |>> Expr.Record
-          tuple_literal   |>> Expr.Tuple
-          bracketed expr  |>> Expr.Bracketed
-          let_expr        |>> Expr.Let
-          if_else_expr    |>> Expr.IfThenElse
-          gen_call_expr   |>> Expr.GenCall
-          call_expr
-          array_comp      |>> Expr.ArrayComp
-          set_comp        |>> Expr.SetComp
-          array3d_lit     |>> Expr.Array3DLit
-          array2d_lit     |>> Expr.Array2DLit
-          array1d_lit     |>> Expr.Array1DLit
-          set_literal     |>> Expr.Set
-          un_op           |>> Expr.UnaryOp
-          ident           |>> Expr.Ident
-          ]
-        |> choice
-        <!> "expr-atom-head"
+        
+        let bracketed =
+            betweenWs('(', ')') expr
+            |>> Expr.Bracketed
+            
+        let plus =
+            charReturn '+' UnaryOp.Add
+            .>> ws
+            .>>. expr
+            |>> Expr.UnaryOp
+            
+        let minus =
+            charReturn '-' UnaryOp.Add
+            .>> ws
+            .>>. expr
+            |>> Expr.UnaryOp
+        
+        let not =
+            stringReturn "not" UnaryOp.Not
+            .>> ws
+            .>>. expr
+            |>> Expr.UnaryOp
+            
+        let wildcard =
+            wildcard |>> Expr.WildCard
+            
+        let absent =             
+            absent |>> Expr.Absent
+          
+        let numeric =
+            numeric_range <|> number_lit
+                  
+        let bool_lit =
+            bool_lit |>> Expr.Bool
+        
+        let string_lit =
+            string_lit |>> Expr.String
+            
+        let wildcard =
+            charReturn '_' (Expr.WildCard WildCard)
+            
+        let absent =
+            stringReturn "<>" (Expr.Absent Absent)
+            
+        let id =
+            ident_or_keyword .>> ws
+            
+        let array_sep =
+            attempt (
+                skipChar '|'
+                .>> (notFollowedBy (skipChar ']'))
+            )
+            >>. ws
+            <!> "array-sep"
+
+        let array_expr : Parser<Expr> =
+            
+            let array1d_lit =
+                commaSep1 expr .>> skipChar ']'
+                
+            let array_comp_tail =
+                comp_tail .>> ws .>> skipChar ']'
+        
+            let array_row =
+                commaSep expr
+            
+            let array2d_lit =
+                sepEndBy array_row array_sep
+                .>> ws
+                .>> skipString "|]"
+                >>= (fun exprs ->
+                    try
+                        array2D exprs
+                        |> Expr.Array2DLit
+                        |> preturn
+                    with
+                    | exn ->
+                        fail exn.Message)
+                <!> "array2d"
+                
+                
+            let array3d_lit =
+                            
+                let row_sep =
+                    attempt (
+                        skip '|'
+                        .>> (followedBy (noneOf "|,"))
+                    )
+                    <!> "array3d-sep"
+                    
+                let row =
+                    commaSep expr
+                    <!> "array3d-row"
+
+                let nested_matrix : Parser<Expr list list> =
+                    row
+                    |> delimitedBy row_sep
+                    |> betweenWs('|', '|')
+                    <!> "array3d-matrix"
+                                
+                nested_matrix
+                |> commaSep1
+                .>> ws
+                .>> skipString "|]"
+                >>= (fun exprs ->
+                    
+                    try
+                        let I = exprs.Length
+                        let J = if I > 0 then exprs[0].Length else 0
+                        let K = if J > 0 then exprs[0].[0].Length else 0
+                        let array = Array3D.zeroCreate I J K
+                        for i,x in Seq.indexed exprs do
+                            for j,y in Seq.indexed x do
+                                for k, z in Seq.indexed y do
+                                    array[i,j,k] <- z
+                        array
+                        |> Expr.Array3DLit 
+                        |> preturn                            
+                    with
+                    | exn ->
+                        fail $"Bad array dimensions"
+                    )
+                |> attempt
+                <!> "array3d"
+                    
+            
+            fun stream ->
+                stream.Skip('[')
+                stream.SkipWhitespace()
+                
+                match stream.Peek() with
+                
+                // Empty array
+                | ']' ->
+                    stream.Skip(1)
+                    Reply(Expr.Array1DLit Array.empty)
+                
+                // 2D or 3D Array
+                | '|' ->
+                    stream.Skip(1)
+                    stream.SkipWhitespace()
+                    match stream.Peek() with
+                    | '|' -> array3d_lit stream
+                    |  _  -> array2d_lit stream
+                    
+                // 1D literal or comprehension
+                | _ ->
+                    let reply = expr stream
+                    if reply.Status = Ok then
+                        stream.SkipWhitespace()
+                        match stream.Peek() with
+                        // Comma separated means set literal
+                        | ',' ->
+                            stream.Skip(1)
+                            stream.SkipWhitespace()
+                            match array1d_lit stream with
+                            | r when r.Status = Ok ->
+                                reply.Result :: r.Result
+                                |> Expr.Set
+                                |> Reply
+                            | r ->
+                                Reply(r.Status, r.Error)
+                                
+                        // Pipe indicated set comprehension
+                        | '|' ->
+                            stream.SkipWhitespace()
+                            match array_comp_tail stream with
+                            | r when r.Status = Ok ->
+                                { Yields = reply.Result
+                                ; IsSet = false
+                                ; From = r.Result }
+                                |> Expr.ArrayComp
+                                |> Reply
+                            | r ->
+                                Reply(r.Status, r.Error)
+                            
+                        // End of set literal
+                        | ']' ->
+                             stream.Skip(1)
+                             [| reply.Result |]
+                             |> Expr.Array1DLit
+                             |> Reply
+
+                        | _x ->
+                            failwith "xd"
+                            
+                             
+                    else
+                        Reply(reply.Status, reply.Error)    
+            
+        let set_expr : Parser<Expr> =
+            
+            let set_lit_tail =
+                commaSep1 expr .>> skipChar '}'
+                
+            let set_comp_tail =
+                comp_tail .>> ws .>> skipChar '}'
+            
+            fun stream ->
+                stream.Skip('{')
+                stream.SkipWhitespace()
+
+                // Empty set literal
+                if stream.Skip('}') then
+                    Reply(Expr.Set [])
+
+                // Could be set lit or set comp                    
+                else
+                    let reply = expr stream
+                    if reply.Status = Ok then
+                        stream.SkipWhitespace()
+                        match stream.Peek() with
+                        // Comma separated means set literal
+                        | ',' ->
+                            stream.Skip(1)
+                            stream.SkipWhitespace()
+                            match set_lit_tail stream with
+                            | r when r.Status = Ok ->
+                                reply.Result :: r.Result
+                                |> Expr.Set
+                                |> Reply
+                            | r ->
+                                Reply(r.Status, r.Error)
+                                
+                        // Pipe indicated set comprehension
+                        | '|' ->
+                            stream.SkipWhitespace()
+                            match set_comp_tail stream with
+                            | r when r.Status = Ok ->
+                                { Yields = reply.Result
+                                ; IsSet = true
+                                ; From = r.Result }
+                                |> Expr.SetComp
+                                |> Reply
+                            | r ->
+                                Reply(r.Status, r.Error)
+                            
+                        // End of set literal
+                        | '}' ->
+                             stream.Skip(1)
+                             Reply(Expr.Set[reply.Result])
+
+                        | _x ->
+                            failwith "xd"
+                            
+                             
+                    else
+                        Reply(reply.Status, reply.Error)
+            
+        fun stream ->
+            let tag = stream.StateTag
+            match id stream with
+            | r when r.Status = Ok ->
+                match r.Result with
+                | Word Keyword.LET ->
+                    let_expr stream
+                | Word Keyword.IF ->
+                    if_else_expr stream
+                | Word Keyword.TRUE ->
+                    Reply(Expr.Bool true)
+                | Word Keyword.FALSE ->
+                    Reply(Expr.Bool false)
+                | Ident id ->
+                    match stream.Peek() with
+                    | '(' ->
+                        match tupled_args stream with
+                        | r when r.Status = Ok ->
+                            let expr = Expr.Call (Id id, r.Result)
+                            Reply(expr)
+                        | r ->
+                            Reply(r.Status, r.Error)
+                    | _z ->
+                        Reply(Expr.Ident id)
+                | _z ->
+                    failwith "xd"
+                        
+            | _ when stream.StateTag = tag ->
+                match stream.Peek() with
+                | '(' -> bracketed stream
+                | '+' -> plus stream
+                | '-' -> minus stream
+                | '{' -> set_expr stream
+                | '[' -> array_expr stream
+                | '_' -> wildcard stream 
+                | '<' -> absent stream
+                | _other -> numeric stream
+            
+            | r ->
+                Reply(r.Status, r.Error)
+          
             
     // <annotations>
     annotation_ref.contents <-
@@ -1489,7 +1773,6 @@ module Parsers =
                 ; TypeInst = ti }
                 |> Item.Synonym
                 )
-        
         
     // <output-item>
     let output_item : Parser<Item> =

@@ -231,7 +231,7 @@ module rec Encode =
                     
         member this.writeArrayType (elements: TypeInst, [<ParamArray>]dimensions: ArrayDim[]) =
             this.write "array["
-            this.writeExprs(dimensions)
+            this.writeSep(",", dimensions, this.writeType)
             this.write "] of "
             this.writeTypeInst elements
                             
@@ -272,7 +272,7 @@ module rec Encode =
             let s = operators[x]
             this.write s
                     
-        member this.writeSetComp (x: SetCompExpr) =
+        member this.writeSetComp (x: CompExpr) =
             this.write '{'
             this.writeExpr x.Yields
             this.write " | "
@@ -319,7 +319,7 @@ module rec Encode =
             this.dedent()        
             this.write "|]"            
            
-        member this.writeArrayComp (x: ArrayCompExpr) =
+        member this.writeArrayComp (x: CompExpr) =
             this.write '['
             this.writeExpr x.Yields
             this.write " | "
@@ -340,9 +340,8 @@ module rec Encode =
             this.write ")"
 
         member this.writeUnaryOp ((id, expr): UnaryOpExpr) =
-            match id with
-            | IdOr.Id x -> this.write x
-            | IdOr.Val x -> this.writeOp x
+            let name = Operator.byInt[int id]
+            this.write name
             this.write " "
             this.writeExpr expr
             
@@ -389,9 +388,7 @@ module rec Encode =
             this.writeSep(", ", xs, this.writeGenerator)
                 
         member this.writeGenCall (x: GenCallExpr) =
-            match x.Operation with
-            | IdOr.Id id ->this.write id
-            | IdOr.Val v -> this.writeOp v
+            this.write x.Id
             this.write "("
             this.writeGenerators x.From
             this.write ")"
@@ -494,11 +491,11 @@ module rec Encode =
             | Expr.Array6D(i, j, k, l, m, n, arr) ->
                 this.writeArray(arr, i, j, k, l, m, n)
             
-        member this.writeArray(array: Expr[], [<ParamArray>] index_sets: Expr[]) =
+        member this.writeArray(array: Expr[], [<ParamArray>] index_sets: Type[]) =
             let n = index_sets.Length
             this.write $"array{n}d("
-            for expr in index_sets do
-                this.writeExpr expr
+            for index in index_sets do
+                this.writeType index
                 this.write ", "
             this.writeArray1dLit array
             this.write ")"
