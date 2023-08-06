@@ -242,12 +242,13 @@ Encoded:
         testExpr mzn
     
     [<Theory>]
-    [<InlineData("[| |]")>]
-    [<InlineData("[| one_item |]")>]
-    [<InlineData("[|0 , 0, 0, | _, 1, _ | 3, 2, _||]")>]
-    [<InlineData("[|1,2,3,4 | 5,6,7,8 | 9,10,11,12  |    |]")>]
-    [<InlineData("[| true, false, true |]")>]
+    [<InlineData("")>]
+    [<InlineData("one_item")>]
+    [<InlineData("0 , 0, 0, | _, 1, _ | 3, 2, _")>]
+    [<InlineData("1,2,3,4 | 5,6,7,8 | 9,10,11,12 |")>]
+    [<InlineData("true, false, true\n")>]
     let ``test array2d literal`` mzn =
+        let mzn = $"[| {mzn} |]"
         testExpr mzn
     
     [<Theory>]

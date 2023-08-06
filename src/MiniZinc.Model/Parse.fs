@@ -1453,28 +1453,34 @@ module Parsers =
             
         let id =
             ident_or_keyword .>> ws
-            
-        let array_sep =
-            attempt (
-                skipChar '|'
-                .>> (notFollowedBy (skipChar ']'))
-            )
-            >>. ws
-            <!> "array-sep"
+
+        // TODO - Handle double '|', optional end char             
+        let array_sep : Parser<unit> =
+            fun stream ->
+                let next = stream.Peek2()
+                match (next.Char0, next.Char1) with
+                | '|', x when x <> ']' ->
+                    stream.Skip()
+                    stream.SkipWhitespace()
+                    Reply(())
+                | _1, _2 ->
+                    Reply(ReplyStatus.Error, expected "|")
 
         let array_expr : Parser<Expr> =
             
             let array1d_lit =
-                commaSep1 expr .>> skipChar ']'
+                commaSep1 expr
+                .>> skipChar ']'
                 
             let array_comp_tail =
                 comp_tail .>> ws .>> skipChar ']'
         
             let array_row =
                 commaSep expr
+                <!> "array-row"
             
             let array2d_lit =
-                sepEndBy array_row array_sep
+                sepEndBy array_row (array_sep <!> "array-sep")
                 .>> ws
                 .>> skipString "|]"
                 >>= (fun exprs ->
@@ -1531,7 +1537,6 @@ module Parsers =
                     )
                 |> attempt
                 <!> "array3d"
-                    
             
             fun stream ->
                 stream.Skip('[')
@@ -1546,11 +1551,17 @@ module Parsers =
                 
                 // 2D or 3D Array
                 | '|' ->
-                    stream.Skip(1)
+                    stream.Skip()
                     stream.SkipWhitespace()
-                    match stream.Peek() with
-                    | '|' -> array3d_lit stream
-                    |  _  -> array2d_lit stream
+                    let next = stream.Peek2()
+                    match next.Char0, next.Char1 with
+                    | '|' , ']' ->
+                        stream.Skip(2)
+                        Reply(Expr.Array1DLit Array.empty)
+                    | '|', _ ->
+                        array3d_lit stream
+                    |  _  ->
+                        array2d_lit stream
                     
                 // 1D literal or comprehension
                 | _ ->
