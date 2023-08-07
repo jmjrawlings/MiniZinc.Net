@@ -534,7 +534,7 @@ module Parsers =
             elif num.IsInteger then
                 Reply(Expr.Int (int32 num.String))
             // Float with a trailing dot (not allowed)
-            elif stream.Peek() = '.' then
+            elif num.String[num.String.Length - 1] = '.' then
                 stream.Seek(stream.Index - 1L)
                 let expr =
                     num.String.Substring(0, num.String.Length - 1)
@@ -548,12 +548,53 @@ module Parsers =
     // <string-literal>
     let string_lit : Parser<string> =
         let error = expected "string-literal"
+        let invalidEscape = messageError "Invalid escape sequence"
         fun stream ->
-            if stream.Peek() <> '"' then
-                Reply(ReplyStatus.Error, error)
+            if stream.Read() <> '"' then
+                 Reply(Error, error)
             else
-                Reply(ReplyStatus.Error, messageError "xd")
-                //stream.Skip()
+                let buffer = StringBuilder()
+                let rec loop () =
+                    match stream.Peek() with
+                    | '"' ->
+                        stream.Skip()
+                        Reply(buffer.ToString())
+                    | '\\' ->
+                        stream.Skip()
+                        match stream.Peek() with
+                        | 'n' ->
+                            buffer.Append('\n')
+                            stream.Skip()
+                            loop ()
+                        | 't' ->
+                            buffer.Append('\t')
+                            stream.Skip()
+                            loop ()
+                        | '"' ->
+                            buffer.Append("\\\"")
+                            stream.Skip()
+                            loop ()
+                        | '(' ->
+                            buffer.Append("\\\"")
+                            stream.Skip()
+                            loop ()
+                        | ''' ->
+                            buffer.Append("\\\'")
+                            stream.Skip()
+                            loop ()
+                        | _   ->
+                            Reply(ReplyStatus.Error, invalidEscape)
+                    | CharStream.EndOfStreamChar ->
+                        Reply(Error, messageError "Unexpected end of input")
+                        
+                    | c ->    
+                        buffer.Append(c)
+                        stream.Skip()
+                        loop ()
+
+                loop ()
+                    
+            
     
     let string_annotation : Parser<string> =
         skip "::"
@@ -686,7 +727,7 @@ module Parsers =
     // <annotations>
     // eg: `:: output :: x(2)`
     let ann_capture : Parser<Ident> =
-        skip1 "ann"
+        skip "ann"
         >>. skip ':'
         >>. ident
     
@@ -978,17 +1019,36 @@ module Parsers =
             let reply = ident_or_keyword stream
             
             if reply.Status = Ok then
-              match reply.Result with
-              | Word Keyword.INT    -> Reply(Type.Int)
-              | Word Keyword.BOOL   -> Reply(Type.Bool)
-              | Word Keyword.FLOAT  -> Reply(Type.Float)
-              | Word Keyword.STRING -> Reply(Type.String)
-              | Word Keyword.ANN    -> Reply(Type.Ann)
-              | Word Keyword.ANY    -> Reply(Type.Any)
-              | Word Keyword.RECORD -> record_ti stream
-              | Word Keyword.TUPLE  -> tuple_ti stream
-              | Word other          -> Reply(ReplyStatus.Error, messageError "Unexected keyword {other}")
-              | Ident id            -> Reply(Type.Ident id)
+                
+                match reply.Result with
+                | Word Keyword.INT ->
+                    Reply(Type.Int)
+                | Word Keyword.BOOL ->
+                    Reply(Type.Bool)
+                | Word Keyword.FLOAT ->
+                    Reply(Type.Float)
+                | Word Keyword.STRING ->
+                    Reply(Type.String)
+                | Word Keyword.ANN ->
+                  Reply(Type.Ann)
+                | Word Keyword.ANY    ->
+                    Reply(Type.Any)
+                | Word Keyword.RECORD ->
+                    record_ti stream
+                | Word Keyword.TUPLE  ->
+                    tuple_ti stream
+                | Word other ->
+                    Reply(ReplyStatus.Error, messageError "Unexected keyword {other}")
+                | Ident id ->
+                    // Ident is a part of tuple, range, or call
+                    // eg: `x[0]`, `x .. 10`, `x(100)`
+                    match stream.Peek() with
+                    | '.' | '[' | '(' ->
+                        stream.Seek(stream.Index - (int64)id.Length)
+                        range_ti stream
+                    // Ident is standalone
+                    | _c ->
+                        Reply(Type.Ident id)
                       
             elif reply.Status = Error && stateTag = stream.StateTag then
               match stream.Peek() with
@@ -1396,7 +1456,7 @@ module Parsers =
         
     // <expr-atom-head>    
     let expr_atom_head : Parser<Expr> =
-            
+                            
         let plus =
             charReturn '+' UnaryOp.Add
             .>> ws
@@ -1405,12 +1465,6 @@ module Parsers =
             
         let minus =
             charReturn '-' UnaryOp.Add
-            .>> ws
-            .>>. expr
-            |>> Expr.UnaryOp
-        
-        let not =
-            stringReturn "not" UnaryOp.Not
             .>> ws
             .>>. expr
             |>> Expr.UnaryOp
@@ -1662,7 +1716,7 @@ module Parsers =
                 betweenWs('(', ')') generators,
                 betweenWs('(', ')') expr
             )
-            
+                        
         fun stream ->
             let tag = stream.StateTag
             match id stream with
@@ -1680,7 +1734,7 @@ module Parsers =
                     
                 | Word Keyword.FALSE ->
                     Reply(Expr.Bool false)
-                    
+                   
                 // Function-call or Generator-call                    
                 | Ident id when stream.Peek() = '(' ->
                     let mutable state = CharStreamState(stream)
@@ -1702,9 +1756,19 @@ module Parsers =
                             
                 | Ident id ->
                     Reply(Expr.Ident id)
+
+                | Word Keyword.NOT ->
+                    stream.SkipWhitespace()
+                    let reply = expr stream
+                    if reply.Status <> Ok then
+                        Reply(reply.Status, reply.Error)
+                    else
+                        Reply(Expr.UnaryOp (UnaryOp.Not, reply.Result))
+                                    
+                // TODO This is an error usually except when used as an annotation eg: `:: output`                     
+                | Word word ->
+                    Reply(Expr.Ident Keyword.byValue[word])
                     
-                | _z ->
-                    failwith "xd"
                         
             | _ when stream.StateTag = tag ->
                 match stream.Peek() with
@@ -1717,13 +1781,13 @@ module Parsers =
                 | '<' -> absent stream
                 | '"' -> string_lit stream                
                 | _other -> number_lit stream
-            
-            | r ->
-                Reply(r.Status, r.Error)
-          
+                
+            | c ->
+                Reply(ReplyStatus.Error, unexpected (string c))
             
     // <annotations>
     annotation_ref.contents <-
+                
         skip "::"
         >>. expr_atom_head
         >>== expr_atom_tail

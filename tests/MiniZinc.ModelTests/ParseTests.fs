@@ -92,13 +92,12 @@ Encoded:
         testRoundtrip Parsers.ident mzn (fun enc -> enc.write)
     
     [<Theory>]
-    [<InlineData("abc")>]
-    [<InlineData("Escaped single \\\'quotes\\\' are fine.")>]
-    [<InlineData("Escaped double \\\"quotes\\\" are fine.")>]
-    let ``test string literal`` mzn =
-        let p = Parsers.string_lit_contents >>. eof
-        let result = Parse.parseWith p mzn
-        result.AssertOk()
+    [<InlineData(""" "abc" """)>]
+    [<InlineData(""" "Escaped single \'quotes\' are fine" """)>]
+    [<InlineData(""" "Escaped double \"quotes\" are fine" """)>]
+    let ``test string literal`` (mzn:string) =
+        let mzn = mzn.Trim()
+        testRoundtrip Parsers.string_lit mzn (fun enc -> enc.writeString)
     
     [<Theory>]
     [<InlineData("[")>]
@@ -275,8 +274,9 @@ Encoded:
     [<InlineData("1..10")>]
     [<InlineData("-1 .. z")>]
     [<InlineData("x[1]..x[2]")>]
-    let ``test range expr `` mzn =
-        testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
+    [<InlineData("f(x)..15")>]
+    let ``test range ti `` mzn =
+        testRoundtrip Parsers.base_ti_expr_tail mzn (fun enc -> enc.writeType)
         
     [<Fact>]
     let test_bad () =
@@ -333,7 +333,7 @@ Encoded:
         testRoundtrip Parsers.item input (fun enc -> enc.writeItem)
     
     [<Fact>]
-    let ``test xd `` ()=
+    let ``test annotations`` ()=
         let input = ":: add_to_output :: mzn_break_here"
         testRoundtrip Parsers.annotations input (fun enc -> enc.writeAnnotations)
         
@@ -350,7 +350,8 @@ Encoded:
             
     [<Theory>]
     [<InlineData("int:a::add_to_output = product([|2, 2 | 2, 2|])")>]
-    let ``test exprs`` mzn =
+    [<InlineData("""output ["Escaped single \'quotes\' are fine."]""")>]
+    let ``test items`` mzn =
         testItem mzn
     
     [<Theory>]
@@ -361,7 +362,9 @@ Encoded:
         let statement, comments = Parse.parseComments mzn
         statement.AssertEmpty("")
         
-    [<Fact>]
-    let ``test xd`` () =
-        testItem """output ["Escaped single \'quotes\' are fine."];"""
+    [<Theory>]
+    [<InlineData("""constraint x > 2 -> not z""")>]
+    let ``test constraint`` mzn =
+        testItem mzn
         
+            
