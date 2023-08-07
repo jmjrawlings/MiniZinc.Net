@@ -17,7 +17,7 @@ module ``Parser Tests`` =
             
     // Test parsing the string
     let testRoundtrip (parser: Parser<'t>) (mzn: string) (writer: Encoder -> 't -> unit) =
-
+        
         let parser =
             Parsers.ws >>.
             parser
@@ -75,6 +75,12 @@ Encoded:
 """
     let testExpr mzn =
         testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
+
+    let testNumExpr mzn =
+        testRoundtrip Parsers.num_expr mzn (fun enc -> enc.writeExpr)
+        
+    let testItem mzn =
+        testRoundtrip Parsers.item mzn (fun enc -> enc.writeItem)
     
     [<Theory>]
     [<InlineData("a")>]
@@ -197,15 +203,12 @@ Encoded:
     [<InlineData("100 / 1.0")>]
     [<InlineData("A `something` B")>]
     let ``test num binary op`` mzn =
-        testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
+        testRoundtrip Parsers.num_expr mzn (fun enc -> enc.writeExpr)
         
     [<Theory>]
-    [<InlineData("predicate(var $T: x)")>]
+    [<InlineData("predicate x(var $T: x)")>]
     let ``test generic param`` mzn =
-        testRoundtrip
-            Parsers.predicate_item
-            mzn
-            (fun enc -> enc.writeItem)                
+        testItem mzn
         
     [<Theory>]
     [<InlineData("% 12312312")>]
@@ -242,13 +245,12 @@ Encoded:
         testExpr mzn
     
     [<Theory>]
-    [<InlineData("")>]
-    [<InlineData("one_item")>]
-    [<InlineData("0 , 0, 0, | _, 1, _ | 3, 2, _")>]
-    [<InlineData("1,2,3,4 | 5,6,7,8 | 9,10,11,12 |")>]
-    [<InlineData("true, false, true\n")>]
+    [<InlineData("[| |]")>]
+    [<InlineData("[| one_item |]")>]
+    [<InlineData("[| 0 , 0, 0, | _, 1, _ | 3, 2, _ |]")>]
+    [<InlineData("[| 1,2,3,4 | 5,6,7,8 | 9,10,11,12 |]")>]
+    [<InlineData("[| true, false, true\n | |]")>]
     let ``test array2d literal`` mzn =
-        let mzn = $"[| {mzn} |]"
         testExpr mzn
     
     [<Theory>]
@@ -258,38 +260,23 @@ Encoded:
     [<InlineData("[| | 1, 2 | 3, 4|, | 5, 6|7, 8| |]", 2, 2, 2)>]
     let ``test array3d literal`` (mzn, i, j, k) =
         let array =
-            testRoundtrip
-                Parsers.array3d_lit
-                mzn
-                (fun enc -> enc.writeArray3dLit)
-        
+            match testExpr mzn with
+            | Expr.Array3DLit arr -> arr | _ -> Array3D.zeroCreate 0 0 0
         i.AssertEquals(Array3D.length1 array)
         j.AssertEquals(Array3D.length2 array)
         k.AssertEquals(Array3D.length3 array)
         
     [<Theory>]
-    [<InlineData("""forall (i in 1..n-1) (true)""")>]
-    let ``test gen call`` mzn =
-        testRoundtrip
-            Parsers.gen_call_expr
-            mzn (fun enc -> enc.writeGenCall)
-        
-    [<Theory>]
-    [<InlineData("int: x;")>]
-    //[<InlineData("var llower..lupper: Production")>]
-    let ``test declare`` mzn =
-        let x = parseModelString mzn
-        match x with
-        | Result.Ok m -> m
-        | Result.Error err -> failwith err.Message
-        
+    [<InlineData("if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif")>]
+    let ``test if then else`` mzn =
+        testExpr mzn
                 
     [<Theory>]
     [<InlineData("1..10")>]
     [<InlineData("-1 .. z")>]
     [<InlineData("x[1]..x[2]")>]
     let ``test range expr `` mzn =
-        testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr) 
+        testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
         
     [<Fact>]
     let test_bad () =
@@ -321,7 +308,7 @@ Encoded:
     [<InlineData("sum( k in 1..K ) ( bin[k] )")>]
     [<InlineData("forall(k in 1 .. K)(is_feasible_packing(bin[k], [item[k, j] | j in 1 .. N]))")>]
     [<InlineData("forall (i in 1..n-1) (if d[i] == d[i+1] then lex_lesseq([p[i,  j] | j in 1..t], [p[i+1,j] | j in 1..t]) else true endif)")>]
-    let ``test gencall`` mzn =
+    let ``test generator call`` mzn =
         testExpr mzn
         
     [<Theory>]
@@ -352,19 +339,19 @@ Encoded:
         
     [<Theory>]
     [<InlineData("tuple(1..3): x = (4,)")>]
-    let ``test tuple ti`` mzn =
-        testRoundtrip Parsers.item mzn (fun enc -> enc.writeItem)
+    let ``test declare tuple`` mzn =
+        testItem mzn
             
     [<Theory>]
     [<InlineData("x.1")>]
     [<InlineData("x.b")>]
     let ``test item access`` mzn =
-        testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
+        testExpr mzn
             
     [<Theory>]
     [<InlineData("int:a::add_to_output = product([|2, 2 | 2, 2|])")>]
     let ``test exprs`` mzn =
-        testRoundtrip Parsers.declare_item mzn (fun enc -> enc.writeItem)
+        testItem mzn
     
     [<Theory>]
     [<InlineData("/* this is a block comment */")>]
@@ -376,7 +363,5 @@ Encoded:
         
     [<Fact>]
     let ``test xd`` () =
-        let mzn = """output ["Escaped single \'quotes\' are fine."];"""
-        let model = parseModelString mzn
-        model.AssertOk()
+        testItem """output ["Escaped single \'quotes\' are fine."];"""
         
