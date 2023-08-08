@@ -75,9 +75,6 @@ Encoded:
 """
     let testExpr mzn =
         testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
-
-    let testNumExpr mzn =
-        testRoundtrip Parsers.num_expr mzn (fun enc -> enc.writeExpr)
         
     let testItem mzn =
         testRoundtrip Parsers.item mzn (fun enc -> enc.writeItem)
@@ -165,7 +162,7 @@ Encoded:
     [<InlineData("tuple(int, string, string): x")>]
     [<InlineData("tuple(X, 'something else', set of Q): Q")>]
     let ``test type inst and id`` mzn =
-        testRoundtrip Parsers.named_ti mzn (fun enc -> enc.writeParameter)
+        testRoundtrip Parsers.ti_expr_and_id mzn (fun enc -> enc.writeParameter)
             
     [<Theory>]
     [<InlineData("enum A = {A1}")>]
@@ -189,20 +186,20 @@ Encoded:
     [<InlineData("(1)")>]
     [<InlineData("(  (3))")>]
     let ``test num expr atom simple`` mzn =
-        testRoundtrip Parsers.num_expr_atom_head mzn (fun enc -> enc.writeExpr)
+        testRoundtrip Parsers.expr_atom_head mzn (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("-100")>]
     [<InlineData("+300.2")>]
     let ``test num unary op`` mzn =
-        testRoundtrip Parsers.num_expr_atom_head mzn (fun enc -> enc.writeExpr)
+        testRoundtrip Parsers.expr_atom_head mzn (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("100 + 100")>]
     [<InlineData("100 / 1.0")>]
     [<InlineData("A `something` B")>]
     let ``test num binary op`` mzn =
-        testRoundtrip Parsers.num_expr mzn (fun enc -> enc.writeExpr)
+        testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("predicate x(var $T: x)")>]

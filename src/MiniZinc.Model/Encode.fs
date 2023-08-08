@@ -187,26 +187,26 @@ module rec Encode =
                 this.write "float"
             | Type.Ann ->
                 this.write "ann"
+            | Type.Annotation ->
+                this.write "annotation"
             | Type.Any ->
                 this.write "any"
-            | Type.Range (lo, hi) ->
-                this.writeExpr lo
-                this.write " .. "
-                this.writeExpr hi
+            | Type.Expr expr ->
+                this.writeExpr expr
             | Type.Ident x
             | Type.Generic x ->
-                this.write x                
+                this.write $"${x}"
+            | Type.Generic2 x ->
+                this.write $"$${x}"
+            | Type.Concat tis ->
+                this.writeSep(" ++ ", tis, this.writeTypeInst)
             | Type.Record fields ->
                 this.write "record"
-                this.writeParameters fields               
+                this.writeParameters fields                
             | Type.Tuple fields ->
                 this.write "tuple("
                 this.writeSep(", ", fields, this.writeTypeInst)
                 this.write ")"
-            | Type.Set x ->
-                this.write '{'
-                this.writeExprs x
-                this.write '}'
             | Type.Array1D (i, ti) ->
                 this.writeArrayType(ti, i)
             | Type.Array2D (i, j, ti) ->
@@ -329,7 +329,7 @@ module rec Encode =
         member this.writeTupleExpr (tuple: TupleExpr) =
             this.writeArgs tuple
             
-        member this.writeRecordField (id: Ident, expr: Expr) =
+        member this.writeRecordField (struct(id, expr): NamedExpr) =
             this.write id
             this.write ": "
             this.writeExpr expr
@@ -412,9 +412,16 @@ module rec Encode =
              | None ->
                  ()
         
-        member this.writeArrayAccess (exprs: ArrayAccess) =
+        member this.writeArraySliceExpr (expr: Expr voption) =
+            match expr with
+            | ValueNone ->
+                this.write ".."
+            | ValueSome expr ->
+                this.writeExpr expr
+        
+        member this.writeArrayAccess (exprs: ArraySlice) =
             this.write '['
-            this.writeExprs exprs
+            this.writeSep(",", exprs, this.writeArraySliceExpr)
             this.write ']'
                             
         member this.writeExpr (x: Expr) =
@@ -453,14 +460,14 @@ module rec Encode =
                 this.writeTupleExpr x
             | Expr.Record x ->
                 this.writeRecordExpr x
-            | Expr.RecordAccess (field, expr) ->
+            | Expr.RecordAccess (expr, field) ->
                 this.writeExpr expr
                 this.write "."
                 this.write field
-            | Expr.TupleAccess (item, expr) ->
+            | Expr.TupleAccess (expr, item) ->
                 this.writeExpr expr
                 this.write "."
-                this.write item                
+                this.write item
             | Expr.UnaryOp x ->
                 this.writeUnaryOp x
             | Expr.BinaryOp x ->
@@ -473,11 +480,9 @@ module rec Encode =
                 this.writeCall x
             | Expr.GenCall x ->
                 this.writeGenCall x 
-            | Expr.ArrayAccess (access, expr) ->
+            | Expr.ArrayAccess (expr, slice) ->
                 this.writeExpr expr
-                this.write '['
-                this.writeExprs access
-                this.write ']'
+                this.writeArrayAccess slice
             | Expr.Array1D(i, arr) ->
                 this.writeArray(arr, i)
             | Expr.Array2D(i, j, arr) ->
@@ -621,8 +626,10 @@ module rec Encode =
                 this.writeSynonym x
             | Item.Constraint x -> 
                 this.writeConstraint x
-            | Item.Assign x -> 
-                this.writeAssign x
+            | Item.Assign (id, expr) -> 
+                this.write id
+                this.write '='
+                this.writeExpr expr
             | Item.Declare x -> 
                 this.writeDeclare x
             | Item.Solve x ->

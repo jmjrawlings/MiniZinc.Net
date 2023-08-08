@@ -196,10 +196,16 @@ module rec Solve =
                             
                             let dataString =
                                 (message["output"]["dzn"]).GetValue<string>()
-                            
+                                                        
                             let data =
-                                parseDataString dataString
-                                |> Result.map Map.ofSeq
+                                match parseDataString dataString with
+                                | Result.Ok items ->
+                                    items
+                                    |> Seq.map (fun struct(id,expr) -> (id,expr))
+                                    |> Map.ofSeq
+                                    |> Result.Ok
+                                | Result.Error err ->
+                                    Result.Error err
 
                             let outputs, status =
                                 match data with

@@ -189,7 +189,7 @@ module rec Ast =
         | Tuple         of TupleExpr
         | Record        of RecordExpr
         | UnaryOp       of UnaryOpExpr
-        | BinaryOp      of BinaryOpExpr 
+        | BinaryOp      of BinaryOpExpr
         | IfThenElse    of IfThenElseExpr
         | Let           of LetExpr
         | Call          of CallExpr
@@ -199,13 +199,13 @@ module rec Ast =
         IdOr<Op> * Expr list
     
     type RecordAccessExpr =
-        string * Expr
+        Expr * string
     
     type TupleAccessExpr =
-        uint8 * Expr
+        Expr * uint8
     
     type ArrayAccessExpr =
-        ArrayAccess * Expr
+        Expr * ArraySlice
     
     type BinaryOpExpr =
         Expr * IdOr<BinaryOp> * Expr
@@ -213,8 +213,8 @@ module rec Ast =
     type UnaryOpExpr =
         UnaryOp * Expr
     
-    type ArrayAccess =
-        Expr list
+    type ArraySlice =
+        (Expr voption) list
 
     type Annotation =
         Expr
@@ -319,6 +319,12 @@ module rec Ast =
         /// True if this TypeInst is a parameter (not a variable)
         member this.IsPar =
             not this.IsVar
+            
+        member this.IsCollection =
+            this.IsSet || this.IsArray
+            
+        member this.IsSingleton =
+            not this.IsCollection
         
         static member Empty =
             { Type = Type.Ident ""
@@ -342,11 +348,13 @@ module rec Ast =
         | String
         | Float
         | Ann
+        | Annotation
         | Any 
         | Generic   of Ident
+        | Generic2  of Ident // TODO - ????
         | Ident     of Ident
-        | Set       of Expr list
-        | Range     of Expr * Expr
+        | Expr      of Expr
+        | Concat    of TypeInst list
         | Tuple     of TypeInst list
         | Record    of TypeInst list
         | Array1D   of ArrayDim * TypeInst
@@ -395,7 +403,7 @@ module rec Ast =
         | Enum       of EnumType
         | Synonym    of TypeAlias
         | Constraint of ConstraintExpr
-        | Assign     of AssignExpr
+        | Assign     of NamedExpr
         | Declare    of TypeInst
         | Solve      of SolveItem
         | Test       of TestItem
@@ -409,7 +417,7 @@ module rec Ast =
         ; Annotations: Annotations }
       
     type NamedExpr =
-        Ident * Expr
+        (struct(Ident * Expr))
            
     type TestItem =
         { Name: string
@@ -446,9 +454,6 @@ module rec Ast =
         
     type Test =
         unit
-
-    type AssignExpr =
-        NamedExpr
 
     type OutputExpr =
         { Expr: Expr; Annotation: string option }
