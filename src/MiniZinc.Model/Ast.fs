@@ -59,30 +59,30 @@ module rec Ast =
         | Minimize = 1
         | Maximize = 2
 
-    type NumericUnaryOp =
+    type NumUnOp =
         | Add = 0
         | Subtract = 1
         
-    type UnaryOp =
+    type UnOp =
         | Add = 0
         | Subtract = 1
         | Not = 2
 
-    type NumericBinaryOp =
+    type NumBinOp =
         | Add = 0
         | Subtract = 1
         | Multiply = 3
         | Divide = 4
         | Div = 5
         | Mod = 6
-        | Exp = 7
+        | Exponent = 7
         | TildeAdd = 8
         | TildeSubtract = 9
         | TildeMultiply = 10
         | TildeDivide = 11
         | TildeDiv = 12
         
-    type BinaryOp =
+    type BinOp =
         | Add = 0
         | Subtract = 1
         | Multiply = 3
@@ -160,40 +160,100 @@ module rec Ast =
         | Intersect = 35 
         | PlusPlus = 36
         | Default =  37
+            
+    module Operator =
+        
+        let list =
+            [ ("+", Op.Add)
+              ("-", Op.Subtract)
+              ("*", Op.Multiply)
+              ("/", Op.Divide)       
+              ("^", Op.Exponent)
+              ("~+", Op.TildeAdd)
+              ("~-", Op.TildeSubtract)
+              ("~*", Op.TildeMultiply)
+              ("~/", Op.TildeDivide)
+              ("div", Op.Div)
+              ("mod", Op.Mod)
+              ("~div", Op.TildeDiv) 
+              ("<->", Op.Equivalent)
+              ("->", Op.Implies)
+              ("<-", Op.ImpliedBy)
+              ("\/", Op.Or)
+              ("/\\", Op.And)
+              ("<=", Op.LessThanEqual)
+              (">=", Op.GreaterThanEqual)
+              ("==", Op.EqualEqual)
+              ("<", Op.LessThan)
+              (">", Op.GreaterThan)
+              ("=", Op.Equal)
+              ("!=", Op.NotEqual)
+              ("~=", Op.TildeEqual)
+              ("~!=", Op.TildeNotEqual)
+              ("..", Op.DotDot)
+              ("++", Op.PlusPlus)
+              ("xor", Op.Xor)
+              ("intersect", Op.Intersect)
+              ("in", Op.In)
+              ("subset", Op.Subset)
+              ("superset", Op.Superset)
+              ("union", Op.Union)
+              ("diff", Op.Diff)
+              ("symdiff", Op.SymDiff)
+              ("default", Op.Default)
+              ("not", Op.Not) ]
+        
+        let byName =
+            Map.ofList list
+        
+        let byValue =
+            list
+            |> Seq.map (fun (k,v) -> (v,k))
+            |> Map.ofSeq
+
+        let byInt =
+            list
+            |> Seq.map (fun (k,v) -> (int v,k))
+            |> Map.ofSeq
+        
+        
 
     [<RequireQualifiedAccess>] 
     type Expr =
-        | WildCard      of WildCard
-        | Absent        of Absent
-        | Int           of int
-        | Float         of float
-        | Bool          of bool
-        | String        of string
-        | Ident         of string
-        | Bracketed     of Expr
-        | Set           of Expr list
-        | SetComp       of CompExpr
-        | RecordAccess  of RecordAccessExpr
-        | TupleAccess   of TupleAccessExpr
-        | ArrayAccess   of ArrayAccessExpr
-        | Array1DLit    of Expr[]
-        | Array2DLit    of Expr[,]
-        | Array3DLit    of Expr[,,]
-        | Array1D       of ArrayDim * Expr[]
-        | Array2D       of ArrayDim * ArrayDim * Expr[]
-        | Array3D       of ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | Array4D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | Array5D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | Array6D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | ArrayComp     of CompExpr
-        | Tuple         of TupleExpr
-        | Record        of RecordExpr
-        | UnaryOp       of UnaryOpExpr
-        | BinaryOp      of BinaryOpExpr
-        | IfThenElse    of IfThenElseExpr
-        | Let           of LetExpr
-        | Call          of CallExpr
-        | GenCall       of GenCallExpr
+        | WildCard       of WildCard
+        | Absent         of Absent
+        | Int            of int
+        | Float          of float
+        | Bool           of bool
+        | String         of string
+        | Ident          of string
+        | Bracketed      of Expr
+        | ClosedRange    of Expr*Expr
+        | LeftOpenRange  of Expr
+        | RightOpenRange of Expr
+        | Set            of Expr list
+        | SetComp        of CompExpr
+        | RecordAccess   of RecordAccessExpr
+        | TupleAccess    of TupleAccessExpr
+        | ArrayAccess    of ArrayAccessExpr
+        | Array1DLit     of Expr[]
+        | Array2DLit     of Expr[,]
+        | Array3DLit     of Expr[,,]
+        | Array1D        of ArrayDim * Expr[]
+        | Array2D        of ArrayDim * ArrayDim * Expr[]
+        | Array3D        of ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array4D        of ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array5D        of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array6D        of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | ArrayComp      of CompExpr
+        | Tuple          of TupleExpr
+        | Record         of RecordExpr
+        | UnaryOp        of UnaryOpExpr
+        | BinaryOp       of BinaryOpExpr
+        | IfThenElse     of IfThenElseExpr
+        | Let            of LetExpr
+        | Call           of CallExpr
+        | GenCall        of GenCallExpr
     
     type CallExpr =
         IdOr<Op> * Expr list
@@ -208,10 +268,10 @@ module rec Ast =
         Expr * ArraySlice
     
     type BinaryOpExpr =
-        Expr * IdOr<BinaryOp> * Expr
+        Expr * IdOr<BinOp> * Expr
         
     type UnaryOpExpr =
-        UnaryOp * Expr
+        UnOp * Expr
     
     type ArraySlice =
         (Expr voption) list

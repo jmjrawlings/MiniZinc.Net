@@ -102,12 +102,15 @@ module rec Encode =
             this.write s
             this.writetn()
         
-        member this.writeSep (sep: string, xs: 't seq, write: 't -> unit) =
+        member this.writeSep (sep: string, xs: 't seq, write: 't -> unit, ?term) =
+            let term = defaultArg term false
             let n = Seq.length xs 
             let mutable i = 0
             for x in xs do
                 i <- i + 1
                 write x
+                if term then
+                    this.write ';'
                 if i < n then
                     this.write sep
             ()
@@ -163,10 +166,12 @@ module rec Encode =
                     this.writeAnnotation ann
                 
         member this.writeTypeInst (ti: TypeInst) =
-            match ti.IsArray with
-            | true ->
+            match ti.IsArray, ti.Type with
+            | true , _->
                 this.writeType ti.Type
-            | false ->
+            | _, Type.Concat xs ->
+                this.writeSep(" ++ ", xs, this.writeTypeInst)
+            | false , _ ->
                 if ti.IsVar then
                     this.write "var "
                 if ti.IsSet then
@@ -372,8 +377,8 @@ module rec Encode =
         member this.writeLetExpr (x: LetExpr) =
             this.writen "let {"
             this.indent()
-            this.writeSep(",\n", x.Declares, this.writeDeclare)
-            this.writeSep(",\n", x.Constraints, this.writeConstraint)
+            this.writeSep(",\n", x.Declares, this.writeDeclare, term=true)
+            this.writeSep(",\n", x.Constraints, this.writeConstraint, term=true)
             this.dedent()
             this.writen "} in"
             this.indent()
@@ -448,6 +453,16 @@ module rec Encode =
                 this.writeSetLit x
             | Expr.SetComp x ->
                 this.writeSetComp x
+            | Expr.RightOpenRange x ->
+                this.writeExpr x
+                this.write ".."
+            | Expr.LeftOpenRange x ->
+                this.write ".."
+                this.writeExpr x
+            | Expr.ClosedRange (left, right) ->
+                this.writeExpr left
+                this.write ".."
+                this.writeExpr right             
             | Expr.Array1DLit x ->
                 this.writeArray1dLit x
             | Expr.Array2DLit x ->

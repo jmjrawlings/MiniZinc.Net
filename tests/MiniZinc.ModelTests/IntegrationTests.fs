@@ -1,9 +1,10 @@
     namespace MiniZinc.Tests
     open MiniZinc
+    open MiniZinc.Parser
     open MiniZinc.Tests
     open Xunit
     open System.IO
-
+    
     module IntegrationTests =
         
         let test filePath =

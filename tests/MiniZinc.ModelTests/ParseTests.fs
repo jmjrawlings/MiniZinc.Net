@@ -9,21 +9,19 @@ Model objects.
 namespace MiniZinc.Tests
 
 open MiniZinc
+open MiniZinc.Parser
 open MiniZinc.Tests
 open Xunit
 open FParsec
 
 module ``Parser Tests`` =
-            
+                
     // Test parsing the string
     let testRoundtrip (parser: Parser<'t>) (mzn: string) (writer: Encoder -> 't -> unit) =
         
         let parser =
-            Parsers.ws >>.
-            parser
-            .>> Parsers.ws
-            .>> eof
-        
+            spaces >>. parser .>> spaces .>> eof
+            
         let parsed =
             match parseWith parser mzn with
             | Result.Ok x ->
@@ -105,7 +103,7 @@ Encoded:
         
     [<Theory>]
     [<InlineData("int")>]
-    [<InlineData("any")>]
+    [<InlineData("any $T")>]
     [<InlineData("var int")>]
     [<InlineData("opt bool")>]
     [<InlineData("set of opt float")>]
@@ -141,6 +139,15 @@ Encoded:
             Parsers.base_ti_expr_tail
             mzn
             (fun enc -> enc.writeType)
+        
+    [<Theory>]
+    [<InlineData("var MyTuple ++ var MyTuple")>]
+    [<InlineData("array[a+1..b+3] of var int")>]
+    let ``test complex type inst`` mzn =
+        testRoundtrip
+            Parsers.ti_expr
+            mzn
+            (fun enc -> enc.writeTypeInst)
         
     [<Theory>]
     [<InlineData("var set of bool: xd")>]

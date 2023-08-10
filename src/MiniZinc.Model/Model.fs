@@ -14,7 +14,7 @@ past the parsing phase.
 namespace MiniZinc
 
 open System.IO
-open FParsec.CharParsers
+open MiniZinc.Parser
 
 [<AutoOpen>]
 module rec Model =

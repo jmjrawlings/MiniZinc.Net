@@ -8,369 +8,19 @@ Abstract Syntax Tree (AST).
 
 *)
 
-namespace MiniZinc
+namespace MiniZinc.Parser
 
 open System
-open System.Collections.Generic
 open System.IO
-open System.Runtime.CompilerServices
-open System.Runtime.InteropServices
 open System.Text
 open FParsec
 open MiniZinc
-open System.Collections
-open FParsec.Primitives
 
-module Keyword =
-    
-    type Keyword =
-        | NONE = -1
-        | ANNOTATION = 0
-        | ANN = 1
-        | ANY = 2
-        | ARRAY = 3 
-        | BOOL = 4 
-        | CASE = 5
-        | CONSTRAINT = 6 
-        | DIFF = 7
-        | DIV = 8
-        | ELSE = 9
-        | ELSEIF = 10
-        | ENDIF = 11
-        | ENUM = 12
-        | FALSE = 13
-        | FLOAT = 14
-        | FUNCTION = 15 
-        | IF = 16
-        | IN = 17
-        | INCLUDE = 18 
-        | INT = 19
-        | INTERSECT = 20 
-        | LET = 21
-        | LIST = 22
-        | MAXIMIZE = 23 
-        | MINIMIZE = 24
-        | MOD = 25
-        | NOT = 26
-        | OF = 27
-        | OP = 28
-        | OPT = 29
-        | OUTPUT = 30
-        | PAR = 31
-        | PREDICATE = 32 
-        | RECORD = 33
-        | SATISFY = 34
-        | SET = 35
-        | SOLVE = 36
-        | STRING = 37
-        | SUBSET = 38
-        | SUPERSET = 39
-        | SYMDIFF = 40
-        | TEST = 41
-        | THEN = 42
-        | TRUE = 43      
-        | TUPLE = 44
-        | TYPE = 45
-        | UNION = 46       
-        | VAR = 47
-        | WHERE = 48
-        | XOR = 49
-        
-    module Keyword =
-        
-        let list = [
-            ("ann", Keyword.ANN)
-            ("annotation", Keyword.ANNOTATION)
-            ("any", Keyword.ANY)
-            ("array", Keyword.ARRAY)
-            ("bool", Keyword.BOOL)
-            ("case", Keyword.CASE)
-            ("constraint", Keyword.CONSTRAINT)
-            ("diff", Keyword.DIFF)
-            ("div", Keyword.DIV)
-            ("else", Keyword.ELSE)
-            ("elseif", Keyword.ELSEIF)
-            ("endif", Keyword.ENDIF)
-            ("enum", Keyword.ENUM)
-            ("false", Keyword.FALSE)
-            ("float", Keyword.FLOAT)
-            ("function", Keyword.FUNCTION)
-            ("if", Keyword.IF)
-            ("in", Keyword.IN)
-            ("include", Keyword.INCLUDE)
-            ("int", Keyword.INT)
-            ("intersect", Keyword.INTERSECT)
-            ("let", Keyword.LET)
-            ("list", Keyword.LIST)
-            ("maximize", Keyword.MAXIMIZE)
-            ("minimize", Keyword.MINIMIZE)
-            ("mod", Keyword.MOD)
-            ("not", Keyword.NOT)
-            ("of", Keyword.OF)
-            ("op", Keyword.OP)  
-            ("opt", Keyword.OPT)
-            ("output", Keyword.OUTPUT)
-            ("par", Keyword.PAR)
-            ("predicate", Keyword.PREDICATE)
-            ("record", Keyword.RECORD)
-            ("satisfy", Keyword.SATISFY)
-            ("set", Keyword.SET)
-            ("solve", Keyword.SOLVE)
-            ("string", Keyword.STRING)
-            ("subset", Keyword.SUBSET)
-            ("superset", Keyword.SUPERSET)
-            ("symdiff", Keyword.SYMDIFF)
-            ("test", Keyword.TEST)
-            ("then", Keyword.THEN)
-            ("true", Keyword.TRUE)
-            ("tuple", Keyword.TUPLE)
-            ("type", Keyword.TYPE)
-            ("union", Keyword.UNION)
-            ("var", Keyword.VAR)
-            ("where", Keyword.WHERE)
-            ("xor", Keyword.XOR) ]
-    
-        let byName =
-            Map.ofList list
-        
-        let byValue =
-            list
-            |> Seq.map (fun (k,v) -> (v,k))
-            |> Map.ofSeq
-            
-        let lookup key =
-            let mutable word = Keyword.NONE
-            byName.TryGetValue(key, &word)
-            word
-            
-            
-module Operator =
-    
-    let list =
-        [ ("+", Op.Add)
-          ("-", Op.Subtract)
-          ("*", Op.Multiply)
-          ("/", Op.Divide)       
-          ("^", Op.Exponent)
-          ("~+", Op.TildeAdd)
-          ("~-", Op.TildeSubtract)
-          ("~*", Op.TildeMultiply)
-          ("~/", Op.TildeDivide)
-          ("div", Op.Div)
-          ("mod", Op.Mod)
-          ("~div", Op.TildeDiv) 
-          ("<->", Op.Equivalent)
-          ("->", Op.Implies)
-          ("<-", Op.ImpliedBy)
-          ("\/", Op.Or)
-          ("/\\", Op.And)
-          ("<=", Op.LessThanEqual)
-          (">=", Op.GreaterThanEqual)
-          ("==", Op.EqualEqual)
-          ("<", Op.LessThan)
-          (">", Op.GreaterThan)
-          ("=", Op.Equal)
-          ("!=", Op.NotEqual)
-          ("~=", Op.TildeEqual)
-          ("~!=", Op.TildeNotEqual)
-          ("..", Op.DotDot)
-          ("++", Op.PlusPlus)
-          ("xor", Op.Xor)
-          ("intersect", Op.Intersect)
-          ("in", Op.In)
-          ("subset", Op.Subset)
-          ("superset", Op.Superset)
-          ("union", Op.Union)
-          ("diff", Op.Diff)
-          ("symdiff", Op.SymDiff)
-          ("default", Op.Default)
-          ("not", Op.Not) ]
-    
-    let byName =
-        Map.ofList list
-    
-    let byValue =
-        list
-        |> Seq.map (fun (k,v) -> (v,k))
-        |> Map.ofSeq
-
-    let byInt =
-        list
-        |> Seq.map (fun (k,v) -> (int v,k))
-        |> Map.ofSeq
-    
-type ParserState() =
-    let sb = StringBuilder()
-    let mutable indent = 0
-
-    member this.Indent
-        with get() = indent
-        and set(v : int) = indent <- v
-            
-    member this.write (msg: string) =
-        sb.AppendLine msg
-        
-    member this.Message =
-        sb.ToString()
-
-type Parser<'t> =
-    Parser<'t, ParserState>
-    
+[<AutoOpen>]    
 module Parsers =
     
-    open Keyword
-    
-    [<Struct>]
-    type ParseDebugEvent<'a> =
-        | Enter
-        | Leave of Reply<'a>
-
-    let ws = spaces
-        
-    let ws1 = spaces1
-    
-    let (>>==) a b =
-        (a .>> ws) >>= b
-        
-    type private P () =
-        
-        // Skip char and whitespace
-        static member skip(c: char) =
-            skipChar c .>> ws
-            
-        // Skip char and whitespace
-        static member skip1(c: char) =
-            skipChar c .>> ws1
-
-        // Skip char and whitespace
-        static member skip(k: Keyword) =
-            let name = Keyword.byValue[k]
-            skipString name >>. ws
-        
-        // Skip char and whitespace
-        static member skip1(k: Keyword) =
-            let name = Keyword.byValue[k]
-            skipString name >>. ws1
-        
-        // Skip string and whitespace        
-        static member skip(s: string) =
-            skipString s  .>> ws
-            
-        // Skip string and whitespace        
-        static member skip1(s: string) =
-            skipString s .>> ws1
-                
-        // Between with whitespace
-        static member betweenWs (pStart : Parser<_>, pEnd : Parser<_>) =
-            between (pStart .>> ws) (ws >>. pEnd)
-                
-        // Between chars with whitespace                
-        static member betweenWs (s: char, e: char) =
-            P.betweenWs (skipChar s, skipChar e)
-            
-        // Between strings with whitespace
-        static member betweenWs (s: string, e: string) =
-            P.betweenWs (skipString s, skipString e)
-        
-        // Between chars with whitespace        
-        static member betweenWs (s: string) =
-            P.betweenWs(s,s)
-        
-        // Between chars with whitespace    
-        static member betweenWs (c: char) =
-            P.betweenWs(c, c)
-
-        static member pipe (a: Parser<_>, b: Parser<_>, f) =
-            pipe2 (a .>> ws) b f
-               
-        static member pipe (a: Parser<_>, b: Parser<_>, c: Parser<_>, f) =
-            pipe3 (a .>> ws) (b .>> ws) c f
-            
-        static member pipe (a: Parser<_>, b: Parser<_>, c: Parser<_>, d: Parser<_>, f) =
-            pipe4 (a .>> ws) (b .>> ws) (c .>> ws) d f
-            
-        static member pipe (a: Parser<_>, b: Parser<_>, c: Parser<_>, d: Parser<_>, e: Parser<_>, f) =
-            pipe5 (a .>> ws) (b .>> ws) (c .>> ws) (d .>> ws) e f
-        
-        static member tuple (a: Parser<_>, b: Parser<_>) =
-            tuple2 (a .>> ws) b
-               
-        static member tuple (a: Parser<'a>, b: Parser<'b>, c: Parser<'c>) =
-            tuple3 (a .>> ws) (b .>> ws) c
-            
-        static member commaSep (p: Parser<_>) : Parser<_> =
-            P.delimitedBy(',') p
-            
-        static member commaSep1 (p: Parser<_>) : Parser<_> =
-            P.delimitedBy1(',') p
-        
-        static member delimitedBy (d: Parser<_>) : Parser<_> -> Parser<_> =
-            fun p ->
-                sepEndBy (p .>> ws) (d >>. ws)
-            
-        static member delimitedBy (c:char) =
-            P.delimitedBy (skipChar c)
-        
-        static member delimitedBy1 (d: Parser<_>) : Parser<_> -> Parser<_> =
-            fun p ->
-                sepEndBy1 (p .>> ws) (d >>. ws)
-        
-        static member delimitedBy1(c:char) =
-            P.delimitedBy1 (skipChar c)
-            
-        static member delimitedBy1(s:string) =
-            P.delimitedBy1 (skipString s)
-            
-        static member betweenBrackets (p: Parser<_>) =
-            P.betweenWs('(', ')') p
-            
-    open type P
-        
-    let addToDebug (stream: CharStream<ParserState>) label event =
-        let msgPadLen = 40
-        let startIndent = stream.UserState.Indent
-        let msg, indent, nextIndent = 
-            match event with
-            | Enter ->
-                $"{label}", startIndent, startIndent+1
-            | Leave res ->
-                let str = $"{label} ({res.Status})"
-                let pad = max (msgPadLen - startIndent - 1) 0
-                let resStr = $"%s{str.PadRight(pad)} {res.Result}"
-                resStr, startIndent-1, startIndent-1
-      
-        let indentStr =
-            let pad = max indent 0
-            if indent = 0 then ""
-            else "-".PadRight(pad, '-')
-
-        let row = stream.Position.Line.ToString().PadRight(5)
-        let col = stream.Position.Column.ToString().PadRight(5)
-        let posStr = $"{row} |{col} | "
-        let posIdentStr = posStr + indentStr
-
-        // The %A for res.Result makes it go onto multiple lines - pad them out correctly
-        let replaceStr = "\n" + "".PadRight(max posStr.Length 0) + "".PadRight(max indent 0, '\u2502').PadRight(max msgPadLen 0)
-        let correctedStr = msg.Replace("\n", replaceStr)
-        let fullStr = $"%s{posIdentStr} %s{correctedStr}"
-
-        stream.UserState.write fullStr
-        stream.UserState.Indent <- nextIndent
-
-    // Add debug info to the given parser
-    let (<!>) (p: Parser<'t>) (label: string) : Parser<'t> =
-        let error = expected label
-        fun stream ->
-            let stateTag = stream.StateTag
-            addToDebug stream label Enter
-            let mutable reply = p stream
-            if stateTag = stream.StateTag then
-                reply.Error <- error
-            addToDebug stream label (Leave reply)
-            reply
-            
-    // let (<!>) (p: Parser<'t>) (label: string) : Parser<'t> =
-    //     p
+    open ParseUtils
+    open type ParseUtils.P
     
     /// Determine the correct Inst for the given TypeInst
     /// </summary>
@@ -487,7 +137,8 @@ module Parsers =
     let ident : Parser<Ident> =
         simple_ident <|> quoted_ident
     
-    let ident_or_keyword : Parser<struct(string*Keyword)> =
+    // An identifier but also return its keyword
+    let ident_kw : Parser<struct(string*Keyword)> =
         fun stream ->
             let reply = ident stream
             if reply.Status <> Ok then
@@ -497,10 +148,10 @@ module Parsers =
                 Keyword.byName.TryGetValue(reply.Result, &word)
                 Reply(struct(reply.Result, word))
     
-    let (=>) (kw: Keyword) b =
-        let name = Keyword.byValue[kw]
-        stringReturn name b
-    
+    // let (=>) (kw: Keyword) b =
+    //     let name = Keyword.byValue[kw]
+    //     stringReturn name b
+    //
     let (==>) (kw: Keyword) b =
         skip1 kw >>. (preturn b)
     
@@ -614,84 +265,153 @@ module Parsers =
         skip "::"
         >>. string_lit
         |>> sprintf "\"%s\""
-        
-    let builtin_num_un_ops =
-        [ "+" =!> Op.Add
-        ; "-" =!> Op.Subtract ]
-        
-    // <builtin-num-un-op>
-    let builtin_num_un_op =
-        builtin_num_un_ops
-        |> choice
-        |>> (int >> enum<UnaryOp>)
-        <!> "builtin-num-un-op"
     
-    let builtin_num_bin_ops =
-         [ "+"    =!> Op.Add
-         ; "-"    =!> Op.Subtract 
-         ; "*"    =!> Op.Multiply
-         ; "/"    =!> Op.Divide         
-         ; "^"    =!> Op.Exponent
-         ; "~+"   =!> Op.TildeAdd
-         ; "~-"   =!> Op.TildeSubtract
-         ; "~*"   =!> Op.TildeMultiply
-         ; "~/"   =!> Op.TildeDivide
-         ; "div"  =!> Op.Div
-         ; "mod"  =!> Op.Mod
-         ; "~div" =!> Op.TildeDiv ]
-        
     // <builtin-num-bin-op>
-    let builtin_num_bin_op =
-         builtin_num_bin_ops
-         |> choice
-         |>> (int >> enum<BinaryOp>)
-         <!> "num-bin-op"
-            
-    let builtin_bin_ops = 
-        [ "<->"       =!> Op.Equivalent
-        ; "->"        =!> Op.Implies
-        ; "<-"        =!> Op.ImpliedBy
-        ; "\/"        =!> Op.Or
-        ; "/\\"       =!> Op.And
-        ; "<="        =!> Op.LessThanEqual
-        ; ">="        =!> Op.GreaterThanEqual
-        ; "=="        =!> Op.EqualEqual
-        ; "<"         =!> Op.LessThan
-        ; ">"         =!> Op.GreaterThan
-        ; "="         =!> Op.Equal
-        ; "!="        =!> Op.NotEqual
-        ; "~="        =!> Op.TildeEqual
-        ; "~!="       =!> Op.TildeNotEqual
-        ; ".."        =!> Op.DotDot
-        ; "++"        =!> Op.PlusPlus
-        ; "xor"       =!> Op.Xor
-        ; "intersect" =!> Op.Intersect
-        ; "in"        =!> Op.In
-        ; "subset"    =!> Op.Subset
-        ; "superset"  =!> Op.Superset
-        ; "union"     =!> Op.Union
-        ; "diff"      =!> Op.Diff
-        ; "symdiff"   =!> Op.SymDiff
-        ; "default"   =!> Op.Default ]
-        @ builtin_num_bin_ops
-        
-    // <builtin-bin-op>            
-    let builtin_bin_op : Parser<BinaryOp> =
-        builtin_bin_ops
-        |> choice
-        |>> (int >> enum<BinaryOp>)
-        <!> "binop"
-        
-    let builtin_un_ops =
-        builtin_num_un_ops
-        @ ["not" =!> Op.Not]
+    let builtin_num_bin_op : Parser<NumBinOp> =
+         let error = expected "Numeric binary operator"
+         fun stream ->
+             match stream.Peek() with
+             | '+' ->
+                 stream.Skip(); Reply(NumBinOp.Add)
+             | '-' ->
+                 stream.Skip(); Reply(NumBinOp.Subtract) 
+             | '*' ->
+                 stream.Skip(); Reply(NumBinOp.Multiply)
+             | '/' ->
+                 stream.Skip(); Reply(NumBinOp.Divide)
+             | '^' ->
+                 stream.Skip(); Reply(NumBinOp.Exponent)
+             | '~' ->
+                 match stream.Read() with
+                 | '+' ->
+                     Reply(NumBinOp.TildeAdd)
+                 | '-' ->
+                     Reply(NumBinOp.TildeSubtract)
+                 | '*' ->
+                     Reply(NumBinOp.TildeMultiply)
+                 | '/' ->
+                     Reply(NumBinOp.TildeDivide)
+                 | 'd' when stream.Skip("div") ->
+                     Reply(NumBinOp.TildeDiv)
+                 | c ->
+                     Reply(ReplyStatus.Error, error)
+             | 'd' when stream.Skip("div") ->
+                 Reply(NumBinOp.Div)
+             | 'm' when stream.Skip("mod") ->
+                 Reply(NumBinOp.Mod)
+             | _ ->
+                 Reply(ReplyStatus.Error, error)
 
-    // <builtin-un-op>           
-    let builtin_un_op : Parser<UnaryOp> =
-        builtin_un_ops
-        |> choice
-        |>> (int >> enum<UnaryOp>)
+    // <builtin-bin-op>
+    let builtin_bin_op : Parser<BinOp> =
+         let error = expected "Binary operator"
+         fun stream ->
+             match stream.Peek() with
+             
+             | '<' ->
+                 stream.Skip()
+                 if stream.Skip("->") then 
+                     Reply(BinOp.Equivalent)
+                 elif stream.Skip('-') then
+                     Reply(BinOp.ImpliedBy)
+                 elif stream.Skip('=') then
+                     Reply(BinOp.LessThanEqual)
+                 else 
+                     Reply(BinOp.LessThan)
+             
+             | '>' ->
+                 stream.Skip()
+                 if stream.Skip('=') then
+                     Reply(BinOp.GreaterThanEqual)
+                 else
+                     Reply(BinOp.GreaterThan)
+             
+             | '\\' when stream.Skip("\/") ->
+                 Reply(BinOp.Or)
+             
+             | '/' ->
+                stream.Skip()
+                if stream.Skip('\\') then
+                    Reply(BinOp.And)
+                else
+                    Reply(BinOp.Divide)
+             
+             | '=' ->
+                 stream.Skip()
+                 if stream.Skip('=') then
+                     Reply(BinOp.EqualEqual)
+                 else
+                     Reply(BinOp.Equal)
+             
+             | '.' when stream.Skip("..") ->
+                 Reply(BinOp.DotDot)
 
+             | '!' when stream.Skip("!=") ->
+                 Reply(BinOp.NotEqual)
+                 
+             | '~' ->
+                 stream.Skip()
+                 match stream.Read() with
+                 | '!' when stream.Skip('=') ->
+                     Reply(BinOp.TildeNotEqual)
+                 | '=' ->
+                     Reply(BinOp.TildeEqual)
+                 | '+' ->
+                     Reply(BinOp.TildeAdd)
+                 | '-' ->
+                     Reply(BinOp.TildeSubtract)
+                 | '*' ->
+                     Reply(BinOp.TildeMultiply)
+                 | '/' ->
+                     Reply(BinOp.TildeDivide)
+                 | 'd' when stream.Skip("div") ->
+                     Reply(BinOp.TildeDiv)
+                 | c ->
+                     Reply(ReplyStatus.Error, unexpected (string c))
+             
+             | '+' ->
+                 stream.Skip()
+                 if stream.Skip('+') then
+                     Reply(BinOp.PlusPlus)
+                 else
+                     Reply(BinOp.Add)
+             
+             | '-' ->
+                stream.Skip()
+                if stream.Skip('>') then
+                    Reply(BinOp.Implies)
+                else
+                    Reply(BinOp.Subtract)
+             
+             | '*' ->
+                 stream.Skip(); Reply(BinOp.Multiply)
+
+             | '^' ->
+                 stream.Skip(); Reply(BinOp.Exponent)
+
+             | _c ->
+                 let mutable state = stream.State
+                 let reply = ident_kw stream
+                 if reply.Status = Ok then
+                     let struct(name, word) = reply.Result
+                     match word with
+                     | Keyword.XOR       -> Reply(BinOp.Xor)
+                     | Keyword.INTERSECT -> Reply(BinOp.Intersect)
+                     | Keyword.IN        -> Reply(BinOp.In)
+                     | Keyword.SUBSET    -> Reply(BinOp.Subset)
+                     | Keyword.SUPERSET  -> Reply(BinOp.Superset)
+                     | Keyword.UNION     -> Reply(BinOp.Union)
+                     | Keyword.DIFF      -> Reply(BinOp.Diff)
+                     | Keyword.SYMDIFF   -> Reply(BinOp.SymDiff)
+                     | Keyword.DEFAULT   -> Reply(BinOp.Default)
+                     | Keyword.DIV       -> Reply(BinOp.Div)
+                     | Keyword.MOD       -> Reply(BinOp.Mod)
+                     | _ ->
+                         stream.BacktrackTo(&state)
+                         Reply(ReplyStatus.Error, error)
+                 else
+                     Reply(reply.Status, reply.Error)
+    
     // <ti-expr>
     let ti_expr, ti_expr_ref =
         createParserForwardedToRef<TypeInst, ParserState>()
@@ -712,18 +432,19 @@ module Parsers =
     let annotation, annotation_ref =
         createParserForwardedToRef<Annotation, ParserState>()
 
-    /// Parse the operator or its quoted name
-    let op (parser: Parser<'T>) : Parser<IdOr<'T>> =
+    /// Parse a simple quoted identifier or the given parser
+    let quoted_ident_or (parser: Parser<_>) : Parser<IdOr<_>> =
         
-        let value =
-            parser |>> IdOr.Val
-        
-        let name =
-            simple_ident
-            |> betweenWs '`'
-            |>> IdOr.Id
+        let simple_ident =
+            let options = IdentifierOptions(isAsciiIdStart = Char.IsLetter)
+            identifier options
+
+        let quoted_ident =
+            between (skipChar '`') (skipChar '`') simple_ident
             
-        name <|> value
+        (quoted_ident |>> IdOr.Id)
+        <|>
+        (parser |>> IdOr.Val)
             
     // <annotations>
     // eg: `:: output :: x(2)`
@@ -747,8 +468,7 @@ module Parsers =
                 Reply(reply.Status, reply.Error)
             else
                 stream.SkipWhitespace()
-                stream.Skip(':')
-                stream.SkipWhitespace()
+                stream.SkipWs(':')
                 match ident stream with
                 | r when r.Status = Ok ->
                     let ti = {reply.Result with Name = r.Result}
@@ -770,10 +490,13 @@ module Parsers =
         )
         
     let assign_tail : Parser<Expr> =
-        skipChar '='
-        >>. (opt <| skipChar '=')
-        >>. ws
-        >>. expr
+        let error = expected "=[=] expr"
+        fun stream ->
+            if stream.Skip('=') then
+                stream.SkipWs('=')
+                expr stream
+            else
+                Reply(ReplyStatus.Error, error)
        
     // eg: `(int: a, var bool: b)`        
     let parameters : Parser<TypeInst list> =
@@ -851,36 +574,37 @@ module Parsers =
                 )
         )
         <!> "function"
-    
-    // <enum-case-list>    
-    let enum_cases : Parser<EnumCases list> =
-                
-        let enum_names : Parser<EnumCases> =
-            ident
-            |> commaSep
-            |> betweenWs('{', '}')
-            |>> EnumCases.Names
-
-        let anon_enum : Parser<EnumCases> =
-            skip "_"
-            <|> skip "anon_enum"
-            >>. betweenWs('(', ')') expr
-            |>> EnumCases.Anon
-            
-        let enum_call : Parser<EnumCases> =
-            ident
-            .>>. betweenWs('(', ')') expr
-            |>> EnumCases.Call
-        
-        let enum_case =
-            [ enum_names; anon_enum; enum_call ]
-            |> choice
-            .>> ws
-            
-        sepBy enum_case (skip "++")
           
     // <enum-item>
-    let enum_item : Parser<Item> =            
+    let enum_item : Parser<Item> =
+        
+        // <enum-case-list>    
+        let enum_cases : Parser<EnumCases list> =
+                    
+            let enum_names : Parser<EnumCases> =
+                ident
+                |> commaSep
+                |> betweenWs('{', '}')
+                |>> EnumCases.Names
+
+            let anon_enum : Parser<EnumCases> =
+                skip "_"
+                <|> skip "anon_enum"
+                >>. betweenWs('(', ')') expr
+                |>> EnumCases.Anon
+                
+            let enum_call : Parser<EnumCases> =
+                ident
+                .>>. betweenWs('(', ')') expr
+                |>> EnumCases.Call
+            
+            let enum_case =
+                [ enum_names; anon_enum; enum_call ]
+                |> choice
+                .>> ws
+                
+            sepBy enum_case (skip "++")
+        
         pipe(
             ident,
             annotations,
@@ -895,32 +619,30 @@ module Parsers =
     let include_item : Parser<Item> =
         string_lit
         |>> (IncludeItem.Create >> Item.Include)
-    
-    // <var-par>
-    let is_var =
-        choice
-            [ Keyword.VAR ==> true
-            ; Keyword.PAR ==> false
-            ; preturn   false ]
-        
-    // <opt-ti>        
-    let opt_ti =
-        Keyword.OPT ==> true
-        <|> preturn false
-    
-    // <set-ti>    
-    let set_ti =
-        skip1 Keyword.SET
-        >>. skip Keyword.OF
-        >>% true
-        <|> preturn false
            
     // <base-ti-expr>
     let base_ti_expr_atom : Parser<TypeInst> =
+        
+        let is_var =
+            choice
+                [ Keyword.VAR ==> true
+                ; Keyword.PAR ==> false
+                ; preturn false ]
+        
+        let is_opt =
+            Keyword.OPT ==> true
+            <|> preturn false
+    
+        let is_set =
+            skip1 Keyword.SET
+            >>. skip Keyword.OF
+            >>% true
+            <|> preturn false
+        
         pipe(
             is_var,
-            set_ti,
-            opt_ti,
+            is_set,
+            is_opt,
             base_ti_expr_tail,
             fun inst set opt typ ->
                 { Type = typ
@@ -937,7 +659,7 @@ module Parsers =
         
     // TODO - make it more efficient        
     let base_ti_expr : Parser<TypeInst> =
-                    
+
           // Combine the given TypeInsts 
           let foldTypeInsts (a: TypeInst) _ (b: TypeInst) =
               
@@ -969,7 +691,6 @@ module Parsers =
               separatorParser = (skipString "++" >>. ws),
               separatorMayEndSequence = true
               )
-              
         
     // <array-ti-expr>        
     let array_ti_expr : Parser<TypeInst> =
@@ -1037,47 +758,123 @@ module Parsers =
         |>> Type.Record
         <!> "record-ti"
         
-    let instanced_type : Parser<string> =
-        skipChar '$' >>. ident
+    let expr_ti, expr_ti_ref =
+        createParserForwardedToRef<Expr, ParserState>()
+        
+    let left_open_range =
+        skip ".."
+        >>. expr
+        |>> Expr.LeftOpenRange
+    
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
                     
-        let generic =
-            ident |>> Type.Generic
+        let generic1 =
+            skipChar '$'
+            >>. simple_ident
+            |>> Type.Generic
         
         let generic2 =
-            ident |>> Type.Generic2
-           
+            skipString "$$"
+            >>. simple_ident
+            |>> Type.Generic2
+        
+        // TODO - Allow any binop except for '++' because
+        // that has a special meaning for type insts.
+        expr_ti_ref.contents <-
+            
+            let binop_or_quoted_id =
+                quoted_ident_or builtin_bin_op
+
+            let binop_error =
+                expected "Any BinOp except ++"
+                        
+            let rec expr_ti_tail (left: Expr) (stream: CharStream<_>) =
+                stream.SkipWhitespace()
+                let mutable state = stream.State
+                let stateTag = stream.StateTag
+                let reply = binop_or_quoted_id stream
+                if reply.Status = Ok then
+                    match reply.Result with
+                    
+                    (* ++ is a special case which we don't want it 
+                    parsed as part of a single TypeInst.
+                    ++ can only be used to concatenate many TIs eg:
+                    ```record(int: a) ++ record(int: b)``` *)
+                    | Val BinOp.PlusPlus ->
+                        stream.BacktrackTo(&state)
+                        Reply(left)
+                        
+                    (* ".." is not actually a 'binop' because it 
+                    can be used in three ways:
+                    `left..`
+                    `left..right`
+                    `..right`
+                    *)
+                    | Val BinOp.DotDot as op ->
+                        stream.SkipWhitespace()
+                        let x = stream.Peek2()
+                        let stateTag = stream.StateTag
+                        let reply = expr_ti stream
+                        if reply.Status = Ok then
+                            let right = reply.Result
+                            let binop = Expr.BinaryOp (left, op, right)
+                            expr_ti_tail binop stream
+                        elif stream.StateTag = stateTag then
+                            Reply(Expr.RightOpenRange left)
+                        else
+                            Reply(reply.Status, reply.Error)
+                        
+                    | op ->
+                        stream.SkipWhitespace()
+                        let reply = expr stream
+                        if reply.Status = Ok then
+                            let right = reply.Result
+                            let binop = Expr.BinaryOp (left, op, right)
+                            expr_ti_tail binop stream
+                        else
+                            Reply(reply.Status, reply.Error)
+                            
+                elif stream.StateTag <> stateTag then
+                    Reply(reply.Status, reply.Error)
+                    
+                else
+                    Reply(left)
+            
+            (expr_atom <|> left_open_range)
+            >>= expr_ti_tail
+            <!> "expr-ti"
+            
         let expr_ti =
-            expr_atom >>==
-                (fun left ->
-                    let range =
-                        attempt (skip "..")
-                        >>. expr_atom
-                        |>> (fun right ->
-                            (left, IdOr.Val BinaryOp.DotDot, right)
-                            |> Expr.BinaryOp
-                            |> Type.Expr)
-                    range <|> preturn (Type.Expr left)
-                    )
-         
+            expr_ti |>> Type.Expr
+            
         fun stream ->
             let stateTag = stream.StateTag
-            let reply = ident_or_keyword stream
+            let reply = ident_kw stream
             let struct(id, keyword) = reply.Result
             
             if reply.Status = Ok then
                 match keyword with 
-                | Keyword.INT -> Reply(Type.Int)
-                | Keyword.BOOL -> Reply(Type.Bool)
-                | Keyword.FLOAT -> Reply(Type.Float)
-                | Keyword.STRING -> Reply(Type.String)
-                | Keyword.ANN -> Reply(Type.Ann)
-                | Keyword.ANNOTATION -> Reply(Type.Annotation)
-                | Keyword.ANY -> Reply(Type.Any)
-                | Keyword.RECORD -> record_ti stream
-                | Keyword.TUPLE -> tuple_ti stream
+                | Keyword.INT ->
+                    Reply(Type.Int)
+                | Keyword.BOOL ->
+                    Reply(Type.Bool)
+                | Keyword.FLOAT ->
+                    Reply(Type.Float)
+                | Keyword.STRING ->
+                    Reply(Type.String)
+                | Keyword.ANN ->
+                    Reply(Type.Ann)
+                | Keyword.ANNOTATION ->
+                    Reply(Type.Annotation)
+                | Keyword.RECORD ->
+                    record_ti stream
+                | Keyword.TUPLE ->
+                    tuple_ti stream
+                | Keyword.ANY ->
+                    stream.SkipWhitespace()
+                    generic1 stream
                 | _ ->
                     // Must be an expression (eg: `Foo`, `{1,2,3}`)
                     stream.Seek(stream.Index - (int64)id.Length)
@@ -1086,8 +883,8 @@ module Parsers =
             elif reply.Status = Error && stateTag = stream.StateTag then
               let peek = stream.Peek2()
               match (peek.Char0, peek.Char1) with
-              | '$', '$' -> stream.Skip(2); generic2 stream
-              | '$', _   -> stream.Skip(); generic stream
+              | '$', '$' -> generic2 stream
+              | '$', _   -> generic1 stream
               | _, _     -> expr_ti stream
                   
             else 
@@ -1115,7 +912,7 @@ module Parsers =
         // <!> "call-expr"
         
     let wildcard : Parser<WildCard> =
-        skip '_'
+        skipChar '_'
         >>. notFollowedBy letter
         >>% WildCard.WildCard
     
@@ -1159,6 +956,20 @@ module Parsers =
             
         generator
         |> commaSep1
+    
+    // <declare-item>
+    let declare_any_tail : Parser<Item> =
+        pipe(
+            (skip ':' >>. ident),
+            annotations,
+            assign_tail,
+            fun name anns expr ->
+                Item.Declare
+                 { TypeInst.Empty with
+                    Name = name
+                    Annotations = anns
+                    Value = Some expr }
+            )
     
     // <declare-item>
     let declare_item : Parser<Item> =
@@ -1222,17 +1033,17 @@ module Parsers =
         let_constraint <|> let_declare
     
     // <let-expr>
-    let let_expr : Parser<Expr> =
+    let let_expr_tail : Parser<LetExpr> =
                 
         let item =
-            let_item .>> ws .>> opt (anyOf ";,")
-    
+            let_item .>>> opt (anyOf ";,")
+            
         let items =
             many1 (item .>> ws)
             |> betweenWs('{', '}')
         
         pipe(
-            items,
+            (ws >>. items),
             skip "in",
             expr,
             (fun items _b body ->
@@ -1251,32 +1062,89 @@ module Parsers =
                 { Declares = declares
                 ; Constraints = constraints
                 ; Body=body }
-                |> Expr.Let
                 ))
         <!> "let-expr"
-        
-    // <if-then-else-expr>
-    let if_else_expr : Parser<Expr> =
-                        
-        let case (word: Keyword) =
-            skip word
-            >>. expr
-           .>> ws
-            <!> $"{word}-case"
             
-        pipe(
-            expr,
-            case Keyword.THEN,
-            many (case Keyword.ELSEIF .>>. case Keyword.THEN),
-            opt (case Keyword.ELSE),
-            skip Keyword.ENDIF,
-            fun if_ then_ elseif_ else_ _ ->
-                { If = if_
-                ; Then = then_
-                ; ElseIf = elseif_
-                ; Else = else_ }
-                |> Expr.IfThenElse
-        )
+    // <if-then-else-expr>
+    let if_else_expr_tail : Parser<IfThenElseExpr> =
+        
+        let else_case =
+            skip Keyword.ELSE
+            >>. expr
+            
+        let elseif_case =
+            skip Keyword.ELSEIF
+            >>. expr
+            
+        let then_case =
+            skip Keyword.THEN
+            >>. expr
+            
+        let elseif_then_case =
+            tuple(elseif_case, then_case)
+            
+        let elseif_cases =
+            many elseif_then_case
+        
+        fun stream ->
+            
+            let mutable ite =
+                { If = Unchecked.defaultof<Expr>
+                  Then = Unchecked.defaultof<Expr>
+                  ElseIf = []
+                  Else = None }
+                        
+            stream.SkipWhitespace()
+            let mutable reply =
+                Reply(ReplyStatus.Error, ite, NoErrorMessages)
+            
+            // If-Case
+            let ifReply = expr stream
+            if ifReply.Status = Ok then
+                stream.SkipWhitespace()
+                ite <- { ite with If = ifReply.Result }
+                
+                // Then-case
+                let thenReply = then_case stream
+                if thenReply.Status = Ok then
+                    stream.SkipWhitespace()
+                    ite <- { ite with Then = thenReply.Result }
+                    let stateTag = stream.StateTag
+                    
+                    // ElseIf-Cases
+                    let elseIfReply = elseif_cases stream
+                    if (elseIfReply.Status = Ok || stateTag = stream.StateTag) then
+                        if elseIfReply.Status = Ok then
+                            stream.SkipWhitespace()
+                            ite <- { ite with ElseIf =  elseIfReply.Result }
+                        let stateTag = stream.StateTag
+                        
+                        // Else-Case
+                        let elseReply = else_case stream
+                        if (elseReply.Status = Ok || stream.StateTag = stateTag) then
+                            if elseReply.Status = Ok then
+                                stream.SkipWhitespace()
+                                ite <- {ite with Else = Some elseReply.Result }
+                            if stream.Skip("endif") then
+                                reply.Status <- Ok
+                                reply.Result <- ite
+                            else
+                                reply.Status <- ReplyStatus.Error
+                                reply.Error <- expected "endif"
+                        else
+                            reply.Status <- elseIfReply.Status
+                            reply.Error <- elseIfReply.Error
+                    else
+                        reply.Status <- elseIfReply.Status
+                        reply.Error <- elseIfReply.Error
+                else
+                    reply.Status <- thenReply.Status
+                    reply.Error <- thenReply.Error
+            else
+                reply.Status <- ifReply.Status
+                reply.Error <- ifReply.Error
+            
+            reply
     
     let tuple_access_tail =
         attempt (skip '.' >>. puint8)
@@ -1329,8 +1197,7 @@ module Parsers =
     let expr_in_brackets : Parser<Expr> =
                 
         fun stream ->
-            stream.Skip('(')
-            stream.SkipWhitespace()
+            stream.SkipWs('(')
             let state = BracketState.Empty
             let mutable error = expected "Bracketed expr, tuple, or record"
             let mutable comma = false
@@ -1354,8 +1221,7 @@ module Parsers =
                 
                 | ',' ->
                     comma <- true
-                    stream.Skip()
-                    stream.SkipWhitespace()
+                    stream.SkipWs(1)
                     loop state
                     
                 | _ ->
@@ -1369,8 +1235,7 @@ module Parsers =
                         
                         // Record items eg: `a:2`
                         | Expr.Ident id when stream.Peek() = ':' ->
-                            stream.Skip()
-                            stream.SkipWhitespace()
+                            stream.SkipWs(1)
                             match expr stream with
                             | r when r.Status = Ok ->
                                 let value = r.Result
@@ -1410,13 +1275,13 @@ module Parsers =
     let expr_atom_head : Parser<Expr> =
                             
         let plus =
-            charReturn '+' UnaryOp.Add
+            charReturn '+' UnOp.Add
             .>> ws
             .>>. expr
             |>> Expr.UnaryOp
             
         let minus =
-            charReturn '-' UnaryOp.Add
+            charReturn '-' UnOp.Add
             .>> ws
             .>>. expr
             |>> Expr.UnaryOp
@@ -1437,7 +1302,7 @@ module Parsers =
             stringReturn "<>" (Expr.Absent Absent)
             
         let id =
-            ident_or_keyword .>> ws
+            ident_kw .>> ws
             
         let array2d_lit : Parser<Expr> =
             
@@ -1449,8 +1314,7 @@ module Parsers =
                     let next = stream.Peek2()
                     match (next.Char0, next.Char1) with
                     | '|', x when x <> ']' ->
-                        stream.Skip()
-                        stream.SkipWhitespace()
+                        stream.SkipWs(1)
                         Reply(())
                     | _1, _2 ->
                         Reply(ReplyStatus.Error, expected "|")
@@ -1484,8 +1348,7 @@ module Parsers =
                     match stream.Peek() with
                     | '|' ->
                         let mutable state = CharStreamState(stream)
-                        stream.Skip()
-                        stream.SkipWhitespace()
+                        stream.SkipWs(1)
                         match stream.Peek() with
                         | '|' | ',' ->
                             stream.BacktrackTo(&state)
@@ -1537,8 +1400,7 @@ module Parsers =
                 generators .>> ws .>> skipChar ']'
             
             fun stream ->
-                stream.Skip('[')
-                stream.SkipWhitespace()
+                stream.SkipWs('[')
                 
                 match stream.Peek() with
                 
@@ -1549,8 +1411,7 @@ module Parsers =
                 
                 // 2D or 3D Array
                 | '|' ->
-                    stream.Skip()
-                    stream.SkipWhitespace()
+                    stream.SkipWs(1)
                     let next = stream.Peek2()
                     match next.Char0, next.Char1 with
                     | '|' , ']' ->
@@ -1612,8 +1473,7 @@ module Parsers =
                 generators .>> ws .>> skipChar '}'
             
             fun stream ->
-                stream.Skip('{')
-                stream.SkipWhitespace()
+                stream.SkipWs('{')
 
                 // Empty set literal
                 if stream.Skip('}') then
@@ -1627,8 +1487,7 @@ module Parsers =
                         match stream.Peek() with
                         // Comma separated means set literal
                         | ',' ->
-                            stream.Skip(1)
-                            stream.SkipWhitespace()
+                            stream.SkipWs(1)
                             match set_lit_tail stream with
                             | r when r.Status = Ok ->
                                 reply.Result :: r.Result
@@ -1639,8 +1498,7 @@ module Parsers =
                                 
                         // Pipe indicated set comprehension
                         | '|' ->
-                            stream.Skip()
-                            stream.SkipWhitespace()
+                            stream.SkipWs(1)
                             match set_comp_tail stream with
                             | r when r.Status = Ok ->
                                 { Yields = reply.Result
@@ -1668,20 +1526,24 @@ module Parsers =
                 betweenWs('(', ')') generators,
                 betweenWs('(', ')') expr
             )
+            
+        let let_expr =
+            let_expr_tail |>> Expr.Let
+        
+        let if_else_expr =
+            if_else_expr_tail |>> Expr.IfThenElse
                         
         fun stream ->
             let tag = stream.StateTag
-            let reply = ident_or_keyword stream
+            let reply = ident_kw stream
             if reply.Status = Ok then
                 let struct(id, keyword) = reply.Result
                 match keyword with
                 
                 | Keyword.LET ->
-                    stream.SkipWhitespace()
                     let_expr stream
                     
                 | Keyword.IF ->
-                    stream.SkipWhitespace()
                     if_else_expr stream
                     
                 | Keyword.TRUE ->
@@ -1696,7 +1558,7 @@ module Parsers =
                     if reply.Status <> Ok then
                         Reply(reply.Status, reply.Error)
                     else
-                        Reply(Expr.UnaryOp (UnaryOp.Not, reply.Result))
+                        Reply(Expr.UnaryOp (UnOp.Not, reply.Result))
                                     
                 // <ident>, <call-expr>, or <gen-call>
                 | Keyword.NONE ->
@@ -1734,7 +1596,7 @@ module Parsers =
                 | '[' -> array_expr stream
                 | '_' -> wildcard stream 
                 | '<' -> absent stream
-                | '"' -> string_lit stream                
+                | '"' -> string_lit stream
                 | _other -> number_lit stream
                 
             else
@@ -1742,42 +1604,78 @@ module Parsers =
             
     // <annotations>
     annotation_ref.contents <-
-                
         skip "::"
-        >>. expr_atom_head
-        >>== expr_atom_tail
+        >>. expr_atom
         <!> "annotation"
-    
+   
     // <expr-atom>        
     expr_atom_ref.contents <-
-        expr_atom_head
+        expr_atom_head 
         >>== expr_atom_tail
+        <!> "expr-atom"
             
-    // <expr-binop-tail>
-    let expr_binop_tail (head: Expr) =
-        
-        let binop =
-            pipe(
-                op builtin_bin_op,
-                expr,
-                fun operator tail ->
-                    Expr.BinaryOp (head, operator, tail)
-            )
-            
-        binop
-        <|> preturn head
+    let quoted_ident_or_binop =
+        quoted_ident_or builtin_bin_op
+        <!> "binop-or-id"
             
     // <expr>
     expr_ref.contents <-
-        expr_atom
-        >>== expr_binop_tail
+        
+        let binop_or_quoted_id =
+            quoted_ident_or builtin_bin_op
+                    
+        let rec expr_binop_tail (left: Expr) (stream: CharStream<_>) =
+            stream.SkipWhitespace()
+            let mutable state = stream.State
+            let stateTag = stream.StateTag
+            let reply = binop_or_quoted_id stream
+            if reply.Status = Ok then
+                match reply.Result with
+                
+                (* ".." is not actually a 'binop' because it 
+                can be used in three ways:
+                `left..`
+                `left..right`
+                `..right`
+                *)
+                | Val BinOp.DotDot as op ->
+                    stream.SkipWhitespace()
+                    let stateTag = stream.StateTag
+                    let reply = expr stream
+                    if reply.Status = Ok then
+                        let right = reply.Result
+                        let binop = Expr.BinaryOp (left, op, right)
+                        expr stream
+                    elif stream.StateTag = stateTag then
+                        Reply(Expr.RightOpenRange left)
+                    else
+                        Reply(reply.Status, reply.Error)
+                    
+                | operator ->
+                    stream.SkipWhitespace()
+                    let reply = expr stream
+                    if reply.Status = Ok then
+                        let right = reply.Result
+                        let binop = Expr.BinaryOp (left, operator, right)
+                        expr_binop_tail binop stream
+                    else
+                        Reply(reply.Status, reply.Error)
+                        
+            elif stream.StateTag <> stateTag then
+                Reply(reply.Status, reply.Error)
+                
+            else
+                Reply(left)
+        
+        (expr_atom <|> left_open_range)
+        >>= expr_binop_tail
         <!> "expr"
             
     let solve_type : Parser<SolveMethod> =
         choice
-          [ Keyword.SATISFY => SolveMethod.Satisfy
-          ; Keyword.MINIMIZE => SolveMethod.Minimize
-          ; Keyword.MAXIMIZE => SolveMethod.Maximize ]
+          [ stringReturn "satisfy" SolveMethod.Satisfy
+          ; stringReturn "minimize" SolveMethod.Minimize
+          ; stringReturn "maximize" SolveMethod.Maximize ]
         
     // <solve-item>
     let solve_item : Parser<Item> =
@@ -1794,14 +1692,6 @@ module Parsers =
                 | _ ->
                     SolveItem.Sat anns
                 |> Item.Solve)
-        
-    // <assign-item>
-    // eg ```a = 1;```
-    // eg ```b == func(4);```
-    // let assign_item : Parser<AssignExpr> =
-    //     attempt (ident .>> ws .>> followedBy (pchar '='))
-    //     .>>. assign_tail
-    //     <!> "assign-item"
         
     // <type-inst-syn-item>
     let alias_item : Parser<Item> =
@@ -1843,45 +1733,45 @@ module Parsers =
     // <item>
     let item : Parser<Item> =
         let err = expected "item"
-        let ident = ident .>> ws
+        let idkw = ident_kw .>> ws
         fun stream ->
             let mutable state = CharStreamState(stream)
             let tag = stream.StateTag
-            let reply = ident stream
-            
-            // identifier was found
+            let reply = idkw stream
             if reply.Status = Ok then
-              match Keyword.lookup reply.Result with
-              | Keyword.ENUM ->
-                  enum_item stream
-              | Keyword.CONSTRAINT ->
-                  constraint_item stream
-              | Keyword.INCLUDE ->
-                  include_item stream
-              | Keyword.SOLVE ->
-                  solve_item stream
-              | Keyword.TYPE ->
-                  alias_item stream
-              | Keyword.OUTPUT ->
-                  output_item stream
-              | Keyword.PREDICATE ->
-                  predicate_item stream
-              | Keyword.FUNCTION ->
-                  function_item stream
-              | Keyword.TEST ->
-                  test_item stream
-              | Keyword.NONE when stream.Peek() = '=' ->
-                  let id = reply.Result
-                  match assign_tail stream with
-                  | r when r.Status = ReplyStatus.Ok ->
-                      let item = Item.Assign (id, r.Result)
-                      Reply(item)
-                  | r ->
-                      Reply(r.Status, r.Error)
-              | _other ->
-                  stream.BacktrackTo(&state)
-                  declare_item stream
-
+                let struct(name, word) = reply.Result
+                match word with
+                | Keyword.ENUM ->
+                    enum_item stream
+                | Keyword.CONSTRAINT ->
+                    constraint_item stream
+                | Keyword.INCLUDE ->
+                    include_item stream
+                | Keyword.SOLVE ->
+                    solve_item stream
+                | Keyword.TYPE ->
+                    alias_item stream
+                | Keyword.OUTPUT ->
+                    output_item stream
+                | Keyword.PREDICATE ->
+                    predicate_item stream
+                | Keyword.FUNCTION ->
+                    function_item stream
+                | Keyword.TEST ->
+                    test_item stream
+                | Keyword.ANY ->
+                    declare_any_tail stream
+                | Keyword.NONE when stream.Peek() = '=' ->
+                    let reply = assign_tail stream
+                    if reply.Status = Ok then
+                        Item.Assign (name, reply.Result)
+                        |> Reply
+                    else
+                        Reply(reply.Status, reply.Error)
+                | _other ->
+                    stream.BacktrackTo(&state)
+                    declare_item stream
+  
             // Not an identifier, assume part of declare
             // eg: 1..10: x;
             else
@@ -1889,11 +1779,10 @@ module Parsers =
                           
     let ast : Parser<Ast> =
         
-        let sep =
-            ws .>> skipChar ';' .>> ws
-        
+        let sep = skip ';'
+
         ws
-        >>. sepEndBy item sep
+        >>. sepEndBy (item .>> ws) sep
         .>> eof
         
     let private assign_expr : Parser<NamedExpr> =
