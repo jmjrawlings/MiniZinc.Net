@@ -128,19 +128,41 @@ module Keyword =
             let mutable word = Keyword.NONE
             byName.TryGetValue(key, &word)
             word
+
+type Scope =
+    | ExprScope
+    | TypeInstScope
+    | LetScope
+    | NumExprScope
     
-type ParserState() =
+type ParseOptions =
+    { Debug: bool }
+    static member Default =
+        { Debug = false }
+    
+type ParserState(options: ParseOptions) =
     let sb = StringBuilder()
     let mutable indent = 0
-    
+    let mutable scope = ExprScope
+        
+    member this.Debug =
+        options.Debug
+            
+    member this.Options =
+        options
+            
     member this.Indent
         with get() = indent
-        and set(v : int) = indent <- v
-            
-    member this.write (msg: string) =
+        and set x = indent <- x
+    
+    member this.Scope
+        with get() = scope
+        and set x = scope <- x
+           
+    member this.Write (msg: string) =
         sb.AppendLine msg
         
-    member this.Message =
+    member this.DebugString =
         sb.ToString()
 
 type Parser<'t> =
@@ -425,7 +447,7 @@ module ParseUtils =
             
     open type P
         
-    let addToDebug (stream: CharStream<ParserState>) label event =
+    let addToDebug (stream: CharStream<ParserState>) label  event =
         let msgPadLen = 40
         let startIndent = stream.UserState.Indent
         let msg, indent, nextIndent = 
@@ -453,20 +475,21 @@ module ParseUtils =
         let correctedStr = msg.Replace("\n", replaceStr)
         let fullStr = $"%s{posIdentStr} %s{correctedStr}"
 
-        stream.UserState.write fullStr
+        stream.UserState.Write fullStr
         stream.UserState.Indent <- nextIndent
 
     // Add debug info to the given parser
     let (<!>) (p: Parser<'t>) (label: string) : Parser<'t> =
         let error = expected label
         fun stream ->
-            let stateTag = stream.StateTag
-            addToDebug stream label Enter
-            let mutable reply = p stream
-            if stateTag = stream.StateTag then
-                reply.Error <- error
-            addToDebug stream label (Leave reply)
-            reply
-
-    // let (<!>) (p: Parser<'t>) (label: string) : Parser<'t> =
-        //     p
+            if stream.UserState.Debug then
+                let stateTag = stream.StateTag
+                addToDebug stream label Enter
+                let mutable reply = p stream
+                if stateTag = stream.StateTag then
+                    reply.Error <- error
+                addToDebug stream label (Leave reply)
+                reply
+            else
+                p stream
+                

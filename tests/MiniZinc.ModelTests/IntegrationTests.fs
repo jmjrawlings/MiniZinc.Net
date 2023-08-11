@@ -7,11 +7,14 @@
     
     module IntegrationTests =
         
+        let parseOptions =
+            { ParseOptions.Default with Debug = true }
+        
         let test filePath =
             let file = LibMiniZinc.testDir </> filePath
             let mzn = File.ReadAllText file.FullName
             let string, comments = parseComments mzn
-            let result = parseModelString string
+            let result = parseModelString parseOptions string
             match result with
             | Result.Ok model ->
                 ()

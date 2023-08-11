@@ -258,159 +258,79 @@ module Parsers =
                         loop ()
 
                 loop ()
-                    
-            
     
     let string_annotation : Parser<string> =
         skip "::"
         >>. string_lit
         |>> sprintf "\"%s\""
     
-    // <builtin-num-bin-op>
-    let builtin_num_bin_op : Parser<NumBinOp> =
-         let error = expected "Numeric binary operator"
-         fun stream ->
-             match stream.Peek() with
-             | '+' ->
-                 stream.Skip(); Reply(NumBinOp.Add)
-             | '-' ->
-                 stream.Skip(); Reply(NumBinOp.Subtract) 
-             | '*' ->
-                 stream.Skip(); Reply(NumBinOp.Multiply)
-             | '/' ->
-                 stream.Skip(); Reply(NumBinOp.Divide)
-             | '^' ->
-                 stream.Skip(); Reply(NumBinOp.Exponent)
-             | '~' ->
-                 match stream.Read() with
-                 | '+' ->
-                     Reply(NumBinOp.TildeAdd)
-                 | '-' ->
-                     Reply(NumBinOp.TildeSubtract)
-                 | '*' ->
-                     Reply(NumBinOp.TildeMultiply)
-                 | '/' ->
-                     Reply(NumBinOp.TildeDivide)
-                 | 'd' when stream.Skip("div") ->
-                     Reply(NumBinOp.TildeDiv)
-                 | c ->
-                     Reply(ReplyStatus.Error, error)
-             | 'd' when stream.Skip("div") ->
-                 Reply(NumBinOp.Div)
-             | 'm' when stream.Skip("mod") ->
-                 Reply(NumBinOp.Mod)
-             | _ ->
-                 Reply(ReplyStatus.Error, error)
-
-    // <builtin-bin-op>
-    let builtin_bin_op : Parser<BinOp> =
-         let error = expected "Binary operator"
-         fun stream ->
-             match stream.Peek() with
-             
-             | '<' ->
-                 stream.Skip()
-                 if stream.Skip("->") then 
-                     Reply(BinOp.Equivalent)
-                 elif stream.Skip('-') then
-                     Reply(BinOp.ImpliedBy)
-                 elif stream.Skip('=') then
-                     Reply(BinOp.LessThanEqual)
-                 else 
-                     Reply(BinOp.LessThan)
-             
-             | '>' ->
-                 stream.Skip()
-                 if stream.Skip('=') then
-                     Reply(BinOp.GreaterThanEqual)
-                 else
-                     Reply(BinOp.GreaterThan)
-             
-             | '\\' when stream.Skip("\/") ->
-                 Reply(BinOp.Or)
-             
-             | '/' ->
-                stream.Skip()
-                if stream.Skip('\\') then
-                    Reply(BinOp.And)
-                else
-                    Reply(BinOp.Divide)
-             
-             | '=' ->
-                 stream.Skip()
-                 if stream.Skip('=') then
-                     Reply(BinOp.EqualEqual)
-                 else
-                     Reply(BinOp.Equal)
-             
-             | '.' when stream.Skip("..") ->
-                 Reply(BinOp.DotDot)
-
-             | '!' when stream.Skip("!=") ->
-                 Reply(BinOp.NotEqual)
-                 
-             | '~' ->
-                 stream.Skip()
-                 match stream.Read() with
-                 | '!' when stream.Skip('=') ->
-                     Reply(BinOp.TildeNotEqual)
-                 | '=' ->
-                     Reply(BinOp.TildeEqual)
-                 | '+' ->
-                     Reply(BinOp.TildeAdd)
-                 | '-' ->
-                     Reply(BinOp.TildeSubtract)
-                 | '*' ->
-                     Reply(BinOp.TildeMultiply)
-                 | '/' ->
-                     Reply(BinOp.TildeDivide)
-                 | 'd' when stream.Skip("div") ->
-                     Reply(BinOp.TildeDiv)
-                 | c ->
-                     Reply(ReplyStatus.Error, unexpected (string c))
-             
-             | '+' ->
-                 stream.Skip()
-                 if stream.Skip('+') then
-                     Reply(BinOp.PlusPlus)
-                 else
-                     Reply(BinOp.Add)
-             
-             | '-' ->
-                stream.Skip()
-                if stream.Skip('>') then
-                    Reply(BinOp.Implies)
-                else
-                    Reply(BinOp.Subtract)
-             
-             | '*' ->
-                 stream.Skip(); Reply(BinOp.Multiply)
-
-             | '^' ->
-                 stream.Skip(); Reply(BinOp.Exponent)
-
-             | _c ->
-                 let mutable state = stream.State
-                 let reply = ident_kw stream
-                 if reply.Status = Ok then
-                     let struct(name, word) = reply.Result
-                     match word with
-                     | Keyword.XOR       -> Reply(BinOp.Xor)
-                     | Keyword.INTERSECT -> Reply(BinOp.Intersect)
-                     | Keyword.IN        -> Reply(BinOp.In)
-                     | Keyword.SUBSET    -> Reply(BinOp.Subset)
-                     | Keyword.SUPERSET  -> Reply(BinOp.Superset)
-                     | Keyword.UNION     -> Reply(BinOp.Union)
-                     | Keyword.DIFF      -> Reply(BinOp.Diff)
-                     | Keyword.SYMDIFF   -> Reply(BinOp.SymDiff)
-                     | Keyword.DEFAULT   -> Reply(BinOp.Default)
-                     | Keyword.DIV       -> Reply(BinOp.Div)
-                     | Keyword.MOD       -> Reply(BinOp.Mod)
-                     | _ ->
-                         stream.BacktrackTo(&state)
-                         Reply(ReplyStatus.Error, error)
-                 else
-                     Reply(reply.Status, reply.Error)
+    let opp = OperatorPrecedenceParser<Expr, unit, ParserState>()
+    let expr_atom = opp.TermParser
+    let expr = opp.ExpressionParser
+    
+    let LeftAssoc = Associativity.Left
+    let RightAssoc = Associativity.Right
+    let NoAssoc = Associativity.None
+       
+    let addInfix (s: string) (op: BinOp) (precedence: int) (assoc: Associativity) =
+        let create _ left right =
+            Expr.BinaryOp(left, IdOr.Val op, right)
+        let op =
+            InfixOperator(s, ws, precedence, assoc, (), create)
+        opp.AddOperator op
+        
+    addInfix "<->"       BinOp.Equivalent       1 LeftAssoc
+    addInfix "<-"        BinOp.ImpliedBy        1 LeftAssoc
+    addInfix "<="        BinOp.LessThanEqual    1 LeftAssoc
+    addInfix "<"         BinOp.LessThan         1 LeftAssoc
+    addInfix ">="        BinOp.GreaterThanEqual 1 LeftAssoc
+    addInfix ">"         BinOp.GreaterThan      1 LeftAssoc
+    addInfix "\\/"       BinOp.Or               1 LeftAssoc
+    addInfix "/\\"       BinOp.And              1 LeftAssoc
+    addInfix "/"         BinOp.Divide           1 LeftAssoc
+    addInfix "=="        BinOp.Equal            1 LeftAssoc
+    addInfix "="         BinOp.Equal            1 LeftAssoc
+    addInfix ".."        BinOp.DotDot           1 LeftAssoc
+    addInfix "!="        BinOp.NotEqual         1 LeftAssoc
+    addInfix "~!="       BinOp.TildeNotEqual    1 LeftAssoc
+    addInfix "~="        BinOp.TildeEqual       1 LeftAssoc
+    addInfix "~+"        BinOp.TildeAdd         1 LeftAssoc
+    addInfix "~-"        BinOp.TildeSubtract    1 LeftAssoc
+    addInfix "~*"        BinOp.TildeMultiply    1 LeftAssoc
+    addInfix "++"        BinOp.PlusPlus         1 LeftAssoc
+    addInfix "+"         BinOp.Add              1 LeftAssoc
+    addInfix "->"        BinOp.Implies          1 LeftAssoc
+    addInfix "-"         BinOp.Subtract         1 LeftAssoc
+    addInfix "*"         BinOp.Multiply         1 LeftAssoc
+    addInfix "^"         BinOp.Exponent         1 LeftAssoc
+    addInfix "XOR"       BinOp.Xor              1 LeftAssoc
+    addInfix "INTERSECT" BinOp.Intersect        1 LeftAssoc
+    addInfix "IN"        BinOp.In               1 LeftAssoc
+    addInfix "SUBSET"    BinOp.Subset           1 LeftAssoc
+    addInfix "SUPERSET"  BinOp.Superset         1 LeftAssoc
+    addInfix "UNION"     BinOp.Union            1 LeftAssoc
+    addInfix "DIFF"      BinOp.Diff             1 LeftAssoc
+    addInfix "SYMDIFF"   BinOp.SymDiff          1 LeftAssoc
+    addInfix "DEFAULT"   BinOp.Default          1 LeftAssoc
+    addInfix "DIV"       BinOp.Div              1 LeftAssoc
+    addInfix "MOD"       BinOp.Mod              1 LeftAssoc
+    
+    let addPrefix (s: string) (precedence: int) f =
+        let op =
+            PrefixOperator(s, ws, precedence, true, f)
+        opp.AddOperator op
+        
+    addPrefix "+"   1 (fun expr -> Expr.UnaryOp (UnOp.Plus, expr))
+    addPrefix "-"   1 (fun expr -> Expr.UnaryOp (UnOp.Minus, expr))
+    addPrefix "not" 1 (fun expr -> Expr.UnaryOp (UnOp.Not, expr))
+    addPrefix ".."  1 (fun expr -> Expr.RightOpenRange expr)
+    
+    let addPostfix (s: string) (precedence: int) f =
+        let op =
+            PostfixOperator(s, ws, precedence, true, f)
+        opp.AddOperator op
+        
+    addPostfix ".." 1 Expr.RightOpenRange
     
     // <ti-expr>
     let ti_expr, ti_expr_ref =
@@ -419,14 +339,6 @@ module Parsers =
     // <ti-expr>
     let base_ti_expr_tail, base_ti_expr_tail_ref =
         createParserForwardedToRef<Type, ParserState>()
-        
-    // <expr>
-    let expr, expr_ref =
-        createParserForwardedToRef<Expr, ParserState>()
-    
-    // <expr-atom>        
-    let expr_atom, expr_atom_ref =
-        createParserForwardedToRef<Expr, ParserState>()
 
     // <annotation>
     let annotation, annotation_ref =
@@ -765,7 +677,6 @@ module Parsers =
         skip ".."
         >>. expr
         |>> Expr.LeftOpenRange
-    
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
@@ -782,69 +693,69 @@ module Parsers =
         
         // TODO - Allow any binop except for '++' because
         // that has a special meaning for type insts.
-        expr_ti_ref.contents <-
-            
-            let binop_or_quoted_id =
-                quoted_ident_or builtin_bin_op
-
-            let binop_error =
-                expected "Any BinOp except ++"
-                        
-            let rec expr_ti_tail (left: Expr) (stream: CharStream<_>) =
-                stream.SkipWhitespace()
-                let mutable state = stream.State
-                let stateTag = stream.StateTag
-                let reply = binop_or_quoted_id stream
-                if reply.Status = Ok then
-                    match reply.Result with
-                    
-                    (* ++ is a special case which we don't want it 
-                    parsed as part of a single TypeInst.
-                    ++ can only be used to concatenate many TIs eg:
-                    ```record(int: a) ++ record(int: b)``` *)
-                    | Val BinOp.PlusPlus ->
-                        stream.BacktrackTo(&state)
-                        Reply(left)
-                        
-                    (* ".." is not actually a 'binop' because it 
-                    can be used in three ways:
-                    `left..`
-                    `left..right`
-                    `..right`
-                    *)
-                    | Val BinOp.DotDot as op ->
-                        stream.SkipWhitespace()
-                        let x = stream.Peek2()
-                        let stateTag = stream.StateTag
-                        let reply = expr_ti stream
-                        if reply.Status = Ok then
-                            let right = reply.Result
-                            let binop = Expr.BinaryOp (left, op, right)
-                            expr_ti_tail binop stream
-                        elif stream.StateTag = stateTag then
-                            Reply(Expr.RightOpenRange left)
-                        else
-                            Reply(reply.Status, reply.Error)
-                        
-                    | op ->
-                        stream.SkipWhitespace()
-                        let reply = expr stream
-                        if reply.Status = Ok then
-                            let right = reply.Result
-                            let binop = Expr.BinaryOp (left, op, right)
-                            expr_ti_tail binop stream
-                        else
-                            Reply(reply.Status, reply.Error)
-                            
-                elif stream.StateTag <> stateTag then
-                    Reply(reply.Status, reply.Error)
-                    
-                else
-                    Reply(left)
-            
-            (expr_atom <|> left_open_range)
-            >>= expr_ti_tail
-            <!> "expr-ti"
+        // expr_ti_ref.contents <-
+        //     
+        //     let binop_or_quoted_id =
+        //         quoted_ident_or builtin_bin_op
+        //
+        //     let binop_error =
+        //         expected "Any BinOp except ++"
+        //                 
+        //     let rec expr_ti_tail (left: Expr) (stream: CharStream<_>) =
+        //         stream.SkipWhitespace()
+        //         let mutable state = stream.State
+        //         let stateTag = stream.StateTag
+        //         let reply = binop_or_quoted_id stream
+        //         if reply.Status = Ok then
+        //             match reply.Result with
+        //             
+        //             (* ++ is a special case which we don't want it 
+        //             parsed as part of a single TypeInst.
+        //             ++ can only be used to concatenate many TIs eg:
+        //             ```record(int: a) ++ record(int: b)``` *)
+        //             | Val BinOp.PlusPlus ->
+        //                 stream.BacktrackTo(&state)
+        //                 Reply(left)
+        //                 
+        //             (* ".." is not actually a 'binop' because it 
+        //             can be used in three ways:
+        //             `left..`
+        //             `left..right`
+        //             `..right`
+        //             *)
+        //             | Val BinOp.DotDot as op ->
+        //                 stream.SkipWhitespace()
+        //                 let x = stream.Peek2()
+        //                 let stateTag = stream.StateTag
+        //                 let reply = expr_ti stream
+        //                 if reply.Status = Ok then
+        //                     let right = reply.Result
+        //                     let binop = Expr.BinaryOp (left, op, right)
+        //                     expr_ti_tail binop stream
+        //                 elif stream.StateTag = stateTag then
+        //                     Reply(Expr.RightOpenRange left)
+        //                 else
+        //                     Reply(reply.Status, reply.Error)
+        //                 
+        //             | op ->
+        //                 stream.SkipWhitespace()
+        //                 let reply = expr stream
+        //                 if reply.Status = Ok then
+        //                     let right = reply.Result
+        //                     let binop = Expr.BinaryOp (left, op, right)
+        //                     expr_ti_tail binop stream
+        //                 else
+        //                     Reply(reply.Status, reply.Error)
+        //                     
+        //         elif stream.StateTag <> stateTag then
+        //             Reply(reply.Status, reply.Error)
+        //             
+        //         else
+        //             Reply(left)
+        //     
+        //     (expr_atom <|> left_open_range)
+        //     >>= expr_ti_tail
+        //     <!> "expr-ti"
             
         let expr_ti =
             expr_ti |>> Type.Expr
@@ -1273,15 +1184,15 @@ module Parsers =
         
     // <expr-atom-head>    
     let expr_atom_head : Parser<Expr> =
-                            
+                                    
         let plus =
-            charReturn '+' UnOp.Add
+            charReturn '+' UnOp.Plus
             .>> ws
             .>>. expr
             |>> Expr.UnaryOp
             
         let minus =
-            charReturn '-' UnOp.Add
+            charReturn '-' UnOp.Plus
             .>> ws
             .>>. expr
             |>> Expr.UnaryOp
@@ -1519,7 +1430,6 @@ module Parsers =
                              
                     else
                         Reply(reply.Status, reply.Error)
-            
 
         let gen_call_tail =
             tuple(
@@ -1608,68 +1518,69 @@ module Parsers =
         >>. expr_atom
         <!> "annotation"
    
-    // <expr-atom>        
-    expr_atom_ref.contents <-
+    // <expr-atom>
+    opp.TermParser <-
         expr_atom_head 
         >>== expr_atom_tail
         <!> "expr-atom"
-            
-    let quoted_ident_or_binop =
-        quoted_ident_or builtin_bin_op
-        <!> "binop-or-id"
-            
-    // <expr>
-    expr_ref.contents <-
         
-        let binop_or_quoted_id =
-            quoted_ident_or builtin_bin_op
-                    
-        let rec expr_binop_tail (left: Expr) (stream: CharStream<_>) =
-            stream.SkipWhitespace()
-            let mutable state = stream.State
-            let stateTag = stream.StateTag
-            let reply = binop_or_quoted_id stream
-            if reply.Status = Ok then
-                match reply.Result with
-                
-                (* ".." is not actually a 'binop' because it 
-                can be used in three ways:
-                `left..`
-                `left..right`
-                `..right`
-                *)
-                | Val BinOp.DotDot as op ->
-                    stream.SkipWhitespace()
-                    let stateTag = stream.StateTag
-                    let reply = expr stream
-                    if reply.Status = Ok then
-                        let right = reply.Result
-                        let binop = Expr.BinaryOp (left, op, right)
-                        expr stream
-                    elif stream.StateTag = stateTag then
-                        Reply(Expr.RightOpenRange left)
-                    else
-                        Reply(reply.Status, reply.Error)
-                    
-                | operator ->
-                    stream.SkipWhitespace()
-                    let reply = expr stream
-                    if reply.Status = Ok then
-                        let right = reply.Result
-                        let binop = Expr.BinaryOp (left, operator, right)
-                        expr_binop_tail binop stream
-                    else
-                        Reply(reply.Status, reply.Error)
-                        
-            elif stream.StateTag <> stateTag then
-                Reply(reply.Status, reply.Error)
-                
-            else
-                Reply(left)
-        
-        (expr_atom <|> left_open_range)
-        >>= expr_binop_tail
-        <!> "expr"
+    //         
+    // let quoted_ident_or_binop =
+    //     quoted_ident_or builtin_bin_op
+    //     <!> "binop-or-id"
+    //         
+    // // <expr>
+    // expr_ref.contents <-
+    //     
+    //     let binop_or_quoted_id =
+    //         quoted_ident_or builtin_bin_op
+    //                 
+    //     let rec expr_binop_tail (left: Expr) (stream: CharStream<_>) =
+    //         stream.SkipWhitespace()
+    //         let mutable state = stream.State
+    //         let stateTag = stream.StateTag
+    //         let reply = binop_or_quoted_id stream
+    //         if reply.Status = Ok then
+    //             match reply.Result with
+    //             
+    //             (* ".." is not actually a 'binop' because it 
+    //             can be used in three ways:
+    //             `left..`
+    //             `left..right`
+    //             `..right`
+    //             *)
+    //             | Val BinOp.DotDot as op ->
+    //                 stream.SkipWhitespace()
+    //                 let stateTag = stream.StateTag
+    //                 let reply = expr stream
+    //                 if reply.Status = Ok then
+    //                     let right = reply.Result
+    //                     let binop = Expr.BinaryOp (left, op, right)
+    //                     expr stream
+    //                 elif stream.StateTag = stateTag then
+    //                     Reply(Expr.RightOpenRange left)
+    //                 else
+    //                     Reply(reply.Status, reply.Error)
+    //                 
+    //             | operator ->
+    //                 stream.SkipWhitespace()
+    //                 let reply = expr stream
+    //                 if reply.Status = Ok then
+    //                     let right = reply.Result
+    //                     let binop = Expr.BinaryOp (left, operator, right)
+    //                     expr_binop_tail binop stream
+    //                 else
+    //                     Reply(reply.Status, reply.Error)
+    //                     
+    //         elif stream.StateTag <> stateTag then
+    //             Reply(reply.Status, reply.Error)
+    //             
+    //         else
+    //             Reply(left)
+    //     
+    //     (expr_atom <|> left_open_range)
+    //     >>= expr_binop_tail
+    //     <!> "expr"
             
     let solve_type : Parser<SolveMethod> =
         choice
@@ -1857,9 +1768,9 @@ open Parsers
 module Parse =
         
     // Parse a string with the given parser
-    let parseWith (parser: Parser<'t>) (input: string) : Result<'t, ParseError> =
+    let parseWith (parser: Parser<'t>) (options: ParseOptions) (input: string) : Result<'t, ParseError> =
         
-        let state = ParserState()
+        let state = ParserState(options)
                         
         match runParserOnString parser state "" input with
                 
@@ -1873,7 +1784,7 @@ module Parse =
                 ; Line = err.Position.Line
                 ; Column = err.Position.Column
                 ; Index = err.Position.Index
-                ; Trace = state.Message }
+                ; Trace = state.DebugString }
                 
             Result.Error err
     
@@ -1970,18 +1881,18 @@ module Parse =
         source, comments
          
     /// Parse '.dzn' style model data from a string        
-    let parseDataString (dzn: string) : Result<NamedExpr list, ParseError> =
+    let parseDataString (options: ParseOptions) (dzn: string) : Result<NamedExpr list, ParseError> =
                             
         let source, comments =
             parseComments dzn
             
         let result =
-            parseWith data source
+            parseWith data options source
             
         result            
             
     /// Parse a '.dzn' model data file            
-    let parseDataFile (filepath: string) : Result<NamedExpr list, ParseError> =
+    let parseDataFile (options: ParseOptions) (filepath: string) : Result<NamedExpr list, ParseError> =
         let dzn = File.ReadAllText filepath
-        let data = parseDataString dzn
+        let data = parseDataString options dzn
         data

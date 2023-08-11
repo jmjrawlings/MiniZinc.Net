@@ -196,7 +196,7 @@ module rec Solve =
                                 (message["output"]["dzn"]).GetValue<string>()
                                                         
                             let data =
-                                match parseDataString dataString with
+                                match parseDataString ParseOptions.Default dataString with
                                 | Result.Ok items ->
                                     items
                                     |> Seq.map (fun struct(id,expr) -> (id,expr))

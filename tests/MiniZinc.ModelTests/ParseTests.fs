@@ -15,6 +15,9 @@ open Xunit
 open FParsec
 
 module ``Parser Tests`` =
+    
+    let parseOptions =
+        { ParseOptions.Default with Debug = true }
                 
     // Test parsing the string
     let testRoundtrip (parser: Parser<'t>) (mzn: string) (writer: Encoder -> 't -> unit) =
@@ -23,7 +26,7 @@ module ``Parser Tests`` =
             spaces >>. parser .>> spaces .>> eof
             
         let parsed =
-            match parseWith parser mzn with
+            match parseWith parser parseOptions mzn with
             | Result.Ok x ->
                 x
             | Result.Error err ->
@@ -49,7 +52,7 @@ Failed to parse the test model:
         let encoded =
             encoder.String.Trim()
        
-        match parseWith parser encoded with
+        match parseWith parser parseOptions encoded with
         | Result.Ok x ->
             x
         | Result.Error err ->
@@ -98,7 +101,7 @@ Encoded:
     [<InlineData("[")>]
     [<InlineData("@")>]
     let ``test invalid identifier`` mzn =
-        let result = Parse.parseWith Parsers.ident mzn
+        let result = Parse.parseWith Parsers.ident parseOptions mzn
         result.AssertErr()
         
     [<Theory>]
@@ -216,13 +219,13 @@ Encoded:
     [<Theory>]
     [<InlineData("% 12312312")>]
     let ``test comments`` mzn =
-        let output = parseWith Parsers.line_comment mzn
+        let output = parseWith Parsers.line_comment parseOptions mzn
         output.AssertOk()
         
     [<Theory>]
     [<InlineData("/* something */")>]
     let ``test block comment`` mzn =
-        let output = parseWith Parsers.block_comment mzn
+        let output = parseWith Parsers.block_comment parseOptions mzn
         output.AssertOk()
         
     [<Theory>]

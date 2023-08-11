@@ -338,41 +338,41 @@ module rec Model =
                 
             enc.String
                             
-    let parseModelString (mzn: string) : Result<Model, ParseError> =
+    let parseModelString (options:ParseOptions) (mzn: string) : Result<Model, ParseError> =
                                             
         let source, comments =
             parseComments mzn
         
         let model =
             source
-            |> parseWith Parsers.ast
+            |> parseWith ast options
             |> Result.map Model.fromAst
             
         model
         
-    let parseModelFile (filepath: string) : Result<Model, ParseError> =
+    let parseModelFile (options: ParseOptions) (filepath: string) : Result<Model, ParseError> =
                 
         if File.Exists filepath then
             let mzn = File.ReadAllText filepath
-            let model = parseModelString mzn
+            let model = parseModelString options mzn
             model
         else
             failwithf $"{filepath} does not exist"
        
         
     type Model with
-
+    
         /// Parse a Model from the given file
         static member ParseFile (filepath: string) =
-            parseModelFile filepath
+            parseModelFile ParseOptions.Default filepath
             
         /// Parse a Model from the given file
         static member ParseFile (filepath: FileInfo) =
-            parseModelFile filepath.FullName
+            parseModelFile ParseOptions.Default filepath.FullName
 
         /// Parse a Model from the given string
         static member ParseString (mzn: string) =
-            parseModelString mzn
+            parseModelString ParseOptions.Default mzn
             
         member this.Encode() =
             Model.encode this

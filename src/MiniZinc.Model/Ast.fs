@@ -64,8 +64,8 @@ module rec Ast =
         | Subtract = 1
         
     type UnOp =
-        | Add = 0
-        | Subtract = 1
+        | Plus = 0
+        | Minus = 1
         | Not = 2
 
     type NumBinOp =
@@ -269,6 +269,7 @@ module rec Ast =
     
     type BinaryOpExpr =
         Expr * IdOr<BinOp> * Expr
+        
         
     type UnaryOpExpr =
         UnOp * Expr

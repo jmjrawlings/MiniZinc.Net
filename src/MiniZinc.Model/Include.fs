@@ -1,12 +1,6 @@
 ﻿namespace MiniZinc
 
-open System
-open System.IO
-
-type IncludeOption =
-    | Reference = 1
-    | Integrated = 2
-    
+open MiniZinc.Parser
 
 [<AutoOpen>]
 module rec Include =
@@ -15,7 +9,7 @@ module rec Include =
         
         /// Include the model from the given filepath by parsing it
         /// and merging the results with the source model.
-        let integrate (filepath: string) (model: Model) =
+        let includeFrom (options: ParseOptions) (filepath: string)  (model: Model) =
             
             let item =
                 IncludeItem.Create filepath
@@ -24,7 +18,7 @@ module rec Include =
                 item.File
                 |> Option.map (fun fi -> fi.FullName)
                 |> Option.defaultValue ""
-                |> parseModelFile
+                |> parseModelFile options
                 |> Result.mapError (fun e -> e.Message)
                 |> Result.map (fun m ->
                     let merged = Model.merge model m
@@ -32,37 +26,12 @@ module rec Include =
                     )
                 
             integrated
-            
-        let includeReference (path: string) (model: Model) =
-            let item = IncludeItem.Create path
-            match model.Includes.TryFind item.Name with
-            // The model has already been included
-            | Some _ ->
-                model
-            // Add a new inclusion
-            | None ->
-                { model with
-                    Includes =
-                        model.Includes.Add (item.Name, item) 
-                   }
-            
-        let includeAs (option: IncludeOption) (path: string) (model: Model) =
-            match option with
-            | IncludeOption.Integrated ->
-                integrate path model
-            | IncludeOption.Reference ->
-                includeReference path model
-                |> Result.Ok
-            | _ ->
-                failwith "xd"
-            
+                
     type Model with
-    
-        member this.Include(filepath: string, option: IncludeOption) =
-            Model.includeAs option filepath this
-            
+
         member this.Include(filepath: string) =
-             Model.includeReference filepath
+             Model.includeFrom ParseOptions.Default filepath
              
-        member this.Integrate(filepath: string) =
-             Model.integrate filepath
+        member this.Include(filepath: string, parseOptions: ParseOptions) =
+             Model.includeFrom parseOptions filepath
+        
