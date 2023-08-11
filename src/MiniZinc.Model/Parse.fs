@@ -264,8 +264,25 @@ module Parsers =
         >>. string_lit
         |>> sprintf "\"%s\""
     
+    // <ti-expr>
+    let ti_expr, ti_expr_ref =
+        createParserForwardedToRef<TypeInst, ParserState>()
+
+    // <expr-atom-ref>
+    let expr_atom, expr_atom_ref =
+        createParserForwardedToRef<Expr, ParserState>()
+
+    // <ti-expr>
+    let base_ti_expr_tail, base_ti_expr_tail_ref =
+        createParserForwardedToRef<Type, ParserState>()
+
+    // <annotation>
+    let annotation, annotation_ref =
+        createParserForwardedToRef<Annotation, ParserState>()
+    
     let opp = OperatorPrecedenceParser<Expr, unit, ParserState>()
-    let expr_atom = opp.TermParser
+    opp.TermParser <- expr_atom
+    
     let expr = opp.ExpressionParser
     
     let LeftAssoc = Associativity.Left
@@ -279,41 +296,44 @@ module Parsers =
             InfixOperator(s, ws, precedence, assoc, (), create)
         opp.AddOperator op
         
-    addInfix "<->"       BinOp.Equivalent       1 LeftAssoc
-    addInfix "<-"        BinOp.ImpliedBy        1 LeftAssoc
-    addInfix "<="        BinOp.LessThanEqual    1 LeftAssoc
-    addInfix "<"         BinOp.LessThan         1 LeftAssoc
-    addInfix ">="        BinOp.GreaterThanEqual 1 LeftAssoc
-    addInfix ">"         BinOp.GreaterThan      1 LeftAssoc
-    addInfix "\\/"       BinOp.Or               1 LeftAssoc
-    addInfix "/\\"       BinOp.And              1 LeftAssoc
-    addInfix "/"         BinOp.Divide           1 LeftAssoc
-    addInfix "=="        BinOp.Equal            1 LeftAssoc
-    addInfix "="         BinOp.Equal            1 LeftAssoc
-    addInfix ".."        BinOp.DotDot           1 LeftAssoc
-    addInfix "!="        BinOp.NotEqual         1 LeftAssoc
-    addInfix "~!="       BinOp.TildeNotEqual    1 LeftAssoc
-    addInfix "~="        BinOp.TildeEqual       1 LeftAssoc
-    addInfix "~+"        BinOp.TildeAdd         1 LeftAssoc
-    addInfix "~-"        BinOp.TildeSubtract    1 LeftAssoc
-    addInfix "~*"        BinOp.TildeMultiply    1 LeftAssoc
-    addInfix "++"        BinOp.PlusPlus         1 LeftAssoc
-    addInfix "+"         BinOp.Add              1 LeftAssoc
-    addInfix "->"        BinOp.Implies          1 LeftAssoc
-    addInfix "-"         BinOp.Subtract         1 LeftAssoc
-    addInfix "*"         BinOp.Multiply         1 LeftAssoc
-    addInfix "^"         BinOp.Exponent         1 LeftAssoc
-    addInfix "XOR"       BinOp.Xor              1 LeftAssoc
-    addInfix "INTERSECT" BinOp.Intersect        1 LeftAssoc
-    addInfix "IN"        BinOp.In               1 LeftAssoc
-    addInfix "SUBSET"    BinOp.Subset           1 LeftAssoc
-    addInfix "SUPERSET"  BinOp.Superset         1 LeftAssoc
-    addInfix "UNION"     BinOp.Union            1 LeftAssoc
-    addInfix "DIFF"      BinOp.Diff             1 LeftAssoc
-    addInfix "SYMDIFF"   BinOp.SymDiff          1 LeftAssoc
-    addInfix "DEFAULT"   BinOp.Default          1 LeftAssoc
-    addInfix "DIV"       BinOp.Div              1 LeftAssoc
-    addInfix "MOD"       BinOp.Mod              1 LeftAssoc
+    addInfix "<->"       BinOp.Equivalent       1200 LeftAssoc
+    addInfix "->"        BinOp.Implies          1100 LeftAssoc
+    addInfix "<-"        BinOp.ImpliedBy        1100 LeftAssoc
+    addInfix "\\/"       BinOp.Or               1000 LeftAssoc
+    addInfix "xor"       BinOp.Xor              1000 LeftAssoc
+    addInfix "/\\"       BinOp.And              0900 LeftAssoc
+    addInfix "<"         BinOp.LessThan         0800 NoAssoc
+    addInfix ">"         BinOp.GreaterThan      0800 NoAssoc
+    addInfix "<="        BinOp.LessThanEqual    0800 NoAssoc
+    addInfix ">="        BinOp.GreaterThanEqual 0800 NoAssoc
+    addInfix "=="        BinOp.Equal            0800 NoAssoc
+    addInfix "="         BinOp.Equal            0800 NoAssoc
+    addInfix "!="        BinOp.NotEqual         0800 NoAssoc
+    addInfix "in"        BinOp.In               0700 NoAssoc
+    addInfix "subset"    BinOp.Subset           0700 NoAssoc
+    addInfix "superset"  BinOp.Superset         0700 NoAssoc
+    addInfix "union"     BinOp.Union            0600 NoAssoc
+    addInfix "diff"      BinOp.Diff             0600 NoAssoc
+    addInfix "symdiff"   BinOp.SymDiff          0600 NoAssoc
+    addInfix ".."        BinOp.ClosedRange      0500 NoAssoc
+    addInfix "<.."       BinOp.LeftOpenRange    0500 NoAssoc
+    addInfix "..<"       BinOp.RightOpenRange   0500 NoAssoc
+    addInfix "<..<"      BinOp.OpenRange        0500 NoAssoc
+    addInfix "+"         BinOp.Add              0400 LeftAssoc
+    addInfix "-"         BinOp.Subtract         0400 LeftAssoc
+    addInfix "*"         BinOp.Multiply         0300 LeftAssoc
+    addInfix "div"       BinOp.Div              0300 LeftAssoc
+    addInfix "mod"       BinOp.Mod              0300 LeftAssoc
+    addInfix "/"         BinOp.Divide           0300 LeftAssoc
+    addInfix "intersect" BinOp.Intersect        0300 LeftAssoc
+    addInfix "^"         BinOp.Exponent         0200 LeftAssoc
+    addInfix "++"        BinOp.Concat           0100 RightAssoc
+    addInfix "default"   BinOp.Default          0050 LeftAssoc
+    // addInfix "~!="       BinOp.TildeNotEqual    1 LeftAssoc
+    // addInfix "~="        BinOp.TildeEqual       1 LeftAssoc
+    // addInfix "~+"        BinOp.TildeAdd         1 LeftAssoc
+    // addInfix "~-"        BinOp.TildeSubtract    1 LeftAssoc
+    // addInfix "~*"        BinOp.TildeMultiply    1 LeftAssoc
     
     let addPrefix (s: string) (precedence: int) f =
         let op =
@@ -325,25 +345,13 @@ module Parsers =
     addPrefix "not" 1 (fun expr -> Expr.UnaryOp (UnOp.Not, expr))
     addPrefix ".."  1 (fun expr -> Expr.RightOpenRange expr)
     
-    let addPostfix (s: string) (precedence: int) f =
-        let op =
-            PostfixOperator(s, ws, precedence, true, f)
-        opp.AddOperator op
-        
-    addPostfix ".." 1 Expr.RightOpenRange
+    // let addPostfix (s: string) (precedence: int) f =
+    //     let op =
+    //         PostfixOperator(s, ws, precedence, true, f)
+    //     opp.AddOperator op
+    //     
+    // addPostfix ".." 1 Expr.RightOpenRange
     
-    // <ti-expr>
-    let ti_expr, ti_expr_ref =
-        createParserForwardedToRef<TypeInst, ParserState>()
-
-    // <ti-expr>
-    let base_ti_expr_tail, base_ti_expr_tail_ref =
-        createParserForwardedToRef<Type, ParserState>()
-
-    // <annotation>
-    let annotation, annotation_ref =
-        createParserForwardedToRef<Annotation, ParserState>()
-
     /// Parse a simple quoted identifier or the given parser
     let quoted_ident_or (parser: Parser<_>) : Parser<IdOr<_>> =
         
@@ -670,9 +678,6 @@ module Parsers =
         |>> Type.Record
         <!> "record-ti"
         
-    let expr_ti, expr_ti_ref =
-        createParserForwardedToRef<Expr, ParserState>()
-        
     let left_open_range =
         skip ".."
         >>. expr
@@ -713,7 +718,7 @@ module Parsers =
         //             parsed as part of a single TypeInst.
         //             ++ can only be used to concatenate many TIs eg:
         //             ```record(int: a) ++ record(int: b)``` *)
-        //             | Val BinOp.PlusPlus ->
+        //             | Val BinOp.Concat ->
         //                 stream.BacktrackTo(&state)
         //                 Reply(left)
         //                 
@@ -723,7 +728,7 @@ module Parsers =
         //             `left..right`
         //             `..right`
         //             *)
-        //             | Val BinOp.DotDot as op ->
+        //             | Val BinOp.Range as op ->
         //                 stream.SkipWhitespace()
         //                 let x = stream.Peek2()
         //                 let stateTag = stream.StateTag
@@ -758,7 +763,7 @@ module Parsers =
         //     <!> "expr-ti"
             
         let expr_ti =
-            expr_ti |>> Type.Expr
+            expr |>> Type.Expr
             
         fun stream ->
             let stateTag = stream.StateTag
@@ -1517,9 +1522,8 @@ module Parsers =
         skip "::"
         >>. expr_atom
         <!> "annotation"
-   
-    // <expr-atom>
-    opp.TermParser <-
+
+    expr_atom_ref.contents <-        
         expr_atom_head 
         >>== expr_atom_tail
         <!> "expr-atom"

@@ -13,44 +13,41 @@ open MiniZinc
 module rec Encode =
 
     let operators : Map<int, string> =
-         [ Op.Add, "+"         
-         ; Op.Subtract, "-"
-         ; Op.Not, "not"
-         ; Op.Multiply, "*"         
-         ; Op.Divide, "/"                  
-         ; Op.Exponent, "^"         
-         ; Op.TildeAdd, "~+"        
-         ; Op.TildeSubtract, "~-"        
-         ; Op.TildeMultiply, "~*"        
-         ; Op.TildeDivide, "~/"        
-         ; Op.Div, "div"       
-         ; Op.Mod, "mod"       
-         ; Op.TildeDiv, "~div"       
-         ; Op.Equivalent, "<->"       
-         ; Op.Implies, "->"        
-         ; Op.ImpliedBy, "<-"        
-         ; Op.Or, "\/"        
-         ; Op.And, "/\\"       
-         ; Op.LessThanEqual, "<="        
-         ; Op.GreaterThanEqual, ">="        
-         ; Op.EqualEqual, "=="        
-         ; Op.LessThan, "<"         
-         ; Op.GreaterThan, ">"         
-         ; Op.Equal, "="         
-         ; Op.NotEqual, "!="        
-         ; Op.TildeEqual, "~="        
-         ; Op.TildeNotEqual, "~!="       
-         ; Op.DotDot, ".."        
-         ; Op.PlusPlus, "++"        
-         ; Op.Xor, "xor"       
-         ; Op.In, "in"        
-         ; Op.Subset, "subset"    
-         ; Op.Superset, "superset"  
-         ; Op.Union, "union"     
-         ; Op.Diff, "diff"      
-         ; Op.SymDiff, "symdiff"   
-         ; Op.Intersect, "intersect" 
-         ; Op.Default, "default" ]
+        [
+        (BinOp.Equivalent,  "<->")
+        (BinOp.Implies,  "->")
+        (BinOp.ImpliedBy,  "<-")
+        (BinOp.Or,  "\\/")
+        (BinOp.Xor,  "xor")
+        (BinOp.And,  "/\\")
+        (BinOp.LessThan,  "<")
+        (BinOp.GreaterThan,  ">")
+        (BinOp.LessThanEqual,  "<=")
+        (BinOp.GreaterThanEqual,  ">=")
+        (BinOp.Equal,  "==")
+        (BinOp.Equal,  "=")
+        (BinOp.NotEqual,  "!=")
+        (BinOp.In,  "in")
+        (BinOp.Subset,  "subset")
+        (BinOp.Superset,  "superset")
+        (BinOp.Union,  "union")
+        (BinOp.Diff,  "diff")
+        (BinOp.SymDiff,  "symdiff")
+        (BinOp.ClosedRange,  "..")
+        (BinOp.LeftOpenRange,  "<..")
+        (BinOp.RightOpenRange,  "..<")
+        (BinOp.OpenRange,  "<..<")
+        (BinOp.Add,  "+")
+        (BinOp.Subtract,  "-")
+        (BinOp.Multiply,  "*")
+        (BinOp.Div,  "div")
+        (BinOp.Mod,  "mod")
+        (BinOp.Divide,  "/")
+        (BinOp.Intersect,  "intersect")
+        (BinOp.Exponent,  "^")
+        (BinOp.Concat,  "++")
+        (BinOp.Default,  "default")
+         ]
          |> List.map (fun (op, s) -> (int op, s))
          |> Map.ofList
     
@@ -345,7 +342,7 @@ module rec Encode =
             this.write ")"
 
         member this.writeUnaryOp ((id, expr): UnaryOpExpr) =
-            let name = Operator.byInt[int id]
+            let name = operators[int id]
             this.write name
             this.write " "
             this.writeExpr expr

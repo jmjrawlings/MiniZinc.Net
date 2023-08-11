@@ -116,10 +116,13 @@ module rec Ast =
         | Union = 31
         | Diff = 32
         | SymDiff = 33 
-        | DotDot = 34
-        | Intersect = 35 
-        | PlusPlus = 36
-        | Default =  37
+        | Intersect = 34 
+        | Concat = 35
+        | Default =  36
+        | ClosedRange = 37
+        | LeftOpenRange = 38
+        | RightOpenRange = 39
+        | OpenRange = 40
 
     type Op =     
         | Add = 0
@@ -158,65 +161,12 @@ module rec Ast =
         | SymDiff = 33 
         | DotDot = 34
         | Intersect = 35 
-        | PlusPlus = 36
-        | Default =  37
-            
-    module Operator =
-        
-        let list =
-            [ ("+", Op.Add)
-              ("-", Op.Subtract)
-              ("*", Op.Multiply)
-              ("/", Op.Divide)       
-              ("^", Op.Exponent)
-              ("~+", Op.TildeAdd)
-              ("~-", Op.TildeSubtract)
-              ("~*", Op.TildeMultiply)
-              ("~/", Op.TildeDivide)
-              ("div", Op.Div)
-              ("mod", Op.Mod)
-              ("~div", Op.TildeDiv) 
-              ("<->", Op.Equivalent)
-              ("->", Op.Implies)
-              ("<-", Op.ImpliedBy)
-              ("\/", Op.Or)
-              ("/\\", Op.And)
-              ("<=", Op.LessThanEqual)
-              (">=", Op.GreaterThanEqual)
-              ("==", Op.EqualEqual)
-              ("<", Op.LessThan)
-              (">", Op.GreaterThan)
-              ("=", Op.Equal)
-              ("!=", Op.NotEqual)
-              ("~=", Op.TildeEqual)
-              ("~!=", Op.TildeNotEqual)
-              ("..", Op.DotDot)
-              ("++", Op.PlusPlus)
-              ("xor", Op.Xor)
-              ("intersect", Op.Intersect)
-              ("in", Op.In)
-              ("subset", Op.Subset)
-              ("superset", Op.Superset)
-              ("union", Op.Union)
-              ("diff", Op.Diff)
-              ("symdiff", Op.SymDiff)
-              ("default", Op.Default)
-              ("not", Op.Not) ]
-        
-        let byName =
-            Map.ofList list
-        
-        let byValue =
-            list
-            |> Seq.map (fun (k,v) -> (v,k))
-            |> Map.ofSeq
-
-        let byInt =
-            list
-            |> Seq.map (fun (k,v) -> (int v,k))
-            |> Map.ofSeq
-        
-        
+        | Concat = 35
+        | Default =  36
+        | ClosedRange = 37
+        | LeftOpenRange = 38
+        | RightOpenRange = 39
+        | OpenRange = 40
 
     [<RequireQualifiedAccess>] 
     type Expr =
