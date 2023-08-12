@@ -44,9 +44,9 @@ module rec Ast =
 
     [<Struct>]
     // An identifier or a value of 'T
-    type IdOr<'T> =
-        | Id of id:string
-        | Val of value:'T
+    type IdentOr<'T> =
+        | Ident of id:string
+        | Other of value:'T
         
     type VarKind =
         | AssignedPar = 0
@@ -60,113 +60,93 @@ module rec Ast =
         | Maximize = 2
 
     type NumUnOp =
-        | Add = 0
-        | Subtract = 1
+        | Plus = 33
+        | Minus = 34
         
     type UnOp =
-        | Plus = 0
-        | Minus = 1
-        | Not = 2
-
+        | Plus = 33
+        | Minus = 34
+        | Not = 35
+        
     type NumBinOp =
-        | Add = 0
-        | Subtract = 1
-        | Multiply = 3
-        | Divide = 4
-        | Div = 5
-        | Mod = 6
-        | Exponent = 7
-        | TildeAdd = 8
-        | TildeSubtract = 9
-        | TildeMultiply = 10
-        | TildeDivide = 11
-        | TildeDiv = 12
+        | Add = 23
+        | Subtract = 24
+        | Multiply = 25
+        | Div = 26
+        | Mod = 27
+        | Divide = 28
+        | Exponent = 30
         
     type BinOp =
-        | Add = 0
-        | Subtract = 1
-        | Multiply = 3
-        | Divide = 4
-        | Div = 5
-        | Mod = 6
-        | Exponent = 7
-        | TildeAdd = 8
-        | TildeSubtract = 9
-        | TildeMultiply = 10
-        | TildeDivide = 11
-        | TildeDiv = 12
-        | Equivalent = 13 
-        | Implies = 14
-        | ImpliedBy = 15
-        | Or = 16
-        | Xor = 17  
-        | And = 18
-        | LessThanEqual = 19 
-        | GreaterThanEqual = 20 
-        | EqualEqual = 21
-        | LessThan =  22
-        | GreaterThan = 23
-        | Equal = 24
-        | NotEqual = 25  
-        | TildeEqual = 26 
-        | TildeNotEqual = 27  
-        | In = 28
-        | Subset = 29 
-        | Superset = 30
-        | Union = 31
-        | Diff = 32
-        | SymDiff = 33 
-        | Intersect = 34 
-        | Concat = 35
-        | Default =  36
-        | ClosedRange = 37
-        | LeftOpenRange = 38
-        | RightOpenRange = 39
-        | OpenRange = 40
+        | Equivalent = 1
+        | Implies = 2
+        | ImpliedBy = 3
+        | Or = 4
+        | Xor = 5
+        | And = 6
+        | LessThan = 7
+        | GreaterThan = 8
+        | LessThanEqual = 9
+        | GreaterThanEqual = 10
+        | Equal = 11
+        | NotEqual = 12
+        | In = 13
+        | Subset = 14
+        | Superset = 15
+        | Union = 16
+        | Diff = 17
+        | SymDiff = 18
+        | ClosedRange = 19
+        | LeftOpenRange = 20
+        | RightOpenRange = 21
+        | OpenRange = 22
+        | Add = 23
+        | Subtract = 24
+        | Multiply = 25
+        | Div = 26
+        | Mod = 27
+        | Divide = 28
+        | Intersect = 29
+        | Exponent = 30
+        | Default = 31
+        | Concat = 32
 
     type Op =     
-        | Add = 0
-        | Subtract = 1
-        | Not = 2
-        | Multiply = 3
-        | Divide = 4
-        | Div = 5
-        | Mod = 6
-        | Exponent = 7
-        | TildeAdd = 8
-        | TildeSubtract = 9
-        | TildeMultiply = 10
-        | TildeDivide = 11
-        | TildeDiv = 12
-        | Equivalent = 13 
-        | Implies = 14
-        | ImpliedBy = 15
-        | Or = 16
-        | Xor = 17  
-        | And = 18
-        | LessThanEqual = 19 
-        | GreaterThanEqual = 20 
-        | EqualEqual = 21
-        | LessThan =  22
-        | GreaterThan = 23
-        | Equal = 24
-        | NotEqual = 25  
-        | TildeEqual = 26 
-        | TildeNotEqual = 27  
-        | In = 28
-        | Subset = 29 
-        | Superset = 30
-        | Union = 31
-        | Diff = 32
-        | SymDiff = 33 
-        | DotDot = 34
-        | Intersect = 35 
-        | Concat = 35
-        | Default =  36
-        | ClosedRange = 37
-        | LeftOpenRange = 38
-        | RightOpenRange = 39
-        | OpenRange = 40
+        | Equivalent = 1
+        | Implies = 2
+        | ImpliedBy = 3
+        | Or = 4
+        | Xor = 5
+        | And = 6
+        | LessThan = 7
+        | GreaterThan = 8
+        | LessThanEqual = 9
+        | GreaterThanEqual = 10
+        | Equal = 11
+        | NotEqual = 12
+        | In = 13
+        | Subset = 14
+        | Superset = 15
+        | Union = 16
+        | Diff = 17
+        | SymDiff = 18
+        | ClosedRange = 19
+        | LeftOpenRange = 20
+        | RightOpenRange = 21
+        | OpenRange = 22
+        | Add = 23
+        | Subtract = 24
+        | Multiply = 25
+        | Div = 26
+        | Mod = 27
+        | Divide = 28
+        | Intersect = 29
+        | Exponent = 30
+        | Default = 31
+        | Concat = 32
+        | Plus = 33
+        | Minus = 34
+        | Not = 35
 
     [<RequireQualifiedAccess>] 
     type Expr =
@@ -206,7 +186,7 @@ module rec Ast =
         | GenCall        of GenCallExpr
     
     type CallExpr =
-        IdOr<Op> * Expr list
+        Ident * Expr list
     
     type RecordAccessExpr =
         Expr * string
@@ -218,8 +198,7 @@ module rec Ast =
         Expr * ArraySlice
     
     type BinaryOpExpr =
-        Expr * IdOr<BinOp> * Expr
-        
+        Expr * BinOp * Expr
         
     type UnaryOpExpr =
         UnOp * Expr
@@ -244,7 +223,7 @@ module rec Ast =
         ; From   : Generator list }
 
     type Generator =
-        { Yields : IdOr<WildCard> list
+        { Yields : IdentOr<WildCard> list
         ; From  : Expr  
         ; Where : Expr option }
 

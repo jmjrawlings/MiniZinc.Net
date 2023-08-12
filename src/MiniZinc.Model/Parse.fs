@@ -160,16 +160,16 @@ module Parsers =
     let (=!>) (operator: string) (value: 't) =
          attempt (stringReturn operator value)
             
-    let name_or_quoted_value (p: Parser<'T>) : Parser<IdOr<'T>> =
+    let name_or_quoted_value (p: Parser<'T>) : Parser<IdentOr<'T>> =
                         
         let name =
             ident
-            |>> IdOr.Id
+            |>> IdentOr.Ident
         
         let value =
             p
             |> between (skipChar ''') (skipChar ''') 
-            |>> IdOr.Val
+            |>> IdentOr.Other
         
         value <|> name
             
@@ -280,20 +280,42 @@ module Parsers =
     let annotation, annotation_ref =
         createParserForwardedToRef<Annotation, ParserState>()
     
-    let opp = OperatorPrecedenceParser<Expr, unit, ParserState>()
-    opp.TermParser <- expr_atom
+    let opp = OperatorPrecedenceParser<Expr, string, ParserState>()
+    opp.TermParser <- (expr_atom .>> ws)
     
     let expr = opp.ExpressionParser
-    
+        
     let LeftAssoc = Associativity.Left
     let RightAssoc = Associativity.Right
     let NoAssoc = Associativity.None
        
     let addInfix (s: string) (op: BinOp) (precedence: int) (assoc: Associativity) =
+
         let create _ left right =
-            Expr.BinaryOp(left, IdOr.Val op, right)
+            Expr.BinaryOp(left, op, right)
+
+        // For 'word' operators, eg `not` we need
+        // to ensure it is not followed by more letters
+        let after =
+            if (Char.IsLetter s[0]) then
+                notFollowedBy letter
+                >>. ws >>. preturn ""
+            else
+                ws >>. preturn ""
+                
+        // TODO - Ask MiniZinc team about non-associative operators
+        // as leaving it in causes expressions such as this
+        // to fail:
+        // ```R in row /\ C in col```
+        let assoc =
+            if assoc = NoAssoc then
+                LeftAssoc
+            else
+                assoc
+
         let op =
-            InfixOperator(s, ws, precedence, assoc, (), create)
+            InfixOperator(s, after, precedence, assoc, (), create)
+            
         opp.AddOperator op
         
     addInfix "<->"       BinOp.Equivalent       1200 LeftAssoc
@@ -312,9 +334,9 @@ module Parsers =
     addInfix "in"        BinOp.In               0700 NoAssoc
     addInfix "subset"    BinOp.Subset           0700 NoAssoc
     addInfix "superset"  BinOp.Superset         0700 NoAssoc
-    addInfix "union"     BinOp.Union            0600 NoAssoc
-    addInfix "diff"      BinOp.Diff             0600 NoAssoc
-    addInfix "symdiff"   BinOp.SymDiff          0600 NoAssoc
+    addInfix "union"     BinOp.Union            0600 LeftAssoc
+    addInfix "diff"      BinOp.Diff             0600 LeftAssoc
+    addInfix "symdiff"   BinOp.SymDiff          0600 LeftAssoc
     addInfix ".."        BinOp.ClosedRange      0500 NoAssoc
     addInfix "<.."       BinOp.LeftOpenRange    0500 NoAssoc
     addInfix "..<"       BinOp.RightOpenRange   0500 NoAssoc
@@ -327,44 +349,62 @@ module Parsers =
     addInfix "/"         BinOp.Divide           0300 LeftAssoc
     addInfix "intersect" BinOp.Intersect        0300 LeftAssoc
     addInfix "^"         BinOp.Exponent         0200 LeftAssoc
-    addInfix "++"        BinOp.Concat           0100 RightAssoc
-    addInfix "default"   BinOp.Default          0050 LeftAssoc
+    addInfix "default"   BinOp.Default          0070 LeftAssoc
     // addInfix "~!="       BinOp.TildeNotEqual    1 LeftAssoc
     // addInfix "~="        BinOp.TildeEqual       1 LeftAssoc
     // addInfix "~+"        BinOp.TildeAdd         1 LeftAssoc
     // addInfix "~-"        BinOp.TildeSubtract    1 LeftAssoc
     // addInfix "~*"        BinOp.TildeMultiply    1 LeftAssoc
     
-    let addPrefix (s: string) (precedence: int) f =
-        let op =
-            PrefixOperator(s, ws, precedence, true, f)
-        opp.AddOperator op
+    let concat =
         
-    addPrefix "+"   1 (fun expr -> Expr.UnaryOp (UnOp.Plus, expr))
-    addPrefix "-"   1 (fun expr -> Expr.UnaryOp (UnOp.Minus, expr))
-    addPrefix "not" 1 (fun expr -> Expr.UnaryOp (UnOp.Not, expr))
-    addPrefix ".."  1 (fun expr -> Expr.RightOpenRange expr)
+        let after : Parser<string> =
+            let error = messageError "Cannot use ++ within TypeInst expressions"
+            fun stream ->
+                let context = stream.UserState.Context
+                if context = Context.TypeInst then
+                    Reply(ReplyStatus.Error, error)
+                else
+                    stream.SkipWhitespace()
+                    Reply("")
+
+        let create _ left right =
+            Expr.BinaryOp(left, BinOp.Concat, right)
+        
+        let op =
+            InfixOperator("++", after, 100, RightAssoc, (), create)
+            
+        opp.AddOperator op
     
-    // let addPostfix (s: string) (precedence: int) f =
-    //     let op =
-    //         PostfixOperator(s, ws, precedence, true, f)
-    //     opp.AddOperator op
-    //     
-    // addPostfix ".." 1 Expr.RightOpenRange
-    
-    /// Parse a simple quoted identifier or the given parser
-    let quoted_ident_or (parser: Parser<_>) : Parser<IdOr<_>> =
+    let quoted_binop =
         
         let simple_ident =
             let options = IdentifierOptions(isAsciiIdStart = Char.IsLetter)
             identifier options
 
         let quoted_ident =
-            between (skipChar '`') (skipChar '`') simple_ident
+            simple_ident
+            .>> (skipChar '`')
+            .>> ws
             
-        (quoted_ident |>> IdOr.Id)
-        <|>
-        (parser |>> IdOr.Val)
+        let create ident left right =
+            Expr.Call(ident, [left;right])
+            
+        let op : InfixOperator<Expr, string, ParserState> =
+            InfixOperator("`", quoted_ident, 50, LeftAssoc, (), create)
+            
+        opp.AddOperator op
+        
+    let addPrefix (s: string) f =
+        let operator =
+            PrefixOperator(s, ws >>. preturn "", 1, true, f)
+        
+        opp.AddOperator operator
+
+    addPrefix "+"   (fun expr -> Expr.UnaryOp (UnOp.Plus, expr))
+    addPrefix "-"   (fun expr -> Expr.UnaryOp (UnOp.Minus, expr))
+    addPrefix "not" (fun expr -> Expr.UnaryOp (UnOp.Not, expr))
+    addPrefix ".."  (fun expr -> Expr.RightOpenRange expr)
             
     // <annotations>
     // eg: `:: output :: x(2)`
@@ -696,80 +736,25 @@ module Parsers =
             >>. simple_ident
             |>> Type.Generic2
         
-        // TODO - Allow any binop except for '++' because
-        // that has a special meaning for type insts.
-        // expr_ti_ref.contents <-
-        //     
-        //     let binop_or_quoted_id =
-        //         quoted_ident_or builtin_bin_op
-        //
-        //     let binop_error =
-        //         expected "Any BinOp except ++"
-        //                 
-        //     let rec expr_ti_tail (left: Expr) (stream: CharStream<_>) =
-        //         stream.SkipWhitespace()
-        //         let mutable state = stream.State
-        //         let stateTag = stream.StateTag
-        //         let reply = binop_or_quoted_id stream
-        //         if reply.Status = Ok then
-        //             match reply.Result with
-        //             
-        //             (* ++ is a special case which we don't want it 
-        //             parsed as part of a single TypeInst.
-        //             ++ can only be used to concatenate many TIs eg:
-        //             ```record(int: a) ++ record(int: b)``` *)
-        //             | Val BinOp.Concat ->
-        //                 stream.BacktrackTo(&state)
-        //                 Reply(left)
-        //                 
-        //             (* ".." is not actually a 'binop' because it 
-        //             can be used in three ways:
-        //             `left..`
-        //             `left..right`
-        //             `..right`
-        //             *)
-        //             | Val BinOp.Range as op ->
-        //                 stream.SkipWhitespace()
-        //                 let x = stream.Peek2()
-        //                 let stateTag = stream.StateTag
-        //                 let reply = expr_ti stream
-        //                 if reply.Status = Ok then
-        //                     let right = reply.Result
-        //                     let binop = Expr.BinaryOp (left, op, right)
-        //                     expr_ti_tail binop stream
-        //                 elif stream.StateTag = stateTag then
-        //                     Reply(Expr.RightOpenRange left)
-        //                 else
-        //                     Reply(reply.Status, reply.Error)
-        //                 
-        //             | op ->
-        //                 stream.SkipWhitespace()
-        //                 let reply = expr stream
-        //                 if reply.Status = Ok then
-        //                     let right = reply.Result
-        //                     let binop = Expr.BinaryOp (left, op, right)
-        //                     expr_ti_tail binop stream
-        //                 else
-        //                     Reply(reply.Status, reply.Error)
-        //                     
-        //         elif stream.StateTag <> stateTag then
-        //             Reply(reply.Status, reply.Error)
-        //             
-        //         else
-        //             Reply(left)
-        //     
-        //     (expr_atom <|> left_open_range)
-        //     >>= expr_ti_tail
-        //     <!> "expr-ti"
-            
-        let expr_ti =
-            expr |>> Type.Expr
+        // TypeInst declared with an expression
+        // eg: ```1..(1+3)```
+        let expr_ti : Parser<Type> =
+            fun stream ->
+                let context = stream.UserState.UpdateContext Context.TypeInst
+                let reply = expr stream
+                stream.UserState.Context <- context
+                if reply.Status = Ok then
+                    Reply(Type.Expr reply.Result)
+                else
+                    Reply(reply.Status, reply.Error)
             
         fun stream ->
             let stateTag = stream.StateTag
+            let context = stream.UserState.Context
+            
             let reply = ident_kw stream
             let struct(id, keyword) = reply.Result
-            
+                        
             if reply.Status = Ok then
                 match keyword with 
                 | Keyword.INT ->
@@ -842,8 +827,8 @@ module Parsers =
     let generators : Parser<Generator list> =
                 
         let gen_var =
-            [ wildcard |>> IdOr.Val 
-            ; ident    |>> IdOr.Id ]
+            [ wildcard |>> IdentOr.Other 
+            ; ident    |>> IdentOr.Ident ]
             |> choice
             <!> "gen-var"
             
@@ -1189,18 +1174,6 @@ module Parsers =
         
     // <expr-atom-head>    
     let expr_atom_head : Parser<Expr> =
-                                    
-        let plus =
-            charReturn '+' UnOp.Plus
-            .>> ws
-            .>>. expr
-            |>> Expr.UnaryOp
-            
-        let minus =
-            charReturn '-' UnOp.Plus
-            .>> ws
-            .>>. expr
-            |>> Expr.UnaryOp
             
         let wildcard =
             wildcard |>> Expr.WildCard
@@ -1491,7 +1464,7 @@ module Parsers =
                             stream.BacktrackTo(&state)
                             match tupled_args stream with
                             | r when r.Status = Ok ->
-                                Expr.Call (Id id, r.Result)
+                                Expr.Call (id, r.Result)
                                 |> Reply
                             | r ->
                                 Reply(r.Status, r.Error)
@@ -1505,8 +1478,6 @@ module Parsers =
             else if stream.StateTag = tag then
                 match stream.Peek() with
                 | '(' -> expr_in_brackets stream
-                | '+' -> plus stream
-                | '-' -> minus stream
                 | '{' -> set_expr stream
                 | '[' -> array_expr stream
                 | '_' -> wildcard stream 

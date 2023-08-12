@@ -14,39 +14,43 @@ module rec Encode =
 
     let operators : Map<int, string> =
         [
-        (BinOp.Equivalent,  "<->")
-        (BinOp.Implies,  "->")
-        (BinOp.ImpliedBy,  "<-")
-        (BinOp.Or,  "\\/")
-        (BinOp.Xor,  "xor")
-        (BinOp.And,  "/\\")
-        (BinOp.LessThan,  "<")
-        (BinOp.GreaterThan,  ">")
-        (BinOp.LessThanEqual,  "<=")
-        (BinOp.GreaterThanEqual,  ">=")
-        (BinOp.Equal,  "==")
-        (BinOp.Equal,  "=")
-        (BinOp.NotEqual,  "!=")
-        (BinOp.In,  "in")
-        (BinOp.Subset,  "subset")
-        (BinOp.Superset,  "superset")
-        (BinOp.Union,  "union")
-        (BinOp.Diff,  "diff")
-        (BinOp.SymDiff,  "symdiff")
-        (BinOp.ClosedRange,  "..")
-        (BinOp.LeftOpenRange,  "<..")
-        (BinOp.RightOpenRange,  "..<")
-        (BinOp.OpenRange,  "<..<")
-        (BinOp.Add,  "+")
-        (BinOp.Subtract,  "-")
-        (BinOp.Multiply,  "*")
-        (BinOp.Div,  "div")
-        (BinOp.Mod,  "mod")
-        (BinOp.Divide,  "/")
-        (BinOp.Intersect,  "intersect")
-        (BinOp.Exponent,  "^")
-        (BinOp.Concat,  "++")
-        (BinOp.Default,  "default")
+        (Op.Plus,  "+")
+        (Op.Minus,  "-")
+        (Op.Not, "not")
+        (Op.Add,  "+")
+        (Op.Subtract,  "-")
+        (Op.Not, "not")
+        (Op.Multiply,  "*")
+        (Op.Divide,  "/")
+        (Op.Div,  "div")
+        (Op.Mod,  "mod")
+        (Op.Exponent,  "^")
+        (Op.Equivalent,  "<->")
+        (Op.Implies,  "->")
+        (Op.ImpliedBy,  "<-")
+        (Op.Or,  "\\/")
+        (Op.Xor,  "xor")
+        (Op.And,  "/\\")
+        (Op.LessThanEqual,  "<=")
+        (Op.GreaterThanEqual,  ">=")
+        (Op.LessThan,  "<")
+        (Op.GreaterThan,  ">")
+        (Op.Equal,  "=")
+        (Op.NotEqual,  "!=")
+        (Op.In,  "in")
+        (Op.Subset,  "subset")
+        (Op.Superset,  "superset")
+        (Op.Union,  "union")
+        (Op.Diff,  "diff")
+        (Op.SymDiff,  "symdiff")
+        (Op.Intersect,  "intersect")
+        (Op.Concat,  "++")
+        (Op.Default,  "default")
+        (Op.ClosedRange,  "..")
+        (Op.LeftOpenRange,  "<..")
+        (Op.RightOpenRange,  "..<")
+        (Op.OpenRange,  "<..<")        
+        
          ]
          |> List.map (fun (op, s) -> (int op, s))
          |> Map.ofList
@@ -242,11 +246,11 @@ module rec Encode =
             this.writeExprs set
             this.write "}"
 
-        member inline this.writeIdOrOp<'t when 't :> Enum> (x: IdOr<'t>) =
+        member inline this.writeIdOrOp<'t when 't :> Enum> (x: IdentOr<'t>) =
             match x with
-            | IdOr.Id id ->
+            | IdentOr.Ident id ->
                 this.write $"`{id}`"
-            | IdOr.Val op ->
+            | IdentOr.Other op ->
                 let x = Convert.ToInt32(op)
                 let s = operators[x]
                 this.write s
@@ -342,15 +346,14 @@ module rec Encode =
             this.write ")"
 
         member this.writeUnaryOp ((id, expr): UnaryOpExpr) =
-            let name = operators[int id]
-            this.write name
+            this.writeOp id
             this.write " "
             this.writeExpr expr
             
         member this.writeBinaryOp ((left, op, right): BinaryOpExpr) =
             this.writeExpr left
             this.write " "
-            this.writeIdOrOp op
+            this.writeOp op
             this.write " "
             this.writeExpr right
             
@@ -398,10 +401,10 @@ module rec Encode =
             this.writeExpr x.Yields
             this.write ")"
             
-        member this.writeYield (id: IdOr<WildCard>) =
+        member this.writeYield (id: IdentOr<WildCard>) =
             match id with
-            | IdOr.Id id -> this.write id
-            | IdOr.Val value -> this.writeWildcard value
+            | IdentOr.Ident id -> this.write id
+            | IdentOr.Other value -> this.writeWildcard value
         
         member this.writeGenerator (gen: Generator) =
             this.writeSep(", ", gen.Yields, this.writeYield)
@@ -585,10 +588,7 @@ module rec Encode =
                 ()
                     
         member this.writeCall (ident, args) =
-            match ident with
-            | IdOr.Id s -> this.write s
-            | IdOr.Val v -> this.writeOp v
-            
+            this.write ident
             this.writeArgs args
             
         member this.writeArgs (args: Expr list) =

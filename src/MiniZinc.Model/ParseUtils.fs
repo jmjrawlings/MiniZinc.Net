@@ -1,5 +1,6 @@
 ﻿namespace MiniZinc.Parser
 
+open System.Collections.Generic
 open MiniZinc
 open FParsec
 open System.Text
@@ -129,11 +130,11 @@ module Keyword =
             byName.TryGetValue(key, &word)
             word
 
-type Scope =
-    | ExprScope
-    | TypeInstScope
-    | LetScope
-    | NumExprScope
+type Context =
+    | Expr = 1
+    | TypeInst = 2
+    | Let  = 3
+    | Numeric = 4
     
 type ParseOptions =
     { Debug: bool }
@@ -143,8 +144,8 @@ type ParseOptions =
 type ParserState(options: ParseOptions) =
     let sb = StringBuilder()
     let mutable indent = 0
-    let mutable scope = ExprScope
-        
+    let mutable context = Unchecked.defaultof<Context>
+            
     member this.Debug =
         options.Debug
             
@@ -155,10 +156,15 @@ type ParserState(options: ParseOptions) =
         with get() = indent
         and set x = indent <- x
     
-    member this.Scope
-        with get() = scope
-        and set x = scope <- x
-           
+    member this.UpdateContext x =
+        let old = context
+        context <- x
+        old
+
+    member this.Context
+        with get() = context
+        and set x = context <- x
+               
     member this.Write (msg: string) =
         sb.AppendLine msg
         

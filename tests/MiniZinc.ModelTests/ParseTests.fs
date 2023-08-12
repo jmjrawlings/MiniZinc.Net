@@ -138,20 +138,14 @@ Encoded:
     [<InlineData("tuple(int, string, string)")>]
     [<InlineData("tuple(X, 'something else', set of Q)")>]
     let ``test tuple type inst`` mzn =
-        testRoundtrip
-            Parsers.base_ti_expr_tail
-            mzn
-            (fun enc -> enc.writeType)
+        testRoundtrip Parsers.base_ti_expr_tail mzn (fun enc -> enc.writeType)
         
     [<Theory>]
     [<InlineData("var MyTuple ++ var MyTuple")>]
     [<InlineData("array[a+1..b+3] of var int")>]
     let ``test complex type inst`` mzn =
-        testRoundtrip
-            Parsers.ti_expr
-            mzn
-            (fun enc -> enc.writeTypeInst)
-        
+        testRoundtrip Parsers.ti_expr mzn (fun enc -> enc.writeTypeInst)
+            
     [<Theory>]
     [<InlineData("var set of bool: xd")>]
     [<InlineData("var set of opt 'Quoted': 'something else'")>]
@@ -202,7 +196,7 @@ Encoded:
     [<InlineData("-100")>]
     [<InlineData("+300.2")>]
     let ``test num unary op`` mzn =
-        testRoundtrip Parsers.expr_atom_head mzn (fun enc -> enc.writeExpr)
+        testRoundtrip Parsers.expr mzn (fun enc -> enc.writeExpr)
         
     [<Theory>]
     [<InlineData("100 + 100")>]
@@ -280,6 +274,7 @@ Encoded:
     [<Theory>]
     [<InlineData("1..10")>]
     [<InlineData("-1 .. z")>]
+    [<InlineData("a+1..b+3")>]
     [<InlineData("x[1]..x[2]")>]
     [<InlineData("f(x)..15")>]
     let ``test range ti `` mzn =
