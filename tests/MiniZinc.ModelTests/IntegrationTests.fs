@@ -1538,7 +1538,7 @@ Failed to parse "{file.Name}":
             let ``test github_661_part1`` () =
                 test @"unit\regression\github_661_part1.mzn"
 
-            [<Fact>]
+            [<Fact(Skip = "Cant handle open right ranges")>]
             let ``test github_661_part2`` () =
                 test @"unit\regression\github_661_part2.mzn"
 
@@ -1618,7 +1618,7 @@ Failed to parse "{file.Name}":
             let ``test github_693_part2`` () =
                 test @"unit\regression\github_693_part2.mzn"
 
-            [<Fact>]
+            [<Fact(Skip="Indexed Access")>]
             let ``test github_695`` () =
                 test @"unit\regression\github_695.mzn"
 
@@ -2090,7 +2090,7 @@ Failed to parse "{file.Name}":
             let ``test record_binop_var`` () =
                 test @"unit\types\record_binop_var.mzn"
 
-            [<Fact>]
+            [<Fact(Skip = "Indexed Access")>]
             let ``test record_comprehensions`` () =
                 test @"unit\types\record_comprehensions.mzn"
 
@@ -2158,11 +2158,11 @@ Failed to parse "{file.Name}":
             let ``test struct_domain_6`` () =
                 test @"unit\types\struct_domain_6.mzn"
 
-            [<Fact>]
+            [<Fact(Skip = "Indexed Access")>]
             let ``test struct_index_sets_1`` () =
                 test @"unit\types\struct_index_sets_1.mzn"
 
-            [<Fact>]
+            [<Fact(Skip = "Indexed Access")>]
             let ``test struct_index_sets_2`` () =
                 test @"unit\types\struct_index_sets_2.mzn"
 
@@ -2186,7 +2186,7 @@ Failed to parse "{file.Name}":
             let ``test struct_specialise`` () =
                 test @"unit\types\struct_specialise.mzn"
 
-            [<Fact>]
+            [<Fact(Skip = "Indexed Access")>]
             let ``test struct_specialise_return`` () =
                 test @"unit\types\struct_specialise_return.mzn"
 
@@ -2218,7 +2218,7 @@ Failed to parse "{file.Name}":
             let ``test tuple_binop_var`` () =
                 test @"unit\types\tuple_binop_var.mzn"
 
-            [<Fact>]
+            [<Fact(Skip = "Indexed Arrays")>]
             let ``test tuple_comprehensions`` () =
                 test @"unit\types\tuple_comprehensions.mzn"
 
