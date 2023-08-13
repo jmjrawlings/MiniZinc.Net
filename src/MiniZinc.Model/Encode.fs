@@ -49,9 +49,12 @@ module rec Encode =
         (Op.ClosedRange,  "..")
         (Op.LeftOpenRange,  "<..")
         (Op.RightOpenRange,  "..<")
-        (Op.OpenRange,  "<..<")        
-        
-         ]
+        (Op.OpenRange,  "<..<")
+        (Op.TildeNotEqual, "~!=") 
+        (Op.TildeEqual, "~=")
+        (Op.TildeAdd, "~+")   
+        (Op.TildeSubtract, "~-")    
+        (Op.TildeMultiply, "~*") ]
          |> List.map (fun (op, s) -> (int op, s))
          |> Map.ofList
     
@@ -197,13 +200,12 @@ module rec Encode =
                 this.write "annotation"
             | Type.Any ->
                 this.write "any"
+            | Type.Generic x ->
+                this.write x
             | Type.Expr expr ->
                 this.writeExpr expr
-            | Type.Ident x
-            | Type.Generic x ->
-                this.write $"${x}"
-            | Type.Generic2 x ->
-                this.write $"$${x}"
+            | Type.Ident x ->
+                this.write x
             | Type.Concat tis ->
                 this.writeSep(" ++ ", tis, this.writeTypeInst)
             | Type.Record fields ->
@@ -566,7 +568,7 @@ module rec Encode =
             this.write "output "
             match x.Annotation with
             | Some ann ->
-                this.writeAnnotation (Expr.String ann)
+                this.writeAnnotation ann
             | _ ->
                 ()
             this.writeExpr x.Expr                

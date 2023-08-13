@@ -110,6 +110,11 @@ module rec Ast =
         | Exponent = 30
         | Default = 31
         | Concat = 32
+        | TildeNotEqual = 33 
+        | TildeEqual = 34
+        | TildeAdd = 35   
+        | TildeSubtract = 36    
+        | TildeMultiply = 37  
 
     type Op =     
         | Equivalent = 1
@@ -147,6 +152,11 @@ module rec Ast =
         | Plus = 33
         | Minus = 34
         | Not = 35
+        | TildeNotEqual = 33 
+        | TildeEqual = 34
+        | TildeAdd = 35   
+        | TildeSubtract = 36    
+        | TildeMultiply = 37
 
     [<RequireQualifiedAccess>] 
     type Expr =
@@ -304,6 +314,7 @@ module rec Ast =
           IsOptional : bool
           IsArray : bool
           IsInstanced : bool
+          PostFix : Annotations
           Value : Expr option }
         
         /// True if this TypeInst is a parameter (not a variable)
@@ -317,13 +328,14 @@ module rec Ast =
             not this.IsCollection
         
         static member Empty =
-            { Type = Type.Ident ""
+            { Type = Type.Any
             ; IsVar = false
             ; IsSet = false
             ; IsOptional = false
             ; IsArray = false
             ; IsInstanced = false
             ; Name = ""
+            ; PostFix = []
             ; Annotations = []
             ; Value = None }
             
@@ -339,9 +351,8 @@ module rec Ast =
         | Float
         | Ann
         | Annotation
-        | Any 
+        | Any
         | Generic   of Ident
-        | Generic2  of Ident // TODO - ????
         | Ident     of Ident
         | Expr      of Expr
         | Concat    of TypeInst list
@@ -397,8 +408,8 @@ module rec Ast =
         | Declare    of TypeInst
         | Solve      of SolveItem
         | Test       of TestItem
-        | Output     of OutputExpr
         | Function   of FunctionType
+        | Output     of OutputExpr
         | Annotation of AnnotationType
         | Comment    of string
 
@@ -444,9 +455,9 @@ module rec Ast =
         
     type Test =
         unit
-
+    
     type OutputExpr =
-        { Expr: Expr; Annotation: string option }
+        { Expr: Expr; Annotation: Annotation option }
         
     type LetLocal =
         Choice<TypeInst, ConstraintExpr>

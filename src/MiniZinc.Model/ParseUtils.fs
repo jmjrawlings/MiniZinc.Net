@@ -133,8 +133,9 @@ module Keyword =
 type Context =
     | Expr = 1
     | TypeInst = 2
-    | Let  = 3
-    | Numeric = 4
+    | LetExpr  = 3
+    | NumExpr = 4
+    | Call = 4
     
 type ParseOptions =
     { Debug: bool }
@@ -499,3 +500,11 @@ module ParseUtils =
             else
                 p stream
                 
+    /// Set the parser context for 'p', eg: `LetExpr`     
+    let withContext context (p: Parser<_>) : Parser<_> =
+        fun stream ->
+            let old_context = stream.UserState.Context
+            stream.UserState.Context <- context
+            let reply = p stream
+            stream.UserState.Context <- old_context
+            reply

@@ -55,9 +55,8 @@ module Parsers =
         | Type.Float 
         | Type.Ident _ 
         | Type.Expr _
-        | Type.Generic _
-        | Type.Generic2 _
         | Type.Any
+        | Type.Generic _
         | Type.Annotation
         | Type.Ann ->
             ty, false
@@ -177,9 +176,10 @@ module Parsers =
     let number_lit : Parser<Expr> =
 
         let format =
-           NumberLiteralOptions.AllowMinusSign
-           ||| NumberLiteralOptions.AllowFraction
+           NumberLiteralOptions.AllowFraction
            ||| NumberLiteralOptions.AllowExponent
+           ||| NumberLiteralOptions.AllowHexadecimal
+           ||| NumberLiteralOptions.AllowOctal
            
         fun stream ->
             let reply = numberLiteral format "number" stream
@@ -259,10 +259,10 @@ module Parsers =
 
                 loop ()
     
-    let string_annotation : Parser<string> =
+    let string_annotation : Parser<Expr> =
         skip "::"
         >>. string_lit
-        |>> sprintf "\"%s\""
+        |>> Expr.String
     
     // <ti-expr>
     let ti_expr, ti_expr_ref =
@@ -350,11 +350,11 @@ module Parsers =
     addInfix "intersect" BinOp.Intersect        0300 LeftAssoc
     addInfix "^"         BinOp.Exponent         0200 LeftAssoc
     addInfix "default"   BinOp.Default          0070 LeftAssoc
-    // addInfix "~!="       BinOp.TildeNotEqual    1 LeftAssoc
-    // addInfix "~="        BinOp.TildeEqual       1 LeftAssoc
-    // addInfix "~+"        BinOp.TildeAdd         1 LeftAssoc
-    // addInfix "~-"        BinOp.TildeSubtract    1 LeftAssoc
-    // addInfix "~*"        BinOp.TildeMultiply    1 LeftAssoc
+    addInfix "~!="       BinOp.TildeNotEqual    0800 NoAssoc
+    addInfix "~="        BinOp.TildeEqual       0800 NoAssoc
+    addInfix "~+"        BinOp.TildeAdd         0400 NoAssoc
+    addInfix "~-"        BinOp.TildeSubtract    0400 NoAssoc
+    addInfix "~*"        BinOp.TildeMultiply    0300 NoAssoc
     
     let concat =
         
@@ -395,16 +395,27 @@ module Parsers =
             
         opp.AddOperator op
         
-    let addPrefix (s: string) f =
+    let addPrefix (s: string) precedence f =
         let operator =
-            PrefixOperator(s, ws >>. preturn "", 1, true, f)
+            PrefixOperator(s, ws >>. preturn "", precedence, true, f)
         
         opp.AddOperator operator
 
-    addPrefix "+"   (fun expr -> Expr.UnaryOp (UnOp.Plus, expr))
-    addPrefix "-"   (fun expr -> Expr.UnaryOp (UnOp.Minus, expr))
-    addPrefix "not" (fun expr -> Expr.UnaryOp (UnOp.Not, expr))
-    addPrefix ".."  (fun expr -> Expr.RightOpenRange expr)
+    addPrefix "+"   2000 (fun expr -> Expr.UnaryOp (UnOp.Plus, expr))
+    addPrefix "-"   2000 (fun expr -> Expr.UnaryOp (UnOp.Minus, expr))
+    addPrefix "not" 2000 (fun expr -> Expr.UnaryOp (UnOp.Not, expr))
+    addPrefix ".."  2000 (fun expr -> Expr.RightOpenRange expr)
+    
+    let right_open_range =
+        
+        let after : Parser<string> =
+            pstring "."
+            .>> ws
+            
+        let op =
+            PostfixOperator(".", after, 1, false, Expr.RightOpenRange)
+                    
+        opp.AddOperator op   
             
     // <annotations>
     // eg: `:: output :: x(2)`
@@ -610,89 +621,121 @@ module Parsers =
                 ; IsOptional = opt
                 ; IsSet = set
                 ; IsArray = false
-                ; Annotations = [] 
+                ; Annotations = []
+                ; PostFix = [] 
                 ; IsVar = inst
                 ; Value = None
                 ; IsInstanced = false }
         )
         <!> "base-ti"
         
-    // TODO - make it more efficient        
+    let generic_ident =
+        let options = IdentifierOptions(isAsciiIdStart = fun c -> c = '$' || Char.IsLetter c )
+        skipChar '$'
+        >>. identifier options
+    
     let base_ti_expr : Parser<TypeInst> =
+                          
+        let any_ti : Parser<TypeInst> =
+            let error = expected "ti-variable: eg $$x"
+            skip1 "any"
+            >>. generic_ident
+            |>> (fun name -> { TypeInst.Empty with Type = Type.Generic name  })
 
-          // Combine the given TypeInsts 
-          let foldTypeInsts (a: TypeInst) _ (b: TypeInst) =
+        // Combine the given TypeInsts 
+        let foldTypeInsts (a: TypeInst) _ (b: TypeInst) =
               
-              let ty =
-                  match a.Type, b.Type with
+            let ty =
+                match a.Type, b.Type with
+              
+                | Type.Record ra, Type.Record rb when a.IsSingleton && b.IsSingleton ->
+                    Type.Record (ra @ rb)
                   
-                  | Type.Record ra, Type.Record rb when a.IsSingleton && b.IsSingleton ->
-                      Type.Record (ra @ rb)
-                      
-                  | Type.Tuple ta, Type.Tuple tb when a.IsSingleton && b.IsSingleton ->
-                      Type.Tuple (ta @ tb)
-                      
-                  // TODO - handle somehow
-                  | Type.Concat xs, _ ->
-                      Type.Concat (xs @ [b])
-                      
-                  | _, _ ->
-                      Type.Concat [a; b]
-                      
-              let ti = { a with Type = ty }
-              let ti = resolveTypeInst ti
-              ti
-          
-          Inline.SepBy(
-              stateFromFirstElement = id,
-              foldState = foldTypeInsts,
-              resultFromState = id,
-              elementParser = (base_ti_expr_atom .>> ws),
-              separatorParser = (skipString "++" >>. ws),
-              separatorMayEndSequence = true
-              )
+                | Type.Tuple ta, Type.Tuple tb when a.IsSingleton && b.IsSingleton ->
+                    Type.Tuple (ta @ tb)
+                  
+                // TODO - handle somehow
+                | Type.Concat xs, _ ->
+                    Type.Concat (xs @ [b])
+                  
+                | _, _ ->
+                    Type.Concat [a; b]
+                  
+            let ti = { a with Type = ty }
+            let ti = resolveTypeInst ti
+            ti
+            
+        any_ti
+        <|>
+        Inline.SepBy(
+          stateFromFirstElement = id,
+          foldState = foldTypeInsts,
+          resultFromState = id,
+          elementParser = (base_ti_expr_atom .>> ws),
+          separatorParser = skip "++",
+          separatorMayEndSequence = true
+        )
         
     // <array-ti-expr>        
     let array_ti_expr : Parser<TypeInst> =
-                
+        
+        let list_ti : Parser<TypeInst> =
+            fun stream ->
+                let error = expected "list-ti"
+                if stream.Skip("list ") then
+                    stream.SkipWhitespace()
+                    if stream.Skip("of") then
+                        stream.SkipWhitespace()
+                        base_ti_expr stream
+                    else
+                        Reply(ReplyStatus.Error, error)
+                else
+                    Reply(ReplyStatus.Error, error)
+            
+        let array_dim_expr =
+            ti_expr |>> (fun ti -> ti.Type)
+                    
         let array_dims =
-            base_ti_expr_tail
+            array_dim_expr
             |> commaSep
             |> betweenWs ('[', ']')
             <!> "array-dims"
         
-        pipe(
-            skip Keyword.ARRAY,
-            array_dims,
-            skip Keyword.OF,
-            base_ti_expr,
-            fun _ dims _ ti ->
-                (dims, resolveTypeInst ti))
-        >>= (fun (dims, ti) ->
-                let arr ty =
-                    preturn
-                        { TypeInst.Empty with
-                            IsArray = true
-                            IsVar = ti.IsVar
-                            Type = ty }
-                        
-                match dims with
- 
-                | [i] ->
-                    arr <| Type.Array1D (i, ti)
-                | [i;j] ->
-                    arr <| Type.Array2D (i, j, ti)
-                | [i;j;k]->
-                    arr <| Type.Array3D (i, j, k, ti)
-                | [i;j;k;l]->
-                    arr <| Type.Array4D (i, j, k, l, ti)
-                | [i;j;k;l;m] ->
-                    arr <| Type.Array5D (i, j, k, l, m, ti)
-                | [i;j;k;l;m;n] ->
-                    arr <| Type.Array6D (i, j, k, l, m, n, ti)
-                | xs ->
-                    fail $"Number of array dimension must be between 1 and 6 (got {xs.Length})."
-        )        
+        let array_ti =
+            pipe(
+                skip Keyword.ARRAY,
+                array_dims,
+                skip Keyword.OF,
+                base_ti_expr,
+                fun _ dims _ ti ->
+                    (dims, resolveTypeInst ti))
+            >>= (fun (dims, ti) ->
+                    let arr ty =
+                        preturn
+                            { TypeInst.Empty with
+                                IsArray = true
+                                IsVar = ti.IsVar
+                                Type = ty }
+                            
+                    match dims with
+     
+                    | [i] ->
+                        arr <| Type.Array1D (i, ti)
+                    | [i;j] ->
+                        arr <| Type.Array2D (i, j, ti)
+                    | [i;j;k]->
+                        arr <| Type.Array3D (i, j, k, ti)
+                    | [i;j;k;l]->
+                        arr <| Type.Array4D (i, j, k, l, ti)
+                    | [i;j;k;l;m] ->
+                        arr <| Type.Array5D (i, j, k, l, m, ti)
+                    | [i;j;k;l;m;n] ->
+                        arr <| Type.Array6D (i, j, k, l, m, n, ti)
+                    | xs ->
+                        fail $"Number of array dimension must be between 1 and 6 (got {xs.Length})."
+            )
+        list_ti
+        <|> array_ti
         <!> "array-ti"
     
     // <ti-expr>        
@@ -700,6 +743,7 @@ module Parsers =
         [ array_ti_expr
         ; base_ti_expr  ]
         |> choice
+        |> withContext Context.TypeInst        
         <!> "ti"
 
     // <tuple-ti-expr-tail>
@@ -725,28 +769,20 @@ module Parsers =
             
     // <base-ti-expr-tail>
     base_ti_expr_tail_ref.contents <-
-                    
-        let generic1 =
-            skipChar '$'
-            >>. simple_ident
-            |>> Type.Generic
-        
-        let generic2 =
-            skipString "$$"
-            >>. simple_ident
-            |>> Type.Generic2
         
         // TypeInst declared with an expression
         // eg: ```1..(1+3)```
         let expr_ti : Parser<Type> =
             fun stream ->
-                let context = stream.UserState.UpdateContext Context.TypeInst
                 let reply = expr stream
-                stream.UserState.Context <- context
                 if reply.Status = Ok then
                     Reply(Type.Expr reply.Result)
                 else
                     Reply(reply.Status, reply.Error)
+            
+        let generic =
+            generic_ident
+            |>> Type.Generic
             
         fun stream ->
             let stateTag = stream.StateTag
@@ -773,20 +809,15 @@ module Parsers =
                     record_ti stream
                 | Keyword.TUPLE ->
                     tuple_ti stream
-                | Keyword.ANY ->
-                    stream.SkipWhitespace()
-                    generic1 stream
                 | _ ->
                     // Must be an expression (eg: `Foo`, `{1,2,3}`)
                     stream.Seek(stream.Index - (int64)id.Length)
                     expr_ti stream
                       
             elif reply.Status = Error && stateTag = stream.StateTag then
-              let peek = stream.Peek2()
-              match (peek.Char0, peek.Char1) with
-              | '$', '$' -> generic2 stream
-              | '$', _   -> generic1 stream
-              | _, _     -> expr_ti stream
+              match stream.Peek() with
+              | '$' -> generic stream 
+              | _ -> expr_ti stream
                   
             else 
               Reply(reply.Status, reply.Error)
@@ -859,34 +890,42 @@ module Parsers =
         |> commaSep1
     
     // <declare-item>
-    let declare_any_tail : Parser<Item> =
-        pipe(
-            (skip ':' >>. ident),
-            annotations,
-            assign_tail,
-            fun name anns expr ->
-                Item.Declare
-                 { TypeInst.Empty with
-                    Name = name
-                    Annotations = anns
-                    Value = Some expr }
-            )
-    
-    // <declare-item>
     let declare_item : Parser<Item> =
+        
+        let declare_any : Parser<Item> =
+            skip "any"
+            >>. skip ':'
+            >>. pipe(
+                ident,
+                annotations,
+                assign_tail,
+                fun name anns expr ->
+                    Item.Declare
+                     { TypeInst.Empty with
+                        Type = Type.Any
+                        Name = name
+                        Annotations = anns
+                        Value = Some expr }
+                )
+            <!> "declare-any"        
+
+        declare_any
+        <|>
         pipe(
             ti_expr_and_id,
             opt parameters,
             annotations,
             opt assign_tail,
-            fun ti args anns expr ->
+            annotations,
+            fun ti args ti_anns expr expr_anns ->
                 let ti = resolveTypeInst ti
                 match args with
                 // No arguments, not a function
                 | None ->
                     Item.Declare
                         { ti with
-                            Annotations = anns
+                            Annotations = ti_anns
+                            PostFix = expr_anns 
                             Value=expr }
                 // Arguments, must be a function                    
                 | Some args ->
@@ -894,8 +933,8 @@ module Parsers =
                         { Name = ti.Name
                         ; Returns = {ti with Name = ""}
                         ; Ann = ""
-                        ; Annotations = anns
-                        ; Parameters = args 
+                        ; Annotations = ti_anns
+                        ; Parameters = args
                         ; Body = expr}
         )
         <!> "declare-item"
@@ -912,7 +951,6 @@ module Parsers =
     // <constraint-item>
     let constraint_item =
         constraint_tail |>> Item.Constraint
-    
        
     // <let-item>
     let let_item : Parser<LetLocal> =
@@ -943,11 +981,8 @@ module Parsers =
             many1 (item .>> ws)
             |> betweenWs('{', '}')
         
-        pipe(
-            (ws >>. items),
-            skip "in",
-            expr,
-            (fun items _b body ->
+        ws >>. pipe(items, skip "in", expr,
+            fun items _b body ->
                 let declares, constraints =
                     items
                     |> List.fold (fun (ds, cs) item ->
@@ -963,7 +998,9 @@ module Parsers =
                 { Declares = declares
                 ; Constraints = constraints
                 ; Body=body }
-                ))
+                )
+
+        |> withContext Context.LetExpr        
         <!> "let-expr"
             
     // <if-then-else-expr>
@@ -1645,8 +1682,6 @@ module Parsers =
                     function_item stream
                 | Keyword.TEST ->
                     test_item stream
-                | Keyword.ANY ->
-                    declare_any_tail stream
                 | Keyword.NONE when stream.Peek() = '=' ->
                     let reply = assign_tail stream
                     if reply.Status = Ok then
