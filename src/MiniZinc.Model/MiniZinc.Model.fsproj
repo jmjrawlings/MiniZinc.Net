@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="Prelude.fs" />
     <Compile Include="Ast.fs" />    
+    <Compile Include="ParseUtils.fs" />    
     <Compile Include="Parse.fs" />    
     <Compile Include="Encode.fs" />    
     <Compile Include="Model.fs" />

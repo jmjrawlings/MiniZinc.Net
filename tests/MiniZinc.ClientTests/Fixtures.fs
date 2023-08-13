@@ -2,6 +2,7 @@
 
 open System
 open Microsoft.Extensions.Logging
+open MiniZinc.Parser
 open Serilog
 open MiniZinc
 open Xunit
@@ -50,21 +51,24 @@ type IntegrationTestSuite(fixture: ClientFixture) =
     let fail msg =
         Assert.Fail(msg)
         failwith ""
-        
+
+    let parseOptions =
+        { ParseOptions.Default with Debug = true } 
+            
     interface IClassFixture<ClientFixture>
     
     abstract Name: string
         
     member this.Suite =
         LibMiniZinc.testSpec[this.Name]
-                
+               
     member this.test (testCase: TestCase) (solver: string) =
         
         let options =
             SolveOptions.create solver
             
         let model =
-            match parseModelFile testCase.TestFile.FullName with
+            match parseModelFile parseOptions testCase.TestFile.FullName with
             | Result.Ok model ->
                 model
             | Result.Error err ->

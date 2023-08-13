@@ -13,44 +13,48 @@ open MiniZinc
 module rec Encode =
 
     let operators : Map<int, string> =
-         [ Op.Add, "+"         
-         ; Op.Subtract, "-"
-         ; Op.Not, "not"
-         ; Op.Multiply, "*"         
-         ; Op.Divide, "/"                  
-         ; Op.Exponent, "^"         
-         ; Op.TildeAdd, "~+"        
-         ; Op.TildeSubtract, "~-"        
-         ; Op.TildeMultiply, "~*"        
-         ; Op.TildeDivide, "~/"        
-         ; Op.Div, "div"       
-         ; Op.Mod, "mod"       
-         ; Op.TildeDiv, "~div"       
-         ; Op.Equivalent, "<->"       
-         ; Op.Implies, "->"        
-         ; Op.ImpliedBy, "<-"        
-         ; Op.Or, "\/"        
-         ; Op.And, "/\\"       
-         ; Op.LessThanEqual, "<="        
-         ; Op.GreaterThanEqual, ">="        
-         ; Op.EqualEqual, "=="        
-         ; Op.LessThan, "<"         
-         ; Op.GreaterThan, ">"         
-         ; Op.Equal, "="         
-         ; Op.NotEqual, "!="        
-         ; Op.TildeEqual, "~="        
-         ; Op.TildeNotEqual, "~!="       
-         ; Op.DotDot, ".."        
-         ; Op.PlusPlus, "++"        
-         ; Op.Xor, "xor"       
-         ; Op.In, "in"        
-         ; Op.Subset, "subset"    
-         ; Op.Superset, "superset"  
-         ; Op.Union, "union"     
-         ; Op.Diff, "diff"      
-         ; Op.SymDiff, "symdiff"   
-         ; Op.Intersect, "intersect" 
-         ; Op.Default, "default" ]
+        [
+        (Op.Plus,  "+")
+        (Op.Minus,  "-")
+        (Op.Not, "not")
+        (Op.Add,  "+")
+        (Op.Subtract,  "-")
+        (Op.Not, "not")
+        (Op.Multiply,  "*")
+        (Op.Divide,  "/")
+        (Op.Div,  "div")
+        (Op.Mod,  "mod")
+        (Op.Exponent,  "^")
+        (Op.Equivalent,  "<->")
+        (Op.Implies,  "->")
+        (Op.ImpliedBy,  "<-")
+        (Op.Or,  "\\/")
+        (Op.Xor,  "xor")
+        (Op.And,  "/\\")
+        (Op.LessThanEqual,  "<=")
+        (Op.GreaterThanEqual,  ">=")
+        (Op.LessThan,  "<")
+        (Op.GreaterThan,  ">")
+        (Op.Equal,  "=")
+        (Op.NotEqual,  "!=")
+        (Op.In,  "in")
+        (Op.Subset,  "subset")
+        (Op.Superset,  "superset")
+        (Op.Union,  "union")
+        (Op.Diff,  "diff")
+        (Op.SymDiff,  "symdiff")
+        (Op.Intersect,  "intersect")
+        (Op.Concat,  "++")
+        (Op.Default,  "default")
+        (Op.ClosedRange,  "..")
+        (Op.LeftOpenRange,  "<..")
+        (Op.RightOpenRange,  "..<")
+        (Op.OpenRange,  "<..<")
+        (Op.TildeNotEqual, "~!=") 
+        (Op.TildeEqual, "~=")
+        (Op.TildeAdd, "~+")   
+        (Op.TildeSubtract, "~-")    
+        (Op.TildeMultiply, "~*") ]
          |> List.map (fun (op, s) -> (int op, s))
          |> Map.ofList
     
@@ -102,12 +106,15 @@ module rec Encode =
             this.write s
             this.writetn()
         
-        member this.writeSep (sep: string, xs: 't seq, write: 't -> unit) =
+        member this.writeSep (sep: string, xs: 't seq, write: 't -> unit, ?term) =
+            let term = defaultArg term false
             let n = Seq.length xs 
             let mutable i = 0
             for x in xs do
                 i <- i + 1
                 write x
+                if term then
+                    this.write ';'
                 if i < n then
                     this.write sep
             ()
@@ -163,10 +170,12 @@ module rec Encode =
                     this.writeAnnotation ann
                 
         member this.writeTypeInst (ti: TypeInst) =
-            match ti.IsArray with
-            | true ->
+            match ti.IsArray, ti.Type with
+            | true , _->
                 this.writeType ti.Type
-            | false ->
+            | _, Type.Concat xs ->
+                this.writeSep(" ++ ", xs, this.writeTypeInst)
+            | false , _ ->
                 if ti.IsVar then
                     this.write "var "
                 if ti.IsSet then
@@ -175,11 +184,6 @@ module rec Encode =
                     this.write "opt "
                 this.writeType ti.Type
 
-        member this.writeTupleType fields =
-            this.write "tuple("
-            this.writeSep(", ", fields, this.writeTypeInst)
-            this.write ")"
-            
         member this.writeType (t: Type) =
             match t with
             | Type.Int ->
@@ -192,17 +196,25 @@ module rec Encode =
                 this.write "float"
             | Type.Ann ->
                 this.write "ann"
+            | Type.Annotation ->
+                this.write "annotation"
             | Type.Any ->
                 this.write "any"
-            | Type.Ident x
             | Type.Generic x ->
-                this.write x                
-            | Type.Record x ->
-                this.writeRecordType x                
-            | Type.Tuple x ->
-                this.writeTupleType x                
-            | Type.Set x ->
-                this.writeExpr x
+                this.write x
+            | Type.Expr expr ->
+                this.writeExpr expr
+            | Type.Ident x ->
+                this.write x
+            | Type.Concat tis ->
+                this.writeSep(" ++ ", tis, this.writeTypeInst)
+            | Type.Record fields ->
+                this.write "record"
+                this.writeParameters fields                
+            | Type.Tuple fields ->
+                this.write "tuple("
+                this.writeSep(", ", fields, this.writeTypeInst)
+                this.write ")"
             | Type.Array1D (i, ti) ->
                 this.writeArrayType(ti, i)
             | Type.Array2D (i, j, ti) ->
@@ -227,7 +239,7 @@ module rec Encode =
                     
         member this.writeArrayType (elements: TypeInst, [<ParamArray>]dimensions: ArrayDim[]) =
             this.write "array["
-            this.writeExprs(dimensions)
+            this.writeSep(",", dimensions, this.writeType)
             this.write "] of "
             this.writeTypeInst elements
                             
@@ -236,11 +248,11 @@ module rec Encode =
             this.writeExprs set
             this.write "}"
 
-        member inline this.writeIdOrOp<'t when 't :> Enum> (x: IdOr<'t>) =
+        member inline this.writeIdOrOp<'t when 't :> Enum> (x: IdentOr<'t>) =
             match x with
-            | IdOr.Id id ->
+            | IdentOr.Ident id ->
                 this.write $"`{id}`"
-            | IdOr.Val op ->
+            | IdentOr.Other op ->
                 let x = Convert.ToInt32(op)
                 let s = operators[x]
                 this.write s
@@ -268,7 +280,7 @@ module rec Encode =
             let s = operators[x]
             this.write s
                     
-        member this.writeSetComp (x: SetCompExpr) =
+        member this.writeSetComp (x: CompExpr) =
             this.write '{'
             this.writeExpr x.Yields
             this.write " | "
@@ -315,7 +327,7 @@ module rec Encode =
             this.dedent()        
             this.write "|]"            
            
-        member this.writeArrayComp (x: ArrayCompExpr) =
+        member this.writeArrayComp (x: CompExpr) =
             this.write '['
             this.writeExpr x.Yields
             this.write " | "
@@ -325,7 +337,7 @@ module rec Encode =
         member this.writeTupleExpr (tuple: TupleExpr) =
             this.writeArgs tuple
             
-        member this.writeRecordField (id: Ident, expr: Expr) =
+        member this.writeRecordField (struct(id, expr): NamedExpr) =
             this.write id
             this.write ": "
             this.writeExpr expr
@@ -336,16 +348,14 @@ module rec Encode =
             this.write ")"
 
         member this.writeUnaryOp ((id, expr): UnaryOpExpr) =
-            match id with
-            | IdOr.Id x -> this.write x
-            | IdOr.Val x -> this.writeOp x
+            this.writeOp id
             this.write " "
             this.writeExpr expr
             
         member this.writeBinaryOp ((left, op, right): BinaryOpExpr) =
             this.writeExpr left
             this.write " "
-            this.writeIdOrOp op
+            this.writeOp op
             this.write " "
             this.writeExpr right
             
@@ -369,8 +379,8 @@ module rec Encode =
         member this.writeLetExpr (x: LetExpr) =
             this.writen "let {"
             this.indent()
-            this.writeSep(",\n", x.Declares, this.writeDeclare)
-            this.writeSep(",\n", x.Constraints, this.writeConstraint)
+            this.writeSep(",\n", x.Declares, this.writeDeclare, term=true)
+            this.writeSep(",\n", x.Constraints, this.writeConstraint, term=true)
             this.dedent()
             this.writen "} in"
             this.indent()
@@ -385,9 +395,7 @@ module rec Encode =
             this.writeSep(", ", xs, this.writeGenerator)
                 
         member this.writeGenCall (x: GenCallExpr) =
-            match x.Operation with
-            | IdOr.Id id ->this.write id
-            | IdOr.Val v -> this.writeOp v
+            this.write x.Id
             this.write "("
             this.writeGenerators x.From
             this.write ")"
@@ -395,10 +403,10 @@ module rec Encode =
             this.writeExpr x.Yields
             this.write ")"
             
-        member this.writeYield (id: IdOr<WildCard>) =
+        member this.writeYield (id: IdentOr<WildCard>) =
             match id with
-            | IdOr.Id id -> this.write id
-            | IdOr.Val value -> this.writeWildcard value
+            | IdentOr.Ident id -> this.write id
+            | IdentOr.Other value -> this.writeWildcard value
         
         member this.writeGenerator (gen: Generator) =
             this.writeSep(", ", gen.Yields, this.writeYield)
@@ -411,9 +419,16 @@ module rec Encode =
              | None ->
                  ()
         
-        member this.writeArrayAccess (exprs: ArrayAccess) =
+        member this.writeArraySliceExpr (expr: Expr voption) =
+            match expr with
+            | ValueNone ->
+                this.write ".."
+            | ValueSome expr ->
+                this.writeExpr expr
+        
+        member this.writeArrayAccess (exprs: ArraySlice) =
             this.write '['
-            this.writeExprs exprs
+            this.writeSep(",", exprs, this.writeArraySliceExpr)
             this.write ']'
                             
         member this.writeExpr (x: Expr) =
@@ -440,6 +455,16 @@ module rec Encode =
                 this.writeSetLit x
             | Expr.SetComp x ->
                 this.writeSetComp x
+            | Expr.RightOpenRange x ->
+                this.writeExpr x
+                this.write ".."
+            | Expr.LeftOpenRange x ->
+                this.write ".."
+                this.writeExpr x
+            | Expr.ClosedRange (left, right) ->
+                this.writeExpr left
+                this.write ".."
+                this.writeExpr right             
             | Expr.Array1DLit x ->
                 this.writeArray1dLit x
             | Expr.Array2DLit x ->
@@ -452,14 +477,14 @@ module rec Encode =
                 this.writeTupleExpr x
             | Expr.Record x ->
                 this.writeRecordExpr x
-            | Expr.RecordAccess (field, expr) ->
+            | Expr.RecordAccess (expr, field) ->
                 this.writeExpr expr
                 this.write "."
                 this.write field
-            | Expr.TupleAccess (item, expr) ->
+            | Expr.TupleAccess (expr, item) ->
                 this.writeExpr expr
                 this.write "."
-                this.write item                
+                this.write item
             | Expr.UnaryOp x ->
                 this.writeUnaryOp x
             | Expr.BinaryOp x ->
@@ -472,11 +497,9 @@ module rec Encode =
                 this.writeCall x
             | Expr.GenCall x ->
                 this.writeGenCall x 
-            | Expr.ArrayAccess (access, expr) ->
+            | Expr.ArrayAccess (expr, slice) ->
                 this.writeExpr expr
-                this.write '['
-                this.writeExprs access
-                this.write ']'
+                this.writeArrayAccess slice
             | Expr.Array1D(i, arr) ->
                 this.writeArray(arr, i)
             | Expr.Array2D(i, j, arr) ->
@@ -490,11 +513,11 @@ module rec Encode =
             | Expr.Array6D(i, j, k, l, m, n, arr) ->
                 this.writeArray(arr, i, j, k, l, m, n)
             
-        member this.writeArray(array: Expr[], [<ParamArray>] index_sets: Expr[]) =
+        member this.writeArray(array: Expr[], [<ParamArray>] index_sets: Type[]) =
             let n = index_sets.Length
             this.write $"array{n}d("
-            for expr in index_sets do
-                this.writeExpr expr
+            for index in index_sets do
+                this.writeType index
                 this.write ", "
             this.writeArray1dLit array
             this.write ")"
@@ -522,10 +545,6 @@ module rec Encode =
             | _ ->
                 ()
             
-        member this.writeRecordType fields =
-            this.write "record"
-            this.writeParameters fields
-                
         member this.writeParameter (ti: TypeInst) =
             this.writeTypeInst ti
             this.write ": "
@@ -549,7 +568,7 @@ module rec Encode =
             this.write "output "
             match x.Annotation with
             | Some ann ->
-                this.writeAnnotation (Expr.String ann)
+                this.writeAnnotation ann
             | _ ->
                 ()
             this.writeExpr x.Expr                
@@ -571,10 +590,7 @@ module rec Encode =
                 ()
                     
         member this.writeCall (ident, args) =
-            match ident with
-            | IdOr.Id s -> this.write s
-            | IdOr.Val v -> this.writeOp v
-            
+            this.write ident
             this.writeArgs args
             
         member this.writeArgs (args: Expr list) =
@@ -624,8 +640,10 @@ module rec Encode =
                 this.writeSynonym x
             | Item.Constraint x -> 
                 this.writeConstraint x
-            | Item.Assign x -> 
-                this.writeAssign x
+            | Item.Assign (id, expr) -> 
+                this.write id
+                this.write '='
+                this.writeExpr expr
             | Item.Declare x -> 
                 this.writeDeclare x
             | Item.Solve x ->

@@ -2,14 +2,12 @@
 
 open System
 open System.Collections.Generic
-open System.Runtime.InteropServices
 open System.Text.Json
 open System.Text.Json.Nodes
-open System.Text.Json.Serialization
 open FSharp.Control
 open MiniZinc.Command
+open MiniZinc.Parser
 open Microsoft.Extensions.Logging
-open Microsoft.Extensions.Logging.Abstractions
 
 [<AutoOpen>]
 module rec Solve =
@@ -196,10 +194,16 @@ module rec Solve =
                             
                             let dataString =
                                 (message["output"]["dzn"]).GetValue<string>()
-                            
+                                                        
                             let data =
-                                parseDataString dataString
-                                |> Result.map Map.ofSeq
+                                match parseDataString ParseOptions.Default dataString with
+                                | Result.Ok items ->
+                                    items
+                                    |> Seq.map (fun struct(id,expr) -> (id,expr))
+                                    |> Map.ofSeq
+                                    |> Result.Ok
+                                | Result.Error err ->
+                                    Result.Error err
 
                             let outputs, status =
                                 match data with

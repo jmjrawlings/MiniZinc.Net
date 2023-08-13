@@ -1,11 +1,29 @@
 # Changelog
 
+## [0.6.2] - UNRELEASED
+
+The parser has been heavily refactored as per the [FParsec Performance Guidelines](https://www.quanttec.com/fparsec/users-guide/performance-optimizations.html).  While the parsing code has lost a lot its aesthetic qualities and is probably harder to understand at a glance,  I feel like the benefits were well worth the change.
+
+Using the lower level `CharStream` operations has made certain finicky edge cases (there are a lot in MiniZinc) **much** easier to handle. Debugging these edges cases is also greatly enhanced with access to standard breakpoints in our functions.  Many thanks to @stephan-tolksdorf for such a well crafted library.
+
+Just from my manual tests I can feel the parser is much much quicker.  I wish I had benchmarked the old implementation to know just how much faster it is but alas.  Apart from the obvious motivation of performance always being a feature, I am hoping that a fast parser gives us the flexibility to  manipulate models using minizinc strings as opposed to transforming the AST directly if it would be easier.
+
+
+# Changes
+- Refactored the `Item` parser 
+- Refactored the `Expr` parser 
+- Refactored the `NumExpr` parser
+- Fixed multiple edge cases in the parser as shown by passing tests
+
+
+## Changed
+
+
 ## [0.6.1] - 2023-08-01
 
 ## Added
 - Support for 3D array literals
 - Improved testing error messages
-
  
 ## [0.6.0] - 2023-07-26
 

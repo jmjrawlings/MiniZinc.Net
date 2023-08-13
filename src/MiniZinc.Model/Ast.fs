@@ -44,9 +44,9 @@ module rec Ast =
 
     [<Struct>]
     // An identifier or a value of 'T
-    type IdOr<'T> =
-        | Id of id:string
-        | Val of value:'T
+    type IdentOr<'T> =
+        | Ident of id:string
+        | Other of value:'T
         
     type VarKind =
         | AssignedPar = 0
@@ -59,162 +59,162 @@ module rec Ast =
         | Minimize = 1
         | Maximize = 2
 
-    type NumericUnaryOp =
-        | Add = 0
-        | Subtract = 1
+    type NumUnOp =
+        | Plus = 33
+        | Minus = 34
         
-    type UnaryOp =
-        | Add = 0
-        | Subtract = 1
-        | Not = 2
-
-    type NumericBinaryOp =
-        | Add = 0
-        | Subtract = 1
-        | Multiply = 3
-        | Divide = 4
-        | Div = 5
-        | Mod = 6
-        | Exp = 7
-        | TildeAdd = 8
-        | TildeSubtract = 9
-        | TildeMultiply = 10
-        | TildeDivide = 11
-        | TildeDiv = 12
+    type UnOp =
+        | Plus = 33
+        | Minus = 34
+        | Not = 35
         
-    type BinaryOp =
-        | Add = 0
-        | Subtract = 1
-        | Multiply = 3
-        | Divide = 4
-        | Div = 5
-        | Mod = 6
-        | Exponent = 7
-        | TildeAdd = 8
-        | TildeSubtract = 9
-        | TildeMultiply = 10
-        | TildeDivide = 11
-        | TildeDiv = 12
-        | Equivalent = 13 
-        | Implies = 14
-        | ImpliedBy = 15
-        | Or = 16
-        | Xor = 17  
-        | And = 18
-        | LessThanEqual = 19 
-        | GreaterThanEqual = 20 
-        | EqualEqual = 21
-        | LessThan =  22
-        | GreaterThan = 23
-        | Equal = 24
-        | NotEqual = 25  
-        | TildeEqual = 26 
-        | TildeNotEqual = 27  
-        | In = 28
-        | Subset = 29 
-        | Superset = 30
-        | Union = 31
-        | Diff = 32
-        | SymDiff = 33 
-        | DotDot = 34
-        | Intersect = 35 
-        | PlusPlus = 36
-        | Default =  37
+    type NumBinOp =
+        | Add = 23
+        | Subtract = 24
+        | Multiply = 25
+        | Div = 26
+        | Mod = 27
+        | Divide = 28
+        | Exponent = 30
+        
+    type BinOp =
+        | Equivalent = 1
+        | Implies = 2
+        | ImpliedBy = 3
+        | Or = 4
+        | Xor = 5
+        | And = 6
+        | LessThan = 7
+        | GreaterThan = 8
+        | LessThanEqual = 9
+        | GreaterThanEqual = 10
+        | Equal = 11
+        | NotEqual = 12
+        | In = 13
+        | Subset = 14
+        | Superset = 15
+        | Union = 16
+        | Diff = 17
+        | SymDiff = 18
+        | ClosedRange = 19
+        | LeftOpenRange = 20
+        | RightOpenRange = 21
+        | OpenRange = 22
+        | Add = 23
+        | Subtract = 24
+        | Multiply = 25
+        | Div = 26
+        | Mod = 27
+        | Divide = 28
+        | Intersect = 29
+        | Exponent = 30
+        | Default = 31
+        | Concat = 32
+        | TildeNotEqual = 33 
+        | TildeEqual = 34
+        | TildeAdd = 35   
+        | TildeSubtract = 36    
+        | TildeMultiply = 37  
 
     type Op =     
-        | Add = 0
-        | Subtract = 1
-        | Not = 2
-        | Multiply = 3
-        | Divide = 4
-        | Div = 5
-        | Mod = 6
-        | Exponent = 7
-        | TildeAdd = 8
-        | TildeSubtract = 9
-        | TildeMultiply = 10
-        | TildeDivide = 11
-        | TildeDiv = 12
-        | Equivalent = 13 
-        | Implies = 14
-        | ImpliedBy = 15
-        | Or = 16
-        | Xor = 17  
-        | And = 18
-        | LessThanEqual = 19 
-        | GreaterThanEqual = 20 
-        | EqualEqual = 21
-        | LessThan =  22
-        | GreaterThan = 23
-        | Equal = 24
-        | NotEqual = 25  
-        | TildeEqual = 26 
-        | TildeNotEqual = 27  
-        | In = 28
-        | Subset = 29 
-        | Superset = 30
-        | Union = 31
-        | Diff = 32
-        | SymDiff = 33 
-        | DotDot = 34
-        | Intersect = 35 
-        | PlusPlus = 36
-        | Default =  37
+        | Equivalent = 1
+        | Implies = 2
+        | ImpliedBy = 3
+        | Or = 4
+        | Xor = 5
+        | And = 6
+        | LessThan = 7
+        | GreaterThan = 8
+        | LessThanEqual = 9
+        | GreaterThanEqual = 10
+        | Equal = 11
+        | NotEqual = 12
+        | In = 13
+        | Subset = 14
+        | Superset = 15
+        | Union = 16
+        | Diff = 17
+        | SymDiff = 18
+        | ClosedRange = 19
+        | LeftOpenRange = 20
+        | RightOpenRange = 21
+        | OpenRange = 22
+        | Add = 23
+        | Subtract = 24
+        | Multiply = 25
+        | Div = 26
+        | Mod = 27
+        | Divide = 28
+        | Intersect = 29
+        | Exponent = 30
+        | Default = 31
+        | Concat = 32
+        | Plus = 33
+        | Minus = 34
+        | Not = 35
+        | TildeNotEqual = 33 
+        | TildeEqual = 34
+        | TildeAdd = 35   
+        | TildeSubtract = 36    
+        | TildeMultiply = 37
 
     [<RequireQualifiedAccess>] 
     type Expr =
-        | WildCard      of WildCard
-        | Absent        of Absent
-        | Int           of int
-        | Float         of float
-        | Bool          of bool
-        | String        of string
-        | Ident         of string
-        | Bracketed     of Expr
-        | Set           of Expr list
-        | SetComp       of SetCompExpr
-        | RecordAccess  of RecordAccessExpr
-        | TupleAccess   of TupleAccessExpr
-        | ArrayAccess   of ArrayAccessExpr
-        | Array1DLit    of Expr[]
-        | Array2DLit    of Expr[,]
-        | Array3DLit    of Expr[,,]
-        | Array1D       of ArrayDim * Expr[]
-        | Array2D       of ArrayDim * ArrayDim * Expr[]
-        | Array3D       of ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | Array4D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | Array5D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | Array6D       of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
-        | ArrayComp     of ArrayCompExpr
-        | Tuple         of TupleExpr
-        | Record        of RecordExpr
-        | UnaryOp       of UnaryOpExpr
-        | BinaryOp      of BinaryOpExpr 
-        | IfThenElse    of IfThenElseExpr
-        | Let           of LetExpr
-        | Call          of CallExpr
-        | GenCall       of GenCallExpr
+        | WildCard       of WildCard
+        | Absent         of Absent
+        | Int            of int
+        | Float          of float
+        | Bool           of bool
+        | String         of string
+        | Ident          of string
+        | Bracketed      of Expr
+        | ClosedRange    of Expr*Expr
+        | LeftOpenRange  of Expr
+        | RightOpenRange of Expr
+        | Set            of Expr list
+        | SetComp        of CompExpr
+        | RecordAccess   of RecordAccessExpr
+        | TupleAccess    of TupleAccessExpr
+        | ArrayAccess    of ArrayAccessExpr
+        | Array1DLit     of Expr[]
+        | Array2DLit     of Expr[,]
+        | Array3DLit     of Expr[,,]
+        | Array1D        of ArrayDim * Expr[]
+        | Array2D        of ArrayDim * ArrayDim * Expr[]
+        | Array3D        of ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array4D        of ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array5D        of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | Array6D        of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * Expr[]
+        | ArrayComp      of CompExpr
+        | Tuple          of TupleExpr
+        | Record         of RecordExpr
+        | UnaryOp        of UnaryOpExpr
+        | BinaryOp       of BinaryOpExpr
+        | IfThenElse     of IfThenElseExpr
+        | Let            of LetExpr
+        | Call           of CallExpr
+        | GenCall        of GenCallExpr
     
     type CallExpr =
-        IdOr<Op> * Expr list
+        Ident * Expr list
     
     type RecordAccessExpr =
-        string * Expr
+        Expr * string
     
     type TupleAccessExpr =
-        uint8 * Expr
+        Expr * uint8
     
     type ArrayAccessExpr =
-        ArrayAccess * Expr
+        Expr * ArraySlice
     
     type BinaryOpExpr =
-        Expr * IdOr<BinaryOp> * Expr
+        Expr * BinOp * Expr
         
     type UnaryOpExpr =
-        IdOr<UnaryOp> * Expr
+        UnOp * Expr
     
-    type ArrayAccess =
-        Expr list
+    type ArraySlice =
+        (Expr voption) list
 
     type Annotation =
         Expr
@@ -223,20 +223,17 @@ module rec Ast =
         Annotation list
 
     type GenCallExpr =
-        { Operation: IdOr<Op>
+        { Id : string
         ; From : Generator list 
         ; Yields : Expr }
         
-    type ArrayCompExpr =
-        { Yields : Expr         
-        ; From : Generator list }
-
-    type SetCompExpr =
-        { Yields : Expr         
-        ; From : Generator list }
+    type CompExpr =
+        { Yields : Expr
+        ; IsSet  : bool
+        ; From   : Generator list }
 
     type Generator =
-        { Yields : IdOr<WildCard> list
+        { Yields : IdentOr<WildCard> list
         ; From  : Expr  
         ; Where : Expr option }
 
@@ -317,20 +314,28 @@ module rec Ast =
           IsOptional : bool
           IsArray : bool
           IsInstanced : bool
+          PostFix : Annotations
           Value : Expr option }
         
         /// True if this TypeInst is a parameter (not a variable)
         member this.IsPar =
             not this.IsVar
+            
+        member this.IsCollection =
+            this.IsSet || this.IsArray
+            
+        member this.IsSingleton =
+            not this.IsCollection
         
         static member Empty =
-            { Type = Type.Ident ""
+            { Type = Type.Any
             ; IsVar = false
             ; IsSet = false
             ; IsOptional = false
             ; IsArray = false
             ; IsInstanced = false
             ; Name = ""
+            ; PostFix = []
             ; Annotations = []
             ; Value = None }
             
@@ -345,10 +350,12 @@ module rec Ast =
         | String
         | Float
         | Ann
-        | Any 
+        | Annotation
+        | Any
         | Generic   of Ident
         | Ident     of Ident
-        | Set       of Expr
+        | Expr      of Expr
+        | Concat    of TypeInst list
         | Tuple     of TypeInst list
         | Record    of TypeInst list
         | Array1D   of ArrayDim * TypeInst
@@ -358,7 +365,7 @@ module rec Ast =
         | Array5D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
         | Array6D   of ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * ArrayDim * TypeInst
        
-    type ArrayDim = Expr
+    type ArrayDim = Type
         
     type IncludeItem =
         { Name: string
@@ -397,12 +404,12 @@ module rec Ast =
         | Enum       of EnumType
         | Synonym    of TypeAlias
         | Constraint of ConstraintExpr
-        | Assign     of AssignExpr
+        | Assign     of NamedExpr
         | Declare    of TypeInst
         | Solve      of SolveItem
         | Test       of TestItem
-        | Output     of OutputExpr
         | Function   of FunctionType
+        | Output     of OutputExpr
         | Annotation of AnnotationType
         | Comment    of string
 
@@ -411,7 +418,7 @@ module rec Ast =
         ; Annotations: Annotations }
       
     type NamedExpr =
-        Ident * Expr
+        (struct(Ident * Expr))
            
     type TestItem =
         { Name: string
@@ -448,12 +455,9 @@ module rec Ast =
         
     type Test =
         unit
-
-    type AssignExpr =
-        NamedExpr
-
+    
     type OutputExpr =
-        { Expr: Expr; Annotation: string option }
+        { Expr: Expr; Annotation: Annotation option }
         
     type LetLocal =
         Choice<TypeInst, ConstraintExpr>
