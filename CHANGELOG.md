@@ -1,35 +1,41 @@
 # Changelog
 
-## [0.6.2] - UNRELEASED
 
-The parser has been heavily refactored as per the [FParsec Performance Guidelines](https://www.quanttec.com/fparsec/users-guide/performance-optimizations.html).  While the parsing code has lost a lot its aesthetic qualities and is probably harder to understand at a glance,  I feel like the benefits were well worth the change.
+## [0.7.0] - UNRELEASED
 
-Using the lower level `CharStream` operations has made certain finicky edge cases (there are a lot in MiniZinc) **much** easier to handle. Debugging these edges cases is also greatly enhanced with access to standard breakpoints in our functions.  Many thanks to @stephan-tolksdorf for such a well crafted library.
+### Meta
 
-Just from my manual tests I can feel the parser is much much quicker.  I wish I had benchmarked the old implementation to know just how much faster it is but alas.  Apart from the obvious motivation of performance always being a feature, I am hoping that a fast parser gives us the flexibility to  manipulate models using minizinc strings as opposed to transforming the AST directly if it would be easier.
+- Tests will only capture traces in `DEBUG` releases
 
 
-# Changes
-- Refactored the `Item` parser 
-- Refactored the `Expr` parser 
+## [0.6.2] - 2023-08-13
+
+The parser has been heavily refactored as per the FParsec Performance Guidelines. While the parsing code has lost a lot its aesthetic qualities and is probably harder to understand at a glance, I feel like the benefits were well worth the change.
+
+Using the lower level CharStream operations has made certain finicky edge cases (there are a lot in MiniZinc) much easier to handle. Debugging these edges cases is also greatly enhanced with access to standard breakpoints in our functions. Many thanks to @stephan-tolksdorf for such a well crafted library.
+
+Just from my manual tests I can feel the parser is much much quicker. I wish I had benchmarked the old implementation to know just how much faster it is but alas. Apart from the obvious motivation of performance always being a feature, I am hoping that a fast parser gives us the flexibility to manipulate models using minizinc strings as opposed to transforming the AST directly if it would be easier.
+
+### Changed
+- Refactored the `Item` parser
+- Refactored the `Expr` parser
 - Refactored the `NumExpr` parser
 - Fixed multiple edge cases in the parser as shown by passing tests
-
-
-## Changed
+- Quoted binop calls are parsed as `Expr.BinaryOp`
+- Quoted ident infixes are parsed as `Expr.Call`
 
 
 ## [0.6.1] - 2023-08-01
 
-## Added
+### Added
 - Support for 3D array literals
 - Improved testing error messages
- 
+
 ## [0.6.0] - 2023-07-26
 
 Further progress towards full test coverage.
 
-## Parser
+### Parser
 - Added support for Tuple and Record literals
 - Added support for tuple and record field access
 - Combined `keyword1` and `keyword` parsing
@@ -43,15 +49,15 @@ Further progress towards full test coverage.
 - Removed the `NumExpr` class entirely as it was just a subset of `Expr`
 - Rewrote `parseComments` entirely to correctly handle line comments, block comments, escaped quotes etc
 
-## Model
+### Model
 - Added support for instanced variables `$T` in `TypeInsts`
- 
-## Client
+
+### Client
 - Changed `ILogger` to `ILogger<T>`
 - Added basic logging to `compile`
 - Changed `CommandResult` and `Arg` to structs
 
-## Bugfixes
+### Bugfixes
 - Fixed several bugs related to comment preprocessing
 
 
@@ -73,11 +79,11 @@ The resulting integration tests are:
 - [MiniZinc.ModelTests/IntegrationTests.fs](./tests/MiniZinc.ModelTests/IntegrationTests.fs)
 - [MiniZinc.ClientTests/IntegrationTests.fs](./tests/MiniZinc.ClientTests/IntegrationTests.fs)
 
-We are **NOT** passing all of these tests yet.  The unit tests and examples test every strange dark corner and 
+We are **NOT** passing all of these tests yet.  The unit tests and examples test every strange dark corner and
 murky edge case of MiniZinc syntax which is exactly what we want but is going to take some time to get
-100% coverage. 
+100% coverage.
 
-I'll be plugging away on failing tests with a goal of 100% compliance for the next minor release. 
+I'll be plugging away on failing tests with a goal of 100% compliance for the next minor release.
 
 
 ### Model
@@ -140,13 +146,13 @@ I'll be plugging away on failing tests with a goal of 100% compliance for the ne
 
 ## [0.3.0] - 2023-05-27
 - Recursive loading of included models
- 
+
 ## [0.2.0] - 2023-05-24
-- Integrate libminizinc test suite 
+- Integrate libminizinc test suite
 - Parser tested against libminizinc
 - Model type and parsing methods
 
-## [0.1.0] - 2023-05-19 
+## [0.1.0] - 2023-05-19
 - MiniZinc AST
 - MiniZinc command line runner
 - MiniZinc parser with manual tests
