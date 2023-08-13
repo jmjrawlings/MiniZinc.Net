@@ -110,9 +110,9 @@ module private rec TestSuite =
         | _ -> Some node
         
     let parseFile (file: FileInfo) =
-        file.FullName
-        |> File.ReadAllText
-        |> parseYamlString
+        let yamlString = File.ReadAllText(file.FullName, Encoding.UTF8)
+        let yaml = parseYamlString yamlString
+        yaml
         
     let parseTestSpec (specFile: FileInfo) : TestSpec =
         
