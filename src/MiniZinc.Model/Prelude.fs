@@ -29,23 +29,6 @@ module Prelude =
         
     let notImpl msg =
         raise ( NotImplementedException(msg) )
-        
-
-type File =
-    
-    static member existing(path: string) =
-        match File.Exists path with
-        | true -> Result.Ok path
-        | false -> Error $"{path} does not exist"
-    
-    static member read(path: string) =
-        path
-        |> File.existing
-        |> Result.map File.ReadAllText
-        
-    static member read(path: FileInfo) =
-        File.read(path.FullName)
-        
 
 module Map =
     let withKey f xs =
