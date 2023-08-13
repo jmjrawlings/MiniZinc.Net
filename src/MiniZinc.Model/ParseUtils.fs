@@ -140,7 +140,11 @@ type Context =
 type ParseOptions =
     { Debug: bool }
     static member Default =
+        #if DEBUG
+        { Debug = true }
+        #else 
         { Debug = false }
+        #endif
     
 type ParserState(options: ParseOptions) =
     let sb = StringBuilder()
