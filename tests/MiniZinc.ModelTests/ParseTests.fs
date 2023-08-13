@@ -17,7 +17,7 @@ open FParsec
 module ``Parser Tests`` =
     
     let parseOptions =
-        { ParseOptions.Default with Debug = true }
+        ParseOptions.Default
                 
     // Test parsing the string
     let testRoundtrip (parser: Parser<'t>) (mzn: string) (writer: Encoder -> 't -> unit) =

@@ -53,7 +53,7 @@ type IntegrationTestSuite(fixture: ClientFixture) =
         failwith ""
 
     let parseOptions =
-        { ParseOptions.Default with Debug = true } 
+        ParseOptions.Default
             
     interface IClassFixture<ClientFixture>
     

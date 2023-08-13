@@ -8,7 +8,7 @@
     module IntegrationTests =
         
         let parseOptions =
-            { ParseOptions.Default with Debug = true }
+            ParseOptions.Default
         
         let test filePath =
             let file = LibMiniZinc.testDir </> filePath
