@@ -13,6 +13,7 @@ Just from my manual tests I can feel the parser is much much quicker.  I wish I 
 - Refactored the `Item` parser 
 - Refactored the `Expr` parser 
 - Refactored the `NumExpr` parser
+- Fixed multiple edge cases in the parser as shown by passing tests
 
 
 ## Changed
