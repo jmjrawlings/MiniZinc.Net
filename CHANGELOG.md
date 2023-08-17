@@ -1,7 +1,12 @@
 # Changelog
 
-
 ## [0.7.0] - UNRELEASED
+
+### Changed
+- The Array1D, Array2D and Array3D parsers have been rewritten
+
+### Fixed
+- Some roundtrip errors involving operators
 
 ### Meta
 
