@@ -12,7 +12,6 @@ be wrapped up and exposed through the `Model` class
 
 namespace MiniZinc
 
-open System
 open System.Diagnostics
 open System.IO
 open Microsoft.FSharp.Collections
@@ -110,11 +109,11 @@ module rec Ast =
         | Exponent = 30
         | Default = 31
         | Concat = 32
-        | TildeNotEqual = 33 
-        | TildeEqual = 34
-        | TildeAdd = 35   
-        | TildeSubtract = 36    
-        | TildeMultiply = 37  
+        | TildeNotEqual = 36 
+        | TildeEqual = 37
+        | TildeAdd = 38 
+        | TildeSubtract = 39    
+        | TildeMultiply = 40  
 
     type Op =     
         | Equivalent = 1
@@ -152,11 +151,11 @@ module rec Ast =
         | Plus = 33
         | Minus = 34
         | Not = 35
-        | TildeNotEqual = 33 
-        | TildeEqual = 34
-        | TildeAdd = 35   
-        | TildeSubtract = 36    
-        | TildeMultiply = 37
+        | TildeNotEqual = 36 
+        | TildeEqual = 37
+        | TildeAdd = 38 
+        | TildeSubtract = 39    
+        | TildeMultiply = 40
 
     [<RequireQualifiedAccess>] 
     type Expr =
@@ -214,7 +213,7 @@ module rec Ast =
         UnOp * Expr
     
     type ArraySlice =
-        (Expr voption) list
+        ValueOption<Expr> list
 
     type Annotation =
         Expr
