@@ -183,18 +183,49 @@ module ParseUtils =
         
     type CharStream with
     
-        member this.SkipWs(x: char) =
-            this.Skip(x)
+        member this.WsSkipWs(x: char) =
             this.SkipWhitespace()
-           
+            if this.Skip(x) then
+                this.SkipWhitespace()
+                true
+            else
+                false
+                
+        member this.WsSkipWs(x: string) =
+            this.SkipWhitespace()
+            if this.Skip(x) then
+                this.SkipWhitespace()
+                true
+            else
+                false
+    
+        member this.SkipWs(x: char) =
+            if this.Skip(x) then
+                this.SkipWhitespace()
+                true
+            else
+                false
+        
+        member this.SkipWs(x: string) =
+            if this.Skip(x) then
+                this.SkipWhitespace()
+                true
+            else
+                false
+            
         member this.SkipWs(offset: int) =
             this.Skip(offset)
             this.SkipWhitespace()
-    
-        member this.SkipWs(x: string) =
-            this.Skip(x)
+
+        member this.WsSkip(c: char) =
             this.SkipWhitespace()
-    
+            this.Skip(c)
+            
+        member this.WsSkip(s: string) =
+            this.SkipWhitespace()
+            this.Skip(s)
+
+        
     [<Struct>]
     type ParseDebugEvent<'a> =
         | Enter
@@ -214,7 +245,6 @@ module ParseUtils =
             if reply1.Status = Ok then
                 stream.SkipWhitespace()
                 if isNull reply1.Error then
-                    // in separate branch because the JIT can produce better code for a tail call
                     q stream
                 else
                     let stateTag1 = stream.StateTag
