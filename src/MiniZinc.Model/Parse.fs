@@ -1,17 +1,9 @@
-﻿(*
-
-Parse.fs
-
-Contains functions and values that enable the
-parsing of a MiniZinc model/file into an
-Abstract Syntax Tree (AST).
-
-*)
-
-namespace MiniZinc.Parser
+﻿namespace MiniZinc.Parser
 
 open System
+open System.Collections.Generic
 open System.IO
+open System.Runtime.CompilerServices
 open System.Text
 open FParsec
 open MiniZinc
@@ -38,7 +30,7 @@ module Parsers =
     /// This function returns the TypeInst with the correctly
     /// inferred Vars 
     /// </remarks>
-    let rec resolveTypeInst (ti: TypeInst) =
+    let rec private resolveTypeInst (ti: TypeInst) =
         match resolveType ti.Type with
         // If the type is a Var it overrides the setting here
         | ty, true ->
@@ -47,7 +39,7 @@ module Parsers =
         | ty, _ ->
             { ti with Type = ty; }
             
-    and resolveType (ty: Type) =
+    and private resolveType (ty: Type) =
         match ty with
         | Type.Int 
         | Type.Bool 
@@ -284,11 +276,10 @@ module Parsers =
     opp.TermParser <- (expr_atom .>> ws)
     
     let expr = opp.ExpressionParser
-        
     let LeftAssoc = Associativity.Left
     let RightAssoc = Associativity.Right
     let NoAssoc = Associativity.None
-       
+           
     let addInfix (s: string) (op: BinOp) (precedence: int) (assoc: Associativity) =
 
         let create _ left right =
@@ -464,7 +455,8 @@ module Parsers =
         let error = expected "=[=] expr"
         fun stream ->
             if stream.Skip('=') then
-                stream.SkipWs('=')
+                stream.Skip('=')
+                stream.SkipWhitespace()
                 expr stream
             else
                 Reply(ReplyStatus.Error, error)
@@ -1208,7 +1200,384 @@ module Parsers =
                                 
             let reply = loop Empty
             reply
+                
+    type [<Struct>] Array3DState =
+        | Begin
+        | End
+        | ParseElement of optional:bool
+        | Element of expr:Expr
+        | NoElement
         
+    let bool_lit =
+        stringReturn "true" true
+        <|>
+        stringReturn "false" false
+        |>> Expr.Bool
+        
+    let int_lit =
+        pint32
+        |>> Expr.Int
+        
+    let float_lit =
+        number_lit
+                
+    let array3d_lit : Parser<Expr[,,]> =
+        
+        let endElementError =
+            messageError "array elements must be followed by ',', '|', '|,' or '| |]"
+        
+        let expectedArrayElement =
+            expected "Array element expr"
+            
+        let expectedEndOfArray =
+            expected "|]"
+            
+        let rowEndError =
+            expected "Array1D row end: | or ','"
+            
+        let expectedMatrixSep =
+            expected "Array2D separator: |"
+            
+        let expectedElementOrEndOfArray =
+            expected "Array element or end of array '| |]'"
+        
+        fun stream ->
+            
+            let mutable i = 0 // Current first index
+            let mutable j = 0 // Current second index
+            let mutable k = 0 // Current third index
+            let mutable n = 0 // Total element count
+                                                                                    
+            let mutable errors = NoErrorMessages
+            let mutable rowContinue = false
+            let mutable fin = false
+            let mutable elements = List<Expr>()
+                                                                                                                        
+            while not fin do
+                let tag = stream.StateTag
+                let exprReply = expr stream
+                // Successful element parse
+                if exprReply.Status = Ok then
+                    stream.SkipWhitespace()
+                    elements.Add exprReply.Result
+                    k <- k + 1
+                    n <- n + 1
+                                                                                
+                    let comma = stream.SkipWs(',')
+                    let pipe = stream.SkipWs('|')
+                                                                    
+                    // End of current 1D array                        
+                    if pipe then
+                        rowContinue <- false
+                                                                                                                                                                                                                  
+                        // Start of new 2D array
+                        if stream.SkipWs(',') then
+                            if stream.SkipWs('|') then
+                                k <- 0
+                                i <- i + 1
+                                j <- 0
+                            else
+                                errors <- expectedMatrixSep
+                        
+                        // End of the 3d array
+                        elif stream.Skip("|]") then
+                            fin <- true
+                            
+                        // Start of new row
+                        else
+                            k <- 0
+                            j <- j + 1
+                            
+                    // Continue 1D array
+                    elif comma then
+                        rowContinue <- true
+                    
+                    // Error    
+                    else
+                        errors <- rowEndError
+                        fin <- true
+
+                // Element parse failed and changed state                        
+                elif tag <> stream.StateTag then
+                    errors <- exprReply.Error
+                    fin <- true
+                    
+                // Element parse failed when one was expected
+                elif rowContinue then
+                    errors <- expectedArrayElement
+                    fin <- true
+
+                // No element but it could be an empty array                
+                elif n = 0 then
+                    if stream.SkipWs('|') && stream.Skip("|]") then
+                        fin <- true
+                    else
+                        fin <- true
+                        errors <- expectedElementOrEndOfArray
+                    
+                // No element - must be end
+                elif stream.Skip("|]") then
+                    fin <- true
+                    
+                // Error
+                else
+                    errors <- expectedEndOfArray
+                    fin <- true
+            
+            if errors <> NoErrorMessages then
+                Reply(ReplyStatus.Error, errors)
+            elif n = 0 then
+                Reply(Array3D.zeroCreate 1 0 0)
+            else
+                let I = i + 1
+                let J = j + 1 
+                let K = k
+                let N = I * J * K
+                if N <> n then
+                    let msg = $"Array[{I},{J},{K}] should have {N} elements but parsed {n}"
+                    Reply(ReplyStatus.Error, messageError msg)
+                else
+                    let array = Array3D.zeroCreate I J K
+                    let mutable z = 0
+                    for i in 0 .. (I-1) do
+                        for j in 0 .. (J-1) do
+                            for k in 0 .. (K-1) do
+                                array[i,j,k] <- elements[z]
+                                z <- z + 1
+                    Reply(array)
+    
+    type Array1DState =
+        | ParseElement 
+        | RetryElement
+        | Continue
+    
+    // Parse a 1D array literal using the provided element parser
+    // as the first priority.  Internally this uses an
+    // (element <|> expr) to still allow complex expressions 
+    let private array1d_lit_of (element: ValueOption<Parser<Expr>>): Parser<List<Expr>> =
+        let delimError = expected ", or ]"
+        let elemError = expected "array element"
+        let pElement, pBackup, retry =
+            match element with
+            | ValueSome p ->
+                p, expr, true
+            | ValueNone _ ->
+                expr, Unchecked.defaultof<Parser<Expr>>, false
+
+        fun stream ->
+            let mutable elements = List<Expr>()
+            let rec loop (state: Array1DState) =
+                match state with
+                // Attempt with the initial parser (eg: int, float)
+                | ParseElement ->
+                    let tag = stream.StateTag
+                    let idx = stream.Index                        
+                    let reply = pElement stream
+                    // Successful element parse
+                    if reply.Status = Ok then
+                        stream.SkipWhitespace()
+                        // Check ahead in case the element on matched partially
+                        // for example it could succeed but be part of a binary
+                        // operation.
+                        let c = stream.Peek()
+                        if not retry then
+                            elements.Add reply.Result
+                            loop Continue
+                        elif c = ',' then
+                            elements.Add reply.Result
+                            loop Continue
+                        elif c = ']' then
+                            elements.Add reply.Result
+                            loop Continue
+                        else
+                            stream.Seek(idx)
+                            loop RetryElement
+                        
+                    // Failed and changed state
+                    elif stream.StateTag <> tag then
+                        reply.Error
+                    // Parser failed but we can retry
+                    elif retry then
+                        loop RetryElement
+                    // Parser failed no retry                                            
+                    else
+                        reply.Error
+                        
+                // Retry with the full expression parser if required
+                | RetryElement ->
+                    let peek = stream.Peek2()
+                    match peek.Char0, peek.Char1 with
+                    // Check for wildcard 
+                    | '_', c when not (Char.IsLetter c) ->
+                        elements.Add (Expr.WildCard WildCard)
+                        stream.SkipWs(1)
+                        loop Continue
+                    // Check for absent 
+                    | '<', '>' ->
+                        elements.Add (Expr.Absent Absent)
+                        stream.SkipWs(2)
+                        loop Continue
+                    | _, _ ->
+                        let reply = pBackup stream
+                        // Retry succeded
+                        if reply.Status = Ok then
+                            elements.Add reply.Result
+                            loop Continue
+                        // Retry failed
+                        else
+                            reply.Error
+
+                // Check for end or separator                    
+                | Continue ->
+                    if stream.SkipWs(',') then
+                        if stream.Skip(']') then
+                            NoErrorMessages
+                        else
+                            loop ParseElement
+                    elif stream.Skip(']') then
+                        NoErrorMessages
+                    else
+                        elemError
+            
+            let error = loop Continue
+            if error = NoErrorMessages then
+                Reply(elements)
+            else
+                Reply(ReplyStatus.Error, error)
+                
+    // <array-literal-2d>
+    let array2d_lit : Parser<Expr[,]> =
+                                            
+        let row : Parser<Expr list> =
+            commaSep1 expr
+        
+        let sep : Parser<unit> =
+            fun stream ->
+                let error = expectedString "|"
+                let next = stream.Peek2()
+                if next.Char0 = '|' && next.Char1 <> ']' then
+                    stream.SkipWs(1)
+                    Reply(())
+                else
+                    Reply(ReplyStatus.Error, error)
+        
+        let rows : Parser<Expr list list> =
+            sepEndBy row sep
+
+        let uniformError =
+            expected "2D array with uniform dimensions"
+        
+        let closeError =
+            expected "|] or ]"
+        
+        fun stream ->
+            let reply = rows stream
+            if reply.Status = Ok then
+                
+                // Directly follows a trailing sep
+                let closeOk =
+                    if stream.Skip(']') then
+                        true
+                    else
+                        stream.SkipWhitespace()
+                        stream.Skip("|]")
+                
+                if closeOk then    
+                    try
+                        let array = array2D reply.Result
+                        Reply(array)
+                    with
+                    | exn ->
+                        Reply(ReplyStatus.Error, uniformError)
+                else
+                    Reply(ReplyStatus.Error, closeError)
+            else
+                Reply(reply.Status, reply.Error)
+    
+           
+    let array_expr : Parser<Expr> =
+            
+        let error = expectedString "["
+        
+        let array_comp_tail =
+            generators .>> ws .>> skipChar ']'
+            
+        let expectedArrayExpr =
+            expected "array expression (literal or comp)"
+            
+        let array3d =            
+            array3d_lit |>> Expr.Array3DLit 
+        
+        let array2d =            
+            array2d_lit |>> Expr.Array2DLit
+        
+        fun stream ->
+                        
+            // Empty 1D array
+            if stream.Skip('[') then
+                
+                // 2D or 3D array 
+                if stream.SkipWs("|") then
+                                    
+                    // Empty 2D Array
+                    if stream.Skip("|]") then
+                        Reply(Expr.Array1DLit Array.empty)
+                        
+                    elif stream.SkipWs('|') then
+                        array3d stream                        
+                    else
+                        array2d stream
+
+                // Empty 1D Array
+                elif stream.WsSkip(']') then 
+                    Reply(Expr.Array1DLit Array.empty)
+                                    
+                // Non-empty 1D Array or Comprehension
+                else
+                    let reply = expr stream
+                    if reply.Status = Ok then
+                        stream.SkipWhitespace()
+                        // Pipe indicates a comprehension
+                        if stream.SkipWs('|') then
+                            match array_comp_tail stream with
+                            | r when r.Status = Ok ->
+                                { Yields = reply.Result
+                                ; IsSet = false
+                                ; From = r.Result }
+                                |> Expr.ArrayComp
+                                |> Reply
+                            | r ->
+                                Reply(r.Status, r.Error)
+                            
+                        else
+                            // Comma separated means array literal
+                            let first = reply.Result
+                            let element =
+                                match first with
+                                | Expr.Bool _ -> ValueSome bool_lit
+                                | Expr.Int _ -> ValueSome int_lit
+                                | Expr.Float _ -> ValueSome float_lit
+                                | _ -> ValueNone
+                            
+                            match array1d_lit_of element stream with
+                            | r when r.Status = Ok ->
+                                let arr = r.Result
+                                arr.Insert(0, reply.Result)
+                                let set = 
+                                    arr
+                                    |> List.ofSeq
+                                    |> Expr.Set
+                                
+                                Reply set
+                            | r ->
+                                Reply(r.Status, r.Error)
+
+                    else
+                        Reply(reply.Status, reply.Error)
+            else
+                Reply(ReplyStatus.Error, expectedArrayExpr)    
+        
+   
     // <expr-atom-head>    
     let expr_atom_head : Parser<Expr> =
             
@@ -1229,167 +1598,7 @@ module Parsers =
             
         let id =
             ident_kw .>> ws
-            
-        let array2d_lit : Parser<Expr> =
-            
-            let row =
-                commaSep1 expr <!> "array2d-row"
-            
-            let sep : Parser<unit> =
-                fun stream ->
-                    let next = stream.Peek2()
-                    match (next.Char0, next.Char1) with
-                    | '|', x when x <> ']' ->
-                        stream.SkipWs(1)
-                        Reply(())
-                    | _1, _2 ->
-                        Reply(ReplyStatus.Error, expected "|")
-            
-            let rows = sepEndBy row sep
-
-            let error = expected "2D array with uniform dimensions"
-
-            fun stream ->
-                let reply = rows stream
-                if reply.Status = Ok then
-                    stream.SkipWhitespace()
-                    stream.Skip("|]")
-                    try
-                        let array = array2D reply.Result
-                        Reply(Expr.Array2DLit array)
-                    with
-                    | exn ->
-                        Reply(ReplyStatus.Error, error)
-                else
-                    Reply(reply.Status, reply.Error)
                     
-        let array3d_lit : Parser<Expr> =
-            
-            let row =
-                commaSep expr <!> "array3d-row"
-            
-            let sep : Parser<unit> =
-                let error = expected "| not followed by another | or ,"
-                fun stream ->
-                    match stream.Peek() with
-                    | '|' ->
-                        let mutable state = CharStreamState(stream)
-                        stream.SkipWs(1)
-                        match stream.Peek() with
-                        | '|' | ',' ->
-                            stream.BacktrackTo(&state)
-                            Reply(ReplyStatus.Error, error)
-                        | _ ->
-                            Reply(())
-                    | _ ->
-                        Reply(ReplyStatus.Error, error)
-            
-            let rows = sepEndBy row sep
-            
-            let nested_matrix : Parser<Expr list list> =
-                row
-                |> delimitedBy sep
-                |> betweenWs('|', '|')
-                <!> "array3d-matrix"
-                            
-            nested_matrix
-            |> commaSep1
-            .>> ws
-            .>> skipString "|]"
-            >>= (fun exprs ->
-                
-                try
-                    let I = exprs.Length
-                    let J = if I > 0 then exprs[0].Length else 0
-                    let K = if J > 0 then exprs[0].[0].Length else 0
-                    let array = Array3D.zeroCreate I J K
-                    for i,x in Seq.indexed exprs do
-                        for j,y in Seq.indexed x do
-                            for k, z in Seq.indexed y do
-                                array[i,j,k] <- z
-                    array
-                    |> Expr.Array3DLit 
-                    |> preturn                            
-                with
-                | exn ->
-                    fail $"Bad array dimensions"
-                )
-            |> attempt
-            <!> "array3d"                    
-
-        let array1d_lit =
-            commaSep1 expr .>> skipChar ']'
-        
-        let array_expr : Parser<Expr> =
-                
-            let array_comp_tail =
-                generators .>> ws .>> skipChar ']'
-            
-            fun stream ->
-                stream.SkipWs('[')
-                
-                match stream.Peek() with
-                
-                // Empty array
-                | ']' ->
-                    stream.Skip()
-                    Reply(Expr.Array1DLit Array.empty)
-                
-                // 2D or 3D Array
-                | '|' ->
-                    stream.SkipWs(1)
-                    let next = stream.Peek2()
-                    match next.Char0, next.Char1 with
-                    | '|' , ']' ->
-                        stream.Skip(2)
-                        Reply(Expr.Array1DLit Array.empty)
-                    | '|', _ ->
-                        array3d_lit stream
-                    |  _  ->
-                        array2d_lit stream
-                    
-                // 1D literal or comprehension
-                | _ ->
-                    let reply = expr stream
-                    if reply.Status = Ok then
-                        stream.SkipWhitespace()
-                        match stream.Read() with
-                        // Comma separated means array literal
-                        | ',' ->
-                            stream.SkipWhitespace()
-                            match array1d_lit stream with
-                            | r when r.Status = Ok ->
-                                reply.Result :: r.Result
-                                |> Expr.Set
-                                |> Reply
-                            | r ->
-                                Reply(r.Status, r.Error)
-                                
-                        // Pipe indicates a comprehension
-                        | '|' ->
-                            stream.SkipWhitespace()
-                            match array_comp_tail stream with
-                            | r when r.Status = Ok ->
-                                { Yields = reply.Result
-                                ; IsSet = false
-                                ; From = r.Result }
-                                |> Expr.ArrayComp
-                                |> Reply
-                            | r ->
-                                Reply(r.Status, r.Error)
-                            
-                        // End of array literal
-                        | ']' ->
-                             [| reply.Result |]
-                             |> Expr.Array1DLit
-                             |> Reply
-
-                        | c ->
-                            Reply(ReplyStatus.Error, unexpected (string c))
-                             
-                    else
-                        Reply(reply.Status, reply.Error)    
-            
         let set_expr : Parser<Expr> =
             
             let set_lit_tail =
@@ -1410,10 +1619,8 @@ module Parsers =
                     let reply = expr stream
                     if reply.Status = Ok then
                         stream.SkipWhitespace()
-                        match stream.Peek() with
                         // Comma separated means set literal
-                        | ',' ->
-                            stream.SkipWs(1)
+                        if stream.SkipWs(',') then
                             match set_lit_tail stream with
                             | r when r.Status = Ok ->
                                 reply.Result :: r.Result
@@ -1423,8 +1630,7 @@ module Parsers =
                                 Reply(r.Status, r.Error)
                                 
                         // Pipe indicated set comprehension
-                        | '|' ->
-                            stream.SkipWs(1)
+                        elif stream.SkipWs('|') then
                             match set_comp_tail stream with
                             | r when r.Status = Ok ->
                                 { Yields = reply.Result
@@ -1436,11 +1642,11 @@ module Parsers =
                                 Reply(r.Status, r.Error)
                             
                         // End of set literal
-                        | '}' ->
-                             stream.Skip(1)
+                        elif stream.SkipWs('}') then
                              Reply(Expr.Set[reply.Result])
 
-                        | c ->
+                        else
+                            let c = stream.Peek()
                             Reply(ReplyStatus.Error, unexpected (string c))
                              
                     else
@@ -1639,7 +1845,7 @@ module Parsers =
                 { Expr = expr
                 ; Annotation = ann }
                 |> Item.Output)
-        
+                
     // <annotation_item>
     let ann_item : Parser<Item> =
         pipe(
