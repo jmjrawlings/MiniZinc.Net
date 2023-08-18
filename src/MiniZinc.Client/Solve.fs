@@ -199,8 +199,7 @@ module rec Solve =
                                 match parseDataString ParseOptions.Default dataString with
                                 | Result.Ok items ->
                                     items
-                                    |> Seq.map (fun struct(id,expr) -> (id,expr))
-                                    |> Map.ofSeq
+                                    |> Map.ofKeyValues
                                     |> Result.Ok
                                 | Result.Error err ->
                                     Result.Error err

@@ -8,13 +8,13 @@
     module IntegrationTests =
         
         let parseOptions =
-            { ParseOptions.Default with Debug = true }
+            ParseOptions.Default
         
         let test filePath =
             let file = LibMiniZinc.testDir </> filePath
-            let mzn = File.ReadAllText file.FullName
-            let string, comments = parseComments mzn
-            let result = parseModelString parseOptions string
+            let source = File.ReadAllText file.FullName
+            let mzn, comments = parseComments source
+            let result = parseModelString parseOptions mzn
             match result with
             | Result.Ok model ->
                 ()
@@ -24,7 +24,7 @@ Failed to parse "{file.Name}":
 
 {err.Message}
 ----------------------------------------------
-{string}
+{mzn}
 -----------------------------------------------
 {err.Trace}
 -----------------------------------------------"""
