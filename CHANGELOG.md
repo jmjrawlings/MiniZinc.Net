@@ -1,16 +1,21 @@
 # Changelog
 
-## [0.7.0] - UNRELEASED
+## [0.6.3] - 2023-08-18
+
+The parser improvements continue with 1D, 2D and 3D array
+parsers all rewritten with performance in mind.  The `big array lit` example
+from the unit test suite went from taking over a minute to under a second.
 
 ### Changed
 - The Array1D, Array2D and Array3D parsers have been rewritten
 
 ### Fixed
 - Some roundtrip errors involving operators
+- Several random issue causing unit tests to fail
 
 ### Meta
-
 - Tests will only capture traces in `DEBUG` releases
+- Tests that use unsupported language features have been Skipped in XUnit
 
 
 ## [0.6.2] - 2023-08-13
