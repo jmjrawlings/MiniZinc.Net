@@ -254,7 +254,7 @@ Encoded:
         testExpr mzn
     
     [<Theory>]
-    [<InlineData("[| | | |]", 1, 1, 0)>]
+    [<InlineData("[| | | |]", 1, 0, 0)>]
     [<InlineData("[| | one_item | |]", 1, 1, 1)>]
     [<InlineData("[| | 1, 2 |, | 3, 4 | |]", 2, 1, 2)>]
     [<InlineData("[| | 1, 2 | 3, 4|, | 5, 6|7, 8| |]", 2, 2, 2)>]
