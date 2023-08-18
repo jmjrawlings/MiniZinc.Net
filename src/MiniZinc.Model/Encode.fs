@@ -345,10 +345,10 @@ module rec Encode =
         member this.writeTupleExpr (tuple: TupleExpr) =
             this.writeArgs tuple
             
-        member this.writeRecordField (struct(id, expr): NamedExpr) =
-            this.write id
+        member this.writeRecordField (expr: NamedExpr) =
+            this.write expr.Key
             this.write ": "
-            this.writeExpr expr
+            this.writeExpr expr.Value
             
         member this.writeRecordExpr (record: RecordExpr) =
             this.write "("
@@ -648,10 +648,10 @@ module rec Encode =
                 this.writeSynonym x
             | Item.Constraint x -> 
                 this.writeConstraint x
-            | Item.Assign (id, expr) -> 
-                this.write id
+            | Item.Assign expr ->
+                this.write expr.Key
                 this.write '='
-                this.writeExpr expr
+                this.writeExpr expr.Value
             | Item.Declare x -> 
                 this.writeDeclare x
             | Item.Solve x ->
