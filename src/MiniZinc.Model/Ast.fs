@@ -12,6 +12,7 @@ be wrapped up and exposed through the `Model` class
 
 namespace MiniZinc
 
+open System.Collections.Generic
 open System.Diagnostics
 open System.IO
 open Microsoft.FSharp.Collections
@@ -417,7 +418,7 @@ module rec Ast =
         ; Annotations: Annotations }
       
     type NamedExpr =
-        (struct(Ident * Expr))
+        KeyValuePair<Ident, Expr>
            
     type TestItem =
         { Name: string
