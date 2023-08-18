@@ -6,6 +6,7 @@
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <RepositoryType>git</RepositoryType>
         <Authors>Justin Rawlings</Authors>
+        <TargetFramework>net7.0</TargetFramework>
         <RepositoryUrl>https://github.com/jmjrawlings/MiniZinc.Net</RepositoryUrl>
     </PropertyGroup>
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">

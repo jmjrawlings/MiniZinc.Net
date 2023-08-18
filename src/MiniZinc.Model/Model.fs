@@ -281,8 +281,8 @@ module rec Model =
                     { model with NameSpace = model.NameSpace.Add x }
                 | Item.Function x ->
                     { model with NameSpace = model.NameSpace.Add x }
-                | Item.Assign (name, expr) ->
-                    { model with NameSpace = model.NameSpace.Add(name, expr) }
+                | Item.Assign (expr) ->
+                    { model with NameSpace = model.NameSpace.Add(expr.Key, expr.Value) }
                 | Item.Constraint x ->
                     { model with Constraints = x :: model.Constraints }
                 | Item.Solve x ->

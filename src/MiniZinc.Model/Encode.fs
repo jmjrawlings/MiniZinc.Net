@@ -307,25 +307,33 @@ module rec Encode =
             this.write "|]"
             
         member this.writeArray3dLit (array: Expr[,,]) =
-            this.writen "[|"
-            this.indent()
-            let I = Array3D.length1 array
-            let J = Array3D.length2 array
-            for i in 0 .. I - 1 do
-                this.write '|'
-                for j in 0 .. J - 1 do
-                    let row = array.[i,j,*]
-                    this.writeExprs(row)
+            match array.Length with
+            | 0 ->
+                this.writen "[| | | |]"
+            | N ->
+                this.writen "[|"
+                this.indent()
+                                                               
+                let I = Array3D.length1 array
+                let J = Array3D.length2 array
+                let K = Array3D.length3 array
+                                
+                for i in 0 .. I - 1 do
                     this.write '|'
-                    this.writen()
+                    for j in 0 .. J - 1 do
+                        for k in 0 .. K - 1 do
+                            let e = array[i,j,k]
+                            this.writeExpr e
+                            this.write ','
+                        this.write '|'
+                        this.writen()
 
-                // Separator between sub matrices
-                if (i <> I - 1) then
-                    this.writen ", "
-                    
-                    
-            this.dedent()        
-            this.write "|]"            
+                    // Separator between sub matrices
+                    if (i < I - 1) then
+                        this.writen ", "
+                        
+                this.dedent()        
+                this.write "|]"            
            
         member this.writeArrayComp (x: CompExpr) =
             this.write '['
@@ -337,10 +345,10 @@ module rec Encode =
         member this.writeTupleExpr (tuple: TupleExpr) =
             this.writeArgs tuple
             
-        member this.writeRecordField (struct(id, expr): NamedExpr) =
-            this.write id
+        member this.writeRecordField (expr: NamedExpr) =
+            this.write expr.Key
             this.write ": "
-            this.writeExpr expr
+            this.writeExpr expr.Value
             
         member this.writeRecordExpr (record: RecordExpr) =
             this.write "("
@@ -640,10 +648,10 @@ module rec Encode =
                 this.writeSynonym x
             | Item.Constraint x -> 
                 this.writeConstraint x
-            | Item.Assign (id, expr) -> 
-                this.write id
+            | Item.Assign expr ->
+                this.write expr.Key
                 this.write '='
-                this.writeExpr expr
+                this.writeExpr expr.Value
             | Item.Declare x -> 
                 this.writeDeclare x
             | Item.Solve x ->

@@ -17,7 +17,7 @@ open Xunit
 module ``Model Tests`` =
     
     let parseOptions =
-        { ParseOptions.Default with Debug = true }   
+        ParseOptions.Default   
     
     [<Fact>]
     let ``test binding conflict`` () =

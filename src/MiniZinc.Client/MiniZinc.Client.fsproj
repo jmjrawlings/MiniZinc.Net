@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Title>MiniZinc.Net</Title>
-    <Description>Formulate and solve MiniZinc models in .NET</Description>
-    <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>MiniZinc.Net</RootNamespace>
+    <Title>MiniZinc.Net.Client</Title>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>
@@ -26,11 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MiniZinc.Model\MiniZinc.Model.fsproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="JetBrains.ReSharper.TestRunner.Merged">
-      <HintPath>..\..\..\..\AppData\Local\JetBrains\Toolbox\apps\Rider\ch-0\231.9011.39\lib\ReSharperHost\TestRunner\netcoreapp3.0\JetBrains.ReSharper.TestRunner.Merged.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
  

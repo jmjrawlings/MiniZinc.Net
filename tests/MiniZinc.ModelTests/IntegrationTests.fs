@@ -8,23 +8,26 @@
     module IntegrationTests =
         
         let parseOptions =
-            { ParseOptions.Default with Debug = true }
+            ParseOptions.Default
         
-        let test filePath =
-            let file = LibMiniZinc.testDir </> filePath
-            let mzn = File.ReadAllText file.FullName
-            let string, comments = parseComments mzn
-            let result = parseModelString parseOptions string
+        let test (filepath: string) =
+            let mutable file = LibMiniZinc.testDir.FullName
+            for stem in filepath.Split('\\') do
+                file <- Path.Combine(file, stem)
+                
+            let source = File.ReadAllText file
+            let mzn, comments = parseComments source
+            let result = parseModelString parseOptions mzn
             match result with
             | Result.Ok model ->
                 ()
             | Result.Error err ->
                 failwith $"""
-Failed to parse "{file.Name}":
+Failed to parse "{file}":
 
 {err.Message}
 ----------------------------------------------
-{string}
+{mzn}
 -----------------------------------------------
 {err.Trace}
 -----------------------------------------------"""
