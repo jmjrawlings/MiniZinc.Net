@@ -29,12 +29,25 @@ module Prelude =
         
     let notImpl msg =
         raise ( NotImplementedException(msg) )
+        
+    let xd () =
+        failwith "xd"
+    
+    let inline (=>) key value =
+        KeyValuePair(key, value)
 
 module Map =
+    
     let withKey f xs =
         xs
         |> Seq.map (fun x -> (f x), x)
         |> Map
+
+    let ofKeyValues (xs: seq<KeyValuePair<'k, 'v>>) : Map<'k, 'v> =
+        let map = 
+            (Map.empty, xs)
+            ||> Seq.fold (fun m kv -> Map.add kv.Key kv.Value m)
+        map
         
     let toDict (map: Map<'k, 'v>) : Dictionary<'k,'v> =
         let dict = Dictionary()
