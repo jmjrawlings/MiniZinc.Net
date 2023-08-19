@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Title>MiniZinc.Net</Title>
-    <Description>Formulate and solve MiniZinc models in .NET</Description>
-    <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>MiniZinc.Net</RootNamespace>
+    <Title>MiniZinc.Net.Model</Title>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>

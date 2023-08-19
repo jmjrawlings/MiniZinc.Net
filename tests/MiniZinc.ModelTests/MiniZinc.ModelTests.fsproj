@@ -1,11 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
     
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <FSharpCoreImplicitPackageVersion>7.0.200</FSharpCoreImplicitPackageVersion>
-        <RootNamespace>MiniZinc.Net.Tests</RootNamespace>
-    </PropertyGroup>
-    
     <ItemGroup>
         <Compile Include="ParseTests.fs" />
         <Compile Include="ModelTests.fs" />
@@ -20,8 +14,8 @@
     <ItemGroup>
       <PackageReference Include="FluentAssertions" Version="6.11.0" />
       <PackageReference Include="Microsoft.Net.Test.Sdk" Version="17.5.0" />
-      <PackageReference Include="xunit" Version="2.5.0-pre.44" />
-      <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0-pre.27">
+      <PackageReference Include="xunit" Version="2.5.0" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
