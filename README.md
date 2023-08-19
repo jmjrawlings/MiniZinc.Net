@@ -1,63 +1,58 @@
 # MiniZinc.Net
 
-Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from C# and F#.
+Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from .NET
 
-> This is an unofficial API under heavy development.  
-> See the [Project Board](https://github.com/users/jmjrawlings/projects/1/views/2) for details. 
+> This project is a work in progress and is quite some time away from being "production ready" though
+> that is certainly the goal.
+> 
+> I am developing it in the open as there are certain parts (eg the parser) that may serve useful
+> to others.
 
-## Immediate Goals
+## Features 
 
-- Parse models
-  - From model string
-  - From `.mzn` file
-  - Full AST as per the [Specification](https://www.minizinc.org/doc-2.7.3/en/spec.html#full-grammar)
+- Parse
+  - [x] Parse models from a string
+  - [x] Parse models from a `.mzn` file
+  - [x] Parse `.dzn` model data from string
 
-- Solve models
-  - All async iterators
-  - Stream from stdout, stderr
-  - Handle timeout / user cancellation
 
-## Wishlist
+- Model
+  - [ ] Cohesive API for editing models
 
-- Create models
-  - Come up with a nice DSL
-  - Computational Expressions?
 
-- Augment models
-  - Parse then edit?
+- Client
+  - [x] Execute `minizinc` commands
+  - [x] Solve simple models
+  - [x] Async stream model solutions
+  - [ ] Handle timeout / user cancellation
 
-- Compile time execution
 
-  - C#
-    - Use a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) 
-      - Have models in separate file and a first class interface to them through C#? that would be great
-  - F#
-    - Use a [Type Provider](https://learn.microsoft.com/en-us/dotnet/fsharp/tutorials/type-providers/)? 
-      - They are pretty clunky honestly and not fun to build
+- Other
+  - [ ] C# source generator
+  - [ ] Comprehensive examples
+  - [ ] Tutorials
+  - [ ] Nuget package
 
-- Comprehensive examples and walkthroughs
-- Nuget package
+
+## Requirements
+- [.NET7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
 
 
 ## Quickstart
-
-- Download [.NET6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
-- Clone the repo
+- `git clone https://github.com/jmjrawlings/MiniZinc.Net.git`
+- `cd MiniZinc.Net`
 - `dotnet tool restore`
 - `dotnet test`
 
 
-## Motivation
-
-- Give back to the MiniZinc community
-- Share what I've learned from solving problems in industry
-- Promote MiniZinc and constraint solving  
+## Goals
+- Contribute to the success of MiniZinc 
 - Make modelling and solving CP problems a joyful experience
-- Get this library to a level I would use professionally in production
+- Share my industry experience with others 
+- Create a high quality library I would happily use in production
 
 
 ## References
-
 - [MiniZinc Installation](https://www.minizinc.org/doc-2.7.4/en/installation.html)
 - [MiniZinc Tutorial](https://www.minizinc.org/doc-2.7.4/en/part_2_tutorial.html)
 - [MiniZinc User Manual](https://www.minizinc.org/doc-2.7.4/en/part_3_user_manual.html)
