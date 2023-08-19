@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Title>MiniZinc.Net</Title>
     <Description>Formulate and solve MiniZinc models in .NET</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>MiniZinc.Net</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">

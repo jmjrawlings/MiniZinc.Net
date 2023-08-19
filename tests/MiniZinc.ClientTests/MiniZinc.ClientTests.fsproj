@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <FSharpCoreImplicitPackageVersion>7.0.200</FSharpCoreImplicitPackageVersion>
+        <TargetFramework>net7.0</TargetFramework>
         <RootNamespace>MiniZinc.Net.Tests</RootNamespace>
     </PropertyGroup>
 
