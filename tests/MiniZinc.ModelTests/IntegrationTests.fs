@@ -10,9 +10,12 @@
         let parseOptions =
             ParseOptions.Default
         
-        let test filePath =
-            let file = LibMiniZinc.testDir </> filePath
-            let source = File.ReadAllText file.FullName
+        let test (filepath: string) =
+            let mutable file = LibMiniZinc.testDir.FullName
+            for stem in filepath.Split('\\') do
+                file <- Path.Combine(file, stem)
+                
+            let source = File.ReadAllText file
             let mzn, comments = parseComments source
             let result = parseModelString parseOptions mzn
             match result with
@@ -20,7 +23,7 @@
                 ()
             | Result.Error err ->
                 failwith $"""
-Failed to parse "{file.Name}":
+Failed to parse "{file}":
 
 {err.Message}
 ----------------------------------------------
