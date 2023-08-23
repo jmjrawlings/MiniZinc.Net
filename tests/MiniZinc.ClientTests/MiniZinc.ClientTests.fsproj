@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+    
     <ItemGroup>
         <Compile Include="Fixtures.fs" />
         <Compile Include="CommandTests.fs" />

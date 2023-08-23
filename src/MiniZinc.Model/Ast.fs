@@ -12,10 +12,10 @@ be wrapped up and exposed through the `Model` class
 
 namespace MiniZinc
 
-open System.Collections.Generic
 open System.Diagnostics
 open System.IO
 open Microsoft.FSharp.Collections
+open System.Collections.Generic
 
 [<AutoOpen>]
 module rec Ast =
@@ -179,6 +179,8 @@ module rec Ast =
         | Array1DLit     of Expr[]
         | Array2DLit     of Expr[,]
         | Array3DLit     of Expr[,,]
+        | IndexedArray1DLit of List<IndexedArrayItem>
+        | IndexedArrayComp of IndexedArrayComp
         | Array1D        of ArrayDim * Expr[]
         | Array2D        of ArrayDim * ArrayDim * Expr[]
         | Array3D        of ArrayDim * ArrayDim * ArrayDim * Expr[]
@@ -222,6 +224,12 @@ module rec Ast =
     type Annotations =
         Annotation list
 
+    type IndexedArrayItem =
+        KeyValuePair<Expr, Expr>
+        
+    type IndexedArray1D =
+        List<IndexedArrayItem>
+    
     type GenCallExpr =
         { Id : string
         ; From : Generator list 
@@ -230,6 +238,10 @@ module rec Ast =
     type CompExpr =
         { Yields : Expr
         ; IsSet  : bool
+        ; From   : Generator list }
+        
+    type IndexedArrayComp =
+        { Yields : KeyValuePair<Expr, Expr>
         ; From   : Generator list }
 
     type Generator =

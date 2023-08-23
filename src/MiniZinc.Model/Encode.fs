@@ -1,6 +1,7 @@
 ﻿namespace MiniZinc
 
 open System
+open System.Collections.Generic
 open System.Text
 open MiniZinc
 
@@ -300,7 +301,7 @@ module rec Encode =
             let I = Array2D.length1 array
             let J = Array2D.length2 array
             for i in 0 .. I-1 do
-                let row = array.[i,*]
+                let row = array[i,*]
                 this.writeExprs(row)
                 this.write "\n|"
                     
@@ -359,6 +360,18 @@ module rec Encode =
             this.writeOp id
             this.write " "
             this.writeExpr expr
+            
+        member this.writeIndexedArray1D (array: IndexedArray1D) =
+            this.write '['
+            this.writeSep(",", array, this.writeKeyValuePair)
+            this.write ']'
+        
+        member this.writeIndexedArrayComp (expr: IndexedArrayComp) =
+            this.write '['
+            this.writeKeyValuePair expr.Yields
+            this.write " | "
+            this.writeGenerators expr.From
+            this.write ']'
             
         member this.writeBinaryOp ((left, op, right): BinaryOpExpr) =
             this.writeExpr left
@@ -493,6 +506,10 @@ module rec Encode =
                 this.writeExpr expr
                 this.write "."
                 this.write item
+            | Expr.IndexedArray1DLit x ->
+                this.writeIndexedArray1D x
+            | Expr.IndexedArrayComp x ->
+                this.writeIndexedArrayComp x
             | Expr.UnaryOp x ->
                 this.writeUnaryOp x
             | Expr.BinaryOp x ->
@@ -571,6 +588,16 @@ module rec Encode =
             this.write id
             this.write ": "
             this.writeExpr expr
+            
+        member this.writeNamedExpr (expr: NamedExpr) =
+            this.write expr.Key
+            this.write ": "
+            this.writeExpr expr.Value
+        
+        member this.writeKeyValuePair (kv: KeyValuePair<Expr, Expr>) =
+            this.writeExpr kv.Key
+            this.write ": "
+            this.writeExpr kv.Value            
             
         member this.writeOutput (x: OutputExpr) =
             this.write "output "
