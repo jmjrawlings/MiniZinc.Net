@@ -7,7 +7,13 @@ just about as fast as they are going to get and more than
 sufficient for 99.9% of use cases.
 
 ### Added
-- Added support for [indexed array literals](https://www.minizinc.org/doc-2.7.3/en/spec.html#indexed-array-literals) (!D only) 
+- Added support for [indexed array literals](https://www.minizinc.org/doc-2.7.3/en/spec.html#indexed-array-literals) (!D only)
+
+### Fixed
+- Fixed a bug that caused tests not to run properly on linux
+
+### Changed
+- Upgraded all projects to .NET7
 
 
 ## [0.6.3] - 2023-08-18
