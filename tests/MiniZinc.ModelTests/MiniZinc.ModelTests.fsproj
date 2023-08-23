@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
     
     <ItemGroup>
         <Compile Include="ParseTests.fs" />
