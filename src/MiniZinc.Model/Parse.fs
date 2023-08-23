@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
 open System.IO
 open System.Runtime.CompilerServices
 open System.Text
@@ -279,7 +280,19 @@ module Parsers =
     let LeftAssoc = Associativity.Left
     let RightAssoc = Associativity.Right
     let NoAssoc = Associativity.None
-           
+    
+    let expr_ws : Parser<Expr> =
+        fun stream ->
+            let reply = expr stream
+            if reply.Status = Ok then
+                stream.SkipWhitespace()
+                reply
+            else
+                reply
+    
+    let NoParser = Unchecked.defaultof<Parser<Expr>>
+    let NoExpr = Unchecked.defaultof<Expr>
+               
     let addInfix (s: string) (op: BinOp) (precedence: int) (assoc: Associativity) =
 
         let create _ left right =
@@ -1083,7 +1096,7 @@ module Parsers =
     let record_access_tail =
         attempt (skip '.' >>. ident)
         <!> "record-access"
-        
+            
     let array_access_tail =
 
         let item =
@@ -1220,253 +1233,289 @@ module Parsers =
         
     let float_lit =
         number_lit
+
+    let backup_array_item_parser : Parser<Expr> =
+        fun stream ->
+            let peek = stream.Peek2()
+            let reply = 
+                match peek.Char0, peek.Char1 with
+                // Check for wildcard 
+                | '_', c when not (Char.IsLetter c) ->
+                    stream.SkipWs(1)
+                    Reply(Expr.WildCard WildCard)
+                // Check for absent 
+                | '<', '>' ->
+                    stream.SkipWs(2)
+                    Reply(Expr.Absent Absent)
+                | _, _ ->
+                    expr stream
+            reply
     
+    let create_array_item_parser (p: Parser<Expr>) : Parser<Expr> =
+        fun stream ->
+            let mutable state = stream.State
+            let mutable ok = false
+            let tag = stream.StateTag
+            let mutable reply = p stream
+            // First try succeeded
+            if reply.Status = Ok then
+                stream.SkipWhitespace()
+                match stream.Peek() with
+                | ',' | '|' | ']' | ':' ->
+                    // Expr was not part of a larger binop
+                    ()
+                | _ ->
+                    // Expr was part of a larger binop
+                    stream.BacktrackTo(&state)
+                    reply <- backup_array_item_parser stream
+                                    
+            // First try failed and changed state - abort                    
+            elif tag <> stream.StateTag then
+                ()
+            
+            // First try failed without changing state - try again
+            else
+                reply <- backup_array_item_parser stream
+                
+            reply
+
+    let array_bool =
+        create_array_item_parser bool_lit
+        
+    let array_int =
+        create_array_item_parser int_lit
+        
+    let array_float =
+        create_array_item_parser float_lit
+        
     [<Struct>]
     type private ArrayParseState =
-        | ParseElement 
-        | RetryParse
+        | ParseElement
         | Element of Expr
         | Continue
-    
+         
+    [<Struct>]
+    [<DebuggerDisplay("{DebugString}")>]
+    type ArrayAtomInfo =
+        { mutable Type: Type
+        ; mutable Specialized: bool
+        ; mutable Parser: Parser<Expr>
+        ; mutable Value: Expr }
+        
+        static member Create() =
+            { Type = Type.Any
+            ; Specialized = false
+            ; Parser = expr
+            ; Value = NoExpr }
+        
+        static member Create(expr: Expr) =
+            let mutable info = ArrayAtomInfo.Create() 
+            info.Update(expr)
+            info
+            
+        member this.Copy() =
+            { Type = this.Type
+            ; Specialized = this.Specialized
+            ; Parser = this.Parser
+            ; Value = this.Value }
+           
+        member this.Update(atom: Expr) =
+            match atom with
+            | _ when this.Specialized ->
+                this.Value <- atom
+            | Expr.Int _   ->
+                this.Parser <- array_int
+                this.Specialized <- true
+                this.Type <- Type.Int
+                this.Value <- atom 
+            | Expr.Float _ ->
+                this.Parser <- array_float
+                this.Specialized <- true
+                this.Type <- Type.Float
+                this.Value <- atom
+            | Expr.Bool _ ->
+                this.Parser <- array_bool
+                this.Specialized <- true
+                this.Type <- Type.Bool
+                this.Value <- atom
+            | _ ->
+                this.Parser <- expr
+                this.Specialized <- false
+                this.Type <- Type.Any
+                this.Value <- atom
+                
+        member this.DebugString =
+            $"{this.Type} = {this.Value}"
+            
+        override this.ToString() =
+            this.DebugString
+            
+            
+
+    let private array1d_continues : Parser<bool> =
+        let error = expected "\",\" or \"]\""
+        fun stream ->
+            let mutable reply = Reply(false)
+            if stream.SkipWs(',') then
+                if stream.Skip(']') then
+                    reply
+                else
+                    reply.Result <- true
+                    reply
+            elif stream.Skip(']') then
+                reply
+            else
+                reply.Error <- error
+                reply
+               
     // Parse a 1D array literal using the provided element parser
     // as the first priority.  Internally this uses an
     // (element <|> expr) to still allow complex expressions 
-    let private array1d_lit_of (element: ValueOption<Parser<Expr>>): Parser<List<Expr>> =
+    let private array1d_lit (item: ArrayAtomInfo): Parser<Expr> =
         let delimError = expected ", or ]"
         let elemError = expected "array element"
-                
+                                                
         fun stream ->
-            let mutable pElement = ValueOption.defaultValue expr element
-            let mutable inferred = element.IsSome
-            let mutable i = 0
-                                    
+            let mutable item = item.Copy()
             let elements = List<Expr>()
-                        
-            let rec loop (state: ArrayParseState) =
-                match state with
-                
-                // Parse an element and use it to guess an optimal parser
-                | ParseElement when not inferred  ->
-                    let reply = expr stream
-                    if reply.Status = Ok then
-                        stream.SkipWhitespace()
-                        match reply.Result with
-                        | Expr.Bool _ ->
-                             pElement <- bool_lit
-                             inferred <- true
-                        | Expr.Int _ ->
-                            pElement <- int_lit
-                            inferred <- true
-                        | Expr.Float _ ->
-                            pElement <- float_lit
-                            inferred <- true
-                        | _ ->
-                            pElement <- expr
-                            inferred <- false
-                        loop (Element reply.Result)
-                    else
-                        reply.Error
-                        
-                // Parse with the inferred parser
-                | ParseElement ->
-                    let tag = stream.StateTag
-                    let idx = stream.Index                        
-                    let reply = pElement stream
-                    if reply.Status = Ok then
-                        stream.SkipWhitespace()
-                        if not inferred then
-                            loop (Element reply.Result)
-                        // Check ahead in case the element on matched partially
-                        // for example it could succeed but be part of a binary
-                        // operation.
-                        else
-                            match stream.Peek() with
-                            | ',' | '|'  ->
-                                loop (Element reply.Result)
-                            | _c ->
-                                stream.Seek(idx) 
-                                loop RetryParse
-                        
-                    // Failed and changed state
-                    elif stream.StateTag <> tag then
-                        reply.Error
-                        
-                    // Parser failed but we can retry
-                    elif inferred then
-                        loop RetryParse
-                        
-                    // Parser failed and we cannot retry                                            
-                    else
-                        reply.Error
-                        
-                // Retry with the backup parser
-                | RetryParse ->
-                    let peek = stream.Peek2()
-                    match peek.Char0, peek.Char1 with
-                    // Check for wildcard 
-                    | '_', c when not (Char.IsLetter c) ->
-                        stream.Skip(1)
-                        loop (Element <| Expr.WildCard WildCard)
-                    // Check for absent 
-                    | '<', '>' ->
-                        stream.Skip(2)
-                        loop (Element <| Expr.Absent Absent)
-                    | _, _ ->
-                        let reply = expr stream
-                        // Retry succeded
-                        if reply.Status = Ok then
-                            loop (Element <| reply.Result)
-                        // Retry failed
-                        else
-                            reply.Error
-                
-                | Element e ->
-                    elements.Add(e)
-                    loop Continue
-
-                // Check for end or separator                    
-                | Continue ->
-                    if stream.SkipWs(',') then
-                        if stream.Skip(']') then
-                            NoErrorMessages
-                        else
-                            loop ParseElement
-                    elif stream.Skip(']') then
-                        NoErrorMessages
-                    else
-                        elemError
+            elements.Add(item.Value)
             
-            let error = loop Continue
+            let rec loop () =
+                let reply = array1d_continues stream
+                let continues = reply.Result
+                if reply.Status <> Ok then
+                    reply.Error
+                elif not continues then
+                    NoErrorMessages
+                else
+                    let reply = item.Parser stream
+                    if reply.Status = Ok then
+                        item.Update(reply.Result)
+                        elements.Add(item.Value)
+                        loop ()
+                    else
+                        reply.Error
+            
+            let error = loop ()
             if error = NoErrorMessages then
-                Reply(elements)
+                Reply(Expr.Array1DLit <| Array.ofSeq elements)
+            else
+                Reply(ReplyStatus.Error, error)
+                
+    // <indexed-array-literal>
+    let private indexed_array1d_lit (key: ArrayAtomInfo) (item: ArrayAtomInfo): Parser<Expr> =
+        let delimError = expected ", or ]"
+        let elemError = expected "array element"
+        fun stream ->
+            // AtomInfo regarding keys
+            let mutable key = key.Copy()
+            // AtomInfo regarding items
+            let mutable item = item.Copy()
+            // Are we still trying to parse keys? (only the first is mandatory)
+            let mutable tryKey = true
+            // Offet since the last key was provided
+            let mutable offset = 0
+            // There are more elements to process
+            let mutable loop = true
+            // Stores any parsing error
+            let mutable error = NoErrorMessages
+            // Contains the successfully parsed results
+            let elements = IndexedArray1D()
+            elements.Add(key.Value => item.Value)
+                                    
+            while (loop && error = NoErrorMessages) do
+                let continueReply = array1d_continues stream
+                if continueReply.Status <> Ok then
+                    error <- continueReply.Error
+                elif not continueReply.Result then
+                    loop <- false
+                elif tryKey then
+                    let keyReply = key.Parser stream
+                    if keyReply.Status = Ok then
+                        // This is a key followed by value
+                        if stream.SkipWs(':') then
+                            key.Update(keyReply.Result)
+                            let itemReply = item.Parser stream
+                            if itemReply.Status = Ok then
+                                item.Update(itemReply.Result)
+                                elements.Add(key.Value => item.Value)
+                            else
+                                error <- itemReply.Error
+                        // This is not followed by a ':' so keys are no longer expected
+                        // TODO - use this key parser for the item? if specialised?
+                        // Keys are now auto incremented by 1
+                        else
+                            item.Update(keyReply.Result)
+                            tryKey <- false
+                            offset <- 1                            
+                            elements.Add(Expr.BinaryOp(key.Value, BinOp.Add, Expr.Int offset) => item.Value)
+                    else
+                        error <- continueReply.Error
+                else
+                    let reply = item.Parser stream
+                    if reply.Status = Ok then
+                        item.Update(reply.Result)
+                        offset <- offset + 1
+                        elements.Add(Expr.BinaryOp(key.Value, BinOp.Add, Expr.Int offset) => item.Value)
+                    else
+                        error <- reply.Error
+                        
+            if error = NoErrorMessages then
+                Reply(Expr.IndexedArray1DLit elements)
             else
                 Reply(ReplyStatus.Error, error)
    
     // <array-literal-2d>
-    let array2d_lit : Parser<Expr[,]> =
+    let array2d_lit : Parser<Expr> =
         let delimiterError = expected "\",\" or \"|\" or \"|]\""
         let elementError = expected "array element"
         fun stream ->
-            let mutable pElement = expr
-            let mutable pBackup  = expr
-            let mutable retry = false
-            let mutable infer = true
-            let mutable i = 0 // Current array row 
-            let mutable j = 0 // Current array column
-            let mutable n = 0 // Current array size         
+            let mutable item = ArrayAtomInfo.Create()
+            // Current array row
+            let mutable i = 0
+            // Current array column
+            let mutable j = 0
+            // Total array elements
+            let mutable n = 0
+            // Parsed array elements
             let elements = List<Expr>()
-                        
-            let rec loop (state: ArrayParseState) =
-                match state with
-                                
-                // Parse an element and use it to guess an optimal parser
-                | ParseElement when infer ->
-                    let reply = expr stream
-                    if reply.Status = Ok then
-                        stream.SkipWhitespace()
-                        match reply.Result with
-                        | Expr.Bool _ ->
-                             pElement <- bool_lit
-                             retry <- true
-                             infer <- false
-                        | Expr.Int _ ->
-                            pElement <- int_lit
-                            retry <- true
-                            infer <- false
-                        | Expr.Float _ ->
-                            pElement <- float_lit
-                            retry <- true
-                            infer <- false
-                        | _ ->
-                            pElement <- expr
-                            retry <- false
-                        loop (Element reply.Result)
-                    else
-                        reply.Error
-                
-                // Parse with the inferred parser
-                | ParseElement ->
-                    let tag = stream.StateTag
-                    let idx = stream.Index                        
-                    let reply = pElement stream
-                    if reply.Status = Ok then
-                        stream.SkipWhitespace()
-                        if not retry then
-                            loop (Element reply.Result)
-                        // Check ahead in case the element on matched partially
-                        // for example it could succeed but be part of a binary
-                        // operation.
-                        else
-                            match stream.Peek() with
-                            | ',' | '|'  ->
-                                loop (Element reply.Result)
-                            | _c ->
-                                stream.Seek(idx) 
-                                loop RetryParse
-                        
-                    // Failed and changed state
-                    elif stream.StateTag <> tag then
-                        reply.Error
-                        
-                    // Parser failed but we can retry
-                    elif retry then
-                        loop RetryParse
-                        
-                    // Parser failed and we cannot retry                                            
-                    else
-                        reply.Error
-                        
-                // Retry with the backup parser
-                | RetryParse ->
-                    let peek = stream.Peek2()
-                    match peek.Char0, peek.Char1 with
-                    // Check for wildcard 
-                    | '_', c when not (Char.IsLetter c) ->
-                        stream.Skip(1)
-                        loop (Element <| Expr.WildCard WildCard)
-                    // Check for absent 
-                    | '<', '>' ->
-                        stream.Skip(2)
-                        loop (Element <| Expr.Absent Absent)
-                    | _, _ ->
-                        let reply = pBackup stream
-                        // Retry succeded
-                        if reply.Status = Ok then
-                            loop (Element <| reply.Result)
-                        // Retry failed
-                        else
-                            reply.Error
-
-                // An element was parses successfully
-                | Element el ->
+            // Flag to break out of while loop
+            let mutable stop = false
+            // First fatal error that occurs
+            let mutable error = NoErrorMessages
+            
+            while (error = NoErrorMessages && not stop) do
+                let reply = item.Parser stream
+                if reply.Status = Ok then
+                    item.Update(reply.Result)
                     j <- j + 1
                     n <- n + 1
-                    elements.Add(el)
-                    stream.SkipWhitespace()
-                    loop Continue
+                    elements.Add(item.Value)
+                else
+                    error <- reply.Error
                 
-                // Check for end or separator                    
-                | Continue ->
-                    let comma = stream.SkipWs(',')
-                    // End of current row
-                    if stream.Skip('|') then
-                        i <- i + 1
-                        if stream.Skip(']') then
-                            NoErrorMessages
-                        elif stream.WsSkip("|]") then
-                            NoErrorMessages
-                        else
-                            j <- 0
-                            loop ParseElement
-                    // Current row continues
-                    elif comma then
-                        loop ParseElement
-                    // We expected an element
+                // Comma can trail every item
+                let comma = stream.SkipWs(',')
+                // End of current row
+                if stream.Skip('|') then
+                    i <- i + 1
+                    // End of array
+                    if stream.Skip(']') then
+                        stop <- true
+                    // End of array (optional trailing pipe)
+                    elif stream.WsSkip("|]") then
+                        stop <- true
+                    // Reset column position
                     else
-                        elementError
+                        j <- 0
+                // Current row continues
+                elif comma then
+                    ()
+                // We expected an element
+                else
+                    error <- elementError
            
-            match loop ParseElement with
-            | NoErrorMessages ->
+            if error = NoErrorMessages then
                 let I = i
                 let J = j
                 let N = n
@@ -1481,14 +1530,13 @@ module Parsers =
                             array[i,j] <- elements[n]
                             n <- n + 1
                             
-                    Reply(array)
-                    
-            | errors ->
-                Reply(ReplyStatus.Error, errors)
+                    Reply(Expr.Array2DLit array)
+            else
+                Reply(ReplyStatus.Error, error)
                     
 
                     
-    let array3d_lit : Parser<Expr[,,]> =
+    let array3d_lit : Parser<Expr> =
                 
         let endElementError = messageError "array elements must be followed by ',', '|', '|,' or '| |]"
         let expectedArrayElement = expected "Array element expr"
@@ -1498,9 +1546,7 @@ module Parsers =
         let expectedElementOrEndOfArray = expected "Array element or end of array '| |]'"
         
         fun stream ->
-            let mutable inferred = false
-            let mutable pElement = expr
-            let mutable pBackup  = expr
+            let mutable item = ArrayAtomInfo.Create()
             let mutable i = 0 // Current first index
             let mutable j = 0 // Current second index
             let mutable k = 0 // Current third index
@@ -1510,71 +1556,12 @@ module Parsers =
             
             let rec loop (state: ArrayParseState) =
                 match state with
-                // Parse an element and use it to guess an optimal parser
-                | ParseElement when not inferred ->
-                    let reply = expr stream
+                | ParseElement ->
+                    let reply = item.Parser stream
                     if reply.Status = Ok then
-                        stream.SkipWhitespace()
-                        match reply.Result with
-                        | Expr.Bool _ ->
-                             pElement <- bool_lit
-                             inferred <- true
-                        | Expr.Int _ ->
-                            pElement <- int_lit
-                            inferred <- true
-                        | Expr.Float _ ->
-                            pElement <- float_lit
-                            inferred <- true
-                        | _ ->
-                            pElement <- expr
                         loop (Element reply.Result)
                     else
                         reply.Error
-                
-                // Attempt to parse using the infered element parser
-                | ParseElement ->
-                    let tag = stream.StateTag
-                    let idx = stream.Index                        
-                    let reply = pElement stream
-                    if reply.Status = Ok then
-                        stream.SkipWhitespace()
-                        // We check here in case the inferred parser only partially
-                        // matches the input.
-                        let next = stream.Peek()
-                        if next = ',' || next = '|' then
-                            loop (Element reply.Result)
-                        else
-                            stream.Seek(idx) 
-                            loop RetryParse
-                        
-                    // Failed and changed state
-                    elif stream.StateTag <> tag then
-                        reply.Error
-                        
-                    // Parser failed but we can retry
-                    else 
-                        loop RetryParse
-                        
-                // Retry with the backup parser
-                | RetryParse ->
-                    let peek = stream.Peek2()
-                    match peek.Char0, peek.Char1 with
-                    // Check for wildcard 
-                    | '_', c when not (Char.IsLetter c) ->
-                        stream.Skip(1)
-                        loop (Element <| Expr.WildCard WildCard)
-                    // Check for absent 
-                    | '<', '>' ->
-                        stream.Skip(2)
-                        loop (Element <| Expr.Absent Absent)
-                    | _, _ ->
-                        let reply = pBackup stream
-                        // Retry succeded
-                        if reply.Status = Ok then
-                            loop (Element <| reply.Result)
-                        // Retry failed
-                        else
-                            reply.Error
 
                 // An element was parses successfully
                 | Element el ->
@@ -1632,7 +1619,7 @@ module Parsers =
                                 array[i,j,k] <- elements[z]
                                 z <- z + 1
                     
-                    Reply(array)
+                    Reply(Expr.Array3DLit array)
                 with
                 | exn ->
                     Reply(ReplyStatus.Error, messageError exn.Message)
@@ -1644,82 +1631,89 @@ module Parsers =
     let array_expr : Parser<Expr> =
             
         let error = expectedString "["
-        
+                        
         let array_comp_tail =
             generators .>> ws .>> skipChar ']'
             
         let expectedArrayExpr =
             expected "array expression (literal or comp)"
-            
-        let array3d =            
-            array3d_lit |>> Expr.Array3DLit
-        
-        let array2d =            
-            array2d_lit |>> Expr.Array2DLit
         
         fun stream ->
+            match stream.Skip('[') with
                         
-            if stream.Skip('[') then
-                // 1D or 2D Array
-                if stream.SkipWs("|") then
-                    // Empty 2D Array
-                    if stream.Skip("|]") then
-                        Reply(Expr.Array2DLit <| Array2D.zeroCreate 0 0)
-                    // 3D Array
-                    elif stream.SkipWs('|') then
-                        if stream.SkipWs('|') && stream.Skip("|]") then
-                            Reply(Expr.Array3DLit <| Array3D.zeroCreate 1 0 0)
-                        else
-                            array3d stream
-                    // 2D Array
+            // 1D or 2D Array
+            | true when stream.SkipWs("|") ->
+                    
+                // Empty 2D Array
+                if stream.Skip("|]") then
+                    Reply(Expr.Array2DLit <| Array2D.zeroCreate 0 0)
+                    
+                // 3D Array
+                elif stream.SkipWs('|') then
+                    if stream.SkipWs('|') && stream.Skip("|]") then
+                        Reply(Expr.Array3DLit <| Array3D.zeroCreate 1 0 0)
                     else
-                        array2d stream
-                // Empty 1D Array
-                elif stream.WsSkip(']') then 
-                    Reply(Expr.Array1DLit Array.empty)
-                // Non-empty 1D Array or Comprehension
+                        array3d_lit stream
+                        
+                // 2D Array
                 else
-                    let reply = expr stream
-                    if reply.Status = Ok then
-                        stream.SkipWhitespace()
-                        // Pipe indicates a comprehension
-                        if stream.SkipWs('|') then
-                            match array_comp_tail stream with
-                            | r when r.Status = Ok ->
-                                { Yields = reply.Result
-                                ; IsSet = false
-                                ; From = r.Result }
-                                |> Expr.ArrayComp
-                                |> Reply
-                            | r ->
-                                Reply(r.Status, r.Error)
-                            
-                        else
-                            // Comma separated means array literal
-                            let first = reply.Result
-                            let element =
-                                match first with
-                                | Expr.Bool _ -> ValueSome bool_lit
-                                | Expr.Int _ -> ValueSome int_lit
-                                | Expr.Float _ -> ValueSome float_lit
-                                | _ -> ValueNone
-                            
-                            match array1d_lit_of element stream with
-                            | r when r.Status = Ok ->
-                                let arr = r.Result
-                                arr.Insert(0, reply.Result)
-                                let set = 
-                                    arr
-                                    |> List.ofSeq
-                                    |> Expr.Set
-                                
-                                Reply set
-                            | r ->
-                                Reply(r.Status, r.Error)
-
+                    array2d_lit stream
+                
+            // Empty 1D Array        
+            | true when stream.WsSkip(']') -> 
+                Reply(Expr.Array1DLit Array.empty)
+                    
+            // Non-empty 1D Array or Array Comprehension
+            | true ->
+                let reply = expr_ws stream
+                match reply.Status with
+                                                                                
+                // Expr followed by pipe is Array Comprehension
+                // eg: `[ x | x in {1,2,3}]`
+                | Ok when stream.SkipWs('|') ->
+                    let compReply = array_comp_tail stream
+                    if compReply.Status = Ok then
+                        { Yields = reply.Result
+                        ; IsSet = false
+                        ; From = compReply.Result }
+                        |> Expr.ArrayComp
+                        |> Reply
                     else
-                        Reply(reply.Status, reply.Error)
-            else
+                        Reply(compReply.Status, compReply.Error)
+                        
+                // Expr followed by colon is Indexed Array
+                // eg: `[ 1: a, 2: b]`
+                | Ok when stream.SkipWs(':') ->
+                    let key = ArrayAtomInfo.Create(reply.Result)
+                    let itemReply = expr_ws stream
+                    if itemReply.Status = Ok then
+                        let item = ArrayAtomInfo.Create(itemReply.Result)
+                        let next = stream.Peek2()
+                        
+                        // <indexed-array-comp>
+                        if next.Char0 = '|' && next.Char1 <> ']' then
+                            stream.SkipWs('|')
+                            let reply = array_comp_tail stream
+                            if reply.Status = Ok then
+                                { Yields = key.Value => item.Value
+                                ; From = reply.Result }
+                                |> Expr.IndexedArrayComp
+                                |> Reply
+                            else
+                                Reply(reply.Status, reply.Error)
+                        else        
+                            indexed_array1d_lit key item stream
+                    else
+                        Reply(itemReply.Status, itemReply.Error)
+                    
+                // Otherwise a standard 1D Array 
+                | Ok ->
+                    let item = ArrayAtomInfo.Create(reply.Result)
+                    array1d_lit item stream
+                | _ ->
+                    Reply(reply.Status, reply.Error)
+                    
+            | false ->
                 Reply(ReplyStatus.Error, expectedArrayExpr)    
         
    

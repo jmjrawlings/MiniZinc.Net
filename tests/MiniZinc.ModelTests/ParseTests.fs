@@ -252,6 +252,13 @@ Encoded:
     [<InlineData("[| true, false, true\n | |]")>]
     let ``test array2d literal`` mzn =
         testExpr mzn
+        
+    [<Theory>]
+    [<InlineData("[ 1:2, 3:4]")>]
+    [<InlineData("[ 1:a, 3:b, (3+1): 4]")>]
+    [<InlineData("[ X:1, Y:2, 3, 4, 5]")>]
+    let ``test array1d indexed literal`` mzn =
+        testExpr mzn
     
     [<Theory>]
     [<InlineData("[| | | |]", 1, 0, 0)>]
