@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.4] - 2023-08-23
+
+More improvements to the array parsers.  I think they are
+just about as fast as they are going to get and more than
+sufficient for 99.9% of use cases.
+
+### Added
+- Added support for [indexed array literals](https://www.minizinc.org/doc-2.7.3/en/spec.html#indexed-array-literals) (!D only) 
+
+
 ## [0.6.3] - 2023-08-18
 
 The parser improvements continue with 1D, 2D and 3D array
