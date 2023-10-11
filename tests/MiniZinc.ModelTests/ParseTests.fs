@@ -101,7 +101,7 @@ Encoded:
     [<InlineData("[")>]
     [<InlineData("@")>]
     let ``test invalid identifier`` mzn =
-        let result = Parse.parseWith Parsers.ident parseOptions mzn
+        let result = Parser.parseWith Parsers.ident parseOptions mzn
         result.AssertErr()
         
     [<Theory>]
@@ -368,7 +368,7 @@ Encoded:
     [<InlineData("% this is a line comment */")>]
     [<InlineData("/* this has % things /  in it */")>]
     let ``test comment`` mzn =
-        let statement, comments = Parse.parseComments mzn
+        let statement, comments = Parser.parseComments mzn
         statement.AssertEmpty("")
         
     [<Theory>]

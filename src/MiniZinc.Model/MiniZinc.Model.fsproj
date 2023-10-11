@@ -10,10 +10,11 @@
     <Compile Include="Prelude.fs" />
     <Compile Include="Ast.fs" />    
     <Compile Include="ParseUtils.fs" />    
-    <Compile Include="Parse.fs" />    
-    <Compile Include="Encode.fs" />    
+    <Compile Include="Lexer.fsi" />    
+    <Compile Include="Lexer.fs" />
+    <Compile Include="Parser.fs" />
+    <Compile Include="Compiler.fs" />
     <Compile Include="Model.fs" />
-    <Compile Include="Compile.fs" />    
     <Compile Include="Include.fs" />    
   </ItemGroup>
   <ItemGroup>

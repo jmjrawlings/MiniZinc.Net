@@ -3,7 +3,7 @@
 open MiniZinc.Parser
 
 [<AutoOpen>]
-module rec Include =
+module Include =
         
     module Model =
         
@@ -34,4 +34,3 @@ module rec Include =
              
         member this.Include(filepath: string, parseOptions: ParseOptions) =
              Model.includeFrom parseOptions filepath
-        
