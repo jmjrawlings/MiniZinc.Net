@@ -11,7 +11,7 @@ module Lexer =
     let [<Literal>] STAR = '*'
     
     type Parser<'t> = Parser<'t, unit>
-      
+          
     type TokenKind =
         | TError  = 0
         // Values
@@ -74,80 +74,70 @@ module Lexer =
         | KWhere       = 59
         | KXor         = 60
         // Operators
-        | TDoubleArrow      = 70// <->
-        | TLeftArrow        = 71// <-
-        | TRightArrow       = 72// -> 
-        | TDownWedge        = 73// \/                
-        | TUpWedge          = 74// /\
-        | TLessThan         = 75// <
-        | TGreaterThan      = 76// >
-        | TLessThanEqual    = 77// <=
-        | TGreaterThanEqual = 78// >=
-        | TEqual            = 79// =
-        | TDotDot           = 80// ..
-        | TPlus             = 81// +
-        | TMinus            = 82// -
-        | TStar             = 83// *
-        | TSlash            = 84// /
-        | TTildeEquals      = 85// ~=
-        | TTildePlus        = 86// ~+
-        | TTildeMinus       = 87// ~-
-        | TTildeStar        = 88// ~*
+        | TDoubleArrow      = 70 // <->
+        | TLeftArrow        = 71 // <-
+        | TRightArrow       = 72 // -> 
+        | TDownWedge        = 73 // \/                
+        | TUpWedge          = 74 // /\
+        | TLessThan         = 75 // <
+        | TGreaterThan      = 76 // >
+        | TLessThanEqual    = 77 // <=
+        | TGreaterThanEqual = 78 // >=
+        | TEqual            = 79 // =
+        | TDotDot           = 80 // ..
+        | TPlus             = 81 // +
+        | TMinus            = 82 // -
+        | TStar             = 83 // *
+        | TSlash            = 84 // /
+        | TTildeEquals      = 85 // ~=
+        | TTildePlus        = 86 // ~+
+        | TTildeMinus       = 87 // ~-
+        | TTildeStar        = 88 // ~*
         // Symbol
+        | TLeftBracket     = 100 // [ 
+        | TRightBracket    = 101 // ]
+        | TLeftParen       = 102 // (
+        | TRightParen      = 103 // )
+        | TLeftBrace       = 102 // {
+        | TRightBrace      = 103 // }
+        | TDot             = 104 // .
+        | TTilde           = 105 // ~
+        | TBackSlash       = 106 // \                
+        | TForwardSlash    = 107 // /
         
-        | SLeftBracket = 8
-        | SRightBracket = 9
-        | SLeftParen = 10
-        | SRightParen = 11
-    
     [<Struct>]
     type Token =
-        { Kind    : TokenKind
-        ; Line    : int
-        ; Column  : int
-        ; Index   : int64
-        ; String  : string
-        ; Int     : Nullable<int>
-        ; Float   : Nullable<float> }
+        { mutable Kind    : TokenKind
+        ; mutable Line    : int64
+        ; mutable Column  : int64
+        ; mutable Index   : int64
+        ; mutable Length  : int64
+        ; mutable String  : string
+        ; mutable Int     : int
+        ; mutable Float   : float }
     
-    let tString pos kind s =
-        { Kind    = kind
-        ; Line    = pos.Line
-        ; Column  = pos.Column
-        ; Index   = pos.Index
-        ; String  = s
-        ; Int     = Nullable()
-        ; Float   = Nullable() }
-        
-    let tInt pos kind int
-        { Kind    = kind
-        ; Line    = pos.Line
-        ; Column  = pos.Column
-        ; Index   = pos.Index
-        ; String  = s
-        ; Int     = Nullable()
-        ; Float   = Nullable()
-        ; Keyword = Keyword.NONE }
-    
-        
     // Parse and remove comments from the given model string
-    let parser : Parser<Token> =
+    let pToken : Parser<Token> =
         fun stream ->
-            let mutable result = Reply(null)
+            let mutable token = Unchecked.defaultof<Token>
+            let mutable reply = Reply(ReplyStatus.Ok, NoErrorMessages)
             stream.SkipWhitespace()
             let pos = stream.Position
             let next = stream.Peek2()
+            token.Line <- pos.Line
+            token.Column <- pos.Column
+            token.Index <- pos.Index
+
             // Line comment
             if next.Char0 = HASH then
                 stream.Skip()
-                let mzn = stream.ReadRestOfLine()
-                let token =
-                    { Type = TokenType.LineComment
-                    ; Mzn = mzn
-                    ; Start = pos
-                    ; End = stream.Position }
+                let mzn = stream.ReadRestOfLine(false)
+                token.Kind <- TokenKind.TLineComment
+                token.String <- mzn
+                token.Length <- stream.Index - token.Index
                 reply.Result <- token
                 reply.Status <- ReplyStatus.Ok
+                
             // Block comment
             elif next.Char0 = SLASH && next.Char1 = STAR then
                 stream.Skip(2)
@@ -162,91 +152,14 @@ module Lexer =
                     | c ->
                         sb.Append c
                         fin <- stream.IsEndOfStream
-                let token =
-                    { Type = TokenType.BlockComment
-                    ; Mzn = mzn
-                    ; Start = pos
-                    ; End = stream.Position }
+                token.Kind <- TokenKind.TBlockComment
+                token.String <- sb.ToString()
+                token.Length <- stream.Index - token.Index
                 reply.Result <- token
                 reply.Status <- ReplyStatus.Ok
+                
             // Source code
             else
-                                        
+                ()
             
-            let chars = 
-            let mutable state = State.Mzn
-            let mutable char = 'a'
-            
-            for c in mzn.AsSpan() do
-                match state, c with
-                
-                | State.LineComment, '\n' ->
-                    source.AppendLine()
-                    state <- State.Mzn
-                    
-                | State.LineComment, _ ->
-                    comments.Append c
-                    state <- State.LineComment
-                    
-                | State.Mzn, '%' ->
-                    state <- State.LineComment
-                    
-                | State.Mzn, '/' ->
-                    state <- State.BlockOpenCheck
-                    
-                | State.BlockOpenCheck, '*' ->
-                    state <- State.Block
-                    
-                | State.BlockOpenCheck, _ ->
-                    source.Append '/'
-                    source.Append c
-                    state <- State.Mzn
-                    ()
-                
-                | State.Block, '*' ->
-                    state <- State.BlockCloseCheck
-                    
-                | State.BlockCloseCheck, '/' ->
-                    state <- State.Mzn
-                
-                | State.BlockCloseCheck, _ ->
-                    comments.Append '*'
-                    state <- State.Block
-                   
-                | State.Block, _ ->
-                    comments.Append c
-                    state <- State.Block
-                    
-                | State.Mzn, '"' ->
-                    source.Append '"'
-                    state <- State.StringLit
-                    
-                | State.StringLit, '\\' ->
-                    source.Append '\\'
-                    state <- State.StringEscape
-                    
-                | State.StringEscape, _ ->
-                    source.Append c
-                    state <- State.StringLit
-                    
-                | State.StringLit, '"' ->
-                    source.Append '"'
-                    state <- State.Mzn
-                    
-                | State.StringLit, _ ->
-                    source.Append c
-                    ()
-                    
-                | State.Mzn, '\n' when char = '\n' ->
-                    ()
-                    
-                | State.Mzn, _ ->
-                    source.Append c
-                    ()
-        
-                char <- c                
-                    
-
-            let source = source.ToString().Trim()
-            let comments = comments.ToString()
-            source, comments
+            reply    

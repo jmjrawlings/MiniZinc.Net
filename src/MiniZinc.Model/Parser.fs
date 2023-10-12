@@ -2084,10 +2084,10 @@ module Parser =
          
     /// Parse '.dzn' style model data from a string        
     let parseDataString (options: ParseOptions) (dzn: string) : Result<NamedExpr list, ParseError> =
-                            
+                                    
         let source, comments =
-            parseComments dzn
-            
+            lex dzn
+                        
         let result =
             parseWith data options source
             
