@@ -4,6 +4,7 @@ open MiniZinc
 open Xunit
 open FSharp.Control
 open System.IO
+open MiniZinc.Parser
 
 type ``Client Tests``(fixture: ClientFixture) =
     

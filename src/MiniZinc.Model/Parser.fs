@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser
+﻿namespace MiniZinc
 
 open System
 open System.Collections.Generic
@@ -8,10 +8,8 @@ open System.Runtime.CompilerServices
 open System.Text
 open FParsec
 open MiniZinc
-
-[<AutoOpen>]    
-module Parsers =
-    
+   
+module Parsers =    
     open ParseUtils
     open type ParseUtils.P
     
@@ -31,7 +29,7 @@ module Parsers =
     /// This function returns the TypeInst with the correctly
     /// inferred Vars 
     /// </remarks>
-    let rec private resolveTypeInst (ti: TypeInst) =
+    let rec resolveTypeInst (ti: TypeInst) =
         match resolveType ti.Type with
         // If the type is a Var it overrides the setting here
         | ty, true ->
@@ -40,7 +38,7 @@ module Parsers =
         | ty, _ ->
             { ti with Type = ty; }
             
-    and private resolveType (ty: Type) =
+    and resolveType (ty: Type) =
         match ty with
         | Type.Int 
         | Type.Bool 
@@ -1131,7 +1129,7 @@ module Parsers =
         preturn expr
     
     [<Struct>]
-    type private BracketState =
+    type BracketState =
         | Empty
         | Expr of expr: Expr
         | Tuple of tuple: List<Expr>
@@ -1289,7 +1287,7 @@ module Parsers =
         create_array_item_parser float_lit
         
     [<Struct>]
-    type private ArrayParseState =
+    type ArrayParseState =
         | ParseElement
         | Element of Expr
         | Continue
@@ -1352,7 +1350,7 @@ module Parsers =
             
             
 
-    let private array1d_continues : Parser<bool> =
+    let array1d_continues : Parser<bool> =
         let error = expected "\",\" or \"]\""
         fun stream ->
             let mutable reply = Reply(false)
@@ -1371,7 +1369,7 @@ module Parsers =
     // Parse a 1D array literal using the provided element parser
     // as the first priority.  Internally this uses an
     // (element <|> expr) to still allow complex expressions 
-    let private array1d_lit (item: ArrayAtomInfo): Parser<Expr> =
+    let array1d_lit (item: ArrayAtomInfo): Parser<Expr> =
         let delimError = expected ", or ]"
         let elemError = expected "array element"
                                                 
@@ -1403,7 +1401,7 @@ module Parsers =
                 Reply(ReplyStatus.Error, error)
                 
     // <indexed-array-literal>
-    let private indexed_array1d_lit (key: ArrayAtomInfo) (item: ArrayAtomInfo): Parser<Expr> =
+    let indexed_array1d_lit (key: ArrayAtomInfo) (item: ArrayAtomInfo): Parser<Expr> =
         let delimError = expected ", or ]"
         let elemError = expected "array element"
         fun stream ->
@@ -1992,7 +1990,7 @@ module Parsers =
         >>. sepEndBy (item .>> ws) sep
         .>> eof
         
-    let private assign_expr : Parser<NamedExpr> =
+    let assign_expr : Parser<NamedExpr> =
         let error = expected "Assignment (id = expr)"
         fun stream ->
             let reply = ident stream
@@ -2054,15 +2052,12 @@ module Parsers =
         >>. many (statement .>> ws)
         .>> eof
         
-        
-open Parsers
-
-[<AutoOpen>]       
+[<AutoOpen>]
 module Parser =
-        
+                
     // Parse a string with the given parser
     let parseWith (parser: Parser<'t>) (options: ParseOptions) (input: string) : Result<'t, ParseError> =
-        
+                
         let state = ParserState(options)
                         
         match runParserOnString parser state "" input with
@@ -2084,12 +2079,9 @@ module Parser =
          
     /// Parse '.dzn' style model data from a string        
     let parseDataString (options: ParseOptions) (dzn: string) : Result<NamedExpr list, ParseError> =
-                                    
-        let source, comments =
-            lex dzn
-                        
+                              
         let result =
-            parseWith data options source
+            parseWith Parsers.data options dzn
             
         result            
             
@@ -2098,3 +2090,37 @@ module Parser =
         let dzn = File.ReadAllText filepath
         let data = parseDataString options dzn
         data
+        
+    let parseModelFromString (options:ParseOptions) (mzn: string) : Result<Model, ParseError> =
+                                            
+        let source = mzn
+        
+        let model =
+            source
+            |> parseWith Parsers.ast options
+            |> Result.map Model.fromAst
+            
+        model
+        
+    let parseModelFromFile (options: ParseOptions) (filepath: string) : Result<Model, ParseError> =
+                
+        if File.Exists filepath then
+            let mzn = File.ReadAllText filepath
+            let model = parseModelFromString options mzn
+            model
+        else
+            failwithf $"{filepath} does not exist"
+        
+    type Model with
+    
+        /// Parse a Model from the given file
+        static member ParseFile (filepath: string) =
+            parseModelFromFile ParseOptions.Default filepath
+            
+        /// Parse a Model from the given file
+        static member ParseFile (filepath: FileInfo) =
+            parseModelFromFile ParseOptions.Default filepath.FullName
+
+        /// Parse a Model from the given string
+        static member ParseString (mzn: string) =
+            parseModelFromString ParseOptions.Default mzn

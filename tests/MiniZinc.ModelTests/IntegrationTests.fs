@@ -4,6 +4,7 @@
     open MiniZinc.Tests
     open Xunit
     open System.IO
+    open Lexer
     
     module IntegrationTests =
         
@@ -16,8 +17,8 @@
                 file <- Path.Combine(file, stem)
                 
             let source = File.ReadAllText file
-            let mzn, comments = parseComments source
-            let result = parseModelString parseOptions mzn
+            let lexResult = lexString source  
+            let result = parseModelFromString parseOptions source
             match result with
             | Result.Ok model ->
                 ()
@@ -27,7 +28,7 @@ Failed to parse "{file}":
 
 {err.Message}
 ----------------------------------------------
-{mzn}
+
 -----------------------------------------------
 {err.Trace}
 -----------------------------------------------"""

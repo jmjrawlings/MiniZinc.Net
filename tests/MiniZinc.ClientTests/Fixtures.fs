@@ -68,7 +68,7 @@ type IntegrationTestSuite(fixture: ClientFixture) =
             SolveOptions.create solver
             
         let model =
-            match parseModelFile parseOptions testCase.TestFile.FullName with
+            match parseModelFromFile parseOptions testCase.TestFile.FullName with
             | Result.Ok model ->
                 model
             | Result.Error err ->

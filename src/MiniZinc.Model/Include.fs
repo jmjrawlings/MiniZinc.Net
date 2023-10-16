@@ -18,7 +18,7 @@ module Include =
                 item.File
                 |> Option.map (fun fi -> fi.FullName)
                 |> Option.defaultValue ""
-                |> parseModelFile options
+                |> parseModelFromFile options
                 |> Result.mapError (fun e -> e.Message)
                 |> Result.map (fun m ->
                     let merged = Model.merge model m

@@ -1,7 +1,11 @@
 ﻿namespace MiniZinc
-    
-  module Lexer =
-    
+
+open System
+open System.Collections.Generic
+open System.Text
+        
+module Lexer =
+
     type TokenKind =
         | TError  = 0
         // Values
@@ -105,5 +109,16 @@
         ; mutable String  : string
         ; mutable Int     : int
         ; mutable Float   : float }
+
+    type LexResult =
+        { StartTime : DateTime
+        ; EndTime   : DateTime
+        ; Duration  : TimeSpan
+        ; Error     : string
+        ; Tokens    : IEnumerable<Token> }            
+
+    val lexFile: encoding: Encoding -> file: string -> LexResult
+
+    val lexString: mzn: string -> LexResult
         
-    val lex : string -> Token seq 
+    val lexStream: encoding: Encoding -> stream: IO.Stream -> LexResult

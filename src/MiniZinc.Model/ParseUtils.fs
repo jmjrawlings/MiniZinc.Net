@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser
+﻿namespace MiniZinc
 
 open System.Collections.Generic
 open MiniZinc

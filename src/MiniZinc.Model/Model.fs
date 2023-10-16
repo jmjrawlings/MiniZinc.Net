@@ -14,7 +14,7 @@ past the parsing phase.
 namespace MiniZinc
 
 open System.IO
-open MiniZinc.Parser
+open MiniZinc
 
 [<AutoOpen>]
 module rec Model =
@@ -39,7 +39,7 @@ module rec Model =
         let remove name ns =
             { ns with
                 Bindings   = ns.Bindings.Remove name
-                Declared  = ns.Declared.Remove name
+                Declared   = ns.Declared.Remove name
                 Undeclared = ns.Undeclared.Remove name 
                 Enums      = ns.Enums.Remove name 
                 Synonyms   = ns.Synonyms.Remove name 
@@ -301,78 +301,5 @@ module rec Model =
                 
             model
     
-        /// Encode the given model as a string
-        let encode (model: Model) =
-            
-            let enc = Encoder()
-                                                
-            for item in model.Includes.Values do
-                enc.writeIncludeItem item
-                enc.writetn()
-
-            for enum in model.NameSpace.Enums.Values do
-                enc.writeEnumType enum
-                enc.writetn()
-                
-            for syn in model.NameSpace.Synonyms.Values do
-                enc.writeSynonym syn
-                enc.writetn()
-
-            for x in model.NameSpace.Declared.Values do
-                enc.writeDeclare x
-                enc.writetn()
-
-            for cons in model.Constraints do
-                enc.writeConstraint cons
-                enc.writetn()
-
-            for func in model.NameSpace.Functions.Values do
-                enc.writeFunction func
-                enc.writetn()
-                        
-            enc.writeSolveMethod model.SolveMethod
-            
-            for output in model.Outputs do
-                enc.writeOutput output
-                enc.writetn()
-                
-            enc.String
                             
-    let parseModelString (options:ParseOptions) (mzn: string) : Result<Model, ParseError> =
-                                            
-        let source, comments =
-            parseComments mzn
-        
-        let model =
-            source
-            |> parseWith ast options
-            |> Result.map Model.fromAst
-            
-        model
-        
-    let parseModelFile (options: ParseOptions) (filepath: string) : Result<Model, ParseError> =
-                
-        if File.Exists filepath then
-            let mzn = File.ReadAllText filepath
-            let model = parseModelString options mzn
-            model
-        else
-            failwithf $"{filepath} does not exist"
-       
-        
-    type Model with
     
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: string) =
-            parseModelFile ParseOptions.Default filepath
-            
-        /// Parse a Model from the given file
-        static member ParseFile (filepath: FileInfo) =
-            parseModelFile ParseOptions.Default filepath.FullName
-
-        /// Parse a Model from the given string
-        static member ParseString (mzn: string) =
-            parseModelString ParseOptions.Default mzn
-            
-        member this.Encode() =
-            Model.encode this

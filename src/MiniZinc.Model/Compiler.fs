@@ -77,7 +77,7 @@ module rec Compiler =
          |> Map.ofList
     
             
-    type Encoder() =
+    type Compiler() =
                 
         let mutable indentLevel = 0
         
@@ -708,99 +708,131 @@ module rec Compiler =
                 this.writeDeclareAnnotation x
             | _ ->
                 ()
+                
+        member this.writeModel (model: Model) =
+                                                
+            for item in model.Includes.Values do
+                this.writeIncludeItem item
+                this.writetn()
 
-    // /// Compile the given model to a tempfile with '.mzn' extension
-    // let compileModel (options: CompileOptions) (model: Model) : CompileResult =
-    //     
-    //     let folder (model: CompileResult) (name: string) (binding: Binding) =
-    //         match binding with
-    //         | Binding.Variable d when d.IsPar && d.Value.IsNone->
-    //             $"Unassigned parameter \"{name}\""
-    //             |> model.Err
-    //         | Binding.Expr expr ->
-    //             $"Undeclared variable {name} = {expr}"
-    //             |> model.Err
-    //         | Binding.Enum { Cases = []} ->
-    //             $"Enum \"{name}\" has no cases defined"
-    //             |> model.Err
-    //         | Binding.Multiple bindings ->
-    //             let n = bindings.Length
-    //             let err =
-    //                 bindings
-    //                 |> List.map string
-    //                 |> String.concat ", "
-    //             $"""Name "{name}" was bound to {n} expressions: {err}"""
-    //             |> model.Err
-    //         | Binding.Variable var ->
-    //             model
-    //         | Binding.Enum enum ->
-    //             model
-    //         | Binding.Type syn ->
-    //             model
-    //         | Binding.Function func ->
-    //             model
-    //         
-    //     let empty =
-    //         { ModelString = ""
-    //         ; Warnings    = []
-    //         ; Errors      = [] }
-    //             
-    //     let compiled =
-    //         (empty, model.NameSpace.Bindings)
-    //         ||> Map.fold folder
-    //         
-    //     let mzn =
-    //         { model with Outputs = [] }
-    //         |> Model.encode
-    //         
-    //     { compiled with
-    //         ModelString = mzn }
-    //
-    // /// Compile the Model with extra Data        
-    // let compileModelWithData (options: CompileOptions) (data: NameSpace) (model: Model) =
-    //     
-    //     let nameSpace =
-    //         data
-    //         |> NameSpace.merge model.NameSpace
-    //         
-    //     let combined =
-    //         { model with NameSpace = nameSpace }
-    //         
-    //     let compiled =
-    //         compileModel options combined
-    //         
-    //     compiled
-    //
-    //     
-    // module Model =
-    //     
-    //     let compile options model =
-    //         compileModel model
-    //         
-    //     let compileWith data model =
-    //         compileModelWithData data model
-    //         
-    //             
-    // type Model with
-    //
-    //     /// Compile this model 
-    //     member this.Compile() =
-    //         compileModel CompileOptions.Default this
-    //         
-    //     /// Compile this model with the given options
-    //     member this.Compile(options: CompileOptions) =
-    //         compileModel options this
-    //
-    //     /// Compile this model using the given parameters             
-    //     member this.Compile(options: CompileOptions, parameters: IDictionary<string, Expr>) =
-    //         
-    //         let data =
-    //             parameters
-    //             |> Seq.map (fun kv -> kv.Key, Binding.Expr kv.Value)
-    //             |> NameSpace.ofSeq
-    //         
-    //         compileModelWithData options data this
-    //                 
-    //     /// Compile this model using the given parameters             
-    //     member this.Compile(parameters: IDictionary<string, Expr>) =
-    //         this.Compile(CompileOptions.Default, parameters)
+            for enum in model.NameSpace.Enums.Values do
+                this.writeEnumType enum
+                this.writetn()
+                
+            for syn in model.NameSpace.Synonyms.Values do
+                this.writeSynonym syn
+                this.writetn()
+
+            for x in model.NameSpace.Declared.Values do
+                this.writeDeclare x
+                this.writetn()
+
+            for cons in model.Constraints do
+                this.writeConstraint cons
+                this.writetn()
+
+            for func in model.NameSpace.Functions.Values do
+                this.writeFunction func
+                this.writetn()
+                        
+            this.writeSolveMethod model.SolveMethod
+                    
+            for output in model.Outputs do
+                this.writeOutput output
+                this.writetn()
+    
+    /// Compile the given model to a tempfile with '.mzn' extension
+    let compileModel (options: CompileOptions) (model: Model) : CompileResult =
+                        
+        let folder (model: CompileResult) (name: string) (binding: Binding) =
+            match binding with
+            | Binding.Variable d when d.IsPar && d.Value.IsNone->
+                $"Unassigned parameter \"{name}\""
+                |> model.Err
+            | Binding.Expr expr ->
+                $"Undeclared variable {name} = {expr}"
+                |> model.Err
+            | Binding.Enum { Cases = []} ->
+                $"Enum \"{name}\" has no cases defined"
+                |> model.Err
+            | Binding.Multiple bindings ->
+                let n = bindings.Length
+                let err =
+                    bindings
+                    |> List.map string
+                    |> String.concat ", "
+                $"""Name "{name}" was bound to {n} expressions: {err}"""
+                |> model.Err
+            | Binding.Variable var ->
+                model
+            | Binding.Enum enum ->
+                model
+            | Binding.Type syn ->
+                model
+            | Binding.Function func ->
+                model
+            
+        let empty =
+            { ModelString = ""
+            ; Warnings    = []
+            ; Errors      = [] }
+                
+        let compiled =
+            (empty, model.NameSpace.Bindings)
+            ||> Map.fold folder
+            
+        let com = Compiler()
+        com.writeModel { model with Outputs = [] }
+        let mzn = com.String
+            
+        { compiled with
+            ModelString = mzn }
+    
+    /// Compile the Model with extra Data        
+    let compileModelAndData (options: CompileOptions) (data: NameSpace) (model: Model) =
+                                
+        let nameSpace =
+            data
+            |> NameSpace.merge model.NameSpace
+            
+        let combined =
+            { model with NameSpace = nameSpace }
+            
+        let compiled =
+            compileModel options combined
+            
+        compiled
+    
+        
+    module Model =
+                
+        let compile options model =
+            compileModel model
+            
+        let compileWith data model =
+            compileWith data model
+            
+                
+    type Model with
+    
+        /// Compile this model 
+        member this.Compile() =
+            compileModel CompileOptions.Default this
+            
+        /// Compile this model with the given options
+        member this.Compile(options: CompileOptions) =
+            compileModel options this
+    
+        /// Compile this model using the given parameters             
+        member this.Compile(options: CompileOptions, parameters: IDictionary<string, Expr>) =
+            
+            let data =
+                parameters
+                |> Seq.map (fun kv -> kv.Key, Binding.Expr kv.Value)
+                |> NameSpace.ofSeq
+            
+            compileModelAndData options data this
+                    
+        /// Compile this model using the given parameters             
+        member this.Compile(parameters: IDictionary<string, Expr>) =
+            this.Compile(CompileOptions.Default, parameters)

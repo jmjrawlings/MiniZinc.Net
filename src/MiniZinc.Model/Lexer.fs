@@ -1,16 +1,25 @@
 ﻿namespace MiniZinc
 
 open System
+open System.Collections.Generic
 open System.Text
 open FParsec
 
-module Lexer =
-    
+module rec Lexer =
+        
     let [<Literal>] HASH = '#'
     let [<Literal>] SLASH = '/'
     let [<Literal>] STAR = '*'
-    
+    let [<Literal>] TERM = ';'
+                    
     type Parser<'t> = Parser<'t, unit>
+            
+    type LexResult =
+        { StartTime : DateTime
+        ; EndTime   : DateTime
+        ; Duration  : TimeSpan
+        ; Error     : string
+        ; Tokens    : IEnumerable<Token> }        
           
     type TokenKind =
         | TError  = 0
@@ -127,7 +136,7 @@ module Lexer =
             token.Line <- pos.Line
             token.Column <- pos.Column
             token.Index <- pos.Index
-
+            
             // Line comment
             if next.Char0 = HASH then
                 stream.Skip()
@@ -162,4 +171,66 @@ module Lexer =
             else
                 ()
             
-            reply    
+            reply
+            
+    let pTokens : Parser<ResizeArray<Token>> =
+        fun stream ->
+            let mutable stateTag = stream.StateTag
+            // Parse the first token
+            let mutable xs = ResizeArray()
+            let mutable reply = pToken stream
+            if reply.Status = Ok then
+                // Parse further tokens
+                xs.Add reply.Result
+                let mutable error = reply.Error
+                stateTag <- stream.StateTag
+                reply <- pToken stream
+                while reply.Status = Ok do
+                    if stateTag = stream.StateTag then
+                        failwith "infinite loop exception"
+                    xs.Add reply.Result
+                    error <- reply.Error
+                    stateTag <- stream.StateTag
+                    reply <- pToken stream
+                if reply.Status = Error && stateTag = stream.StateTag then
+                    error <- mergeErrors error reply.Error
+                    Reply(Ok, xs, error)
+                else
+                    error <- if stateTag <> stream.StateTag then reply.Error
+                             else mergeErrors error reply.Error
+                    Reply(reply.Status, error)
+            elif reply.Status = Error && stateTag = stream.StateTag then
+                Reply(xs)
+            else
+                Reply(reply.Status, reply.Error)
+        
+    let createResult startTime endTime parseResult : LexResult =
+        let error, tokens =
+            match parseResult with
+            | Success(tokens, _, _) ->
+                 "", tokens :> Token seq
+            | Failure(msg, parserError, _) ->
+                msg, Seq.empty<Token>
+        let result = createResult startTime endTime parseResult
+        result        
+                
+    let lexFile (encoding: Encoding) (file: string) =
+        let startTime = DateTimeOffset.Now
+        let parseResult = runParserOnFile pTokens () file encoding
+        let endTime = DateTimeOffset.Now
+        let result = createResult startTime endTime parseResult
+        result                
+    
+    let lexString (mzn: string) =
+        let startTime = DateTimeOffset.Now
+        let parseResult = runParserOnString pTokens () "" mzn
+        let endTime = DateTimeOffset.Now
+        let result = createResult startTime endTime parseResult
+        result
+    
+    let lexStream (encoding: Encoding) (stream: IO.Stream) =
+        let startTime = DateTimeOffset.Now
+        let parseResult = runParserOnStream pTokens () "" stream encoding
+        let endTime = DateTimeOffset.Now
+        let result = createResult startTime endTime parseResult
+        result

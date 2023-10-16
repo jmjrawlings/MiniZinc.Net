@@ -10,7 +10,6 @@ Model objects.
 namespace MiniZinc.Tests
 
 open MiniZinc
-open MiniZinc.Parser
 open MiniZinc.Tests
 open Xunit
 
@@ -85,7 +84,7 @@ module ``Model Tests`` =
     let ``test detect unassigned`` arg =
         
         let model =
-            Model.ParseString arg
+             Parser.parseModelFromString ParseOptions.Default arg
             
         assert model.Get().NameSpace.Undeclared.IsEmpty
         
@@ -94,6 +93,6 @@ module ``Model Tests`` =
     let ``test detect unassigned 2`` arg =
 
         let model =
-            parseWith Parsers.item parseOptions arg
-            
+            Parser.parseWith Parsers.item parseOptions arg
+                        
         model.AssertOk()                                        

@@ -9,7 +9,6 @@ Model objects.
 namespace MiniZinc.Tests
 
 open MiniZinc
-open MiniZinc.Parser
 open MiniZinc.Tests
 open Xunit
 open FParsec
@@ -20,13 +19,13 @@ module ``Parser Tests`` =
         ParseOptions.Default
                 
     // Test parsing the string
-    let testRoundtrip (parser: Parser<'t>) (mzn: string) (writer: Encoder -> 't -> unit) =
-        
+    let testRoundtrip (parser: Parser<'t>) (mzn: string) (writer: Compiler -> 't -> unit) =
+                
         let parser =
             spaces >>. parser .>> spaces .>> eof
             
         let parsed =
-            match parseWith parser parseOptions mzn with
+            match Parser.parseWith parser parseOptions mzn with
             | Result.Ok x ->
                 x
             | Result.Error err ->
@@ -45,14 +44,14 @@ Failed to parse the test model:
 
 """
             
-        let encoder = Encoder()
-        let write = (writer encoder)
+        let compiler = Compiler()
+        let write = (writer compiler)
         write parsed
         
         let encoded =
-            encoder.String.Trim()
+            compiler.String.Trim()
        
-        match parseWith parser parseOptions encoded with
+        match Parser.parseWith parser parseOptions encoded with
         | Result.Ok x ->
             x
         | Result.Error err ->
@@ -213,13 +212,13 @@ Encoded:
     [<Theory>]
     [<InlineData("% 12312312")>]
     let ``test comments`` mzn =
-        let output = parseWith Parsers.line_comment parseOptions mzn
+        let output = Parser.parseWith Parsers.line_comment parseOptions mzn
         output.AssertOk()
         
     [<Theory>]
     [<InlineData("/* something */")>]
     let ``test block comment`` mzn =
-        let output = parseWith Parsers.block_comment parseOptions mzn
+        let output = Parser.parseWith Parsers.block_comment parseOptions mzn
         output.AssertOk()
         
     [<Theory>]
@@ -363,14 +362,6 @@ Encoded:
     let ``test items`` mzn =
         testItem mzn
     
-    [<Theory>]
-    [<InlineData("/* this is a block comment */")>]
-    [<InlineData("% this is a line comment */")>]
-    [<InlineData("/* this has % things /  in it */")>]
-    let ``test comment`` mzn =
-        let statement, comments = Parser.parseComments mzn
-        statement.AssertEmpty("")
-        
     [<Theory>]
     [<InlineData("""constraint x > 2 -> not z""")>]
     let ``test constraint`` mzn =
