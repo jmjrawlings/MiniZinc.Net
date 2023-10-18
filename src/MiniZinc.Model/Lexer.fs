@@ -8,10 +8,30 @@ open FParsec
 module rec Lexer =
         
     let [<Literal>] HASH = '#'
-    let [<Literal>] SLASH = '/'
+    let [<Literal>] FWD_SLASH = '/'
+    let [<Literal>] BACK_SLASH = '\\'
     let [<Literal>] STAR = '*'
-    let [<Literal>] TERM = ';'
-                    
+    let [<Literal>] DELIM = ';'
+    let [<Literal>] EQUAL = '='
+    let [<Literal>] LEFT_CHEVRON = '<'
+    let [<Literal>] RIGHT_CHEVRON = '>'
+    let [<Literal>] UP_CHEVRON = '^'
+    let [<Literal>] DOT = '.'
+    let [<Literal>] PLUS = '+'
+    let [<Literal>] MINUS = '-'
+    let [<Literal>] TILDE = '~'
+    let [<Literal>] LEFT_BRACK= '[' 
+    let [<Literal>] RIGHT_BRACK = ']'
+    let [<Literal>] LEFT_PAREN = '('
+    let [<Literal>] RIGHT_PAREN = ')'
+    let [<Literal>] LEFT_BRACE = '{'
+    let [<Literal>] RIGHT_BRACE = '}'
+    let [<Literal>] PERCENT = '%'
+    let [<Literal>] UNDERSCORE = '_'
+    let [<Literal>] SINGLE_QUOTE = '''
+    let [<Literal>] DOUBLE_QUOTE = '"'
+    let [<Literal>] BACKTICK = '`'
+                            
     type Parser<'t> = Parser<'t, unit>
             
     type LexResult =
@@ -19,7 +39,7 @@ module rec Lexer =
         ; EndTime   : DateTime
         ; Duration  : TimeSpan
         ; Error     : string
-        ; Tokens    : IEnumerable<Token> }        
+        ; Tokens    : IEnumerable<Token> }
           
     type TokenKind =
         | TError  = 0
@@ -30,6 +50,7 @@ module rec Lexer =
         | TString = 4
         | TLineComment = 5
         | TBlockComment = 6
+        | TQuoted = 7
         // Keywords
         | KAnnotation  = 10 
         | KAnn         = 11
@@ -124,54 +145,167 @@ module rec Lexer =
         ; mutable String  : string
         ; mutable Int     : int
         ; mutable Float   : float }
-    
+        
+    let pInt : Parser<int> =
+        pint32
+        
+    let pFloat : Parser<float> =
+        pfloat
+        
+    let pNumber : Parser<NumberLiteral> =
+        let format =
+           NumberLiteralOptions.AllowFraction
+           ||| NumberLiteralOptions.AllowExponent
+           ||| NumberLiteralOptions.AllowHexadecimal
+           ||| NumberLiteralOptions.AllowOctal
+        numberLiteral format "number"
+            
     // Parse and remove comments from the given model string
     let pToken : Parser<Token> =
         fun stream ->
             let mutable token = Unchecked.defaultof<Token>
-            let mutable reply = Reply(ReplyStatus.Ok, NoErrorMessages)
-            stream.SkipWhitespace()
+            let mutable error = Unchecked.defaultof<string>
             let pos = stream.Position
-            let next = stream.Peek2()
             token.Line <- pos.Line
             token.Column <- pos.Column
             token.Index <- pos.Index
-            
-            // Line comment
-            if next.Char0 = HASH then
-                stream.Skip()
-                let mzn = stream.ReadRestOfLine(false)
-                token.Kind <- TokenKind.TLineComment
-                token.String <- mzn
-                token.Length <- stream.Index - token.Index
-                reply.Result <- token
-                reply.Status <- ReplyStatus.Ok
-                
-            // Block comment
-            elif next.Char0 = SLASH && next.Char1 = STAR then
-                stream.Skip(2)
-                let mutable fin = false
-                let sb = StringBuilder()
-                while not fin do
+            token.Kind <- 
+                match stream.Read() with
+                | LEFT_BRACK ->
+                    TokenKind.TLeftBracket  
+                | RIGHT_BRACK ->
+                    TokenKind.TRightBracket 
+                | LEFT_PAREN ->
+                    TokenKind.TLeftParen 
+                | RIGHT_PAREN ->
+                    TokenKind.TRightParen 
+                | LEFT_BRACE ->
+                    TokenKind.TLeftBrace 
+                | RIGHT_BRACE ->
+                    TokenKind.TRightBrace
+                | DOT ->
+                    if stream.Skip(DOT) then
+                        TokenKind.TDotDot
+                    else
+                        TokenKind.TDot
+                | TILDE ->
                     match stream.Read() with
-                    | STAR when stream.Peek() = SLASH ->
-                        stream.Skip(2)
-                        stream.SkipWhitespace()
-                        fin <- true
-                    | c ->
-                        sb.Append c
-                        fin <- stream.IsEndOfStream
-                token.Kind <- TokenKind.TBlockComment
-                token.String <- sb.ToString()
-                token.Length <- stream.Index - token.Index
-                reply.Result <- token
-                reply.Status <- ReplyStatus.Ok
-                
-            // Source code
-            else
-                ()
-            
-            reply
+                    | EQUAL ->
+                        TokenKind.TTildeEquals
+                    | PLUS ->
+                        TokenKind.TTildePlus
+                    | MINUS ->
+                        TokenKind.TTildeMinus
+                    | STAR ->
+                        TokenKind.TTildeStar
+                    | _   ->
+                        stream.Seek(token.Index)
+                        TokenKind.TTilde
+                | BACK_SLASH ->
+                    TokenKind.TBackSlash
+                // Line comment
+                | HASH ->
+                    token.String <- stream.ReadRestOfLine(false)
+                    TokenKind.TLineComment
+                // Block comment
+                | FWD_SLASH when stream.Skip(STAR) ->
+                    let mutable fin = false
+                    let sb = StringBuilder()
+                    while not fin do
+                        match stream.Read() with
+                        | STAR when stream.Peek() = FWD_SLASH ->
+                            stream.Skip(2)
+                            stream.SkipWhitespace()
+                            fin <- true
+                        | c ->
+                            sb.Append c
+                            fin <- stream.IsEndOfStream
+                    token.String <- sb.ToString()
+                    TokenKind.TBlockComment                    
+                | FWD_SLASH ->
+                    TokenKind.TForwardSlash
+                | LEFT_CHEVRON ->
+                    if stream.Skip(MINUS) then
+                        if stream.Skip(RIGHT_CHEVRON) then
+                            TokenKind.TDoubleArrow
+                        else
+                            TokenKind.TLeftArrow
+                    elif stream.Skip(EQUAL) then
+                        TokenKind.TLessThan
+                    else
+                        TokenKind.TLessThan
+                | MINUS ->
+                    if stream.Skip(RIGHT_CHEVRON) then
+                        TokenKind.TRightArrow
+                    else
+                        TokenKind.TMinus
+                | RIGHT_CHEVRON ->
+                    if stream.Skip(EQUAL) then
+                        TokenKind.TGreaterThanEqual
+                    else
+                        TokenKind.TGreaterThan
+                | EQUAL ->
+                    stream.Skip(EQUAL)
+                    TokenKind.TEqual
+                | PLUS ->
+                    TokenKind.TPlus
+                | STAR ->
+                    TokenKind.TStar
+                | SINGLE_QUOTE ->
+                    let mutable fin = false
+                    let sb = StringBuilder()
+                    while not fin do
+                        match stream.Read() with
+                        | BACK_SLASH when stream.Skip(SINGLE_QUOTE) ->
+                            ignore <| sb.Append(SINGLE_QUOTE)
+                        | SINGLE_QUOTE ->
+                            fin <- true
+                        | c ->
+                            sb.Append(c)
+                            if stream.IsEndOfStream then
+                                error <- $"Unterminated quoted string"
+                                fin <- true
+                    token.String <- sb.ToString()
+                    TokenKind.TQuoted
+                | DOUBLE_QUOTE ->
+                    let mutable fin = false
+                    let sb = StringBuilder()
+                    while not fin do
+                        match stream.Read() with
+                        | BACK_SLASH when stream.Skip(DOUBLE_QUOTE) ->
+                            ignore <| sb.Append(DOUBLE_QUOTE)
+                        | DOUBLE_QUOTE ->
+                            fin <- true
+                        | c ->
+                            sb.Append(c)
+                            if stream.IsEndOfStream then
+                                error <- "Unterminated string literal"
+                                fin <- true
+                    token.String <- sb.ToString()
+                    TokenKind.TString
+                | c when Char.IsNumber c ->
+                    stream.Seek(token.Index)
+                    let reply = pNumber stream
+                    if reply.Status = Ok then
+                        let result = reply.Result
+                        if result.IsInteger then
+                            token.Int <- (int result.String)
+                            TokenKind.TInt
+                        else
+                            token.Float <- (float result.String)
+                            TokenKind.TFloat
+                    else
+                        error <- string reply.Error
+                        TokenKind.TError
+                | c ->
+                    TokenKind.TError
+
+            token.Length = stream.Index - token.Index
+            match error with
+            | null ->
+                Reply(token)
+            | err ->
+                Reply(ReplyStatus.Error, messageError err)
             
     let pTokens : Parser<ResizeArray<Token>> =
         fun stream ->

@@ -5,9 +5,10 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <Compile Include="ParseTests.fs" />
-        <Compile Include="ModelTests.fs" />
+        <Compile Include="ParserTests.fs" />
+        <Compile Include="ApiTests.fs" />
         <Compile Include="IntegrationTests.fs" />
+        <Compile Include="LexerTests.fs" />
     </ItemGroup>
     
     <ItemGroup>
