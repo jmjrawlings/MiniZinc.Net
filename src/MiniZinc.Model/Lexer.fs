@@ -11,7 +11,7 @@ module rec Lexer =
     let [<Literal>] FWD_SLASH = '/'
     let [<Literal>] BACK_SLASH = '\\'
     let [<Literal>] STAR = '*'
-    let [<Literal>] DELIM = ';'
+    let [<Literal>] DELIMITER = ';'
     let [<Literal>] EQUAL = '='
     let [<Literal>] LEFT_CHEVRON = '<'
     let [<Literal>] RIGHT_CHEVRON = '>'
@@ -31,7 +31,9 @@ module rec Lexer =
     let [<Literal>] SINGLE_QUOTE = '''
     let [<Literal>] DOUBLE_QUOTE = '"'
     let [<Literal>] BACKTICK = '`'
-                            
+    let [<Literal>] COLON = ':'
+    let [<Literal>] EOF = '\uffff'
+                                
     type Parser<'t> = Parser<'t, unit>
             
     type LexResult =
@@ -134,6 +136,8 @@ module rec Lexer =
         | TTilde           = 105 // ~
         | TBackSlash       = 106 // \                
         | TForwardSlash    = 107 // /
+        | TColon           = 108 // :
+        | TDelimiter       = 109 // ;
         
     [<Struct>]
     type Token =
@@ -146,11 +150,15 @@ module rec Lexer =
         ; mutable Int     : int
         ; mutable Float   : float }
         
-    let pInt : Parser<int> =
+    let pInteger : Parser<int> =
         pint32
         
     let pFloat : Parser<float> =
         pfloat
+        
+    let pIdentifier : Parser<Ident> =
+        let options = IdentifierOptions(isAsciiIdStart = fun c -> c = '_' || isLetter c)
+        identifier options
         
     let pNumber : Parser<NumberLiteral> =
         let format =
@@ -159,18 +167,20 @@ module rec Lexer =
            ||| NumberLiteralOptions.AllowHexadecimal
            ||| NumberLiteralOptions.AllowOctal
         numberLiteral format "number"
-            
+    
     // Parse and remove comments from the given model string
     let pToken : Parser<Token> =
         fun stream ->
             let mutable token = Unchecked.defaultof<Token>
-            let mutable error = Unchecked.defaultof<string>
+            let mutable error = NoErrorMessages
             let pos = stream.Position
             token.Line <- pos.Line
             token.Column <- pos.Column
             token.Index <- pos.Index
             token.Kind <- 
                 match stream.Read() with
+                | DELIMITER ->
+                    TokenKind.TDelimiter
                 | LEFT_BRACK ->
                     TokenKind.TLeftBracket  
                 | RIGHT_BRACK ->
@@ -183,6 +193,8 @@ module rec Lexer =
                     TokenKind.TLeftBrace 
                 | RIGHT_BRACE ->
                     TokenKind.TRightBrace
+                | COLON ->
+                    TokenKind.TColon
                 | DOT ->
                     if stream.Skip(DOT) then
                         TokenKind.TDotDot
@@ -263,10 +275,11 @@ module rec Lexer =
                         | c ->
                             sb.Append(c)
                             if stream.IsEndOfStream then
-                                error <- $"Unterminated quoted string"
+                                error <- messageError $"Unterminated quoted string"
                                 fin <- true
                     token.String <- sb.ToString()
                     TokenKind.TQuoted
+                // String literal                    
                 | DOUBLE_QUOTE ->
                     let mutable fin = false
                     let sb = StringBuilder()
@@ -279,11 +292,12 @@ module rec Lexer =
                         | c ->
                             sb.Append(c)
                             if stream.IsEndOfStream then
-                                error <- "Unterminated string literal"
+                                error <- messageError "Unterminated string literal"
                                 fin <- true
                     token.String <- sb.ToString()
                     TokenKind.TString
-                | c when Char.IsNumber c ->
+                // Number literal                    
+                | c when isDigit c ->
                     stream.Seek(token.Index)
                     let reply = pNumber stream
                     if reply.Status = Ok then
@@ -295,48 +309,49 @@ module rec Lexer =
                             token.Float <- (float result.String)
                             TokenKind.TFloat
                     else
-                        error <- string reply.Error
+                        error <- reply.Error
                         TokenKind.TError
+                // Word
                 | c ->
-                    TokenKind.TError
+                    stream.Seek(token.Index)
+                    let reply = pIdentifier stream
+                    if reply.Status = Ok then
+                        token.String <- reply.Result
+                        TokenKind.TWord
+                    else
+                        error <- reply.Error
+                        TokenKind.TError
 
             token.Length = stream.Index - token.Index
-            match error with
-            | null ->
+            if error = NoErrorMessages then
                 Reply(token)
-            | err ->
-                Reply(ReplyStatus.Error, messageError err)
+            else
+                Reply(ReplyStatus.Error, error)
+                
             
     let pTokens : Parser<ResizeArray<Token>> =
         fun stream ->
-            let mutable stateTag = stream.StateTag
-            // Parse the first token
-            let mutable xs = ResizeArray()
-            let mutable reply = pToken stream
-            if reply.Status = Ok then
-                // Parse further tokens
-                xs.Add reply.Result
-                let mutable error = reply.Error
-                stateTag <- stream.StateTag
-                reply <- pToken stream
-                while reply.Status = Ok do
+            let stateTag = stream.StateTag
+            let mutable xs = ResizeArray<Token>()
+            let mutable fin = false
+            let mutable reply = Reply(xs)
+            while fin do
+                stream.SkipWhitespace()
+                let tokenReply = pToken stream
+                if tokenReply.Status = Ok then
                     if stateTag = stream.StateTag then
-                        failwith "infinite loop exception"
-                    xs.Add reply.Result
-                    error <- reply.Error
-                    stateTag <- stream.StateTag
-                    reply <- pToken stream
-                if reply.Status = Error && stateTag = stream.StateTag then
-                    error <- mergeErrors error reply.Error
-                    Reply(Ok, xs, error)
+                        reply.Error <- messageError "infinite loop"
+                        fin <- true
+                    else
+                        xs.Add tokenReply.Result                    
+                elif stateTag = stream.StateTag then
+                    reply.Error <- messageError "infinite loop"
+                    fin <- true
                 else
-                    error <- if stateTag <> stream.StateTag then reply.Error
-                             else mergeErrors error reply.Error
-                    Reply(reply.Status, error)
-            elif reply.Status = Error && stateTag = stream.StateTag then
-                Reply(xs)
-            else
-                Reply(reply.Status, reply.Error)
+                    reply.Error <- tokenReply.Error
+                    fin <- true
+            reply                    
+                    
         
     let createResult startTime endTime parseResult : LexResult =
         let error, tokens =
