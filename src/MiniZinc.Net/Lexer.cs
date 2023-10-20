@@ -4,7 +4,115 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-public static class Lexer
+public enum Kind
+{
+    TNone,
+    TError,
+    TWord,
+    TInt,
+    TFloat,
+    TString,
+    TLineComment,
+    TBlockComment,
+    TQuoted,
+    KAnnotation,
+    KAnn,
+    KAny,
+    KArray,
+    KBool,
+    KCase,
+    KConstraint,
+    KDefault,
+    KDiff,
+    KDiv,
+    KElse,
+    KElseif,
+    KEndif,
+    KEnum,
+    KFalse,
+    KFloat,
+    KFunction,
+    KIf,
+    KIn,
+    KInclude,
+    KInt,
+    KIntersect,
+    KLet,
+    KList,
+    KMaximize,
+    KMinimize,
+    KMod,
+    KNot,
+    KOf,
+    KOp,
+    KOpt,
+    KOutput,
+    KPar,
+    KPredicate,
+    KRecord,
+    KSatisfy,
+    KSet,
+    KSolve,
+    KString,
+    KSubset,
+    KSuperset,
+    KSymdiff,
+    KTest,
+    KThen,
+    KTrue,
+    KTuple,
+    KType,
+    KUnion,
+    KVar,
+    KWhere,
+    KXor,
+    TDoubleArrow,
+    TLeftArrow,
+    TRightArrow,
+    TDownWedge,
+    TUpWedge,
+    TLessThan,
+    TGreaterThan,
+    TLessThanEqual,
+    TGreaterThanEqual,
+    TEqual,
+    TDotDot,
+    TPlus,
+    TMinus,
+    TStar,
+    TSlash,
+    TTildeEquals,
+    TTildePlus,
+    TTildeMinus,
+    TTildeStar,
+    TLeftBracket,
+    TRightBracket,
+    TLeftParen,
+    TRightParen,
+    TLeftBrace,
+    TRightBrace,
+    TDot,
+    TTilde,
+    TBackSlash,
+    TForwardSlash,
+    TColon,
+    TDelimiter,
+    TEmpty
+}
+
+public readonly struct Token
+{
+    public Kind Kind { get; init; }
+    public int Line { get; init; }
+    public int Col { get; init; }
+    public int Start { get; init; }
+    public int Length { get; init; }
+    public int? Int { get; init; }
+    public string? String { get; init; }
+    public float? Float { get; init; }
+}
+
+public class Lexer : IDisposable
 {
     const char HASH = '#';
     const char FWD_SLASH = '/';
@@ -33,168 +141,99 @@ public static class Lexer
     const char COLON = ':';
     const char EOF = '\uffff';
 
-    public enum Kind
+    public DateTime StartTime { get; private set; }
+    public DateTime EndTime { get; private set; }
+    public TimeSpan Duration { get; private set; }
+
+    private int _line;
+    private int _col;
+    private int _index;
+    private Kind _kind;
+    private int _start;
+    private readonly StreamReader _stream;
+
+    public Lexer(StreamReader stream)
     {
-        TError,
-        TWord,
-        TInt,
-        TFloat,
-        TString,
-        TLineComment,
-        TBlockComment,
-        TQuoted,
-        KAnnotation,
-        KAnn,
-        KAny,
-        KArray,
-        KBool,
-        KCase,
-        KConstraint,
-        KDefault,
-        KDiff,
-        KDiv,
-        KElse,
-        KElseif,
-        KEndif,
-        KEnum,
-        KFalse,
-        KFloat,
-        KFunction,
-        KIf,
-        KIn,
-        KInclude,
-        KInt,
-        KIntersect,
-        KLet,
-        KList,
-        KMaximize,
-        KMinimize,
-        KMod,
-        KNot,
-        KOf,
-        KOp,
-        KOpt,
-        KOutput,
-        KPar,
-        KPredicate,
-        KRecord,
-        KSatisfy,
-        KSet,
-        KSolve,
-        KString,
-        KSubset,
-        KSuperset,
-        KSymdiff,
-        KTest,
-        KThen,
-        KTrue,
-        KTuple,
-        KType,
-        KUnion,
-        KVar,
-        KWhere,
-        KXor,
-        TDoubleArrow,
-        TLeftArrow,
-        TRightArrow,
-        TDownWedge,
-        TUpWedge,
-        TLessThan,
-        TGreaterThan,
-        TLessThanEqual,
-        TGreaterThanEqual,
-        TEqual,
-        TDotDot,
-        TPlus,
-        TMinus,
-        TStar,
-        TSlash,
-        TTildeEquals,
-        TTildePlus,
-        TTildeMinus,
-        TTildeStar,
-        TLeftBracket,
-        TRightBracket,
-        TLeftParen,
-        TRightParen,
-        TLeftBrace,
-        TRightBrace,
-        TDot,
-        TTilde,
-        TBackSlash,
-        TForwardSlash,
-        TColon,
-        TDelimiter,
-        TEmpty
+        StartTime = DateTime.Now;
+        _stream = stream;
     }
 
-    public readonly struct Token
+    public Token Next()
     {
-        public Kind Kind { get; init; }
-        public int Line { get; init; }
-        public int Column { get; init; }
-        public int Start { get; init; }
-        public int End { get; init; }
-    }
-
-    public interface ILexed
-    {
-        string Source { get; }
-        DateTime StartTime { get; }
-        DateTime EndTime { get; }
-        TimeSpan Duration { get; }
-        IEnumerable<Token> Token { get; }
-        string? Error { get; }
-        string String(int index);
-        int Int(int index);
-        float Float(int index);
-    }
-
-    public class Lexed
-    {
-        public string Source { get; init; }
-        public DateTime StartTime { get; }
-        public DateTime EndTime { get; init; }
-        public TimeSpan Duration { get; init; }
-        private List<Token>? _tokens;
-        private List<string>? _strings;
-        private List<int>? _ints;
-        private List<float> _floats;
-        private string? _error;
-
-        public Lexed()
+        _start = _index;
+        var c = (char)_stream.Read();
+        switch (c)
         {
-            StartTime = DateTime.Now;
+            case HASH:
+                break;
+            case FWD_SLASH:
+                break;
+            case BACK_SLASH:
+                break;
+            case STAR:
+                break;
+            case DELIMITER:
+                break;
+            case EQUAL:
+                break;
+            case LEFT_CHEVRON:
+                break;
+            case RIGHT_CHEVRON:
+                break;
+            case UP_CHEVRON:
+                break;
+            case DOT:
+                break;
+            case PLUS:
+                break;
+            case MINUS:
+                break;
+            case TILDE:
+                break;
+            case LEFT_BRACK:
+                break;
+            case RIGHT_BRACK:
+                break;
+            case LEFT_PAREN:
+                break;
+            case RIGHT_PAREN:
+                break;
+            case LEFT_BRACE:
+                break;
+            case RIGHT_BRACE:
+                break;
+            case PERCENT:
+                break;
+            case UNDERSCORE:
+                break;
+            case SINGLE_QUOTE:
+                break;
+            case DOUBLE_QUOTE:
+                break;
+            case BACKTICK:
+                break;
+            case COLON:
+                break;
+            case EOF:
+                break;
         }
 
-        public string String(int index) => _strings![index];
+        var token = new Token
+        {
+            Kind = _kind,
+            Line = _line,
+            Col = _col,
+            Start = _start,
+            Length = _index - _start
+        };
+        return token;
+    }
 
-        public int Int(int index) => _ints![index];
-
-        public float FLoat(int index) => _floats![index];
-
-        internal void Add(string x) => (_strings ??= new List<string>()).Add(x);
-
-        internal void Add(int x) => (_ints ??= new List<int>()).Add(x);
-
-        internal void Add(float x) => (_floats ??= new List<float>()).Add(x);
+    public void Dispose()
+    {
+        _stream.Dispose();
     }
 }
-
-//
-//     // Parse and remove comments from the given model string
-//     let pToken : Parser<Lexeme> =
-//     fun stream ->
-//     Console.WriteLine($"{stream.Index}")
-//     let mutable token = Unchecked.defaultof<Lexeme>
-//         let mutable error = NoErrorMessages
-//     let lexed = stream.UserState
-//     let pos = stream.Position
-//     token.Line<- pos.Line
-//         token.Column<- pos.Column
-//         token.Start<- pos.Index
-//         token.Kind<-
-//
 //     match stream.Read() with
 //     | DELIMITER ->
 //     Token.TDelimiter
