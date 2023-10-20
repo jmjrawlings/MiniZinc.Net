@@ -34,16 +34,9 @@ module rec Lexer =
     let [<Literal>] COLON = ':'
     let [<Literal>] EOF = '\uffff'
                                 
-    type Parser<'t> = Parser<'t, unit>
-            
-    type LexResult =
-        { StartTime : DateTime
-        ; EndTime   : DateTime
-        ; Duration  : TimeSpan
-        ; Error     : string
-        ; Tokens    : IEnumerable<Token> }
+    type Parser<'t> = Parser<'t, LexResult>
           
-    type TokenKind =
+    type Token =
         | TError  = 0
         // Values
         | TWord  = 1
@@ -138,17 +131,56 @@ module rec Lexer =
         | TForwardSlash    = 107 // /
         | TColon           = 108 // :
         | TDelimiter       = 109 // ;
+        | TEmpty           = 110 // <>
+        
         
     [<Struct>]
-    type Token =
-        { mutable Kind    : TokenKind
+    type Lexeme =
+        { mutable Kind    : Token
         ; mutable Line    : int64
         ; mutable Column  : int64
-        ; mutable Index   : int64
-        ; mutable Length  : int64
-        ; mutable String  : string
-        ; mutable Int     : int
-        ; mutable Float   : float }
+        ; mutable Start   : int64
+        ; mutable End     : int64 }
+
+    let inline nullOf<'t> =
+        Unchecked.defaultof<'t>
+        
+    type LexResult =          
+        { Source    : string
+        ; StartTime : DateTime
+        ; EndTime   : DateTime
+        ; Duration  : TimeSpan
+        ; mutable Lexemes  : ResizeArray<Lexeme>
+        ; mutable Strings : ResizeArray<string>
+        ; mutable Ints    : ResizeArray<int>
+        ; mutable Floats  : ResizeArray<float>
+        ; mutable Error   : string }
+        
+        static member Empty =
+            { Source    = null
+            ; StartTime = DateTime.Now 
+            ; EndTime   = DateTime.Now   
+            ; Duration  = TimeSpan.Zero  
+            ; Lexemes    = ResizeArray()   
+            ; Strings   = nullOf   
+            ; Ints      = nullOf       
+            ; Floats    = nullOf    
+            ; Error     = nullOf }
+        
+        member this.Add(x : string) =
+            if isNull this.Strings then
+                this.Strings <- ResizeArray()
+            this.Strings.Add x
+            
+        member this.Add(x : int) =
+            if isNull this.Ints then
+                this.Ints <- ResizeArray()
+            this.Ints.Add x
+                    
+        member this.Add(x : float) =
+            if isNull this.Floats then
+                this.Floats <- ResizeArray()
+            this.Floats.Add x
         
     let pInteger : Parser<int> =
         pint32
@@ -169,60 +201,63 @@ module rec Lexer =
         numberLiteral format "number"
     
     // Parse and remove comments from the given model string
-    let pToken : Parser<Token> =
+    let pToken : Parser<Lexeme> =
         fun stream ->
-            let mutable token = Unchecked.defaultof<Token>
+            Console.WriteLine($"{stream.Index}")
+            let mutable token = Unchecked.defaultof<Lexeme>
             let mutable error = NoErrorMessages
+            let lexed = stream.UserState
             let pos = stream.Position
             token.Line <- pos.Line
             token.Column <- pos.Column
-            token.Index <- pos.Index
+            token.Start <- pos.Index
             token.Kind <- 
                 match stream.Read() with
                 | DELIMITER ->
-                    TokenKind.TDelimiter
+                    Token.TDelimiter
                 | LEFT_BRACK ->
-                    TokenKind.TLeftBracket  
+                    Token.TLeftBracket  
                 | RIGHT_BRACK ->
-                    TokenKind.TRightBracket 
+                    Token.TRightBracket 
                 | LEFT_PAREN ->
-                    TokenKind.TLeftParen 
+                    Token.TLeftParen 
                 | RIGHT_PAREN ->
-                    TokenKind.TRightParen 
+                    Token.TRightParen 
                 | LEFT_BRACE ->
-                    TokenKind.TLeftBrace 
+                    Token.TLeftBrace 
                 | RIGHT_BRACE ->
-                    TokenKind.TRightBrace
+                    Token.TRightBrace
                 | COLON ->
-                    TokenKind.TColon
+                    Token.TColon
                 | DOT ->
                     if stream.Skip(DOT) then
-                        TokenKind.TDotDot
+                        Token.TDotDot
                     else
-                        TokenKind.TDot
+                        Token.TDot
                 | TILDE ->
                     match stream.Read() with
                     | EQUAL ->
-                        TokenKind.TTildeEquals
+                        Token.TTildeEquals
                     | PLUS ->
-                        TokenKind.TTildePlus
+                        Token.TTildePlus
                     | MINUS ->
-                        TokenKind.TTildeMinus
+                        Token.TTildeMinus
                     | STAR ->
-                        TokenKind.TTildeStar
+                        Token.TTildeStar
                     | _   ->
-                        stream.Seek(token.Index)
-                        TokenKind.TTilde
+                        stream.Seek(token.Start)
+                        Token.TTilde
                 | BACK_SLASH ->
-                    TokenKind.TBackSlash
+                    Token.TBackSlash
                 // Line comment
                 | HASH ->
-                    token.String <- stream.ReadRestOfLine(false)
-                    TokenKind.TLineComment
+                    let string = stream.ReadRestOfLine(false)
+                    lexed.Strings.Add string
+                    Token.TLineComment
                 // Block comment
                 | FWD_SLASH when stream.Skip(STAR) ->
                     let mutable fin = false
-                    let sb = StringBuilder()
+                    // let sb = StringBuilder()
                     while not fin do
                         match stream.Read() with
                         | STAR when stream.Peek() = FWD_SLASH ->
@@ -230,39 +265,40 @@ module rec Lexer =
                             stream.SkipWhitespace()
                             fin <- true
                         | c ->
-                            sb.Append c
+                            // sb.Append c
                             fin <- stream.IsEndOfStream
-                    token.String <- sb.ToString()
-                    TokenKind.TBlockComment                    
+                    Token.TBlockComment                    
                 | FWD_SLASH ->
-                    TokenKind.TForwardSlash
+                    Token.TForwardSlash
                 | LEFT_CHEVRON ->
                     if stream.Skip(MINUS) then
                         if stream.Skip(RIGHT_CHEVRON) then
-                            TokenKind.TDoubleArrow
+                            Token.TDoubleArrow
                         else
-                            TokenKind.TLeftArrow
+                            Token.TLeftArrow
                     elif stream.Skip(EQUAL) then
-                        TokenKind.TLessThan
+                        Token.TLessThan
+                    elif stream.Skip(RIGHT_CHEVRON) then
+                        Token.TEmpty                        
                     else
-                        TokenKind.TLessThan
+                        Token.TLessThan
                 | MINUS ->
                     if stream.Skip(RIGHT_CHEVRON) then
-                        TokenKind.TRightArrow
+                        Token.TRightArrow
                     else
-                        TokenKind.TMinus
+                        Token.TMinus
                 | RIGHT_CHEVRON ->
                     if stream.Skip(EQUAL) then
-                        TokenKind.TGreaterThanEqual
+                        Token.TGreaterThanEqual
                     else
-                        TokenKind.TGreaterThan
+                        Token.TGreaterThan
                 | EQUAL ->
                     stream.Skip(EQUAL)
-                    TokenKind.TEqual
+                    Token.TEqual
                 | PLUS ->
-                    TokenKind.TPlus
+                    Token.TPlus
                 | STAR ->
-                    TokenKind.TStar
+                    Token.TStar
                 | SINGLE_QUOTE ->
                     let mutable fin = false
                     let sb = StringBuilder()
@@ -277,8 +313,8 @@ module rec Lexer =
                             if stream.IsEndOfStream then
                                 error <- messageError $"Unterminated quoted string"
                                 fin <- true
-                    token.String <- sb.ToString()
-                    TokenKind.TQuoted
+                    // token.String <- sb.ToString()
+                    Token.TQuoted
                 // String literal                    
                 | DOUBLE_QUOTE ->
                     let mutable fin = false
@@ -294,48 +330,50 @@ module rec Lexer =
                             if stream.IsEndOfStream then
                                 error <- messageError "Unterminated string literal"
                                 fin <- true
-                    token.String <- sb.ToString()
-                    TokenKind.TString
+                    // token.String <- sb.ToString()
+                    Token.TString
                 // Number literal                    
                 | c when isDigit c ->
-                    stream.Seek(token.Index)
+                    stream.Seek(token.Start)
                     let reply = pNumber stream
                     if reply.Status = Ok then
                         let result = reply.Result
                         if result.IsInteger then
-                            token.Int <- (int result.String)
-                            TokenKind.TInt
+                            let i = int result.String
+                            lexed.Add i
+                            Token.TInt
                         else
-                            token.Float <- (float result.String)
-                            TokenKind.TFloat
+                            let f = float result.String
+                            lexed.Add f
+                            Token.TFloat
                     else
                         error <- reply.Error
-                        TokenKind.TError
+                        Token.TError
                 // Word
                 | c ->
-                    stream.Seek(token.Index)
+                    stream.Seek(token.Start)
                     let reply = pIdentifier stream
                     if reply.Status = Ok then
-                        token.String <- reply.Result
-                        TokenKind.TWord
+                        // token.String <- reply.Result
+                        Token.TWord
                     else
                         error <- reply.Error
-                        TokenKind.TError
+                        Token.TError
 
-            token.Length = stream.Index - token.Index
+            token.End <- stream.Index
             if error = NoErrorMessages then
                 Reply(token)
             else
                 Reply(ReplyStatus.Error, error)
                 
             
-    let pTokens : Parser<ResizeArray<Token>> =
+    let pTokens : Parser<ResizeArray<Lexeme>> =
         fun stream ->
             let stateTag = stream.StateTag
-            let mutable xs = ResizeArray<Token>()
+            let mutable xs = ResizeArray<Lexeme>()
             let mutable fin = false
             let mutable reply = Reply(xs)
-            while fin do
+            while (not fin) do
                 stream.SkipWhitespace()
                 let tokenReply = pToken stream
                 if tokenReply.Status = Ok then
@@ -357,29 +395,32 @@ module rec Lexer =
         let error, tokens =
             match parseResult with
             | Success(tokens, _, _) ->
-                 "", tokens :> Token seq
+                 "", tokens :> Lexeme seq
             | Failure(msg, parserError, _) ->
-                msg, Seq.empty<Token>
+                msg, Seq.empty<Lexeme>
         let result = createResult startTime endTime parseResult
         result        
                 
     let lexFile (encoding: Encoding) (file: string) =
         let startTime = DateTimeOffset.Now
-        let parseResult = runParserOnFile pTokens () file encoding
+        let lexed = LexResult.Empty
+        let parseResult = runParserOnFile pTokens lexed file encoding
         let endTime = DateTimeOffset.Now
         let result = createResult startTime endTime parseResult
         result                
     
     let lexString (mzn: string) =
         let startTime = DateTimeOffset.Now
-        let parseResult = runParserOnString pTokens () "" mzn
+        let lexed = LexResult.Empty
+        let parseResult = runParserOnString pTokens lexed "" mzn
         let endTime = DateTimeOffset.Now
         let result = createResult startTime endTime parseResult
         result
     
     let lexStream (encoding: Encoding) (stream: IO.Stream) =
         let startTime = DateTimeOffset.Now
-        let parseResult = runParserOnStream pTokens () "" stream encoding
+        let lexed = LexResult.Empty
+        let parseResult = runParserOnStream pTokens lexed "" stream encoding
         let endTime = DateTimeOffset.Now
         let result = createResult startTime endTime parseResult
         result

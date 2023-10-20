@@ -6,7 +6,7 @@ open System.Text
         
 module Lexer =
 
-    type TokenKind =
+    type Token =
         | TError  = 0
         // Values
         | TWord  = 1
@@ -100,22 +100,23 @@ module Lexer =
         | TForwardSlash    = 107 // /
         
     [<Struct>]
-    type Token =
-        { mutable Kind    : TokenKind
+    type Lexeme =
+        { mutable Kind    : Token
         ; mutable Line    : int64
         ; mutable Column  : int64
-        ; mutable Index   : int64
-        ; mutable Length  : int64
-        ; mutable String  : string
-        ; mutable Int     : int
-        ; mutable Float   : float }
+        ; mutable Start   : int64
+        ; mutable End     : int64 }
 
-    type LexResult =
-        { StartTime : DateTime
+    type LexResult =          
+        { Source    : string
+        ; StartTime : DateTime
         ; EndTime   : DateTime
         ; Duration  : TimeSpan
-        ; Error     : string
-        ; Tokens    : IEnumerable<Token> }            
+        ; mutable Lexemes  : ResizeArray<Lexeme>
+        ; mutable Strings : ResizeArray<string>
+        ; mutable Ints    : ResizeArray<int>
+        ; mutable Floats  : ResizeArray<float>
+        ; mutable Error   : string }            
 
     val lexFile: encoding: Encoding -> file: string -> LexResult
 
