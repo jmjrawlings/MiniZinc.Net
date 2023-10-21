@@ -159,6 +159,8 @@ public class Lexer : IDisposable
     private Kind _kind;
     private string? _string;
     private string? _error;
+    private char _char;
+    private char _last;
     private readonly bool _debug;
     private readonly StreamReader _sr;
     private readonly StringBuilder _sb;
@@ -170,11 +172,16 @@ public class Lexer : IDisposable
         _sb = new StringBuilder();
     }
 
-    private char Next()
+    private void Next()
     {
-        var c = (char)_sr.Read();
+        _last = _char;
+        _char = (char)_sr.Read();
         _index++;
-        return c;
+    }
+
+    private void Store()
+    {
+        _sb.Append(_char);
     }
 
     private char Peek()
@@ -220,6 +227,20 @@ public class Lexer : IDisposable
         }
     }
 
+    public IEnumerable<Token> ReadToEnd()
+    {
+        while (true)
+        {
+            var token = Read();
+            if (!token.HasValue)
+                break;
+
+            yield return token.Value;
+            if (_error is null)
+                break;
+        }
+    }
+
     public Token? Read()
     {
         _start = _index;
@@ -228,8 +249,8 @@ public class Lexer : IDisposable
         if (!CharsRemain)
             return null;
 
-        var c = Next();
-        switch (c)
+        Next();
+        switch (_char)
         {
             case HASH:
                 ReadLineComment();
@@ -313,11 +334,19 @@ public class Lexer : IDisposable
                 break;
             case COLON:
                 break;
+            default:
+                if (char.IsDigit(_char))
+                    ReadNumber();
+                break;
         }
 
         Kind kind = _kind;
+        string? s = _string;
         if (_error is not null)
+        {
             kind = Kind.TError;
+            s = _error;
+        }
 
         var token = new Token
         {
@@ -326,11 +355,13 @@ public class Lexer : IDisposable
             Col = _col,
             Start = _start,
             Length = _offset,
-            String = _string
+            String = s
         };
 
         return token;
     }
+
+    private void ReadNumber() { }
 
     private void ReadStringLiteral()
     {
@@ -338,18 +369,18 @@ public class Lexer : IDisposable
         bool fin = false;
         while (CharsRemain && !fin)
         {
-            var c = Next();
-            if (c is DOUBLE_QUOTE)
+            Next();
+            if (_char is DOUBLE_QUOTE)
             {
                 ok = true;
                 fin = true;
             }
-            else if (c is BACK_SLASH)
+            else if (_char is BACK_SLASH)
             {
-                _sb.Append(c);
-                c = Next();
-                _sb.Append(c);
-                switch (c)
+                Store();
+                Next();
+                Store();
+                switch (_char)
                 {
                     case BACK_SLASH:
                     case DOUBLE_QUOTE:
@@ -362,7 +393,7 @@ public class Lexer : IDisposable
             }
             else
             {
-                _sb.Append(c);
+                Store();
             }
         }
         _kind = Kind.TString;
@@ -375,8 +406,8 @@ public class Lexer : IDisposable
         bool fin = false;
         while (CharsRemain && !fin)
         {
-            var c = Next();
-            switch (c)
+            Next();
+            switch (_char)
             {
                 case SINGLE_QUOTE:
                     fin = true;
@@ -388,18 +419,32 @@ public class Lexer : IDisposable
                     fin = true;
                     break;
                 default:
-                    _sb.Append(c);
+                    Store();
                     break;
             }
         }
 
         if (!ok)
-            _error = ERR_QUOTED_IDENT;
+            Error(ERR_QUOTED_IDENT);
 
         _kind = Kind.TQuoted;
         _string = String();
     }
 
+    /// Record and error
+    private void Error(string msg)
+    {
+        _error = msg;
+    }
+
+    /// Record an error if the given condition holds
+    private void ErrorIf(bool cond, string msg)
+    {
+        if (cond)
+            Error(msg);
+    }
+
+    /// Return the contents of the current string buffer
     private string String()
     {
         var s = _sb.ToString();
@@ -414,28 +459,27 @@ public class Lexer : IDisposable
         bool ok = false;
         while (CharsRemain)
         {
-            var c = Next();
-            if (c is STAR && Skip(FWD_SLASH))
+            Next();
+            if (_char is STAR && Skip(FWD_SLASH))
             {
                 ok = true;
                 break;
             }
-            _sb.Append(c);
+            Store();
         }
 
         _kind = Kind.TBlockComment;
         _string = String();
-        if (!ok)
-            _error = "Unclosed block comment";
+        ErrorIf(!ok, "Unclosed block comment");
     }
 
     private void ReadLineComment()
     {
         while (CharsRemain)
         {
-            char c = Next();
-            _sb.Append(c);
-            if (c is NEWLINE)
+            Next();
+            Store();
+            if (_char is NEWLINE)
                 break;
         }
 
