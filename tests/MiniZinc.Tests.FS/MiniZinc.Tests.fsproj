@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <Compile Include="Prelude.fs" />
+        <Compile Include="Yaml.fs" />
+        <Compile Include="LibMiniZinc.fs" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\MiniZinc.Client\MiniZinc.Client.fsproj" />
+      <ProjectReference Include="..\..\src\MiniZinc.Model\MiniZinc.Model.fsproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="YamlDotNet" Version="13.2.0" />
+    </ItemGroup>
+
+</Project>
