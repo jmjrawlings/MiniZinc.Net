@@ -7,101 +7,101 @@ using System.Text;
 
 public enum Kind
 {
-    TNone,
-    TError,
-    TWord,
-    TInt,
-    TFloat,
-    TString,
-    TLineComment,
-    TBlockComment,
-    TQuoted,
-    KAnnotation,
-    KAnn,
-    KAny,
-    KArray,
-    KBool,
-    KCase,
-    KConstraint,
-    KDefault,
-    KDiff,
-    KDiv,
-    KElse,
-    KElseif,
-    KEndif,
-    KEnum,
-    KFalse,
-    KFloat,
-    KFunction,
-    KIf,
-    KIn,
-    KInclude,
-    KInt,
-    KIntersect,
-    KLet,
-    KList,
-    KMaximize,
-    KMinimize,
-    KMod,
-    KNot,
-    KOf,
-    KOp,
-    KOpt,
-    KOutput,
-    KPar,
-    KPredicate,
-    KRecord,
-    KSatisfy,
-    KSet,
-    KSolve,
-    KString,
-    KSubset,
-    KSuperset,
-    KSymdiff,
-    KTest,
-    KThen,
-    KTrue,
-    KTuple,
-    KType,
-    KUnion,
-    KVar,
-    KWhere,
-    KXor,
-    TDoubleArrow,
-    TLeftArrow,
-    TRightArrow,
-    TDownWedge,
-    TUpWedge,
-    TLessThan,
-    TGreaterThan,
-    TLessThanEqual,
-    TGreaterThanEqual,
-    TEqual,
-    TDotDot,
-    TPlus,
-    TMinus,
-    TStar,
-    TSlash,
-    TPlusPlus,
-    TTildeEquals,
-    TTildePlus,
-    TTildeMinus,
-    TTildeStar,
-    TLeftBracket,
-    TRightBracket,
-    TLeftParen,
-    TRightParen,
-    TLeftBrace,
-    TRightBrace,
-    TDot,
-    TPercent,
-    TUnderscore,
-    TTilde,
-    TBackSlash,
-    TForwardSlash,
-    TColon,
-    TDelimiter,
-    TEmpty
+    None,
+    Error,
+    Word,
+    Int,
+    Float,
+    String,
+    LineComment,
+    BlockComment,
+    QuotedIdentifier,
+    KeywordAnnotation,
+    KeywordAnn,
+    KeywordAny,
+    KeywordArray,
+    KeywordBool,
+    KeywordCase,
+    KeywordConstraint,
+    KeywordDefault,
+    KeywordDiff,
+    KeywordDiv,
+    KeywordElse,
+    KeywordElseif,
+    KeywordEndif,
+    KeywordEnum,
+    KeywordFalse,
+    KeywordFloat,
+    KeywordFunction,
+    KeywordIf,
+    KeywordIn,
+    KeywordInclude,
+    KeywordInt,
+    KeywordIntersect,
+    KeywordLet,
+    KeywordList,
+    KeywordMaximize,
+    KeywordMinimize,
+    KeywordMod,
+    KeywordNot,
+    KeywordOf,
+    KeywordOp,
+    KeywordOpt,
+    KeywordOutput,
+    KeywordPar,
+    KeywordPredicate,
+    KeywordRecord,
+    KeywordSatisfy,
+    KeywordSet,
+    KeywordSolve,
+    KeywordString,
+    KeywordSubset,
+    KeywordSuperset,
+    KeywordSymdiff,
+    KeywordTest,
+    KeywordThen,
+    KeywordTrue,
+    KeywordTuple,
+    KeywordType,
+    KeywordUnion,
+    KeywordVar,
+    KeywordWhere,
+    KeywordXor,
+    DoubleArrow,
+    LeftArrow,
+    RightArrow,
+    DownWedge,
+    UpWedge,
+    LessThan,
+    GreaterThan,
+    LessThanEqual,
+    GreaterThanEqual,
+    Equal,
+    DotDot,
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    PlusPlus,
+    TildeEquals,
+    TildePlus,
+    TildeMinus,
+    TildeStar,
+    LeftBracket,
+    RightBracket,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    Dot,
+    Percent,
+    Underscore,
+    Tilde,
+    BackSlash,
+    ForwardSlash,
+    Colon,
+    Delimiter,
+    Empty
 }
 
 public readonly struct Token
@@ -137,6 +137,7 @@ public class Lexer : IDisposable
     const char RIGHT_PAREN = ')';
     const char LEFT_BRACE = '{';
     const char RIGHT_BRACE = '}';
+    const char PIPE = '|';
     const char PERCENT = '%';
     const char UNDERSCORE = '_';
     const char SINGLE_QUOTE = '\'';
@@ -144,11 +145,16 @@ public class Lexer : IDisposable
     const char BACKTICK = '`';
     const char COLON = ':';
     const char NEWLINE = '\n';
+    const char TAB = '\t';
     const char RETURN = '\r';
     const char NULL = '\x00';
+    const char SPACE = ' ';
+    const char EOF = '\0';
 
     const string ERR_QUOTED_IDENT = "Invalid quoted identifier";
     const string ERR_ESCAPED_STRING = "String was not escaped properly";
+    const string ERR_UNTERMINATED_LITERAL =
+        "Literal was not terminated properly at the end of the stream";
 
     private readonly DateTime _startTime;
     private int _line;
@@ -161,6 +167,9 @@ public class Lexer : IDisposable
     private string? _error;
     private char _char;
     private char _last;
+    private char _peek;
+    private int _int;
+    private float _float;
     private readonly bool _debug;
     private readonly StreamReader _sr;
     private readonly StringBuilder _sb;
@@ -172,7 +181,7 @@ public class Lexer : IDisposable
         _sb = new StringBuilder();
     }
 
-    private void Next()
+    private void Move()
     {
         _last = _char;
         _char = (char)_sr.Read();
@@ -184,26 +193,24 @@ public class Lexer : IDisposable
         _sb.Append(_char);
     }
 
-    private char Peek()
+    private void Peek()
     {
-        var c = (char)_sr.Peek();
-        return c;
+        _peek = (char)_sr.Peek();
     }
 
     private bool Skip(char c)
     {
-        var p = Peek();
-        if (p != c)
+        Peek();
+        if (_peek != c)
             return false;
-        Next();
+        Move();
         return true;
     }
 
     /// Skip the next char
     private void Skip()
     {
-        _sr.Read();
-        _index++;
+        Move();
     }
 
     /// Skip the next char
@@ -227,31 +234,34 @@ public class Lexer : IDisposable
         }
     }
 
-    public IEnumerable<Token> ReadToEnd()
+    public IEnumerable<Token> ReadTokens()
     {
-        while (true)
+        while (_char != EOF)
         {
-            var token = Read();
-            if (!token.HasValue)
-                break;
-
-            yield return token.Value;
+            var token = ReadToken();
+            yield return token;
             if (_error is null)
                 break;
         }
     }
 
-    public Token? Read()
+    public Token ReadToken()
     {
+        start:
         _start = _index;
         _offset = 0;
 
-        if (!CharsRemain)
-            return null;
-
-        Next();
+        Move();
         switch (_char)
         {
+            case EOF:
+                break;
+            case NEWLINE:
+            case TAB:
+            case RETURN:
+            case SPACE:
+                goto start;
+
             case HASH:
                 ReadLineComment();
                 break;
@@ -259,17 +269,17 @@ public class Lexer : IDisposable
                 ReadBlockComment();
                 break;
             case BACK_SLASH:
-                _kind = Kind.TBackSlash;
+                _kind = Kind.BackSlash;
                 break;
             case STAR:
-                _kind = Kind.TStar;
+                _kind = Kind.Star;
                 break;
             case DELIMITER:
-                _kind = Kind.TDelimiter;
+                _kind = Kind.Delimiter;
                 break;
             case EQUAL:
                 Skip(EQUAL);
-                _kind = Kind.TTildeEquals;
+                _kind = Kind.TildeEquals;
                 break;
             case LEFT_CHEVRON:
                 break;
@@ -278,51 +288,49 @@ public class Lexer : IDisposable
             case UP_CHEVRON:
                 break;
             case DOT:
-                _kind = Skip(DOT) ? Kind.TDotDot : Kind.TDot;
+                _kind = Skip(DOT) ? Kind.DotDot : Kind.Dot;
                 break;
             case PLUS:
-                _kind = Skip(PLUS) ? Kind.TPlusPlus : Kind.TPlus;
+                _kind = Skip(PLUS) ? Kind.PlusPlus : Kind.Plus;
                 break;
             case MINUS:
-                _kind = Kind.TMinus;
+                _kind = Kind.Minus;
                 break;
             case TILDE:
-                _kind = Peek() switch
+                Peek();
+                _kind = _peek switch
                 {
-                    MINUS => Kind.TTildeMinus,
-                    PLUS => Kind.TTildePlus,
-                    STAR => Kind.TTildeStar,
-                    EQUAL => Kind.TTildeEquals,
-                    _ => Kind.TTilde
+                    MINUS => Kind.TildeMinus,
+                    PLUS => Kind.TildePlus,
+                    STAR => Kind.TildeStar,
+                    EQUAL => Kind.TildeEquals,
+                    _ => Kind.Tilde
                 };
 
-                if (_kind != Kind.TTilde)
+                if (_kind != Kind.Tilde)
                     Skip();
 
                 break;
             case LEFT_BRACK:
-                _kind = Kind.TLeftBracket;
+                _kind = Kind.LeftBracket;
                 break;
             case RIGHT_BRACK:
-                _kind = Kind.TRightBracket;
+                _kind = Kind.RightBracket;
                 break;
             case LEFT_PAREN:
-                _kind = Kind.TLeftParen;
+                _kind = Kind.LeftParen;
                 break;
             case RIGHT_PAREN:
-                _kind = Kind.TRightParen;
+                _kind = Kind.RightParen;
                 break;
             case LEFT_BRACE:
-                _kind = Kind.TLeftBrace;
+                _kind = Kind.LeftBrace;
                 break;
             case RIGHT_BRACE:
-                _kind = Kind.TRightBrace;
+                _kind = Kind.RightBrace;
                 break;
             case PERCENT:
-                _kind = Kind.TPercent;
-                break;
-            case UNDERSCORE:
-                _kind = Kind.TUnderscore;
+                _kind = Kind.Percent;
                 break;
             case SINGLE_QUOTE:
                 ReadQuotedIdentifier();
@@ -334,9 +342,22 @@ public class Lexer : IDisposable
                 break;
             case COLON:
                 break;
+            case UNDERSCORE:
+                Peek();
+                if (char.IsWhiteSpace(_peek))
+                    _kind = Kind.Underscore;
+                else if (char.IsLetter(_peek))
+                    ReadWord();
+                else
+                {
+                    Error("Underscore xd");
+                }
+                break;
             default:
                 if (char.IsDigit(_char))
                     ReadNumber();
+                else if (char.IsLetter(_char))
+                    ReadWordOrKeyword();
                 break;
         }
 
@@ -344,7 +365,7 @@ public class Lexer : IDisposable
         string? s = _string;
         if (_error is not null)
         {
-            kind = Kind.TError;
+            kind = Kind.Error;
             s = _error;
         }
 
@@ -355,80 +376,92 @@ public class Lexer : IDisposable
             Col = _col,
             Start = _start,
             Length = _offset,
-            String = s
+            String = s,
+            Int = _int,
+            Float = _float
         };
 
         return token;
     }
 
-    private void ReadNumber() { }
+    private void ReadWordOrKeyword()
+    {
+        ReadWord();
+    }
+
+    private void ReadWord()
+    {
+        _kind = Kind.Word;
+    }
+
+    private void ReadNumber()
+    {
+        bool isFloat = false;
+        Store();
+        while (_char != EOF)
+        {
+            Peek();
+            if (!char.IsDigit(_peek))
+                break;
+
+            Move();
+            Store();
+        }
+        String();
+        _kind = isFloat ? Kind.Float : Kind.Int;
+        _int = int.Parse(_string!);
+    }
 
     private void ReadStringLiteral()
     {
+        _kind = Kind.String;
         bool ok = false;
-        bool fin = false;
-        while (CharsRemain && !fin)
+        while (_char != EOF)
         {
-            Next();
+            Move();
             if (_char is DOUBLE_QUOTE)
             {
                 ok = true;
-                fin = true;
+                break;
             }
-            else if (_char is BACK_SLASH)
+
+            if (_char is BACK_SLASH)
             {
                 Store();
-                Next();
+                Move();
                 Store();
-                switch (_char)
-                {
-                    case BACK_SLASH:
-                    case DOUBLE_QUOTE:
-                        break;
-                    default:
-                        _error = ERR_ESCAPED_STRING;
-                        fin = true;
-                        break;
-                }
+                if (_char is BACK_SLASH or DOUBLE_QUOTE)
+                    continue;
+                Error(ERR_ESCAPED_STRING);
+                break;
             }
-            else
-            {
-                Store();
-            }
+            Store();
         }
-        _kind = Kind.TString;
-        _string = String();
+
+        ErrorIf(!ok, ERR_UNTERMINATED_LITERAL);
+        String();
     }
 
     private void ReadQuotedIdentifier()
     {
         bool ok = false;
-        bool fin = false;
-        while (CharsRemain && !fin)
+        while (_char != EOF)
         {
-            Next();
-            switch (_char)
+            Move();
+            if (_char is SINGLE_QUOTE)
             {
-                case SINGLE_QUOTE:
-                    fin = true;
-                    ok = true;
-                    break;
-                case BACK_SLASH:
-                case RETURN:
-                case NEWLINE:
-                    fin = true;
-                    break;
-                default:
-                    Store();
-                    break;
+                ok = true;
+                break;
             }
+
+            if (_char is BACK_SLASH or RETURN or NEWLINE)
+                break;
+
+            Store();
         }
 
-        if (!ok)
-            Error(ERR_QUOTED_IDENT);
-
-        _kind = Kind.TQuoted;
-        _string = String();
+        ErrorIf(!ok, ERR_QUOTED_IDENT);
+        String();
     }
 
     /// Record and error
@@ -445,21 +478,18 @@ public class Lexer : IDisposable
     }
 
     /// Return the contents of the current string buffer
-    private string String()
+    private void String()
     {
-        var s = _sb.ToString();
+        _string = _sb.ToString();
         _sb.Clear();
-        return s;
     }
-
-    private bool CharsRemain => !_sr.EndOfStream;
 
     private void ReadBlockComment()
     {
         bool ok = false;
-        while (CharsRemain)
+        while (_char != EOF)
         {
-            Next();
+            Move();
             if (_char is STAR && Skip(FWD_SLASH))
             {
                 ok = true;
@@ -468,23 +498,23 @@ public class Lexer : IDisposable
             Store();
         }
 
-        _kind = Kind.TBlockComment;
-        _string = String();
+        _kind = Kind.BlockComment;
+        String();
         ErrorIf(!ok, "Unclosed block comment");
     }
 
     private void ReadLineComment()
     {
-        while (CharsRemain)
+        while (_char != EOF)
         {
-            Next();
+            Move();
             Store();
             if (_char is NEWLINE)
                 break;
         }
 
-        _kind = Kind.TLineComment;
-        _string = String();
+        _kind = Kind.LineComment;
+        String();
     }
 
     public void Dispose()
