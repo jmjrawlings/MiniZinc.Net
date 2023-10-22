@@ -156,7 +156,6 @@ public class Lexer : IDisposable
     const string ERR_UNTERMINATED_LITERAL =
         "Literal was not terminated properly at the end of the stream";
 
-    private readonly DateTime _startTime;
     private int _line;
     private int _col;
     private int _index;
@@ -176,7 +175,6 @@ public class Lexer : IDisposable
 
     public Lexer(StreamReader sr)
     {
-        _startTime = DateTime.Now;
         _sr = sr;
         _sb = new StringBuilder();
     }
@@ -234,18 +232,18 @@ public class Lexer : IDisposable
         }
     }
 
-    public IEnumerable<Token> ReadTokens()
+    public IEnumerable<Token> LexTokens()
     {
         while (_char != EOF)
         {
-            var token = ReadToken();
+            var token = LexToken();
             yield return token;
             if (_error is null)
                 break;
         }
     }
 
-    public Token ReadToken()
+    public Token LexToken()
     {
         start:
         _start = _index;
@@ -333,10 +331,10 @@ public class Lexer : IDisposable
                 _kind = Kind.Percent;
                 break;
             case SINGLE_QUOTE:
-                ReadQuotedIdentifier();
+                LexQuotedIdentifier();
                 break;
             case DOUBLE_QUOTE:
-                ReadStringLiteral();
+                LexStringLiteral();
                 break;
             case BACKTICK:
                 break;
@@ -347,17 +345,18 @@ public class Lexer : IDisposable
                 if (char.IsWhiteSpace(_peek))
                     _kind = Kind.Underscore;
                 else if (char.IsLetter(_peek))
-                    ReadWord();
+                    LexWord();
                 else
                 {
                     Error("Underscore xd");
                 }
+
                 break;
             default:
                 if (char.IsDigit(_char))
-                    ReadNumber();
+                    LexNumber();
                 else if (char.IsLetter(_char))
-                    ReadWordOrKeyword();
+                    LexWordOrKeyword();
                 break;
         }
 
@@ -384,17 +383,17 @@ public class Lexer : IDisposable
         return token;
     }
 
-    private void ReadWordOrKeyword()
+    private void LexWordOrKeyword()
     {
-        ReadWord();
+        LexWord();
     }
 
-    private void ReadWord()
+    private void LexWord()
     {
         _kind = Kind.Word;
     }
 
-    private void ReadNumber()
+    private void LexNumber()
     {
         bool isFloat = false;
         Store();
@@ -407,12 +406,13 @@ public class Lexer : IDisposable
             Move();
             Store();
         }
+
         String();
         _kind = isFloat ? Kind.Float : Kind.Int;
         _int = int.Parse(_string!);
     }
 
-    private void ReadStringLiteral()
+    private void LexStringLiteral()
     {
         _kind = Kind.String;
         bool ok = false;
@@ -435,6 +435,7 @@ public class Lexer : IDisposable
                 Error(ERR_ESCAPED_STRING);
                 break;
             }
+
             Store();
         }
 
@@ -442,7 +443,7 @@ public class Lexer : IDisposable
         String();
     }
 
-    private void ReadQuotedIdentifier()
+    private void LexQuotedIdentifier()
     {
         bool ok = false;
         while (_char != EOF)
@@ -477,7 +478,7 @@ public class Lexer : IDisposable
             Error(msg);
     }
 
-    /// Return the contents of the current string buffer
+    /// Read the contents of the current string buffer
     private void String()
     {
         _string = _sb.ToString();
@@ -495,6 +496,7 @@ public class Lexer : IDisposable
                 ok = true;
                 break;
             }
+
             Store();
         }
 
@@ -548,243 +550,3 @@ public class Lexer : IDisposable
         return lexer;
     }
 }
-//     match stream.Read() with
-//     | DELIMITER ->
-//     Token.TDelimiter
-//     | LEFT_BRACK ->
-//     Token.TLeftBracket
-//     | RIGHT_BRACK ->
-//     Token.TRightBracket
-//     | LEFT_PAREN ->
-//     Token.TLeftParen
-//     | RIGHT_PAREN ->
-//     Token.TRightParen
-//     | LEFT_BRACE ->
-//     Token.TLeftBrace
-//     | RIGHT_BRACE ->
-//     Token.TRightBrace
-//     | COLON ->
-//     Token.TColon
-//     | DOT ->
-//     if stream.Skip(DOT) then
-//     Token.TDotDot
-//     else
-//     Token.TDot
-//     | TILDE ->
-//     match stream.Read() with
-//     | EQUAL ->
-//     Token.TTildeEquals
-//     | PLUS ->
-//     Token.TTildePlus
-//     | MINUS ->
-//     Token.TTildeMinus
-//     | STAR ->
-//     Token.TTildeStar
-//     | _ ->
-//     stream.Seek(token.Start)
-//         Token.TTilde
-//
-//     | BACK_SLASH ->
-//
-//     Token.TBackSlash
-//     // Line comment
-//     | HASH ->
-//     let string = stream.ReadRestOfLine(false)
-//         lexed.Strings.Add string
-//         Token.TLineComment
-//
-//     // Block comment
-//     | FWD_SLASH when stream.Skip(STAR) ->
-//     let mutable fin = false
-//     // let sb = StringBuilder()
-//     while not fin do
-//     match stream.Read() with
-//     | STAR when stream.Peek() = FWD_SLASH ->
-//     stream.Skip(2)
-//         stream.SkipWhitespace()
-//
-//     fin<- true
-//     | c ->
-//
-//     // sb.Append c
-//     fin<- stream.IsEndOfStream
-//         Token.TBlockComment
-//
-//     | FWD_SLASH ->
-//     Token.TForwardSlash
-//     | LEFT_CHEVRON ->
-//     if stream.Skip(MINUS) then
-//     if stream.Skip(RIGHT_CHEVRON) then
-//     Token.TDoubleArrow
-//     else
-//
-//     Token.TLeftArrow
-//         elif stream.Skip(EQUAL) then
-//
-//     Token.TLessThan
-//         elif stream.Skip(RIGHT_CHEVRON) then
-//     Token.TEmpty
-//     else
-//     Token.TLessThan
-//     | MINUS ->
-//     if stream.Skip(RIGHT_CHEVRON) then
-//     Token.TRightArrow
-//     else
-//     Token.TMinus
-//     | RIGHT_CHEVRON ->
-//     if stream.Skip(EQUAL) then
-//     Token.TGreaterThanEqual
-//     else
-//     Token.TGreaterThan
-//     | EQUAL ->
-//     stream.Skip(EQUAL)
-//         Token.TEqual
-//
-//     | PLUS ->
-//     Token.TPlus
-//     | STAR ->
-//     Token.TStar
-//     | SINGLE_QUOTE ->
-//     let mutable fin = false
-//
-//     let sb = StringBuilder()
-//         while not fin do
-//     match stream.Read() with
-//     | BACK_SLASH when stream.Skip(SINGLE_QUOTE) ->
-//     ignore<| sb.Append(SINGLE_QUOTE)
-//     | SINGLE_QUOTE ->
-//     fin<- true
-//     | c ->
-//     sb.Append(c)
-//     if stream.IsEndOfStream then
-//     error<- messageError $"Unterminated quoted string"
-//     fin<- true
-//
-//     // token.String <- sb.ToString()
-//     Token.TQuoted
-//     // String literal
-//     | DOUBLE_QUOTE ->
-//     let mutable fin = false
-//
-//     let sb = StringBuilder()
-//         while not fin do
-//     match stream.Read() with
-//     | BACK_SLASH when stream.Skip(DOUBLE_QUOTE) ->
-//     ignore<| sb.Append(DOUBLE_QUOTE)
-//     | DOUBLE_QUOTE ->
-//     fin<- true
-//     | c ->
-//     sb.Append(c)
-//     if stream.IsEndOfStream then
-//     error<- messageError "Unterminated string literal"
-//     fin<- true
-//
-//     // token.String <- sb.ToString()
-//     Token.TString
-//     // Number literal
-//     | c when isDigit c ->
-//     stream.Seek(token.Start)
-//         let reply = pNumber stream
-//     if reply.Status = Ok then
-//
-//     let result = reply.Result
-//         if result.IsInteger then
-//     let i = int result.String
-//         lexed.Add i
-//         Token.TInt
-//
-//     else
-//     let f = float result.String
-//         lexed.Add f
-//         Token.TFloat
-//
-//     else
-//     error<- reply.Error
-//         Token.TError
-//
-//     // Word
-//     | c ->
-//     stream.Seek(token.Start)
-//         let reply = pIdentifier stream
-//     if reply.Status = Ok then
-//
-//     // token.String <- reply.Result
-//     Token.TWord
-//     else
-//     error<- reply.Error
-//         Token.TError
-//
-//     token.End<- stream.Index
-//     if error = NoErrorMessages then
-//
-//     Reply(token)
-//         else
-//
-//     Reply(ReplyStatus.Error, error)
-//
-//
-//     let pTokens : Parser<ResizeArray<Lexeme>> =
-//     fun stream ->
-//     let stateTag = stream.StateTag
-//     let mutable xs = ResizeArray<Lexeme>()
-//         let mutable fin = false
-//     let mutable reply = Reply(xs)
-//         while (not fin) do
-//     stream.SkipWhitespace()
-//         let tokenReply = pToken stream
-//     if tokenReply.Status = Ok then
-//     if stateTag = stream.StateTag then
-//     reply.Error<- messageError "infinite loop"
-//     fin<- true
-//     else
-//     xs.Add tokenReply.Result
-//     elif stateTag = stream.StateTag then
-//         reply.Error<- messageError "infinite loop"
-//     fin<- true
-//     else
-//     reply.Error<- tokenReply.Error
-//         fin<- true
-//
-//     reply
-//
-//
-//         let createResult startTime endTime parseResult : LexResult =
-//
-//     let error,
-//         tokens =
-//             match parseResult with
-//     | Success(tokens, _, _) ->
-//         "", tokens :> Lexeme seq
-//     | Failure(msg, parserError, _) ->
-//     msg, Seq.empty<Lexeme>
-//         let result = createResult startTime endTime parseResult
-//
-//     result
-//
-//         let lexFile(encoding: Encoding) (file: string) =
-//     let startTime = DateTimeOffset.Now
-//     let lexed = LexResult.Empty
-//     let parseResult = runParserOnFile pTokens lexed file encoding
-//         let endTime = DateTimeOffset.Now
-//         let result = createResult startTime endTime parseResult
-//
-//     result
-//
-//         let lexString(mzn: string) =
-//     let startTime = DateTimeOffset.Now
-//     let lexed = LexResult.Empty
-//     let parseResult = runParserOnString pTokens lexed "" mzn
-//         let endTime = DateTimeOffset.Now
-//         let result = createResult startTime endTime parseResult
-//
-//     result
-//
-//         let lexStream(encoding: Encoding) (stream: IO.Stream) =
-//     let startTime = DateTimeOffset.Now
-//     let lexed = LexResult.Empty
-//     let parseResult = runParserOnStream pTokens lexed "" stream encoding
-//     let endTime = DateTimeOffset.Now
-//     let result = createResult startTime endTime parseResult
-//         result
-//
-// }

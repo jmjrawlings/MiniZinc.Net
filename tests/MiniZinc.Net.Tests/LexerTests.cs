@@ -5,7 +5,7 @@ public class LexerTests
     Token ReadToken(string mzn)
     {
         var lexer = Lexer.FromString(mzn);
-        var token = lexer.ReadToken();
+        var token = lexer.LexToken();
         return token;
     }
 
@@ -13,7 +13,7 @@ public class LexerTests
     void TestKind(string mzn, params Kind[] kinds)
     {
         var lexer = Lexer.FromString(mzn);
-        var tokens = lexer.ReadTokens().ToArray();
+        var tokens = lexer.LexTokens().ToArray();
         for (int i = 0; i < tokens.Length; i++)
         {
             var token = tokens[i];
