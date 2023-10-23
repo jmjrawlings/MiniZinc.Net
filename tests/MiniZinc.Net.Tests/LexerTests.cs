@@ -5,7 +5,7 @@ public class LexerTests
     Token ReadToken(string mzn)
     {
         var lexer = Lexer.FromString(mzn);
-        var token = lexer.LexToken();
+        var token = lexer.LexTokens().First();
         return token;
     }
 
@@ -38,7 +38,7 @@ public class LexerTests
     [InlineData(""" "Escaped double \"quotes\" are fine" """)]
     public void test_string_literal(string mzn)
     {
-        TestKind(mzn, Kind.String);
+        TestKind(mzn, Kind.StringLiteral);
     }
 
     [Theory]
@@ -48,27 +48,39 @@ public class LexerTests
     {
         var token = ReadToken(mzn);
         token.Int.Should().Be(i);
-        token.Kind.Should().Be(Kind.Int);
+        token.Kind.Should().Be(Kind.IntLiteral);
     }
 
-    // [Theory]
-    // [InlineData("1..10")]
-    // public void test_range_ti(string mzn)
-    // {
-    //     TestKind(mzn, Kind.Int, Kind.DotDot, Kind.Int);
-    // }
-
-    [Fact]
-    public void test_literals()
+    [Theory]
+    [InlineData("1.123.", 1.123)]
+    [InlineData("100.0043", 100.0043)]
+    public void test_float(string mzn, double d)
     {
-        TestKind(
-            "< > <= >= <>",
-            Kind.LessThan,
-            Kind.GreaterThan,
-            Kind.LessThanEqual,
-            Kind.GreaterThanEqual,
-            Kind.Empty
-        );
+        var token = ReadToken(mzn);
+        token.Double.Should().Be(d);
+        token.Kind.Should().Be(Kind.FloatLiteral);
+    }
+
+    [Theory]
+    [InlineData("1..10")]
+    public void test_range_ti(string mzn)
+    {
+        TestKind(mzn, Kind.IntLiteral, Kind.DotDot, Kind.IntLiteral);
+    }
+    
+    [Theory]
+    [InlineData("<", Kind.LessThan)]
+    [InlineData("<=", Kind.LessThanEqual)]
+    [InlineData("==", Kind.Equal)]
+    [InlineData("=", Kind.Equal)]
+    [InlineData(">=", Kind.GreaterThanEqual)]
+    [InlineData(">", Kind.GreaterThan)]
+    [InlineData("<>", Kind.Empty)]
+    public void test_literals(string mzn, Kind kind)
+    {
+        var lexer = Lexer.FromString(mzn);
+        var token = lexer.LexTokens().ToArray().First();
+        token.Kind.Should().BeOneOf(kind);
     }
 
     [Fact]
