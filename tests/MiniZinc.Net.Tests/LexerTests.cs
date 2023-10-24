@@ -1,19 +1,43 @@
-﻿namespace MiniZinc.Tests;
+﻿using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
+namespace MiniZinc.Tests;
 
 public class LexerTests
 {
-    Token ReadToken(string mzn)
+    private readonly ITestOutputHelper _output;
+    private readonly ILogger _logger;
+    
+    public LexerTests(ITestOutputHelper output)
     {
-        var lexer = Lexer.FromString(mzn);
-        var token = lexer.LexTokens().First();
+        _output = output;
+        _logger = XUnitLogger.CreateLogger<Lexer>(output);
+    }
+    
+    private Lexer CreateLexer(string s)
+    {
+        var lexer = Lexer.FromString(s, _logger);
+        return lexer;
+    }
+    
+    private IEnumerable<Token> LexTokens(string s)
+    {
+        using var lexer = CreateLexer(s);
+        var tokens = lexer.Lex().ToArray();
+        return tokens;
+    }
+    
+    private Token LexToken(string s)
+    {
+        var tokens = LexTokens(s);
+        var token = tokens.First();
         return token;
     }
-
+    
     // Test single tokenlexing the given string
     void TestKind(string mzn, params Kind[] kinds)
     {
         var lexer = Lexer.FromString(mzn);
-        var tokens = lexer.LexTokens().ToArray();
+        var tokens = lexer.Lex().ToArray();
         for (int i = 0; i < tokens.Length; i++)
         {
             var token = tokens[i];
@@ -29,7 +53,7 @@ public class LexerTests
     [InlineData("aN4m3w1thnumb3r5")]
     public void Test_identifer(string mzn)
     {
-        TestKind(mzn, Kind.Word);
+        TestKind(mzn, Kind.Identifier);
     }
 
     [Theory]
@@ -46,7 +70,7 @@ public class LexerTests
     [InlineData("100", 100)]
     public void test_int(string mzn, int i)
     {
-        var token = ReadToken(mzn);
+        var token = LexToken(mzn);
         token.Int.Should().Be(i);
         token.Kind.Should().Be(Kind.IntLiteral);
     }
@@ -56,7 +80,7 @@ public class LexerTests
     [InlineData("100.0043", 100.0043)]
     public void test_float(string mzn, double d)
     {
-        var token = ReadToken(mzn);
+        var token = LexToken(mzn);
         token.Double.Should().Be(d);
         token.Kind.Should().Be(Kind.FloatLiteral);
     }
@@ -79,15 +103,15 @@ public class LexerTests
     public void test_literals(string mzn, Kind kind)
     {
         var lexer = Lexer.FromString(mzn);
-        var token = lexer.LexTokens().ToArray().First();
-        token.Kind.Should().BeOneOf(kind);
+        var token = lexer.Lex().ToArray().First();
+        token.Kind.Should().Be(kind);
     }
-
+    
     [Fact]
     public void test_whitespace()
     {
-        var mzn = @$" {'\r'} {'\t'} {'\n'}  ";
-        var t = ReadToken(mzn);
-        var a = 2;
+        var mzn = @$" {'\r'}{'\t'}{'\n'} ";
+        var tokens = LexTokens(mzn);
+        tokens.Should().BeEmpty();
     }
 }

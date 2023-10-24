@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 public enum Kind
 {
     None,
     Error,
-    Word,
+    Identifier,
     IntLiteral,
     FloatLiteral,
     StringLiteral,
@@ -103,8 +104,7 @@ public enum Kind
     Colon,
     Delimiter,
     Pipe,
-    Empty,
-    EndOfStream
+    Empty
 }
 
 public readonly struct Token
@@ -171,14 +171,16 @@ public class Lexer : IDisposable
     private char _prev; // Previous parsed char;
     private int _int;
     private double _double;
-    private readonly bool _debug;
     private readonly StreamReader _sr;
     private readonly StringBuilder _sb;
+    private readonly ILogger? _logger;
     
-    Lexer(StreamReader sr)
+    Lexer(StreamReader sr, ILogger? logger = null)
     {
         _sr = sr;
         _sb = new StringBuilder();
+        _logger = logger;
+        _string = string.Empty;
     }
 
     void MoveAndPeek()
@@ -193,11 +195,24 @@ public class Lexer : IDisposable
         _char = (char)_sr.Read();
         _index++;
         _length++;
+        _logger?.LogInformation("{index} {char}", _index, _char);
     }
-
+    
     void Peek()
     {
         _peek = (char)_sr.Peek();
+    }
+    
+    bool PeekDigit()
+    {
+        Peek();
+        return char.IsDigit(_peek);
+    }
+    
+    bool PeekLetter()
+    {
+        Peek();
+        return char.IsLetter(_peek);
     }
 
     void Store()
@@ -217,11 +232,12 @@ public class Lexer : IDisposable
 
     void Error(string msg)
     {
+        _logger?.LogError("{name}", msg);
         _kind = Kind.Error;
         _string = msg;
     }
     
-    public IEnumerable<Token> LexTokens()
+    public IEnumerable<Token> Lex()
     {
         Console.WriteLine(_char);
         // Move the stream forward
@@ -243,7 +259,6 @@ public class Lexer : IDisposable
                 case SPACE:
                     goto move;
                 case EOF:
-                    _kind = Kind.EndOfStream;
                     goto stop;
                 // Line comment
                 case HASH:
@@ -422,18 +437,17 @@ public class Lexer : IDisposable
                                 Store();
                                 Move();
                                 Store();
-                                if (_char is BACK_SLASH or DOUBLE_QUOTE)
+                                 if (_char is BACK_SLASH or DOUBLE_QUOTE or SINGLE_QUOTE)
                                     continue;
                                 Error(ERR_ESCAPED_STRING);
                                 goto error;
                             case EOF:
                                 Error(ERR_UNTERMINATED_LITERAL);
-                                goto error; 
+                                goto error;
                             default:
                                 Store();
                                 break;
                         }
-                        goto ok;
                     }
                 case COLON:
                     _kind = Kind.Colon;
@@ -443,23 +457,21 @@ public class Lexer : IDisposable
                     if (char.IsWhiteSpace(_peek))
                         _kind = Kind.Underscore;
                     else if (char.IsLetter(_peek))
-                        LexWord();
+                        goto lex_identifier;
                     else
                         Error("Underscore xd");
                     break;
                 default:
                     if (char.IsDigit(_char))
-                        goto number;
-                    
+                        goto lex_number;
+                   
                     if (char.IsLetter(_char))
-                    {
-                        LexWordOrKeyword();
-                        goto ok;
-                    }
+                        goto lex_identifier;
                     
                     if (_sr.EndOfStream)
                         goto stop;
-                    throw new Exception($"Unhanlded {_char}");
+                    
+                    throw new Exception($"Unhandled {_char}");
             }
             
             error:
@@ -481,93 +493,115 @@ public class Lexer : IDisposable
                     goto stop;
                 
                 goto move;
-                
-            // {
-            //     if (isFloat)
-            //     {
-            //         Error(ERR_FLOAT_LIT);
-            //         goto error;
-            //     }
-            //
-            //     Move();
-            //     Store();
-            //     Peek();
-            //     if (!char.IsDigit(_peek))
-            //     {
-            //         Error(ERR_FLOAT_LIT);
-            //         goto error;
-            //     }
-            //
-            //     Move();
-            //     Store();
-            //     isFloat = true;
-            //     goto start;
-            // }
-            //
-            // if (!char.IsDigit(_peek))
-            //     goto ok;
-            //
-            // Move();
-            // Store();
-            // goto start;
-
-        // error:
-        // Error(ERR_FLOAT_LIT);
-        //
-        // ok:
-        // ReadString();
-        // if (isFloat)
-        // {
-        //     _double = double.Parse(_string.AsSpan());
-        //     _kind = Kind.Float;
-        // }
-        // else
-        // {
-        //     _int = int.Parse(_string.AsSpan());
-        //     _kind = Kind.Int;
-        // }
-        
-        
-        stop:
-            yield break;
-        
-        number:
+                        
+        lex_number:
+            // Collect the exponent
             while (char.IsDigit(_char))
             {
                 Store();
                 Move();
-            } 
-            Peek();
-            if (_peek is DOT)
-            {
-                Move();
-                Peek();
             }
+            // Integer
+            if (_char is DOT)
+                if (PeekDigit())
+                    goto lex_float;
+
+        lex_integer:
+            ReadString();
+            _kind = Kind.IntLiteral;
+            _int = int.Parse(_string!);
+            ClearString();
+            yield return new Token
+            {
+                Kind = _kind,
+                Line = _line,
+                Col = _col,
+                Start = _start,
+                Length = _length,
+                Int = _int
+            };
+            _int = default;
+            goto next;
+
+        lex_float:
+            do
+            {
+                Store();
+                Move();
+            } while 
+                (char.IsDigit(_char));
+            
+            ReadString();
+            _kind = Kind.FloatLiteral;
+            _double = double.Parse(_string!);
+            ClearString();
+            yield return new Token
+            {
+                Kind = _kind,
+                Line = _line,
+                Col = _col,
+                Start = _start,
+                Length = _length,
+                Double = _double
+            };
+            _double = default;
+            goto next;
+            
+        lex_identifier:
+            _kind = Kind.Identifier;
+            while (true)
+            {
+                Store();
+                Move();
+                
+                if (char.IsLetter(_char))
+                    continue;
+                
+                if (char.IsDigit(_char))
+                    continue;
+                
+                if (_char is UNDERSCORE)
+                    continue;
+                
+                break;
+            }
+            
+            ReadString();
+            yield return new Token
+            {
+                Kind = _kind,
+                Line = _line,
+                Col = _col,
+                Start = _start,
+                Length = _length,
+                String = _string
+            };
+            ClearString();
+            goto next;
+            
+        stop:
+            yield break;
+
     }
     
-    private void LexWordOrKeyword()
-    {
-        LexWord();
-    }
-
-    private void LexWord()
-    {
-        _kind = Kind.Word;
-    }
-
     /// Read the contents of the current string buffer
     private void ReadString()
     {
         _string = _sb.ToString();
         _sb.Clear();
     }
-
+    
+    private void ClearString()
+    {
+        _string = null;
+    }
+    
     public void Dispose()
     {
         _sr.Dispose();
     }
-
-    public static Lexer FromString(string s)
+    
+    public static Lexer FromString(string s, ILogger? logger = null)
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
@@ -575,21 +609,21 @@ public class Lexer : IDisposable
         writer.Flush();
         stream.Position = 0;
         var reader = new StreamReader(stream);
-        var lexer = new Lexer(reader);
+        var lexer = new Lexer(reader, logger);
         return lexer;
     }
 
-    public static Lexer FromFile(FileInfo fi)
+    public static Lexer FromFile(FileInfo fi, ILogger? logger = null)
     {
         var stream = fi.OpenText();
-        var lexer = new Lexer(stream);
+        var lexer = new Lexer(stream, logger);
         return lexer;
     }
 
-    public static Lexer FromFile(string path)
+    public static Lexer FromFile(string path, ILogger? logger = null)
     {
         FileInfo fi = new(path);
-        var lexer = FromFile(fi);
+        var lexer = FromFile(fi, logger);
         return lexer;
     }
 }
