@@ -1,7 +1,6 @@
 <Project>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
         <IsPackable>false</IsPackable>        
         <RootNamespace>MiniZinc.Tests</RootNamespace>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
