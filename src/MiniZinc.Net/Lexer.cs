@@ -280,6 +280,7 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
     private uint _index; // Position of the stream
     private uint _start; // Start index of current token
     private uint _length; // Length of the current token
+    private uint _count; // Total numbef of tokens processed
     private TokenKind _kind; // Kind of current token
     private string? _string; // String contents of current token
     private char _peek; // Value of a peek if used
@@ -603,7 +604,7 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
                     Int = _int,
                     Double = _double
                 };
-                
+                _count++;
                 yield return token;
                 if (_kind is TokenKind.Error)
                     goto stop;
@@ -636,6 +637,7 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
                 Length = _length,
                 Int = _int
             };
+            _count++;
             _int = default;
             goto next;
 
@@ -660,6 +662,7 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
                 Length = _length,
                 Double = _double
             };
+            _count++;
             _double = default;
             goto next;
             
