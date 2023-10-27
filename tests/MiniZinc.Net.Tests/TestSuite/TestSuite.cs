@@ -39,158 +39,30 @@ expected: # The obtained result must match one of these
   regex: .*type-inst must be par set.* # Regex the start of the string must match (run with M and S flags)
 ***/
 
-using System.Text.Json.Nodes;
-using Newtonsoft.Json;
-
 namespace MiniZinc.Tests;
 
+using System.Text.Json.Nodes;
 using System.Reflection;
 using System;
 using System.IO;
-using YamlDotNet.Serialization;
+using static Prelude;
 
 public sealed class TestSuite
 {
-    private static FileInfo? _solutionFile;
-
-    public static FileInfo SolutionFile => _solutionFile ??= GetSolutionFile();
-
-    public static DirectoryInfo ProjectDir => SolutionFile.Directory;
-
-    public static DirectoryInfo TestDir => ProjectDir.JoinDir("tests");
-
-    public static DirectoryInfo SourceDir => ProjectDir.JoinDir("src");
-
-    public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");
-
-    public static FileInfo TestSuiteFile => LibMiniZincDir.JoinFile("suites.yml");
-
-    private static FileInfo GetSolutionFile()
-    {
-        var assembly = Assembly.GetExecutingAssembly().Location.ToFile();
-        var sln = assembly.DirectoryName.JoinFile("MiniZinc.Net.sln");
-        while (!sln.Exists)
-        {
-            var dir = sln.Directory.Parent;
-            sln = dir.JoinFile(sln.Name);
-        }
-
-        return sln;
-    }
-
     public string SuiteName { get; init; }
-
-    public IReadOnlyCollection<string> IncludeGlobs { get; }
-
-    public IReadOnlyCollection<FileInfo> IncludeFiles { get; }
-
-    public IReadOnlyCollection<TestCase> TestCases { get; }
-
-    public override string ToString() => $"<{SuiteName}\" ({this.TestCases.Count} cases)>";
-
-    static object Parse(FileInfo file)
-    {
-        var x = Yaml.ParseFile(file);
-        return x;
-
-    }
-
-    [Fact]
-    public void TestParseSuites()
-    {
-        var suites = Parse(TestSuiteFile);
-        var a = 1;
-    }
     
-}
+    public List<string> IncludeGlobs { get; }
 
-public sealed class TestCase
-{
-    public string TestName { get; init; }
+    public List<FileInfo> IncludeFiles { get; }
 
-    public FileInfo TestFile { get; init; }
+    public List<TestCase> TestCases { get; }
+    
+    public override string ToString() => $"<{SuiteName}\" ({this.TestCases.Count} cases)>";
+   
 
-    public string TestPath { get; init; }
-
-    public string ModelString { get; init; }
-
-    public List<FileInfo> Includes { get; init; }
-
-    public List<string> Solvers { get; init; }
-
-    public readonly TestSuite TestSuite;
-
-    public readonly List<TestResult> TestResults;
-
-    public TestCase(TestSuite suite)
-    {
-        TestSuite = suite;
-        TestResults = new List<TestResult>();
-    }
-
-    public override string ToString() => $"<Test \"{TestFile.Name}\">";
-}
-
-public sealed class TestResult
-{
-    public readonly TestCase TestCase;
-
-    public readonly TestSuite TestSuite;
-
-    public SolveStatus SolveStatus { get; init; }
-
-    public string ErrorType { get; init; }
-
-    public string ErrorMessage { get; init; }
-
-    public string ErrorRegex { get; init; }
-
-    public TestResult(TestCase testCase)
-    {
-        TestCase = testCase;
-        TestSuite = testCase.TestSuite;
-    }
-
-    public override string ToString() => $"<TestResult \"{this.SolveStatus}\">";
 }
 
 
-
-
-// module private rec TestSuite =
-//
-//     let deserializer =
-//         DeserializerBuilder()
-//             .WithTagMapping("!Test", typeof<obj>)
-//             .WithTagMapping("!Result", typeof<obj>)
-//             .WithTagMapping("!SolutionSet", typeof<obj>)
-//             .WithTagMapping("!Solution", typeof<obj>)
-//             .WithTagMapping("!Duration", typeof<obj>)
-//             .WithTypeConverter(Yaml.Parser())
-//             .Build()
-//
-//     let parseYamlString (input: string) : Yaml option =
-//         let node = deserializer.Deserialize<Yaml>(input)
-//         match box node with
-//         | null -> None
-//         | _ -> Some node
-//
-//     let parseFile (file: FileInfo) =
-//         let yamlString = File.ReadAllText(file.FullName, Encoding.UTF8)
-//         let yaml = parseYamlString yamlString
-//         yaml
-//
-//     let parseTestSpec (specFile: FileInfo) : TestSpec =
-//
-//         let specDir =
-//             specFile.Directory
-//
-//         let yamls =
-//             specFile
-//             |> parseFile
-//             |> Option.get
-//             |> Yaml.toMap
-//             |> Map.map (fun _ -> Yaml.get "!Suite")
 //
 //         let testSuites =
 //             yamls
