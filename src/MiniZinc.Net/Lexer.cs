@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.ObjectModel;
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace MiniZinc.Net;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -124,23 +122,22 @@ public readonly struct Token
 
 internal sealed class KeywordLookup
 {
-
     private static KeywordLookup? _table;
     public static KeywordLookup Table => _table ??= new KeywordLookup();
-    
+
     private readonly Dictionary<TokenKind, string> _tokenToWord;
     public IReadOnlyDictionary<TokenKind, string> TokenToWord => _tokenToWord;
-    
+
     private readonly Dictionary<string, TokenKind> _wordToToken;
-    public IReadOnlyDictionary<string,TokenKind> WordToToken => _wordToToken;
-    
+    public IReadOnlyDictionary<string, TokenKind> WordToToken => _wordToToken;
+
     private KeywordLookup()
     {
         var names = Enum.GetNames<TokenKind>();
         var count = names.Length;
         _tokenToWord = new Dictionary<TokenKind, string>(count);
         _wordToToken = new Dictionary<string, TokenKind>(count);
-        
+
         Add(TokenKind.KeywordAnnotation, "annotation");
         Add(TokenKind.KeywordAnn, "ann");
         Add(TokenKind.KeywordAny, "any");
@@ -192,49 +189,48 @@ internal sealed class KeywordLookup
         Add(TokenKind.KeywordVar, "var");
         Add(TokenKind.KeywordWhere, "where");
         Add(TokenKind.KeywordXor, "xor");
-        
-        Add(TokenKind.DownWedge, "\\/" );
-        Add(TokenKind.UpWedge,"/\\");
-        Add(TokenKind.LessThan, "<" );
+
+        Add(TokenKind.DownWedge, "\\/");
+        Add(TokenKind.UpWedge, "/\\");
+        Add(TokenKind.LessThan, "<");
         Add(TokenKind.GreaterThan, ">");
-        Add(TokenKind.LessThanEqual, "<=" );
+        Add(TokenKind.LessThanEqual, "<=");
         Add(TokenKind.GreaterThanEqual, ">=");
         Add(TokenKind.Equal, "=");
         Add(TokenKind.DotDot, "..");
         Add(TokenKind.Plus, "+");
         Add(TokenKind.Minus, "-");
-        Add(TokenKind.Star,"*");
-        Add(TokenKind.Slash,"/");
-        Add(TokenKind.PlusPlus,"++");
-        Add(TokenKind.TildeEquals,"~=");
-        Add(TokenKind.TildePlus,"~+");
-        Add(TokenKind.TildeMinus,"~-");
-        Add(TokenKind.TildeStar,"~*");
-        Add(TokenKind.LeftBracket,"[");
-        Add(TokenKind.RightBracket,"]");
-        Add(TokenKind.LeftParen,"(");
-        Add(TokenKind.RightParen,")");
-        Add(TokenKind.LeftBrace,"{");
-        Add(TokenKind.RightBrace,"}");
-        Add(TokenKind.Dot,".");
-        Add(TokenKind.Percent,"%");
-        Add(TokenKind.Underscore,"_");
-        Add(TokenKind.Tilde,"~");
-        Add(TokenKind.BackSlash,"\\");
-        Add(TokenKind.ForwardSlash,"/");
-        Add(TokenKind.Colon,":");
-        Add(TokenKind.Delimiter,"");
-        Add(TokenKind.Pipe,"|");
-        Add(TokenKind.Empty,"<>");
+        Add(TokenKind.Star, "*");
+        Add(TokenKind.Slash, "/");
+        Add(TokenKind.PlusPlus, "++");
+        Add(TokenKind.TildeEquals, "~=");
+        Add(TokenKind.TildePlus, "~+");
+        Add(TokenKind.TildeMinus, "~-");
+        Add(TokenKind.TildeStar, "~*");
+        Add(TokenKind.LeftBracket, "[");
+        Add(TokenKind.RightBracket, "]");
+        Add(TokenKind.LeftParen, "(");
+        Add(TokenKind.RightParen, ")");
+        Add(TokenKind.LeftBrace, "{");
+        Add(TokenKind.RightBrace, "}");
+        Add(TokenKind.Dot, ".");
+        Add(TokenKind.Percent, "%");
+        Add(TokenKind.Underscore, "_");
+        Add(TokenKind.Tilde, "~");
+        Add(TokenKind.BackSlash, "\\");
+        Add(TokenKind.ForwardSlash, "/");
+        Add(TokenKind.Colon, ":");
+        Add(TokenKind.Delimiter, "");
+        Add(TokenKind.Pipe, "|");
+        Add(TokenKind.Empty, "<>");
     }
-    
+
     private void Add(TokenKind kind, string word)
     {
         _tokenToWord[kind] = word;
         _wordToToken[word] = kind;
     }
 }
-
 
 public sealed class Lexer : IDisposable, IEnumerable<Token>
 {
@@ -292,16 +288,18 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
     private readonly StringBuilder _sb;
     private readonly ILogger? _logger;
     private readonly KeywordLookup _lookup;
-    
-    private Lexer(StreamReader sr, ILogger? logger = null)
+    public readonly bool IncludeComments;
+
+    private Lexer(StreamReader sr, ILogger? logger = null, bool includeComment = false)
     {
         _sr = sr;
         _sb = new StringBuilder();
         _logger = logger;
         _string = string.Empty;
         _lookup = KeywordLookup.Table;
+        IncludeComments = includeComment;
     }
-    
+
     void MoveAndPeek()
     {
         Move();
@@ -317,18 +315,18 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
         _col++;
         _logger?.LogInformation("{index} {char}", _index, _char);
     }
-    
+
     void Peek()
     {
         _peek = (char)_sr.Peek();
     }
-    
+
     bool PeekDigit()
     {
         Peek();
         return char.IsDigit(_peek);
     }
-    
+
     bool PeekLetter()
     {
         Peek();
@@ -337,10 +335,9 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
 
     void Store()
     {
-        Console.Write(_char);
         _sb.Append(_char);
     }
-    
+
     bool Skip(char c)
     {
         Peek();
@@ -356,18 +353,18 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
         _kind = TokenKind.Error;
         _string = msg;
     }
-    
+
     public IEnumerable<Token> Lex()
     {
         // Move the stream forward
         move:
-            Move();
-            
-        // Start the next token            
+        Move();
+
+        // Start the next token
         next:
-            _start = _index;
-            _length = 0;
-            
+        _start = _index;
+        _length = 0;
+
         // Handle the current token
         switch (_char)
         {
@@ -382,35 +379,44 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
             case EOF:
                 goto stop;
             // Line comment
-            case HASH:
+            case PERCENT:
                 _kind = TokenKind.LineComment;
                 while (true)
                 {
                     Move();
                     if (_char is EOF or NEWLINE)
                         break;
-                    Store();
+
+                    if (IncludeComments)
+                        Store();
                 }
+
+                if (!IncludeComments)
+                    goto move;
+
                 ReadString();
                 break;
             // Block comment
             case FWD_SLASH when Skip(STAR):
                 _kind = TokenKind.BlockComment;
-                while (true)
+                block_comment:
+                Move();
+                switch (_char)
                 {
-                    Move();
-                    switch (_char)
-                    {
-                        case STAR when Skip(FWD_SLASH):
-                            goto ok;
-                        case EOF:
-                            Error(ERR_UNTERMINATED_LITERAL);
-                            goto error;
-                        default:
+                    case STAR when Skip(FWD_SLASH):
+                        if (!IncludeComments)
+                            goto move;
+                        ReadString();
+                        goto ok;
+                    case EOF:
+                        Error(ERR_UNTERMINATED_LITERAL);
+                        goto error;
+                    default:
+                        if (IncludeComments)
                             Store();
-                            break;
-                    }
+                        goto block_comment;
                 }
+
             case FWD_SLASH:
                 _kind = TokenKind.ForwardSlash;
                 break;
@@ -435,7 +441,7 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
                     _kind = TokenKind.Empty;
                     break;
                 }
-                
+
                 if (_peek is DASH)
                 {
                     MoveAndPeek();
@@ -448,7 +454,7 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
                     _kind = TokenKind.LeftArrow;
                     break;
                 }
-                
+
                 if (_peek is EQUAL)
                 {
                     _kind = TokenKind.LessThanEqual;
@@ -516,9 +522,6 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
             case RIGHT_BRACE:
                 _kind = TokenKind.RightBrace;
                 break;
-            case PERCENT:
-                _kind = TokenKind.Percent;
-                break;
             // Quoted identifier
             case SINGLE_QUOTE:
                 _kind = TokenKind.QuotedIdentifier;
@@ -556,7 +559,7 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
                             Store();
                             Move();
                             Store();
-                             if (_char is BACK_SLASH or DOUBLE_QUOTE or SINGLE_QUOTE)
+                            if (_char is BACK_SLASH or DOUBLE_QUOTE or SINGLE_QUOTE)
                                 continue;
                             Error(ERR_ESCAPED_STRING);
                             goto error;
@@ -574,171 +577,170 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
             case UNDERSCORE:
                 if (PeekLetter())
                     goto lex_identifier;
-                
+
                 _kind = TokenKind.Underscore;
                 break;
-            
+
             default:
                 if (char.IsDigit(_char))
                     goto lex_number;
-               
+
                 if (char.IsLetter(_char))
                     goto lex_identifier;
-                
+
                 if (_sr.EndOfStream)
                     goto stop;
-                
+
                 throw new Exception($"Unhandled {_char}");
-            }
-        
-            error:
-            ok:
-                var token = new Token
-                {
-                    Kind = _kind,
-                    Line = _line,
-                    Col = _col,
-                    Start = _start,
-                    Length = _length,
-                    String = _string,
-                    Int = _int,
-                    Double = _double
-                };
-                _count++;
-                yield return token;
-                if (_kind is TokenKind.Error)
-                    goto stop;
-                
-                goto move;
-                        
+        }
+
+        error:
+        ok:
+        var token = new Token
+        {
+            Kind = _kind,
+            Line = _line,
+            Col = _col,
+            Start = _start,
+            Length = _length,
+            String = _string,
+            Int = _int,
+            Double = _double
+        };
+        _count++;
+        yield return token;
+        if (_kind is TokenKind.Error)
+            goto stop;
+
+        goto move;
+
         lex_number:
-            // Collect the exponent
-            while (char.IsDigit(_char))
-            {
-                Store();
-                Move();
-            }
-            // Integer
-            if (_char is DOT)
-                if (PeekDigit())
-                    goto lex_float;
+        // Collect the exponent
+        while (char.IsDigit(_char))
+        {
+            Store();
+            Move();
+        }
+        // Integer
+        if (_char is DOT)
+            if (PeekDigit())
+                goto lex_float;
 
         lex_integer:
-            ReadString();
-            _kind = TokenKind.IntLiteral;
-            _int = int.Parse(_string!);
-            ClearString();
-            yield return new Token
-            {
-                Kind = _kind,
-                Line = _line,
-                Col = _col,
-                Start = _start,
-                Length = _length,
-                Int = _int
-            };
-            _count++;
-            _int = default;
-            goto next;
+        ReadString();
+        _kind = TokenKind.IntLiteral;
+        _int = int.Parse(_string!);
+        ClearString();
+        yield return new Token
+        {
+            Kind = _kind,
+            Line = _line,
+            Col = _col,
+            Start = _start,
+            Length = _length,
+            Int = _int
+        };
+        _count++;
+        _int = default;
+        goto next;
 
         lex_float:
-            do
-            {
-                Store();
-                Move();
-            } while 
-                (char.IsDigit(_char));
-            
-            ReadString();
-            _kind = TokenKind.FloatLiteral;
-            _double = double.Parse(_string!);
-            ClearString();
-            yield return new Token
-            {
-                Kind = _kind,
-                Line = _line,
-                Col = _col,
-                Start = _start,
-                Length = _length,
-                Double = _double
-            };
-            _count++;
-            _double = default;
-            goto next;
-            
-        lex_identifier:
-            bool checkKeyword = true;
-            while (true)
-            {
-                Store();
-                Move();
-                
-                if (char.IsLetter(_char))
-                    continue;
+        do
+        {
+            Store();
+            Move();
+        } while (char.IsDigit(_char));
 
-                if (_char is UNDERSCORE || char.IsDigit(_char))
-                {
-                    checkKeyword = false;
-                    continue;
-                }
-                
-                break;
+        ReadString();
+        _kind = TokenKind.FloatLiteral;
+        _double = double.Parse(_string!);
+        ClearString();
+        yield return new Token
+        {
+            Kind = _kind,
+            Line = _line,
+            Col = _col,
+            Start = _start,
+            Length = _length,
+            Double = _double
+        };
+        _count++;
+        _double = default;
+        goto next;
+
+        lex_identifier:
+        bool checkKeyword = true;
+        while (true)
+        {
+            Store();
+            Move();
+
+            if (char.IsLetter(_char))
+                continue;
+
+            if (_char is UNDERSCORE || char.IsDigit(_char))
+            {
+                checkKeyword = false;
+                continue;
             }
-            ReadString();
-            
-            if (checkKeyword)
-                if (_lookup.WordToToken.TryGetValue(_string, out _kind))
-                    ;
-                else
-                    _kind = TokenKind.Identifier;
+
+            break;
+        }
+        ReadString();
+
+        if (checkKeyword)
+            if (_lookup.WordToToken.TryGetValue(_string, out _kind))
+                ;
             else
                 _kind = TokenKind.Identifier;
-            
-            yield return new Token
-            {
-                Kind = _kind,
-                Line = _line,
-                Col = _col,
-                Start = _start,
-                Length = _length,
-                String = _string
-            };
-            ClearString();
-            goto next;
-            
+        else
+            _kind = TokenKind.Identifier;
+
+        yield return new Token
+        {
+            Kind = _kind,
+            Line = _line,
+            Col = _col,
+            Start = _start,
+            Length = _length,
+            String = _string
+        };
+        ClearString();
+        goto next;
+
         stop:
-            Dispose();
+        Dispose();
     }
-    
+
     /// Read the contents of the current string buffer
     private void ReadString()
     {
         _string = _sb.ToString();
         _sb.Clear();
     }
-    
+
     private void ClearString()
     {
         _string = null;
     }
-    
+
     public IEnumerator<Token> GetEnumerator()
     {
         var enumerator = Lex();
         return enumerator.GetEnumerator();
     }
-    
+
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
-    
+
     public void Dispose()
     {
         _logger?.LogInformation("Disposing lexer");
         _sr.Dispose();
     }
-    
+
     public static IEnumerable<Token> LexString(string s, ILogger? logger = null)
     {
         var stream = new MemoryStream();
@@ -750,19 +752,27 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
         var lexer = new Lexer(reader, logger);
         return lexer.Lex();
     }
-    
-    public static IEnumerable<Token> LexFile(FileInfo fi, ILogger? logger = null)
+
+    public static IEnumerable<Token> LexFile(
+        FileInfo fi,
+        ILogger? logger = null,
+        bool includeComments = false
+    )
     {
         var stream = fi.OpenText();
-        var lexer = new Lexer(stream, logger);
+        var lexer = new Lexer(stream, logger, includeComments);
         return lexer;
     }
-    
-    public static IEnumerable<Token> LexFile(string path, ILogger? logger = null)
+
+    public static IEnumerable<Token> LexFile(
+        string path,
+        ILogger? logger = null,
+        bool includeComments = false
+    )
     {
         var fi = new FileInfo(path);
         var stream = fi.OpenText();
-        var lexer = new Lexer(stream, logger);
+        var lexer = new Lexer(stream, logger, includeComments);
         return lexer;
     }
 }

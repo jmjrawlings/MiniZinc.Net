@@ -52,19 +52,19 @@ using static Prelude;
 public sealed class TestSuite
 {
     public string Name { get; init; }
-    
+
     public bool Strict { get; set; }
-    
+
     public List<string>? Solvers { get; set; }
-    
+
     public List<string> IncludeGlobs { get; set; }
-    
+
     public List<FileInfo> IncludeFiles { get; set; }
-    
+
     public List<TestCase> TestCases { get; } = new();
-    
+
     public Dictionary<string, YamlNode> Options { get; set; }
-    
+
     public override string ToString() => $"<{Name}\" ({this.TestCases.Count} cases)>";
 
     public static IEnumerable<TestSuite> Load()
@@ -79,27 +79,54 @@ public sealed class TestSuite
             suite.Options = node.Get("options")?.Map.Dict ?? new Dictionary<string, YamlNode>();
             suite.Solvers = node.Get("solvers")?.ListOf(x => x.String);
             suite.IncludeGlobs = node.Get("includes")!.ListOf(x => x.String);
-            suite.IncludeFiles = suite.IncludeGlobs.SelectMany(glob =>
-                LibMiniZincDir.EnumerateFiles(glob, SearchOption.AllDirectories)).ToList();
+            suite.IncludeFiles = suite.IncludeGlobs
+                .SelectMany(
+                    glob => LibMiniZincDir.EnumerateFiles(glob, SearchOption.AllDirectories)
+                )
+                .ToList();
             suites.Add(suite);
-        }
 
-        foreach (var suite in suites)
-        {
             foreach (var file in suite.IncludeFiles)
             {
                 LoadTestCase(suite, file);
             }
         }
-
         return suites;
     }
-    
+
     private static void LoadTestCase(TestSuite suite, FileInfo file)
     {
-        var tokens = Lexer.LexFile(file).First();
-        var x = 1;
+        // Test case yaml are stored as comments in each minizinc model
+        var token = Lexer.LexFile(file, includeComments: true).First();
+        var comment = token.String!;
+        var n = comment.Length;
+        int i;
+        int j;
 
+        for (i = 0; i < n; i++)
+        {
+            if (comment[i] is '*' or '\n')
+                continue;
+            break;
+        }
+
+        for (j = n - 1; j >= 0; j--)
+        {
+            if (comment[j] is '*' or '\n')
+                continue;
+            break;
+        }
+
+        var yamlString = comment.AsSpan(i, j - i + 1).ToString();
+        var testStrings = yamlString.Split(
+            "---",
+            StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries
+        );
+        foreach (var testString in testStrings)
+        {
+            var testYaml = Yaml.ParseString(testString);
+            var a = 1;
+        }
     }
 
     [Fact]

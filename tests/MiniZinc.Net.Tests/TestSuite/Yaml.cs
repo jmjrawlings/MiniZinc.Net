@@ -12,21 +12,18 @@ using static Prelude;
 
 public static class Yaml
 {
-    public static YamlNode ParseString(string s) =>
-        Parser.ParseString(s);
+    public static YamlNode ParseString(string s) => Parser.ParseString(s);
 
-    public static YamlNode ParseFile(FileInfo fi) =>
-        Parser.ParseFile(fi);
+    public static YamlNode ParseFile(FileInfo fi) => Parser.ParseFile(fi);
 
     private static YamlParser? _parser;
     private static YamlParser Parser => _parser ??= new YamlParser();
 }
 
-
 internal sealed class YamlConverter : IYamlTypeConverter
 {
     public bool Accepts(Type type) => true;
-    
+
     public object? ReadYaml(IParser parser, Type type)
     {
         if (parser.Current is null)
@@ -34,9 +31,9 @@ internal sealed class YamlConverter : IYamlTypeConverter
         var result = ParseNode(parser);
         return result;
     }
-    
+
     public void WriteYaml(IEmitter emitter, object? value, Type type) { }
-    
+
     private YamlNode ParseNode(IParser parser)
     {
         var curr = parser.Current;
@@ -51,25 +48,24 @@ internal sealed class YamlConverter : IYamlTypeConverter
         parser.MoveNext();
         return node;
     }
-    
+
     private YamlNode ParseScalar(IParser parser, Scalar e)
     {
         var str = e.Value;
         var tag = GetTag(e);
-        YamlNode scalar = 
-            tag switch
-            {
-                "!!set" => Token(str),
-                "!Duration" => Token(TimeSpan.Parse(str)),
-                _ when str == "true" => Token(true),
-                _ when str == "false" => Token(false),
-                _ when int.TryParse(str, out var i) => Token(i),
-                _ when double.TryParse(str, out var d) => Token(d),
-                _ => Token(str)
-            };
+        YamlNode scalar = tag switch
+        {
+            "!!set" => Token(str),
+            "!Duration" => Token(TimeSpan.Parse(str)),
+            _ when str == "true" => Token(true),
+            _ when str == "false" => Token(false),
+            _ when int.TryParse(str, out var i) => Token(i),
+            _ when double.TryParse(str, out var d) => Token(d),
+            _ => Token(str)
+        };
         return scalar;
     }
-    
+
     private string? GetTag(NodeEvent e)
     {
         if (e.Tag.IsEmpty)
@@ -79,7 +75,7 @@ internal sealed class YamlConverter : IYamlTypeConverter
         Console.WriteLine(x);
         return x;
     }
-    
+
     private YamlMap ParseMap(IParser parser, MappingStart e)
     {
         var map = Map();
@@ -87,9 +83,10 @@ internal sealed class YamlConverter : IYamlTypeConverter
         parser.MoveNext();
         loop:
         var curr = parser.Current;
-        switch(curr) {
+        switch (curr)
+        {
             case null:
-                break;  
+                break;
             case MappingEnd:
                 break;
             default:
@@ -103,7 +100,7 @@ internal sealed class YamlConverter : IYamlTypeConverter
         map.Tag = tag;
         return map;
     }
-    
+
     private YamlNode ParseList(IParser parser, SequenceStart e)
     {
         parser.MoveNext();
@@ -127,9 +124,9 @@ internal sealed class YamlConverter : IYamlTypeConverter
     }
 
     private static YamlToken<T> Token<T>(T value) => new(value);
-    
+
     private static YamlSequence Seq() => new();
-    
+
     private static YamlMap Map() => new();
 }
 
@@ -137,27 +134,27 @@ internal sealed class YamlParser
 {
     private readonly IDeserializer? _deserializer;
     private readonly YamlConverter _converter;
+
     public YamlParser()
     {
         _converter = new YamlConverter();
-        _deserializer =
-            new DeserializerBuilder()
-                .WithTagMapping("!Test", typeof(object))
-                .WithTagMapping("!Result", typeof(object))
-                .WithTagMapping("!SolutionSet", typeof(object))
-                .WithTagMapping("!Solution", typeof(object))
-                .WithTagMapping("!Duration", typeof(object))
-                .WithTypeConverter(_converter)
-                .Build();
+        _deserializer = new DeserializerBuilder()
+            .WithTagMapping("!Test", typeof(object))
+            .WithTagMapping("!Result", typeof(object))
+            .WithTagMapping("!SolutionSet", typeof(object))
+            .WithTagMapping("!Solution", typeof(object))
+            .WithTagMapping("!Duration", typeof(object))
+            .WithTypeConverter(_converter)
+            .Build();
     }
-    
+
     public YamlNode ParseString(string s)
     {
         var text = s.TrimEnd();
         var node = _deserializer.Deserialize(text) as YamlNode;
         return node;
     }
-    
+
     public YamlNode ParseFile(FileInfo fi)
     {
         var text = File.ReadAllText(fi.FullName, Encoding.UTF8);
@@ -169,30 +166,30 @@ internal sealed class YamlParser
 public abstract class YamlNode
 {
     public string? Tag { get; set; }
-    
+
     public YamlNode? Get(string key) => Map.Dict.TryGet(key);
-    
+
     public int Int => (this as YamlToken<int>)!.Value;
-    
+
     public string String => (this as YamlToken<string>)!.Value;
-    
+
     public TimeSpan Duration => (this as YamlToken<TimeSpan>)!.Value;
-    
+
     public bool Bool => (this as YamlToken<bool>)!.Value;
-    
+
     public YamlMap Map => ((YamlMap)this);
-    
+
     public List<T> ListOf<T>(Func<YamlNode, T> f) => ((YamlSequence)this).List.Select(f).ToList();
-    
+
     public IEnumerable<YamlNode> Items => ((YamlSequence)this).List;
 }
 
 public sealed class YamlToken<T> : YamlNode
 {
     public readonly T Value;
-    
+
     public static implicit operator T(YamlToken<T> d) => d.Value;
-    
+
     public YamlToken(T value)
     {
         Value = value;
@@ -201,11 +198,10 @@ public sealed class YamlToken<T> : YamlNode
 
 public sealed class YamlMap : YamlNode
 {
-    public Dictionary<string, YamlNode> Dict { get; } = new ();
+    public Dictionary<string, YamlNode> Dict { get; } = new();
 }
 
 public sealed class YamlSequence : YamlNode
 {
-    public List<YamlNode> List { get; } = new ();
+    public List<YamlNode> List { get; } = new();
 }
-
