@@ -50,29 +50,25 @@ using static Prelude;
 public sealed class TestSuite
 {
     public string SuiteName { get; init; }
-    
-    public List<string> IncludeGlobs { get; }
 
-    public List<FileInfo> IncludeFiles { get; }
+    public List<string> IncludeGlobs { get; } = new();
 
-    public List<TestCase> TestCases { get; }
+    public List<FileInfo> IncludeFiles { get; } = new();
+
+    public List<TestCase> TestCases { get; } = new();
     
     public override string ToString() => $"<{SuiteName}\" ({this.TestCases.Count} cases)>";
-   
 
-}
+    public static IEnumerable<TestSuite> Load(FileInfo file)
+    {
+        var yaml = Yaml.ParseFile(file) as YamlMap;
+        return Enumerable.Empty<TestSuite>();
+        }
+    
 
 
-//
-//         let testSuites =
-//             yamls
-//             |> Map.map (parseTestSuite specDir)
-//
-//         testSuites
-//
-//     let parseTestSuite directory suiteName (yaml: Yaml) : TestSuite =
-//
-//         let includeGlobs =
+
+    //         let includeGlobs =
 //             yaml.Get "includes"
 //             |> Yaml.toList
 //             |> List.choose Yaml.toString
@@ -106,8 +102,26 @@ public sealed class TestSuite
 //             ; IncludeFiles = includeFiles
 //             ; SolveOptions = solveOptions }
 //
-//         suite
-//
+
+    [Fact]
+    public void Test_Load_Test_Suite()
+    {
+        var yaml = Yaml.ParseFile(Prelude.TestSuiteFile).Map;
+        foreach (var kv in yaml.Dict)
+        {
+            var suiteName = kv.Key;
+            var suiteYaml = kv.Value;
+            var includes = suiteYaml.Get("includes")?.List(x => x.String);
+            var strict = suiteYaml.Get("strict")?.Bool;
+            var options = suiteYaml.Get("options")?.Map;
+            var solvers = suiteYaml.Get("solvers")?.List(x => x.String);
+            var x = 1;
+        }
+    }
+}
+
+
+
 //
 //     /// Parse a TestCase from the given yaml
 //     let parseTestCase (yaml: Yaml) : TestCase =

@@ -1,5 +1,4 @@
-﻿
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace MiniZinc.Tests;
 
@@ -106,8 +105,8 @@ internal sealed class YamlConverter : IYamlTypeConverter
     private YamlNode ParseList(IParser parser, SequenceStart e)
     {
         parser.MoveNext();
-        loop:
         var seq = Seq();
+        loop:
         var curr = parser.Current;
         var tag = GetTag(e);
         switch (curr)
@@ -121,12 +120,11 @@ internal sealed class YamlConverter : IYamlTypeConverter
                 seq.List.Add(item);
                 goto loop;
         }
-
         seq.Tag = tag;
         return seq;
     }
-    
-    private static YamlToken<T> Token<T>(T value) => new() { Value = value };
+
+    private static YamlToken<T> Token<T>(T value) => new(value);
     
     private static YamlSequence Seq() => new();
     
@@ -169,11 +167,33 @@ internal sealed class YamlParser
 public abstract class YamlNode
 {
     public string? Tag { get; set; }
+    
+    public YamlNode? Get(string key) => Map.Dict.TryGet(key);
+    
+    public int Int => (this as YamlToken<int>)!.Value;
+    
+    public string String => (this as YamlToken<string>)!.Value;
+    
+    public TimeSpan Duration => (this as YamlToken<TimeSpan>)!.Value;
+    
+    public bool Bool => (this as YamlToken<bool>)!.Value;
+    
+    public YamlMap Map => ((YamlMap)this);
+    
+    public List<T> List<T>(Func<YamlNode, T> f) => ((YamlSequence)this).List.Select(f).ToList();
+
 }
 
 public sealed class YamlToken<T> : YamlNode
 {
-    public T Value { get; init; }
+    public readonly T Value;
+    
+    public static implicit operator T(YamlToken<T> d) => d.Value;
+    
+    public YamlToken(T value)
+    {
+        Value = value;
+    }
 }
 
 public sealed class YamlMap : YamlNode

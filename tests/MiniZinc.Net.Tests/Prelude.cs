@@ -37,4 +37,11 @@ public static class Prelude
 
         return sln;
     }
+
+    public static V? TryGet<K, V>(this Dictionary<K, V> dict, K key) where K : notnull
+    {
+        if (dict.TryGetValue(key, out var item))
+            return item;
+        return default;
+    }
 }
