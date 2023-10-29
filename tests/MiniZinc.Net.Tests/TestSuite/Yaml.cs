@@ -61,6 +61,8 @@ internal sealed class YamlConverter : IYamlTypeConverter
             {
                 "!!set" => Token(str),
                 "!Duration" => Token(TimeSpan.Parse(str)),
+                _ when str == "true" => Token(true),
+                _ when str == "false" => Token(false),
                 _ when int.TryParse(str, out var i) => Token(i),
                 _ when double.TryParse(str, out var d) => Token(d),
                 _ => Token(str)
@@ -180,8 +182,9 @@ public abstract class YamlNode
     
     public YamlMap Map => ((YamlMap)this);
     
-    public List<T> List<T>(Func<YamlNode, T> f) => ((YamlSequence)this).List.Select(f).ToList();
-
+    public List<T> ListOf<T>(Func<YamlNode, T> f) => ((YamlSequence)this).List.Select(f).ToList();
+    
+    public IEnumerable<YamlNode> Items => ((YamlSequence)this).List;
 }
 
 public sealed class YamlToken<T> : YamlNode

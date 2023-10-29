@@ -39,6 +39,8 @@ expected: # The obtained result must match one of these
   regex: .*type-inst must be par set.* # Regex the start of the string must match (run with M and S flags)
 ***/
 
+using Microsoft.Extensions.FileSystemGlobbing;
+
 namespace MiniZinc.Tests;
 
 using System.Text.Json.Nodes;
@@ -49,74 +51,61 @@ using static Prelude;
 
 public sealed class TestSuite
 {
-    public string SuiteName { get; init; }
-
-    public List<string> IncludeGlobs { get; } = new();
-
-    public List<FileInfo> IncludeFiles { get; } = new();
-
+    public string Name { get; init; }
+    
+    public bool Strict { get; set; }
+    
+    public List<string>? Solvers { get; set; }
+    
+    public List<string> IncludeGlobs { get; set; }
+    
+    public List<FileInfo> IncludeFiles { get; set; }
+    
     public List<TestCase> TestCases { get; } = new();
     
-    public override string ToString() => $"<{SuiteName}\" ({this.TestCases.Count} cases)>";
-
-    public static IEnumerable<TestSuite> Load(FileInfo file)
-    {
-        var yaml = Yaml.ParseFile(file) as YamlMap;
-        return Enumerable.Empty<TestSuite>();
-        }
+    public Dictionary<string, YamlNode> Options { get; set; }
     
+    public override string ToString() => $"<{Name}\" ({this.TestCases.Count} cases)>";
 
-
-
-    //         let includeGlobs =
-//             yaml.Get "includes"
-//             |> Yaml.toList
-//             |> List.choose Yaml.toString
-//
-//         let includeFiles =
-//             includeGlobs
-//             |> Seq.collect (fun glob -> Directory.GetFiles(directory.FullName, glob, SearchOption.AllDirectories))
-//             |> Seq.map FileInfo
-//             |> Seq.filter (fun fi -> fi.Extension = ".mzn")
-//             |> Seq.toList
-//
-//         let solveOptions =
-//             yaml.TryGet "options"
-//             |> Option.map Yaml.toMap
-//             |> Option.defaultValue Map.empty
-//
-//         let testCases =
-//             includeFiles
-//             |> Seq.toArray
-//             |> Seq.collect parseTestCases
-//             |> Seq.map (fun case ->
-//                 {case with
-//                     SolveOptions = solveOptions
-//                     SuiteName = suiteName })
-//             |> Seq.toArray
-//
-//         let suite =
-//             { SuiteName = suiteName
-//             ; TestCases = testCases
-//             ; IncludeGlobs = includeGlobs
-//             ; IncludeFiles = includeFiles
-//             ; SolveOptions = solveOptions }
-//
-
-    [Fact]
-    public void Test_Load_Test_Suite()
+    public static IEnumerable<TestSuite> Load()
     {
-        var yaml = Yaml.ParseFile(Prelude.TestSuiteFile).Map;
+        var yaml = Yaml.ParseFile(TestSuiteFile).Map;
+        var suites = new List<TestSuite>();
         foreach (var kv in yaml.Dict)
         {
-            var suiteName = kv.Key;
-            var suiteYaml = kv.Value;
-            var includes = suiteYaml.Get("includes")?.List(x => x.String);
-            var strict = suiteYaml.Get("strict")?.Bool;
-            var options = suiteYaml.Get("options")?.Map;
-            var solvers = suiteYaml.Get("solvers")?.List(x => x.String);
-            var x = 1;
+            var suite = new TestSuite() { Name = kv.Key };
+            var node = kv.Value;
+            suite.Strict = node.Get("strict")?.Bool ?? false;
+            suite.Options = node.Get("options")?.Map.Dict ?? new Dictionary<string, YamlNode>();
+            suite.Solvers = node.Get("solvers")?.ListOf(x => x.String);
+            suite.IncludeGlobs = node.Get("includes")!.ListOf(x => x.String);
+            suite.IncludeFiles = suite.IncludeGlobs.SelectMany(glob =>
+                LibMiniZincDir.EnumerateFiles(glob, SearchOption.AllDirectories)).ToList();
+            suites.Add(suite);
         }
+
+        foreach (var suite in suites)
+        {
+            foreach (var file in suite.IncludeFiles)
+            {
+                LoadTestCase(suite, file);
+            }
+        }
+
+        return suites;
+    }
+    
+    private static void LoadTestCase(TestSuite suite, FileInfo file)
+    {
+        var tokens = Lexer.LexFile(file).First();
+        var x = 1;
+
+    }
+
+    [Fact]
+    public static void test_xd()
+    {
+        var suites = Load();
     }
 }
 
