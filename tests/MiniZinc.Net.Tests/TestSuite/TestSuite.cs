@@ -69,7 +69,7 @@ public sealed class TestSuite
 
     public static IEnumerable<TestSuite> Load()
     {
-        var yaml = Yaml.ParseFile(TestSuiteFile).Map;
+        var yaml = Yaml.ParseFile<YamlMap>(TestSuiteFile);
         var suites = new List<TestSuite>();
         foreach (var kv in yaml.Dict)
         {
@@ -98,6 +98,9 @@ public sealed class TestSuite
     {
         // Test case yaml are stored as comments in each minizinc model
         var token = Lexer.LexFile(file, includeComments: true).First();
+        if (token.Kind != TokenKind.BlockComment)
+            return;
+
         var comment = token.String!;
         var n = comment.Length;
         int i;
@@ -122,9 +125,15 @@ public sealed class TestSuite
             "---",
             StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries
         );
+
         foreach (var testString in testStrings)
         {
-            var testYaml = Yaml.ParseString(testString);
+            var testYaml = Yaml.ParseString<YamlMap>(testString);
+            if (testYaml is null)
+            {
+                Console.Write($"Could not parse {0} yaml from {1}", file.FullName, testString);
+                continue;
+            }
             var a = 1;
         }
     }
