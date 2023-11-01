@@ -38,13 +38,8 @@ expected: # The obtained result must match one of these
   message: Exact error message # Exact error message string (avoid using this as it's generally not portable)
   regex: .*type-inst must be par set.* # Regex the start of the string must match (run with M and S flags)
 ***/
-
-using Microsoft.Extensions.FileSystemGlobbing;
-
 namespace MiniZinc.Tests;
 
-using System.Text.Json.Nodes;
-using System.Reflection;
 using System;
 using System.IO;
 using static Prelude;
@@ -53,32 +48,34 @@ public sealed class TestSuite
 {
     public string Name { get; init; }
 
-    public bool Strict { get; set; }
+    public bool? Strict { get; set; }
 
-    public List<string>? Solvers { get; set; }
+    public List<string> Solvers { get; set; }
 
     public List<string> IncludeGlobs { get; set; }
 
     public List<FileInfo> IncludeFiles { get; set; }
 
-    public List<TestCase> TestCases { get; } = new();
+    public List<TestCase> TestCases { get; }
 
     public Dictionary<string, YamlNode> Options { get; set; }
 
-    public override string ToString() => $"<{Name}\" ({this.TestCases.Count} cases)>";
+    public override string ToString() => $"<{Name}\" ({TestCases.Count} cases)>";
 
     public static IEnumerable<TestSuite> Load()
     {
-        var yaml = Yaml.ParseFile<YamlMap>(TestSuiteFile);
+        var yaml = Yaml.ParseFile(TestSuiteFile);
         var suites = new List<TestSuite>();
-        foreach (var kv in yaml.Dict)
+        foreach (var node in yaml)
         {
-            var suite = new TestSuite() { Name = kv.Key };
-            var node = kv.Value;
-            suite.Strict = node.Get("strict")?.Bool ?? false;
-            suite.Options = node.Get("options")?.Map.Dict ?? new Dictionary<string, YamlNode>();
-            suite.Solvers = node.Get("solvers")?.ListOf(x => x.String);
-            suite.IncludeGlobs = node.Get("includes")!.ListOf(x => x.String);
+            var suite = new TestSuite
+            {
+                Name = node.Key!,
+                Strict = node["strict"].Bool,
+                Options = node["options"],
+                Solvers = node["solvers").List(x => x.Strin]),
+                IncludeGlobs = node["includes").List(x => x.Stri]!)
+            };
             suite.IncludeFiles = suite.IncludeGlobs
                 .SelectMany(
                     glob => LibMiniZincDir.EnumerateFiles(glob, SearchOption.AllDirectories)
@@ -128,12 +125,45 @@ public sealed class TestSuite
 
         foreach (var testString in testStrings)
         {
-            var testYaml = Yaml.ParseString<YamlMap>(testString);
-            if (testYaml is null)
+            var yaml = Yaml.ParseString(testString);
+            if (yaml.IsNone)
             {
-                Console.Write($"Could not parse {0} yaml from {1}", file.FullName, testString);
+                Console.Write("Could not parse {0} yaml from {1}", file.FullName, testString);
                 continue;
             }
+
+            var testName = file.FullName;
+            var testCase = new TestCase(suite, file);
+
+            foreach (var x in yaml.Get("solvers"))
+                testCase.Solvers.Add(x.String!);
+
+            foreach (var x in yaml.Get("includes"))
+                testCase.Includes.Add(new FileInfo(x.String!));
+
+            // foreach (var VARIABLE in yaml.DictOf("options")) { }
+            //     Options = yaml.DictOf(x => x.String)
+            // };
+            // checkAgainst = yaml.ListOfStrings("check_against");
+            // var extraFiles = yaml.ListOfStrings("extra_files");
+
+            ////         let results =
+            //             yaml["expected"]
+            //             |> Yaml.toList
+            //             |> List.map parseTestResult
+            //
+            //         let testCase =
+            //             { SuiteName = ""
+            //             ; TestName = ""
+            //             ; TestFile = FileInfo "."
+            //             ; TestPath = ""
+            //             ; ModelString = ""
+            //             ; Solvers = solvers
+            //             ; Includes = extraFiles
+            //             ; SolveOptions = options
+            //             ; Results = results }
+            //
+            //         testCase
             var a = 1;
         }
     }
@@ -151,37 +181,6 @@ public sealed class TestSuite
 //     /// Parse a TestCase from the given yaml
 //     let parseTestCase (yaml: Yaml) : TestCase =
 //
-//         let solvers =
-//             yaml["solvers"].AsStringList
-//
-//         let check =
-//             yaml["check_against"].AsStringList
-//
-//         let extraFiles =
-//             yaml["extra_files"]
-//             |> Yaml.toStringList
-//             |> List.map FileInfo
-//
-//         let options =
-//             yaml["options"].AsMap
-//
-//         let results =
-//             yaml["expected"]
-//             |> Yaml.toList
-//             |> List.map parseTestResult
-//
-//         let testCase =
-//             { SuiteName = ""
-//             ; TestName = ""
-//             ; TestFile = FileInfo "."
-//             ; TestPath = ""
-//             ; ModelString = ""
-//             ; Solvers = solvers
-//             ; Includes = extraFiles
-//             ; SolveOptions = options
-//             ; Results = results }
-//
-//         testCase
 //
 //     /// Parse the TestCaseResult from the given suite yaml
 //     let parseTestResult (yaml: Yaml) : TestResult =
@@ -212,57 +211,3 @@ public sealed class TestSuite
 //         ; ErrorMessage = ""
 //         ; ErrorRegex = "" }
 //
-/// Load the TestSuite for the given filename
-// let parseTestCases (testFile: FileInfo) : TestCase list =
-//
-//     let testName =
-//         Path.GetFileNameWithoutExtension testFile.FullName
-//
-//     let modelString, yamlString =
-//         use reader = new StreamReader(testFile.FullName)
-//         let yml = StringBuilder()
-//         let header = reader.ReadLine()
-//         let mutable stop = header <> "/***"
-//         let mutable i = 0
-//
-//         while (not stop) do
-//             i <- i + 1
-//             let line = reader.ReadLine()
-//             match line with
-//             | _ when line.Contains "***/" ->
-//                 stop <- true
-//             | null ->
-//                 stop <- true
-//             | line ->
-//                 yml.AppendLine line
-//                 ()
-//
-//         let mzn = reader.ReadToEnd()
-//         let yml = (string yml)
-//         mzn, yml
-//
-//     let testYamls =
-//         yamlString.Split("---", StringSplitOptions.RemoveEmptyEntries)
-//         |> Seq.map (fun s -> s.Trim())
-//         |> Seq.toList
-//
-//     let testCases =
-//         testYamls
-//         |> Seq.choose parseYamlString
-//         |> Seq.map (Yaml.get "!Test")
-//         |> Seq.filter (fun yml -> yml <> Null)
-//         |> Seq.map parseTestCase
-//         |> Seq.map (fun case ->
-//
-//             let includes =
-//                 case.Includes
-//                 |> List.map (fun fi -> testFile.Directory </> fi.Name)
-//
-//             { case with
-//                 Includes = includes
-//                 TestName = testName
-//                 TestFile = testFile
-//                 ModelString = modelString })
-//         |> Seq.toList
-//
-//     testCases

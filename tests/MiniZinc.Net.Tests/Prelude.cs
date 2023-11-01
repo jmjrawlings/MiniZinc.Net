@@ -11,10 +11,11 @@ public static class Prelude
         var logger = factory.CreateLogger<T>();
         return logger;
     }
+
     private static FileInfo? _solutionFile;
-    
+
     public static FileInfo SolutionFile => _solutionFile ??= GetSolutionFile();
-    
+
     public static DirectoryInfo ProjectDir => SolutionFile.Directory;
 
     public static DirectoryInfo TestDir => ProjectDir.JoinDir("tests");
@@ -24,7 +25,7 @@ public static class Prelude
     public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");
 
     public static FileInfo TestSuiteFile => LibMiniZincDir.JoinFile("suites.yml");
-    
+
     private static FileInfo GetSolutionFile()
     {
         var assembly = Assembly.GetExecutingAssembly().Location.ToFile();
@@ -38,7 +39,8 @@ public static class Prelude
         return sln;
     }
 
-    public static V? TryGet<K, V>(this Dictionary<K, V> dict, K key) where K : notnull
+    public static V? TryGet<K, V>(this IDictionary<K, V> dict, K key)
+        where K : notnull
     {
         if (dict.TryGetValue(key, out var item))
             return item;

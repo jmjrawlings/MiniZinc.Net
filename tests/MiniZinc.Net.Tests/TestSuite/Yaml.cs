@@ -1,4 +1,8 @@
-﻿namespace MiniZinc.Tests;
+﻿using System.Collections;
+using System.Collections.Immutable;
+using FluentAssertions.Equivalency;
+
+namespace MiniZinc.Tests;
 
 using System.Text;
 using YamlDotNet.Core;
@@ -7,11 +11,9 @@ using YamlDotNet.Serialization;
 
 public static class Yaml
 {
-    public static T? ParseString<T>(string s)
-        where T : YamlNode => Parser.ParseString<T>(s);
+    public static YamlNode ParseString(string s) => Parser.ParseString(s);
 
-    public static T? ParseFile<T>(FileInfo fi)
-        where T : YamlNode => Parser.ParseFile<T>(fi);
+    public static YamlNode ParseFile(FileInfo fi) => Parser.ParseFile(fi);
 
     private static YamlParser? _parser;
     private static YamlParser Parser => _parser ??= new YamlParser();
@@ -90,7 +92,7 @@ internal sealed class YamlConverter : IYamlTypeConverter
                 var key = (parser.Current as Scalar)!.Value;
                 parser.MoveNext();
                 var value = ParseNode(parser);
-                map.Dict[key] = value;
+                map.Add(key, value);
                 goto loop;
         }
 
@@ -113,7 +115,7 @@ internal sealed class YamlConverter : IYamlTypeConverter
                 break;
             default:
                 var item = ParseNode(parser);
-                seq.List.Add(item);
+                seq.Add(item);
                 goto loop;
         }
         seq.Tag = tag;
@@ -122,7 +124,7 @@ internal sealed class YamlConverter : IYamlTypeConverter
 
     private static YamlToken<T> Token<T>(T value) => new(value);
 
-    private static YamlSequence Seq() => new();
+    private static YamlSeq Seq() => new();
 
     private static YamlMap Map() => new();
 }
@@ -144,55 +146,88 @@ internal sealed class YamlParser
             .Build();
     }
 
-    public T? ParseString<T>(string s)
-        where T : YamlNode
+    public YamlNode ParseString(string s)
     {
         var text = s.TrimEnd();
-        var obj = _deserializer.Deserialize(text);
-        var yaml = obj as T;
-        return yaml;
+        var node = _deserializer.Deserialize(text);
+        if (node is YamlNode n)
+            return n;
+        return YamlNode.None;
     }
 
-    public T? ParseFile<T>(FileInfo fi)
-        where T : YamlNode
+    public YamlNode ParseFile(FileInfo fi)
     {
         var text = File.ReadAllText(fi.FullName, Encoding.UTF8);
-        var node = ParseString<T>(text);
+        var node = ParseString(text);
         return node;
     }
 }
 
-public abstract class YamlNode
+public abstract class YamlNode : IEnumerable<YamlNode>
 {
     public string? Tag { get; set; }
 
-    public YamlNode? Get(string key) => Map.Dict.TryGet(key);
+    public string? Key { get; set; }
 
-    public int Int => (this as YamlToken<int>)!.Value;
+    public bool IsNone => ReferenceEquals(this, None);
 
-    public string String => (this as YamlToken<string>)!.Value;
+    public static readonly YamlNode None = new YamlNone();
 
-    public TimeSpan Duration => (this as YamlToken<TimeSpan>)!.Value;
-
-    public bool Bool => (this as YamlToken<bool>)!.Value;
-
-    public YamlMap Map => (YamlMap)this;
-
-    public List<T> ListOf<T>(Func<YamlNode, T> f) => ((YamlSequence)this).List.Select(f).ToList();
-
-    public List<T> ListOf<T>(string key, Func<YamlNode, T> f) =>
-        Get(key)?.ListOf(f) ?? Enumerable.Empty<T>().ToList();
-
-    public Dictionary<string, T> DictOf<T>(Func<YamlNode, T> f)
+    public YamlNode this[string key]
     {
-        var dict = new Dictionary<string, T>();
-        foreach (var kv in (this as YamlMap)!.Dict)
-            dict[kv.Key] = f(kv.Value);
-        return dict;
+        get
+        {
+            if (this is YamlMap x)
+                if (x.Value.TryGetValue(key, out var node))
+                    return node;
+            return None;
+        }
     }
 
-    public Dictionary<string, T> DictOf<T>(string key, Func<YamlNode, T> f) =>
-        Get(key)?.DictOf(f) ?? new Dictionary<string, T>();
+    public int? Int => (this as YamlToken<int>)?.Value;
+
+    public string? String => (this as YamlToken<string>)?.Value;
+
+    public TimeSpan? Duration => (this as YamlToken<TimeSpan>)?.Value;
+
+    public bool? Bool => (this as YamlToken<bool>)?.Value;
+
+    public List<YamlNode> List() => (this as YamlSeq)?.Value ?? new List<YamlNode>();
+
+    public List<T> List<T>(Func<YamlNode, T> f) => List().Select(f).ToList();
+
+    public Dictionary<string, YamlNode> Dict() =>
+        (this as YamlMap)?.Value ?? new Dictionary<string, YamlNode>();
+
+    public Dictionary<string, T> Dict<T>(Func<YamlNode, T> f)
+    {
+        var d = new Dictionary<string, T>();
+        foreach (var kv in Dict())
+        {
+            d[kv.Key] = f(kv.Value);
+        }
+
+        return d;
+    }
+
+    public IEnumerator<YamlNode> GetEnumerator()
+    {
+        if (this is YamlSeq seq)
+        {
+            foreach (var item in seq.Value)
+                yield return item;
+        }
+        else if (this is YamlMap map)
+        {
+            foreach (var item in map.Value.Values)
+                yield return item;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }
 
 public sealed class YamlToken<T> : YamlNode
@@ -209,10 +244,23 @@ public sealed class YamlToken<T> : YamlNode
 
 public sealed class YamlMap : YamlNode
 {
-    public Dictionary<string, YamlNode> Dict { get; } = new();
+    public readonly Dictionary<string, YamlNode> Value = new();
+
+    public void Add(string key, YamlNode val)
+    {
+        val.Key = key;
+        Value.Add(key, val);
+    }
 }
 
-public sealed class YamlSequence : YamlNode
+public sealed class YamlSeq : YamlNode
 {
-    public List<YamlNode> List { get; } = new();
+    public readonly List<YamlNode> Value = new();
+
+    public void Add(YamlNode item)
+    {
+        Value.Add(item);
+    }
 }
+
+public sealed class YamlNone : YamlNode { }

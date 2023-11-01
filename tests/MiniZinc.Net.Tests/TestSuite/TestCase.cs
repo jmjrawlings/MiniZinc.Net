@@ -2,26 +2,30 @@ namespace MiniZinc.Tests;
 
 public sealed class TestCase
 {
-    public string TestName { get; init; }
+    public readonly string TestName;
 
-    public FileInfo TestFile { get; init; }
+    public readonly string TestPath;
 
-    public string TestPath { get; init; }
+    public readonly FileInfo TestFile;
 
-    public string ModelString { get; init; }
+    public readonly List<FileInfo> Includes;
 
-    public List<FileInfo> Includes { get; init; }
-
-    public List<string> Solvers { get; init; }
+    public readonly List<string> Solvers;
 
     public readonly TestSuite TestSuite;
 
     public readonly List<TestResult> TestResults;
 
-    public TestCase(TestSuite suite)
+    public TestCase(TestSuite suite, FileInfo file)
     {
         TestSuite = suite;
         TestResults = new List<TestResult>();
+        Solvers = new List<string>();
+        Includes = new List<FileInfo>();
+        TestResults = new List<TestResult>();
+        TestPath = file.FullName;
+        TestName = Path.GetFileNameWithoutExtension(file.Name);
+        TestFile = file;
     }
 
     public override string ToString() => $"<Test \"{TestFile.Name}\">";
