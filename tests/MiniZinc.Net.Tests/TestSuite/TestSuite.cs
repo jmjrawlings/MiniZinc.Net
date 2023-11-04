@@ -46,19 +46,19 @@ using static Prelude;
 
 public sealed class TestSuite
 {
-    public string Name { get; init; }
+    public required string Name { get; init; }
 
-    public bool? Strict { get; set; }
+    public required bool? Strict { get; set; }
 
-    public List<string> Solvers { get; set; }
+    public required List<string> Solvers { get; set; }
 
-    public List<string> IncludeGlobs { get; set; }
+    public required List<string> IncludeGlobs { get; set; }
 
     public List<FileInfo> IncludeFiles { get; set; }
 
-    public List<TestCase> TestCases { get; }
+    public List<TestCase> TestCases { get; set; } = new();
 
-    public Dictionary<string, YamlNode> Options { get; set; }
+    public required YamlNode Options { get; set; }
 
     public override string ToString() => $"<{Name}\" ({TestCases.Count} cases)>";
 
@@ -73,8 +73,8 @@ public sealed class TestSuite
                 Name = node.Key!,
                 Strict = node["strict"].Bool,
                 Options = node["options"],
-                Solvers = node["solvers").List(x => x.Strin]),
-                IncludeGlobs = node["includes").List(x => x.Stri]!)
+                Solvers = node["solvers"].Select(x => x.String!).ToList(),
+                IncludeGlobs = node["includes"].Select(x => x.String!).ToList(),
             };
             suite.IncludeFiles = suite.IncludeGlobs
                 .SelectMany(
@@ -126,44 +126,26 @@ public sealed class TestSuite
         foreach (var testString in testStrings)
         {
             var yaml = Yaml.ParseString(testString);
-            if (yaml.IsNone)
+            if (yaml is null)
             {
                 Console.Write("Could not parse {0} yaml from {1}", file.FullName, testString);
                 continue;
             }
 
             var testName = file.FullName;
-            var testCase = new TestCase(suite, file);
-
-            foreach (var x in yaml.Get("solvers"))
-                testCase.Solvers.Add(x.String!);
-
-            foreach (var x in yaml.Get("includes"))
-                testCase.Includes.Add(new FileInfo(x.String!));
-
-            // foreach (var VARIABLE in yaml.DictOf("options")) { }
-            //     Options = yaml.DictOf(x => x.String)
-            // };
-            // checkAgainst = yaml.ListOfStrings("check_against");
-            // var extraFiles = yaml.ListOfStrings("extra_files");
-
-            ////         let results =
-            //             yaml["expected"]
-            //             |> Yaml.toList
-            //             |> List.map parseTestResult
-            //
-            //         let testCase =
-            //             { SuiteName = ""
-            //             ; TestName = ""
-            //             ; TestFile = FileInfo "."
-            //             ; TestPath = ""
-            //             ; ModelString = ""
-            //             ; Solvers = solvers
-            //             ; Includes = extraFiles
-            //             ; SolveOptions = options
-            //             ; Results = results }
-            //
-            //         testCase
+            var testCase = new TestCase
+            {
+                TestSuite = suite,
+                TestName = testName,
+                TestPath = file.FullName,
+                TestFile = file,
+                Includes = yaml["includes"].Select(x => x.String!.ToFile()).ToList(),
+                Solvers = yaml["solvers"].Select(x => x.String!).ToList(),
+                SolveOptions = yaml["options"]
+            };
+            var check = yaml["check_against"];
+            var extra = yaml["extra"];
+            var expected = yaml["expected"];
             var a = 1;
         }
     }

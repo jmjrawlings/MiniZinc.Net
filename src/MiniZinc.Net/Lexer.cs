@@ -271,23 +271,22 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
     const string ERR_UNTERMINATED_LITERAL =
         "Literal was not terminated properly at the end of the stream";
 
-    private uint _line; // Start line of current token
-    private uint _col; // Start column of current token
-    private uint _index; // Position of the stream
-    private uint _start; // Start index of current token
-    private uint _length; // Length of the current token
-    private uint _count; // Total numbef of tokens processed
-    private TokenKind _kind; // Kind of current token
-    private string? _string; // String contents of current token
-    private char _peek; // Value of a peek if used
-    private char _char; // Char at the current stream position
-    private char _prev; // Previous parsed char;
-    private int? _int;
-    private double? _double;
-    private readonly StreamReader _sr;
-    private readonly StringBuilder _sb;
-    private readonly ILogger? _logger;
-    private readonly KeywordLookup _lookup;
+    uint _line; // Start line of current token
+    uint _col; // Start column of current token
+    uint _index; // Position of the stream
+    uint _start; // Start index of current token
+    uint _length; // Length of the current token
+    uint _count; // Total numbef of tokens processed
+    TokenKind _kind; // Kind of current token
+    string? _string; // String contents of current token
+    char _peek; // Value of a peek if used
+    char _char; // Char at the current stream position
+    int? _int;
+    double? _double;
+    readonly StreamReader _sr;
+    readonly StringBuilder _sb;
+    readonly ILogger? _logger;
+    readonly KeywordLookup _lookup;
     public readonly bool IncludeComments;
 
     private Lexer(StreamReader sr, ILogger? logger = null, bool includeComment = false)
@@ -308,7 +307,6 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
 
     void Move()
     {
-        _prev = _char;
         _char = (char)_sr.Read();
         _index++;
         _length++;
@@ -529,11 +527,9 @@ public sealed class Lexer : IDisposable, IEnumerable<Token>
                 Move();
                 switch (_char)
                 {
-                    case SINGLE_QUOTE when (_prev is SINGLE_QUOTE):
-                        Error(ERR_QUOTED_IDENT);
-                        goto error;
-                    case SINGLE_QUOTE:
+                    case SINGLE_QUOTE when _length > 2:
                         goto ok;
+                    case SINGLE_QUOTE:
                     case BACK_SLASH:
                     case RETURN:
                     case NEWLINE:
