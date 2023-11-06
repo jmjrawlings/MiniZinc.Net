@@ -6,21 +6,23 @@ using Xunit.Abstractions;
 public class LexerTests
 {
     private readonly ILogger _logger;
-    
+
     public LexerTests(ITestOutputHelper output)
     {
         _logger = XUnitLogger.CreateLogger<Lexer>(output);
     }
-    
+
     private IEnumerable<Token> LexString(string s) => Lexer.LexString(s, _logger);
-    
+
     private IEnumerable<Token> LexFile(string s) => Lexer.LexFile(s, _logger);
-    
+
+    private IEnumerable<Token> LexFile(FileInfo fi) => Lexer.LexFile(fi, _logger);
+
     // Test single tokenlexing the given string
     void TestKind(string mzn, params TokenKind[] kinds)
     {
         var tokens = LexString(mzn).ToArray();
-        for (int i = 0; i < tokens.Length; i++)
+        for (int i = 0; i < tokens.Length - 1; i++)
         {
             var token = tokens[i];
             var kind = kinds[i];
@@ -37,17 +39,18 @@ public class LexerTests
     {
         TestKind(mzn, TokenKind.Identifier);
     }
-    
+
     [Fact]
     public void Test_keywords()
     {
-        TestKind("if else then constraint maximize",
+        TestKind(
+            "if else then constraint maximize",
             TokenKind.KeywordIf,
             TokenKind.KeywordElse,
             TokenKind.KeywordThen,
             TokenKind.KeywordConstraint,
             TokenKind.KeywordMaximize
-            );
+        );
     }
 
     [Theory]
@@ -58,7 +61,7 @@ public class LexerTests
     {
         TestKind(mzn, TokenKind.StringLiteral);
     }
-    
+
     [Theory]
     [InlineData("1", 1)]
     [InlineData("100", 100)]
@@ -85,14 +88,21 @@ public class LexerTests
     {
         TestKind(mzn, TokenKind.IntLiteral, TokenKind.DotDot, TokenKind.IntLiteral);
     }
-    
+
     [Theory]
     [InlineData("1.1..1.2.0")]
     public void test_bad_range(string mzn)
     {
-        TestKind(mzn, TokenKind.FloatLiteral, TokenKind.DotDot, TokenKind.FloatLiteral, TokenKind.Dot, TokenKind.IntLiteral);
+        TestKind(
+            mzn,
+            TokenKind.FloatLiteral,
+            TokenKind.DotDot,
+            TokenKind.FloatLiteral,
+            TokenKind.Dot,
+            TokenKind.IntLiteral
+        );
     }
-    
+
     [Theory]
     [InlineData("<", TokenKind.LessThan)]
     [InlineData("<=", TokenKind.LessThanEqual)]
@@ -107,12 +117,21 @@ public class LexerTests
         var token = LexString(mzn).First();
         token.Kind.Should().Be(tokenKind);
     }
-    
+
     [Fact]
     public void test_whitespace()
     {
         var mzn = @$" {'\r'}{'\t'}{'\n'} ";
         var tokens = LexString(mzn).ToArray();
-        tokens.Should().BeEmpty();
+        tokens.Should().HaveCount(1);
+        tokens[0].Kind.Should().Be(TokenKind.EOF);
+    }
+
+    [Theory(Skip = "xd")]
+    [ClassData(typeof(TestFiles))]
+    public void test_lex_test_files(FileInfo file)
+    {
+        var tokens = LexFile(file).ToArray();
+        var last = tokens[-1];
     }
 }
