@@ -127,11 +127,17 @@ public class LexerTests
         tokens[0].Kind.Should().Be(TokenKind.EOF);
     }
 
-    [Theory(Skip = "xd")]
+    [Theory]
     [ClassData(typeof(TestFiles))]
     public void test_lex_test_files(FileInfo file)
     {
         var tokens = LexFile(file).ToArray();
-        var last = tokens[-1];
+        var last = tokens[^1];
+        if (last.Kind == TokenKind.EOF)
+            return;
+
+        var mzn = File.ReadAllText(file.FullName);
+        var txt = mzn.AsSpan((int)last.Start).ToString();
+        Assert.Fail("EOF expected");
     }
 }
