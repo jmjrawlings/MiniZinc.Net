@@ -122,6 +122,7 @@ public enum TokenKind
 
     // Errors
     ERROR,
+    ERROR_UNEXPECTED_CHAR,
     ERROR_QUOTED_IDENT,
     ERROR_QUOTED_OPERATOR,
     ERROR_ESCAPED_STRING,
@@ -162,6 +163,8 @@ public readonly struct Token
         String = s;
         Double = d;
     }
+
+    public override string ToString() => $"{Line}, {Col}, {Start} | {Kind} | {String}";
 }
 
 internal sealed class KeywordLookup
@@ -360,161 +363,173 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     public bool MoveNext()
     {
+        next:
+
+        if (_kind >= TokenKind.EOF)
+            return false;
+
         if (!skipNext)
             Move();
+
         skipNext = false;
         _start = _pos;
         _length = 0;
-        _string = null;
         switch (_char)
         {
             case EOF:
-                _kind = TokenKind.EOF;
-                var x = _sr.EndOfStream;
+                Token(TokenKind.EOF);
                 break;
             case TAB:
             case RETURN:
             case SPACE:
-                return MoveNext();
             case NEWLINE:
-                _line++;
-                _col = 0;
-                return MoveNext();
+                goto next;
             case PERCENT:
-                return LexLineComment();
+                LexLineComment();
+                break;
             case FWD_SLASH when Skip(STAR):
-                return LexBlockComment();
+                LexBlockComment();
+                break;
             case FWD_SLASH:
-                _kind = TokenKind.ForwardSlash;
+                Token(TokenKind.ForwardSlash);
                 break;
             case BACK_SLASH:
-                _kind = TokenKind.BackSlash;
+                Token(TokenKind.BackSlash);
                 break;
             case STAR:
-                _kind = TokenKind.Star;
+                Token(TokenKind.Star);
                 break;
             case DELIMITER:
-                _kind = TokenKind.Delimiter;
+                Token(TokenKind.Delimiter);
                 break;
             case EQUAL:
                 Skip(EQUAL);
-                _kind = TokenKind.Equal;
+                Token(TokenKind.Equal);
                 break;
             case LEFT_CHEVRON:
                 switch (Peek2())
                 {
                     case (RIGHT_CHEVRON, _):
                         Move();
-                        _kind = TokenKind.Empty;
+                        Token(TokenKind.Empty);
                         break;
                     case (DASH, RIGHT_CHEVRON):
                         Move();
                         Move();
-                        _kind = TokenKind.DoubleArrow;
+                        Token(TokenKind.DoubleArrow);
                         break;
                     case (DASH, _):
                         Move();
-                        _kind = TokenKind.LeftArrow;
+                        Token(TokenKind.LeftArrow);
                         break;
                     case (EQUAL, _):
-                        _kind = TokenKind.LessThanEqual;
+                        Token(TokenKind.LessThanEqual);
                         break;
                     default:
-                        _kind = TokenKind.LessThan;
+                        Token(TokenKind.LessThan);
                         break;
                 }
 
                 break;
             case RIGHT_CHEVRON:
-                _kind = Skip(EQUAL) ? TokenKind.GreaterThanEqual : TokenKind.GreaterThan;
+                Token(Skip(EQUAL) ? TokenKind.GreaterThanEqual : TokenKind.GreaterThan);
                 break;
             case UP_CHEVRON:
                 break;
             case PIPE:
-                _kind = TokenKind.Pipe;
+                Token(TokenKind.Pipe);
                 break;
             case DOT:
-                _kind = Skip(DOT) ? TokenKind.DotDot : TokenKind.Dot;
+                Token(Skip(DOT) ? TokenKind.DotDot : TokenKind.Dot);
                 break;
             case PLUS:
-                _kind = Skip(PLUS) ? TokenKind.PlusPlus : TokenKind.Plus;
+                Token(Skip(PLUS) ? TokenKind.PlusPlus : TokenKind.Plus);
                 break;
             case DASH:
-                _kind = Skip(RIGHT_CHEVRON) ? TokenKind.RightArrow : TokenKind.Minus;
+                Token(Skip(RIGHT_CHEVRON) ? TokenKind.RightArrow : TokenKind.Minus);
                 break;
             case TILDE:
-                switch (Peek)
+                Move();
+                switch (_char)
                 {
                     case DASH:
-                        _kind = TokenKind.TildeMinus;
-                        Move();
+                        Token(TokenKind.TildeMinus);
                         break;
                     case PLUS:
-                        _kind = TokenKind.TildePlus;
-                        Move();
+                        Token(TokenKind.TildePlus);
                         break;
                     case STAR:
-                        _kind = TokenKind.TildeStar;
-                        Move();
+                        Token(TokenKind.TildeStar);
                         break;
                     case EQUAL:
-                        _kind = TokenKind.TildeEquals;
-                        Move();
+                        Token(TokenKind.TildeEquals);
                         break;
                     default:
-                        _kind = TokenKind.Tilde;
+                        Token(TokenKind.Tilde);
+                        skipNext = true;
                         break;
                 }
                 break;
             case LEFT_BRACK:
-                _kind = TokenKind.LeftBracket;
+                Token(TokenKind.LeftBracket);
                 break;
             case RIGHT_BRACK:
-                _kind = TokenKind.RightBracket;
+                Token(TokenKind.RightBracket);
                 break;
             case LEFT_PAREN:
-                _kind = TokenKind.LeftParen;
+                Token(TokenKind.LeftParen);
                 break;
             case RIGHT_PAREN:
-                _kind = TokenKind.RightParen;
+                Token(TokenKind.RightParen);
                 break;
             case LEFT_BRACE:
-                _kind = TokenKind.LeftBrace;
+                Token(TokenKind.LeftBrace);
                 break;
             case RIGHT_BRACE:
-                _kind = TokenKind.RightBrace;
+                Token(TokenKind.RightBrace);
                 break;
             case SINGLE_QUOTE:
-                return LexQuotedIdentifier();
+                LexQuotedIdentifier();
+                break;
             case DOUBLE_QUOTE:
-                return LexStringLiteral();
+                LexStringLiteral();
+                break;
             case BACKTICK:
-                return LexQuotedOperator();
+                LexQuotedOperator();
+                break;
             case DOLLAR:
-                return LexPolymorphicIdentifier();
+                LexPolymorphicIdentifier();
+                break;
             case COLON:
-                _kind = TokenKind.Colon;
+                Token(TokenKind.Colon);
+                break;
+            case UNDERSCORE when FollowedByLetter:
+                LexIdentifier(checkKeyword: false);
                 break;
             case UNDERSCORE:
-                if (FollowedByLetter)
-                    return LexIdentifier(checkKeyword: false);
-                _kind = TokenKind.Underscore;
+                Token(TokenKind.Underscore);
                 break;
             case COMMA:
-                _kind = TokenKind.Comma;
+                Token(TokenKind.Comma);
+                break;
+            case EXCLAMATION when Skip(EQUAL):
+                Token(TokenKind.NotEqual);
                 break;
             case EXCLAMATION:
-                _kind = Skip(EQUAL) ? TokenKind.NotEqual : TokenKind.Equal;
+                Error(TokenKind.ERROR_UNEXPECTED_CHAR);
                 break;
             default:
                 if (IsDigit(_char))
-                    return LexNumber();
+                {
+                    LexNumber();
+                    break;
+                }
 
                 if (IsLetter(_char))
-                    return LexIdentifier();
-
-                if (_sr.EndOfStream)
-                    return false;
+                {
+                    LexIdentifier();
+                    break;
+                }
 
                 ReadString();
                 var msg =
@@ -523,19 +538,17 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     msg += $".  The contents of the string buffer were \"{_string}\"";
                 throw new Exception(msg);
         }
-
-        _token = new Token(_kind, _line, _col, _start, _length, 0, 0.0, _string);
-        if (_kind is TokenKind.EOF)
-            return false;
-
         return true;
     }
 
-    private bool LexPolymorphicIdentifier()
+    private void LexPolymorphicIdentifier()
     {
         Move();
         if (!IsLetter(_char))
-            return Error(TokenKind.ERROR_POLYMORPHIC_IDENTIFIER);
+        {
+            Error(TokenKind.ERROR_POLYMORPHIC_IDENTIFIER);
+            return;
+        }
 
         skipNext = true;
         Move();
@@ -545,10 +558,9 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Move();
         }
         StringToken(TokenKind.Polymorphic);
-        return true;
     }
 
-    private bool LexQuotedOperator()
+    private void LexQuotedOperator()
     {
         loop:
         Move();
@@ -561,10 +573,10 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
         else
         {
-            return Error(TokenKind.ERROR_QUOTED_OPERATOR);
+            Error(TokenKind.ERROR_QUOTED_OPERATOR);
+            return;
         }
         StringToken(TokenKind.QuotedOperator);
-        return true;
     }
 
     private void StringToken(TokenKind kind)
@@ -580,9 +592,25 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             0.0,
             _string
         );
+        _string = null;
+        Console.WriteLine($"{kind} - \"{_string}\"");
     }
 
-    private bool LexQuotedIdentifier()
+    private void Token(TokenKind kind)
+    {
+        _token = new Token(
+            _kind = kind,
+            _line,
+            _col,
+            _start,
+            skipNext ? _length - 1 : _length,
+            0,
+            0.0,
+            null
+        );
+    }
+
+    private void LexQuotedIdentifier()
     {
         quoted_identifier:
         Move();
@@ -596,17 +624,17 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case RETURN:
             case NEWLINE:
             case EOF:
-                return Error(TokenKind.ERROR_QUOTED_IDENT);
+                Error(TokenKind.ERROR_QUOTED_IDENT);
+                return;
             default:
                 Store();
                 goto quoted_identifier;
         }
 
         StringToken(TokenKind.QuotedIdentifier);
-        return true;
     }
 
-    private bool LexBlockComment()
+    private void LexBlockComment()
     {
         block_comment:
         Move();
@@ -614,11 +642,12 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         {
             case STAR when Skip(FWD_SLASH):
                 if (!IncludeComments)
-                    return true;
+                    return;
                 ReadString();
                 break;
             case EOF:
-                return Error(TokenKind.ERROR_UNTERMINATED_BLOCK_COMMENT);
+                Error(TokenKind.ERROR_UNTERMINATED_BLOCK_COMMENT);
+                return;
             default:
                 if (IncludeComments)
                     Store();
@@ -626,22 +655,21 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         if (!IncludeComments)
-            return MoveNext();
+            return;
 
         StringToken(TokenKind.BlockComment);
-        return true;
     }
 
-    private bool Error(TokenKind kind)
+    private void Error(TokenKind kind)
     {
         StringToken(kind);
-        return false;
     }
 
-    private bool LexLineComment()
+    private void LexLineComment()
     {
         skipNext = true;
         line_comment:
+        Move();
         switch (_char)
         {
             case NEWLINE:
@@ -655,13 +683,12 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         if (!IncludeComments)
-            return MoveNext();
+            return;
 
         StringToken(TokenKind.LineComment);
-        return true;
     }
 
-    bool LexIdentifier(bool checkKeyword = true)
+    void LexIdentifier(bool checkKeyword = true)
     {
         skipNext = true;
 
@@ -679,62 +706,62 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         ReadString();
-        _kind = TokenKind.Identifier;
-        if (checkKeyword)
-            _keywords.WordToToken.TryGetValue(_string!, out _kind);
+        if (checkKeyword && _keywords.WordToToken.TryGetValue(_string!, out _kind))
+            _string = null;
+        else
+            _kind = TokenKind.Identifier;
 
         _token = new Token(_kind, _line, _col, _start, _length - 1, 0, 0.0, _string);
-        return true;
     }
 
-    private bool LexStringLiteral()
+    private void LexStringLiteral()
     {
         bool inExpr = false;
-        Debug.Write("\n\n============================\n\n");
-        Debug.Write(_char);
-
-        double_quote:
+        bool escaped = false;
+        Console.Write("\n\n========= STRING LIT ===================\n\n");
+        string_literal:
         Move();
-        Debug.Write(_char);
         switch (_char)
         {
-            case DOUBLE_QUOTE when !inExpr:
+            case DOUBLE_QUOTE when inExpr:
+                Error(TokenKind.ERROR_UNTERMINATED_STRING_EXPRESSION);
+                return;
+            case DOUBLE_QUOTE when escaped:
                 break;
             case DOUBLE_QUOTE:
-                return Error(TokenKind.ERROR_UNTERMINATED_STRING_EXPRESSION);
+                StringToken(TokenKind.StringLiteral);
+                return;
             case RIGHT_PAREN when inExpr:
                 inExpr = false;
-                goto double_quote;
+                break;
+            case LEFT_PAREN when escaped && !inExpr:
+                inExpr = true;
+                break;
             case BACK_SLASH:
-                Store();
-                Move();
-                Store();
-                switch (_char)
-                {
-                    // Properly escaped chars
-                    case BACK_SLASH:
-                    case DOUBLE_QUOTE:
-                    case SINGLE_QUOTE:
-                    case 'n':
-                    case 't':
-                        goto double_quote;
-
-                    case LEFT_PAREN when !inExpr:
-                        inExpr = true;
-                        goto double_quote;
-                }
-                return Error(TokenKind.ERROR_ESCAPED_STRING);
+                escaped = !escaped;
+                break;
             case EOF:
-                return Error(TokenKind.ERROR_UNTERMINATED_STRING_LITERAL);
+                Error(TokenKind.ERROR_UNTERMINATED_STRING_LITERAL);
+                return;
             default:
-                Store();
-                goto double_quote;
+                if (!escaped)
+                    break;
+
+                if (_char is 'n' or 't' or SINGLE_QUOTE)
+                {
+                    escaped = false;
+                    break;
+                }
+
+                Error(TokenKind.ERROR_ESCAPED_STRING);
+                return;
         }
-        StringToken(TokenKind.StringLiteral);
-        return true;
+
+        Store();
+        goto string_literal;
     }
 
-    bool LexNumber()
+    private void LexNumber()
     {
         skipNext = true;
 
@@ -747,9 +774,19 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             goto lex_float;
 
         ReadString();
-        _kind = TokenKind.IntLiteral;
-        _token = new Token(_kind, _line, _col, _start, _length, int.Parse(_string!), 0.0, null);
-        return true;
+
+        _token = new Token(
+            _kind = TokenKind.IntLiteral,
+            _line,
+            _col,
+            _start,
+            _length - 1,
+            int.Parse(_string!),
+            0.0,
+            _string = null
+        );
+
+        return;
 
         lex_float:
         Store();
@@ -758,9 +795,17 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             goto lex_float;
 
         ReadString();
-        _kind = TokenKind.FloatLiteral;
-        _token = new Token(_kind, _line, _col, _start, _length, 0, double.Parse(_string!), null);
-        return true;
+
+        _token = new Token(
+            _kind = TokenKind.FloatLiteral,
+            _line,
+            _col,
+            _start,
+            _length - 1,
+            0,
+            double.Parse(_string!),
+            _string = null
+        );
     }
 
     void Move()
@@ -769,6 +814,12 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _pos++;
         _length++;
         _col++;
+        if (_char is NEWLINE)
+        {
+            _line++;
+            _col = 0;
+        }
+        Console.WriteLine($"{_char}\t{(int)_char}\tLine {_line}\tCol {_col}\tPos {_pos}");
     }
 
     char Peek => (char)_sr.Peek();
@@ -778,7 +829,6 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         var a = (char)_sr.Read();
         var b = (char)_sr.Peek();
         _sr.BaseStream.Seek(-1, SeekOrigin.Current);
-        //var c = (char)_sr.Peek();
         return (a, b);
     }
 
@@ -797,11 +847,6 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             return false;
         Move();
         return true;
-    }
-
-    void Backtrack(long n)
-    {
-        _sr.BaseStream.Seek(-n, SeekOrigin.Current);
     }
 
     /// Read the contents of the current string buffer
@@ -834,7 +879,11 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         bool includeComments = false
     )
     {
-        var stream = fi.OpenText();
+        var stream = new StreamReader(
+            fi.FullName,
+            Encoding.UTF8,
+            detectEncodingFromByteOrderMarks: true
+        );
         var lexer = new Lexer(stream, includeComments);
         return lexer;
     }
