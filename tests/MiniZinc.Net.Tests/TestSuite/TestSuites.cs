@@ -49,7 +49,7 @@ public class TestSuites : IEnumerable<object[]>
     static void Load(TestSuite suite, FileInfo file)
     {
         // Test case yaml are stored as comments in each minizinc model
-        var token = Lexer.LexFile(file, includeComments: true).First();
+        var token = Lexer.LexFile(file, lexBlockComments: true).First();
         if (token.Kind != TokenKind.BlockComment)
             return;
 

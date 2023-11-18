@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices.JavaScript;
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-namespace MiniZinc.Net;
+﻿namespace MiniZinc.Net;
 
 using System;
 using System.Collections;
@@ -163,8 +159,8 @@ public readonly struct Token
         String = s;
         Double = d;
     }
-
-    public override string ToString() => $"{Line}, {Col}, {Start} | {Kind} | {String}";
+    
+    public override string ToString() => $"{Kind} {String} | Line {Line}, Col {Col}, Start {Start}, End {Start+Length}, Len: {Length}";
 }
 
 internal sealed class KeywordLookup
@@ -316,51 +312,38 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const char RETURN = '\r';
     const char SPACE = ' ';
     const char EOF = '\uffff';
-
-    // Start line of current token
-    uint _line;
-
-    // Start column of current token
-    uint _col;
-
-    // Position of the stream
-    uint _pos;
-
-    // Start index of current token
-    uint _start;
-
-    // Length of the current token
-    uint _length;
-
-    // String contents of current token
+    
+    private uint _line;
+    private uint _col;
+    private uint _pos;
+    private uint _start;
+    private uint _length;
     private string? _string;
-
-    // Char at the current stream position
     private char _char;
-
-    // Current token
     private Token _token;
-
     private bool skipNext;
-
     private TokenKind _kind;
-
-    private readonly StreamReader _sr;
+    private readonly StreamReader _reader;
     private readonly StringBuilder _sb;
-    private readonly KeywordLookup _keywords;
-
-    // Return comments as tokens?
-    public readonly bool IncludeComments;
-
-    private Lexer(StreamReader sr, bool includeComment = false)
+    private readonly KeywordLookup Keywords;
+    public readonly bool LexLineComments;
+    public readonly bool LexBlockComments;
+    
+    private Lexer(
+        StreamReader reader,
+        bool lexLineComment = false,
+        bool lexBlockComments = false
+    )
     {
-        _sr = sr;
+        _reader = reader;
         _sb = new StringBuilder();
         _string = string.Empty;
-        _keywords = KeywordLookup.Table;
-        IncludeComments = includeComment;
+        _line = 1;
+        Keywords = KeywordLookup.Table;
+        LexLineComments = lexLineComment;
+        LexBlockComments = lexBlockComments;
     }
-
+    
     public bool MoveNext()
     {
         next:
@@ -369,26 +352,26 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             return false;
 
         if (!skipNext)
-            Move();
+            Read();
 
         skipNext = false;
+        if (IsWhiteSpace(_char))
+            goto next;
+
         _start = _pos;
-        _length = 0;
+        _length = 1;
         switch (_char)
         {
             case EOF:
                 Token(TokenKind.EOF);
                 break;
-            case TAB:
-            case RETURN:
-            case SPACE:
-            case NEWLINE:
-                goto next;
             case PERCENT:
-                LexLineComment();
+                if (!LexLineComment())
+                    goto next;
                 break;
             case FWD_SLASH when Skip(STAR):
-                LexBlockComment();
+                if (!LexBlockComment())
+                    goto next;
                 break;
             case FWD_SLASH:
                 Token(TokenKind.ForwardSlash);
@@ -410,16 +393,16 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 switch (Peek2())
                 {
                     case (RIGHT_CHEVRON, _):
-                        Move();
+                        Read();
                         Token(TokenKind.Empty);
                         break;
                     case (DASH, RIGHT_CHEVRON):
-                        Move();
-                        Move();
+                        Read();
+                        Read();
                         Token(TokenKind.DoubleArrow);
                         break;
                     case (DASH, _):
-                        Move();
+                        Read();
                         Token(TokenKind.LeftArrow);
                         break;
                     case (EQUAL, _):
@@ -449,7 +432,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Token(Skip(RIGHT_CHEVRON) ? TokenKind.RightArrow : TokenKind.Minus);
                 break;
             case TILDE:
-                Move();
+                Read();
                 switch (_char)
                 {
                     case DASH:
@@ -543,7 +526,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     private void LexPolymorphicIdentifier()
     {
-        Move();
+        Read();
         if (!IsLetter(_char))
         {
             Error(TokenKind.ERROR_POLYMORPHIC_IDENTIFIER);
@@ -551,11 +534,11 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         skipNext = true;
-        Move();
+        Read();
         while (IsAsciiLetterOrDigit(_char))
         {
             Store();
-            Move();
+            Read();
         }
         StringToken(TokenKind.Polymorphic);
     }
@@ -563,9 +546,8 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private void LexQuotedOperator()
     {
         loop:
-        Move();
-        if (_char is BACKTICK && _length > 2)
-            ;
+        Read();
+        if (_char is BACKTICK && _length > 2) { }
         else if (IsAsciiLetterOrDigit(_char))
         {
             Store();
@@ -592,10 +574,8 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             0.0,
             _string
         );
-        _string = null;
-        Console.WriteLine($"{kind} - \"{_string}\"");
     }
-
+    
     private void Token(TokenKind kind)
     {
         _token = new Token(
@@ -613,7 +593,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private void LexQuotedIdentifier()
     {
         quoted_identifier:
-        Move();
+        Read();
         switch (_char)
         {
             case SINGLE_QUOTE when _length > 2:
@@ -634,30 +614,30 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         StringToken(TokenKind.QuotedIdentifier);
     }
 
-    private void LexBlockComment()
+    private bool LexBlockComment()
     {
         block_comment:
-        Move();
+        Read();
         switch (_char)
         {
             case STAR when Skip(FWD_SLASH):
-                if (!IncludeComments)
-                    return;
-                ReadString();
+                if (!LexBlockComments)
+                    return false;
                 break;
             case EOF:
                 Error(TokenKind.ERROR_UNTERMINATED_BLOCK_COMMENT);
-                return;
+                return true;
             default:
-                if (IncludeComments)
+                if (LexBlockComments)
                     Store();
                 goto block_comment;
         }
 
-        if (!IncludeComments)
-            return;
+        if (!LexBlockComments)
+            return false;
 
         StringToken(TokenKind.BlockComment);
+        return true;
     }
 
     private void Error(TokenKind kind)
@@ -665,11 +645,10 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         StringToken(kind);
     }
 
-    private void LexLineComment()
+    private bool LexLineComment()
     {
-        skipNext = true;
         line_comment:
-        Move();
+        Read();
         switch (_char)
         {
             case NEWLINE:
@@ -677,15 +656,16 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
 
             default:
-                if (IncludeComments)
+                if (LexLineComments)
                     Store();
                 goto line_comment;
         }
 
-        if (!IncludeComments)
-            return;
+        if (!LexLineComments)
+            return false;
 
         StringToken(TokenKind.LineComment);
+        return true;
     }
 
     void LexIdentifier(bool checkKeyword = true)
@@ -694,7 +674,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         identifier:
         Store();
-        Move();
+        Read();
 
         if (IsLetter(_char))
             goto identifier;
@@ -706,21 +686,20 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         ReadString();
-        if (checkKeyword && _keywords.WordToToken.TryGetValue(_string!, out _kind))
+        if (checkKeyword && Keywords.WordToToken.TryGetValue(_string!, out _kind))
             _string = null;
         else
             _kind = TokenKind.Identifier;
 
         _token = new Token(_kind, _line, _col, _start, _length - 1, 0, 0.0, _string);
     }
-
+    
     private void LexStringLiteral()
     {
         bool inExpr = false;
         bool escaped = false;
-        Console.Write("\n\n========= STRING LIT ===================\n\n");
         string_literal:
-        Move();
+        Read();
         switch (_char)
         {
             case DOUBLE_QUOTE when inExpr:
@@ -767,7 +746,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         lex_int:
         Store();
-        Move();
+        Read();
         if (IsDigit(_char))
             goto lex_int;
         if (_char is DOT && FollowedByDigit)
@@ -790,7 +769,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         lex_float:
         Store();
-        Move();
+        Read();
         if (IsDigit(_char))
             goto lex_float;
 
@@ -808,9 +787,10 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         );
     }
 
-    void Move()
+    void Read()
     {
-        _char = (char)_sr.Read();
+        // var encoding = _sr.CurrentEncoding;
+        _char = (char)_reader.Read();
         _pos++;
         _length++;
         _col++;
@@ -819,16 +799,15 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _line++;
             _col = 0;
         }
-        Console.WriteLine($"{_char}\t{(int)_char}\tLine {_line}\tCol {_col}\tPos {_pos}");
     }
 
-    char Peek => (char)_sr.Peek();
+    char Peek => (char)_reader.Peek();
 
     (char a, char b) Peek2()
     {
-        var a = (char)_sr.Read();
-        var b = (char)_sr.Peek();
-        _sr.BaseStream.Seek(-1, SeekOrigin.Current);
+        var a = (char)_reader.Read();
+        var b = (char)_reader.Peek();
+        _reader.BaseStream.Seek(-1, SeekOrigin.Current);
         return (a, b);
     }
 
@@ -845,7 +824,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         if (Peek != c)
             return false;
-        Move();
+        Read();
         return true;
     }
 
@@ -858,10 +837,14 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     public void Dispose()
     {
-        _sr.Dispose();
+        _reader.Dispose();
     }
 
-    public static IEnumerable<Token> LexString(string s, ILogger? logger = null)
+    public static Lexer LexString(
+        string s,
+        bool lexLineComments = false,
+        bool lexBlockComments = false
+    )
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
@@ -869,14 +852,15 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         writer.Flush();
         stream.Position = 0;
         var reader = new StreamReader(stream);
-        var lexer = new Lexer(reader);
+        var lexer = new Lexer(reader, lexLineComments, lexBlockComments);
         return lexer;
     }
 
-    public static IEnumerable<Token> LexFile(
+    public static Lexer LexFile(
         FileInfo fi,
         ILogger? logger = null,
-        bool includeComments = false
+        bool lexLineComments = false,
+        bool lexBlockComments = false
     )
     {
         var stream = new StreamReader(
@@ -884,21 +868,23 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Encoding.UTF8,
             detectEncodingFromByteOrderMarks: true
         );
-        var lexer = new Lexer(stream, includeComments);
+        var lexer = new Lexer(stream, lexLineComments, lexBlockComments);
         return lexer;
     }
-
-    public static IEnumerable<Token> LexFile(
+    
+    public static Lexer LexFile(
         string path,
         ILogger? logger = null,
-        bool includeComments = false
-    )
-    {
-        var fi = new FileInfo(path);
-        var stream = fi.OpenText();
-        var lexer = new Lexer(stream, includeComments);
-        return lexer;
-    }
+        bool lexLineComments = false,
+        bool lexBlockComments = false
+    ) => LexFile(new FileInfo(path), logger, lexLineComments, lexBlockComments);
+    
+
+    public static IEnumerable<Token> LexStream(
+        StreamReader stream,
+        bool lexLineComments = false,
+        bool lexBlockComments = false
+    ) => new Lexer(stream,  lexLineComments, lexBlockComments);
 
     public void Reset()
     {

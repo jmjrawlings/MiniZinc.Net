@@ -29,11 +29,11 @@ public static class Prelude
     private static FileInfo GetSolutionFile()
     {
         var assembly = Assembly.GetExecutingAssembly().Location.ToFile();
-        var sln = assembly.DirectoryName.JoinFile("MiniZinc.Net.sln");
+        var sln = assembly.Directory!.JoinFile("MiniZinc.Net.sln");
         while (!sln.Exists)
         {
-            var dir = sln.Directory.Parent;
-            sln = dir.JoinFile(sln.Name);
+            var dir = sln.Directory!.Parent;
+            sln = dir!.JoinFile(sln.Name);
         }
 
         return sln;
