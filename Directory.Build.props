@@ -6,8 +6,10 @@
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <RepositoryType>git</RepositoryType>
         <Authors>Justin Rawlings</Authors>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RepositoryUrl>https://github.com/jmjrawlings/MiniZinc.Net</RepositoryUrl>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 </Project>
