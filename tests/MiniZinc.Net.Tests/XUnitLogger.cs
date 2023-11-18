@@ -10,8 +10,8 @@ internal class XUnitLogger(
     string categoryName
 ) : ILogger
 {
-    public static ILogger Create<T>(ITestOutputHelper testOutputHelper) =>
-        new XUnitLogger(testOutputHelper, new LoggerExternalScopeProvider(), nameof(T));
+    public static ILogger Create<T>(ITestOutputHelper output) =>
+        new XUnitLogger(output, new LoggerExternalScopeProvider(), nameof(T));
 
     public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None;
 
@@ -26,26 +26,11 @@ internal class XUnitLogger(
     )
     {
         var sb = new StringBuilder();
-        sb.Append(GetLogLevelString(logLevel))
-            .Append(" [")
-            .Append(categoryName)
-            .Append("] ")
-            .Append(formatter(state, exception));
-
+        var msg = formatter(state, exception);
         if (exception is not null)
             sb.Append('\n').Append(exception);
 
-        // Append scopes
-        scopeProvider.ForEachScope(
-            (scope, state) =>
-            {
-                state.Append("\n => ");
-                state.Append(scope);
-            },
-            sb
-        );
-
-        testOutputHelper.WriteLine(sb.ToString());
+        testOutputHelper.WriteLine(msg);
     }
 
     private static string GetLogLevelString(LogLevel logLevel)

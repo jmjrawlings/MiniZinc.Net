@@ -316,7 +316,9 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private uint _line;
     private uint _col;
     private uint _pos;
-    private uint _start;
+    private uint _startPos;
+    private uint _startLine;
+    private uint _startCol;
     private uint _length;
     private string? _string;
     private char _char;
@@ -358,7 +360,9 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         if (IsWhiteSpace(_char))
             goto next;
 
-        _start = _pos;
+        _startPos = _pos;
+        _startLine = _line;
+        _startCol = _col;
         _length = 1;
         switch (_char)
         {
@@ -560,15 +564,15 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
         StringToken(TokenKind.QuotedOperator);
     }
-
+    
     private void StringToken(TokenKind kind)
     {
         ReadString();
         _token = new Token(
             _kind = kind,
-            _line,
-            _col,
-            _start,
+            _startLine,
+            _startCol,
+            _startPos,
             skipNext ? _length - 1 : _length,
             0,
             0.0,
@@ -580,9 +584,9 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         _token = new Token(
             _kind = kind,
-            _line,
-            _col,
-            _start,
+            _startLine,
+            _startCol,
+            _startPos,
             skipNext ? _length - 1 : _length,
             0,
             0.0,
@@ -691,7 +695,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         else
             _kind = TokenKind.Identifier;
 
-        _token = new Token(_kind, _line, _col, _start, _length - 1, 0, 0.0, _string);
+        _token = new Token(_kind, _startLine, _startCol, _startPos, _length - 1, 0, 0.0, _string);
     }
     
     private void LexStringLiteral()
@@ -715,6 +719,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case LEFT_PAREN when escaped && !inExpr:
                 inExpr = true;
+                escaped = false;
                 break;
             case BACK_SLASH:
                 escaped = !escaped;
@@ -758,7 +763,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _kind = TokenKind.IntLiteral,
             _line,
             _col,
-            _start,
+            _startPos,
             _length - 1,
             int.Parse(_string!),
             0.0,
@@ -779,17 +784,16 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _kind = TokenKind.FloatLiteral,
             _line,
             _col,
-            _start,
+            _startPos,
             _length - 1,
             0,
             double.Parse(_string!),
             _string = null
         );
     }
-
+    
     void Read()
     {
-        // var encoding = _sr.CurrentEncoding;
         _char = (char)_reader.Read();
         _pos++;
         _length++;
