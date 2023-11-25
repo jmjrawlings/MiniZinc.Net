@@ -485,6 +485,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 LexQuotedOperator();
                 break;
             case DOLLAR:
+                Skip(DOLLAR);
                 LexPolymorphicIdentifier();
                 break;
             case COLON:
@@ -702,13 +703,12 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         bool inExpr = false;
         bool escaped = false;
+        Console.WriteLine("STRING");
         string_literal:
         Read();
+        Console.Write(_char);
         switch (_char)
         {
-            case DOUBLE_QUOTE when inExpr:
-                Error(TokenKind.ERROR_UNTERMINATED_STRING_EXPRESSION);
-                return;
             case DOUBLE_QUOTE when escaped:
                 break;
             case DOUBLE_QUOTE:

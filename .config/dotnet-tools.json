@@ -7,6 +7,12 @@
       "commands": [
         "fake"
       ]
+    },
+    "csharpier": {
+      "version": "0.26.2",
+      "commands": [
+        "dotnet-csharpier"
+      ]
     }
   }
 }

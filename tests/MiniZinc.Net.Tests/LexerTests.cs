@@ -167,7 +167,7 @@ public class LexerTests
     [Fact]
     public void test1()
     {
-        var p1 = @"C:\Users\hrkn\projects\MiniZinc.Net\libminizinc\unit\general\pow_bounds.mzn";
+        var p1 = @"C:\Users\hrkn\projects\MiniZinc.Net\libminizinc\unit\regression\github_730.mzn";
         var t1 = LexFile(p1);
         var l1 = t1.Last();
     
@@ -175,10 +175,17 @@ public class LexerTests
         // var t2 = LexFile(p2);
         // var l2 = t2.Last();
         
-        l1.Kind.Should().Be(TokenKind.EOF);
+        l1.Kind.Should().Be(TokenKind.EOF, "Line {0}, Col {1}, {2}", l1.Line, l1.Col, l1.String);
         // l2.Kind.Should().Be(TokenKind.EOF);
-        
-        
+    }
+
+    [Fact]
+    public void xd()
+    {
+        var s = $"""output ["full var: \(x)\nvar array: \(y)\nnested: \(z)\nelement: \(z.2.1)\npartial: \(init)\ndata: \(dat)\nenumtup: \(enumtup)\n"];""";
+        var x = Lexer.LexString(s);
+        var a = x.ToArray();
+        var z = 2;
     }
 
     [Theory]

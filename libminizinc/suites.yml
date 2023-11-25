@@ -1,4 +1,4 @@
-﻿default: !Suite
+default: !Suite
   includes: ['unit/*']
 
 optimize-0: !Suite
