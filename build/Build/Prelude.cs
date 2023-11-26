@@ -4,6 +4,8 @@ namespace MiniZinc.Build;
 
 public static class Prelude
 {
+    public const string LibMiniZincUrl = "https://github.com/MiniZinc/libminizinc";
+
     private static FileInfo? _solutionFile;
 
     public static FileInfo SolutionFile => _solutionFile ??= GetSolutionFile();
@@ -16,7 +18,7 @@ public static class Prelude
 
     public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");
 
-    public static FileInfo TestSuiteFile => LibMiniZincDir.JoinFile("suites.yml");
+    public static FileInfo TestSpecFile => LibMiniZincDir.JoinFile("suites.yml");
 
     private static FileInfo GetSolutionFile()
     {
