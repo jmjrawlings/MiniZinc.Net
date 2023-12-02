@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualBasic.FileIO;
 using MiniZinc.Build;
 using static MiniZinc.Build.Prelude;
+using static System.Console;
 
 var cloneTestsCommand = new Command(
     name: "--clone-tests",
@@ -23,12 +24,6 @@ rootCommand.AddCommand(cloneTestsCommand);
 rootCommand.AddCommand(generateTestsCommand);
 var result = await rootCommand.InvokeAsync(args);
 return result;
-
-async Task GenTests()
-{
-    var spec = TestSpec.Create(TestSpecFile);
-    var a = 2;
-}
 
 async Task CloneTests()
 {
@@ -58,4 +53,12 @@ async Task CloneTests()
     var targetDir = libDir;
     sourceDir.CopyContentsTo(targetDir);
     cloneDir.Delete(true);
+}
+
+async Task GenTests()
+{
+    var spec = TestSpec.Parse(TestSpecFile);
+    var gen = new GenLexerTests(spec);
+
+    var a = 2;
 }

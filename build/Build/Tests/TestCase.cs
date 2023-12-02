@@ -16,7 +16,7 @@ public sealed class TestCase
 
     public required YamlNode SolveOptions { get; init; }
 
-    public List<TestResult> TestResults { get; } = new();
+    public List<TestResult> Results { get; } = new();
 
-    public override string ToString() => $"<Test \"{TestFile.Name}\">";
+    public override string ToString() => $"<Test \"{TestName}\">";
 }

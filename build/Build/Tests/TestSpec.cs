@@ -10,9 +10,13 @@ public sealed class TestSpec : IEnumerable<TestSuite>
     public readonly FileInfo File;
     private readonly List<TestSuite> _suites;
     private readonly List<TestCase> _cases;
+    private readonly HashSet<FileInfo> _files;
     private readonly StringBuilder _sb;
 
-    public static TestSpec Create(FileInfo file)
+    public IEnumerable<FileInfo> Files => _files;
+    public IEnumerable<TestCase> TestCases => _cases;
+
+    public static TestSpec Parse(FileInfo file)
     {
         return new TestSpec(file);
     }
@@ -22,13 +26,17 @@ public sealed class TestSpec : IEnumerable<TestSuite>
         _sb = new StringBuilder();
         _suites = new();
         _cases = new();
+        _files = new HashSet<FileInfo>();
         File = file;
         var document = Yaml.ParseFile(File)!;
         foreach (var node in document)
-            CreateTestSuite(node);
+        {
+            var suite = CreateTestSuite(node);
+            _suites.Add(suite);
+        }
     }
 
-    private void CreateTestSuite(YamlNode node)
+    private TestSuite CreateTestSuite(YamlNode node)
     {
         var suite = new TestSuite
         {
@@ -49,10 +57,17 @@ public sealed class TestSpec : IEnumerable<TestSuite>
                     )
             );
 
-        foreach (var fi in suite.IncludeFiles)
-            CreateTestCase(suite, fi);
+        foreach (var testFile in suite.IncludeFiles)
+        {
+            foreach (var testCase in CreateTestCases(suite, testFile))
+            {
+                suite.TestCases.Add(testCase);
+                _files.Add(testFile);
+                _cases.Add(testCase);
+            }
+        }
 
-        _suites.Add(suite);
+        return suite;
     }
 
     /// <summary>
@@ -71,7 +86,6 @@ public sealed class TestSpec : IEnumerable<TestSuite>
         {
             i++;
             c = (char)reader.Read();
-            Console.Write(c);
         }
 
         bool Skip(char c)
@@ -116,11 +130,12 @@ public sealed class TestSpec : IEnumerable<TestSuite>
         foreach (var s in testStrings)
         {
             var doc = Yaml.ParseString(s);
-            yield return doc;
+            if (doc is not null)
+                yield return doc;
         }
     }
 
-    private void CreateTestCase(TestSuite suite, FileInfo file)
+    private IEnumerable<TestCase> CreateTestCases(TestSuite suite, FileInfo file)
     {
         foreach (var node in ParseTestCaseYaml(file))
         {
@@ -138,8 +153,21 @@ public sealed class TestSpec : IEnumerable<TestSuite>
             var check = node["check_against"];
             var extra = node["extra"];
             var expected = node["expected"];
-            var a = 1;
+            foreach (var enode in expected)
+            {
+                var result = CreateTestResult(enode);
+                testCase.Results.Add(result);
+            }
+
+            yield return testCase;
         }
+    }
+
+    private TestResult CreateTestResult(YamlNode node)
+    {
+        var sol = node["solution"];
+        var result = new TestResult { Expected = sol };
+        return result;
     }
 
     public IEnumerator<TestSuite> GetEnumerator() => _suites.GetEnumerator();
