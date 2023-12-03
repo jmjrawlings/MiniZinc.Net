@@ -2,19 +2,15 @@ namespace MiniZinc.Build;
 
 public sealed class TestCase
 {
-    public required TestSuite TestSuite { get; init; }
-
     public required string TestName { get; init; }
 
     public required string TestPath { get; init; }
 
-    public required FileInfo TestFile { get; init; }
-
-    public required List<FileInfo> Includes { get; init; }
+    public required List<string> Includes { get; init; }
 
     public required List<string> Solvers { get; init; }
 
-    public required YamlNode SolveOptions { get; init; }
+    //public required YamlNode SolveOptions { get; init; }
 
     public List<TestResult> Results { get; } = new();
 

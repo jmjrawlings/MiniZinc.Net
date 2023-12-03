@@ -8,13 +8,13 @@ public sealed class TestSuite
 
     public required bool? Strict { get; init; }
 
-    public required YamlNode Options { get; init; }
+    // public required YamlNode Options { get; init; }
 
     public List<string> Solvers { get; } = new();
 
     public List<string> IncludeGlobs { get; } = new();
 
-    public List<FileInfo> IncludeFiles { get; } = new();
+    public List<string> IncludeFiles { get; } = new();
 
     public List<TestCase> TestCases { get; } = new();
 

@@ -1,5 +1,9 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualBasic.FileIO;
 using MiniZinc.Build;
@@ -12,12 +16,12 @@ var cloneTestsCommand = new Command(
 );
 
 var generateTestsCommand = new Command(
-    name: "--generate-tests",
+    name: "--generate-test-db",
     description: "Generate test cases from the test spec"
 );
 
-cloneTestsCommand.SetHandler(async () => await CloneTests());
-generateTestsCommand.SetHandler(async () => await GenTests());
+cloneTestsCommand.SetHandler(CloneTests);
+generateTestsCommand.SetHandler(GenerateTestDB);
 
 var rootCommand = new RootCommand("MiniZinc.NET build options");
 rootCommand.AddCommand(cloneTestsCommand);
@@ -55,10 +59,12 @@ async Task CloneTests()
     cloneDir.Delete(true);
 }
 
-async Task GenTests()
+async Task GenerateTestDB()
 {
     var spec = TestSpec.Parse(TestSpecFile);
-    var gen = new GenLexerTests(spec);
-
-    var a = 2;
+    var json = JsonSerializer.Serialize(spec);
+    var file = BuildDir.JoinFile("tests.json");
+    await using var stream = file.OpenWrite();
+    await using var writer = new StreamWriter(stream);
+    await writer.WriteAsync(json);
 }

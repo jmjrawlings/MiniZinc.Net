@@ -14,4 +14,8 @@
     <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\tests\MiniZinc.Net.TestSpec\MiniZinc.Net.TestSpec.csproj" />
+  </ItemGroup>
+
 </Project>

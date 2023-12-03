@@ -3,18 +3,18 @@
 namespace MiniZinc.Build;
 
 using System.Collections;
-using static Prelude;
 
 public sealed class TestSpec : IEnumerable<TestSuite>
 {
     public readonly FileInfo File;
     private readonly List<TestSuite> _suites;
-    private readonly List<TestCase> _cases;
-    private readonly HashSet<FileInfo> _files;
+    private readonly HashSet<string> _files;
     private readonly StringBuilder _sb;
+    public readonly FileInfo SpecFile;
+    public readonly DirectoryInfo SpecDir;
 
-    public IEnumerable<FileInfo> Files => _files;
-    public IEnumerable<TestCase> TestCases => _cases;
+    public IEnumerable<string> Files => _files;
+    public IEnumerable<TestCase> TestCases => _suites.SelectMany(s => s.TestCases);
 
     public static TestSpec Parse(FileInfo file)
     {
@@ -23,10 +23,11 @@ public sealed class TestSpec : IEnumerable<TestSuite>
 
     private TestSpec(FileInfo file)
     {
+        SpecFile = file;
+        SpecDir = file.Directory!;
         _sb = new StringBuilder();
         _suites = new();
-        _cases = new();
-        _files = new HashSet<FileInfo>();
+        _files = new HashSet<string>();
         File = file;
         var document = Yaml.ParseFile(File)!;
         foreach (var node in document)
@@ -42,7 +43,7 @@ public sealed class TestSpec : IEnumerable<TestSuite>
         {
             Name = node.Key!,
             Strict = node["strict"].Bool,
-            Options = node["options"]
+            // Options = node["options"]
         };
 
         suite.Solvers.AddRange(node["solvers"].Select(x => x.String!));
@@ -52,9 +53,8 @@ public sealed class TestSpec : IEnumerable<TestSuite>
             .AddRange(
                 suite
                     .IncludeGlobs
-                    .SelectMany(
-                        glob => LibMiniZincDir.EnumerateFiles(glob, SearchOption.AllDirectories)
-                    )
+                    .SelectMany(glob => SpecDir.EnumerateFiles(glob, SearchOption.AllDirectories))
+                    .Select(x => x.FullName)
             );
 
         foreach (var testFile in suite.IncludeFiles)
@@ -63,7 +63,6 @@ public sealed class TestSpec : IEnumerable<TestSuite>
             {
                 suite.TestCases.Add(testCase);
                 _files.Add(testFile);
-                _cases.Add(testCase);
             }
         }
 
@@ -73,8 +72,9 @@ public sealed class TestSpec : IEnumerable<TestSuite>
     /// <summary>
     /// Parse yaml contained within the test file comments
     /// </summary>
-    private IEnumerable<YamlNode> ParseTestCaseYaml(FileInfo file)
+    private IEnumerable<YamlNode> ParseTestCaseYaml(string path)
     {
+        var file = new FileInfo(path);
         using var stream = file.OpenRead();
         using var reader = new StreamReader(stream);
         _sb.Clear();
@@ -135,20 +135,18 @@ public sealed class TestSpec : IEnumerable<TestSuite>
         }
     }
 
-    private IEnumerable<TestCase> CreateTestCases(TestSuite suite, FileInfo file)
+    private IEnumerable<TestCase> CreateTestCases(TestSuite suite, string path)
     {
-        foreach (var node in ParseTestCaseYaml(file))
+        foreach (var node in ParseTestCaseYaml(path))
         {
-            var testName = file.FullName;
+            var testName = path;
             var testCase = new TestCase
             {
-                TestSuite = suite,
                 TestName = testName,
-                TestPath = file.FullName,
-                TestFile = file,
-                Includes = node["includes"].Select(x => x.String!.ToFile()).ToList(),
+                TestPath = path,
+                Includes = node["includes"].Select(x => x.String!).ToList(),
                 Solvers = node["solvers"].Select(x => x.String!).ToList(),
-                SolveOptions = node["options"]
+                // SolveOptions = node["options"]
             };
             var check = node["check_against"];
             var extra = node["extra"];
@@ -166,7 +164,7 @@ public sealed class TestSpec : IEnumerable<TestSuite>
     private TestResult CreateTestResult(YamlNode node)
     {
         var sol = node["solution"];
-        var result = new TestResult { Expected = sol };
+        var result = new TestResult { };
         return result;
     }
 

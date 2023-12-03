@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.csproj" />
+    <ProjectReference Include="..\MiniZinc.Net.TestSpec\MiniZinc.Net.TestSpec.csproj" />
   </ItemGroup>
 
 </Project>

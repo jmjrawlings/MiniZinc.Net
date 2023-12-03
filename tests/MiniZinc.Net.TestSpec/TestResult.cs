@@ -2,7 +2,7 @@ namespace MiniZinc.Build;
 
 public sealed record TestResult
 {
-    public required YamlNode Expected { get; init; }
+    //public required YamlNode Expected { get; init; }
 
     // public required SolveStatus SolveStatus { get; init; }
 
