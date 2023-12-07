@@ -1,4 +1,4 @@
-namespace MiniZinc.Build;
+namespace MiniZinc.Tests;
 
 public sealed record TestResult
 {

@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Build;
+﻿using MiniZinc.Tests;
+
+namespace MiniZinc.Build;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -23,7 +25,14 @@ public sealed class LexerTests
         Using("System");
         _class = ClassDeclaration("LexerIntegrationTests");
         _class = _class.AddModifiers(Token(SyntaxKind.PublicKeyword));
-        foreach (var file in spec.Files)
+        var files = spec.TestSuites
+            .SelectMany(s => s.TestCases)
+            .Select(c => c.TestPath)
+            .Distinct()
+            .Order()
+            .ToArray();
+
+        foreach (var file in files)
         {
             var test = CreateTest(file);
             _tests.Add(test);
@@ -43,6 +52,12 @@ public sealed class LexerTests
         var methodName = $"Test_{Path.GetFileNameWithoutExtension(file)}";
         var returnType = ParseTypeName("void");
         var method = MethodDeclaration(returnType, methodName);
+        
+        
+        method.AddBodyStatements()
+        
+        
+        
         return null;
     }
 }

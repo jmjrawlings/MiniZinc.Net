@@ -159,8 +159,9 @@ public readonly struct Token
         String = s;
         Double = d;
     }
-    
-    public override string ToString() => $"{Kind} {String} | Line {Line}, Col {Col}, Start {Start}, End {Start+Length}, Len: {Length}";
+
+    public override string ToString() =>
+        $"{Kind} {String} | Line {Line}, Col {Col}, Start {Start}, End {Start + Length}, Len: {Length}";
 }
 
 internal sealed class KeywordLookup
@@ -312,7 +313,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const char RETURN = '\r';
     const char SPACE = ' ';
     const char EOF = '\uffff';
-    
+
     private uint _line;
     private uint _col;
     private uint _pos;
@@ -330,12 +331,8 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private readonly KeywordLookup Keywords;
     public readonly bool LexLineComments;
     public readonly bool LexBlockComments;
-    
-    private Lexer(
-        StreamReader reader,
-        bool lexLineComment = false,
-        bool lexBlockComments = false
-    )
+
+    private Lexer(StreamReader reader, bool lexLineComment = false, bool lexBlockComments = false)
     {
         _reader = reader;
         _sb = new StringBuilder();
@@ -345,7 +342,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         LexLineComments = lexLineComment;
         LexBlockComments = lexBlockComments;
     }
-    
+
     public bool MoveNext()
     {
         next:
@@ -565,7 +562,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
         StringToken(TokenKind.QuotedOperator);
     }
-    
+
     private void StringToken(TokenKind kind)
     {
         ReadString();
@@ -580,7 +577,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _string
         );
     }
-    
+
     private void Token(TokenKind kind)
     {
         _token = new Token(
@@ -698,7 +695,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         _token = new Token(_kind, _startLine, _startCol, _startPos, _length - 1, 0, 0.0, _string);
     }
-    
+
     private void LexStringLiteral()
     {
         bool inExpr = false;
@@ -791,7 +788,7 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _string = null
         );
     }
-    
+
     void Read()
     {
         _char = (char)_reader.Read();
@@ -875,20 +872,19 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         var lexer = new Lexer(stream, lexLineComments, lexBlockComments);
         return lexer;
     }
-    
+
     public static Lexer LexFile(
         string path,
         ILogger? logger = null,
         bool lexLineComments = false,
         bool lexBlockComments = false
     ) => LexFile(new FileInfo(path), logger, lexLineComments, lexBlockComments);
-    
 
     public static IEnumerable<Token> LexStream(
         StreamReader stream,
         bool lexLineComments = false,
         bool lexBlockComments = false
-    ) => new Lexer(stream,  lexLineComments, lexBlockComments);
+    ) => new Lexer(stream, lexLineComments, lexBlockComments);
 
     public void Reset()
     {

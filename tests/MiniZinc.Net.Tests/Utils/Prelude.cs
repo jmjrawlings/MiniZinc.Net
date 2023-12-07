@@ -12,6 +12,8 @@ public static class Prelude
 
     public static DirectoryInfo TestDir => ProjectDir.JoinDir("tests");
 
+    public static FileInfo TestSpecJson => TestDir.JoinFile("tests.json");
+
     public static DirectoryInfo SourceDir => ProjectDir.JoinDir("src");
 
     public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");

@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Build;
+﻿namespace MiniZinc.Tests;
 
 using System.IO;
 
@@ -14,7 +14,7 @@ public sealed class TestSuite
 
     public List<string> IncludeGlobs { get; } = new();
 
-    public List<string> IncludeFiles { get; } = new();
+    // public List<string> IncludeFiles { get; } = new();
 
     public List<TestCase> TestCases { get; } = new();
 

@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Build;
+﻿namespace MiniZinc.Tests;
 
 using System.Collections;
 using System.Text;

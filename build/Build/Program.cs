@@ -7,7 +7,9 @@ using System.Text.Json;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualBasic.FileIO;
 using MiniZinc.Build;
-using static MiniZinc.Build.Prelude;
+using MiniZinc.Net.Build;
+using MiniZinc.Tests;
+using static MiniZinc.Net.Build.Prelude;
 using static System.Console;
 
 var cloneTestsCommand = new Command(
@@ -21,7 +23,7 @@ var generateTestsCommand = new Command(
 );
 
 cloneTestsCommand.SetHandler(CloneTests);
-generateTestsCommand.SetHandler(GenerateTestDB);
+generateTestsCommand.SetHandler(GenerateTestDatabase);
 
 var rootCommand = new RootCommand("MiniZinc.NET build options");
 rootCommand.AddCommand(cloneTestsCommand);
@@ -59,12 +61,10 @@ async Task CloneTests()
     cloneDir.Delete(true);
 }
 
-async Task GenerateTestDB()
+async Task GenerateTestDatabase()
 {
-    var spec = TestSpec.Parse(TestSpecFile);
-    var json = JsonSerializer.Serialize(spec);
-    var file = BuildDir.JoinFile("tests.json");
-    await using var stream = file.OpenWrite();
-    await using var writer = new StreamWriter(stream);
-    await writer.WriteAsync(json);
+    var yaml = TestSpecFile;
+    var json = TestDir.JoinFile("tests.json");
+    var spec = TestSpec.ParseYaml(TestSpecFile);
+    await TestSpec.WriteJson(spec, json);
 }

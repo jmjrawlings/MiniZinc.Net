@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.23525.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
