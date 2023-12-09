@@ -1,13 +1,8 @@
-﻿using System.Text.RegularExpressions;
-
-namespace MiniZinc.Net;
+﻿namespace MiniZinc.Net;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Channels;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 
@@ -121,7 +116,7 @@ public readonly record struct Command
         }
         else
         {
-            String = exe + string.Join(" ", args);
+            String = $"{exe} {string.Join(" ", args)}";
         }
     }
 
@@ -132,7 +127,13 @@ public readonly record struct Command
         return cmd;
     }
 
-    public Command Add(Arg arg)
+    public static Command operator +(Command a, string b)
+    {
+        var cmd = a.Add(b);
+        return cmd;
+    }
+
+    private Command Add(Arg arg)
     {
         Command cmd;
         if (Args is null)
@@ -180,9 +181,19 @@ public readonly record struct Command
         return result;
     }
 
-    public CommandResult RunSync()
+    public async IAsyncEnumerable<CommandOutput> Stream()
     {
-        var result = Run().Result;
+        var stream = new CommandStreamer(this);
+        await foreach (var msg in stream.Stream())
+        {
+            yield return msg;
+        }
+    }
+
+    public static async Task<CommandResult> Run(string exe, params string[]? args)
+    {
+        var cmd = Create(exe, args);
+        var result = await cmd.Run();
         return result;
     }
 }

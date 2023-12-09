@@ -6,7 +6,7 @@ public sealed class CommandTests
     public void Command_Runs_Sync()
     {
         var cmd = Command.Create("git", "-v");
-        var res = cmd.RunSync();
+        var res = cmd.Run().Result;
         res.StdErr.Should().BeEmpty();
         res.StdOut.Should().Contain("git version");
     }
@@ -18,5 +18,15 @@ public sealed class CommandTests
         var res = await cmd.Run();
         res.StdErr.Should().BeEmpty();
         res.StdOut.Should().Contain("git version");
+    }
+
+    [Fact]
+    public async void Command_Stream()
+    {
+        var cmd = Command.Create("minizinc", "-v");
+        await foreach (var msg in cmd.Stream())
+        {
+            var a = 2;
+        }
     }
 }
