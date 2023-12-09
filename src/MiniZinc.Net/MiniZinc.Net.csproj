@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
     <PackageReference Include="microsoft.extensions.logging" Version="7.0.0" />
   </ItemGroup>

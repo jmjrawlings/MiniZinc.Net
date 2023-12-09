@@ -52,12 +52,6 @@ public sealed class LexerTests
         var methodName = $"Test_{Path.GetFileNameWithoutExtension(file)}";
         var returnType = ParseTypeName("void");
         var method = MethodDeclaration(returnType, methodName);
-        
-        
-        method.AddBodyStatements()
-        
-        
-        
         return null;
     }
 }

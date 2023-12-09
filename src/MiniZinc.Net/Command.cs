@@ -1,14 +1,18 @@
-﻿namespace MiniZinc.Net;
+﻿using System.Text.RegularExpressions;
+
+namespace MiniZinc.Net;
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Collections;
 using System.Threading.Channels;
+using System.Threading.Tasks;
+using CommunityToolkit.Diagnostics;
 
-public enum CommandStatus {
+public enum CommandStatus
+{
     Started = 0,
     StdOut = 1,
     StdErr = 2,
@@ -18,70 +22,99 @@ public enum CommandStatus {
 
 public readonly record struct CommandOutput
 {
-    public required string Command { get; init;} 
-    public required int ProcessId { get; init;}
-    public required string Message { get; init;} 
-    public required DateTimeOffset StartTime { get; init;} 
-    public required DateTimeOffset TimeStamp { get; init;} 
-    public required TimeSpan Elapsed { get; init;} 
-    public required CommandStatus Status { get; init;}
+    public required string Command { get; init; }
+    public required int ProcessId { get; init; }
+    public required string Message { get; init; }
+    public required DateTimeOffset StartTime { get; init; }
+    public required DateTimeOffset TimeStamp { get; init; }
+    public required TimeSpan Elapsed { get; init; }
+    public required CommandStatus Status { get; init; }
 }
 
-public readonly record struct CommandResult {
-    public required string Command   {get;init;} 
-    public required DateTimeOffset StartTime {get;init;} 
-    public required DateTimeOffset EndTime   {get;init;} 
-    public required TimeSpan Duration  {get;init;} 
-    public required string StdOut    {get;init;} 
-    public required string StdErr    {get;init;} 
-    public required int ExitCode  {get;init;} 
-    public required bool IsError   {get;init;}  
+public readonly record struct CommandResult
+{
+    public required string Command { get; init; }
+    public required DateTimeOffset StartTime { get; init; }
+    public required DateTimeOffset EndTime { get; init; }
+    public required TimeSpan Duration { get; init; }
+    public required string StdOut { get; init; }
+    public required string StdErr { get; init; }
+    public required int ExitCode { get; init; }
+    public required bool IsError { get; init; }
 }
-
-public enum FlagType
-    {
-    Short, Long, None
-    }
 
 public readonly record struct Arg
 {
-    public required string Flag { get; init; }
-    public required string Value { get; init; }
-    public required string Sep { get; init; }
+    public readonly string? Flag;
+    public readonly string? Value;
+    public readonly string? Sep;
+    public readonly string String;
+
+    public Arg(string? flag, string? value, string? sep)
+    {
+        Flag = flag;
+        Value = value;
+        Sep = sep;
+        String = $"{Flag}{Sep}{Value}";
+    }
+
+    public override string ToString() => String;
+
+    public static Arg Parse(string input)
+    {
+        string? value = null;
+        string? sep = null;
+        string? flag = null;
+
+        var quoted_pattern = "\"[^\"]*\"";
+        var unquoted_pattern = """[^\s\"<>|&;]*""";
+        var flag_pattern = """-(?:-?[\w|-]+)""";
+        var assign_pattern = $"""({flag_pattern})(=|\s)?(.*)""";
+        var assign_regex = new Regex(assign_pattern);
+        var value_pattern = $"({quoted_pattern})|({unquoted_pattern})|(.*)";
+        var value_regex = new Regex(value_pattern);
+        var assign_match = assign_regex.Match(input);
+        if (assign_match.Success)
+        {
+            flag = assign_match.Groups[1].Value;
+            sep = assign_match.Groups[2].Value;
+            value = assign_match.Groups[3].Value;
+        }
+        else
+        {
+            value = input;
+        }
+
+        var value_match = value_regex.Match(value.Trim());
+
+        if (!value_match.Success)
+            return new Arg(flag, sep, value);
+
+        var quoted = value_match.Groups[1].Value;
+        var unquoted = value_match.Groups[2].Value;
+        var bad = value_match.Groups[3].Value;
+        if (quoted.Length > 0)
+            value = quoted;
+        else if (unquoted.Length > 0)
+            value = unquoted;
+        else if (bad.Length > 0)
+            value = bad;
+
+        var arg = new Arg(flag, sep, value);
+        return arg;
+    }
 }
 
-/// Command line arguments
-public class Args : IEnumerable<Arg>
-{
-    public readonly List<Arg> List;
-
-    private Args()
-    {
-        List = new List<Arg>();
-    }
-
-    public IEnumerator<Arg> GetEnumerator()
-    {
-        return List.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IEnumerable)List).GetEnumerator();
-    }
-}
-
-public readonly struct Command
+public readonly record struct Command
 {
     public readonly string Exe;
-    private readonly Arg[]? _args;
-    public IReadOnlyCollection<Arg> Args => _args;
+    public readonly Arg[]? Args;
     public readonly string String;
-    
-    private Command(string exe, params Arg[]? args) 
+
+    private Command(string exe, params Arg[]? args)
     {
         Exe = exe;
-        _args = args;
+        Args = args;
         if (args is null)
         {
             String = exe;
@@ -92,161 +125,64 @@ public readonly struct Command
         }
     }
 
-    public override string ToString() => String;
+    public Command Add(string s)
+    {
+        var arg = Arg.Parse(s);
+        var cmd = Add(arg);
+        return cmd;
+    }
 
-        // /// Create a ProcessStartInfo for the given command        
-        // let toStartInfo (cmd: Command) =
-        //     let info = ProcessStartInfo()
-        //     info.FileName <- cmd.Exe
-        //     info.RedirectStandardOutput <- true
-        //     info.RedirectStandardError <- true
-        //     info.UseShellExecute <- false
-        //     info.CreateNoWindow <- true
-        //     for arg in cmd.Args do
-        //         info.ArgumentList.Add (string arg)
-        //     info
-        //
-        // /// Create a new Process for the given command
-        // let toProcess (cmd: Command) =
-        //     let proc = new Process()
-        //     proc.EnableRaisingEvents <- true
-        //     proc.StartInfo <- toStartInfo cmd
-        //     proc
-        //     
-        // /// Start the given command and stream the output back asynchronously
-        // let stream (cmd: Command) : IAsyncEnumerable<CommandOutput> =
-        //     
-        //     let proc =
-        //         toProcess cmd
-        //         
-        //     let channel =
-        //         Channel.CreateUnbounded<CommandOutput>()
-        //         
-        //     let mutable startMessage =
-        //         Unchecked.defaultof<CommandOutput>
-        //         
-        //     let handleData status (args: DataReceivedEventArgs) =
-        //         match args.Data with
-        //         | null ->
-        //             ()
-        //         | text ->
-        //             let message =
-        //                 { startMessage with
-        //                     Message = text
-        //                     Status = status
-        //                     TimeStamp = DateTimeOffset.Now
-        //                     Elapsed = DateTimeOffset.Now - startMessage.StartTime }
-        //
-        //             channel.Writer.TryWrite message
-        //             |> ignore
-        //             
-        //     let handleExit _ =
-        //         let message =
-        //             { startMessage with
-        //                 Status = if proc.ExitCode > 0 then CommandStatus.Success else CommandStatus.Failure
-        //                 TimeStamp = DateTimeOffset.Now
-        //                 Elapsed = DateTimeOffset.Now - startMessage.StartTime }
-        //             
-        //         proc.Dispose()
-        //         channel.Writer.TryWrite message
-        //         channel.Writer.Complete()
-        //
-        //     proc.OutputDataReceived.Add (handleData CommandStatus.StdOut)
-        //     proc.ErrorDataReceived.Add (handleData CommandStatus.StdErr)
-        //     proc.Exited.Add handleExit
-        //     proc.Start()
-        //     
-        //     startMessage <-
-        //         { Command = cmd.Statement
-        //         ; ProcessId = proc.Id
-        //         ; Message = ""
-        //         ; Status = CommandStatus.Started
-        //         ; StartTime = DateTimeOffset.Now 
-        //         ; TimeStamp = DateTimeOffset.Now
-        //         ; Elapsed = TimeSpan.Zero }
-        //     
-        //     channel.Writer.TryWrite startMessage
-        //     proc.BeginOutputReadLine()
-        //     proc.BeginErrorReadLine()
-        //     channel.Reader.ReadAllAsync()        
-        //             
-        // /// Execute the given Command 
-        // let run (cmd: Command) =
-        //     let proc = toProcess cmd
-        //     let statement = Command.statement cmd
-        //     let stdout = StringBuilder()
-        //     let stderr = StringBuilder()
-        //     let complete = TaskCompletionSource<bool>()
-        //     
-        //     let handleData (builder: StringBuilder) (args: DataReceivedEventArgs) =
-        //         match args.Data with
-        //         | null ->
-        //             ()
-        //         | msg ->
-        //             ignore (builder.Append msg)
-        //     
-        //     proc.OutputDataReceived.Add (handleData stdout)
-        //     proc.ErrorDataReceived.Add (handleData stderr)
-        //     proc.Exited.Add (fun _ -> complete.SetResult true)
-        //             
-        //     task {
-        //         let start_time = DateTimeOffset.Now
-        //         
-        //         proc.Start()
-        //         proc.BeginOutputReadLine()
-        //         proc.BeginErrorReadLine()
-        //                 
-        //         let! _ = complete.Task
-        //         let end_time = DateTimeOffset.Now
-        //                         
-        //         let result =
-        //             { Command = cmd.Statement
-        //             ; StartTime = start_time
-        //             ; EndTime = end_time
-        //             ; Duration = end_time - start_time
-        //             ; ExitCode = proc.ExitCode
-        //             ; IsError = proc.ExitCode > 0 
-        //             ; StdOut = string stdout
-        //             ; StdErr = string stderr }
-        //
-        //         proc.Dispose()
-        //         return result
-        //     }
-        //     
-        // /// Execute the given Command and wait for the result 
-        // let runSync (cmd: Command) =
-        //     use proc = toProcess cmd
-        //     let statement = Command.statement cmd
-        //     let stdout = StringBuilder()
-        //     let stderr = StringBuilder()
-        //                             
-        //     let handleData (builder: StringBuilder) (args: DataReceivedEventArgs) =
-        //         match args.Data with
-        //         | null ->
-        //             ()
-        //         | msg ->
-        //             ignore (builder.Append msg)
-        //     
-        //     proc.OutputDataReceived.Add (handleData stdout)
-        //     proc.ErrorDataReceived.Add (handleData stderr)
-        //             
-        //     let start_time = DateTimeOffset.Now
-        //     
-        //     proc.Start()
-        //     proc.BeginOutputReadLine()
-        //     proc.BeginErrorReadLine()
-        //     proc.WaitForExit()
-        //     
-        //     let end_time = DateTimeOffset.Now
-        //     
-        //     let result =
-        //         { Command = statement 
-        //         ; StartTime = start_time
-        //         ; EndTime = end_time
-        //         ; Duration = end_time - start_time
-        //         ; ExitCode = proc.ExitCode
-        //         ; IsError = proc.ExitCode > 0 
-        //         ; StdOut = string stdout
-        //         ; StdErr = string stderr }
-        //     
-        //     result
+    public Command Add(Arg arg)
+    {
+        Command cmd;
+        if (Args is null)
+        {
+            cmd = new Command(Exe, arg);
+        }
+        else
+        {
+            var args = new Arg[Args.Length + 1];
+            Array.Copy(Args, args, Args.Length);
+            args[^1] = arg;
+            cmd = new Command(Exe, args);
+        }
+
+        return cmd;
+    }
+
+    public static Command Create(string exe, params string[]? args)
+    {
+        Guard.IsNotNullOrWhiteSpace(exe);
+        Command cmd;
+        if (args is null)
+        {
+            cmd = new Command(exe);
+        }
+        else
+        {
+            var pargs = new Arg[args.Length];
+            for (int i = 0; i < args.Length; i++)
+            {
+                var arg = Arg.Parse(args[i]);
+                pargs[i] = arg;
+            }
+
+            cmd = new Command(exe, pargs);
+        }
+
+        return cmd;
+    }
+
+    public async Task<CommandResult> Run()
+    {
+        var runner = new CommandRunner(this);
+        var result = await runner.Run();
+        return result;
+    }
+
+    public CommandResult RunSync()
+    {
+        var result = Run().Result;
+        return result;
+    }
+}
