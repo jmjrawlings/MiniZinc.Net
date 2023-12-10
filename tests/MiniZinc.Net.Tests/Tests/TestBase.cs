@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Tests;
 
-public abstract class TestBase
+public abstract class TestBase : IClassFixture<LoggingFixture>
 {
     protected readonly ILogger _logger;
     protected readonly ILoggerFactory _factory;

@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Net;
+﻿using Microsoft.Extensions.Logging;
+
+namespace MiniZinc.Net;
 
 using System;
 using System.Collections.Generic;
@@ -38,22 +40,28 @@ public readonly record struct CommandResult
     public required bool IsError { get; init; }
 }
 
-public readonly record struct Arg
+public readonly partial record struct Arg
 {
     public readonly string? Flag;
     public readonly string? Value;
     public readonly string? Sep;
     public readonly string String;
 
-    public Arg(string? flag, string? value, string? sep)
+    public Arg(string? flag, string? sep, string? value)
     {
         Flag = flag;
-        Value = value;
         Sep = sep;
+        Value = value;
         String = $"{Flag}{Sep}{Value}";
     }
 
     public override string ToString() => String;
+
+    const string quotedArgPattern = "\"[^\"]*\"";
+    const string unquotedArgPattern = """[^\s\"<>|&;]*""";
+    const string flagPattern = """-(?:-?[\w|-]+)""";
+    const string assignPattern = $"""({flagPattern})(=|\s)?(.*)""";
+    const string value_pattern = $"({quotedArgPattern})|({unquotedArgPattern})|(.*)";
 
     public static Arg Parse(string input)
     {
@@ -61,43 +69,54 @@ public readonly record struct Arg
         string? sep = null;
         string? flag = null;
 
-        var quoted_pattern = "\"[^\"]*\"";
-        var unquoted_pattern = """[^\s\"<>|&;]*""";
-        var flag_pattern = """-(?:-?[\w|-]+)""";
-        var assign_pattern = $"""({flag_pattern})(=|\s)?(.*)""";
-        var assign_regex = new Regex(assign_pattern);
-        var value_pattern = $"({quoted_pattern})|({unquoted_pattern})|(.*)";
-        var value_regex = new Regex(value_pattern);
+        var assign_regex = AssignRegex();
         var assign_match = assign_regex.Match(input);
         if (assign_match.Success)
         {
-            flag = assign_match.Groups[1].Value;
-            sep = assign_match.Groups[2].Value;
-            value = assign_match.Groups[3].Value;
+            Group g;
+            g = assign_match.Groups[1];
+            if (g.Value.Length > 0)
+                flag = g.Value;
+            g = assign_match.Groups[2];
+            if (g.Value.Length > 0)
+                sep = g.Value;
+            g = assign_match.Groups[3];
+            if (g.Value.Length > 0)
+                value = g.Value;
         }
         else
         {
             value = input;
         }
 
+        if (value is null)
+            return new Arg(flag, sep, value);
+
+        var value_regex = ValueRegex();
         var value_match = value_regex.Match(value.Trim());
 
         if (!value_match.Success)
             return new Arg(flag, sep, value);
 
-        var quoted = value_match.Groups[1].Value;
-        var unquoted = value_match.Groups[2].Value;
-        var bad = value_match.Groups[3].Value;
-        if (quoted.Length > 0)
-            value = quoted;
-        else if (unquoted.Length > 0)
-            value = unquoted;
-        else if (bad.Length > 0)
-            value = bad;
+        var quoted = value_match.Groups[1];
+        var unquoted = value_match.Groups[2];
+        var bad = value_match.Groups[3];
+        if (quoted.Success)
+            value = quoted.Value;
+        else if (unquoted.Success)
+            value = unquoted.Value;
+        else if (bad.Success)
+            value = bad.Value;
 
         var arg = new Arg(flag, sep, value);
         return arg;
     }
+
+    [GeneratedRegex(assignPattern)]
+    private static partial Regex AssignRegex();
+
+    [GeneratedRegex(value_pattern)]
+    private static partial Regex ValueRegex();
 }
 
 public readonly record struct Command
@@ -181,9 +200,9 @@ public readonly record struct Command
         return result;
     }
 
-    public async IAsyncEnumerable<CommandOutput> Stream()
+    public async IAsyncEnumerable<CommandOutput> Stream(ILogger? logger = null)
     {
-        var stream = new CommandStreamer(this);
+        var stream = new CommandStreamer(this, logger);
         await foreach (var msg in stream.Stream())
         {
             yield return msg;

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Threading.Channels;
+using Microsoft.Extensions.Logging;
 
 namespace MiniZinc.Net;
 
@@ -11,9 +12,11 @@ internal sealed class CommandStreamer
     public readonly DateTimeOffset StartTime;
     public readonly string CommandString;
     private readonly Channel<CommandOutput> _channel;
+    private readonly ILogger? _logger;
 
-    public CommandStreamer(Command cmd)
+    public CommandStreamer(Command cmd, ILogger? logger = null)
     {
+        _logger = logger;
         Command = cmd;
         StartInfo = new ProcessStartInfo
         {
@@ -36,8 +39,8 @@ internal sealed class CommandStreamer
         Process.OutputDataReceived += OnOutput;
         Process.ErrorDataReceived += OnError;
         Process.Exited += OnExit;
+        _logger?.LogInformation("Command {Command} started", CommandString);
         Process.Start();
-        StartTime = DateTimeOffset.Now;
         _channel = Channel.CreateUnbounded<CommandOutput>(
             new UnboundedChannelOptions
             {
@@ -74,10 +77,15 @@ internal sealed class CommandStreamer
     private void OnExit(object? sender, EventArgs e)
     {
         CommandStatus status;
+        LogLevel level;
         if (Process.ExitCode > 0)
+        {
+            level = LogLevel.Error;
             status = CommandStatus.Failure;
+        }
         else
         {
+            level = LogLevel.Information;
             status = CommandStatus.Success;
         }
 
@@ -92,6 +100,12 @@ internal sealed class CommandStreamer
             Elapsed = DateTimeOffset.Now - StartTime
         };
 
+        _logger?.Log(
+            level,
+            "Process exited with code {ExitCode} after {Duration}ms",
+            Process.ExitCode,
+            msg.Elapsed.TotalMilliseconds
+        );
         Process.Dispose();
         _channel.Writer.TryWrite(msg);
         _channel.Writer.TryComplete();
@@ -112,6 +126,7 @@ internal sealed class CommandStreamer
             TimeStamp = DateTimeOffset.Now,
             Elapsed = DateTimeOffset.Now - StartTime
         };
+        _logger?.LogError("{Message}", msg.Message);
         _channel.Writer.TryWrite(msg);
     }
 
@@ -130,6 +145,7 @@ internal sealed class CommandStreamer
             TimeStamp = DateTimeOffset.Now,
             Elapsed = DateTimeOffset.Now - StartTime
         };
+        _logger?.LogInformation("{Message}", msg.Message);
         _channel.Writer.TryWrite(msg);
     }
 }
