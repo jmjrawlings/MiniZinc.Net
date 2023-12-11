@@ -8,9 +8,10 @@ public sealed class CommandTests : TestBase
     [InlineData("-a1")]
     public void Parse_Flag_Only_Arg(string s)
     {
-        var arg = Arg.Parse(s);
+        var arg = Command.ParseArg(s).Value;
         Assert.Null(arg.Value);
-        Assert.Null(arg.Sep);
+        Assert.False(arg.Eq);
+        Assert.Equal(arg.String, s);
     }
 
     [Theory]
@@ -19,9 +20,10 @@ public sealed class CommandTests : TestBase
     [InlineData("-one=2")]
     public void Parse_Flag_And_Value_Arg(string s)
     {
-        var arg = Arg.Parse(s);
+        var arg = Command.ParseArg(s).Value;
         Assert.NotNull(arg.Flag);
         Assert.NotNull(arg.Value);
+        Assert.Equal(arg.String, s);
     }
 
     [Theory]
@@ -30,9 +32,9 @@ public sealed class CommandTests : TestBase
     [InlineData("\"asdfasdf asdf\"")]
     public void Parse_Value_Only_Arg(string s)
     {
-        var arg = Arg.Parse(s);
+        var arg = Command.ParseArg(s).Value;
         Assert.Null(arg.Flag);
-        Assert.Null(arg.Sep);
+        Assert.False(arg.Eq);
         Assert.Equal(arg.Value, s);
     }
 
@@ -70,7 +72,7 @@ public sealed class CommandTests : TestBase
         var cmd = Command.Create("minizinc", "--version");
         var res = await cmd.Run();
         res.StdErr.Should().BeEmpty();
-        res.StdOut.Should().Contain("minizinc");
+        res.StdOut.Should().StartWith("MiniZinc to FlatZinc converter, version");
     }
 
     public CommandTests(LoggingFixture logging, ITestOutputHelper output)

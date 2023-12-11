@@ -40,92 +40,93 @@ public readonly record struct CommandResult
     public required bool IsError { get; init; }
 }
 
-public readonly partial record struct Arg
+public readonly record struct Arg
 {
     public readonly string? Flag;
     public readonly string? Value;
-    public readonly string? Sep;
+    public readonly bool Eq;
     public readonly string String;
 
-    public Arg(string? flag, string? sep, string? value)
+    public Arg(string? flag, bool? eq, string? value)
     {
         Flag = flag;
-        Sep = sep;
+        Eq = eq ?? false;
         Value = value;
-        String = $"{Flag}{Sep}{Value}";
+        if (value is null)
+            String = flag!;
+        else if (flag is null)
+            String = value;
+        else if (Eq)
+            String = $"{Flag}={Value}";
+        else
+            String = $"{Flag} {Value}";
     }
 
     public override string ToString() => String;
 
-    const string quotedArgPattern = "\"[^\"]*\"";
-    const string unquotedArgPattern = """[^\s\"<>|&;]*""";
-    const string flagPattern = """-(?:-?[\w|-]+)""";
-    const string assignPattern = $"""({flagPattern})(=|\s)?(.*)""";
-    const string value_pattern = $"({quotedArgPattern})|({unquotedArgPattern})|(.*)";
-
-    public static Arg Parse(string input)
-    {
-        string? value = null;
-        string? sep = null;
-        string? flag = null;
-
-        var assign_regex = AssignRegex();
-        var assign_match = assign_regex.Match(input);
-        if (assign_match.Success)
-        {
-            Group g;
-            g = assign_match.Groups[1];
-            if (g.Value.Length > 0)
-                flag = g.Value;
-            g = assign_match.Groups[2];
-            if (g.Value.Length > 0)
-                sep = g.Value;
-            g = assign_match.Groups[3];
-            if (g.Value.Length > 0)
-                value = g.Value;
-        }
-        else
-        {
-            value = input;
-        }
-
-        if (value is null)
-            return new Arg(flag, sep, value);
-
-        var value_regex = ValueRegex();
-        var value_match = value_regex.Match(value.Trim());
-
-        if (!value_match.Success)
-            return new Arg(flag, sep, value);
-
-        var quoted = value_match.Groups[1];
-        var unquoted = value_match.Groups[2];
-        var bad = value_match.Groups[3];
-        if (quoted.Success)
-            value = quoted.Value;
-        else if (unquoted.Success)
-            value = unquoted.Value;
-        else if (bad.Success)
-            value = bad.Value;
-
-        var arg = new Arg(flag, sep, value);
-        return arg;
-    }
-
-    [GeneratedRegex(assignPattern)]
-    private static partial Regex AssignRegex();
-
-    [GeneratedRegex(value_pattern)]
-    private static partial Regex ValueRegex();
+    // public static Arg Parse(string input)
+    // {
+    //     string? value = null;
+    //     string? sep = null;
+    //     string? flag = null;
+    //
+    //     var assign_regex = AssignRegex();
+    //     var assign_match = assign_regex.Match(input);
+    //     if (assign_match.Success)
+    //     {
+    //         Group g;
+    //         g = assign_match.Groups[1];
+    //         if (g.Value.Length > 0)
+    //             flag = g.Value;
+    //         g = assign_match.Groups[2];
+    //         if (g.Value.Length > 0)
+    //             sep = g.Value;
+    //         g = assign_match.Groups[3];
+    //         if (g.Value.Length > 0)
+    //             value = g.Value;
+    //     }
+    //     else
+    //     {
+    //         value = input;
+    //     }
+    //
+    //     if (value is null)
+    //         return new Arg(flag, sep, value);
+    //
+    //     var value_regex = ValueRegex();
+    //     var value_match = value_regex.Match(value.Trim());
+    //
+    //     if (!value_match.Success)
+    //         return new Arg(flag, sep, value);
+    //
+    //     var quoted = value_match.Groups[1];
+    //     var unquoted = value_match.Groups[2];
+    //     var bad = value_match.Groups[3];
+    //     if (quoted.Success)
+    //         value = quoted.Value;
+    //     else if (unquoted.Success)
+    //         value = unquoted.Value;
+    //     else if (bad.Success)
+    //         value = bad.Value;
+    //
+    //     var arg = new Arg(flag, sep, value);
+    //     return arg;
+    // }
+    //
+    // [GeneratedRegex(assignPattern)]
+    // private static partial Regex AssignRegex();
+    //
+    // [GeneratedRegex(value_pattern)]
+    // private static partial Regex ValueRegex();
 }
 
-public readonly record struct Command
+public readonly partial record struct Command
 {
     public readonly string Exe;
     public readonly Arg[]? Args;
     public readonly string String;
 
-    private Command(string exe, params Arg[]? args)
+    private Command(string exe, Arg[]? args = null)
     {
         Exe = exe;
         Args = args;
@@ -139,37 +140,6 @@ public readonly record struct Command
         }
     }
 
-    public Command Add(string s)
-    {
-        var arg = Arg.Parse(s);
-        var cmd = Add(arg);
-        return cmd;
-    }
-
-    public static Command operator +(Command a, string b)
-    {
-        var cmd = a.Add(b);
-        return cmd;
-    }
-
-    private Command Add(Arg arg)
-    {
-        Command cmd;
-        if (Args is null)
-        {
-            cmd = new Command(Exe, arg);
-        }
-        else
-        {
-            var args = new Arg[Args.Length + 1];
-            Array.Copy(Args, args, Args.Length);
-            args[^1] = arg;
-            cmd = new Command(Exe, args);
-        }
-
-        return cmd;
-    }
-
     public static Command Create(string exe, params string[]? args)
     {
         Guard.IsNotNullOrWhiteSpace(exe);
@@ -180,14 +150,8 @@ public readonly record struct Command
         }
         else
         {
-            var pargs = new Arg[args.Length];
-            for (int i = 0; i < args.Length; i++)
-            {
-                var arg = Arg.Parse(args[i]);
-                pargs[i] = arg;
-            }
-
-            cmd = new Command(exe, pargs);
+            var arr = ParseArgs(args).ToArray();
+            cmd = new Command(exe, arr);
         }
 
         return cmd;
@@ -215,4 +179,50 @@ public readonly record struct Command
         var result = await cmd.Run();
         return result;
     }
+
+    const string ArgsPattern = """(-{1,2}[a-zA-Z]\w*)?\s*(=)?\s*("[^"]*"|\w+)?""";
+
+    private static Arg ParseArg(Match m)
+    {
+        Group g;
+        g = m.Groups[1];
+        var flag = g.Success ? g.Value : null;
+
+        g = m.Groups[2];
+        var eq = g.Success;
+
+        g = m.Groups[3];
+        var value = g.Success ? g.Value : null;
+        var arg = new Arg(flag, eq, value);
+        return arg;
+    }
+
+    public static Arg? ParseArg(string s)
+    {
+        var m = ArgsRegex().Match(s);
+        if (!m.Success)
+            return null;
+        var arg = ParseArg(m);
+        return arg;
+    }
+
+    public static IEnumerable<Arg> ParseArgs(params string[] args)
+    {
+        var regex = ArgsRegex();
+        foreach (var arg in args)
+        {
+            var matches = regex.Matches(arg);
+            foreach (Match m in matches)
+            {
+                if (m.Length <= 0)
+                    continue;
+
+                var a = ParseArg(m);
+                yield return a;
+            }
+        }
+    }
+
+    [GeneratedRegex(ArgsPattern)]
+    private static partial Regex ArgsRegex();
 }
