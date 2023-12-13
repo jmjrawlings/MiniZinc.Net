@@ -177,7 +177,7 @@ public partial class LexerTests : TestBase
     [InlineData("")]
     public void test_string(string mzn)
     {
-        var tokens = Lexer.LexFile(mzn, _logger).ToArray();
+        var tokens = Lexer.LexString(mzn).ToArray();
         var last = tokens.Last();
         last.Kind.Should().Be(TokenKind.EOF);
     }
