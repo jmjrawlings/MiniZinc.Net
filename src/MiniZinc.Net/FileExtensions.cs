@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Net;
 
-public static class FileExtensions
+internal static class FileExtensions
 {
     public static string JoinPath(this string path, params string[] a)
     {

@@ -1,12 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace MiniZinc.Net;
+﻿namespace MiniZinc.Net;
 
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 public enum CommandStatus
 {
@@ -63,61 +62,6 @@ public readonly record struct Arg
     }
 
     public override string ToString() => String;
-
-    // public static Arg Parse(string input)
-    // {
-    //     string? value = null;
-    //     string? sep = null;
-    //     string? flag = null;
-    //
-    //     var assign_regex = AssignRegex();
-    //     var assign_match = assign_regex.Match(input);
-    //     if (assign_match.Success)
-    //     {
-    //         Group g;
-    //         g = assign_match.Groups[1];
-    //         if (g.Value.Length > 0)
-    //             flag = g.Value;
-    //         g = assign_match.Groups[2];
-    //         if (g.Value.Length > 0)
-    //             sep = g.Value;
-    //         g = assign_match.Groups[3];
-    //         if (g.Value.Length > 0)
-    //             value = g.Value;
-    //     }
-    //     else
-    //     {
-    //         value = input;
-    //     }
-    //
-    //     if (value is null)
-    //         return new Arg(flag, sep, value);
-    //
-    //     var value_regex = ValueRegex();
-    //     var value_match = value_regex.Match(value.Trim());
-    //
-    //     if (!value_match.Success)
-    //         return new Arg(flag, sep, value);
-    //
-    //     var quoted = value_match.Groups[1];
-    //     var unquoted = value_match.Groups[2];
-    //     var bad = value_match.Groups[3];
-    //     if (quoted.Success)
-    //         value = quoted.Value;
-    //     else if (unquoted.Success)
-    //         value = unquoted.Value;
-    //     else if (bad.Success)
-    //         value = bad.Value;
-    //
-    //     var arg = new Arg(flag, sep, value);
-    //     return arg;
-    // }
-    //
-    // [GeneratedRegex(assignPattern)]
-    // private static partial Regex AssignRegex();
-    //
-    // [GeneratedRegex(value_pattern)]
-    // private static partial Regex ValueRegex();
 }
 
 public readonly partial record struct Command
@@ -125,11 +69,13 @@ public readonly partial record struct Command
     public readonly string Exe;
     public readonly Arg[]? Args;
     public readonly string String;
+    public readonly DirectoryInfo? WorkingDir;
 
-    private Command(string exe, Arg[]? args = null)
+    private Command(string exe, Arg[]? args = null, DirectoryInfo? workingDir = null)
     {
         Exe = exe;
         Args = args;
+        WorkingDir = workingDir;
         if (args is null)
         {
             String = exe;
@@ -139,6 +85,14 @@ public readonly partial record struct Command
             String = $"{exe} {string.Join(" ", args)}";
         }
     }
+
+    public Command WithWorkingDirectory(string path) =>
+        WithWorkingDirectory(new DirectoryInfo(path));
+
+    public Command WithArgs(params string[]? args) =>
+        Create(Exe, args).WithWorkingDirectory(WorkingDir);
+
+    public Command WithWorkingDirectory(DirectoryInfo? dir) => new(Exe, Args, dir);
 
     public static Command Create(string exe, params string[]? args)
     {

@@ -1,11 +1,11 @@
-﻿using System.Collections;
+﻿namespace MiniZinc.Net.Tests;
+
+using System.Collections;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
 using CommunityToolkit.Diagnostics;
-
-namespace MiniZinc.Tests;
 
 public sealed class TestSpec : IEnumerable<TestSuite>
 {

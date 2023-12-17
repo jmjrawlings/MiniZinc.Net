@@ -1,10 +1,9 @@
-﻿using MiniZinc.Tests;
-
-namespace MiniZinc.Build;
+﻿namespace MiniZinc.Build;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MiniZinc.Net.Tests;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 public sealed class LexerTests

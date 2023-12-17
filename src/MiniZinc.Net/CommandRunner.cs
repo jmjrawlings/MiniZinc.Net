@@ -11,6 +11,8 @@ internal sealed class CommandRunner
     public readonly DateTimeOffset StartTime;
     public readonly string CommandString;
     private readonly TaskCompletionSource<CommandResult> _tcs;
+    public Arg[]? Args => Command.Args;
+    public string Exe => Command.Exe;
 
     public CommandRunner(Command cmd)
     {
@@ -24,14 +26,15 @@ internal sealed class CommandRunner
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
         };
+        if (cmd.WorkingDir is not null)
+            StartInfo.WorkingDirectory = cmd.WorkingDir.FullName;
+
         CommandString = cmd.String;
-        if (cmd.Args is { } args)
-        {
-            foreach (var arg in args)
+        if (cmd.Args is not null)
+            foreach (var arg in cmd.Args)
                 StartInfo.ArgumentList.Add(arg.String);
-        }
 
         Process = new Process();
         Process.EnableRaisingEvents = true;

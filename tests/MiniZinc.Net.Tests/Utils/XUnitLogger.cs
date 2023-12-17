@@ -1,8 +1,8 @@
-﻿using System.Text;
+﻿namespace MiniZinc.Net.Tests;
+
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
-
-namespace MiniZinc.Tests;
 
 internal class XUnitLogger(
     ITestOutputHelper testOutputHelper,

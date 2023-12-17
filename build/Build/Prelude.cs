@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+﻿namespace MiniZinc.Net.Build;
 
-namespace MiniZinc.Net.Build;
+using System.Reflection;
+using MiniZinc.Net.Build;
 
 public static class Prelude
 {

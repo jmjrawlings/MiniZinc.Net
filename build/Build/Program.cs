@@ -1,16 +1,10 @@
 ﻿using System.CommandLine;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text.Json;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.VisualBasic.FileIO;
-using MiniZinc.Build;
+using MiniZinc.Net;
 using MiniZinc.Net.Build;
-using MiniZinc.Tests;
+using MiniZinc.Net.Tests;
 using static MiniZinc.Net.Build.Prelude;
-using static System.Console;
+using Cmd = MiniZinc.Net.Command;
+using Command = System.CommandLine.Command;
 
 var cloneTestsCommand = new Command(
     name: "--clone-tests",
@@ -22,7 +16,7 @@ var generateTestsCommand = new Command(
     description: "Generate test cases from the test spec"
 );
 
-cloneTestsCommand.SetHandler(CloneTests);
+cloneTestsCommand.SetHandler(CloneLibMiniZincTestSpec);
 generateTestsCommand.SetHandler(GenerateTestDatabase);
 
 var rootCommand = new RootCommand("MiniZinc.NET build options");
@@ -31,7 +25,7 @@ rootCommand.AddCommand(generateTestsCommand);
 var result = await rootCommand.InvokeAsync(args);
 return result;
 
-async Task CloneTests()
+async Task CloneLibMiniZincTestSpec()
 {
     var url = $"{LibMiniZincUrl}.git";
     var libDir = LibMiniZincDir.CreateOrClear();
@@ -41,12 +35,11 @@ async Task CloneTests()
         .ToDirectory()
         .CreateOrClear();
 
-    async Task<int> Git(params object[] args)
+    async Task<CommandResult> Git(params string[] args)
     {
-        var arg = string.Join(" ", args);
-        Console.WriteLine(arg);
-        var exit = await ProcessUtils.Exec("git", arg, workDir: cloneDir.FullName);
-        return exit.ExitCode ?? 0;
+        var cmd = Cmd.Create("git", args).WithWorkingDirectory(cloneDir);
+        var result = await cmd.Run();
+        return result;
     }
 
     await Git("init");

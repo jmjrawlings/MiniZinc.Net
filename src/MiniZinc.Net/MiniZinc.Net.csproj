@@ -4,4 +4,9 @@
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
     <PackageReference Include="microsoft.extensions.logging" Version="7.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>$(AssemblyName).Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

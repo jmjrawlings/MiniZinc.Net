@@ -1,6 +1,6 @@
-﻿using System.Text;
+﻿namespace MiniZinc.Net.Tests;
 
-namespace MiniZinc.Tests;
+using System.Text;
 
 internal sealed class TestSpecParser
 {

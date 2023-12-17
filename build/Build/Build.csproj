@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.csproj" />
     <ProjectReference Include="..\..\tests\MiniZinc.Net.TestSpec\MiniZinc.Net.TestSpec.csproj" />
   </ItemGroup>
 
