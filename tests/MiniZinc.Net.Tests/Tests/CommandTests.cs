@@ -26,6 +26,14 @@ public sealed class CommandTests : TestBase
         Assert.Equal(arg.String, s);
     }
 
+    [Fact]
+    public void Parse_Url_Flag()
+    {
+        var url = @"https://github.com/MiniZinc/libminizinc.git";
+        var arg = Command.ParseArg(url).Value;
+        Assert.Equal(arg.Value, url);
+    }
+
     [Theory]
     [InlineData("x")]
     [InlineData("123")]

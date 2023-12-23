@@ -37,6 +37,15 @@ public readonly record struct CommandResult
     public required string StdErr { get; init; }
     public required int ExitCode { get; init; }
     public required bool IsError { get; init; }
+
+    public void EnsureSuccess()
+    {
+        if (!IsError)
+            return;
+
+        var msg = $"The command \"{Command}\" exited with code {ExitCode}:\n \"{StdErr}\"";
+        throw new Exception(msg);
+    }
 }
 
 public readonly record struct Arg
@@ -70,6 +79,7 @@ public readonly partial record struct Command
     public readonly Arg[]? Args;
     public readonly string String;
     public readonly DirectoryInfo? WorkingDir;
+    private const string ArgsPattern = """(-{1,2}[a-zA-Z]\w*)?\s*(=)?\s*("[^"]*"|[^\s]+)?""";
 
     private Command(string exe, Arg[]? args = null, DirectoryInfo? workingDir = null)
     {
@@ -133,8 +143,6 @@ public readonly partial record struct Command
         var result = await cmd.Run();
         return result;
     }
-
-    const string ArgsPattern = """(-{1,2}[a-zA-Z]\w*)?\s*(=)?\s*("[^"]*"|\w+)?""";
 
     private static Arg ParseArg(Match m)
     {

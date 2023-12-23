@@ -3,15 +3,15 @@ using MiniZinc.Net;
 using MiniZinc.Net.Build;
 using MiniZinc.Net.Tests;
 using static MiniZinc.Net.Build.Prelude;
-using Cmd = MiniZinc.Net.Command;
-using Command = System.CommandLine.Command;
+using CliCommand = System.CommandLine.Command;
+using Command = MiniZinc.Net.Command;
 
-var cloneTestsCommand = new Command(
+var cloneTestsCommand = new CliCommand(
     name: "--clone-tests",
     description: "Clone the test suite from libminizinc"
 );
 
-var generateTestsCommand = new Command(
+var generateTestsCommand = new CliCommand(
     name: "--generate-test-db",
     description: "Generate test cases from the test spec"
 );
@@ -37,8 +37,9 @@ async Task CloneLibMiniZincTestSpec()
 
     async Task<CommandResult> Git(params string[] args)
     {
-        var cmd = Cmd.Create("git", args).WithWorkingDirectory(cloneDir);
+        var cmd = Command.Create("git", args).WithWorkingDirectory(cloneDir);
         var result = await cmd.Run();
+        result.EnsureSuccess();
         return result;
     }
 
