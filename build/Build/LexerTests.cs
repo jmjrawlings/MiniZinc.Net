@@ -53,4 +53,10 @@ public sealed class LexerTests
         var method = MethodDeclaration(returnType, methodName);
         return null;
     }
+
+    public static LexerTests Generate(TestSpec spec)
+    {
+        var tests = new LexerTests(spec);
+        return tests;
+    }
 }

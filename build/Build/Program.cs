@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using MiniZinc.Build;
 using MiniZinc.Net;
 using MiniZinc.Net.Build;
 using MiniZinc.Net.Tests;
@@ -7,25 +8,32 @@ using CliCommand = System.CommandLine.Command;
 using Command = MiniZinc.Net.Command;
 
 var cloneTestsCommand = new CliCommand(
-    name: "--clone-tests",
+    name: "--clone-libminizinc-tests",
     description: "Clone the test suite from libminizinc"
 );
 
-var generateTestsCommand = new CliCommand(
-    name: "--generate-test-db",
+var genTestsJsonCommand = new CliCommand(
+    name: "--gen-tests-json",
     description: "Generate test cases from the test spec"
 );
 
-cloneTestsCommand.SetHandler(CloneLibMiniZincTestSpec);
-generateTestsCommand.SetHandler(GenerateTestDatabase);
+var genLexerIntegrationTestsCommand = new CliCommand(
+    name: "--gen-lexer-tests",
+    description: "Generate lexer tests"
+);
+
+cloneTestsCommand.SetHandler(CloneLibMiniZincTests);
+genTestsJsonCommand.SetHandler(GenerateTestsJson);
+genLexerIntegrationTestsCommand.SetHandler(GenerateLexerIntegrationTests);
 
 var rootCommand = new RootCommand("MiniZinc.NET build options");
 rootCommand.AddCommand(cloneTestsCommand);
-rootCommand.AddCommand(generateTestsCommand);
+rootCommand.AddCommand(genTestsJsonCommand);
+rootCommand.AddCommand(genLexerIntegrationTestsCommand);
 var result = await rootCommand.InvokeAsync(args);
 return result;
 
-async Task CloneLibMiniZincTestSpec()
+async Task CloneLibMiniZincTests()
 {
     var url = $"{LibMiniZincUrl}.git";
     var libDir = LibMiniZincDir.CreateOrClear();
@@ -55,10 +63,15 @@ async Task CloneLibMiniZincTestSpec()
     cloneDir.Delete(true);
 }
 
-async Task GenerateTestDatabase()
+async Task GenerateTestsJson()
 {
-    var yaml = TestSpecFile;
-    var json = TestDir.JoinFile("tests.json");
-    var spec = TestSpec.ParseYaml(TestSpecFile);
-    await TestSpec.WriteJson(spec, json);
+    var spec = TestSpec.ParseYaml(TestSpecYaml);
+    await TestSpec.WriteJson(spec, TestSpecJson);
+}
+
+async Task GenerateLexerIntegrationTests()
+{
+    var spec = await TestSpec.ParseJson(TestSpecJson);
+    var result = LexerTests.Generate(spec);
+    var a = 1;
 }

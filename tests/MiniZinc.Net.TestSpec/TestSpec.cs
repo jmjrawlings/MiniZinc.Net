@@ -32,8 +32,9 @@ public sealed class TestSpec : IEnumerable<TestSuite>
     public static async Task<TestSpec> ParseJson(FileInfo file)
     {
         await using var stream = file.OpenRead();
-        var spec = await JsonSerializer.DeserializeAsync<TestSpec>(stream);
-        Guard.IsNotNull(spec);
+        var suites = await JsonSerializer.DeserializeAsync<List<TestSuite>>(stream);
+        Guard.IsNotNull(suites);
+        var spec = new TestSpec { FileName = file.FullName, TestSuites = suites };
         return spec;
     }
 

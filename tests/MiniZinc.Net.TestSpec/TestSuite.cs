@@ -6,7 +6,7 @@ public sealed class TestSuite
 {
     public required string Name { get; init; }
 
-    public required bool? Strict { get; init; }
+    public bool? Strict { get; init; }
 
     // public required YamlNode Options { get; init; }
 
