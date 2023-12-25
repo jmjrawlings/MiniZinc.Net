@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿using System.Text.Json.Nodes;
+
+namespace MiniZinc.Net.Tests;
 
 using System.IO;
 
@@ -8,15 +10,15 @@ public sealed class TestSuite
 
     public bool? Strict { get; init; }
 
-    // public required YamlNode Options { get; init; }
+    public required JsonObject? Options { get; init; }
 
-    public List<string> Solvers { get; } = new();
+    public required List<string> Solvers { get; init; }
 
-    public List<string> IncludeGlobs { get; } = new();
+    public required List<string> IncludeGlobs { get; init; }
 
     // public List<string> IncludeFiles { get; } = new();
 
-    public List<TestCase> TestCases { get; } = new();
+    public required List<TestCase> TestCases { get; init; }
 
     public override string ToString() => $"<{Name}\" ({TestCases.Count} cases)>";
 }

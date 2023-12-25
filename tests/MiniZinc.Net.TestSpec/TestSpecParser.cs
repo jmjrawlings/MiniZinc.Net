@@ -1,51 +1,60 @@
 ﻿namespace MiniZinc.Net.Tests;
 
 using System.Text;
+using System.Text.Json.Nodes;
+using CommunityToolkit.Diagnostics;
 
 internal sealed class TestSpecParser
 {
     public readonly FileInfo File;
-    public readonly DirectoryInfo Dir;
+    public readonly DirectoryInfo Directory;
     private readonly StringBuilder _sb;
     public readonly TestSpec Spec;
 
     internal TestSpecParser(FileInfo file)
     {
         File = file;
-        Dir = file.Directory!;
+        Directory = file.Directory!;
         _sb = new StringBuilder();
         List<TestSuite> suites = new();
-        var document = Yaml.ParseFile(file)!;
-        foreach (var node in document)
+        var array = Yaml.ParseFile(file) as JsonArray;
+        Guard.IsNotNull(array);
+        foreach (var node in array)
         {
-            var suite = ParseTestSuite(node);
+            var map = node!.AsObject();
+            var suite = ParseTestSuite(map);
             suites.Add(suite);
         }
 
         Spec = new TestSpec { FileName = file.Name, TestSuites = suites };
     }
 
-    private TestSuite ParseTestSuite(YamlNode node)
+    private TestSuite ParseTestSuite(JsonObject node)
     {
+        var strict = node["strict"]?.GetValue<bool>();
+        var options = node["options"]?.AsObject();
+        var solvers = node["solvers"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
+        var includes = node["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
+        var cases = new List<TestCase>();
         var suite = new TestSuite
         {
-            Name = node.Key!,
-            Strict = node["strict"].Bool,
-            // Options = node["options"]
+            Name = node.GetPropertyName(),
+            Strict = strict,
+            Options = options,
+            IncludeGlobs = includes,
+            Solvers = solvers,
+            TestCases = cases
         };
-
-        suite.Solvers.AddRange(node["solvers"].Select(x => x.String!));
-        suite.IncludeGlobs.AddRange(node["includes"].Select(x => x.String!));
 
         foreach (var glob in suite.IncludeGlobs)
         {
-            foreach (var file in Dir.EnumerateFiles(glob, SearchOption.AllDirectories))
+            foreach (var file in Directory.EnumerateFiles(glob, SearchOption.AllDirectories))
             {
-                var path = Path.GetRelativePath(Dir.FullName, file.FullName);
+                var path = Path.GetRelativePath(Directory.FullName, file.FullName);
 
                 foreach (var testCase in ParseTestCases(path))
                 {
-                    suite.TestCases.Add(testCase);
+                    cases.Add(testCase);
                 }
             }
         }
@@ -56,9 +65,9 @@ internal sealed class TestSpecParser
     /// <summary>
     /// Parse yaml contained within the test file comments
     /// </summary>
-    private IEnumerable<YamlNode> ParseTestCase(string relativePath)
+    private IEnumerable<JsonNode> ParseTestCase(string relativePath)
     {
-        var path = Path.Join(Dir.FullName, relativePath);
+        var path = Path.Join(Directory.FullName, relativePath);
         var file = new FileInfo(path);
         using var stream = file.OpenRead();
         using var reader = new StreamReader(stream);
@@ -125,29 +134,35 @@ internal sealed class TestSpecParser
         foreach (var node in ParseTestCase(path))
         {
             var testName = Path.GetFileNameWithoutExtension(path);
+            var solvers = node["solvers"]!.AsArray().Select(x => x.GetValue<string>()).ToList();
+            var solveOptions = node["options"];
             var testCase = new TestCase
             {
                 TestName = testName,
                 TestPath = path,
-                Solvers = node["solvers"].Select(x => x.String!).ToList(),
+                Solvers = solvers
                 // SolveOptions = node["options"]
             };
             var check = node["check_against"];
             var extra = node["extra"];
-            var expected = node["expected"];
-            foreach (var enode in expected)
+
+            if (node["expected"] is JsonArray array)
             {
-                var result = ParseTestResult(enode);
-                testCase.Results.Add(result);
+                foreach (var expected in array)
+                {
+                    var result = ParseTestResult(expected);
+                    testCase.Results.Add(result);
+                }
             }
 
             yield return testCase;
         }
     }
 
-    private TestResult ParseTestResult(YamlNode node)
+    private TestResult ParseTestResult(JsonNode? node)
     {
-        var sol = node["solution"];
+        var obj = node?.AsObject()!;
+        var sol = obj["solution"];
         var result = new TestResult { };
         return result;
     }
