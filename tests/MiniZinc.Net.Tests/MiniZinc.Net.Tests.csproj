@@ -31,4 +31,11 @@
     <ProjectReference Include="..\MiniZinc.Net.TestSpec\MiniZinc.Net.TestSpec.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\libminizinc\suites.yml">
+      <Link>suites.yml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

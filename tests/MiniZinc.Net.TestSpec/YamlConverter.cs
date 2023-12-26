@@ -1,36 +1,15 @@
-﻿using System.Text;
+﻿namespace MiniZinc.Net.Tests;
+
 using System.Text.Json.Nodes;
-using MiniZinc.Net.Tests;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
-public static class Yaml
-{
-    public static JsonNode? ParseString(string s)
-    {
-        var converter = new YamlConverter();
-        var deserializer = new DeserializerBuilder()
-            .WithTagMapping("!Test", typeof(object))
-            .WithTagMapping("!Result", typeof(object))
-            .WithTagMapping("!SolutionSet", typeof(object))
-            .WithTagMapping("!Solution", typeof(object))
-            .WithTagMapping("!Duration", typeof(object))
-            .WithTypeConverter(converter)
-            .Build();
-        var text = s.TrimEnd();
-        var node = deserializer.Deserialize(text) as JsonNode;
-        return node;
-    }
-
-    public static JsonNode? ParseFile(FileInfo fi)
-    {
-        var text = File.ReadAllText(fi.FullName, Encoding.UTF8);
-        var node = ParseString(text);
-        return node;
-    }
-}
-
+/*
+ Used to parse the Yaml contained in:
+ 1. The 'spec.yaml' test suite file
+ 2. The embedded yaml in each `.mzn` test file
+ */
 internal sealed class YamlConverter : IYamlTypeConverter
 {
     public bool Accepts(Type type) => true;
@@ -49,10 +28,7 @@ internal sealed class YamlConverter : IYamlTypeConverter
     {
         if (e.Tag.IsEmpty)
             return null;
-        var s = e.Tag.Value.Where(char.IsLetter);
-        var x = string.Join("", s).ToUpper();
-        Console.WriteLine(x);
-        return x;
+        return e.Tag.Value;
     }
 
     private JsonNode ParseNode(IParser parser)
@@ -99,7 +75,7 @@ internal sealed class YamlConverter : IYamlTypeConverter
 
     private JsonNode ParseMap(IParser parser, MappingStart e)
     {
-        var map = new JsonObject();
+        JsonObject map = new();
         parser.MoveNext();
         loop:
         var curr = parser.Current;
@@ -114,10 +90,14 @@ internal sealed class YamlConverter : IYamlTypeConverter
                 var key = (parser.Current as Scalar)!.Value;
                 parser.MoveNext();
                 var value = ParseNode(parser);
-                var kvp = KeyValuePair.Create(key, value);
-                map.Add(kvp);
+                map.Add(key, value);
                 goto loop;
         }
+
+        // Store the tag as a property
+        if (tag is not null)
+            map["__tag__"] = tag;
+
         return map;
     }
 

@@ -1,8 +1,7 @@
-﻿using System.Text.Json.Nodes;
-
-namespace MiniZinc.Net.Tests;
+﻿namespace MiniZinc.Net.Tests;
 
 using System.IO;
+using System.Text.Json.Nodes;
 
 public sealed class TestSuite
 {
@@ -15,8 +14,6 @@ public sealed class TestSuite
     public required List<string> Solvers { get; init; }
 
     public required List<string> IncludeGlobs { get; init; }
-
-    // public List<string> IncludeFiles { get; } = new();
 
     public required List<TestCase> TestCases { get; init; }
 

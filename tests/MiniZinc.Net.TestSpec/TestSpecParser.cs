@@ -1,19 +1,21 @@
 ﻿namespace MiniZinc.Net.Tests;
 
+using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
 using CommunityToolkit.Diagnostics;
+using YamlDotNet.Serialization;
 
 internal sealed class TestSpecParser
 {
-    public readonly FileInfo File;
+    public readonly FileInfo YamlFile;
     public readonly DirectoryInfo Directory;
     private readonly StringBuilder _sb;
     public readonly TestSpec Spec;
 
     internal TestSpecParser(FileInfo file)
     {
-        File = file;
+        YamlFile = file;
         Directory = file.Directory!;
         _sb = new StringBuilder();
         List<TestSuite> suites = new();
@@ -135,17 +137,18 @@ internal sealed class TestSpecParser
         {
             var testName = Path.GetFileNameWithoutExtension(path);
             var solvers = node["solvers"]!.AsArray().Select(x => x.GetValue<string>()).ToList();
-            var solveOptions = node["options"];
+            var solveOptions = node["options"] ?? new JsonObject();
+            var results = new List<TestResult>();
             var testCase = new TestCase
             {
                 TestName = testName,
                 TestPath = path,
-                Solvers = solvers
-                // SolveOptions = node["options"]
+                Solvers = solvers,
+                SolveOptions = solveOptions,
+                Results = results
             };
             var check = node["check_against"];
             var extra = node["extra"];
-
             if (node["expected"] is JsonArray array)
             {
                 foreach (var expected in array)
@@ -163,7 +166,7 @@ internal sealed class TestSpecParser
     {
         var obj = node?.AsObject()!;
         var sol = obj["solution"];
-        var result = new TestResult { };
+        var result = new TestResult { Solution = sol };
         return result;
     }
 }

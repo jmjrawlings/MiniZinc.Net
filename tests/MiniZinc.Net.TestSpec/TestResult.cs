@@ -1,8 +1,10 @@
 namespace MiniZinc.Net.Tests;
 
+using System.Text.Json.Nodes;
+
 public sealed record TestResult
 {
-    //public required YamlNode Expected { get; init; }
+    public required JsonNode? Solution { get; init; }
 
     // public required SolveStatus SolveStatus { get; init; }
 
