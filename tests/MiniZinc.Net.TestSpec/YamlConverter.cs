@@ -95,8 +95,8 @@ internal sealed class YamlConverter : IYamlTypeConverter
         }
 
         // Store the tag as a property
-        if (tag is not null)
-            map["__tag__"] = tag;
+        // if (tag is not null)
+        //     map["__tag__"] = tag;
 
         return map;
     }

@@ -19,28 +19,31 @@ internal sealed class TestSpecParser
         Directory = file.Directory!;
         _sb = new StringBuilder();
         List<TestSuite> suites = new();
-        var array = Yaml.ParseFile(file) as JsonArray;
-        Guard.IsNotNull(array);
-        foreach (var node in array)
+        var specJson = Yaml.ParseFile<JsonObject>(file);
+        Guard.IsNotNull(specJson);
+        foreach (var (key, val) in specJson)
         {
-            var map = node!.AsObject();
-            var suite = ParseTestSuite(map);
+            var suiteName = key;
+            var suiteJson = val!.AsObject();
+            var suite = ParseTestSuite(suiteName, suiteJson);
             suites.Add(suite);
         }
 
         Spec = new TestSpec { FileName = file.Name, TestSuites = suites };
     }
 
-    private TestSuite ParseTestSuite(JsonObject node)
+    private TestSuite ParseTestSuite(string name, JsonObject node)
     {
         var strict = node["strict"]?.GetValue<bool>();
         var options = node["options"]?.AsObject();
-        var solvers = node["solvers"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
+        var solvers =
+            node["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList()
+            ?? new List<string>();
         var includes = node["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
         var cases = new List<TestCase>();
         var suite = new TestSuite
         {
-            Name = node.GetPropertyName(),
+            Name = name,
             Strict = strict,
             Options = options,
             IncludeGlobs = includes,
@@ -67,7 +70,7 @@ internal sealed class TestSpecParser
     /// <summary>
     /// Parse yaml contained within the test file comments
     /// </summary>
-    private IEnumerable<JsonNode> ParseTestCase(string relativePath)
+    private IEnumerable<JsonObject> ParseTestCase(string relativePath)
     {
         var path = Path.Join(Directory.FullName, relativePath);
         var file = new FileInfo(path);
@@ -125,7 +128,7 @@ internal sealed class TestSpecParser
         );
         foreach (var s in testStrings)
         {
-            var doc = Yaml.ParseString(s);
+            var doc = Yaml.ParseString<JsonObject>(s);
             if (doc is not null)
                 yield return doc;
         }
@@ -165,7 +168,7 @@ internal sealed class TestSpecParser
     private TestResult ParseTestResult(JsonNode? node)
     {
         var obj = node?.AsObject()!;
-        var sol = obj["solution"];
+        var sol = obj["solution"]?.AsObject();
         var result = new TestResult { Solution = sol };
         return result;
     }

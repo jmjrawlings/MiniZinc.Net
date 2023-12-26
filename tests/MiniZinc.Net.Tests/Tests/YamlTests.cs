@@ -12,6 +12,14 @@ public sealed class YamlTests : TestBase
     }
 
     [Fact]
+    public void Parse_Test_Spec()
+    {
+        var file = "suites.yml".ToFile();
+        var spec = TestSpec.ParseYaml(file);
+        var a = spec;
+    }
+
+    [Fact]
     public void Parse_Test_Result()
     {
         var str = """
@@ -35,7 +43,7 @@ public sealed class YamlTests : TestBase
                 row_sums: [2, 2, 3, 2, 2, 1, 5, 1, 2]
             """;
         var map = Yaml.ParseString<JsonObject>(str);
-        map["__tag__"]?.GetValue<string>().Should().Be(Yaml.TEST);
+        // map["__tag__"]?.GetValue<string>().Should().Be(Yaml.TEST);
         var exp = map["expected"]!.AsArray()[0]!;
         var sol = exp["solution"]!;
         var a = sol["a"]!;

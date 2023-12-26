@@ -4,7 +4,7 @@ using System.Text.Json.Nodes;
 
 public sealed record TestResult
 {
-    public required JsonNode? Solution { get; init; }
+    public required JsonObject? Solution { get; init; }
 
     // public required SolveStatus SolveStatus { get; init; }
 
