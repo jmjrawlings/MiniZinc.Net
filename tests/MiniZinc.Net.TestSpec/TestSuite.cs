@@ -9,9 +9,9 @@ public sealed class TestSuite
 
     public bool? Strict { get; init; }
 
-    public required JsonObject? Options { get; init; }
+    public JsonObject? Options { get; init; }
 
-    public required List<string> Solvers { get; init; }
+    public List<string>? Solvers { get; init; }
 
     public required List<string> IncludeGlobs { get; init; }
 

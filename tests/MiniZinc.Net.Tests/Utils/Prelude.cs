@@ -18,7 +18,7 @@ public static class Prelude
 
     public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");
 
-    public static FileInfo TestSuiteFile => LibMiniZincDir.JoinFile("suites.yml");
+    public static FileInfo TestSpecYaml => LibMiniZincDir.JoinFile("suites.yml");
 
     private static FileInfo GetSolutionFile()
     {

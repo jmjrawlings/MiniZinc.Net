@@ -12,7 +12,7 @@ expected:
     alldisj_avsi: [!Range 5..6, !Range 3..4, !Range 7..8, !Range 1..2]
 - !Result
   solution: !Solution
-    alldisj_avsi: [!Range 6..7, !!set {3, 5}, !!set {4, 8}, !Range 1..2]
+     alldisj_avsi: [!Range 6..7, !!set {3, 5}, !!set {4, 8}, !Range 1..2]
 - !Result
   solution: !Solution
     alldisj_avsi: [!!set {4, 7}, !!set {3, 5}, !!set {6, 8}, !Range 1..2]

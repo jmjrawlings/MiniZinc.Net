@@ -38,8 +38,7 @@ async Task CloneLibMiniZincTests()
     var url = $"{LibMiniZincUrl}.git";
     var libDir = LibMiniZincDir.CreateOrClear();
     var cloneDir = Environment
-        .CurrentDirectory
-        .JoinPath(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
+        .CurrentDirectory.JoinPath(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
         .ToDirectory()
         .CreateOrClear();
 
@@ -63,15 +62,15 @@ async Task CloneLibMiniZincTests()
     cloneDir.Delete(true);
 }
 
-async Task GenerateTestsJson()
+void GenerateTestsJson()
 {
-    var spec = TestSpec.ParseYaml(TestSpecYaml);
-    await TestSpec.WriteJson(spec, TestSpecJson);
+    var spec = TestSpec.ParseTestSuitesFromYaml(TestSpecYaml);
+    spec.WriteJson(TestSpecJson);
 }
 
-async Task GenerateLexerIntegrationTests()
+void GenerateLexerIntegrationTests()
 {
-    var spec = await TestSpec.ParseJson(TestSpecJson);
+    var spec = TestSpec.ParseTestSuitesFromJson(TestSpecJson);
     var result = LexerTests.Generate(spec);
     var a = 1;
 }

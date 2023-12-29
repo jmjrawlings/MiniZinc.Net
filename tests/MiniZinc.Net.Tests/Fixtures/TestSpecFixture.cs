@@ -11,6 +11,6 @@ public sealed class TestSpecFixture
 
     public TestSpecFixture()
     {
-        TestSpec = TestSpec.ParseJson(TestSpecJson).Result;
+        TestSpec = TestSpec.ParseTestSuitesFromJson(TestSpecJson);
     }
 }

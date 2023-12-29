@@ -26,7 +26,7 @@ public sealed class LexerTests
         _class = _class.AddModifiers(Token(SyntaxKind.PublicKeyword));
         var files = spec.TestSuites
             .SelectMany(s => s.TestCases)
-            .Select(c => c.TestPath)
+            .Select(c => c.Path)
             .Distinct()
             .Order()
             .ToArray();

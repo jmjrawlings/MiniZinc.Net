@@ -3,10 +3,8 @@
 solvers: [gecode]
 options:
   all_solutions: true
-expected:
-- !Result
-  solution:
-  - !Solution
+expected: !Result
+  solution: !Solution
     b: true
     bs: [[[true, true], [true, true]], [[true, true], [true, true]]]
 ---
