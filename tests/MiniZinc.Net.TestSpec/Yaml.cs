@@ -29,13 +29,14 @@ public static class Yaml
     public const string TAG_DURATION = "!Duration";
     public const string TAG_ERROR = "!Error";
     public const string TAG_FLATZINC = "!FlatZinc";
+    public const string FLATZINC = "flatzinc";
     public const string TAG = "__tag__";
     public const string TRUE = "true";
     public const string FALSE = "false";
     public const string VALUE = "value";
     public const string LOWER = "lower";
     public const string UPPER = "upper";
-    public const string COMPILE = "compile";
+    public const string OUTPUT_MODEL = "outputmodel";
     public const string TYPE = "type";
     public const string SET = "set";
     public const string RANGE = "range";

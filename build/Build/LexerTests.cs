@@ -24,16 +24,11 @@ public sealed class LexerTests
         Using("System");
         _class = ClassDeclaration("LexerIntegrationTests");
         _class = _class.AddModifiers(Token(SyntaxKind.PublicKeyword));
-        var files = spec.TestSuites
-            .SelectMany(s => s.TestCases)
-            .Select(c => c.Path)
-            .Distinct()
-            .Order()
-            .ToArray();
 
-        foreach (var file in files)
+        foreach (var @case in spec.TestCases)
         {
-            var test = CreateTest(file);
+            var path = @case.Path;
+            var test = CreateTest(path);
             _tests.Add(test);
             _class = _class.AddMembers(test);
         }

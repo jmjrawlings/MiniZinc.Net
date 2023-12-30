@@ -9,6 +9,15 @@ using static Prelude;
 
 public sealed class YamlTests : TestBase
 {
+    [Theory]
+    [InlineData("unit\\compilation\\aggregation.mzn")]
+    void Parse_Test_case(string path)
+    {
+        var file = LibMiniZincDir.JoinFile(path);
+        var tests = TestSpec.ParseTestCasesFromModelComments(file).ToList();
+        var a = 2;
+    }
+
     [Fact]
     void Parse_Test_Suite_Yaml()
     {
@@ -19,16 +28,17 @@ public sealed class YamlTests : TestBase
     [Fact]
     void Parse_Test_Spec()
     {
-        var spec = TestSpec.ParseTestSuitesFromYaml(TestSpecYaml);
+        var spec = TestSpec.ParseTestCasesFromModelComments(TestSpecYaml);
         var a = spec;
     }
 
     [Fact]
     void Test_Spec_Parse_Integration()
     {
-        var spec1 = TestSpec.ParseTestSuitesFromYaml(TestSpecYaml);
-        var file = spec1.WriteJson(TestSpecJson);
-        var spec2 = TestSpec.ParseTestSuitesFromJson(file);
+        var spec1 = TestSpec.ParseTestSpecFromYaml(TestSpecYaml);
+        var file = Json.SerializeToFile(spec1, TestSpecJson);
+        var spec2 = TestSpec.ParseTestSpecFromJson(TestSpecJson);
+        var a = 2;
     }
 
     [Fact]

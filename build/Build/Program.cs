@@ -64,13 +64,13 @@ async Task CloneLibMiniZincTests()
 
 void GenerateTestsJson()
 {
-    var spec = TestSpec.ParseTestSuitesFromYaml(TestSpecYaml);
-    spec.WriteJson(TestSpecJson);
+    var spec = TestSpec.ParseTestSpecFromYaml(TestSpecYaml);
+    Json.SerializeToFile(spec, TestSpecJson);
 }
 
 void GenerateLexerIntegrationTests()
 {
-    var spec = TestSpec.ParseTestSuitesFromJson(TestSpecJson);
+    var spec = Json.DeserializeFromFile<TestSpec>(TestSpecJson);
     var result = LexerTests.Generate(spec);
     var a = 1;
 }

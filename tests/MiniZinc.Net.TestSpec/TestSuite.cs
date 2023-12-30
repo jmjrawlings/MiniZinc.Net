@@ -3,7 +3,7 @@
 using System.IO;
 using System.Text.Json.Nodes;
 
-public sealed class TestSuite
+public sealed record TestSuite
 {
     public required string Name { get; init; }
 
@@ -15,7 +15,5 @@ public sealed class TestSuite
 
     public required List<string> IncludeGlobs { get; init; }
 
-    public required List<TestCase> TestCases { get; init; }
-
-    public override string ToString() => $"<{Name}\" ({TestCases.Count} cases)>";
+    public override string ToString() => $"<{Name}>";
 }

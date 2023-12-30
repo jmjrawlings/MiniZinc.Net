@@ -1,88 +1,102 @@
 ﻿namespace MiniZinc.Net.Tests;
 
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using CommunityToolkit.Diagnostics;
 
-public static class TestSpec
+public sealed record TestSpec
 {
-    public static List<TestSuite> ParseTestSuitesFromJson(FileInfo file)
-    {
-        var text = file.OpenText().ReadToEnd();
-        var suites = JsonSerializer.Deserialize<List<TestSuite>>(text, JsonSerializerOptions);
-        Guard.IsNotNull(suites);
-        return suites;
-    }
+    public List<TestSuite> TestSuites { get; } = new();
 
-    public static string WriteToJsonString(object obj)
-    {
-        var json = JsonSerializer.Serialize(obj, JsonSerializerOptions);
-        return json;
-    }
+    public List<TestCase> TestCases { get; } = new();
 
-    public static FileInfo WriteJsonToFile(object obj, FileInfo file)
+    public static TestSpec ParseTestSpecFromJson(FileInfo file)
     {
-        var json = WriteToJsonString(obj);
-        File.WriteAllText(file.FullName, json);
-        return file;
-    }
-
-    public static List<TestSuite> ParseTestSuitesFromYaml(FileInfo file)
-    {
-        var dir = file.Directory!;
-        List<TestSuite> suites = new();
-        var specNode = Yaml.ParseFile<JsonObject>(file);
-        Guard.IsNotNull(specNode);
-        foreach (var (key, val) in specNode)
-        {
-            var suiteName = key;
-            var suiteJson = val!.AsObject();
-            var suite = ParseTestSuite(dir, suiteName, suiteJson);
-            suites.Add(suite);
-        }
-
-        var spec = new TestSpec { FileName = file.Name, TestSuites = suites };
+        var spec = Json.DeserializeFromFile<TestSpec>(file);
         return spec;
     }
 
-    public static TestSuite ParseTestSuite(DirectoryInfo dir, string name, JsonObject json)
+    public static TestSpec ParseTestSpecFromYaml(FileInfo file)
     {
-        var strict = json["strict"]?.GetValue<bool>();
-        var options = json["options"]?.AsObject();
-        var solvers =
-            json["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList()
-            ?? new List<string>();
-        var includes = json["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
-        var cases = new List<TestCase>();
-        var suite = new TestSuite
-        {
-            Name = name,
-            Strict = strict,
-            Options = options,
-            IncludeGlobs = includes,
-            Solvers = solvers,
-            TestCases = cases
-        };
+        var spec = new TestSpec();
+        var dir = file.Directory!;
+        var modelPaths = new HashSet<string>();
+        var specNode = Yaml.ParseFile<JsonObject>(file);
+        Guard.IsNotNull(specNode);
 
-        foreach (var glob in suite.IncludeGlobs)
+        foreach (var (suiteName, suiteJson) in specNode)
         {
-            foreach (var file in dir.EnumerateFiles(glob, SearchOption.AllDirectories))
+            var json = suiteJson!.AsObject();
+            var strict = json["strict"]?.GetValue<bool>();
+            var options = json["options"]?.AsObject();
+            var solvers =
+                json["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList()
+                ?? new List<string>();
+            var includes = json["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
+            var suite = new TestSuite
             {
-                var path = Path.GetRelativePath(dir.FullName, file.FullName);
-                foreach (var testCase in ParseTestCases(file, path))
-                    cases.Add(testCase);
+                Name = suiteName,
+                Strict = strict,
+                Options = options,
+                IncludeGlobs = includes,
+                Solvers = solvers
+            };
+            spec.TestSuites.Add(suite);
+
+            foreach (var glob in suite.IncludeGlobs)
+            {
+                foreach (var model in dir.EnumerateFiles(glob, SearchOption.AllDirectories))
+                {
+                    if (model.Extension != ".mzn")
+                        continue;
+
+                    var path = Path.GetRelativePath(dir.FullName, model.FullName);
+                    modelPaths.Add(path);
+                }
             }
         }
 
-        return suite;
+        foreach (var modelPath in modelPaths)
+        {
+            var model = new FileInfo(Path.Join(dir.FullName, modelPath));
+            foreach (var testCase in ParseTestCasesFromModelComments(model))
+            {
+                testCase.Path = modelPath;
+                spec.TestCases.Add(testCase);
+            }
+        }
+
+        return spec;
     }
 
     /// <summary>
     /// Parse yaml contained within the test file comments
     /// </summary>
-    public static IEnumerable<JsonObject> ParseEmbeddedTestCaseJson(FileInfo file)
+    public static TestCase ParseTestCasesFromModelComments(JsonObject json)
+    {
+        var solvers = json["solvers"]?.ToNonEmptyList<string>();
+        var solveOptions = json["options"]?.AsObject();
+        var type = json["type"]?.GetValue<string>();
+        var extraFiles = json["extra_files"]?.ToNonEmptyList<string>();
+        var expected = json["expected"];
+
+        var testCase = new TestCase
+        {
+            Solvers = solvers,
+            SolveOptions = solveOptions,
+            ExtraFiles = extraFiles
+        };
+
+        foreach (var result in ParseTestResults(type, expected))
+            testCase.Results.Add(result);
+
+        return testCase;
+    }
+
+    /// <summary>
+    /// Parse yaml contained within the test file comments
+    /// </summary>
+    public static IEnumerable<TestCase> ParseTestCasesFromModelComments(FileInfo file)
     {
         var sb = new StringBuilder();
         using var stream = file.OpenRead();
@@ -124,9 +138,15 @@ public static class TestSpec
         );
         foreach (var s in testStrings)
         {
-            var doc = Yaml.ParseString<JsonObject>(s);
-            if (doc is not null)
-                yield return doc;
+            var json = Yaml.ParseString<JsonObject>(s);
+            if (json is null)
+            {
+                Console.WriteLine($"Could not parse yaml for {file.FullName}");
+                continue;
+            }
+
+            var @case = ParseTestCasesFromModelComments(json);
+            yield return @case;
         }
 
         yield break;
@@ -147,51 +167,24 @@ public static class TestSpec
         }
     }
 
-    public static IEnumerable<TestCase> ParseTestCases(FileInfo file, string relativePath)
+    public static IEnumerable<TestResult> ParseTestResults(string? type, JsonNode? node)
     {
-        foreach (var json in ParseEmbeddedTestCaseJson(file))
+        if (node is null)
+            yield break;
+
+        if (node is JsonArray arr)
         {
-            var testName = Path.GetFileNameWithoutExtension(file.Name);
-            var solvers = json["solvers"]?.ToNonEmptyList<string>();
-            var solveOptions = json["options"]?.AsObject();
-            var type = json["type"]?.GetValue<string>();
-            var results = new List<TestResult>();
-            var extraFiles = json["extra_files"]?.ToNonEmptyList<string>();
-            TestResult result;
-            if (json["expected"] is JsonArray array)
+            foreach (var obj in arr)
             {
-                if (type is Yaml.COMPILE)
+                foreach (var res in ParseTestResults(type, obj))
                 {
-                    var files = array.ToList(x => x.GetString(Yaml.TAG_FLATZINC)!);
-                    result = new TestResult { Files = files, Type = ResultType.FlatZinc };
-                    results.Add(result);
-                }
-                else
-                {
-                    foreach (var resultJson in array)
-                    {
-                        result = ParseTestResult(resultJson!);
-                        results.Add(result);
-                    }
+                    yield return res;
                 }
             }
 
-            var testCase = new TestCase
-            {
-                Name = testName,
-                Path = relativePath,
-                Solvers = solvers,
-                SolveOptions = solveOptions,
-                Results = results,
-                ExtraFiles = extraFiles
-            };
-
-            yield return testCase;
+            yield break;
         }
-    }
 
-    public static TestResult ParseTestResult(JsonNode node)
-    {
         var solution = node["solution"];
         var status = node.GetString("status");
         string? tag = null;
@@ -202,40 +195,37 @@ public static class TestSpec
         }
 
         TestResult result;
-        switch (tag, status, solution)
+        switch (type, tag, status, solution)
         {
-            case (Yaml.TAG_ERROR, _, null):
+            case (_, Yaml.TAG_ERROR, _, null):
                 result = new TestResult { Type = ResultType.Error };
                 break;
-            case (Yaml.TAG_RESULT, Yaml.SATISFIED, _):
+            case (_, Yaml.TAG_RESULT, Yaml.SATISFIED, _):
                 result = new TestResult { Type = ResultType.Satisfied };
                 break;
-            case (Yaml.TAG_RESULT, _, _):
+            case (_, Yaml.TAG_RESULT, _, _):
                 result = new TestResult { Type = ResultType.Solution, Solution = solution };
+                break;
+            case ("compile", _, _, _):
+                var fzn = node.GetStringExn(Yaml.FLATZINC);
+                result = new TestResult
+                {
+                    Type = ResultType.FlatZinc,
+                    Files = new() { fzn! }
+                };
+                break;
+            case ("output-model", _, _, _):
+                var ozn = node.GetStringExn(Yaml.OUTPUT_MODEL);
+                result = new TestResult
+                {
+                    Type = ResultType.FlatZinc,
+                    Files = new() { ozn! }
+                };
                 break;
             default:
                 throw new Exception();
         }
 
-        return result;
-    }
-
-    private static JsonSerializerOptions? _jsonSerializerOptions;
-    public static JsonSerializerOptions JsonSerializerOptions
-    {
-        get
-        {
-            if (_jsonSerializerOptions is not null)
-                return _jsonSerializerOptions;
-
-            var options = new JsonSerializerOptions();
-            // options.WriteIndented = true;
-            options.WriteIndented = false;
-            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            var converter = new JsonStringEnumConverter();
-            options.Converters.Add(converter);
-            _jsonSerializerOptions = options;
-            return options;
-        }
+        yield return result;
     }
 }
