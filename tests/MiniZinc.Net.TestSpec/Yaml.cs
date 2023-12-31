@@ -43,6 +43,7 @@ public static class Yaml
     public const string DURATION = "duration";
     public const string SOLUTION = "solution";
     public const string SATISFIED = "SATISFIED";
+    public const string UNSATISFIABLE = "UNSATISFIABLE";
 
     /*
      Used to parse the Yaml contained in:

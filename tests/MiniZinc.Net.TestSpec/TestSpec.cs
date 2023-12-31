@@ -187,45 +187,64 @@ public sealed record TestSpec
 
         var solution = node["solution"];
         var status = node.GetString("status");
-        string? tag = null;
-        if (node[Yaml.TAG]?.GetValue<string>() is { } t)
+        string? tag = node.GetString(Yaml.TAG);
+        var result = (type, tag, status) switch
         {
-            tag = t;
-            ((JsonObject)node).Remove(tag);
-        }
-
-        TestResult result;
-        switch (type, tag, status, solution)
-        {
-            case (_, Yaml.TAG_ERROR, _, null):
-                result = new TestResult { Type = ResultType.Error };
-                break;
-            case (_, Yaml.TAG_RESULT, Yaml.SATISFIED, _):
-                result = new TestResult { Type = ResultType.Satisfied };
-                break;
-            case (_, Yaml.TAG_RESULT, _, _):
-                result = new TestResult { Type = ResultType.Solution, Solution = solution };
-                break;
-            case ("compile", _, _, _):
-                var fzn = node.GetStringExn(Yaml.FLATZINC);
-                result = new TestResult
-                {
-                    Type = ResultType.FlatZinc,
-                    Files = new() { fzn! }
-                };
-                break;
-            case ("output-model", _, _, _):
-                var ozn = node.GetStringExn(Yaml.OUTPUT_MODEL);
-                result = new TestResult
-                {
-                    Type = ResultType.FlatZinc,
-                    Files = new() { ozn! }
-                };
-                break;
-            default:
-                throw new Exception();
-        }
+            (_, Yaml.TAG_ERROR, _) => ParseErrorResult(node),
+            (_, Yaml.TAG_RESULT, Yaml.SATISFIED) => ParseSatisfyResult(node),
+            (_, Yaml.TAG_RESULT, Yaml.UNSATISFIABLE) => ParseUnsatisfiableResult(node),
+            (_, Yaml.TAG_RESULT, _) => ParseSolutionResult(solution),
+            ("compile", _, _) => ParseCompileResult(node),
+            ("output-model", _, _) => ParseOutputResult(node),
+            _ => throw new Exception()
+        };
 
         yield return result;
+    }
+
+    private static TestResult ParseOutputResult(JsonNode node)
+    {
+        var ozn = node.GetStringExn(Yaml.OUTPUT_MODEL);
+        var result = new TestResult
+        {
+            Type = TestResultType.Compile,
+            Files = new() { ozn }
+        };
+        return result;
+    }
+
+    private static TestResult ParseCompileResult(JsonNode node)
+    {
+        var fzn = node.GetStringExn(Yaml.FLATZINC);
+        var result = new TestResult
+        {
+            Type = TestResultType.Compile,
+            Files = new() { fzn! }
+        };
+        return result;
+    }
+
+    private static TestResult ParseSolutionResult(JsonNode? solution)
+    {
+        var result = new TestResult { Type = TestResultType.Solve, Solution = solution };
+        return result;
+    }
+
+    private static TestResult ParseSatisfyResult(JsonNode node)
+    {
+        var result = new TestResult { Type = TestResultType.Satisfy };
+        return result;
+    }
+
+    private static TestResult ParseUnsatisfiableResult(JsonNode node)
+    {
+        var result = new TestResult { Type = TestResultType.Unsatisfiable };
+        return result;
+    }
+
+    private static TestResult ParseErrorResult(JsonNode node)
+    {
+        var result = new TestResult { Type = TestResultType.Error };
+        return result;
     }
 }

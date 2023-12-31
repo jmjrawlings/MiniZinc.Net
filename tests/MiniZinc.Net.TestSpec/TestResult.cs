@@ -2,18 +2,19 @@ namespace MiniZinc.Net.Tests;
 
 using System.Text.Json.Nodes;
 
-public enum ResultType
+public enum TestResultType
 {
-    Solution,
+    Solve,
     Error,
-    FlatZinc,
-    OutputModel,
-    Satisfied
+    Compile,
+    Output,
+    Satisfy,
+    Unsatisfiable
 }
 
 public sealed record TestResult
 {
-    public required ResultType Type { get; init; }
+    public required TestResultType Type { get; init; }
     public JsonNode? Solution { get; set; }
     public List<string>? Files { get; set; }
     public string? ErrorType { get; set; }

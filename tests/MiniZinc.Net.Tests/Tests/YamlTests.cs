@@ -94,7 +94,7 @@ public sealed class YamlTests : TestBase
     {
         var result = new TestResult
         {
-            Type = ResultType.Solution,
+            Type = TestResultType.Solve,
             Solution = null,
             Files = null,
             ErrorType = null,
