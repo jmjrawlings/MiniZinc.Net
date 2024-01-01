@@ -224,9 +224,9 @@ public sealed record TestSpec
         return result;
     }
 
-    private static TestResult ParseSolutionResult(JsonNode? solution)
+    private static TestResult ParseSolutionResult(JsonNode? node)
     {
-        var result = new TestResult { Type = TestResultType.Solve, Solution = solution };
+        var result = new TestResult { Type = TestResultType.Solve, Solution = node };
         return result;
     }
 

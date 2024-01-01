@@ -81,39 +81,42 @@ public static class Yaml
         private JsonNode Parse(IParser parser)
         {
             var curr = parser.Current;
-            // Console.WriteLine("{0} {1} {2}", curr.Start, curr.End, curr.GetType().Name);
+            var tag = curr switch
+            {
+                MappingStart x => GetTag(x),
+                SequenceStart x => GetTag(x),
+                Scalar x => GetTag(x),
+                _ => null
+            };
+
             var node = curr switch
             {
-                MappingStart x => Parse(parser, x),
-                SequenceStart x => ParseSequence(parser, x),
-                Scalar x => ParseScalar(x),
-                _ => throw new Exception($"Unexpected yaml event {curr}")
+                MappingStart x => ParseMapping(parser, tag),
+                SequenceStart x => ParseSequence(parser, tag),
+                Scalar x => ParseScalar(parser, tag),
+                _ => throw new Exception($"Unexpected event {curr}")
             };
             parser.MoveNext();
             return node;
         }
 
-        private JsonNode ParseScalar(Scalar scalar)
+        private JsonValue ParseValue(string str)
         {
-            var tag = GetTag(scalar);
-            var str = scalar.Value;
-            var node = ParseScalar(str, tag);
-            return node;
+            if (str is TRUE)
+                return JsonValue.Create(true);
+            if (str is FALSE)
+                return JsonValue.Create(false);
+            if (double.TryParse(str, out var d))
+                return JsonValue.Create(d);
+            if (int.TryParse(str, out var i))
+                return JsonValue.Create(i);
+            return JsonValue.Create(str);
         }
 
-        private JsonNode ParseScalar(string str, string? tag = null)
+        private JsonNode ParseScalar(IParser parser, string? tag)
         {
-            JsonNode node;
-            if (str is TRUE)
-                node = JsonValue.Create(true);
-            else if (str is FALSE)
-                node = JsonValue.Create(false);
-            else if (double.TryParse(str, out var d))
-                node = JsonValue.Create(d);
-            else if (int.TryParse(str, out var i))
-                node = JsonValue.Create(i);
-            else
-                node = JsonValue.Create(str);
+            var str = (parser.Current as Scalar)!.Value;
+            JsonNode node = ParseValue(str);
 
             if (tag is null)
                 return node;
@@ -122,8 +125,8 @@ public static class Yaml
             if (tag is TAG_RANGE)
             {
                 var tokens = str.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                var lower = ParseScalar(tokens[0]);
-                var upper = ParseScalar(tokens[1]);
+                var lower = ParseValue(tokens[0]);
+                var upper = ParseValue(tokens[1]);
                 var obj = new JsonObject
                 {
                     { LOWER, lower },
@@ -142,20 +145,19 @@ public static class Yaml
             return node;
         }
 
-        private JsonNode Parse(IParser parser, MappingStart e)
+        private JsonNode ParseMapping(IParser parser, string? tag)
         {
             JsonObject map = new();
             parser.MoveNext();
             loop:
             var curr = parser.Current;
-            var tag = GetTag(e);
             switch (curr)
             {
                 case null:
-                    break;
                 case MappingEnd:
                     break;
                 default:
+                    // Keys are always scalars
                     var key = (parser.Current as Scalar)!.Value;
                     parser.MoveNext();
                     var value = Parse(parser);
@@ -166,33 +168,19 @@ public static class Yaml
                     goto loop;
             }
 
-            if (tag is TAG_SET)
-            {
-                var set = new JsonArray();
-                foreach (var (key, _) in map)
-                {
-                    var key_ = ParseScalar(key);
-                    set.Add(key_);
-                }
-
-                var node = new JsonObject { { TAG, TAG_SET }, { SET, set } };
-                return node;
-            }
-
             if (tag is not null)
                 map[TAG] = tag;
 
             return map;
         }
 
-        private JsonNode ParseSequence(IParser parser, SequenceStart e)
+        private JsonNode ParseSequence(IParser parser, string? tag)
         {
             parser.MoveNext();
             var node = new JsonArray();
 
             loop:
             var curr = parser.Current;
-            var tag = GetTag(e);
             switch (curr)
             {
                 case null:
