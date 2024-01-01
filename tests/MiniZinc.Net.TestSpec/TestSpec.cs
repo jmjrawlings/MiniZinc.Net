@@ -202,6 +202,27 @@ public sealed record TestSpec
         yield return result;
     }
 
+    private static void RemoveTag(JsonNode node)
+    {
+        switch (node)
+        {
+            case JsonArray arr:
+                foreach (var x in arr)
+                {
+                    if (x is null)
+                        continue;
+                    RemoveTag(x);
+                }
+                break;
+            case JsonObject obj:
+                if (obj.ContainsKey(Yaml.TAG))
+                    obj.Remove(Yaml.TAG);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(node));
+        }
+    }
+
     private static TestResult ParseOutputResult(JsonNode node)
     {
         var ozn = node.GetStringExn(Yaml.OUTPUT_MODEL);
