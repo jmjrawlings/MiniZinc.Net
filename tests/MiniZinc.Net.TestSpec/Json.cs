@@ -120,10 +120,13 @@ public static class Json
             if (_options is not null)
                 return _options;
 
-            var options = new JsonSerializerOptions();
-            // options.WriteIndented = true;
-            options.WriteIndented = false;
-            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            var options = new JsonSerializerOptions
+            {
+                DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower,
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+                WriteIndented = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
             var converter = new JsonStringEnumConverter();
             options.Converters.Add(converter);
             _options = options;

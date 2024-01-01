@@ -185,21 +185,38 @@ public sealed record TestSpec
             yield break;
         }
 
-        var solution = node["solution"];
         var status = node.GetString("status");
-        string? tag = node.GetString(Yaml.TAG);
+        string? tag = GetTag(node);
         var result = (type, tag, status) switch
         {
             (_, Yaml.TAG_ERROR, _) => ParseErrorResult(node),
             (_, Yaml.TAG_RESULT, Yaml.SATISFIED) => ParseSatisfyResult(node),
             (_, Yaml.TAG_RESULT, Yaml.UNSATISFIABLE) => ParseUnsatisfiableResult(node),
-            (_, Yaml.TAG_RESULT, _) => ParseSolutionResult(solution),
+            (_, Yaml.TAG_RESULT, _) => ParseSolutionResult(node),
             ("compile", _, _) => ParseCompileResult(node),
             ("output-model", _, _) => ParseOutputResult(node),
             _ => throw new Exception()
         };
 
         yield return result;
+    }
+
+    private static string? GetTag(JsonNode? node)
+    {
+        switch (node)
+        {
+            case JsonObject o:
+                if (o.ContainsKey(Yaml.TAG))
+                {
+                    var tag = o[Yaml.TAG]!.GetValue<string>();
+                    o.Remove(Yaml.TAG);
+                    return tag;
+                }
+
+                break;
+        }
+
+        return null;
     }
 
     private static void RemoveTag(JsonNode node)
@@ -247,7 +264,9 @@ public sealed record TestSpec
 
     private static TestResult ParseSolutionResult(JsonNode? node)
     {
-        var result = new TestResult { Type = TestResultType.Solve, Solution = node };
+        var solution = node?["solution"];
+        var tag = GetTag(solution);
+        var result = new TestResult { Type = TestResultType.Solve, Solution = solution };
         return result;
     }
 
