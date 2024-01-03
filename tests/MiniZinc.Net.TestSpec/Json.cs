@@ -96,10 +96,10 @@ public static class Json
         throw new Exception("Node was not an array");
     }
 
-    public static T? GetValue<T>(this JsonNode node, string key)
+    public static T? GetValue<T>(this JsonNode? node, string key)
         where T : notnull
     {
-        var item = node[key];
+        var item = node?[key];
         if (item is null)
             return default;
 
@@ -107,10 +107,21 @@ public static class Json
         return value;
     }
 
-    public static string? GetString(this JsonNode node, string key) => node.GetValue<string>(key);
+    public static string? GetString(this JsonNode? node, string key) => node?.GetValue<string>(key);
 
-    public static string GetStringExn(this JsonNode node, string key) =>
-        node.GetValue<string>(key) ?? throw new Exception();
+    public static JsonNode? Pop(this JsonNode? node, string key)
+    {
+        if (node is JsonObject obj)
+        {
+            if (obj[key] is { } val)
+            {
+                obj.Remove(key);
+                return val;
+            }
+        }
+
+        return null;
+    }
 
     private static JsonSerializerOptions? _options;
     public static JsonSerializerOptions Options
@@ -131,6 +142,56 @@ public static class Json
             options.Converters.Add(converter);
             _options = options;
             return options;
+        }
+    }
+
+    public static T? Match<T>(
+        this JsonNode? node,
+        Func<JsonObject, T>? obj = null,
+        Func<JsonArray, T>? arr = null,
+        Func<JsonValue, T>? val = null
+    )
+    {
+        T? result = node switch
+        {
+            JsonArray x when arr is not null => arr(x),
+            JsonObject x when obj is not null => obj(x),
+            JsonValue x when val is not null => val(x),
+            _ => throw new ArgumentOutOfRangeException(nameof(node))
+        };
+
+        return result;
+    }
+
+    public static void Visit(
+        this JsonNode? node,
+        Action<JsonObject>? ifObj = null,
+        Action<JsonArray>? ifArr = null,
+        Action<JsonValue>? ifVal = null
+    )
+    {
+        switch (node)
+        {
+            case null:
+                break;
+            case JsonArray arr:
+                ifArr?.Invoke(arr);
+                foreach (var item in arr)
+                {
+                    Visit(item, ifObj, ifArr, ifVal);
+                }
+                break;
+            case JsonObject obj:
+                ifObj?.Invoke(obj);
+                foreach (var (key, val) in obj)
+                {
+                    Visit(val, ifObj, ifArr, ifVal);
+                }
+
+                break;
+            case JsonValue val:
+                ifVal?.Invoke(val);
+                break;
         }
     }
 }

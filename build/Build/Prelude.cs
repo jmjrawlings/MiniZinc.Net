@@ -19,11 +19,13 @@ public static class Prelude
 
     public static DirectoryInfo BuildDir => ProjectDir.JoinDir("build");
 
+    public static DirectoryInfo TestSpecDir => TestDir.JoinDir("MiniZinc.Net.TestSpec");
+
     public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");
 
     public static FileInfo TestSpecYaml => LibMiniZincDir.JoinFile("suites.yml");
 
-    public static FileInfo TestSpecJson => LibMiniZincDir.JoinFile("tests.json");
+    public static FileInfo TestSpecJson => TestSpecDir.JoinFile("tests.json");
 
     private static FileInfo GetSolutionFile()
     {

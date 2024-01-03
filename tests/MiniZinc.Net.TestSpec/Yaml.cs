@@ -33,11 +33,8 @@ public static class Yaml
     public const string TAG = "__tag__";
     public const string TRUE = "true";
     public const string FALSE = "false";
-    public const string VALUE = "value";
-    public const string LOWER = "lower";
-    public const string UPPER = "upper";
+    public const string NULL = "null";
     public const string OUTPUT_MODEL = "outputmodel";
-    public const string TYPE = "type";
     public const string SET = "set";
     public const string RANGE = "range";
     public const string DURATION = "duration";
@@ -58,7 +55,7 @@ public static class Yaml
         {
             if (parser.Current is null)
                 return null;
-            var result = Parse(parser);
+            var result = ParseNode(parser);
             return result;
         }
 
@@ -71,14 +68,14 @@ public static class Yaml
             return e.Tag.Value;
         }
 
-        private static string GetTypeFromTag(string tag)
+        private static string GetTypeNameFromTag(string tag)
         {
             var c = tag.Where(char.IsLetter).Select(char.ToLower).ToArray();
             var s = new string(c);
             return s;
         }
 
-        private JsonNode Parse(IParser parser)
+        private JsonNode ParseNode(IParser parser)
         {
             var curr = parser.Current;
             var tag = curr switch
@@ -100,8 +97,10 @@ public static class Yaml
             return node;
         }
 
-        private JsonValue ParseValue(string str)
+        private static JsonValue? ParseValue(string str)
         {
+            if (str is NULL)
+                return null;
             if (str is TRUE)
                 return JsonValue.Create(true);
             if (str is FALSE)
@@ -113,7 +112,7 @@ public static class Yaml
             return JsonValue.Create(str);
         }
 
-        private JsonNode ParseScalar(IParser parser, string? tag)
+        private static JsonNode ParseScalar(IParser parser, string? tag)
         {
             var str = (parser.Current as Scalar)!.Value;
             JsonNode node = ParseValue(str);
@@ -121,18 +120,14 @@ public static class Yaml
             if (tag is null)
                 return node;
 
-            var type = GetTypeFromTag(tag);
+            var type = GetTypeNameFromTag(tag);
             if (tag is TAG_RANGE)
             {
                 var tokens = str.Split('.', StringSplitOptions.RemoveEmptyEntries);
                 var lower = ParseValue(tokens[0]);
                 var upper = ParseValue(tokens[1]);
-                var obj = new JsonObject
-                {
-                    { LOWER, lower },
-                    { UPPER, upper },
-                    { TYPE, type }
-                };
+                var arr = new JsonArray(lower, upper);
+                var obj = new JsonObject { { RANGE, arr } };
                 return obj;
             }
 
@@ -145,8 +140,38 @@ public static class Yaml
             return node;
         }
 
+        private static JsonObject ParseSet(IParser parser)
+        {
+            JsonArray arr = new();
+            parser.MoveNext();
+            loop:
+            var curr = parser.Current;
+            switch (curr)
+            {
+                case null:
+                case MappingEnd:
+                    break;
+                default:
+                    var key = (parser.Current as Scalar)!.Value;
+                    var value = ParseValue(key);
+                    arr.Add(value);
+                    parser.MoveNext();
+                    parser.MoveNext();
+                    goto loop;
+            }
+
+            var obj = new JsonObject { { SET, arr } };
+            return obj;
+        }
+
         private JsonNode ParseMapping(IParser parser, string? tag)
         {
+            if (tag is TAG_SET)
+            {
+                var set = ParseSet(parser);
+                return set;
+            }
+
             JsonObject map = new();
             parser.MoveNext();
             loop:
@@ -160,7 +185,7 @@ public static class Yaml
                     // Keys are always scalars
                     var key = (parser.Current as Scalar)!.Value;
                     parser.MoveNext();
-                    var value = Parse(parser);
+                    var value = ParseNode(parser);
                     if (map.ContainsKey(key))
                         WriteLine($"Duplicate Yaml map key \"{key}\"");
                     else
@@ -188,7 +213,7 @@ public static class Yaml
                 case SequenceEnd:
                     break;
                 default:
-                    var item = Parse(parser);
+                    var item = ParseNode(parser);
                     node.Add(item);
                     goto loop;
             }

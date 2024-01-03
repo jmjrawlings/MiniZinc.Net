@@ -1,9 +1,8 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿namespace MiniZinc.Net.Tests;
 
-namespace MiniZinc.Net.Tests;
-
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using CommunityToolkit.Diagnostics;
 using static Prelude;
 
@@ -92,15 +91,7 @@ public sealed class YamlTests : TestBase
     [Fact]
     void Serialize_Test_Result()
     {
-        var result = new TestResult
-        {
-            Type = TestResultType.Solve,
-            Solution = null,
-            Files = null,
-            ErrorType = null,
-            ErrorMessage = null,
-            ErrorRegex = null
-        };
+        var result = new TestCase { Type = TestType.Solve };
         var converter = new JsonStringEnumConverter();
         var options = new JsonSerializerOptions();
         options.Converters.Add(converter);

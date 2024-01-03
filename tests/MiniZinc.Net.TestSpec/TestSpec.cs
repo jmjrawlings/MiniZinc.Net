@@ -76,21 +76,32 @@ public sealed record TestSpec
     {
         var solvers = json["solvers"]?.ToNonEmptyList<string>();
         var solveOptions = json["options"]?.AsObject();
+        var allSolutions = solveOptions?.GetValue<bool>("all_solutions") ?? false;
         var type = json["type"]?.GetValue<string>();
-        var extraFiles = json["extra_files"]?.ToNonEmptyList<string>();
+        var inputFiles = json["extra_files"]?.ToNonEmptyList<string>();
         var expected = json["expected"];
-
-        var testCase = new TestCase
+        var @case = new TestCase
         {
             Solvers = solvers,
             SolveOptions = solveOptions,
-            ExtraFiles = extraFiles
+            InputFiles = inputFiles
+        };
+        
+        var status = (expected as JsonObject)?.GetString("status");
+        string? tag = GetTag(node);
+        switch (type, tag, status) switch
+        {
+            (_, Yaml.TAG_ERROR, _) => ParseErrorResult(node),
+            (_, Yaml.TAG_RESULT, Yaml.SATISFIED) => ParseSatisfyResult(node),
+            (_, Yaml.TAG_RESULT, Yaml.UNSATISFIABLE) => ParseUnsatisfiableResult(node),
+            (_, Yaml.TAG_RESULT, _) => ParseTestCaseFromSolution(node),
+            ("compile", _, _) => ParseCompileResult(node),
+            ("output-model", _, _) => ParseOutputResult(node),
+            _ => throw new Exception()
         };
 
-        foreach (var result in ParseTestResults(type, expected))
-            testCase.Results.Add(result);
-
-        return testCase;
+        
+        return @case;
     }
 
     /// <summary>
@@ -167,124 +178,89 @@ public sealed record TestSpec
         }
     }
 
-    public static IEnumerable<TestResult> ParseTestResults(string? type, JsonNode? node)
-    {
-        if (node is null)
-            yield break;
-
-        if (node is JsonArray arr)
-        {
-            foreach (var obj in arr)
-            {
-                foreach (var res in ParseTestResults(type, obj))
-                {
-                    yield return res;
-                }
-            }
-
-            yield break;
-        }
-
-        var status = node.GetString("status");
-        string? tag = GetTag(node);
-        var result = (type, tag, status) switch
-        {
-            (_, Yaml.TAG_ERROR, _) => ParseErrorResult(node),
-            (_, Yaml.TAG_RESULT, Yaml.SATISFIED) => ParseSatisfyResult(node),
-            (_, Yaml.TAG_RESULT, Yaml.UNSATISFIABLE) => ParseUnsatisfiableResult(node),
-            (_, Yaml.TAG_RESULT, _) => ParseSolutionResult(node),
-            ("compile", _, _) => ParseCompileResult(node),
-            ("output-model", _, _) => ParseOutputResult(node),
-            _ => throw new Exception()
-        };
-
-        yield return result;
-    }
-
     private static string? GetTag(JsonNode? node)
     {
-        switch (node)
+        var tag = node.Match(o =>
         {
-            case JsonObject o:
-                if (o.ContainsKey(Yaml.TAG))
-                {
-                    var tag = o[Yaml.TAG]!.GetValue<string>();
-                    o.Remove(Yaml.TAG);
-                    return tag;
-                }
+            if (o.ContainsKey(Yaml.TAG))
+            {
+                var tag = o[Yaml.TAG]!.GetValue<string>();
+                o.Remove(Yaml.TAG);
+                return tag;
+            }
 
-                break;
-        }
-
-        return null;
+            return null;
+        });
+        return tag;
     }
 
-    private static void RemoveTag(JsonNode node)
+    private static void StripTags(JsonNode? node)
     {
-        switch (node)
+        node.Visit(o =>
         {
-            case JsonArray arr:
-                foreach (var x in arr)
-                {
-                    if (x is null)
-                        continue;
-                    RemoveTag(x);
-                }
-                break;
-            case JsonObject obj:
-                if (obj.ContainsKey(Yaml.TAG))
-                    obj.Remove(Yaml.TAG);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(node));
-        }
+            if (o.ContainsKey(Yaml.TAG))
+            {
+                o.Remove(Yaml.TAG);
+            }
+        });
     }
 
-    private static TestResult ParseOutputResult(JsonNode node)
+    private static TestCase ParseOutputResult(JsonNode node)
     {
         var ozn = node.GetStringExn(Yaml.OUTPUT_MODEL);
-        var result = new TestResult
+        var result = new TestCase
         {
-            Type = TestResultType.Compile,
-            Files = new() { ozn }
+            Type = TestType.Compile,
+            OutputFiles = new() { ozn }
         };
         return result;
     }
 
-    private static TestResult ParseCompileResult(JsonNode node)
+    private static TestCase ParseCompileResult(JsonNode node)
     {
         var fzn = node.GetStringExn(Yaml.FLATZINC);
-        var result = new TestResult
+        var result = new TestCase
         {
-            Type = TestResultType.Compile,
-            Files = new() { fzn! }
+            Type = TestType.Compile,
+            OutputFiles = new() { fzn! }
         };
         return result;
     }
 
-    private static TestResult ParseSolutionResult(JsonNode? node)
+    private static TestCase ParseTestCaseFromSolution(JsonNode? node)
     {
         var solution = node?["solution"];
-        var tag = GetTag(solution);
-        var result = new TestResult { Type = TestResultType.Solve, Solution = solution };
+
+        if (solution is null)
+            return new TestCase { Type = TestType.Compile };
+
+        StripTags(solution);
+
+        if (solution is JsonObject obj)
+            return new TestCase { Type = TestType.Solve, Solution = obj };
+
+        if (solution is JsonArray arr)
+            return new TestCase { Type = TestType.AllSolutions, AllSolutions = arr };
+
+        throw new Exception();
+    }
+
+    private static TestCase ParseSatisfyResult(JsonNode node)
+    {
+        var result = ParseTestCaseFromSolution(node);
+        result.Type = TestType.Satisfy;
         return result;
     }
 
-    private static TestResult ParseSatisfyResult(JsonNode node)
+    private static TestCase ParseUnsatisfiableResult(JsonNode node)
     {
-        var result = new TestResult { Type = TestResultType.Satisfy };
+        var result = new TestCase { Type = TestType.Unsatisfiable };
         return result;
     }
 
-    private static TestResult ParseUnsatisfiableResult(JsonNode node)
+    private static TestCase ParseErrorResult(JsonNode node)
     {
-        var result = new TestResult { Type = TestResultType.Unsatisfiable };
-        return result;
-    }
-
-    private static TestResult ParseErrorResult(JsonNode node)
-    {
-        var result = new TestResult { Type = TestResultType.Error };
+        var result = new TestCase { Type = TestType.Error };
         return result;
     }
 }
