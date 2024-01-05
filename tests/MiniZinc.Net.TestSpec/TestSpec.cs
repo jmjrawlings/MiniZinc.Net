@@ -68,8 +68,7 @@ public sealed record TestSpec
                     continue;
                 }
 
-                var testCase = ParseTestCase(node);
-                testCase.Path = modelPath;
+                var testCase = ParseTestCase(modelPath, node);
                 spec.TestCases.Add(testCase);
             }
         }
@@ -77,54 +76,105 @@ public sealed record TestSpec
         return spec;
     }
 
+    public static JsonObject? ParseSolution(JsonNode? result)
+    {
+        if (result.Pop("solution") is JsonObject sol)
+        {
+            StripTags(sol);
+            return sol;
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Parse yaml contained within the test file comments
     /// </summary>
-    public static TestCase ParseTestCase(JsonObject node)
+    public static TestCase ParseTestCase(string path, JsonObject node)
     {
         var solvers = node["solvers"]?.ToNonEmptyList<string>();
-        var options = node["solve_options"]?.AsObject();
+        var options = (node["solve_options"] ?? node["options"])?.AsObject();
         var allSolutions = options?.TryGetValue<bool>("all_solutions") ?? false;
         var type = node["type"]?.GetValue<string>();
         var inputFiles = node["extra_files"]?.ToNonEmptyList<string>();
-        var expected = node["expected"];
-        var status = (expected as JsonObject)?.TryGetValue<string>("status");
+        var results = node["expected"].AsListOf<JsonObject>();
+
         var testCase = new TestCase
         {
             Solvers = solvers,
             SolveOptions = options,
-            InputFiles = inputFiles
+            InputFiles = inputFiles,
+            Path = path
         };
 
-        string? tag = GetTag(expected);
+        foreach (var result in results)
+        {
+            var status = result.TryGetValue<string>("status");
+            string? tag = GetTag(result);
+            var sols = result.Pop("solution");
 
-        if (expected is JsonArray arr) { }
-        else if (tag is Yaml.TAG_ERROR)
-        {
-            testCase.Type = TestType.Error;
+            if (tag is Yaml.TAG_ERROR)
+            {
+                testCase.Type = TestType.Error;
+                continue;
+            }
+
+            foreach (var sol in sols.AsListOf<JsonObject>())
+            {
+                StripTags(sol);
+                testCase.Solutions ??= new List<JsonObject>();
+                testCase.Solutions.Add(sol);
+            }
+
+            if (result.TryGetValue<string>(Yaml.FLATZINC) is { } fzn)
+            {
+                testCase.Type = TestType.Compile;
+                testCase.OutputFiles ??= new List<string>();
+                testCase.OutputFiles.Add(fzn);
+            }
         }
-        else if (tag is Yaml.TAG_RESULT)
-        {
-            if (status is Yaml.UNSATISFIABLE)
-                testCase.Type = TestType.Unsatisfiable;
-            else { }
-        }
-        else if (type is "compile")
-        {
-            var fzn = expected.GetValue<string>(Yaml.FLATZINC);
-            testCase.Type = TestType.Compile;
-            testCase.OutputFiles = new() { fzn! };
-        }
-        else if (type is "output-model")
-        {
-            var ozn = expected.GetValue<string>(Yaml.OUTPUT_MODEL);
-            testCase.Type = TestType.Compile;
-            testCase.OutputFiles = new() { ozn };
-        }
-        else
-        {
-            throw new Exception("Unhandled path");
-        }
+
+        var nsols = testCase.Solutions?.Count ?? 0;
+        var a = testCase;
+
+        //
+        //     testCase.Solutions = solutions;
+        //     if (allSolutions)
+        //         testCase.Type = TestType.AllSolutions;
+        //     else
+        //         testCase.Type = TestType.Satisfy;
+        // }
+        // else if (tag is Yaml.TAG_ERROR)
+        // {
+        //     testCase.Type = TestType.Error;
+        // }
+        // else if (tag is Yaml.TAG_RESULT)
+        // {
+        //     if (status is Yaml.UNSATISFIABLE)
+        //         testCase.Type = TestType.Unsatisfiable;
+        //     else
+        //     {
+        //         var sol = ParseSolution(expected);
+        //         testCase.Solution = sol;
+        //     }
+        // }
+        // else if (type is "compile")
+        // {
+        //     var fzn = expected.GetValue<string>(Yaml.FLATZINC);
+        //     testCase.Type = TestType.Compile;
+        //     testCase.OutputFiles = new() { fzn };
+        // }
+        // else if (type is "output-model")
+        // {
+        //     var ozn = expected.GetValue<string>(Yaml.OUTPUT_MODEL);
+        //     testCase.Type = TestType.Compile;
+        //     testCase.OutputFiles = new() { ozn };
+        // }
+        // else
+        // {
+        //     throw new Exception("Unhandled path");
+        // }
+
 
         return testCase;
     }
@@ -212,12 +262,9 @@ public sealed record TestSpec
 
     private static void StripTags(JsonNode? node)
     {
-        node.Visit(o =>
+        node.Walk(o =>
         {
-            if (o.ContainsKey(Yaml.TAG))
-            {
-                o.Remove(Yaml.TAG);
-            }
+            o.Pop(Yaml.TAG);
         });
     }
 }

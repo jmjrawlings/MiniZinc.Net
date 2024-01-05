@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 
 public enum TestType
 {
+    Unknown,
     Compile,
     Satisfy,
     Solution,
@@ -30,11 +31,8 @@ public sealed record TestCase
     /// Enumeration of test type
     public TestType Type { get; set; }
 
-    /// The solution, present if Type in {Optimise, Satisfy}
-    public JsonObject? Solution { get; set; }
-
     /// All solutions, present if Type == AllSolutions or AnySolution
-    public JsonArray? Solutions { get; set; }
+    public List<JsonObject>? Solutions { get; set; }
 
     /// Any expected output files produced by the solver (eg flatzinc)
     public List<string>? OutputFiles { get; set; }

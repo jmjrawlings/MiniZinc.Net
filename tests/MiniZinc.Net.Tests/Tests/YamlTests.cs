@@ -16,7 +16,7 @@ public sealed class YamlTests : TestBase
         foreach (var yaml in TestSpec.ParseTestCaseYaml(file))
         {
             var json = Yaml.ParseString<JsonObject>(yaml);
-            var tcase = TestSpec.ParseTestCase(json!);
+            var tcase = TestSpec.ParseTestCase(path, json!);
             var a = 2;
         }
     }

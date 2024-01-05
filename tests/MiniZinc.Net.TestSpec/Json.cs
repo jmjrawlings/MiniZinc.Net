@@ -58,6 +58,24 @@ public static class Json
     /// <summary>
     /// Extract the values of the given json array
     /// </summary>
+    public static List<T> AsListOf<T>(this JsonNode? node)
+    {
+        var lst = new List<T>();
+        if (node is JsonArray arr)
+        {
+            foreach (var item in arr)
+                if (item is T t)
+                    lst.Add(t);
+        }
+        else if (node is T t)
+            lst.Add(t);
+
+        return lst;
+    }
+
+    /// <summary>
+    /// Extract the values of the given json array
+    /// </summary>
     public static List<T> ToList<T>(this JsonNode node)
     {
         if (node is JsonArray arr)
@@ -178,7 +196,7 @@ public static class Json
         return result;
     }
 
-    public static void Visit(
+    public static void Walk(
         this JsonNode? node,
         Action<JsonObject>? ifObj = null,
         Action<JsonArray>? ifArr = null,
@@ -193,14 +211,14 @@ public static class Json
                 ifArr?.Invoke(arr);
                 foreach (var item in arr)
                 {
-                    Visit(item, ifObj, ifArr, ifVal);
+                    Walk(item, ifObj, ifArr, ifVal);
                 }
                 break;
             case JsonObject obj:
                 ifObj?.Invoke(obj);
                 foreach (var (key, val) in obj)
                 {
-                    Visit(val, ifObj, ifArr, ifVal);
+                    Walk(val, ifObj, ifArr, ifVal);
                 }
 
                 break;
