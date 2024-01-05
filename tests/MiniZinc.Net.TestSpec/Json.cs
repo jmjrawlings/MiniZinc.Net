@@ -96,7 +96,17 @@ public static class Json
         throw new Exception("Node was not an array");
     }
 
-    public static T? GetValue<T>(this JsonNode? node, string key)
+    public static T? TryGetValue<T>(this JsonNode? node)
+        where T : notnull
+    {
+        if (node is null)
+            return default;
+
+        var value = node.GetValue<T>();
+        return value;
+    }
+
+    public static T? TryGetValue<T>(this JsonNode? node, string key)
         where T : notnull
     {
         var item = node?[key];
@@ -107,16 +117,21 @@ public static class Json
         return value;
     }
 
-    public static string? GetString(this JsonNode? node, string key) => node?.GetValue<string>(key);
+    public static T GetValue<T>(this JsonNode? node, string key)
+        where T : notnull => node.TryGetValue<T>(key) ?? throw new Exception();
 
+    /// <summary>
+    /// Pop the given key from a node
+    /// </summary>
     public static JsonNode? Pop(this JsonNode? node, string key)
     {
         if (node is JsonObject obj)
         {
-            if (obj[key] is { } val)
+            if (obj.ContainsKey(key))
             {
+                var item = obj[key];
                 obj.Remove(key);
-                return val;
+                return item;
             }
         }
 
@@ -157,7 +172,7 @@ public static class Json
             JsonArray x when arr is not null => arr(x),
             JsonObject x when obj is not null => obj(x),
             JsonValue x when val is not null => val(x),
-            _ => throw new ArgumentOutOfRangeException(nameof(node))
+            _ => default
         };
 
         return result;

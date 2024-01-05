@@ -13,21 +13,25 @@ public sealed class YamlTests : TestBase
     void Parse_Test_case(string path)
     {
         var file = LibMiniZincDir.JoinFile(path);
-        var tests = TestSpec.ParseTestCasesFromModelComments(file).ToList();
-        var a = 2;
+        foreach (var yaml in TestSpec.ParseTestCaseYaml(file))
+        {
+            var json = Yaml.ParseString<JsonObject>(yaml);
+            var tcase = TestSpec.ParseTestCase(json!);
+            var a = 2;
+        }
     }
 
     [Fact]
-    void Parse_Test_Suite_Yaml()
+    void Parse_Test_Suite_Yaml_As_Json()
     {
         var json = Yaml.ParseFile(TestSpecYaml);
         Guard.IsNotNull(json);
     }
 
     [Fact]
-    void Parse_Test_Spec()
+    void Parse_Test_Spec_From_Yaml()
     {
-        var spec = TestSpec.ParseTestCasesFromModelComments(TestSpecYaml);
+        var spec = TestSpec.ParseTestSpecFromYaml(TestSpecYaml);
         var a = spec;
     }
 
@@ -91,7 +95,7 @@ public sealed class YamlTests : TestBase
     [Fact]
     void Serialize_Test_Result()
     {
-        var result = new TestCase { Type = TestType.Solve };
+        var result = new TestCase { Type = TestType.Solution };
         var converter = new JsonStringEnumConverter();
         var options = new JsonSerializerOptions();
         options.Converters.Add(converter);

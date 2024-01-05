@@ -59,8 +59,16 @@ public sealed record TestSpec
         foreach (var modelPath in modelPaths)
         {
             var model = new FileInfo(Path.Join(dir.FullName, modelPath));
-            foreach (var testCase in ParseTestCasesFromModelComments(model))
+            foreach (var yaml in ParseTestCaseYaml(model))
             {
+                var node = Yaml.ParseString<JsonObject>(yaml);
+                if (node is null)
+                {
+                    Console.WriteLine($"Could not parse test case for {modelPath}");
+                    continue;
+                }
+
+                var testCase = ParseTestCase(node);
                 testCase.Path = modelPath;
                 spec.TestCases.Add(testCase);
             }
@@ -72,42 +80,59 @@ public sealed record TestSpec
     /// <summary>
     /// Parse yaml contained within the test file comments
     /// </summary>
-    public static TestCase ParseTestCasesFromModelComments(JsonObject json)
+    public static TestCase ParseTestCase(JsonObject node)
     {
-        var solvers = json["solvers"]?.ToNonEmptyList<string>();
-        var solveOptions = json["options"]?.AsObject();
-        var allSolutions = solveOptions?.GetValue<bool>("all_solutions") ?? false;
-        var type = json["type"]?.GetValue<string>();
-        var inputFiles = json["extra_files"]?.ToNonEmptyList<string>();
-        var expected = json["expected"];
-        var @case = new TestCase
+        var solvers = node["solvers"]?.ToNonEmptyList<string>();
+        var options = node["solve_options"]?.AsObject();
+        var allSolutions = options?.TryGetValue<bool>("all_solutions") ?? false;
+        var type = node["type"]?.GetValue<string>();
+        var inputFiles = node["extra_files"]?.ToNonEmptyList<string>();
+        var expected = node["expected"];
+        var status = (expected as JsonObject)?.TryGetValue<string>("status");
+        var testCase = new TestCase
         {
             Solvers = solvers,
-            SolveOptions = solveOptions,
+            SolveOptions = options,
             InputFiles = inputFiles
         };
-        
-        var status = (expected as JsonObject)?.GetString("status");
-        string? tag = GetTag(node);
-        switch (type, tag, status) switch
-        {
-            (_, Yaml.TAG_ERROR, _) => ParseErrorResult(node),
-            (_, Yaml.TAG_RESULT, Yaml.SATISFIED) => ParseSatisfyResult(node),
-            (_, Yaml.TAG_RESULT, Yaml.UNSATISFIABLE) => ParseUnsatisfiableResult(node),
-            (_, Yaml.TAG_RESULT, _) => ParseTestCaseFromSolution(node),
-            ("compile", _, _) => ParseCompileResult(node),
-            ("output-model", _, _) => ParseOutputResult(node),
-            _ => throw new Exception()
-        };
 
-        
-        return @case;
+        string? tag = GetTag(expected);
+
+        if (expected is JsonArray arr) { }
+        else if (tag is Yaml.TAG_ERROR)
+        {
+            testCase.Type = TestType.Error;
+        }
+        else if (tag is Yaml.TAG_RESULT)
+        {
+            if (status is Yaml.UNSATISFIABLE)
+                testCase.Type = TestType.Unsatisfiable;
+            else { }
+        }
+        else if (type is "compile")
+        {
+            var fzn = expected.GetValue<string>(Yaml.FLATZINC);
+            testCase.Type = TestType.Compile;
+            testCase.OutputFiles = new() { fzn! };
+        }
+        else if (type is "output-model")
+        {
+            var ozn = expected.GetValue<string>(Yaml.OUTPUT_MODEL);
+            testCase.Type = TestType.Compile;
+            testCase.OutputFiles = new() { ozn };
+        }
+        else
+        {
+            throw new Exception("Unhandled path");
+        }
+
+        return testCase;
     }
 
     /// <summary>
     /// Parse yaml contained within the test file comments
     /// </summary>
-    public static IEnumerable<TestCase> ParseTestCasesFromModelComments(FileInfo file)
+    public static IEnumerable<string> ParseTestCaseYaml(FileInfo file)
     {
         var sb = new StringBuilder();
         using var stream = file.OpenRead();
@@ -149,17 +174,8 @@ public sealed record TestSpec
         );
         foreach (var s in testStrings)
         {
-            var json = Yaml.ParseString<JsonObject>(s);
-            if (json is null)
-            {
-                Console.WriteLine($"Could not parse yaml for {file.FullName}");
-                continue;
-            }
-
-            var @case = ParseTestCasesFromModelComments(json);
-            yield return @case;
+            yield return s;
         }
-
         yield break;
 
         bool Skip(char c)
@@ -203,64 +219,5 @@ public sealed record TestSpec
                 o.Remove(Yaml.TAG);
             }
         });
-    }
-
-    private static TestCase ParseOutputResult(JsonNode node)
-    {
-        var ozn = node.GetStringExn(Yaml.OUTPUT_MODEL);
-        var result = new TestCase
-        {
-            Type = TestType.Compile,
-            OutputFiles = new() { ozn }
-        };
-        return result;
-    }
-
-    private static TestCase ParseCompileResult(JsonNode node)
-    {
-        var fzn = node.GetStringExn(Yaml.FLATZINC);
-        var result = new TestCase
-        {
-            Type = TestType.Compile,
-            OutputFiles = new() { fzn! }
-        };
-        return result;
-    }
-
-    private static TestCase ParseTestCaseFromSolution(JsonNode? node)
-    {
-        var solution = node?["solution"];
-
-        if (solution is null)
-            return new TestCase { Type = TestType.Compile };
-
-        StripTags(solution);
-
-        if (solution is JsonObject obj)
-            return new TestCase { Type = TestType.Solve, Solution = obj };
-
-        if (solution is JsonArray arr)
-            return new TestCase { Type = TestType.AllSolutions, AllSolutions = arr };
-
-        throw new Exception();
-    }
-
-    private static TestCase ParseSatisfyResult(JsonNode node)
-    {
-        var result = ParseTestCaseFromSolution(node);
-        result.Type = TestType.Satisfy;
-        return result;
-    }
-
-    private static TestCase ParseUnsatisfiableResult(JsonNode node)
-    {
-        var result = new TestCase { Type = TestType.Unsatisfiable };
-        return result;
-    }
-
-    private static TestCase ParseErrorResult(JsonNode node)
-    {
-        var result = new TestCase { Type = TestType.Error };
-        return result;
     }
 }
