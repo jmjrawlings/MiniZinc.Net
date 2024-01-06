@@ -7,11 +7,11 @@ public enum TestType
     Unknown,
     Compile,
     Satisfy,
-    Solution,
+    AnySolution,
     AllSolutions,
-    Error,
     OutputModel,
-    Unsatisfiable
+    Unsatisfiable,
+    Error
 }
 
 public sealed record TestCase
@@ -26,7 +26,7 @@ public sealed record TestCase
     public List<string>? InputFiles { get; set; }
 
     /// Solver flags to pass through
-    public JsonNode? SolveOptions { get; set; }
+    public JsonNode? Options { get; set; }
 
     /// Enumeration of test type
     public TestType Type { get; set; }

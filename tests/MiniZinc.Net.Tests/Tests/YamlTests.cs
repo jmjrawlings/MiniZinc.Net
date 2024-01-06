@@ -9,7 +9,7 @@ using static Prelude;
 public sealed class YamlTests : TestBase
 {
     [Theory]
-    [InlineData("unit\\compilation\\aggregation.mzn")]
+    [InlineData("unit\\compilation\\par_arg_out_of_bounds.mzn")]
     void Parse_Test_case(string path)
     {
         var file = LibMiniZincDir.JoinFile(path);
@@ -95,13 +95,13 @@ public sealed class YamlTests : TestBase
     [Fact]
     void Serialize_Test_Result()
     {
-        var result = new TestCase { Type = TestType.Solution };
+        var result = new TestCase { Type = TestType.AnySolution };
         var converter = new JsonStringEnumConverter();
         var options = new JsonSerializerOptions();
         options.Converters.Add(converter);
         options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         var json = JsonSerializer.Serialize(result, options);
-        json.Should().BeEquivalentTo("""{"Type":"Solution"}""");
+        json.Should().BeEquivalentTo("""{"Type":"AnySolution"}""");
     }
 
     public YamlTests(LoggingFixture logging, ITestOutputHelper output)

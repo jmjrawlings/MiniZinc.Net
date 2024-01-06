@@ -94,48 +94,77 @@ public sealed record TestSpec
     {
         var solvers = node["solvers"]?.ToNonEmptyList<string>();
         var options = (node["solve_options"] ?? node["options"])?.AsObject();
-        var allSolutions = options?.TryGetValue<bool>("all_solutions") ?? false;
-        var type = node["type"]?.GetValue<string>();
+        var allSolutions = options?.Pop("all_solutions").TryGetValue<bool>() ?? false;
+        var test_type = node["type"]?.GetValue<string>();
         var inputFiles = node["extra_files"]?.ToNonEmptyList<string>();
         var results = node["expected"].AsListOf<JsonObject>();
 
         var testCase = new TestCase
         {
             Solvers = solvers,
-            SolveOptions = options,
+            Options = options?.Count > 0 ? options : null,
             InputFiles = inputFiles,
-            Path = path
+            Path = path,
+            Type = allSolutions ? TestType.AllSolutions : TestType.AnySolution
         };
 
         foreach (var result in results)
         {
             var status = result.TryGetValue<string>("status");
             string? tag = GetTag(result);
-            var sols = result.Pop("solution");
 
             if (tag is Yaml.TAG_ERROR)
             {
                 testCase.Type = TestType.Error;
-                continue;
             }
-
-            foreach (var sol in sols.AsListOf<JsonObject>())
+            else if (result.Pop("solution") is { } x)
             {
-                StripTags(sol);
-                testCase.Solutions ??= new List<JsonObject>();
-                testCase.Solutions.Add(sol);
+                var sols = x.AsListOf<JsonObject>();
+                foreach (var sol in sols)
+                {
+                    StripTags(sol);
+                    if (sol.Count == 0)
+                    {
+                        testCase.Type = TestType.Satisfy;
+                        break;
+                    }
+                    testCase.Solutions ??= new List<JsonObject>();
+                    testCase.Solutions.Add(sol);
+                }
             }
-
-            if (result.TryGetValue<string>(Yaml.FLATZINC) is { } fzn)
+            else if (result.TryGetValue<string>(Yaml.FLATZINC) is { } fzn)
             {
                 testCase.Type = TestType.Compile;
                 testCase.OutputFiles ??= new List<string>();
                 testCase.OutputFiles.Add(fzn);
             }
+            else if (result.TryGetValue<string>(Yaml.OUTPUT_MODEL) is { } ozn)
+            {
+                testCase.Type = TestType.OutputModel;
+                testCase.OutputFiles ??= new List<string>();
+                testCase.OutputFiles.Add(ozn);
+            }
+            else if (status is Yaml.UNSATISFIABLE)
+            {
+                testCase.Type = TestType.Unsatisfiable;
+                break;
+            }
+            else if (status is Yaml.SATISFIED)
+            {
+                testCase.Type = TestType.Satisfy;
+                break;
+            }
+            else if (result.Count == 0)
+            {
+                testCase.Type = TestType.Satisfy;
+            }
+            else
+            {
+                var a = 2;
+            }
         }
 
         var nsols = testCase.Solutions?.Count ?? 0;
-        var a = testCase;
 
         //
         //     testCase.Solutions = solutions;
