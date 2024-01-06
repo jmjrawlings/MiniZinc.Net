@@ -168,10 +168,10 @@ public static class Json
             {
                 DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower,
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-                WriteIndented = false,
+                WriteIndented = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
-            var converter = new JsonStringEnumConverter();
+            var converter = new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower);
             options.Converters.Add(converter);
             _options = options;
             return options;
