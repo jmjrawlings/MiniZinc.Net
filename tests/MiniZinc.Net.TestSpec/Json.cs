@@ -168,7 +168,7 @@ public static class Json
             {
                 DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower,
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-                WriteIndented = true,
+                WriteIndented = false,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
             var converter = new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower);
