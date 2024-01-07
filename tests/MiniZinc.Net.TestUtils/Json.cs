@@ -1,15 +1,15 @@
-﻿using System.Text.Json;
+﻿namespace MiniZinc.Net.Tests;
+
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Diagnostics;
-
-namespace MiniZinc.Net.Tests;
 
 public static class Json
 {
     public static string SerializeToString(object obj)
     {
-        var json = JsonSerializer.Serialize(obj, Options);
+        var json = JsonSerializer.Serialize(obj, SerializerOptions);
         return json;
     }
 
@@ -22,7 +22,7 @@ public static class Json
 
     public static T DeserializeFromString<T>(string s)
     {
-        var result = JsonSerializer.Deserialize<T>(s, Options);
+        var result = JsonSerializer.Deserialize<T>(s, SerializerOptions);
         Guard.IsNotNull(result);
         return result;
     }
@@ -156,13 +156,13 @@ public static class Json
         return null;
     }
 
-    private static JsonSerializerOptions? _options;
-    public static JsonSerializerOptions Options
+    private static JsonSerializerOptions? _seraliazerOptions;
+    public static JsonSerializerOptions SerializerOptions
     {
         get
         {
-            if (_options is not null)
-                return _options;
+            if (_seraliazerOptions is not null)
+                return _seraliazerOptions;
 
             var options = new JsonSerializerOptions
             {
@@ -173,7 +173,7 @@ public static class Json
             };
             var converter = new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower);
             options.Converters.Add(converter);
-            _options = options;
+            _seraliazerOptions = options;
             return options;
         }
     }

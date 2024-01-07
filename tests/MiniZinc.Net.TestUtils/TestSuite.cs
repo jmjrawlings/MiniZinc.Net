@@ -1,6 +1,5 @@
 ﻿namespace MiniZinc.Net.Tests;
 
-using System.IO;
 using System.Text.Json.Nodes;
 
 public sealed record TestSuite

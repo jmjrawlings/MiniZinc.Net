@@ -2,15 +2,13 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using CommunityToolkit.Diagnostics;
-using static Prelude;
+using static FileExtensions;
 
-public sealed class YamlTests : TestBase
+public sealed class TestSpecTests : TestBase
 {
     [Theory]
     [InlineData("unit\\compilation\\par_arg_out_of_bounds.mzn")]
-    void Parse_Test_case(string path)
+    void Parse_TestCase_From_String(string path)
     {
         var file = LibMiniZincDir.JoinFile(path);
         foreach (var yaml in TestSpec.ParseTestCaseYaml(file))
@@ -22,30 +20,19 @@ public sealed class YamlTests : TestBase
     }
 
     [Fact]
-    void Parse_Test_Suite_Yaml_As_Json()
+    void Parse_TestSpec_From_Yaml()
     {
-        var json = Yaml.ParseFile(TestSpecYaml);
-        Guard.IsNotNull(json);
-    }
-
-    [Fact]
-    void Parse_Test_Spec_From_Yaml()
-    {
-        var spec = TestSpec.ParseTestSpecFromYaml(TestSpecYaml);
-        var a = spec;
-    }
-
-    [Fact]
-    void Test_Spec_Parse_Integration()
-    {
-        var spec1 = TestSpec.ParseTestSpecFromYaml(TestSpecYaml);
-        var file = Json.SerializeToFile(spec1, TestSpecJson);
-        var spec2 = TestSpec.ParseTestSpecFromJson(TestSpecJson);
+        var cwd = Directory.GetCurrentDirectory().ToDirectory();
+        var spec1 = TestSpec.ParseYaml(TestSpecYaml);
+        // var dst = cwd.JoinFile("suites.json");
+        var dst = TestSpecJson;
+        Json.SerializeToFile(spec1, dst);
+        var spec2 = TestSpec.ParseJson(dst);
         var a = 2;
     }
 
     [Fact]
-    void Parse_Test_Result()
+    void Parse_Test_Results_From_String()
     {
         var str = """
                   !Test
@@ -75,7 +62,7 @@ public sealed class YamlTests : TestBase
     }
 
     [Fact]
-    void Parse_Sets_And_Ranges()
+    void Parse_Sets_And_Ranges_From_String()
     {
         var yaml = """
         !Test
@@ -84,8 +71,7 @@ public sealed class YamlTests : TestBase
             solution: !Solution
                 alldisj_avsi: [!Range 6..7, !Range 3..4, !!set {5, 8}, !Range 1..2]
 """;
-        var map = Yaml.ParseString<JsonObject>(yaml);
-        // map["__tag__"]?.GetValue<string>().Should().Be(Yaml.TEST);
+        var map = Yaml.ParseString<JsonObject>(yaml)!;
         var exp = map["expected"]!.AsArray()[0]!;
         var sol = exp["solution"]!;
         var a = sol["alldisj_avsi"]!.AsArray();
@@ -93,17 +79,14 @@ public sealed class YamlTests : TestBase
     }
 
     [Fact]
-    void Serialize_Test_Result()
+    void Serialize_TestCase()
     {
         var result = new TestCase { Type = TestType.AnySolution };
-        var converter = new JsonStringEnumConverter();
-        var options = new JsonSerializerOptions();
-        options.Converters.Add(converter);
-        options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        var options = Json.SerializerOptions;
         var json = JsonSerializer.Serialize(result, options);
-        json.Should().BeEquivalentTo("""{"Type":"AnySolution"}""");
+        json.Should().BeEquivalentTo("""{"Type":"any_solution"}""");
     }
 
-    public YamlTests(LoggingFixture logging, ITestOutputHelper output)
+    public TestSpecTests(LoggingFixture logging, ITestOutputHelper output)
         : base(logging, output) { }
 }

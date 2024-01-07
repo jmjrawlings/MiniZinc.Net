@@ -19,7 +19,7 @@ public sealed class LexerTests
     private LexerTests(TestSpec spec)
     {
         Spec = spec;
-        _namespace = NamespaceDeclaration(ParseName("MiniZinc.Net.Tests")).NormalizeWhitespace();
+        _namespace = NamespaceDeclaration(ParseName("MiniZinc.Net.UnitTests")).NormalizeWhitespace();
         _tests = new List<MethodDeclarationSyntax>();
         Using("System");
         _class = ClassDeclaration("LexerIntegrationTests");

@@ -6,19 +6,28 @@ using CommunityToolkit.Diagnostics;
 
 public sealed record TestSpec
 {
-    public List<TestSuite> TestSuites { get; } = new();
+    public required List<TestSuite> TestSuites { get; init; }
 
-    public List<TestCase> TestCases { get; } = new();
+    public required List<TestCase> TestCases { get; init; }
 
-    public static TestSpec ParseTestSpecFromJson(FileInfo file)
+    public static TestSpec ParseJson(FileInfo file)
     {
         var spec = Json.DeserializeFromFile<TestSpec>(file);
         return spec;
     }
 
-    public static TestSpec ParseTestSpecFromYaml(FileInfo file)
+    public static TestSpec ParseJson()
     {
-        var spec = new TestSpec();
+        var cwd = Directory.GetCurrentDirectory();
+        var path = Path.Join(cwd, "tests.json");
+        var file = new FileInfo(path);
+        var spec = ParseJson(file);
+        return spec;
+    }
+
+    public static TestSpec ParseYaml(FileInfo file)
+    {
+        var spec = new TestSpec { TestCases = new(), TestSuites = new() };
         var dir = file.Directory!;
         var modelPaths = new HashSet<string>();
         var specNode = Yaml.ParseFile<JsonObject>(file);
@@ -76,17 +85,6 @@ public sealed record TestSpec
         return spec;
     }
 
-    public static JsonObject? ParseSolution(JsonNode? result)
-    {
-        if (result.Pop("solution") is JsonObject sol)
-        {
-            StripTags(sol);
-            return sol;
-        }
-
-        return null;
-    }
-
     /// <summary>
     /// Parse yaml contained within the test file comments
     /// </summary>
@@ -128,8 +126,18 @@ public sealed record TestSpec
                         testCase.Type = TestType.Satisfy;
                         break;
                     }
-                    testCase.Solutions ??= new List<JsonObject>();
-                    testCase.Solutions.Add(sol);
+
+                    var output = sol.Pop("_output_item")?.ToString();
+                    var objective = sol.Pop("objective")?.AsValue();
+                    var solution = new TestSolution
+                    {
+                        Objective = objective,
+                        Output = output,
+                        Vars = sol
+                    };
+
+                    testCase.Solutions ??= new List<TestSolution>();
+                    testCase.Solutions.Add(solution);
                 }
             }
             else if (result.TryGetValue<string>(Yaml.FLATZINC) is { } fzn)

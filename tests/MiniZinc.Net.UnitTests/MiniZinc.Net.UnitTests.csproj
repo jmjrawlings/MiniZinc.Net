@@ -1,14 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
-    <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0-rc.2.23479.6" />
@@ -28,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.csproj" />
-    <ProjectReference Include="..\MiniZinc.Net.TestSpec\MiniZinc.Net.TestSpec.csproj" />
+    <ProjectReference Include="..\MiniZinc.Net.TestUtils\MiniZinc.Net.TestUtils.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Net.Build;
 
 using System.Reflection;
-using MiniZinc.Net.Build;
+using MiniZinc.Net.Tests;
 
 public static class Prelude
 {
@@ -19,7 +19,7 @@ public static class Prelude
 
     public static DirectoryInfo BuildDir => ProjectDir.JoinDir("build");
 
-    public static DirectoryInfo TestSpecDir => TestDir.JoinDir("MiniZinc.Net.TestSpec");
+    public static DirectoryInfo TestSpecDir => TestDir.JoinDir("MiniZinc.Net.TestUtils");
 
     public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");
 

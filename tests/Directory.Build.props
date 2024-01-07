@@ -1,8 +1,12 @@
 <Project>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
     <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>        
         <RootNamespace>MiniZinc.Tests</RootNamespace>
+        <Nullable>enable</Nullable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <LangVersion>preview</LangVersion>        
     </PropertyGroup>
 </Project>

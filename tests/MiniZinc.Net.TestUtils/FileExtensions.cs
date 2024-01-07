@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Net.Build;
+﻿namespace MiniZinc.Net.Tests;
+
+using System.Reflection;
 
 public static class FileExtensions
 {
@@ -68,5 +70,43 @@ public static class FileExtensions
     {
         var dj = new DirectoryInfo(path);
         return di.CopyContentsTo(dj);
+    }
+
+    public static string RelativeTo(this FileSystemInfo fsi, string path)
+    {
+        var uri = Path.GetRelativePath(path, fsi.FullName);
+        return uri;
+    }
+
+    public static string RelativeTo(this FileSystemInfo fsi, FileSystemInfo other) =>
+        fsi.RelativeTo(other.FullName);
+
+    private static FileInfo? _solutionFile;
+
+    public static FileInfo SolutionFile => _solutionFile ??= GetSolutionFile();
+
+    public static DirectoryInfo ProjectDir => SolutionFile.Directory!;
+
+    public static DirectoryInfo SourceDir => ProjectDir.JoinDir("src");
+
+    public static DirectoryInfo TestDir => ProjectDir.JoinDir("tests");
+
+    public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");
+
+    public static FileInfo TestSpecYaml => LibMiniZincDir.JoinFile("suites.yml");
+
+    public static FileInfo TestSpecJson => LibMiniZincDir.JoinFile("tests.json");
+
+    private static FileInfo GetSolutionFile()
+    {
+        var assembly = Assembly.GetExecutingAssembly().Location.ToFile();
+        var sln = assembly.Directory!.JoinFile("MiniZinc.Net.sln");
+        while (!sln.Exists)
+        {
+            var dir = sln.Directory!.Parent;
+            sln = dir!.JoinFile(sln.Name);
+        }
+
+        return sln;
     }
 }
