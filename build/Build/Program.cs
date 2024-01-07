@@ -1,9 +1,8 @@
 ﻿using System.CommandLine;
-using MiniZinc.Build;
 using MiniZinc.Net;
 using MiniZinc.Net.Build;
 using MiniZinc.Net.Tests;
-using static MiniZinc.Net.Build.Prelude;
+using static MiniZinc.Net.Tests.FileExtensions;
 using CliCommand = System.CommandLine.Command;
 using Command = MiniZinc.Net.Command;
 
@@ -35,7 +34,7 @@ return result;
 
 async Task CloneLibMiniZincTests()
 {
-    var url = $"{LibMiniZincUrl}.git";
+    var url = $"https://github.com/MiniZinc/libminizinc.git";
     var libDir = LibMiniZincDir.CreateOrClear();
     var cloneDir = Environment
         .CurrentDirectory.JoinPath(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))

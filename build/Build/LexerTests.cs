@@ -1,9 +1,9 @@
-﻿namespace MiniZinc.Build;
+﻿namespace MiniZinc.Net.Build;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MiniZinc.Net.Tests;
+using Tests;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 public sealed class LexerTests
@@ -19,7 +19,8 @@ public sealed class LexerTests
     private LexerTests(TestSpec spec)
     {
         Spec = spec;
-        _namespace = NamespaceDeclaration(ParseName("MiniZinc.Net.UnitTests")).NormalizeWhitespace();
+        _namespace = NamespaceDeclaration(ParseName("MiniZinc.Net.UnitTests"))
+            .NormalizeWhitespace();
         _tests = new List<MethodDeclarationSyntax>();
         Using("System");
         _class = ClassDeclaration("LexerIntegrationTests");
