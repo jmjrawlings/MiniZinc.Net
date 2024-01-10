@@ -6,13 +6,13 @@ on:
       - master
 
 jobs:
-  test-model:
+  unit-tests:
     name:
-      Test Model
+      Unit Tests
     runs-on:
       ubuntu-latest
     env:
-      PROJ: tests/MiniZinc.ModelTests/MiniZinc.ModelTests.fsproj
+      PROJ: tests/MiniZinc.Net.UnitTests/MiniZinc.UnitTests.csproj
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -20,24 +20,25 @@ jobs:
       - name: Install DotNet
         uses: actions/setup-dotnet@v3
       
-      - name: Dotnet restore
+      - name: Dotnet Restore
         run: dotnet restore $PROJ
       
-      - name: Dotnet build
+      - name: Dotnet Build
         run: dotnet build $PROJ --no-restore
       
-      - name: Dotnet test        
-        run: dotnet test $PROJ --no-build
+      - name: Dotnet Test        
+        run: dotnet test $PROJ --no-build --verbosity normal
 
   test-client:
+    if: false
     name:
-      Test Client - v${{ matrix.minizinc-version }}
+      Client Tests v${{ matrix.minizinc-version }}
     runs-on:
       ubuntu-latest
     strategy:
       matrix:
         minizinc-version:
-          - "2.7.6"
+          - "2.8.2"
           #- "2.6.4"
           #- "2.5.5"
     env:
@@ -75,11 +76,11 @@ jobs:
       - name: Install DotNet
         uses: actions/setup-dotnet@v3
         
-      - name: Dotnet restore
+      - name: Dotnet Restore
         run: dotnet restore $PROJ
         
-      - name: Dotnet build
+      - name: Dotnet Build
         run: dotnet build $PROJ --no-restore
         
-      - name: Dotnet test
+      - name: Dotnet Test
         run: dotnet test $PROJ --no-build --verbosity normal

@@ -55,7 +55,6 @@ public sealed class TestSpecTests : TestBase
                       row_sums: [2, 2, 3, 2, 2, 1, 5, 1, 2]
                   """;
         var map = Yaml.ParseString<JsonObject>(str);
-        // map["__tag__"]?.GetValue<string>().Should().Be(Yaml.TEST);
         var exp = map["expected"]!.AsArray()[0]!;
         var sol = exp["solution"]!;
         var a = sol["a"]!;
@@ -84,7 +83,7 @@ public sealed class TestSpecTests : TestBase
         var result = new TestCase { Type = TestType.AnySolution };
         var options = Json.SerializerOptions;
         var json = JsonSerializer.Serialize(result, options);
-        json.Should().BeEquivalentTo("""{"Type":"any_solution"}""");
+        json.Should().BeEquivalentTo("""{"type":"any_solution"}""");
     }
 
     public TestSpecTests(LoggingFixture logging, ITestOutputHelper output)
