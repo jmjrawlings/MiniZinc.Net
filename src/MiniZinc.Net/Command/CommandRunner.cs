@@ -3,6 +3,9 @@
 using System.Diagnostics;
 using System.Text;
 
+/// <summary>
+/// Runs the given command to completion
+/// </summary>
 internal sealed class CommandRunner
 {
     public readonly Command Command;
@@ -11,8 +14,6 @@ internal sealed class CommandRunner
     public readonly DateTimeOffset StartTime;
     public readonly string CommandString;
     private readonly TaskCompletionSource<CommandResult> _tcs;
-    public Arg[]? Args => Command.Args;
-    public string Exe => Command.Exe;
 
     public CommandRunner(Command cmd)
     {
@@ -34,7 +35,7 @@ internal sealed class CommandRunner
         CommandString = cmd.String;
         if (cmd.Args is not null)
             foreach (var arg in cmd.Args)
-                StartInfo.ArgumentList.Add(arg.String);
+                StartInfo.ArgumentList.Add(arg);
 
         Process = new Process();
         Process.EnableRaisingEvents = true;

@@ -8,7 +8,7 @@ public sealed class CommandTests : TestBase
     [InlineData("-a1")]
     public void Parse_Flag_Only_Arg(string s)
     {
-        var arg = Command.ParseArg(s).Value;
+        var arg = CommandArg.Parse(s) ?? default;
         Assert.Null(arg.Value);
         Assert.False(arg.Eq);
         Assert.Equal(arg.String, s);
@@ -20,7 +20,7 @@ public sealed class CommandTests : TestBase
     [InlineData("-one=2")]
     public void Parse_Flag_And_Value_Arg(string s)
     {
-        var arg = Command.ParseArg(s).Value;
+        var arg = CommandArg.Parse(s) ?? default;
         Assert.NotNull(arg.Flag);
         Assert.NotNull(arg.Value);
         Assert.Equal(arg.String, s);
@@ -30,7 +30,7 @@ public sealed class CommandTests : TestBase
     public void Parse_Url_Flag()
     {
         var url = @"https://github.com/MiniZinc/libminizinc.git";
-        var arg = Command.ParseArg(url).Value;
+        var arg = CommandArg.Parse(url) ?? default;
         Assert.Equal(arg.Value, url);
     }
 
@@ -40,7 +40,7 @@ public sealed class CommandTests : TestBase
     [InlineData("\"asdfasdf asdf\"")]
     public void Parse_Value_Only_Arg(string s)
     {
-        var arg = Command.ParseArg(s).Value;
+        var arg = CommandArg.Parse(s) ?? default;
         Assert.Null(arg.Flag);
         Assert.False(arg.Eq);
         Assert.Equal(arg.Value, s);

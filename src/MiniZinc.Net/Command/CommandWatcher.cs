@@ -1,20 +1,21 @@
-﻿using System.Diagnostics;
+﻿namespace MiniZinc.Net;
+
+using System.Diagnostics;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 
-namespace MiniZinc.Net;
-
-internal sealed class CommandStreamer
+internal sealed class CommandWatcher : IAsyncEnumerable<CommandMessage>
 {
     public readonly Command Command;
     public readonly ProcessStartInfo StartInfo;
     public readonly Process Process;
     public readonly DateTimeOffset StartTime;
     public readonly string CommandString;
-    private readonly Channel<CommandOutput> _channel;
+    private readonly Channel<CommandMessage> _channel;
     private readonly ILogger? _logger;
+    private IAsyncEnumerator<CommandMessage>? _asyncEnumerable;
 
-    public CommandStreamer(Command cmd, ILogger? logger = null)
+    public CommandWatcher(Command cmd, ILogger? logger = null)
     {
         _logger = logger;
         Command = cmd;
@@ -27,11 +28,8 @@ internal sealed class CommandStreamer
             CreateNoWindow = true
         };
         CommandString = cmd.String;
-        if (cmd.Args is { } args)
-        {
-            foreach (var arg in args)
-                StartInfo.ArgumentList.Add(arg.String);
-        }
+        foreach (var arg in cmd.Args)
+            StartInfo.ArgumentList.Add(arg);
 
         Process = new Process();
         Process.EnableRaisingEvents = true;
@@ -41,7 +39,7 @@ internal sealed class CommandStreamer
         Process.Exited += OnExit;
         _logger?.LogInformation("Command {Command} started", CommandString);
         Process.Start();
-        _channel = Channel.CreateUnbounded<CommandOutput>(
+        _channel = Channel.CreateUnbounded<CommandMessage>(
             new UnboundedChannelOptions
             {
                 SingleWriter = false,
@@ -51,50 +49,27 @@ internal sealed class CommandStreamer
         );
     }
 
-    public async IAsyncEnumerable<CommandOutput> Stream()
-    {
-        var msg = new CommandOutput
-        {
-            Command = CommandString,
-            ProcessId = Process.Id,
-            Message = string.Empty,
-            Status = CommandStatus.Started,
-            StartTime = DateTimeOffset.Now,
-            TimeStamp = DateTimeOffset.Now,
-            Elapsed = TimeSpan.Zero
-        };
-
-        _channel.Writer.TryWrite(msg);
-        Process.BeginOutputReadLine();
-        Process.BeginErrorReadLine();
-
-        await foreach (var output in _channel.Reader.ReadAllAsync())
-        {
-            yield return output;
-        }
-    }
-
     private void OnExit(object? sender, EventArgs e)
     {
-        CommandStatus status;
+        CommandOutputType outputType;
         LogLevel level;
         if (Process.ExitCode > 0)
         {
             level = LogLevel.Error;
-            status = CommandStatus.Failure;
+            outputType = CommandOutputType.Failure;
         }
         else
         {
             level = LogLevel.Information;
-            status = CommandStatus.Success;
+            outputType = CommandOutputType.Success;
         }
 
-        var msg = new CommandOutput
+        var msg = new CommandMessage
         {
             Command = CommandString,
             ProcessId = Process.Id,
-            Message = string.Empty,
-            Status = status,
+            Content = string.Empty,
+            Type = outputType,
             StartTime = StartTime,
             TimeStamp = DateTimeOffset.Now,
             Elapsed = DateTimeOffset.Now - StartTime
@@ -116,17 +91,17 @@ internal sealed class CommandStreamer
         if (e.Data is null)
             return;
 
-        var msg = new CommandOutput
+        var msg = new CommandMessage
         {
             Command = CommandString,
             ProcessId = Process.Id,
-            Message = e.Data,
-            Status = CommandStatus.StdErr,
+            Content = e.Data,
+            Type = CommandOutputType.StdErr,
             StartTime = StartTime,
             TimeStamp = DateTimeOffset.Now,
             Elapsed = DateTimeOffset.Now - StartTime
         };
-        _logger?.LogError("{Message}", msg.Message);
+        _logger?.LogError("{Message}", msg.Content);
         _channel.Writer.TryWrite(msg);
     }
 
@@ -135,17 +110,44 @@ internal sealed class CommandStreamer
         if (e.Data is null)
             return;
 
-        var msg = new CommandOutput
+        var msg = new CommandMessage
         {
             Command = CommandString,
             ProcessId = Process.Id,
-            Message = e.Data,
-            Status = CommandStatus.StdOut,
+            Content = e.Data,
+            Type = CommandOutputType.StdOut,
             StartTime = StartTime,
             TimeStamp = DateTimeOffset.Now,
             Elapsed = DateTimeOffset.Now - StartTime
         };
-        _logger?.LogInformation("{Message}", msg.Message);
+        _logger?.LogInformation("{Message}", msg.Content);
         _channel.Writer.TryWrite(msg);
+    }
+
+    public IAsyncEnumerator<CommandMessage> GetAsyncEnumerator(
+        CancellationToken cancellationToken = new()
+    )
+    {
+        if (_asyncEnumerable is not null)
+            return _asyncEnumerable;
+
+        var msg = new CommandMessage
+        {
+            Command = CommandString,
+            ProcessId = Process.Id,
+            Content = string.Empty,
+            Type = CommandOutputType.Started,
+            StartTime = DateTimeOffset.Now,
+            TimeStamp = DateTimeOffset.Now,
+            Elapsed = TimeSpan.Zero
+        };
+
+        _channel.Writer.TryWrite(msg);
+        Process.BeginOutputReadLine();
+        Process.BeginErrorReadLine();
+        _asyncEnumerable = _channel
+            .Reader.ReadAllAsync(cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
+        return _asyncEnumerable;
     }
 }
