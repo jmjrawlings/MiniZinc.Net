@@ -1,4 +1,4 @@
-﻿// namespace MiniZinc.Net.UnitTests;
+﻿// namespace MiniZinc.Net.Tests.UnitTests;
 //
 // using static Prelude;
 //
