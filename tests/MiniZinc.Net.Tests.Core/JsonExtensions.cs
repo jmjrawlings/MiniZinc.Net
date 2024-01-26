@@ -1,39 +1,9 @@
 ﻿namespace MiniZinc.Net.Tests;
 
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using CommunityToolkit.Diagnostics;
 
-public static class Json
+public static class JsonExtensions
 {
-    public static string SerializeToString(object obj)
-    {
-        var json = JsonSerializer.Serialize(obj, SerializerOptions);
-        return json;
-    }
-
-    public static FileInfo SerializeToFile(object obj, FileInfo file)
-    {
-        var json = SerializeToString(obj);
-        File.WriteAllText(file.FullName, json);
-        return file;
-    }
-
-    public static T DeserializeFromString<T>(string s)
-    {
-        var result = JsonSerializer.Deserialize<T>(s, SerializerOptions);
-        Guard.IsNotNull(result);
-        return result;
-    }
-
-    public static T DeserializeFromFile<T>(FileInfo file)
-    {
-        var text = file.OpenText().ReadToEnd();
-        var result = DeserializeFromString<T>(text);
-        return result;
-    }
-
     /// <summary>
     /// Extract the values of the given json array
     /// </summary>
@@ -156,28 +126,6 @@ public static class Json
         return null;
     }
 
-    private static JsonSerializerOptions? _seraliazerOptions;
-    public static JsonSerializerOptions SerializerOptions
-    {
-        get
-        {
-            if (_seraliazerOptions is not null)
-                return _seraliazerOptions;
-
-            var options = new JsonSerializerOptions
-            {
-                DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower,
-                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-                WriteIndented = false,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
-            var converter = new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower);
-            options.Converters.Add(converter);
-            _seraliazerOptions = options;
-            return options;
-        }
-    }
-
     public static T? Match<T>(
         this JsonNode? node,
         Func<JsonObject, T>? obj = null,
@@ -216,9 +164,9 @@ public static class Json
                 break;
             case JsonObject obj:
                 ifObj?.Invoke(obj);
-                foreach (var (key, val) in obj)
+                foreach (var kv in obj)
                 {
-                    Walk(val, ifObj, ifArr, ifVal);
+                    Walk(kv.Value, ifObj, ifArr, ifVal);
                 }
 
                 break;

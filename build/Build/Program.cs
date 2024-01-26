@@ -63,7 +63,7 @@ async Task CloneLibMiniZincTests()
 
 void GenerateTestsJson()
 {
-    var spec = TestSpec.ParseYaml(TestSpecYaml);
+    var spec = Spec.ParseYaml(TestSpecYaml);
     Json.SerializeToFile(spec, TestSpecJson);
 }
 

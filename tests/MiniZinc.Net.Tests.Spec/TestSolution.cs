@@ -4,9 +4,9 @@ using System.Text.Json.Nodes;
 
 public sealed record TestSolution
 {
-    public JsonObject Vars { get; init; }
+    public JsonObject Vars { get; set; }
 
-    public string? Output { get; init; }
+    public string? Output { get; set; }
 
-    public JsonValue? Objective { get; init; }
+    public JsonValue? Objective { get; set; }
 }

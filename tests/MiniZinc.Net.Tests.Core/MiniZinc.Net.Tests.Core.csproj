@@ -3,4 +3,7 @@
       <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
       <PackageReference Include="YamlDotNet" Version="13.7.1" />
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\MiniZinc.Net.Tests.Spec\MiniZinc.Net.Tests.Spec.csproj" />
+    </ItemGroup>
 </Project>

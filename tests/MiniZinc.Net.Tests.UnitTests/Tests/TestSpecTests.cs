@@ -11,10 +11,10 @@ public sealed class TestSpecTests : TestBase
     void Parse_TestCase_From_String(string path)
     {
         var file = LibMiniZincDir.JoinFile(path);
-        foreach (var yaml in TestSpec.ParseTestCaseYaml(file))
+        foreach (var yaml in Spec.ParseTestCaseYaml(file))
         {
             var json = Yaml.ParseString<JsonObject>(yaml);
-            var tcase = TestSpec.ParseTestCase(path, json!);
+            var tcase = Spec.ParseTestCase(path, json!);
             var a = 2;
         }
     }
@@ -23,11 +23,11 @@ public sealed class TestSpecTests : TestBase
     void Parse_TestSpec_From_Yaml()
     {
         var cwd = Directory.GetCurrentDirectory().ToDirectory();
-        var spec1 = TestSpec.ParseYaml(TestSpecYaml);
+        var spec1 = Spec.ParseYaml(TestSpecYaml);
         // var dst = cwd.JoinFile("suites.json");
         var dst = TestSpecJson;
         Json.SerializeToFile(spec1, dst);
-        var spec2 = TestSpec.ParseJson(dst);
+        var spec2 = Spec.ParseJson(dst);
         var a = 2;
     }
 
