@@ -1,34 +1,37 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿namespace LibMiniZinc.Tests;
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-public static class Json
+public sealed record TestSpec
 {
-    public static string SerializeToString(object obj)
+    public required List<TestSuite> TestSuites { get; init; }
+
+    public required List<TestCase> TestCases { get; init; }
+
+    public static string ToJsonString(TestSpec spec)
     {
-        var json = JsonSerializer.Serialize(obj, SerializerOptions);
+        var json = JsonSerializer.Serialize(spec, SerializerOptions);
         return json;
     }
 
-    public static FileInfo SerializeToFile(object obj, FileInfo file)
+    public static void ToJsonFile(TestSpec spec, FileInfo file)
     {
-        var json = SerializeToString(obj);
+        var json = ToJsonString(spec);
         File.WriteAllText(file.FullName, json);
-        return file;
     }
 
-    public static T DeserializeFromString<T>(string s)
+    public static TestSpec FromJsonString(string s)
     {
-        var result = JsonSerializer.Deserialize<T>(s, SerializerOptions);
-        return result;
+        var result = JsonSerializer.Deserialize<TestSpec>(s, SerializerOptions);
+        return result!;
     }
 
-    public static T DeserializeFromFile<T>(FileInfo file)
+    public static TestSpec FromJsonFile(FileInfo file)
     {
         var text = file.OpenText().ReadToEnd();
-        var result = DeserializeFromString<T>(text);
+        var result = FromJsonString(text);
         return result;
     }
 

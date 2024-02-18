@@ -1,10 +1,10 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿namespace LibMiniZinc.Tests;
 
 using System.Text.Json.Nodes;
 
 public sealed record TestSuite
 {
-    public string Name { get; set; }
+    public required string Name { get; init; }
 
     public bool? Strict { get; set; }
 
@@ -12,7 +12,7 @@ public sealed record TestSuite
 
     public List<string>? Solvers { get; set; }
 
-    public List<string> IncludeGlobs { get; set; }
+    public required List<string> IncludeGlobs { get; init; }
 
     public override string ToString() => $"<{Name}>";
 }

@@ -1,8 +1,8 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿namespace MiniZinc.Net;
 
 using System.Reflection;
 
-public static class FileExtensions
+public static class Repo
 {
     public static string JoinPath(this string path, params string[] a)
     {
@@ -82,31 +82,36 @@ public static class FileExtensions
         fsi.RelativeTo(other.FullName);
 
     private static FileInfo? _solutionFile;
+    public static FileInfo SolutionFile
+    {
+        get
+        {
+            if (_solutionFile is not null)
+                return _solutionFile;
 
-    public static FileInfo SolutionFile => _solutionFile ??= GetSolutionFile();
+            var assembly = Assembly.GetExecutingAssembly().Location.ToFile();
+            var sln = assembly.Directory!.JoinFile("MiniZinc.Net.sln");
+            while (!sln.Exists)
+            {
+                var dir = sln.Directory!.Parent;
+                sln = dir!.JoinFile(sln.Name);
+            }
 
+            _solutionFile = sln;
+            return sln;
+        }
+    }
     public static DirectoryInfo ProjectDir => SolutionFile.Directory!;
 
     public static DirectoryInfo SourceDir => ProjectDir.JoinDir("src");
 
     public static DirectoryInfo TestDir => ProjectDir.JoinDir("tests");
+    public static DirectoryInfo BuildDir => ProjectDir.JoinDir("build");
+    public static DirectoryInfo LibMiniZincDir => BuildDir.JoinDir("libminizinc");
 
-    public static DirectoryInfo LibMiniZincDir => ProjectDir.JoinDir("libminizinc");
+    public static DirectoryInfo TestSpecDir => LibMiniZincDir.JoinDir("tests", "spec");
 
     public static FileInfo TestSpecYaml => LibMiniZincDir.JoinFile("suites.yml");
 
-    public static FileInfo TestSpecJson => LibMiniZincDir.JoinFile("tests.json");
-
-    private static FileInfo GetSolutionFile()
-    {
-        var assembly = Assembly.GetExecutingAssembly().Location.ToFile();
-        var sln = assembly.Directory!.JoinFile("MiniZinc.Net.sln");
-        while (!sln.Exists)
-        {
-            var dir = sln.Directory!.Parent;
-            sln = dir!.JoinFile(sln.Name);
-        }
-
-        return sln;
-    }
+    public static FileInfo TestSpecJson => BuildDir.JoinFile("tests.json");
 }

@@ -1,23 +1,11 @@
-namespace MiniZinc.Net.Tests;
+namespace LibMiniZinc.Tests;
 
 using System.Text.Json.Nodes;
-
-public enum TestType
-{
-    Unknown,
-    Compile,
-    Satisfy,
-    AnySolution,
-    AllSolutions,
-    OutputModel,
-    Unsatisfiable,
-    Error
-}
 
 public sealed record TestCase
 {
     /// Path of the test case relative to the test spec dir
-    public string Path { get; set; }
+    public required string Path { get; init; }
 
     /// Solvers for which to run the test on
     public List<string>? Solvers { get; set; }

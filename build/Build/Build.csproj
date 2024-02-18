@@ -6,18 +6,14 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.23525.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0-3.final" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.csproj" />
-    <ProjectReference Include="..\..\tests\MiniZinc.Net.Tests.Core\MiniZinc.Net.Tests.Core.csproj" />
+    <ProjectReference Include="..\LibMiniZinc.Tests.Parser\LibMiniZinc.Tests.Parser.csproj" />
+    <ProjectReference Include="..\LibMiniZinc.Tests.Spec\LibMiniZinc.Tests.Spec.csproj" />
+    <ProjectReference Include="..\MiniZinc.Net.Repo\MiniZinc.Net.Repo.csproj" />
   </ItemGroup>
 
 </Project>

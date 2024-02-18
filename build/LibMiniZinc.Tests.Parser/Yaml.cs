@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿namespace LibMiniZinc.Tests;
 
 using System.Text;
 using System.Text.Json.Nodes;

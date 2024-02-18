@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿namespace LibMiniZinc.Tests;
 
 using System.Text;
 using System.Text.Json.Nodes;
@@ -6,21 +6,6 @@ using CommunityToolkit.Diagnostics;
 
 public static class Spec
 {
-    public static TestSpec ParseJson(FileInfo file)
-    {
-        var spec = Json.DeserializeFromFile<TestSpec>(file);
-        return spec;
-    }
-
-    public static TestSpec ParseJson()
-    {
-        var cwd = Directory.GetCurrentDirectory();
-        var path = Path.Join(cwd, "tests.json");
-        var file = new FileInfo(path);
-        var spec = ParseJson(file);
-        return spec;
-    }
-
     public static TestSpec ParseYaml(FileInfo file)
     {
         var spec = new TestSpec { TestCases = new(), TestSuites = new() };

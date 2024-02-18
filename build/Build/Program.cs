@@ -1,41 +1,39 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.CommandLine;
+using Build;
+using LibMiniZinc.Tests;
 using MiniZinc.Net;
-using MiniZinc.Net.Build;
-using MiniZinc.Net.Tests;
-using static MiniZinc.Net.Tests.FileExtensions;
-using CliCommand = System.CommandLine.Command;
 using Command = MiniZinc.Net.Command;
 
-var cloneTestsCommand = new CliCommand(
-    name: "--clone-libminizinc-tests",
-    description: "Clone the test suite from libminizinc"
-);
-
-var genTestsJsonCommand = new CliCommand(
-    name: "--gen-tests-json",
-    description: "Generate test cases from the test spec"
-);
-
-var genLexerIntegrationTestsCommand = new CliCommand(
-    name: "--gen-lexer-tests",
-    description: "Generate lexer tests"
-);
-
-cloneTestsCommand.SetHandler(CloneLibMiniZincTests);
-genTestsJsonCommand.SetHandler(GenerateTestsJson);
-genLexerIntegrationTestsCommand.SetHandler(GenerateLexerIntegrationTests);
-
 var rootCommand = new RootCommand("MiniZinc.NET build options");
-rootCommand.AddCommand(cloneTestsCommand);
-rootCommand.AddCommand(genTestsJsonCommand);
-rootCommand.AddCommand(genLexerIntegrationTestsCommand);
+
+void AddCommand(string name, string desc, Func<Task> handler)
+{
+    var command = new System.CommandLine.Command(name: name, description: desc);
+    command.SetHandler(handler);
+    rootCommand.AddCommand(command);
+}
+
+AddCommand(
+    "--clone-libminizinc-tests",
+    "Clone the test suite from libminizinc",
+    CloneLibMiniZincTests
+);
+AddCommand(
+    "--parse-libminizinc-tests",
+    "Generate test cases from the test spec",
+    Parse_LibMiniZinc_Tests
+);
+
+AddCommand("--generate-lexer-tests", "Generate lexer tests", Generate_LibMiniZinc_Lexer_Tests);
+
 var result = await rootCommand.InvokeAsync(args);
 return result;
 
 async Task CloneLibMiniZincTests()
 {
     var url = $"https://github.com/MiniZinc/libminizinc.git";
-    var libDir = LibMiniZincDir.CreateOrClear();
+    var libDir = Repo.LibMiniZincDir.CreateOrClear();
     var cloneDir = Environment
         .CurrentDirectory.JoinPath(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
         .ToDirectory()
@@ -61,15 +59,15 @@ async Task CloneLibMiniZincTests()
     cloneDir.Delete(true);
 }
 
-void GenerateTestsJson()
+async Task Parse_LibMiniZinc_Tests()
 {
-    var spec = Spec.ParseYaml(TestSpecYaml);
-    Json.SerializeToFile(spec, TestSpecJson);
+    var spec = Spec.ParseYaml(Repo.TestSpecYaml);
+    TestSpec.ToJsonFile(spec, Repo.TestSpecJson);
 }
 
-void GenerateLexerIntegrationTests()
+async Task Generate_LibMiniZinc_Lexer_Tests()
 {
-    var spec = Json.DeserializeFromFile<TestSpec>(TestSpecJson);
-    var result = LexerTests.Generate(spec);
+    var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
+    LibMiniZincLexerTests.Generate(spec);
     var a = 1;
 }

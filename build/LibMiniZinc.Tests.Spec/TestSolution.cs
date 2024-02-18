@@ -1,10 +1,10 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿namespace LibMiniZinc.Tests;
 
 using System.Text.Json.Nodes;
 
 public sealed record TestSolution
 {
-    public JsonObject Vars { get; set; }
+    public required JsonObject Vars { get; set; }
 
     public string? Output { get; set; }
 
