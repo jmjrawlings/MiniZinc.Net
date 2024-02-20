@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Runs the given command to completion
@@ -14,12 +15,23 @@ internal sealed class CommandRunner
     public readonly DateTimeOffset StartTime;
     public readonly string CommandString;
     private readonly TaskCompletionSource<CommandResult> _tcs;
+    private readonly StringBuilder? _stderr;
+    private readonly StringBuilder? _stdout;
+    public readonly Task<CommandResult> Task;
+    private readonly ILogger _logger;
 
-    public CommandRunner(Command cmd)
+    public CommandRunner(in Command cmd, bool captureStdErr = true, bool captureStdOut = true)
     {
-        var stderr = new StringBuilder();
-        var stdout = new StringBuilder();
+        _logger = Logging.Factory.CreateLogger<CommandRunner>();
+
+        if (captureStdErr)
+            _stderr = new StringBuilder();
+
+        if (captureStdOut)
+            _stdout = new StringBuilder();
+
         _tcs = new TaskCompletionSource<CommandResult>();
+        Task = _tcs.Task;
         Command = cmd;
         StartInfo = new ProcessStartInfo
         {
@@ -29,47 +41,26 @@ internal sealed class CommandRunner
             UseShellExecute = false,
             CreateNoWindow = true,
         };
+
         if (cmd.WorkingDir is not null)
             StartInfo.WorkingDirectory = cmd.WorkingDir.FullName;
 
         CommandString = cmd.String;
-        if (cmd.Args is not null)
-            foreach (var arg in cmd.Args)
-                StartInfo.ArgumentList.Add(arg);
+        _logger.LogInformation("Running {Exe}", cmd.Exe);
+        _logger.LogInformation("{CommandString}", CommandString);
+
+        foreach (var arg in cmd.Args)
+        {
+            _logger.LogDebug("{Arg}", arg);
+            StartInfo.ArgumentList.Add(arg);
+        }
 
         Process = new Process();
         Process.EnableRaisingEvents = true;
         Process.StartInfo = StartInfo;
-        Process.OutputDataReceived += (_, args) =>
-        {
-            if (args.Data is null)
-                return;
-            stdout.Append(args.Data);
-        };
-        Process.ErrorDataReceived += (_, args) =>
-        {
-            if (args.Data is null)
-                return;
-            stderr.Append(args.Data);
-        };
-        Process.Exited += (_, _) =>
-        {
-            var endTime = DateTimeOffset.Now;
-            var result = new CommandResult
-            {
-                Command = CommandString,
-                StartTime = StartTime,
-                EndTime = endTime,
-                Duration = endTime - StartTime,
-                ExitCode = Process.ExitCode,
-                IsError = Process.ExitCode > 0,
-                StdOut = stdout.ToString(),
-                StdErr = stderr.ToString()
-            };
-            Process.Dispose();
-            _tcs.SetResult(result);
-        };
-
+        Process.OutputDataReceived += OnOutput;
+        Process.ErrorDataReceived += OnError;
+        Process.Exited += OnExited;
         StartTime = DateTimeOffset.UtcNow;
     }
 
@@ -78,7 +69,54 @@ internal sealed class CommandRunner
         Process.Start();
         Process.BeginOutputReadLine();
         Process.BeginErrorReadLine();
+        _logger.LogInformation("ProcessId is {ProcessId}", Process.Id);
         var result = await _tcs.Task;
         return result;
+    }
+
+    private void OnOutput(object? sender, DataReceivedEventArgs e)
+    {
+        if (e.Data is not { } data)
+            return;
+        _logger.LogDebug("{Output}", data);
+        _stdout?.Append(data);
+    }
+
+    private void OnError(object sender, DataReceivedEventArgs e)
+    {
+        if (e.Data is not { } data)
+            return;
+        _logger.LogError("{Error}", data);
+        _stderr?.Append(data);
+    }
+
+    private void OnExited(object? sender, EventArgs e)
+    {
+        var endTime = DateTimeOffset.Now;
+        var result = new CommandResult
+        {
+            Command = CommandString,
+            StartTime = StartTime,
+            EndTime = endTime,
+            Duration = endTime - StartTime,
+            ExitCode = Process.ExitCode,
+            StdOut = _stdout?.ToString() ?? string.Empty,
+            StdErr = _stderr?.ToString() ?? string.Empty
+        };
+
+        _logger.Log(
+            result.IsError ? LogLevel.Error : LogLevel.Information,
+            "Process exited with code {ExitCode} after {Elapsed}",
+            result.ExitCode,
+            result.Duration
+        );
+
+        Process.Dispose();
+        _tcs.SetResult(result);
+    }
+
+    public override string ToString()
+    {
+        return $"<CommandRunner for \"{CommandString}\">";
     }
 }

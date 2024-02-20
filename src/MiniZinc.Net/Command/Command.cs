@@ -1,10 +1,11 @@
-﻿namespace MiniZinc.Net;
+﻿using System.Runtime.CompilerServices;
+
+namespace MiniZinc.Net;
 
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
-using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Specifies a shell command and arguments (eg: git -v)
@@ -102,9 +103,9 @@ public readonly record struct Command
     /// <summary>
     /// Run the command until termination
     /// </summary>
-    public async Task<CommandResult> Run()
+    public async Task<CommandResult> Run(bool stdout = true, bool stderr = true)
     {
-        var runner = new CommandRunner(this);
+        var runner = new CommandRunner(this, stdout, stderr);
         var result = await runner.Run();
         return result;
     }
@@ -112,13 +113,12 @@ public readonly record struct Command
     /// <summary>
     /// Run the command and stream messages
     /// </summary>
-    public async IAsyncEnumerable<CommandMessage> Stream(
-        ILogger? logger = null,
-        CancellationToken? cancellationToken = null
+    public async IAsyncEnumerable<CommandMessage> Listen(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default
     )
     {
-        var stream = new CommandWatcher(this, logger);
-        await foreach (var msg in stream)
+        var listener = new CommandListener(this);
+        await foreach (var msg in listener.Listen(cancellationToken))
         {
             yield return msg;
         }

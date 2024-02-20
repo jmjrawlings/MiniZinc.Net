@@ -1,6 +1,4 @@
-﻿namespace MiniZinc.Net;
-
-using System.Text;
+﻿using System.Text;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
@@ -31,19 +29,5 @@ internal class XUnitLogger(
             sb.Append('\n').Append(exception);
 
         testOutputHelper.WriteLine(msg);
-    }
-
-    private static string GetLogLevelString(LogLevel logLevel)
-    {
-        return logLevel switch
-        {
-            LogLevel.Trace => "trce",
-            LogLevel.Debug => "dbug",
-            LogLevel.Information => "info",
-            LogLevel.Warning => "warn",
-            LogLevel.Error => "fail",
-            LogLevel.Critical => "crit",
-            _ => throw new ArgumentOutOfRangeException(nameof(logLevel))
-        };
     }
 }

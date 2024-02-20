@@ -1,6 +1,4 @@
-﻿// namespace MiniZinc.Tests;
-//
-// public class ParserTests
+﻿// public class ParserTests
 // {
 //     namespace MiniZinc.Tests;
 //

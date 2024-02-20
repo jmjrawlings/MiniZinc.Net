@@ -26,15 +26,18 @@ public readonly record struct CommandResult
     /// The exit code
     public required int ExitCode { get; init; }
 
-    /// True if ExitCode > 0
-    public required bool IsError { get; init; }
+    /// Did the command complete with errors?
+    public bool IsError => ExitCode > 0;
+
+    /// Did the command complete without error?
+    public bool IsOk => ExitCode == 0;
 
     /// <summary>
     /// Throw an exception if the command was not successful
     /// </summary>
     public CommandResult EnsureSuccess()
     {
-        if (!IsError)
+        if (IsOk)
             return this;
 
         var msg = $"The command \"{Command}\" exited with code {ExitCode}:\n \"{StdErr}\"";

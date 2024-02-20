@@ -1,6 +1,4 @@
-﻿namespace MiniZinc.Net;
-
-public partial class LexerTests : TestBase
+﻿public partial class LexerTests : TestBase
 {
     void TestTokens(string mzn, params TokenKind[] kinds)
     {
@@ -181,7 +179,4 @@ public partial class LexerTests : TestBase
         var last = tokens.Last();
         last.Kind.Should().Be(TokenKind.EOF);
     }
-
-    public LexerTests(LoggingFixture logging, ITestOutputHelper output)
-        : base(logging, output) { }
 }

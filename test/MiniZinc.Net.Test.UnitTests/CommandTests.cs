@@ -1,6 +1,4 @@
-﻿namespace MiniZinc.Net;
-
-public sealed class CommandTests : TestBase
+﻿public sealed class CommandTests : TestBase
 {
     [Theory]
     [InlineData("-v")]
@@ -68,7 +66,7 @@ public sealed class CommandTests : TestBase
     public async void Command_Stream_MiniZinc_Version()
     {
         var cmd = Command.Create("minizinc", "--version");
-        await foreach (var msg in cmd.Stream(_logger))
+        await foreach (var msg in cmd.Listen())
         {
             var a = 2;
         }
@@ -82,7 +80,4 @@ public sealed class CommandTests : TestBase
         res.StdErr.Should().BeEmpty();
         res.StdOut.Should().StartWith("MiniZinc to FlatZinc converter, version");
     }
-
-    public CommandTests(LoggingFixture logging, ITestOutputHelper output)
-        : base(logging, output) { }
 }
