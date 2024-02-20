@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿namespace MiniZinc.Net;
 
 public abstract class TestBase : IClassFixture<LoggingFixture>
 {

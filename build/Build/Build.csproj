@@ -11,9 +11,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.csproj" />
-    <ProjectReference Include="..\LibMiniZinc.Tests.Parser\LibMiniZinc.Tests.Parser.csproj" />
-    <ProjectReference Include="..\LibMiniZinc.Tests.Spec\LibMiniZinc.Tests.Spec.csproj" />
-    <ProjectReference Include="..\MiniZinc.Net.Repo\MiniZinc.Net.Repo.csproj" />
+    <ProjectReference Include="..\TestSpecParser\TestSpecParser.csproj" />
+    <ProjectReference Include="..\TestSpec\TestSpec.csproj" />
+    <ProjectReference Include="..\Repo\Repo.csproj" />
   </ItemGroup>
 
 </Project>

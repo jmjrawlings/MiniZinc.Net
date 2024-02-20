@@ -105,7 +105,7 @@ public static class Repo
 
     public static DirectoryInfo SourceDir => ProjectDir.JoinDir("src");
 
-    public static DirectoryInfo TestDir => ProjectDir.JoinDir("tests");
+    public static DirectoryInfo TestDir => ProjectDir.JoinDir("test");
     public static DirectoryInfo BuildDir => ProjectDir.JoinDir("build");
     public static DirectoryInfo LibMiniZincDir => BuildDir.JoinDir("libminizinc");
 
@@ -114,4 +114,7 @@ public static class Repo
     public static FileInfo TestSpecYaml => TestSpecDir.JoinFile("suites.yml");
 
     public static FileInfo TestSpecJson => TestSpecDir.JoinFile("libminizinc-test-spec.json");
+
+    public static DirectoryInfo LibMiniZincTestsDir =>
+        TestDir.JoinDir("MiniZinc.Net.Test.LibMiniZincTests");
 }

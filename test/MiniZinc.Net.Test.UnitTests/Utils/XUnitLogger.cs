@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net.Tests;
+﻿namespace MiniZinc.Net;
 
 using System.Text;
 using Microsoft.Extensions.Logging;

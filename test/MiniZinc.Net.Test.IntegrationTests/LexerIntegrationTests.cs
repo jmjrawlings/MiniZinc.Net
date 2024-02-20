@@ -1,3 +1,3 @@
-namespace MiniZinc.Net.Tests;
+namespace MiniZinc.Net;
 
 public partial class LexerIntegrationTests { }

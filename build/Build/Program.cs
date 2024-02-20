@@ -25,7 +25,7 @@ AddCommand(
     Parse_LibMiniZinc_Tests
 );
 
-AddCommand("--generate-lexer-tests", "Generate lexer tests", Generate_LibMiniZinc_Lexer_Tests);
+AddCommand("--gen-lexer-tests", "Generate lexer tests", Generate_LibMiniZinc_Lexer_Tests);
 
 var result = await rootCommand.InvokeAsync(args);
 return result;
@@ -68,6 +68,8 @@ async Task Parse_LibMiniZinc_Tests()
 async Task Generate_LibMiniZinc_Lexer_Tests()
 {
     var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-    LibMiniZincLexerTests.Generate(spec);
-    var a = 1;
+    var gen = new LexerTestGen(spec);
+    var source = gen.Generate();
+    var file = Repo.LibMiniZincTestsDir.JoinFile("LexerTests.cs");
+    File.WriteAllText(file.FullName, source);
 }
