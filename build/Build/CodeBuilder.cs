@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
+﻿namespace Build;
 
-namespace Build;
-
+using System.Diagnostics;
 using System.Text;
 
 /// <summary>
@@ -9,8 +8,8 @@ using System.Text;
 /// </summary>
 public class CodeBuilder
 {
-    private readonly StringBuilder _sb;
-    private int _indent = 0;
+    protected readonly StringBuilder _sb;
+    protected int _indent = 0;
     private readonly Stack<IDisposable> _context;
 
     public CodeBuilder()
@@ -35,6 +34,23 @@ public class CodeBuilder
     public void WriteLn(string? s)
     {
         Write(s);
+        Newline();
+    }
+
+    public void Var(string name, string s)
+    {
+        Write("var ");
+        Append(name);
+        Append(" = ");
+        Append(s);
+        Append(';');
+        Newline();
+    }
+
+    public void WriteLt(string s)
+    {
+        Write(s);
+        Append(';');
         Newline();
     }
 
@@ -70,9 +86,18 @@ public class CodeBuilder
         });
     }
 
+    public IDisposable Parens()
+    {
+        Append("(");
+        return Push(() =>
+        {
+            Write(')');
+        });
+    }
+
     public IDisposable Braces()
     {
-        Append(" {");
+        Append("{");
         return Push(() =>
         {
             Write('}');
@@ -90,7 +115,7 @@ public class CodeBuilder
         return context;
     }
 
-    protected void Pop()
+    public void Pop()
     {
         var ctx = _context.Peek();
         ctx.Dispose();
@@ -102,7 +127,10 @@ public class CodeBuilder
     public IDisposable Block(string? s = null)
     {
         if (s is not null)
+        {
             Write(s);
+            Spaces();
+        }
         Braces();
         Newline();
         Indent();
@@ -112,6 +140,20 @@ public class CodeBuilder
             Pop();
             Newline();
         });
+    }
+
+    public void Spaces(int n = 1)
+    {
+        _sb.Append(' ', n);
+    }
+
+    public void BlockComment(string s)
+    {
+        Write("/*");
+        Newline();
+        Write(s);
+        Newline();
+        Write("*/");
     }
 
     public override string ToString()

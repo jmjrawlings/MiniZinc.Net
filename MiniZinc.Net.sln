@@ -19,11 +19,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSpecParser", "build\Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repo", "build\Repo\Repo.csproj", "{C818E309-904F-4E10-910D-48F01CF1F624}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Net.LibMiniZincTests", "test\MiniZinc.Net.Test.LibMiniZincTests\MiniZinc.Net.LibMiniZincTests.csproj", "{ECD22739-B519-4EBC-9DE6-F3DBF8B680FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibMiniZincTests", "test\MiniZinc.Net.Test.LibMiniZincTests\LibMiniZincTests.csproj", "{ECD22739-B519-4EBC-9DE6-F3DBF8B680FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Net.UnitTests", "test\MiniZinc.Net.Test.UnitTests\MiniZinc.Net.UnitTests.csproj", "{E890EBA5-7E1C-4103-AA1B-E60A337BF407}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "test\MiniZinc.Net.Test.UnitTests\UnitTests.csproj", "{E890EBA5-7E1C-4103-AA1B-E60A337BF407}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Net.IntegrationTests", "test\MiniZinc.Net.Test.IntegrationTests\MiniZinc.Net.IntegrationTests.csproj", "{8D63F332-CA5E-469E-A583-241DE6E21059}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "test\MiniZinc.Net.Test.IntegrationTests\IntegrationTests.csproj", "{8D63F332-CA5E-469E-A583-241DE6E21059}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

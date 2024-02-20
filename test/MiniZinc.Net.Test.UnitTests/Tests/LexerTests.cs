@@ -115,53 +115,53 @@ public partial class LexerTests : TestBase
         return s?.Replace("\\\"", "\\\"");
     }
 
-    public List<Token> LexFile(string path)
-    {
-        var mznFile = path.ToFile();
-        _logger.LogInformation("{File}", mznFile);
-        var mzn = File.ReadAllText(mznFile.FullName);
-        _logger.LogInformation(mzn);
-        var csvFile = Path.ChangeExtension(mznFile.FullName, "csv").ToFile();
-        using var csvWriter = csvFile.OpenWrite();
-        using var csvStream = new StreamWriter(csvWriter);
-        csvStream.WriteLine(
-            string.Join(
-                ",",
-                "id",
-                "start",
-                "length",
-                "line",
-                "column",
-                "kind",
-                "string",
-                "int",
-                "double"
-            )
-        );
-        var tokens = new List<Token>();
-        var id = 0;
-        foreach (var token in Lexer.LexFile(mznFile))
-        {
-            var msg = string.Join(
-                ',',
-                id++,
-                token.Start,
-                token.Length,
-                token.Line,
-                token.Col,
-                token.Kind,
-                Sanitize(token.String),
-                token.Int,
-                token.Double
-            );
-            csvStream.WriteLine(msg);
-            tokens.Add(token);
-        }
-
-        _logger.LogInformation("Reading from {File}", mznFile);
-        _logger.LogInformation("Writing to {File}", csvFile);
-        return tokens;
-    }
+    // public List<Token> LexFile(string path)
+    // {
+    //     var mznFile = path.ToFile();
+    //     _logger.LogInformation("{File}", mznFile);
+    //     var mzn = File.ReadAllText(mznFile.FullName);
+    //     _logger.LogInformation(mzn);
+    //     var csvFile = Path.ChangeExtension(mznFile.FullName, "csv").ToFile();
+    //     using var csvWriter = csvFile.OpenWrite();
+    //     using var csvStream = new StreamWriter(csvWriter);
+    //     csvStream.WriteLine(
+    //         string.Join(
+    //             ",",
+    //             "id",
+    //             "start",
+    //             "length",
+    //             "line",
+    //             "column",
+    //             "kind",
+    //             "string",
+    //             "int",
+    //             "double"
+    //         )
+    //     );
+    //     var tokens = new List<Token>();
+    //     var id = 0;
+    //     foreach (var token in Lexer.LexFile(mznFile))
+    //     {
+    //         var msg = string.Join(
+    //             ',',
+    //             id++,
+    //             token.Start,
+    //             token.Length,
+    //             token.Line,
+    //             token.Col,
+    //             token.Kind,
+    //             Sanitize(token.String),
+    //             token.Int,
+    //             token.Double
+    //         );
+    //         csvStream.WriteLine(msg);
+    //         tokens.Add(token);
+    //     }
+    //
+    //     _logger.LogInformation("Reading from {File}", mznFile);
+    //     _logger.LogInformation("Writing to {File}", csvFile);
+    //     return tokens;
+    // }
 
     [Fact]
     public void xd()

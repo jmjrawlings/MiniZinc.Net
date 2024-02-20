@@ -6,27 +6,32 @@ using LibMiniZinc.Tests;
 public sealed class LexerTestGen : CodeBuilder
 {
     public readonly TestSpec Spec;
+    public readonly IEnumerable<string> Files;
 
     public LexerTestGen(TestSpec spec)
     {
         Spec = spec;
+        Files = spec.TestCases.Select(c => c.Path).Distinct().ToList();
     }
 
     public string Generate()
     {
-        WriteLn("namespace MiniZinc.Net.Test;");
-        WriteLn("using Xunit;");
         Block("public sealed class LexerTests");
 
-        foreach (var @case in Spec.TestCases)
+        foreach (var path in Files)
         {
-            var path = @case.Path;
             var testName = path.Replace(".mzn", "");
             testName = testName.Replace("\\", "_");
+            testName = testName.Replace("-", "_");
             testName = $"test_{testName}";
             Newline();
             WriteLn("[Fact]");
-            using var _ = Block($"public void {testName}");
+            using (Block($"public void {testName}()"))
+            {
+                Var("path", $"@\"{path}\"");
+                Var("lexer", "Lexer.LexFile(path)");
+                Var("tokens", "lexer.ToArray()");
+            }
         }
 
         var code = ToString();

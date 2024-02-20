@@ -276,7 +276,9 @@ internal sealed class KeywordLookup
     }
 }
 
-public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
+public interface ILexer : IEnumerator<Token>, IEnumerable<Token> { }
+
+public sealed class Lexer : ILexer
 {
     const char HASH = '#';
     const char FWD_SLASH = '/';
@@ -841,7 +843,10 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _reader.Dispose();
     }
 
-    public static Lexer LexString(
+    /// <summary>
+    /// Lex the given string
+    /// </summary>
+    public static ILexer LexString(
         string s,
         bool lexLineComments = false,
         bool lexBlockComments = false
@@ -857,34 +862,38 @@ public sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return lexer;
     }
 
-    public static Lexer LexFile(
-        FileInfo fi,
-        ILogger? logger = null,
+    /// <summary>
+    /// Lex the given file
+    /// </summary>
+    public static ILexer LexFile(
+        string path,
+        Encoding? encoding = null,
         bool lexLineComments = false,
         bool lexBlockComments = false
     )
     {
         var stream = new StreamReader(
-            fi.FullName,
-            Encoding.UTF8,
+            path,
+            encoding ?? Encoding.UTF8,
             detectEncodingFromByteOrderMarks: true
         );
         var lexer = new Lexer(stream, lexLineComments, lexBlockComments);
         return lexer;
     }
 
-    public static Lexer LexFile(
-        string path,
-        ILogger? logger = null,
-        bool lexLineComments = false,
-        bool lexBlockComments = false
-    ) => LexFile(new FileInfo(path), logger, lexLineComments, lexBlockComments);
-
-    public static IEnumerable<Token> LexStream(
-        StreamReader stream,
-        bool lexLineComments = false,
-        bool lexBlockComments = false
-    ) => new Lexer(stream, lexLineComments, lexBlockComments);
+    // /// <summary>
+    // /// Lex the given stream
+    // /// </summary>
+    // /// <param name="stream"></param>
+    // /// <param name="lexLineComments"></param>
+    // /// <param name="lexBlockComments"></param>
+    // /// <returns></returns>
+    //
+    // public static IEnumerable<Token> LexStream(
+    //     StreamReader stream,
+    //     bool lexLineComments = false,
+    //     bool lexBlockComments = false
+    // ) => new Lexer(stream, lexLineComments, lexBlockComments);
 
     public void Reset()
     {
