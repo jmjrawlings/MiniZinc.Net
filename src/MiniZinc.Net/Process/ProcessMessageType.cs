@@ -3,7 +3,7 @@
 /// <summary>
 /// The type of CommandOutput message
 /// </summary>
-public enum CommandMessageType : byte
+public enum ProcessMessageType : byte
 {
     /// The command has started running
     Started,
@@ -14,9 +14,6 @@ public enum CommandMessageType : byte
     /// A message originates from stderr
     StdErr,
 
-    /// The command complete successfully
-    Success,
-
-    ///  The command returned a non-zero exit code
-    Failure,
+    /// The command exited
+    Exited,
 }

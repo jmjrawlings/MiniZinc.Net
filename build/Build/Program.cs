@@ -39,10 +39,11 @@ async Task CloneLibMiniZincTests()
         .ToDirectory()
         .CreateOrClear();
 
-    async Task<CommandResult> Git(params string[] args)
+    async Task<ProcessResult> Git(params string[] args)
     {
         var cmd = Command.Create("git", args).WithWorkingDirectory(cloneDir);
-        var result = await cmd.Run();
+        using var process = cmd.ToProcess();
+        var result = await process.Result;
         result.EnsureSuccess();
         return result;
     }

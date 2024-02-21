@@ -179,4 +179,7 @@
         var last = tokens.Last();
         last.Kind.Should().Be(TokenKind.EOF);
     }
+
+    public LexerTests(ITestOutputHelper output)
+        : base(output) { }
 }

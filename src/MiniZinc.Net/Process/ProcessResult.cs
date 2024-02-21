@@ -1,27 +1,30 @@
 ﻿namespace MiniZinc.Net;
 
 /// <summary>
-/// The result of running a Command
+/// The result of running a Process
 /// </summary>
-public readonly record struct CommandResult
+public readonly record struct ProcessResult
 {
     /// The command that was run
     public required string Command { get; init; }
 
+    /// The final state
+    public required ProcessState State { get; init; }
+
     /// Time the command started running
-    public required DateTimeOffset StartTime { get; init; }
+    public required DateTime StartTime { get; init; }
 
     /// Time the command finished running
-    public required DateTimeOffset EndTime { get; init; }
+    public required DateTime EndTime { get; init; }
 
     /// Total time taken to execute
     public required TimeSpan Duration { get; init; }
 
-    /// Everything written to stdout
-    public required string StdOut { get; init; }
+    /// If captured, everything written to stdout
+    public string? StdOut { get; init; }
 
-    /// Everything written to stderr
-    public required string StdErr { get; init; }
+    /// If captured, everything written to stderr
+    public string? StdErr { get; init; }
 
     /// The exit code
     public required int ExitCode { get; init; }
@@ -35,7 +38,7 @@ public readonly record struct CommandResult
     /// <summary>
     /// Throw an exception if the command was not successful
     /// </summary>
-    public CommandResult EnsureSuccess()
+    public ProcessResult EnsureSuccess()
     {
         if (IsOk)
             return this;

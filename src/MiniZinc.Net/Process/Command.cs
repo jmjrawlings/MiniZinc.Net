@@ -1,8 +1,7 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace MiniZinc.Net;
+﻿namespace MiniZinc.Net;
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
@@ -31,11 +30,11 @@ public readonly record struct Command
     /// <summary>
     /// The working directory
     /// </summary>
-    public readonly DirectoryInfo? WorkingDir;
+    public readonly string? WorkingDir;
 
     private readonly CommandArg[]? _args;
 
-    private Command(string exe, CommandArg[]? args = null, DirectoryInfo? workingDir = null)
+    private Command(string exe, CommandArg[]? args = null, string? workingDir = null)
     {
         Exe = exe;
         WorkingDir = workingDir;
@@ -49,13 +48,8 @@ public readonly record struct Command
         {
             var sb = new StringBuilder();
             sb.Append(Exe);
-            foreach (var arg in args)
-            {
-                var s = arg.ToString();
-                sb.Append(' ');
-                sb.Append(s);
-            }
-
+            sb.Append(' ');
+            sb.AppendJoin(' ', args);
             String = sb.ToString();
         }
     }
@@ -69,13 +63,12 @@ public readonly record struct Command
     /// <summary>
     /// Return this command with the given working directory
     /// </summary>
-    public Command WithWorkingDirectory(string path) =>
-        WithWorkingDirectory(new DirectoryInfo(path));
+    public Command WithWorkingDirectory(string path) => new(Exe, _args, path);
 
     /// <summary>
     /// Return this command with the working directory provided
     /// </summary>
-    public Command WithWorkingDirectory(DirectoryInfo? dir) => new(Exe, _args, dir);
+    public Command WithWorkingDirectory(DirectoryInfo dir) => new(Exe, _args, dir.FullName);
 
     /// <summary>
     /// Create a command from the given exe and optional arguments
@@ -83,44 +76,51 @@ public readonly record struct Command
     /// <example>
     /// var cmd = Command.Create("git", "--version");
     /// </example>
-    public static Command Create(string exe, params string[]? args)
+    public static Command Create(string exe, params string[] args)
     {
         Guard.IsNotNullOrWhiteSpace(exe);
-        Command cmd;
-        if (args is null)
-        {
-            cmd = new Command(exe);
-        }
-        else
-        {
-            var arr = CommandArgs.Parse(args).ToArray();
-            cmd = new Command(exe, arr);
-        }
+        var pargs = CommandArgs.Parse(args).ToArray();
+        var cmd = new Command(exe, pargs);
+        return cmd;
+    }
 
+    public static Command Create(string command)
+    {
+        Guard.IsNotNullOrWhiteSpace(command);
+        var pargs = CommandArgs.Parse(command).ToArray();
+        var exe = pargs[0].ToString();
+        var cargs = new CommandArg[pargs.Length - 1];
+        Array.Copy(pargs, cargs, cargs.Length);
+        var cmd = new Command(exe, cargs);
         return cmd;
     }
 
     /// <summary>
-    /// Run the command until termination
+    /// Create a process for this command
     /// </summary>
-    public async Task<CommandResult> Run(bool stdout = true, bool stderr = true)
+    public Process ToProcess(
+        bool stdout = true,
+        bool stderr = true,
+        CancellationToken cancellationToken = default
+    )
     {
-        var runner = new CommandRunner(this, stdout, stderr);
-        var result = await runner.Run();
+        var process = new Process(this, stdout, stderr, cancellationToken);
+        return process;
+    }
+
+    public async Task<ProcessResult> Run(
+        bool stdout = true,
+        bool stderr = true,
+        CancellationToken cancellationToken = default
+    )
+    {
+        using var process = new Process(this, stdout, stderr, cancellationToken);
+        var result = await process.Result;
         return result;
     }
 
-    /// <summary>
-    /// Run the command and stream messages
-    /// </summary>
-    public async IAsyncEnumerable<CommandMessage> Listen(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default
-    )
+    public override string ToString()
     {
-        var listener = new CommandListener(this);
-        await foreach (var msg in listener.Listen(cancellationToken))
-        {
-            yield return msg;
-        }
+        return String;
     }
 }

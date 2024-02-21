@@ -45,16 +45,7 @@
     }
 
     [Fact]
-    public void Command_Runs_Sync()
-    {
-        var cmd = Command.Create("git", "-v");
-        var res = cmd.Run().Result;
-        res.StdErr.Should().BeEmpty();
-        res.StdOut.Should().Contain("git version");
-    }
-
-    [Fact]
-    public async void Command_Runs_Async()
+    public async void Command_Runs()
     {
         var cmd = Command.Create("git", "-v");
         var res = await cmd.Run();
@@ -63,10 +54,11 @@
     }
 
     [Fact]
-    public async void Command_Stream_MiniZinc_Version()
+    public async void Command_Listen_MiniZinc_Version()
     {
         var cmd = Command.Create("minizinc", "--version");
-        await foreach (var msg in cmd.Listen())
+        using var process = cmd.ToProcess();
+        await foreach (var msg in process)
         {
             var a = 2;
         }
@@ -80,4 +72,18 @@
         res.StdErr.Should().BeEmpty();
         res.StdOut.Should().StartWith("MiniZinc to FlatZinc converter, version");
     }
+
+    [Fact]
+    public async void Ping_And_Listen()
+    {
+        var cmd = Command.Create("ping 127.0.0.1 -n 4");
+        using var proc = cmd.ToProcess();
+        await foreach (var msg in proc)
+        {
+            Write("[{0}|{1}] {2}", cmd.Exe, msg.MessageType, msg.Content);
+        }
+    }
+
+    public CommandTests(ITestOutputHelper output)
+        : base(output) { }
 }
