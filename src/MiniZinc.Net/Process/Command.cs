@@ -1,7 +1,6 @@
-﻿namespace MiniZinc.Net;
+﻿namespace MiniZinc.Net.Process;
 
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
@@ -11,36 +10,27 @@ using CommunityToolkit.Diagnostics;
 /// </summary>
 public readonly record struct Command
 {
-    /// <summary>
     /// The program to execute eg: minizinc
-    /// </summary>
     public readonly string Exe;
 
-    /// <summary>
-    /// The arguments provided to the exe
-    /// </summary>
-    public IEnumerable<string> Args =>
-        _args?.Select(a => a.ToString()) ?? Enumerable.Empty<string>();
-
-    /// <summary>
     /// The fully qualified string eg: "git checkout -b master"
-    /// </summary>
     public readonly string String;
 
-    /// <summary>
     /// The working directory
-    /// </summary>
     public readonly string? WorkingDir;
 
-    private readonly CommandArg[]? _args;
+    private readonly List<Arg> _args;
+    public IReadOnlyList<Arg> Arguments => _args;
 
-    private Command(string exe, CommandArg[]? args = null, string? workingDir = null)
+    private Command(string exe, IEnumerable<Arg>? args = null, string? workingDir = null)
     {
         Exe = exe;
         WorkingDir = workingDir;
-        _args = args;
+        _args = new List<Arg>();
+        if (args is not null)
+            _args.AddRange(args);
 
-        if (args is null || args.Length == 0)
+        if (_args.Count == 0)
         {
             String = exe;
         }
@@ -49,16 +39,10 @@ public readonly record struct Command
             var sb = new StringBuilder();
             sb.Append(Exe);
             sb.Append(' ');
-            sb.AppendJoin(' ', args);
+            sb.AppendJoin(' ', _args);
             String = sb.ToString();
         }
     }
-
-    /// <summary>
-    /// Return this command with the given arguments
-    /// </summary>
-    public Command WithArgs(params string[]? args) =>
-        Create(Exe, args).WithWorkingDirectory(WorkingDir);
 
     /// <summary>
     /// Return this command with the given working directory
@@ -71,6 +55,11 @@ public readonly record struct Command
     public Command WithWorkingDirectory(DirectoryInfo dir) => new(Exe, _args, dir.FullName);
 
     /// <summary>
+    /// Return this command with the given arguments
+    /// </summary>
+    public Command WithArgs(string[] args) => new(Exe, Args.Parse(args), WorkingDir);
+
+    /// <summary>
     /// Create a command from the given exe and optional arguments
     /// </summary>
     /// <example>
@@ -79,19 +68,17 @@ public readonly record struct Command
     public static Command Create(string exe, params string[] args)
     {
         Guard.IsNotNullOrWhiteSpace(exe);
-        var pargs = CommandArgs.Parse(args).ToArray();
-        var cmd = new Command(exe, pargs);
+        var cmd = new Command(exe, Args.Parse(args));
         return cmd;
     }
 
-    public static Command Create(string command)
+    /// Parse a command from the given string
+    public static Command Parse(string s)
     {
-        Guard.IsNotNullOrWhiteSpace(command);
-        var pargs = CommandArgs.Parse(command).ToArray();
-        var exe = pargs[0].ToString();
-        var cargs = new CommandArg[pargs.Length - 1];
-        Array.Copy(pargs, cargs, cargs.Length);
-        var cmd = new Command(exe, cargs);
+        Guard.IsNotNullOrWhiteSpace(s);
+        var args = Args.Parse(s).ToArray();
+        var exe = args[0].ToString();
+        var cmd = new Command(exe, args.Skip(1));
         return cmd;
     }
 

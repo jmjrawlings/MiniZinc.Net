@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net;
+﻿namespace MiniZinc.Net.Process;
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -33,11 +33,14 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
     /// If listening, the last ProcessMessage received
     public ProcessMessage LastMessage { get; private set; }
 
+    /// The Id of the process if it ever started
+    public int ProcessId { get; private set; }
+
     /// If captured, everything from stderr
-    private StringBuilder? _stderr;
+    private readonly StringBuilder? _stderr;
 
     /// If captured, everything from stdout
-    private StringBuilder? _stdout;
+    private readonly StringBuilder? _stdout;
 
     /// If listening, a channel to implement AsyncEnumerable
     private Channel<ProcessMessage>? _channel;
@@ -81,10 +84,10 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
         };
 
         _logger.LogInformation("Command is {Command}", command.String);
-        foreach (var arg in command.Args)
+        foreach (var arg in command.Arguments)
         {
             _logger.LogDebug("{Arg}", arg);
-            _startInfo.ArgumentList.Add(arg);
+            _startInfo.ArgumentList.Add(arg.String);
         }
 
         if (command.WorkingDir is { } path)
@@ -121,15 +124,17 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
         State = ProcessState.Running;
         _watch.Start();
         _process.Start();
-        _process.BeginOutputReadLine();
-        _process.BeginErrorReadLine();
+        ProcessId = _process.Id;
         LastMessage = new ProcessMessage
         {
-            MessageType = ProcessMessageType.Started,
-            TimeStamp = StartTime,
             Command = Command.String,
-            StartTime = StartTime
+            StartTime = StartTime,
+            ProcessId = ProcessId,
+            MessageType = ProcessMessageType.Started,
+            TimeStamp = StartTime
         };
+        _process.BeginOutputReadLine();
+        _process.BeginErrorReadLine();
         _logger.LogInformation("ProcessId is {ProcessId}", _process.Id);
         _channel?.Writer.TryWrite(LastMessage);
     }
@@ -143,13 +148,10 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
         _stdout?.Append(data);
 
         var elapsed = Elapsed;
-        var msg = new ProcessMessage
+        var msg = LastMessage with
         {
-            Command = Command.String,
-            ProcessId = _process.Id,
-            Content = e.Data,
+            Content = data,
             MessageType = ProcessMessageType.StdOut,
-            StartTime = StartTime,
             TimeStamp = StartTime + elapsed,
             Elapsed = elapsed
         };
@@ -166,13 +168,10 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
         _stderr?.Append(data);
 
         var elapsed = Elapsed;
-        var msg = new ProcessMessage
+        var msg = LastMessage with
         {
-            Command = Command.String,
-            ProcessId = _process.Id,
             Content = e.Data,
             MessageType = ProcessMessageType.StdErr,
-            StartTime = StartTime,
             TimeStamp = StartTime + elapsed,
             Elapsed = elapsed
         };
@@ -249,7 +248,7 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
     }
 
     public IAsyncEnumerator<ProcessMessage> GetAsyncEnumerator(
-        CancellationToken cancellationToken = new CancellationToken()
+        CancellationToken cancellationToken = default
     )
     {
         if (_messages is not null)

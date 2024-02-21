@@ -3,7 +3,8 @@ using System.CommandLine;
 using Build;
 using LibMiniZinc.Tests;
 using MiniZinc.Net;
-using Command = MiniZinc.Net.Command;
+using MiniZinc.Net.Process;
+using Command = MiniZinc.Net.Process.Command;
 
 var rootCommand = new RootCommand("MiniZinc.NET build options");
 

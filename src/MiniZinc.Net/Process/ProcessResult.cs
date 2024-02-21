@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net;
+﻿namespace MiniZinc.Net.Process;
 
 /// <summary>
 /// The result of running a Process

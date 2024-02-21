@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net;
+﻿namespace MiniZinc.Net.Process;
 
 /// <summary>
 /// The type of CommandOutput message
