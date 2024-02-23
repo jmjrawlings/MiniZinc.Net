@@ -3,5 +3,11 @@
     <PropertyGroup>
         <RootNamespace>MiniZinc.Parser</RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>ParserTests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
     
 </Project>

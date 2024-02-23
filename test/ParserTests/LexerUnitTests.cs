@@ -38,7 +38,7 @@
     [InlineData(""" "abc" """)]
     [InlineData(""" "Escaped single \'quotes\' are fine" """)]
     [InlineData(""" "Escaped double \"quotes\" are fine" """)]
-    public void test_string_literal(string mzn)
+    void test_string_literal(string mzn)
     {
         TestTokens(mzn, TokenKind.StringLiteral);
     }
@@ -46,7 +46,7 @@
     [Theory]
     [InlineData("1", 1)]
     [InlineData("100", 100)]
-    public void test_int(string mzn, int i)
+    void test_int(string mzn, int i)
     {
         var token = Lexer.LexString(mzn).First();
         token.Int.Should().Be(i);
@@ -56,7 +56,7 @@
     [Theory]
     [InlineData("1.123.", 1.123)]
     [InlineData("100.0043", 100.0043)]
-    public void test_float(string mzn, double d)
+    void test_float(string mzn, double d)
     {
         var token = Lexer.LexString(mzn).First();
         token.Double.Should().Be(d);
@@ -65,14 +65,14 @@
 
     [Theory]
     [InlineData("1..10")]
-    public void test_range_ti(string mzn)
+    void test_range_ti(string mzn)
     {
         TestTokens(mzn, TokenKind.IntLiteral, TokenKind.DotDot, TokenKind.IntLiteral);
     }
 
     [Theory]
     [InlineData("1.1..1.2.0")]
-    public void test_bad_range(string mzn)
+    void test_bad_range(string mzn)
     {
         TestTokens(
             mzn,
@@ -93,14 +93,14 @@
     [InlineData(">", TokenKind.GreaterThan)]
     [InlineData("<>", TokenKind.Empty)]
     [InlineData("_", TokenKind.Underscore)]
-    public void test_literals(string mzn, TokenKind tokenKind)
+    void test_literals(string mzn, TokenKind tokenKind)
     {
         var token = Lexer.LexString(mzn).First();
         token.Kind.Should().Be(tokenKind);
     }
 
     [Fact]
-    public void test_whitespace()
+    void test_whitespace()
     {
         var mzn = @$" {'\r'}{'\t'}{'\n'} ";
         var tokens = Lexer.LexString(mzn).ToArray();
@@ -173,7 +173,7 @@
 
     [Theory]
     [InlineData("")]
-    public void test_string(string mzn)
+    void test_string(string mzn)
     {
         var tokens = Lexer.LexString(mzn).ToArray();
         var last = tokens.Last();

@@ -1,285 +1,13 @@
 ﻿namespace MiniZinc.Parser;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using static Char;
 
-public enum TokenKind
+internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 {
-    // Nodes
-    Identifier,
-    Polymorphic,
-    IntLiteral,
-    FloatLiteral,
-    StringLiteral,
-    LineComment,
-    BlockComment,
-    QuotedIdentifier,
-    QuotedOperator,
-
-    // Keywords
-    KeywordAnnotation,
-    KeywordAnn,
-    KeywordAny,
-    KeywordArray,
-    KeywordBool,
-    KeywordCase,
-    KeywordConstraint,
-    KeywordDefault,
-    KeywordDiff,
-    KeywordDiv,
-    KeywordElse,
-    KeywordElseif,
-    KeywordEndif,
-    KeywordEnum,
-    KeywordFalse,
-    KeywordFloat,
-    KeywordFunction,
-    KeywordIf,
-    KeywordIn,
-    KeywordInclude,
-    KeywordInt,
-    KeywordIntersect,
-    KeywordLet,
-    KeywordList,
-    KeywordMaximize,
-    KeywordMinimize,
-    KeywordMod,
-    KeywordNot,
-    KeywordOf,
-    KeywordOp,
-    KeywordOpt,
-    KeywordOutput,
-    KeywordPar,
-    KeywordPredicate,
-    KeywordRecord,
-    KeywordSatisfy,
-    KeywordSet,
-    KeywordSolve,
-    KeywordString,
-    KeywordSubset,
-    KeywordSuperset,
-    KeywordSymdiff,
-    KeywordTest,
-    KeywordThen,
-    KeywordTrue,
-    KeywordTuple,
-    KeywordType,
-    KeywordUnion,
-    KeywordVar,
-    KeywordWhere,
-    KeywordXor,
-
-    // Binary Ops
-    DoubleArrow,
-    LeftArrow,
-    RightArrow,
-    DownWedge,
-    UpWedge,
-    LessThan,
-    GreaterThan,
-    LessThanEqual,
-    GreaterThanEqual,
-    Equal,
-    NotEqual,
-    DotDot,
-    Plus,
-    Minus,
-    Star,
-    Slash,
-    PlusPlus,
-    TildeEquals,
-    TildePlus,
-    TildeMinus,
-    TildeStar,
-    LeftBracket,
-    RightBracket,
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
-    Dot,
-    Percent,
-    Underscore,
-    Comma,
-    Tilde,
-    BackSlash,
-    ForwardSlash,
-    Colon,
-    Delimiter,
-    Pipe,
-    Empty,
-    EOF,
-
-    // Errors
-    ERROR,
-    ERROR_UNEXPECTED_CHAR,
-    ERROR_QUOTED_IDENT,
-    ERROR_QUOTED_OPERATOR,
-    ERROR_ESCAPED_STRING,
-    ERROR_UNTERMINATED_STRING_LITERAL,
-    ERROR_UNTERMINATED_BLOCK_COMMENT,
-    ERROR_UNTERMINATED_STRING_EXPRESSION,
-    ERROR_POLYMORPHIC_IDENTIFIER
-}
-
-public readonly struct Token
-{
-    public readonly TokenKind Kind;
-    public readonly uint Line;
-    public readonly uint Col;
-    public readonly uint Start;
-    public readonly uint Length;
-    public readonly int Int;
-    public readonly string? String;
-    public readonly double Double;
-
-    public Token(
-        TokenKind kind,
-        uint line,
-        uint col,
-        uint start,
-        uint length,
-        int i,
-        double d,
-        string? s
-    )
-    {
-        Kind = kind;
-        Line = line;
-        Col = col;
-        Start = start;
-        Length = length;
-        Int = i;
-        String = s;
-        Double = d;
-    }
-
-    public override string ToString() =>
-        $"{Kind} {String} | Line {Line}, Col {Col}, Start {Start}, End {Start + Length}, Len: {Length}";
-}
-
-internal sealed class KeywordLookup
-{
-    private static KeywordLookup? _table;
-    public static KeywordLookup Table => _table ??= new KeywordLookup();
-
-    private readonly Dictionary<TokenKind, string> _tokenToWord;
-    public IReadOnlyDictionary<TokenKind, string> TokenToWord => _tokenToWord;
-
-    private readonly Dictionary<string, TokenKind> _wordToToken;
-    public IReadOnlyDictionary<string, TokenKind> WordToToken => _wordToToken;
-
-    private KeywordLookup()
-    {
-        var names = Enum.GetNames<TokenKind>();
-        var count = names.Length;
-        _tokenToWord = new Dictionary<TokenKind, string>(count);
-        _wordToToken = new Dictionary<string, TokenKind>(count);
-
-        Add(TokenKind.KeywordAnnotation, "annotation");
-        Add(TokenKind.KeywordAnn, "ann");
-        Add(TokenKind.KeywordAny, "any");
-        Add(TokenKind.KeywordArray, "array");
-        Add(TokenKind.KeywordBool, "bool");
-        Add(TokenKind.KeywordCase, "case");
-        Add(TokenKind.KeywordConstraint, "constraint");
-        Add(TokenKind.KeywordDefault, "default");
-        Add(TokenKind.KeywordDiff, "diff");
-        Add(TokenKind.KeywordDiv, "div");
-        Add(TokenKind.KeywordElse, "else");
-        Add(TokenKind.KeywordElseif, "elseif");
-        Add(TokenKind.KeywordEndif, "endif");
-        Add(TokenKind.KeywordEnum, "enum");
-        Add(TokenKind.KeywordFalse, "false");
-        Add(TokenKind.KeywordFloat, "float");
-        Add(TokenKind.KeywordFunction, "function");
-        Add(TokenKind.KeywordIf, "if");
-        Add(TokenKind.KeywordIn, "in");
-        Add(TokenKind.KeywordInclude, "include");
-        Add(TokenKind.KeywordInt, "int");
-        Add(TokenKind.KeywordIntersect, "intersect");
-        Add(TokenKind.KeywordLet, "let");
-        Add(TokenKind.KeywordList, "list");
-        Add(TokenKind.KeywordMaximize, "maximize");
-        Add(TokenKind.KeywordMinimize, "minimize");
-        Add(TokenKind.KeywordMod, "mod");
-        Add(TokenKind.KeywordNot, "not");
-        Add(TokenKind.KeywordOf, "of");
-        Add(TokenKind.KeywordOp, "op");
-        Add(TokenKind.KeywordOpt, "opt");
-        Add(TokenKind.KeywordOutput, "output");
-        Add(TokenKind.KeywordPar, "par");
-        Add(TokenKind.KeywordPredicate, "predicate");
-        Add(TokenKind.KeywordRecord, "record");
-        Add(TokenKind.KeywordSatisfy, "satisfy");
-        Add(TokenKind.KeywordSet, "set");
-        Add(TokenKind.KeywordSolve, "solve");
-        Add(TokenKind.KeywordString, "string");
-        Add(TokenKind.KeywordSubset, "subset");
-        Add(TokenKind.KeywordSuperset, "superset");
-        Add(TokenKind.KeywordSymdiff, "symdiff");
-        Add(TokenKind.KeywordTest, "test");
-        Add(TokenKind.KeywordThen, "then");
-        Add(TokenKind.KeywordTrue, "true");
-        Add(TokenKind.KeywordTuple, "tuple");
-        Add(TokenKind.KeywordType, "type");
-        Add(TokenKind.KeywordUnion, "union");
-        Add(TokenKind.KeywordVar, "var");
-        Add(TokenKind.KeywordWhere, "where");
-        Add(TokenKind.KeywordXor, "xor");
-
-        Add(TokenKind.DownWedge, "\\/");
-        Add(TokenKind.UpWedge, "/\\");
-        Add(TokenKind.LessThan, "<");
-        Add(TokenKind.GreaterThan, ">");
-        Add(TokenKind.LessThanEqual, "<=");
-        Add(TokenKind.GreaterThanEqual, ">=");
-        Add(TokenKind.Equal, "=");
-        Add(TokenKind.DotDot, "..");
-        Add(TokenKind.Plus, "+");
-        Add(TokenKind.Minus, "-");
-        Add(TokenKind.Star, "*");
-        Add(TokenKind.Slash, "/");
-        Add(TokenKind.PlusPlus, "++");
-        Add(TokenKind.TildeEquals, "~=");
-        Add(TokenKind.TildePlus, "~+");
-        Add(TokenKind.TildeMinus, "~-");
-        Add(TokenKind.TildeStar, "~*");
-        Add(TokenKind.LeftBracket, "[");
-        Add(TokenKind.RightBracket, "]");
-        Add(TokenKind.LeftParen, "(");
-        Add(TokenKind.RightParen, ")");
-        Add(TokenKind.LeftBrace, "{");
-        Add(TokenKind.RightBrace, "}");
-        Add(TokenKind.Dot, ".");
-        Add(TokenKind.Percent, "%");
-        Add(TokenKind.Underscore, "_");
-        Add(TokenKind.Tilde, "~");
-        Add(TokenKind.BackSlash, "\\");
-        Add(TokenKind.ForwardSlash, "/");
-        Add(TokenKind.Colon, ":");
-        Add(TokenKind.Delimiter, "");
-        Add(TokenKind.Pipe, "|");
-        Add(TokenKind.Empty, "<>");
-    }
-
-    private void Add(TokenKind kind, string word)
-    {
-        _tokenToWord[kind] = word;
-        _wordToToken[word] = kind;
-    }
-}
-
-public interface ILexer : IEnumerator<Token>, IEnumerable<Token> { }
-
-public sealed class Lexer : ILexer
-{
-    const char HASH = '#';
     const char FWD_SLASH = '/';
     const char BACK_SLASH = '\\';
     const char STAR = '*';
@@ -310,9 +38,7 @@ public sealed class Lexer : ILexer
     const char BACKTICK = '`';
     const char COLON = ':';
     const char NEWLINE = '\n';
-    const char TAB = '\t';
     const char RETURN = '\r';
-    const char SPACE = ' ';
     const char EOF = '\uffff';
 
     private uint _line;
@@ -330,18 +56,20 @@ public sealed class Lexer : ILexer
     private readonly StreamReader _reader;
     private readonly StringBuilder _sb;
     private readonly KeywordLookup Keywords;
+    public readonly LexOptions Options;
     public readonly bool LexLineComments;
     public readonly bool LexBlockComments;
 
-    private Lexer(StreamReader reader, bool lexLineComment = false, bool lexBlockComments = false)
+    private Lexer(StreamReader reader, LexOptions options)
     {
         _reader = reader;
         _sb = new StringBuilder();
         _string = string.Empty;
         _line = 1;
         Keywords = KeywordLookup.Table;
-        LexLineComments = lexLineComment;
-        LexBlockComments = lexBlockComments;
+        Options = options;
+        LexLineComments = options.HasFlag(LexOptions.LexLineComments);
+        LexBlockComments = options.HasFlag(LexOptions.LexBlockComments);
     }
 
     public bool MoveNext()
@@ -573,9 +301,7 @@ public sealed class Lexer : ILexer
             _startCol,
             _startPos,
             skipNext ? _length - 1 : _length,
-            0,
-            0.0,
-            _string
+            s: _string
         );
     }
 
@@ -586,10 +312,7 @@ public sealed class Lexer : ILexer
             _startLine,
             _startCol,
             _startPos,
-            skipNext ? _length - 1 : _length,
-            0,
-            0.0,
-            null
+            skipNext ? _length - 1 : _length
         );
     }
 
@@ -694,7 +417,7 @@ public sealed class Lexer : ILexer
         else
             _kind = TokenKind.Identifier;
 
-        _token = new Token(_kind, _startLine, _startCol, _startPos, _length - 1, 0, 0.0, _string);
+        _token = new Token(_kind, _startLine, _startCol, _startPos, _length - 1, s: _string);
     }
 
     private void LexStringLiteral()
@@ -763,9 +486,7 @@ public sealed class Lexer : ILexer
             _col,
             _startPos,
             _length - 1,
-            int.Parse(_string!),
-            0.0,
-            _string = null
+            i: int.Parse(_string!)
         );
 
         return;
@@ -784,9 +505,7 @@ public sealed class Lexer : ILexer
             _col,
             _startPos,
             _length - 1,
-            0,
-            double.Parse(_string!),
-            _string = null
+            d: double.Parse(_string!)
         );
     }
 
@@ -845,11 +564,7 @@ public sealed class Lexer : ILexer
     /// <summary>
     /// Lex the given string
     /// </summary>
-    public static ILexer LexString(
-        string s,
-        bool lexLineComments = false,
-        bool lexBlockComments = false
-    )
+    public static Lexer LexString(string s, LexOptions options = default)
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
@@ -857,18 +572,17 @@ public sealed class Lexer : ILexer
         writer.Flush();
         stream.Position = 0;
         var reader = new StreamReader(stream);
-        var lexer = new Lexer(reader, lexLineComments, lexBlockComments);
+        var lexer = new Lexer(reader, options);
         return lexer;
     }
 
     /// <summary>
     /// Lex the given file
     /// </summary>
-    public static ILexer LexFile(
+    public static Lexer LexFile(
         string path,
         Encoding? encoding = null,
-        bool lexLineComments = false,
-        bool lexBlockComments = false
+        LexOptions options = default
     )
     {
         var stream = new StreamReader(
@@ -876,23 +590,9 @@ public sealed class Lexer : ILexer
             encoding ?? Encoding.UTF8,
             detectEncodingFromByteOrderMarks: true
         );
-        var lexer = new Lexer(stream, lexLineComments, lexBlockComments);
+        var lexer = new Lexer(stream, options);
         return lexer;
     }
-
-    // /// <summary>
-    // /// Lex the given stream
-    // /// </summary>
-    // /// <param name="stream"></param>
-    // /// <param name="lexLineComments"></param>
-    // /// <param name="lexBlockComments"></param>
-    // /// <returns></returns>
-    //
-    // public static IEnumerable<Token> LexStream(
-    //     StreamReader stream,
-    //     bool lexLineComments = false,
-    //     bool lexBlockComments = false
-    // ) => new Lexer(stream, lexLineComments, lexBlockComments);
 
     public void Reset()
     {
