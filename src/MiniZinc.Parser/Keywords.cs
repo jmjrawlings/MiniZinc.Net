@@ -1,17 +1,17 @@
 ﻿namespace MiniZinc.Parser;
 
-internal sealed class KeywordLookup
+internal sealed class Keywords
 {
-    private static KeywordLookup? _table;
-    public static KeywordLookup Table => _table ??= new KeywordLookup();
+    private static Keywords? _table;
+    public static Keywords Table => _table ??= new Keywords();
 
-    private readonly Dictionary<TokenKind, string> _tokenToWord;
+    private static readonly Dictionary<TokenKind, string> _tokenToWord;
     public IReadOnlyDictionary<TokenKind, string> TokenToWord => _tokenToWord;
 
-    private readonly Dictionary<string, TokenKind> _wordToToken;
+    private static readonly Dictionary<string, TokenKind> _wordToToken;
     public IReadOnlyDictionary<string, TokenKind> WordToToken => _wordToToken;
 
-    private KeywordLookup()
+    static Keywords()
     {
         var names = Enum.GetNames<TokenKind>();
         var count = names.Length;
@@ -69,7 +69,6 @@ internal sealed class KeywordLookup
         Add(TokenKind.KeywordVar, "var");
         Add(TokenKind.KeywordWhere, "where");
         Add(TokenKind.KeywordXor, "xor");
-
         Add(TokenKind.DownWedge, "\\/");
         Add(TokenKind.UpWedge, "/\\");
         Add(TokenKind.LessThan, "<");
@@ -105,7 +104,7 @@ internal sealed class KeywordLookup
         Add(TokenKind.Empty, "<>");
     }
 
-    private void Add(TokenKind kind, string word)
+    private static void Add(TokenKind kind, string word)
     {
         _tokenToWord[kind] = word;
         _wordToToken[word] = kind;

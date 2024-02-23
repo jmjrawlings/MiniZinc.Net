@@ -55,7 +55,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private TokenKind _kind;
     private readonly StreamReader _reader;
     private readonly StringBuilder _sb;
-    private readonly KeywordLookup Keywords;
+    private readonly Keywords Keywords;
     public readonly LexOptions Options;
     public readonly bool LexLineComments;
     public readonly bool LexBlockComments;
@@ -66,7 +66,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _sb = new StringBuilder();
         _string = string.Empty;
         _line = 1;
-        Keywords = KeywordLookup.Table;
+        Keywords = Keywords.Table;
         Options = options;
         LexLineComments = options.HasFlag(LexOptions.LexLineComments);
         LexBlockComments = options.HasFlag(LexOptions.LexBlockComments);
