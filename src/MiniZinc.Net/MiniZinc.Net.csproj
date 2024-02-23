@@ -1,12 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="/"/>
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
     <PackageReference Include="microsoft.extensions.logging" Version="7.0.0" />
   </ItemGroup>
+  
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>UnitTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Process\" />
+  </ItemGroup>
+  
 </Project>

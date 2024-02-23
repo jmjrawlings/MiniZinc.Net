@@ -1,16 +1,18 @@
-﻿namespace MiniZinc.Net.Process;
+﻿namespace MiniZinc.Process;
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
+using CommunityToolkit.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SystemProcess = System.Diagnostics.Process;
 
 /// <summary>
 /// Wraps and starts a System.Diagnostics.Process
 /// </summary>
-public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
+public sealed class Process : IDisposable
 {
     /// The originating command
     public readonly Command Command;
@@ -31,48 +33,31 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
     public int ExitCode { get; private set; }
 
     /// If listening, the last ProcessMessage received
-    public ProcessMessage LastMessage { get; private set; }
+    public ProcessEvent LastEvent { get; private set; }
 
     /// The Id of the process if it ever started
     public int ProcessId { get; private set; }
 
     /// If captured, everything from stderr
-    private readonly StringBuilder? _stderr;
+    private StringBuilder? _stderr;
 
     /// If captured, everything from stdout
-    private readonly StringBuilder? _stdout;
+    private StringBuilder? _stdout;
 
     /// If listening, a channel to implement AsyncEnumerable
-    private Channel<ProcessMessage>? _channel;
-
-    /// If listening, a stream of messages
-    private IAsyncEnumerable<ProcessMessage>? _messages;
+    private Channel<ProcessEvent>? _channel;
 
     private readonly ProcessStartInfo _startInfo;
     private readonly SystemProcess _process;
     private readonly Stopwatch _watch;
-    private readonly CancellationToken _cancellationToken;
     private readonly TaskCompletionSource<ProcessResult> _tcs;
     private readonly ILogger _logger;
 
-    public Process(
-        in Command command,
-        bool stderr = true,
-        bool stdout = true,
-        CancellationToken cancellationToken = default
-    )
+    public Process(in Command command, ILogger? logger = null)
     {
-        _logger = Logging.Factory.CreateLogger<Process>();
+        _logger = logger ?? new NullLogger<Process>();
         Command = command;
-        _cancellationToken = cancellationToken;
         _watch = new Stopwatch();
-
-        if (stderr)
-            _stderr = new StringBuilder();
-
-        if (stdout)
-            _stdout = new StringBuilder();
-
         _tcs = new TaskCompletionSource<ProcessResult>();
         _startInfo = new ProcessStartInfo
         {
@@ -84,7 +69,7 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
         };
 
         _logger.LogInformation("Command is {Command}", command.String);
-        foreach (var arg in command.Arguments)
+        foreach (var arg in command.Args)
         {
             _logger.LogDebug("{Arg}", arg);
             _startInfo.ArgumentList.Add(arg.String);
@@ -102,123 +87,10 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
         _process.OutputDataReceived += OnOutput;
         _process.ErrorDataReceived += OnError;
         _process.Exited += OnExit;
-        _cancellationToken.Register(OnCancel);
     }
 
-    /// <summary>
-    /// The result of the Process
-    /// </summary>
-    public Task<ProcessResult> Result
+    private void SetResult()
     {
-        get
-        {
-            if (State is ProcessState.Idle)
-                Start();
-            return _tcs.Task;
-        }
-    }
-
-    private void Start()
-    {
-        _logger.LogInformation("Starting process");
-        State = ProcessState.Running;
-        _watch.Start();
-        _process.Start();
-        ProcessId = _process.Id;
-        LastMessage = new ProcessMessage
-        {
-            Command = Command.String,
-            StartTime = StartTime,
-            ProcessId = ProcessId,
-            MessageType = ProcessMessageType.Started,
-            TimeStamp = StartTime
-        };
-        _process.BeginOutputReadLine();
-        _process.BeginErrorReadLine();
-        _logger.LogInformation("ProcessId is {ProcessId}", _process.Id);
-        _channel?.Writer.TryWrite(LastMessage);
-    }
-
-    private void OnOutput(object _, DataReceivedEventArgs e)
-    {
-        if (e.Data is not { } data)
-            return;
-
-        _logger.LogDebug("{Output}", data);
-        _stdout?.Append(data);
-
-        var elapsed = Elapsed;
-        var msg = LastMessage with
-        {
-            Content = data,
-            MessageType = ProcessMessageType.StdOut,
-            TimeStamp = StartTime + elapsed,
-            Elapsed = elapsed
-        };
-        LastMessage = msg;
-        _channel?.Writer.TryWrite(msg);
-    }
-
-    private void OnError(object _, DataReceivedEventArgs e)
-    {
-        if (e.Data is not { } data)
-            return;
-
-        _logger.LogError("{Error}", data);
-        _stderr?.Append(data);
-
-        var elapsed = Elapsed;
-        var msg = LastMessage with
-        {
-            Content = e.Data,
-            MessageType = ProcessMessageType.StdErr,
-            TimeStamp = StartTime + elapsed,
-            Elapsed = elapsed
-        };
-        LastMessage = msg;
-        _channel?.Writer.TryWrite(msg);
-    }
-
-    private void OnCancel()
-    {
-        if (State is not ProcessState.Running)
-            return;
-
-        if (_process.HasExited)
-            return;
-
-        _logger.LogInformation("Cancellation requested - killing process");
-        State = ProcessState.Signalled;
-        _process.Kill();
-    }
-
-    private void OnExit(object? _s, EventArgs _e)
-    {
-        _watch.Stop();
-        LogLevel level;
-        switch (_process.ExitCode)
-        {
-            case 0:
-                level = LogLevel.Information;
-                State = ProcessState.Ok;
-                break;
-            case { } when State is ProcessState.Cancelled:
-                level = LogLevel.Warning;
-                State = ProcessState.Cancelled;
-                break;
-            case var code:
-                level = LogLevel.Error;
-                State = ProcessState.Error;
-                break;
-        }
-        ExitCode = _process.ExitCode;
-        _logger.Log(
-            level,
-            "Process exited with code {ExitCode} after {Elapsed}",
-            ExitCode,
-            Elapsed
-        );
-
         var result = new ProcessResult
         {
             Command = Command.String,
@@ -231,30 +103,48 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
             StdErr = _stderr?.ToString()
         };
         _tcs.SetResult(result);
-
-        LastMessage = LastMessage with
-        {
-            MessageType = ProcessMessageType.Exited,
-            Content = null,
-            TimeStamp = StartTime + Elapsed,
-            Elapsed = Elapsed
-        };
-
-        if (_channel is null)
-            return;
-
-        _channel.Writer.TryWrite(LastMessage);
-        _channel.Writer.TryComplete();
     }
 
-    public IAsyncEnumerator<ProcessMessage> GetAsyncEnumerator(
-        CancellationToken cancellationToken = default
+    /// <summary>
+    /// Run the process, returning the result on termination.
+    /// </summary>
+    public async Task<ProcessResult> Run(
+        CancellationToken cancellationToken = default,
+        bool stderr = true,
+        bool stdout = true
     )
     {
-        if (_messages is not null)
-            return _messages.GetAsyncEnumerator(cancellationToken);
+        if (State is not ProcessState.Idle)
+            ThrowHelper.ThrowInvalidOperationException();
 
-        _channel = Channel.CreateUnbounded<ProcessMessage>(
+        if (cancellationToken.IsCancellationRequested)
+        {
+            State = ProcessState.Cancelled;
+            SetResult();
+        }
+        else
+        {
+            if (stderr)
+                _stderr = new StringBuilder();
+
+            if (stdout)
+                _stdout = new StringBuilder();
+
+            Start();
+            cancellationToken.Register(Stop);
+        }
+        var result = await _tcs.Task.ConfigureAwait(false);
+        return result;
+    }
+
+    public async IAsyncEnumerable<ProcessEvent> Listen(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default
+    )
+    {
+        if (State is not ProcessState.Idle)
+            ThrowHelper.ThrowInvalidOperationException();
+
+        _channel = Channel.CreateUnbounded<ProcessEvent>(
             new UnboundedChannelOptions
             {
                 SingleWriter = false,
@@ -262,21 +152,140 @@ public sealed class Process : IDisposable, IAsyncEnumerable<ProcessMessage>
                 AllowSynchronousContinuations = false
             }
         );
-        _messages = _channel.Reader.ReadAllAsync(_cancellationToken);
+        cancellationToken.Register(Stop);
+        Start();
+        await foreach (var msg in _channel.Reader.ReadAllAsync().ConfigureAwait(false))
+        {
+            yield return msg;
+        }
+    }
 
-        if (State is ProcessState.Idle)
-            Start();
+    private void Start()
+    {
+        _logger.LogInformation("Starting process");
+        State = ProcessState.Running;
+        _watch.Start();
+        _process.Start();
+        ProcessId = _process.Id;
+        LastEvent = new ProcessEvent
+        {
+            EventType = ProcessEventType.Started,
+            TimeStamp = StartTime
+        };
+        _process.BeginOutputReadLine();
+        _process.BeginErrorReadLine();
+        _logger.LogInformation("ProcessId is {ProcessId}", _process.Id);
+        _channel?.Writer.TryWrite(LastEvent);
+    }
 
-        return _messages.GetAsyncEnumerator(cancellationToken);
+    private void Stop()
+    {
+        _logger.LogInformation("Stop requested");
+        if (State is not ProcessState.Running)
+            return;
+
+        if (_process.HasExited)
+            return;
+
+        _logger.LogInformation("Killing process");
+        State = ProcessState.Signalled;
+        try
+        {
+            _process.Kill();
+        }
+        catch
+        {
+            _logger.LogError("Could not kill the {Exe}", Command.Exe);
+        }
+    }
+
+    private void OnOutput(object _, DataReceivedEventArgs e)
+    {
+        if (e.Data is not { } data)
+            return;
+
+        _logger.LogDebug("{Output}", data);
+        _stdout?.Append(data);
+
+        var elapsed = Elapsed;
+        var msg = new ProcessEvent
+        {
+            Content = data,
+            EventType = ProcessEventType.StdOut,
+            TimeStamp = StartTime + elapsed
+        };
+        LastEvent = msg;
+        _channel?.Writer.TryWrite(msg);
+    }
+
+    private void OnError(object _, DataReceivedEventArgs e)
+    {
+        if (e.Data is not { } data)
+            return;
+
+        _logger.LogError("{Error}", data);
+        _stderr?.Append(data);
+
+        var elapsed = Elapsed;
+        var msg = new ProcessEvent
+        {
+            Content = e.Data,
+            EventType = ProcessEventType.StdErr,
+            TimeStamp = StartTime + elapsed
+        };
+        LastEvent = msg;
+        _channel?.Writer.TryWrite(msg);
+    }
+
+    private void OnExit(object? _s, EventArgs _e)
+    {
+        _watch.Stop();
+        switch (_process.ExitCode)
+        {
+            case 0:
+                State = ProcessState.Ok;
+                _logger.LogInformation("{Exe} succeeded after {Elapsed}", Command.Exe, Elapsed);
+                break;
+            case { } when State is ProcessState.Signalled:
+                State = ProcessState.Cancelled;
+                _logger.LogInformation("{Exe} was cancelled after {Elapsed}", Command.Exe, Elapsed);
+                break;
+            case var exitCode:
+                _logger.LogError(
+                    "{Exe} failed with code {ExitCode} after {Elapsed}",
+                    Command.Exe,
+                    exitCode,
+                    Elapsed
+                );
+                State = ProcessState.Error;
+                break;
+        }
+
+        ExitCode = _process.ExitCode;
+        SetResult();
+
+        LastEvent = new ProcessEvent()
+        {
+            EventType = ProcessEventType.Exited,
+            Content = null,
+            TimeStamp = StartTime + Elapsed
+        };
+
+        if (_channel is null)
+            return;
+
+        _channel.Writer.TryWrite(LastEvent);
+        _channel.Writer.TryComplete();
     }
 
     public void Dispose()
     {
+        Stop();
         _process.Dispose();
     }
 
     public override string ToString()
     {
-        return $"<{Command.Exe} | {State} | {_watch.Elapsed}>";
+        return $"<Process \"{Command.Exe}\" | {State} after {_watch.Elapsed.TotalSeconds}s>";
     }
 }

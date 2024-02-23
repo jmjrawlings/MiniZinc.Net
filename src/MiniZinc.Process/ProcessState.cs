@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net.Process;
+﻿namespace MiniZinc.Process;
 
 public enum ProcessState : byte
 {

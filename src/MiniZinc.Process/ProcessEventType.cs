@@ -1,9 +1,9 @@
-﻿namespace MiniZinc.Net.Process;
+﻿namespace MiniZinc.Process;
 
 /// <summary>
 /// The type of CommandOutput message
 /// </summary>
-public enum ProcessMessageType : byte
+public enum ProcessEventType : byte
 {
     /// The command has started running
     Started,

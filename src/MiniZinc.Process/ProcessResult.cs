@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Net.Process;
+﻿namespace MiniZinc.Process;
 
 /// <summary>
 /// The result of running a Process
@@ -30,7 +30,7 @@ public readonly record struct ProcessResult
     public required int ExitCode { get; init; }
 
     /// Did the command complete with errors?
-    public bool IsError => ExitCode > 0;
+    public bool IsError => ExitCode != 0;
 
     /// Did the command complete without error?
     public bool IsOk => ExitCode == 0;

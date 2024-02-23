@@ -1,4 +1,4 @@
-﻿public partial class LexerTests : TestBase
+﻿public class LexerUnitTests : TestBase
 {
     void TestTokens(string mzn, params TokenKind[] kinds)
     {
@@ -180,6 +180,6 @@
         last.Kind.Should().Be(TokenKind.EOF);
     }
 
-    public LexerTests(ITestOutputHelper output)
+    public LexerUnitTests(ITestOutputHelper output)
         : base(output) { }
 }

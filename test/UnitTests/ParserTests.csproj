@@ -1,7 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <IsTestProject>true</IsTestProject>
-  </PropertyGroup>
+
+  <Target Name="CopyTestModels" AfterTargets="AfterBuild">
+    <ItemGroup>
+      <TestModels Include="..\..\build\libminizinc\tests\spec\**\*.mzn"/>
+    </ItemGroup>
+    <Copy
+            SourceFiles="@(TestModels)"
+            DestinationFolder="$(OutDir)\%(RecursiveDir)" />
+  </Target>
+  
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0-rc.2.23479.6" />
@@ -16,10 +23,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\MiniZinc.Parser\MiniZinc.Parser.csproj" />
+    <ProjectReference Include="..\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.csproj" />
   </ItemGroup>
 

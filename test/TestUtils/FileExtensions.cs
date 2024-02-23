@@ -1,8 +1,6 @@
-﻿namespace MiniZinc.Build;
+﻿namespace MiniZinc.Tests;
 
-using System.Reflection;
-
-public static class Repo
+public static class FileExtensions
 {
     public static string JoinPath(this string path, params string[] a)
     {
@@ -80,36 +78,4 @@ public static class Repo
 
     public static string RelativeTo(this FileSystemInfo fsi, FileSystemInfo other) =>
         fsi.RelativeTo(other.FullName);
-
-    private static FileInfo? _solutionFile;
-    public static FileInfo SolutionFile
-    {
-        get
-        {
-            if (_solutionFile is not null)
-                return _solutionFile;
-
-            var assembly = Assembly.GetExecutingAssembly().Location.ToFile();
-            var sln = assembly.Directory!.JoinFile("MiniZinc.Net.sln");
-            while (!sln.Exists)
-            {
-                var dir = sln.Directory!.Parent;
-                sln = dir!.JoinFile(sln.Name);
-            }
-
-            _solutionFile = sln;
-            return sln;
-        }
-    }
-    public static DirectoryInfo SolutionDir => SolutionFile.Directory!;
-    public static DirectoryInfo SourceDir => SolutionDir.JoinDir("src");
-    public static DirectoryInfo TestDir => SolutionDir.JoinDir("test");
-    public static DirectoryInfo BuildDir => SolutionDir.JoinDir("build");
-    public static DirectoryInfo LibMiniZincDir => BuildDir.JoinDir("libminizinc");
-    public static DirectoryInfo TestSpecDir => LibMiniZincDir.JoinDir("tests", "spec");
-    public static FileInfo TestSpecYaml => TestSpecDir.JoinFile("suites.yml");
-    public static FileInfo TestSpecJson => TestSpecDir.JoinFile("libminizinc-test-spec.json");
-
-    public static DirectoryInfo LibMiniZincTestsDir =>
-        TestDir.JoinDir("MiniZinc.Net.Test.LibMiniZincTests");
 }

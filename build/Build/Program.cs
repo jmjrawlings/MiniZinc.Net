@@ -2,9 +2,9 @@
 using System.CommandLine;
 using Build;
 using LibMiniZinc.Tests;
-using MiniZinc.Net;
-using MiniZinc.Net.Process;
-using Command = MiniZinc.Net.Process.Command;
+using MiniZinc.Build;
+using MiniZinc.Process;
+using Command = MiniZinc.Process.Command;
 
 var rootCommand = new RootCommand("MiniZinc.NET build options");
 
@@ -40,20 +40,19 @@ async Task CloneLibMiniZincTests()
         .ToDirectory()
         .CreateOrClear();
 
-    async Task<ProcessResult> Git(params string[] args)
+    async Task<ProcessResult> Run(params string[] args)
     {
-        var cmd = Command.Create("git", args).WithWorkingDirectory(cloneDir);
-        using var process = cmd.ToProcess();
-        var result = await process.Result;
+        var cmd = Command.Create(args).WithWorkingDirectory(cloneDir);
+        var result = await cmd.Run();
         result.EnsureSuccess();
         return result;
     }
 
-    await Git("init");
-    await Git("remote", "add", "origin", url);
-    await Git("sparse-checkout", "set", "tests/spec");
-    await Git("fetch", "origin", "master");
-    await Git("checkout", "master");
+    await Run("git", "init");
+    await Run("git", "remote", "add", "origin", url);
+    await Run("git", "sparse-checkout", "set", "tests/spec");
+    await Run("git", "fetch", "origin", "master");
+    await Run("git", "checkout", "master");
 
     var sourceDir = cloneDir.JoinDir("tests", "spec").EnsureExists();
     var targetDir = libDir;
@@ -72,6 +71,6 @@ async Task Generate_LibMiniZinc_Lexer_Tests()
     var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
     var gen = new LexerTestGen(spec);
     var source = gen.Generate();
-    var file = Repo.LibMiniZincTestsDir.JoinFile("LexerTests.cs");
+    var file = Projects.ParserTests.Dir.JoinFile("LexerIntegrationTests.cs");
     File.WriteAllText(file.FullName, source);
 }

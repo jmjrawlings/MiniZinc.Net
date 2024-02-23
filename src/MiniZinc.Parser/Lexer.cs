@@ -1,16 +1,15 @@
-﻿namespace MiniZinc.Net;
+﻿namespace MiniZinc.Parser;
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using static Char;
 
 public enum TokenKind
 {
-    None,
-
     // Nodes
     Identifier,
     Polymorphic,
