@@ -1,6 +1,4 @@
-﻿using Xunit.Abstractions;
-
-public sealed class CommandTests : TestBase
+﻿public sealed class CommandTests : TestBase
 {
     [Theory]
     [InlineData("-v")]
