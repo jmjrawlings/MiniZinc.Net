@@ -89,6 +89,7 @@ public readonly record struct Command
         }
     }
 
+    ///
     public override string ToString()
     {
         return String;

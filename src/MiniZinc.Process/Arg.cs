@@ -27,6 +27,13 @@ public readonly partial record struct Arg
     /// </summary>
     public readonly String String;
 
+    /// <summary>
+    /// Create an Arg from a flag, value, or both
+    /// </summary>
+    /// <param name="flag"></param>
+    /// <param name="value"></param>
+    /// <param name="eq"></param>
+    /// <exception cref="ArgumentException"></exception>
     public Arg(string? flag, string? value, bool eq = false)
     {
         switch (flag, value)
@@ -54,8 +61,7 @@ public readonly partial record struct Arg
     /// <summary>
     /// Regex pattern used to match command line arguments
     /// </summary>
-    public const string RegexPattern =
-        """(-{1,2}[a-zA-Z][a-zA-Z0-9_-]*)?\s*(=)?\s*("[^"]*"|[^\s]+)?""";
+    const string RegexPattern = """(-{1,2}[a-zA-Z][a-zA-Z0-9_-]*)?\s*(=)?\s*("[^"]*"|[^\s]+)?""";
 
     /// <summary>
     /// Parse the given string into many arguments
@@ -126,6 +132,7 @@ public readonly partial record struct Arg
     [GeneratedRegex(RegexPattern)]
     internal static partial Regex Regex();
 
+    ///
     public override string ToString()
     {
         return String;

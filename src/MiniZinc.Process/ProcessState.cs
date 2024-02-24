@@ -1,5 +1,8 @@
 ﻿namespace MiniZinc.Process;
 
+/// <summary>
+/// The state of a Process
+/// </summary>
 public enum ProcessState : byte
 {
     /// Process has not been started yet

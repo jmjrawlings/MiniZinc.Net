@@ -53,6 +53,9 @@ public sealed class Process : IDisposable
     private readonly TaskCompletionSource<ProcessResult> _tcs;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// Create a process from the given command
+    /// </summary>
     public Process(in Command command, ILogger? logger = null)
     {
         _logger = logger ?? new NullLogger<Process>();
@@ -137,6 +140,11 @@ public sealed class Process : IDisposable
         return result;
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async IAsyncEnumerable<ProcessEvent> Listen(
         [EnumeratorCancellation] CancellationToken cancellationToken = default
     )
@@ -147,9 +155,9 @@ public sealed class Process : IDisposable
         _channel = Channel.CreateUnbounded<ProcessEvent>(
             new UnboundedChannelOptions
             {
-                SingleWriter = false,
+                SingleWriter = true,
                 SingleReader = true,
-                AllowSynchronousContinuations = false
+                AllowSynchronousContinuations = true
             }
         );
         cancellationToken.Register(Stop);
@@ -278,12 +286,14 @@ public sealed class Process : IDisposable
         _channel.Writer.TryComplete();
     }
 
+    ///
     public void Dispose()
     {
         Stop();
         _process.Dispose();
     }
 
+    ///
     public override string ToString()
     {
         return $"<Process \"{Command.Exe}\" | {State} after {_watch.Elapsed.TotalSeconds}s>";
