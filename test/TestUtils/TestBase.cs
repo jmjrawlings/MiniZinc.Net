@@ -16,7 +16,7 @@ public abstract class TestBase
         _output.WriteLine(message);
     }
 
-    protected void Write(string template, params object[] args)
+    protected void Write(string template, params object?[] args)
     {
         _output.WriteLine(template, args);
     }

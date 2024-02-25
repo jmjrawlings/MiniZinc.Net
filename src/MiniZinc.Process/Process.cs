@@ -286,6 +286,37 @@ public sealed class Process : IDisposable
         _channel.Writer.TryComplete();
     }
 
+    /// <summary>
+    /// Create a process from the given command
+    /// </summary>
+    public static Process Create(Command cmd)
+    {
+        var proc = new Process(cmd);
+        return proc;
+    }
+
+    /// <summary>
+    /// Create a process from the given command line string
+    /// </summary>
+    /// <example>Process.Create("git --version")</example>
+    public static Process Create(string command)
+    {
+        var cmd = Command.Create(command);
+        var proc = Create(cmd);
+        return proc;
+    }
+
+    /// <summary>
+    /// Create a process from the given command line args
+    /// </summary>
+    /// <example>Process.Create("git","--version")</example>
+    public static Process Create(params string[] args)
+    {
+        var cmd = Command.Create(args);
+        var proc = Create(cmd);
+        return proc;
+    }
+
     ///
     public void Dispose()
     {

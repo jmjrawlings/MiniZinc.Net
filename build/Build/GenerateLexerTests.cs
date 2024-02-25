@@ -1,20 +1,22 @@
-﻿namespace Build;
+﻿using MiniZinc.Build;
+
+namespace Build;
 
 using System.Text;
 using LibMiniZinc.Tests;
 
-public sealed class LexerTestGen : CodeBuilder
+public sealed class GenerateLexerTests : CodeBuilder
 {
     public readonly TestSpec Spec;
     public readonly IEnumerable<string> Files;
 
-    public LexerTestGen(TestSpec spec)
+    public GenerateLexerTests(TestSpec spec)
     {
         Spec = spec;
         Files = spec.TestCases.Select(c => c.Path).Distinct().ToList();
     }
 
-    public string Generate()
+    string Generate()
     {
         Block("public sealed class LexerTests");
 
@@ -36,5 +38,14 @@ public sealed class LexerTestGen : CodeBuilder
 
         var code = ToString();
         return code;
+    }
+
+    public static async Task Run()
+    {
+        var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
+        var gen = new GenerateLexerTests(spec);
+        var source = gen.Generate();
+        var file = Projects.ParserTests.Dir.JoinFile("LexerIntegrationTests.cs");
+        await File.WriteAllTextAsync(file.FullName, source);
     }
 }
