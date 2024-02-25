@@ -1,7 +1,6 @@
-﻿using System.Text.Json;
+﻿namespace MiniZinc.Client.Messages;
 
-namespace MiniZinc.Client.Messages;
-
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
@@ -14,26 +13,19 @@ using System.Text.Json.Serialization;
 [JsonDerivedType(typeof(StatusMessage), typeDiscriminator: "status")]
 public record MiniZincMessage
 {
-    private static JsonSerializerOptions? _jsonSerializerOptions;
+    public static readonly JsonSerializerOptions JsonSerializerOptions;
 
-    public static JsonSerializerOptions JsonSerializerOptions
+    static MiniZincMessage()
     {
-        get
+        JsonSerializerOptions = new JsonSerializerOptions
         {
-            if (_jsonSerializerOptions is not null)
-                return _jsonSerializerOptions;
-
-            _jsonSerializerOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-            return _jsonSerializerOptions;
-        }
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
     }
 
     public static MiniZincMessage Deserialize(string json)
     {
-        var message = JsonSerializer.Deserialize<MiniZincMessage>(json, _jsonSerializerOptions);
+        var message = JsonSerializer.Deserialize<MiniZincMessage>(json, JsonSerializerOptions);
         return message;
     }
 }

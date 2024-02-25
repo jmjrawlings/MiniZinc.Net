@@ -33,35 +33,39 @@ public sealed class Process : IDisposable
     public int ExitCode { get; private set; }
 
     /// If listening, the last ProcessMessage received
-    public ProcessEvent LastEvent { get; private set; }
+    public ProcessEventMessage LastEventMessage { get; private set; }
+
+    /// If listening, the last ProcessMessage received
+    public readonly Task<ProcessResult> Result;
 
     /// The Id of the process if it ever started
     public int ProcessId { get; private set; }
 
-    /// If captured, everything from stderr
-    private StringBuilder? _stderr;
-
-    /// If captured, everything from stdout
-    private StringBuilder? _stdout;
-
     /// If listening, a channel to implement AsyncEnumerable
-    private Channel<ProcessEvent>? _channel;
+    private readonly Channel<ProcessEventMessage> _channel;
+
+    private IAsyncEnumerable<ProcessEventMessage>? _events;
 
     private readonly ProcessStartInfo _startInfo;
     private readonly SystemProcess _process;
     private readonly Stopwatch _watch;
     private readonly TaskCompletionSource<ProcessResult> _tcs;
     private readonly ILogger _logger;
+    private readonly CancellationToken _cancellationToken;
 
     /// <summary>
     /// Create a process from the given command
     /// </summary>
-    public Process(in Command command, ILogger? logger = null)
+    public Process(
+        in Command command,
+        CancellationToken cancellationToken = default,
+        ILogger? logger = null
+    )
     {
         _logger = logger ?? new NullLogger<Process>();
-        Command = command;
         _watch = new Stopwatch();
         _tcs = new TaskCompletionSource<ProcessResult>();
+        _cancellationToken = cancellationToken;
         _startInfo = new ProcessStartInfo
         {
             FileName = command.Exe,
@@ -90,6 +94,51 @@ public sealed class Process : IDisposable
         _process.OutputDataReceived += OnOutput;
         _process.ErrorDataReceived += OnError;
         _process.Exited += OnExit;
+
+        Command = command;
+        Result = _tcs.Task;
+
+        _logger.LogInformation("Starting process");
+        State = ProcessState.Running;
+        _channel = Channel.CreateUnbounded<ProcessEventMessage>(
+            new UnboundedChannelOptions
+            {
+                SingleWriter = true,
+                SingleReader = true,
+                AllowSynchronousContinuations = true
+            }
+        );
+
+        _watch.Start();
+        _process.Start();
+        ProcessId = _process.Id;
+        LastEventMessage = new ProcessEventMessage
+        {
+            EventType = ProcessEventType.Started,
+            TimeStamp = StartTime
+        };
+        if (_cancellationToken.IsCancellationRequested)
+            Stop();
+        else
+        {
+            _cancellationToken.Register(Stop);
+            _channel.Writer.TryWrite(LastEventMessage);
+            _process.BeginOutputReadLine();
+            _process.BeginErrorReadLine();
+            _logger.LogInformation("ProcessId is {ProcessId}", _process.Id);
+        }
+    }
+
+    public IAsyncEnumerable<ProcessEventMessage> Events
+    {
+        get
+        {
+            if (_events is not null)
+                return _events;
+
+            _events = _channel.Reader.ReadAllAsync();
+            return _events;
+        }
     }
 
     private void SetResult()
@@ -102,8 +151,6 @@ public sealed class Process : IDisposable
             EndTime = TimeStamp,
             Duration = Elapsed,
             ExitCode = _process.ExitCode,
-            StdOut = _stdout?.ToString(),
-            StdErr = _stderr?.ToString()
         };
         _tcs.SetResult(result);
     }
@@ -125,65 +172,9 @@ public sealed class Process : IDisposable
             State = ProcessState.Cancelled;
             SetResult();
         }
-        else
-        {
-            if (stderr)
-                _stderr = new StringBuilder();
-
-            if (stdout)
-                _stdout = new StringBuilder();
-
-            Start();
-            cancellationToken.Register(Stop);
-        }
+        else { }
         var result = await _tcs.Task.ConfigureAwait(false);
         return result;
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async IAsyncEnumerable<ProcessEvent> Listen(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default
-    )
-    {
-        if (State is not ProcessState.Idle)
-            ThrowHelper.ThrowInvalidOperationException();
-
-        _channel = Channel.CreateUnbounded<ProcessEvent>(
-            new UnboundedChannelOptions
-            {
-                SingleWriter = true,
-                SingleReader = true,
-                AllowSynchronousContinuations = true
-            }
-        );
-        cancellationToken.Register(Stop);
-        Start();
-        await foreach (var msg in _channel.Reader.ReadAllAsync().ConfigureAwait(false))
-        {
-            yield return msg;
-        }
-    }
-
-    private void Start()
-    {
-        _logger.LogInformation("Starting process");
-        State = ProcessState.Running;
-        _watch.Start();
-        _process.Start();
-        ProcessId = _process.Id;
-        LastEvent = new ProcessEvent
-        {
-            EventType = ProcessEventType.Started,
-            TimeStamp = StartTime
-        };
-        _process.BeginOutputReadLine();
-        _process.BeginErrorReadLine();
-        _logger.LogInformation("ProcessId is {ProcessId}", _process.Id);
-        _channel?.Writer.TryWrite(LastEvent);
     }
 
     private void Stop()
@@ -213,16 +204,15 @@ public sealed class Process : IDisposable
             return;
 
         _logger.LogDebug("{Output}", data);
-        _stdout?.Append(data);
 
         var elapsed = Elapsed;
-        var msg = new ProcessEvent
+        var msg = new ProcessEventMessage
         {
             Content = data,
             EventType = ProcessEventType.StdOut,
             TimeStamp = StartTime + elapsed
         };
-        LastEvent = msg;
+        LastEventMessage = msg;
         _channel?.Writer.TryWrite(msg);
     }
 
@@ -232,16 +222,15 @@ public sealed class Process : IDisposable
             return;
 
         _logger.LogError("{Error}", data);
-        _stderr?.Append(data);
 
         var elapsed = Elapsed;
-        var msg = new ProcessEvent
+        var msg = new ProcessEventMessage
         {
             Content = e.Data,
             EventType = ProcessEventType.StdErr,
             TimeStamp = StartTime + elapsed
         };
-        LastEvent = msg;
+        LastEventMessage = msg;
         _channel?.Writer.TryWrite(msg);
     }
 
@@ -272,7 +261,7 @@ public sealed class Process : IDisposable
         ExitCode = _process.ExitCode;
         SetResult();
 
-        LastEvent = new ProcessEvent()
+        LastEventMessage = new ProcessEventMessage()
         {
             EventType = ProcessEventType.Exited,
             Content = null,
@@ -282,39 +271,8 @@ public sealed class Process : IDisposable
         if (_channel is null)
             return;
 
-        _channel.Writer.TryWrite(LastEvent);
+        _channel.Writer.TryWrite(LastEventMessage);
         _channel.Writer.TryComplete();
-    }
-
-    /// <summary>
-    /// Create a process from the given command
-    /// </summary>
-    public static Process Create(Command cmd)
-    {
-        var proc = new Process(cmd);
-        return proc;
-    }
-
-    /// <summary>
-    /// Create a process from the given command line string
-    /// </summary>
-    /// <example>Process.Create("git --version")</example>
-    public static Process Create(string command)
-    {
-        var cmd = Command.Create(command);
-        var proc = Create(cmd);
-        return proc;
-    }
-
-    /// <summary>
-    /// Create a process from the given command line args
-    /// </summary>
-    /// <example>Process.Create("git","--version")</example>
-    public static Process Create(params string[] args)
-    {
-        var cmd = Command.Create(args);
-        var proc = Create(cmd);
-        return proc;
     }
 
     ///
@@ -328,5 +286,21 @@ public sealed class Process : IDisposable
     public override string ToString()
     {
         return $"<Process \"{Command.Exe}\" | {State} after {_watch.Elapsed.TotalSeconds}s>";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await CastAndDispose(Result);
+        await CastAndDispose(_process);
+
+        return;
+
+        static async ValueTask CastAndDispose(IDisposable resource)
+        {
+            if (resource is IAsyncDisposable resourceAsyncDisposable)
+                await resourceAsyncDisposable.DisposeAsync();
+            else
+                resource.Dispose();
+        }
     }
 }

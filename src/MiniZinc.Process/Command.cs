@@ -94,4 +94,11 @@ public readonly record struct Command
     {
         return String;
     }
+
+    public async Task<ProcessResult> Run(CancellationToken cancellationToken = default)
+    {
+        await using var proc = new Process(this, cancellationToken);
+        var result = await proc.Result;
+        return result;
+    }
 }

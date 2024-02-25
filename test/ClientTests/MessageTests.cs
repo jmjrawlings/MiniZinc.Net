@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Tests;
 
 using System.Text.Json;
-using MiniZinc.Client;
-using MiniZinc.Client.Messages;
+using System.Text.RegularExpressions;
+using Client.Messages;
 using Xunit.Abstractions;
 
 public class MessageTests : TestBase
@@ -10,9 +10,13 @@ public class MessageTests : TestBase
     void test_roundtrip(string input)
     {
         var message1 = MiniZincMessage.Deserialize(input);
-        var output = JsonSerializer.Serialize(message1, MiniZincMessage.JsonSerializerOptions);
-        var message2 = MiniZincMessage.Deserialize(output);
-        message1.Should().Be(message2);
+        var string1 = JsonSerializer.Serialize(message1, MiniZincMessage.JsonSerializerOptions);
+        var message2 = MiniZincMessage.Deserialize(string1);
+        var string2 = JsonSerializer.Serialize(message2, MiniZincMessage.JsonSerializerOptions);
+        var norm1 = Regex.Replace(string1, @"\s", "");
+        var norm2 = Regex.Replace(string2, @"\s", "");
+        bool eq = String.Equals(norm1, norm2, StringComparison.OrdinalIgnoreCase);
+        eq.Should().BeTrue();
     }
 
     [Fact]

@@ -20,12 +20,6 @@ public readonly record struct ProcessResult
     /// Total time taken to execute
     public required TimeSpan Duration { get; init; }
 
-    /// If captured, everything written to stdout
-    public string? StdOut { get; init; }
-
-    /// If captured, everything written to stderr
-    public string? StdErr { get; init; }
-
     /// The exit code
     public required int ExitCode { get; init; }
 
@@ -43,7 +37,7 @@ public readonly record struct ProcessResult
         if (IsOk)
             return this;
 
-        var msg = $"The command \"{Command}\" exited with code {ExitCode}:\n \"{StdErr}\"";
+        var msg = $"The command \"{Command}\" exited with code {ExitCode}";
         throw new Exception(msg);
     }
 }

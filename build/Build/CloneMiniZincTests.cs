@@ -17,8 +17,7 @@ public static class CloneLibMiniZincTests
         async Task<ProcessResult> Run(params string[] args)
         {
             var cmd = Command.Create(args).WithWorkingDirectory(cloneDir);
-            using var proc = Process.Create(cmd);
-            var result = await proc.Run();
+            var result = await cmd.Run();
             result.EnsureSuccess();
             return result;
         }
