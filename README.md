@@ -5,9 +5,9 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 ## Features
 
 - Parse
-  - [] Parse models from a string
-  - [] Parse models from a `.mzn` file
-  - [] Parse `.dzn` model data from string
+  - [ ] Parse models from a string
+  - [ ] Parse models from a `.mzn` file
+  - [ ] Parse `.dzn` model data from string
 
 - Model
   - [ ] Cohesive API for editing models
