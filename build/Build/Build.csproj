@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.csproj" />
+    <ProjectReference Include="..\..\src\MiniZinc.Process\MiniZinc.Process.csproj" />
+    <ProjectReference Include="..\TestSpecParser\TestSpecParser.csproj" />
+    <ProjectReference Include="..\TestSpec\TestSpec.csproj" />
+    <ProjectReference Include="..\Repo\Repo.csproj" />
+  </ItemGroup>
+
+</Project>
