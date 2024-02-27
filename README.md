@@ -2,30 +2,21 @@
 
 Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from .NET
 
-> This project is a work in progress and is quite some time away from being "production ready" though
-> that is certainly the goal.
-> 
-> I am developing it in the open as there are certain parts (eg the parser) that may serve useful
-> to others.
-
-## Features 
+## Features
 
 - Parse
-  - [x] Parse models from a string
-  - [x] Parse models from a `.mzn` file
-  - [x] Parse `.dzn` model data from string
-
+  - [] Parse models from a string
+  - [] Parse models from a `.mzn` file
+  - [] Parse `.dzn` model data from string
 
 - Model
   - [ ] Cohesive API for editing models
-
 
 - Client
   - [x] Execute `minizinc` commands
   - [x] Solve simple models
   - [x] Async stream model solutions
-  - [ ] Handle timeout / user cancellation
-
+  - [x] Handle timeout / user cancellation
 
 - Other
   - [ ] C# source generator
@@ -35,10 +26,10 @@ Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models 
 
 
 ## Requirements
-- [.NET7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
+- [.NET8 SDK]
 
 
-## Quickstart
+## Developer Guide
 - `git clone https://github.com/jmjrawlings/MiniZinc.Net.git`
 - `cd MiniZinc.Net`
 - `dotnet tool restore`
