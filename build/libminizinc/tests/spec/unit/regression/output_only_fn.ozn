@@ -1,0 +1,3 @@
+output ["\"output\": {","\"default\": ",showJSON(concat([show(x)])),", \"raw\": ",showJSON(concat([show(x)])),"}, \"sections\": [\"default\", \"raw\"]"];
+function int : foo = 10;
+int: x = foo();

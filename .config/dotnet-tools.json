@@ -2,10 +2,10 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "fake-cli": {
-      "version": "6.0.0",
+    "csharpier": {
+      "version": "0.26.7",
       "commands": [
-        "fake"
+        "dotnet-csharpier"
       ]
     }
   }

@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.0] - UNRELEASED
+
+I have completely rewritten from F# to C#.
+
+Reasons for this in no particular order:
+
+- `MiniZinc.Net` was always intended to be used from C# and maintaining both an idiomatic F# api and C# api was too much work
+- Modern (.NET6+) C# has incorporated just about every feature of F# at this point (ADTs notwithstanding) but the reverse is not true
+  - `IAsyncEnumerable` is a core feature of solvers that doesn't seem to be included in F#?
+- Tooling and compilation are substantially quicker with C#
+- A new job has me developing in C# 8 and enjoying it a lot
+- As soon as you want any sort of performance you need to drop into
+- While I love `FParsec` I was suffering a bit from not having a separate lexing and parsing step
+- I'm aiming for as little dependencies as possible for the library and handing writing a lexer/parser just doesn't seem that hard (we will see)
+- C# is slated to get algebraic data types at some point at which point there is almost no reason to prefer F# other than the syntax which I do love
+
+
 ## [0.6.4] - 2023-08-23
 
 More improvements to the array parsers.  I think they are
