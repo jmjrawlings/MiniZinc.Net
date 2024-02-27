@@ -6,7 +6,7 @@
 public readonly record struct ProcessEventMessage
 {
     /// Time this message was created
-    public required DateTime TimeStamp { get; init; }
+    public required DateTimeOffset TimeStamp { get; init; }
 
     /// The type of event
     public required ProcessEventType EventType { get; init; }

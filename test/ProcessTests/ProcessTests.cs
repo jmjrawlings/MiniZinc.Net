@@ -4,19 +4,21 @@
     public async void Command_Runs()
     {
         var cmd = Command.Create("git", "-v");
-        var res = await cmd.Run();
-        res.IsOk.Should().BeTrue();
+        var proc = await cmd.Run();
+        proc.Status.Should().Be(ProcessStatus.Ok);
     }
 
     [Fact]
     public async void Command_Listen_MiniZinc_Version()
     {
         var cmd = Command.Create("minizinc", "--version");
-        await using var proc = new Process(cmd);
-        await foreach (var msg in proc.Events)
+        var proc = new Process(cmd);
+        await foreach (var msg in proc.Listen())
         {
             Write("{0}", msg.Content);
         }
+
+        proc.Status.Should().Be(ProcessStatus.Ok);
     }
 
     [Fact]
@@ -29,8 +31,8 @@
     public async void Ping_And_Listen()
     {
         var cmd = Command.Create("ping 127.0.0.1 -n 4");
-        await using var proc = new Process(cmd);
-        await foreach (var msg in proc.Events)
+        var proc = new Process(cmd);
+        await foreach (var msg in proc.Listen())
         {
             Write("[{0}|{1}] {2}", cmd.Exe, msg.EventType, msg.Content);
         }
@@ -56,8 +58,8 @@
         File.WriteAllText(tmp.FullName, model);
         var cmd = Command.Create("minizinc", "-a", "--json-stream", tmp.FullName);
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        await using var proc = new Process(cmd, cts.Token);
-        await foreach (var msg in proc.Events)
+        var proc = new Process(cmd);
+        await foreach (var msg in proc.Listen(cts.Token))
         {
             Write("{0}", msg.EventType);
             if (msg.Content is { } data)
@@ -65,7 +67,7 @@
         }
 
         var a = 2;
-        proc.State.Should().Be(ProcessState.Cancelled);
+        proc.Status.Should().Be(ProcessStatus.Cancelled);
     }
 
     public ProcessTests(ITestOutputHelper output)

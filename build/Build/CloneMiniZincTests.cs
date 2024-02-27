@@ -1,4 +1,6 @@
-﻿namespace Build;
+﻿using CommunityToolkit.Diagnostics;
+
+namespace Build;
 
 using MiniZinc.Build;
 using MiniZinc.Process;
@@ -14,12 +16,11 @@ public static class CloneLibMiniZincTests
             .ToDirectory()
             .CreateOrClear();
 
-        async Task<ProcessResult> Run(params string[] args)
+        async Task Run(params string[] args)
         {
             var cmd = Command.Create(args).WithWorkingDirectory(cloneDir);
             var result = await cmd.Run();
-            result.EnsureSuccess();
-            return result;
+            Guard.IsEqualTo((int)result.Status, (int)ProcessStatus.Ok);
         }
 
         await Run("git", "init");

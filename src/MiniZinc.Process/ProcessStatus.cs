@@ -3,7 +3,7 @@
 /// <summary>
 /// The state of a Process
 /// </summary>
-public enum ProcessState : byte
+public enum ProcessStatus : byte
 {
     /// Process has not been started yet
     Idle,

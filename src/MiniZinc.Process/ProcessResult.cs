@@ -9,7 +9,7 @@ public readonly record struct ProcessResult
     public required string Command { get; init; }
 
     /// The final state
-    public required ProcessState State { get; init; }
+    public required ProcessStatus Status { get; init; }
 
     /// Time the command started running
     public required DateTime StartTime { get; init; }
