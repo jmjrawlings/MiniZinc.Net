@@ -1,9 +1,9 @@
-﻿namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser.Ast;
 
 /// <summary>
 /// Binary and unary operators
 /// </summary>
-public enum Op
+public enum Operator
 {
     Equivalent,
     Implies,

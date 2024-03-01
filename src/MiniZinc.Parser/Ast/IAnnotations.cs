@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser.Ast;
 
 public interface IAnnotations
 {

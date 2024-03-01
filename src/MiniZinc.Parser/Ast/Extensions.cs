@@ -1,6 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser.Ast;
 
-public static class AstExtensions
+public static class Extensions
 {
     public static void Annotate(this IAnnotations x, IExpr expr)
     {
