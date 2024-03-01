@@ -15,4 +15,12 @@
         ns.Pop();
         ns.ContainsKey("a").Should().BeFalse();
     }
+
+    [Fact]
+    void test_parse_include()
+    {
+        using var lexer = Lexer.LexString("include \"xd.mzn\";");
+        var parser = new Parser(lexer);
+        parser.Model.Includes.Should().HaveCount(1);
+    }
 }

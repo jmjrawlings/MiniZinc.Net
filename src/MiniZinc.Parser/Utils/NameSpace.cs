@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 /// <summary>
 /// A lookup from names to values.  This differs from
 /// a standard Dictionary in that it stores a stack for
-/// each key to allow temporary shadowing eg: a local
+/// each name to allow temporary shadowing eg: a local
 /// namespace overriding some variables in a global one
 /// </summary>
 public sealed class NameSpace<T> : IReadOnlyDictionary<string, T>

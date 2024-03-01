@@ -1,6 +1,3 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record LeftOpenRangeExpr : IExpr
-{
-    public IExpr Min { get; set; }
-}
+public readonly record struct LeftOpenRangeExpr(IExpr Min) : IExpr { }
