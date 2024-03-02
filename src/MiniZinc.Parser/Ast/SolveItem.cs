@@ -5,7 +5,7 @@
 /// </summary>
 public record SolveItem : IStatement, IAnnotations
 {
-    public SolveMethod SolveMethod { get; set; }
+    public SolveMethod Method { get; set; }
     public List<IExpr>? Annotations { get; set; }
-    public IExpr? Expr { get; set; }
+    public IExpr? Objective { get; set; }
 }

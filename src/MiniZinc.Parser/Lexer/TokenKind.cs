@@ -102,9 +102,9 @@ internal enum TokenKind
     BackSlash,
     ForwardSlash,
     Colon,
-    Delimiter,
     Pipe,
     Empty,
+    EOL,
     EOF,
 
     // Errors

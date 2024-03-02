@@ -110,7 +110,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Token(TokenKind.Star);
                 break;
             case DELIMITER:
-                Token(TokenKind.Delimiter);
+                Token(TokenKind.EOL);
                 break;
             case EQUAL:
                 Skip(EQUAL);

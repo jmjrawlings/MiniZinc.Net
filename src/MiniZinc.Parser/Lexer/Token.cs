@@ -1,36 +1,24 @@
 ﻿namespace MiniZinc.Parser;
 
-internal readonly struct Token
+internal readonly struct Token(
+    TokenKind kind,
+    uint line,
+    uint col,
+    uint start,
+    uint length,
+    int i = default,
+    double d = default,
+    string? s = default
+)
 {
-    public readonly TokenKind Kind;
-    public readonly uint Line;
-    public readonly uint Col;
-    public readonly uint Start;
-    public readonly uint Length;
-    public readonly int Int;
-    public readonly string? String;
-    public readonly double Double;
-
-    public Token(
-        TokenKind kind,
-        uint line,
-        uint col,
-        uint start,
-        uint length,
-        int i = default,
-        double d = default,
-        string? s = default
-    )
-    {
-        Kind = kind;
-        Line = line;
-        Col = col;
-        Start = start;
-        Length = length;
-        Int = i;
-        String = s;
-        Double = d;
-    }
+    public readonly TokenKind Kind = kind;
+    public readonly uint Line = line;
+    public readonly uint Col = col;
+    public readonly uint Start = start;
+    public readonly uint Length = length;
+    public readonly int Int = i;
+    public readonly string? String = s;
+    public readonly double Double = d;
 
     internal static string KindString(TokenKind kind) =>
         kind switch
@@ -116,7 +104,7 @@ internal readonly struct Token
             TokenKind.BackSlash => "\\",
             TokenKind.ForwardSlash => "/",
             TokenKind.Colon => ":",
-            TokenKind.Delimiter => "",
+            TokenKind.EOL => ";",
             TokenKind.Pipe => "|",
             TokenKind.Empty => "<>",
             _ => string.Empty

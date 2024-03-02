@@ -23,4 +23,14 @@
         var parser = new Parser(lexer);
         parser.Model.Includes.Should().HaveCount(1);
     }
+
+    [Theory]
+    [InlineData("solve satisfy;")]
+    [InlineData("solve maximize;")]
+    void test_parse_solve(string mzn)
+    {
+        using var lexer = Lexer.LexString(mzn);
+        var parser = new Parser(lexer);
+        parser.Model.SolveItem.Should().NotBeNull();
+    }
 }

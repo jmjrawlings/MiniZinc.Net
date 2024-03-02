@@ -15,7 +15,7 @@ public sealed class Parser
     internal readonly Stack<ParseContext> _context;
 
     /// The current token
-    private Token _token;
+    private Token Token;
 
     /// The index of the current token
     private int _index;
@@ -36,26 +36,34 @@ public sealed class Parser
     /// close the context.
     private ParseContext Context(AstNode node)
     {
-        var context = new ParseContext(this, _token, node);
+        var context = new ParseContext(this, Token, node);
+        _context.Push(context);
         return context;
     }
 
     private bool Move()
     {
         // Read next token from look ahead queue
-        if (_lookAhead.TryDequeue(out _token))
+        if (_lookAhead.TryDequeue(out Token))
             return true;
 
         // Read next token from source stream
         if (_tokens.MoveNext())
         {
-            _token = _tokens.Current;
+            Token = _tokens.Current;
             _index++;
             return true;
         }
 
         // No more tokens
         return false;
+    }
+
+    /// Expect followed by a move
+    private void Consume(TokenKind kind)
+    {
+        Expect(Token, kind);
+        Move();
     }
 
     private Token Peek()
@@ -81,10 +89,14 @@ public sealed class Parser
         using var _ = Context(AstNode.Model);
         while (Move())
         {
-            switch (_token.Kind)
+            switch (Token.Kind)
             {
                 case TokenKind.KeywordInclude:
                     ParseInclude();
+                    break;
+
+                case TokenKind.KeywordSolve:
+                    ParseSolve();
                     break;
 
                 case TokenKind.KeywordConstraint:
@@ -96,6 +108,20 @@ public sealed class Parser
         var a = 2;
     }
 
+    /// Throw an error
+    private void Error(string msg)
+    {
+        var ctx = _context.Peek();
+        var exn =
+            $@"""
+            An error occurred while parsing {ctx.Node} on Line {ctx.Start.Line} Col {ctx.Start.Col}:
+
+            {msg}
+            """;
+        var context = _context.ToArray();
+        throw new ParseException(context.Cast<IParseContext>());
+    }
+
     /// Expect the token to be of the given kind
     private void Expect(in Token token, TokenKind kind)
     {
@@ -103,28 +129,65 @@ public sealed class Parser
             return;
 
         var ctx = _context.Peek();
-        var msg =
-            $@"""
-            An error occurred while parsing {ctx.Node} on Line {ctx.Start.Line} Col {ctx.Start.Col}.
-            Expected a {kind} but encountered a {token.Kind}
-            """;
-        var context = _context.ToArray();
-        throw new ParseException(context.Cast<IParseContext>());
+        Error($"Expected a {kind} but encountered a {token.Kind}");
     }
 
     private void ParseInclude()
     {
         using var _ = Context(AstNode.Include);
-        Move();
-        Expect(_token, TokenKind.StringLiteral);
-        var inc = new IncludeStatement { Path = _token.String! };
+        Consume(TokenKind.StringLiteral);
+        var inc = new IncludeStatement { Path = Token.String! };
         _model.Includes.Add(inc);
+        Consume(TokenKind.EOL);
+    }
+
+    void EOL()
+    {
+        Consume(TokenKind.EOL);
+    }
+
+    private void ParseSolve()
+    {
+        using var _ = Context(AstNode.Solve);
+        Move();
+
+        var solve = new SolveItem();
+
+        switch (Token.Kind)
+        {
+            case TokenKind.KeywordSatisfy:
+                Move();
+                solve.Method = SolveMethod.Satisfy;
+                break;
+            case TokenKind.KeywordMinimize:
+                Move();
+                solve.Method = SolveMethod.Minimize;
+                solve.Objective = ParseExpr();
+                break;
+            case TokenKind.KeywordMaximize:
+                Move();
+                solve.Method = SolveMethod.Maximize;
+                solve.Objective = ParseExpr();
+                break;
+            default:
+                Error("Expected satisfy, minimize, or maximize");
+                break;
+        }
+        EOL();
+        _model.SolveItem = solve;
     }
 
     private ConstraintExpr ParseConstraint()
     {
         using var _ = Context(AstNode.Constraint);
         Move();
+        var expr = ParseExpr();
+        var con = new ConstraintExpr(expr);
+        return con;
+    }
+
+    private IExpr ParseExpr()
+    {
         return default;
     }
 
@@ -433,11 +496,6 @@ public sealed class Parser
     //             ; Annotations = anns
     //             ; Cases = cases }
     //             |> Item.Enum)
-    //
-    // // <include-item>
-    // let include_item : Parser<Item> =
-    //     string_lit
-    //     |>> (IncludeItem.Create >> Item.Include)
     //
     // // <base-ti-expr>
     // let base_ti_expr_atom : Parser<TypeInst> =
@@ -1817,8 +1875,6 @@ public sealed class Parser
     //                 enum_item stream
     //             | Keyword.CONSTRAINT ->
     //                 constraint_item stream
-    //             | Keyword.INCLUDE ->
-    //                 include_item stream
     //             | Keyword.SOLVE ->
     //                 solve_item stream
     //             | Keyword.TYPE ->
@@ -1881,4 +1937,5 @@ public sealed class Parser
     //     >>. sepEndBy assign_expr (skip ';')
     //     .>> ws
     //     .>> eof
+    private void XD() => Error("xd");
 }
