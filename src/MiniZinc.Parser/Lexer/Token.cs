@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using CommunityToolkit.Diagnostics;
+
+namespace MiniZinc.Parser;
 
 internal readonly struct Token(
     TokenKind kind,
@@ -19,6 +21,15 @@ internal readonly struct Token(
     public readonly int Int = i;
     public readonly string? String = s;
     public readonly double Double = d;
+
+    public string EnsureString
+    {
+        get
+        {
+            Guard.IsNotNullOrWhiteSpace(String);
+            return String;
+        }
+    }
 
     internal static string KindString(TokenKind kind) =>
         kind switch
@@ -93,8 +104,8 @@ internal readonly struct Token(
             TokenKind.TildeStar => "~*",
             TokenKind.LeftBracket => "[",
             TokenKind.RightBracket => "]",
-            TokenKind.LeftParen => "(",
-            TokenKind.RightParen => ")",
+            TokenKind.OpenParen => "(",
+            TokenKind.CloseParen => ")",
             TokenKind.LeftBrace => "{",
             TokenKind.RightBrace => "}",
             TokenKind.Dot => ".",
@@ -104,6 +115,7 @@ internal readonly struct Token(
             TokenKind.BackSlash => "\\",
             TokenKind.ForwardSlash => "/",
             TokenKind.Colon => ":",
+            TokenKind.DoubleColon => "::",
             TokenKind.EOL => ";",
             TokenKind.Pipe => "|",
             TokenKind.Empty => "<>",

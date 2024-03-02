@@ -187,10 +187,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Token(TokenKind.RightBracket);
                 break;
             case LEFT_PAREN:
-                Token(TokenKind.LeftParen);
+                Token(TokenKind.OpenParen);
                 break;
             case RIGHT_PAREN:
-                Token(TokenKind.RightParen);
+                Token(TokenKind.CloseParen);
                 break;
             case LEFT_BRACE:
                 Token(TokenKind.LeftBrace);
@@ -212,7 +212,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 LexPolymorphicIdentifier();
                 break;
             case COLON:
-                Token(TokenKind.Colon);
+                if (Skip(COLON))
+                    Token(TokenKind.DoubleColon);
+                else
+                    Token(TokenKind.Colon);
                 break;
             case UNDERSCORE when FollowedByLetter:
                 LexIdentifier(checkKeyword: false);

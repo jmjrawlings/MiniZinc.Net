@@ -17,10 +17,15 @@ public sealed class Parser
     /// The current token
     private Token Token;
 
-    /// The index of the current token
-    private int _index;
+    /// The current token kind
+    private TokenKind Kind;
+
+    /// The offset of the current context
+    private int _offset;
 
     public Model Model => _model;
+
+    public TimeSpan Elapsed => _watch.Elapsed;
 
     internal Parser(IEnumerator<Token> tokens)
     {
@@ -29,29 +34,27 @@ public sealed class Parser
         _lookAhead = new Queue<Token>();
         _model = new Model();
         _context = new Stack<ParseContext>();
-        Parse();
+        ParseModel();
+        _watch.Stop();
     }
 
-    /// Start a new parsing context, disposing it will
-    /// close the context.
-    private ParseContext Context(AstNode node)
-    {
-        var context = new ParseContext(this, Token, node);
-        _context.Push(context);
-        return context;
-    }
-
+    /// Progress the parser
     private bool Move()
     {
         // Read next token from look ahead queue
         if (_lookAhead.TryDequeue(out Token))
+        {
+            Kind = Token.Kind;
+            _offset++;
             return true;
+        }
 
         // Read next token from source stream
         if (_tokens.MoveNext())
         {
             Token = _tokens.Current;
-            _index++;
+            Kind = Token.Kind;
+            _offset++;
             return true;
         }
 
@@ -59,13 +62,25 @@ public sealed class Parser
         return false;
     }
 
-    /// Expect followed by a move
+    /// Progress the parser if the current token is of the given kind
+    private bool Skip(in TokenKind kind)
+    {
+        if (Kind != kind)
+            return false;
+        Move();
+        return true;
+    }
+
+    /// Skip over the given token kind
     private void Consume(TokenKind kind)
     {
-        Expect(Token, kind);
+        if (Kind != kind)
+            Error($"Expected a {kind} but encountered a {Kind}");
+
         Move();
     }
 
+    /// Returns the next token in the stream without progressing the parser
     private Token Peek()
     {
         // Peek from look ahead if available
@@ -79,17 +94,30 @@ public sealed class Parser
             _lookAhead.Enqueue(token);
             return token;
         }
-
         throw new EndOfStreamException();
     }
 
-    /// Parser entrypoint
-    private void Parse()
+    /// Begin a new parsing context, disposing it will
+    /// close the context.
+    private ParseContext Begin(NodeKind node)
     {
-        using var _ = Context(AstNode.Model);
+        var context = new ParseContext(this, Token, node);
+        _context.Push(context);
+        _offset = 0;
+        return context;
+    }
+
+    void EOL()
+    {
+        Consume(TokenKind.EOL);
+    }
+
+    private void ParseModel()
+    {
+        using var _ = Begin(NodeKind.Model);
         while (Move())
         {
-            switch (Token.Kind)
+            switch (Kind)
             {
                 case TokenKind.KeywordInclude:
                     ParseInclude();
@@ -102,58 +130,55 @@ public sealed class Parser
                 case TokenKind.KeywordConstraint:
                     var con = ParseConstraint();
                     break;
+
+                case TokenKind.KeywordFunction:
+                case TokenKind.KeywordPredicate:
+                    ParseFunction();
+                    break;
             }
         }
 
         var a = 2;
     }
 
-    /// Throw an error
-    private void Error(string msg)
+    private void ParseFunction()
     {
-        var ctx = _context.Peek();
-        var exn =
-            $@"""
-            An error occurred while parsing {ctx.Node} on Line {ctx.Start.Line} Col {ctx.Start.Col}:
+        var func = new FunctionDef();
 
-            {msg}
-            """;
-        var context = _context.ToArray();
-        throw new ParseException(context.Cast<IParseContext>());
+        if (Skip(TokenKind.KeywordPredicate))
+            func.ReturnType = new Type { Kind = TypeKind.Bool, Inst = TypeInst.Var };
+        else
+            func.ReturnType = ParseType();
+
+        Consume(TokenKind.Colon);
+        Expect(TokenKind.Identifier);
+        func.Name = Token.EnsureString;
+        Consume(TokenKind.OpenParen);
+        ParseArgs(func);
+        Consume(TokenKind.CloseParen);
     }
 
-    /// Expect the token to be of the given kind
-    private void Expect(in Token token, TokenKind kind)
-    {
-        if (token.Kind == kind)
-            return;
+    private void ParseArgs(FunctionDef func) => XD<Type>();
 
-        var ctx = _context.Peek();
-        Error($"Expected a {kind} but encountered a {token.Kind}");
-    }
+    private Type ParseType() => XD<Type>();
 
     private void ParseInclude()
     {
-        using var _ = Context(AstNode.Include);
+        using var _ = Begin(NodeKind.Include);
         Consume(TokenKind.StringLiteral);
         var inc = new IncludeStatement { Path = Token.String! };
         _model.Includes.Add(inc);
-        Consume(TokenKind.EOL);
-    }
-
-    void EOL()
-    {
-        Consume(TokenKind.EOL);
+        EOL();
     }
 
     private void ParseSolve()
     {
-        using var _ = Context(AstNode.Solve);
+        using var _ = Begin(NodeKind.Solve);
         Move();
 
         var solve = new SolveItem();
 
-        switch (Token.Kind)
+        switch (Kind)
         {
             case TokenKind.KeywordSatisfy:
                 Move();
@@ -179,8 +204,8 @@ public sealed class Parser
 
     private ConstraintExpr ParseConstraint()
     {
-        using var _ = Context(AstNode.Constraint);
-        Move();
+        using var _ = Begin(NodeKind.Constraint);
+        Consume(TokenKind.KeywordConstraint);
         var expr = ParseExpr();
         var con = new ConstraintExpr(expr);
         return con;
@@ -189,6 +214,49 @@ public sealed class Parser
     private IExpr ParseExpr()
     {
         return default;
+    }
+
+    private void ParseAnnotations(IAnnotations target)
+    {
+        while (Kind is TokenKind.DoubleColon)
+        {
+            var ann = ParseAnnotation();
+            target.Annotate(ann);
+        }
+    }
+
+    private IExpr ParseAnnotation()
+    {
+        var expr = ParseExpr();
+        return expr;
+    }
+
+    /// Throw an error
+    private void Error(string msg)
+    {
+        _watch.Stop();
+        var ctx = _context.Peek();
+        var exn =
+            $@"""
+            An error occurred while parsing {ctx.Node} on Line {ctx.Start.Line} Col {ctx.Start.Col}:
+                {msg}
+            """;
+
+        var context = _context.ToArray();
+        throw new ParseException(context.Cast<IParseContext>());
+    }
+
+    /// Expect the token to be of the given kind
+    private void Expect(TokenKind kind) => Expect(Token, kind);
+
+    /// Expect the token to be of the given kind
+    private void Expect(in Token token, TokenKind kind)
+    {
+        if (token.Kind == kind)
+            return;
+
+        var ctx = _context.Peek();
+        Error($"Expected a {kind} but encountered a {token.Kind}");
     }
 
     // let opp = OperatorPrecedenceParser<Expr, string, ParserState>()
@@ -1937,5 +2005,9 @@ public sealed class Parser
     //     >>. sepEndBy assign_expr (skip ';')
     //     .>> ws
     //     .>> eof
-    private void XD() => Error("xd");
+    private T XD<T>()
+    {
+        Error("xd");
+        return default;
+    }
 }

@@ -9,5 +9,9 @@
             <_Parameter1>ParserTests</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
+    </ItemGroup>
     
 </Project>

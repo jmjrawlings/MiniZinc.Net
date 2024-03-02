@@ -4,9 +4,9 @@ internal readonly record struct ParseContext : IDisposable, IParseContext
 {
     private readonly Parser _parser;
     internal readonly Token Start;
-    internal readonly AstNode Node;
+    internal readonly NodeKind Node;
 
-    internal ParseContext(Parser parser, Token start, AstNode node)
+    internal ParseContext(Parser parser, Token start, NodeKind node)
     {
         _parser = parser;
         Start = start;
@@ -20,5 +20,7 @@ internal readonly record struct ParseContext : IDisposable, IParseContext
 
     public long Line => Start.Line;
     public long Col => Start.Col;
-    AstNode IParseContext.Node => Node;
+    NodeKind IParseContext.Node => Node;
+
+    public override string ToString() => $"Parsing {Node} at Line {Line} Col {Col}";
 }

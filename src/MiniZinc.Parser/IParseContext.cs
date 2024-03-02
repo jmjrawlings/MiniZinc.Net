@@ -4,5 +4,5 @@ public interface IParseContext
 {
     long Line { get; }
     long Col { get; }
-    AstNode Node { get; }
+    NodeKind Node { get; }
 }

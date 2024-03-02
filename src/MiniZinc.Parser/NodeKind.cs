@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-public enum AstNode
+public enum NodeKind
 {
     Model,
     Include,
