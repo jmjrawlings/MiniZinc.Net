@@ -2,8 +2,10 @@
 
 using Annotation = IExpr;
 
-public record Type : IAnnotations
+public record Type : IAnnotations, IExpr, INamed
 {
+    public string Name { get; set; } = string.Empty;
+
     public TypeKind Kind { get; set; }
 
     public TypeInst Inst { get; set; }

@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-        
+            
     <PropertyGroup>
         <RootNamespace>MiniZinc.Parser</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-            <_Parameter1>ParserTests</_Parameter1>
-        </AssemblyAttribute>
+        <InternalsVisibleTo Include="ParserTests" />
     </ItemGroup>
-
+    
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     </ItemGroup>

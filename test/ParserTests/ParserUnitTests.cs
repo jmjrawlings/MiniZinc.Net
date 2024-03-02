@@ -1,5 +1,12 @@
-﻿public class ParserUnitsTests
+﻿public class ParserUnitTests
 {
+    Parser Parse(string mzn)
+    {
+        var lexer = Lexer.LexString(mzn);
+        var parser = new Parser(lexer);
+        return parser;
+    }
+
     [Fact]
     void test_namespace()
     {
@@ -17,11 +24,26 @@
     }
 
     [Fact]
-    void test_parse_include()
+    void test_parse_include_item()
     {
-        using var lexer = Lexer.LexString("include \"xd.mzn\";");
-        var parser = new Parser(lexer);
+        var parser = Parse("include \"xd.mzn\";");
         parser.Model.Includes.Should().HaveCount(1);
+    }
+
+    [Fact]
+    void test_parse_output_item()
+    {
+        var parser = Parse("output [];");
+        parser.ParseOutputItem();
+        parser.Model.Outputs.Should().HaveCount(1);
+    }
+
+    [Fact]
+    void test_parse_constraint()
+    {
+        var parser = Parse("constraint a > 2;");
+        parser.ParseConstraintItem();
+        parser.Model.Constraints.Should().HaveCount(1);
     }
 
     [Theory]
@@ -29,8 +51,8 @@
     [InlineData("solve maximize;")]
     void test_parse_solve(string mzn)
     {
-        using var lexer = Lexer.LexString(mzn);
-        var parser = new Parser(lexer);
-        parser.Model.SolveItem.Should().NotBeNull();
+        var p = Parse(mzn);
+        p.ParseSolveItem();
+        p.Model.SolveItems.Should().NotBeNull();
     }
 }

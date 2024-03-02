@@ -3,18 +3,24 @@
 public enum NodeKind
 {
     Model,
-    Include,
-    Function,
-    Constraint,
+    IncludeItem,
+    FunctionItem,
+    ConstraintItem,
+    SolveItem,
+    AliasItem,
+    AnnotationItem,
+    OutputItem,
     Expr,
     GenExpr,
     GenCall,
-    Solve,
     IfElse,
     Let,
-    Type,
     TypeInst,
-    Output,
+    TypeInstAndId,
     Enum,
-    Array
+    Array,
+    Assign,
+    Declare,
+    Parameters,
+    Arguments
 }

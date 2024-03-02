@@ -31,7 +31,7 @@ public sealed class NameSpace<T> : IReadOnlyDictionary<string, T>
     }
 
     /// Push a binding onto the namespace
-    public void Push(in Binding<T> bnd)
+    public void Push(in IBinding<T> bnd)
     {
         var name = bnd.Name;
         var val = bnd.Value;

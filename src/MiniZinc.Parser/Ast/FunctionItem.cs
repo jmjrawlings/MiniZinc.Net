@@ -1,12 +1,11 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed class FunctionDef : INamed, IAnnotations
+public sealed class FunctionItem : INamed, IAnnotations
 {
     public string Name { get; set; }
     public Type ReturnType { get; set; }
     public List<IExpr>? Annotations { get; set; }
-
-    public List<DeclareExpr>? Parameters { get; set; }
+    public List<Type>? Parameters { get; set; }
 
     public string? Ann { get; set; }
 
