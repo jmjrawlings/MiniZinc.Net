@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public record EnumDef : INamed, IStatement, IAnnotations
+public record EnumDef : INamed, IItem, IAnnotations
 {
     public string Name { get; set; }
     public List<IExpr>? Annotations { get; set; }

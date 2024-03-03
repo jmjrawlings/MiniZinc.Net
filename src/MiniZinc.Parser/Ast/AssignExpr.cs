@@ -3,7 +3,7 @@
 /// <summary>
 /// a = 3;
 /// </summary>
-public readonly record struct AssignExpr : IStatement, INamed
+public readonly record struct AssignExpr : IItem, INamed
 {
     public AssignExpr(string name, IExpr expr)
     {

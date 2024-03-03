@@ -22,5 +22,8 @@ public enum NodeKind
     Assign,
     Declare,
     Parameters,
-    Arguments
+    Arguments,
+    BaseTiExprAtom,
+    RecordType,
+    TupleType
 }

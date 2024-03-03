@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using System.Runtime.CompilerServices;
+
+namespace MiniZinc.Parser;
 
 using System.Diagnostics;
 using Ast;
@@ -31,12 +33,11 @@ public sealed class Parser
         _cache = new Queue<Token>();
         _model = new Model();
         _context = new Stack<ParseContext>();
-        _tokens.MoveNext();
-        Token = tokens.Current;
+        BeginScope(NodeKind.Model);
     }
 
     /// Progress the parser
-    private bool Move()
+    public bool Move()
     {
         // Read next token from look ahead queue
         if (_cache.TryDequeue(out Token))
@@ -196,10 +197,9 @@ public sealed class Parser
     {
         BeginScope(NodeKind.AliasItem);
         Read(TokenKind.KeywordType);
-        var name = ReadId();
+        var name = ReadString();
         Read(TokenKind.Equal);
-        var type = ParseType();
-        type.Name = name;
+        var type = ParseTypeInst();
         EndLine();
         _model.NameSpace.Push(name, type);
         EndScope();
@@ -208,7 +208,7 @@ public sealed class Parser
     public AssignExpr ParseAssignment()
     {
         BeginScope(NodeKind.Assign);
-        var name = ReadId();
+        var name = ReadString();
         Read(TokenKind.Equal);
         var value = ParseExpr();
         var expr = new AssignExpr(name, value);
@@ -227,25 +227,25 @@ public sealed class Parser
         else
         {
             Skip(TokenKind.KeywordFunction);
-            func.ReturnType = ParseType();
+            func.ReturnType = ParseTypeInst();
         }
         Read(TokenKind.Colon);
-        func.Name = ReadId();
+        func.Name = ReadString(TokenKind.Identifier);
         Read(TokenKind.OpenParen);
         ParseParameters(func.Parameters);
         Read(TokenKind.CloseParen);
     }
 
-    private string ReadId()
+    private string ReadString(TokenKind kind = TokenKind.StringLiteral)
     {
         string? s = Token.String;
         if (s is null)
             throw new NullReferenceException();
-        Read(TokenKind.Identifier);
+        Read(kind);
         return s;
     }
 
-    private void ParseParameters(List<Type>? list)
+    private void ParseParameters(List<Binding<Type>>? list)
     {
         BeginScope(NodeKind.Parameters);
         Read(TokenKind.OpenParen);
@@ -254,7 +254,7 @@ public sealed class Parser
 
         next:
         var ti = ParseTypeAndId();
-        list ??= new List<Type>();
+        list ??= new List<Binding<Type>>();
         list.Add(ti);
         if (Skip(TokenKind.Comma))
             goto next;
@@ -283,7 +283,91 @@ public sealed class Parser
         EndScope();
     }
 
-    public Type ParseType()
+    public Type ParseBaseTypeInstExprAtom()
+    {
+        BeginScope(NodeKind.BaseTiExprAtom);
+        var inst = TypeInst.Par;
+        if (Skip(TokenKind.KeywordVar))
+            inst = TypeInst.Var;
+        else
+            Skip(TokenKind.KeywordPar);
+
+        if (Skip(TokenKind.KeywordOpt))
+            inst |= TypeInst.Opt;
+
+        if (Skip(TokenKind.KeywordSet))
+        {
+            Read(TokenKind.KeywordOf);
+            inst |= TypeInst.Set;
+        }
+
+        var type = ParseBaseTypeInstExprTail();
+        type.Inst = inst;
+        EndScope();
+        return type;
+    }
+
+    private Type ParseBaseTypeInstExprTail()
+    {
+        Type type;
+        switch (Token.Kind)
+        {
+            case TokenKind.KeywordInt:
+                Move();
+                type = new Type { Kind = TypeKind.Int };
+                break;
+
+            case TokenKind.KeywordBool:
+                Move();
+                type = new Type { Kind = TypeKind.Bool };
+                break;
+
+            case TokenKind.KeywordFloat:
+                Move();
+                type = new Type { Kind = TypeKind.Float };
+                break;
+
+            case TokenKind.KeywordString:
+                Move();
+                type = new Type { Kind = TypeKind.String };
+                break;
+
+            case TokenKind.KeywordAnn:
+                Move();
+                type = new Type { Kind = TypeKind.Annotation };
+                break;
+
+            case TokenKind.KeywordRecord:
+                type = ParseRecordType();
+                break;
+
+            case TokenKind.KeywordTuple:
+                type = ParseTupleType();
+                break;
+
+            default:
+                var expr = ParseExpr();
+                type = new ExprType { Expr = expr };
+                break;
+        }
+        return type;
+    }
+
+    private TupleType ParseTupleType()
+    {
+        Read(TokenKind.KeywordTuple);
+        var type = new TupleType();
+        return type;
+    }
+
+    private RecordType ParseRecordType()
+    {
+        Read(TokenKind.KeywordRecord);
+        var type = new RecordType();
+        return type;
+    }
+
+    public Type ParseTypeInst()
     {
         BeginScope(NodeKind.TypeInst);
         var type = new Type();
@@ -291,22 +375,23 @@ public sealed class Parser
         return type;
     }
 
-    public Type ParseTypeAndId()
+    public Binding<Type> ParseTypeAndId()
     {
         BeginScope(NodeKind.TypeInstAndId);
-        var type = ParseType();
+        var type = ParseTypeInst();
         Read(TokenKind.Colon);
-        type.Name = ReadId();
+        var name = ReadString();
         EndScope();
-        return type;
+        return name.Bind(type);
     }
 
     public void ParseIncludeItem()
     {
         BeginScope(NodeKind.IncludeItem);
-        Read(TokenKind.StringLiteral);
-        var inc = new IncludeStatement { Path = Token.String! };
-        _model.Includes.Add(inc);
+        Read(TokenKind.KeywordInclude);
+        var path = ReadString();
+        var item = new IncludeItem { Path = path };
+        _model.Includes.Add(item);
         EndLine();
         EndScope();
     }
@@ -316,23 +401,23 @@ public sealed class Parser
         BeginScope(NodeKind.SolveItem);
         Move();
 
-        var solve = new SolveItem();
+        var item = new SolveItem();
 
         switch (Token.Kind)
         {
             case TokenKind.KeywordSatisfy:
                 Move();
-                solve.Method = SolveMethod.Satisfy;
+                item.Method = SolveMethod.Satisfy;
                 break;
             case TokenKind.KeywordMinimize:
                 Move();
-                solve.Method = SolveMethod.Minimize;
-                solve.Objective = ParseExpr();
+                item.Method = SolveMethod.Minimize;
+                item.Objective = ParseExpr();
                 break;
             case TokenKind.KeywordMaximize:
                 Move();
-                solve.Method = SolveMethod.Maximize;
-                solve.Objective = ParseExpr();
+                item.Method = SolveMethod.Maximize;
+                item.Objective = ParseExpr();
                 break;
             default:
                 Error("Expected satisfy, minimize, or maximize");
@@ -340,7 +425,7 @@ public sealed class Parser
         }
         EndLine();
         EndScope();
-        _model.SolveItems.Add(solve);
+        _model.SolveItems.Add(item);
     }
 
     public ConstraintItem ParseConstraintItem()
@@ -348,9 +433,9 @@ public sealed class Parser
         BeginScope(NodeKind.ConstraintItem);
         Read(TokenKind.KeywordConstraint);
         var expr = ParseExpr();
-        var con = new ConstraintItem(expr);
+        var item = new ConstraintItem { Expr = expr };
         EndScope();
-        return con;
+        return item;
     }
 
     public IExpr ParseExpr()

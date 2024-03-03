@@ -2,7 +2,7 @@
 
 public sealed class Model
 {
-    public readonly List<IncludeStatement> Includes = new();
+    public readonly List<IncludeItem> Includes = new();
     public readonly List<FunctionItem> Functions = new();
     public readonly List<AnnotationDef> Annotations = new();
     public readonly NameSpace<IExpr> NameSpace = new();

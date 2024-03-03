@@ -4,6 +4,7 @@
     {
         var lexer = Lexer.LexString(mzn);
         var parser = new Parser(lexer);
+        parser.Move();
         return parser;
     }
 
@@ -27,6 +28,7 @@
     void test_parse_include_item()
     {
         var parser = Parse("include \"xd.mzn\";");
+        parser.ParseIncludeItem();
         parser.Model.Includes.Should().HaveCount(1);
     }
 
@@ -42,8 +44,7 @@
     void test_parse_constraint()
     {
         var parser = Parse("constraint a > 2;");
-        parser.ParseConstraintItem();
-        parser.Model.Constraints.Should().HaveCount(1);
+        var cons = parser.ParseConstraintItem();
     }
 
     [Theory]

@@ -2,5 +2,5 @@
 
 public sealed record RecordType : Type
 {
-    public Dictionary<string, Type> Fields { get; set; } = new();
+    public List<Binding<Type>> Fields { get; set; } = new();
 }
