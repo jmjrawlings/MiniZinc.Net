@@ -253,7 +253,7 @@ public sealed class Parser
             goto end;
 
         next:
-        var ti = ParseTypeAndId();
+        var ti = ParseTypeInstAndId();
         list ??= new List<Binding<Type>>();
         list.Add(ti);
         if (Skip(TokenKind.Comma))
@@ -283,9 +283,27 @@ public sealed class Parser
         EndScope();
     }
 
-    public Type ParseBaseTypeInstExprAtom()
+    public Type ParseTypeInst()
     {
-        BeginScope(NodeKind.BaseTiExprAtom);
+        BeginScope(NodeKind.TypeInst);
+        Type type;
+        switch (Token.Kind)
+        {
+            case TokenKind.KeywordArray:
+            case TokenKind.KeywordList:
+                type = ParseArrayTypeInst();
+                break;
+            default:
+                type = ParseBaseTypeInst();
+                break;
+        }
+
+        EndScope();
+        return type;
+    }
+
+    public Type ParseBaseTypeInst()
+    {
         var inst = TypeInst.Par;
         if (Skip(TokenKind.KeywordVar))
             inst = TypeInst.Var;
@@ -301,13 +319,42 @@ public sealed class Parser
             inst |= TypeInst.Set;
         }
 
-        var type = ParseBaseTypeInstExprTail();
+        var type = ParseBaseTypeInstTail();
         type.Inst = inst;
-        EndScope();
         return type;
     }
 
-    private Type ParseBaseTypeInstExprTail()
+    public Type ParseArrayTypeInst()
+    {
+        var type = new ArrayType();
+        if (Skip(TokenKind.KeywordList))
+        {
+            var dim = new Type { Kind = TypeKind.Int, Inst = TypeInst.Par };
+            type.Dimensions.Add(dim);
+        }
+        else
+        {
+            BeginScope(NodeKind.ArrayDimensions);
+            Read(TokenKind.KeywordArray);
+            Read(TokenKind.OpenBracket);
+            if (Token.Kind is TokenKind.CloseBracket)
+                goto end;
+
+            dim:
+            var dim = ParseTypeInst();
+            type.Dimensions.Add(dim);
+            if (Skip(TokenKind.Comma))
+                goto dim;
+
+            end:
+            Read(TokenKind.CloseBracket);
+        }
+        Read(TokenKind.KeywordOf);
+        type.ValueType = ParseBaseTypeInst();
+        return type;
+    }
+
+    private Type ParseBaseTypeInstTail()
     {
         Type type;
         switch (Token.Kind)
@@ -356,7 +403,17 @@ public sealed class Parser
     private TupleType ParseTupleType()
     {
         Read(TokenKind.KeywordTuple);
+        Read(TokenKind.OpenParen);
         var type = new TupleType();
+        next:
+        if (Token.Kind is TokenKind.CloseParen)
+            goto end;
+        var ti = ParseTypeInst();
+        type.Params.Add(ti);
+        if (Skip(TokenKind.Comma))
+            goto next;
+        end:
+        Read(TokenKind.CloseBracket);
         return type;
     }
 
@@ -364,18 +421,19 @@ public sealed class Parser
     {
         Read(TokenKind.KeywordRecord);
         var type = new RecordType();
+        next:
+        if (Token.Kind is TokenKind.CloseParen)
+            goto end;
+        var ti = ParseTypeInstAndId();
+        type.Fields.Add(ti);
+        if (Skip(TokenKind.Comma))
+            goto next;
+        end:
+        Read(TokenKind.CloseBracket);
         return type;
     }
 
-    public Type ParseTypeInst()
-    {
-        BeginScope(NodeKind.TypeInst);
-        var type = new Type();
-        EndScope();
-        return type;
-    }
-
-    public Binding<Type> ParseTypeAndId()
+    public Binding<Type> ParseTypeInstAndId()
     {
         BeginScope(NodeKind.TypeInstAndId);
         var type = ParseTypeInst();

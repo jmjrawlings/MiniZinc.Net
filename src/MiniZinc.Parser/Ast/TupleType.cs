@@ -2,5 +2,5 @@
 
 public sealed record TupleType : Type
 {
-    public List<Type> Items { get; set; } = new();
+    public List<Type> Params { get; set; } = new();
 }

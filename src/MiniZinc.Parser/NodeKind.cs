@@ -23,7 +23,5 @@ public enum NodeKind
     Declare,
     Parameters,
     Arguments,
-    BaseTiExprAtom,
-    RecordType,
-    TupleType
+    ArrayDimensions
 }

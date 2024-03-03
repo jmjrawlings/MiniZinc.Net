@@ -181,10 +181,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 }
                 break;
             case LEFT_BRACK:
-                Token(TokenKind.LeftBracket);
+                Token(TokenKind.OpenBracket);
                 break;
             case RIGHT_BRACK:
-                Token(TokenKind.RightBracket);
+                Token(TokenKind.CloseBracket);
                 break;
             case LEFT_PAREN:
                 Token(TokenKind.OpenParen);
@@ -193,10 +193,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Token(TokenKind.CloseParen);
                 break;
             case LEFT_BRACE:
-                Token(TokenKind.LeftBrace);
+                Token(TokenKind.OpenBrace);
                 break;
             case RIGHT_BRACE:
-                Token(TokenKind.RightBrace);
+                Token(TokenKind.CloseBrace);
                 break;
             case SINGLE_QUOTE:
                 LexQuotedIdentifier();
