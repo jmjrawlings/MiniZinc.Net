@@ -5,6 +5,7 @@ internal static class Keyword
     internal const TokenKind Annotation = TokenKind.KeywordAnnotation;
     internal const TokenKind Ann = TokenKind.KeywordAnn;
     internal const TokenKind Any = TokenKind.KeywordAny;
+    internal const TokenKind AnonEnum = TokenKind.KeywordAnonEnum;
     internal const TokenKind Array = TokenKind.KeywordArray;
     internal const TokenKind Bool = TokenKind.KeywordBool;
     internal const TokenKind Case = TokenKind.KeywordCase;
@@ -66,6 +67,7 @@ internal static class Keyword
         Lookup = new Dictionary<string, TokenKind>();
         Add(Annotation);
         Add(Ann);
+        Add(AnonEnum);
         Add(Any);
         Add(Array);
         Add(Bool);

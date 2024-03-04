@@ -3,7 +3,7 @@
 /// <summary>
 /// solve maximize a;
 /// </summary>
-public record SolveItem : IItem, IAnnotations
+public record SolveItem : IAnnotations
 {
     public SolveMethod Method { get; set; }
     public List<IExpr>? Annotations { get; set; }

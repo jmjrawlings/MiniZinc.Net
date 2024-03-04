@@ -2,7 +2,7 @@
 
 public sealed record LetExpr : IExpr
 {
-    public List<Type> Declares { get; set; } = new();
+    public List<TypeInst> Declares { get; set; } = new();
 
     public List<ConstraintItem> Constraints { get; set; } = new();
 

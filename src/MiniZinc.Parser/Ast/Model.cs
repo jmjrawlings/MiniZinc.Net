@@ -2,11 +2,10 @@
 
 public sealed class Model
 {
-    public readonly List<IncludeItem> Includes = new();
-    public readonly List<FunctionItem> Functions = new();
+    public readonly List<string> Includes = new();
+    public readonly List<FunctionDeclare> Functions = new();
     public readonly List<AnnotationDef> Annotations = new();
     public readonly NameSpace<IExpr> NameSpace = new();
-    public readonly List<AssignExpr> Assignments = new();
     public readonly List<ConstraintItem> Constraints = new();
     public readonly List<OutputItem> Outputs = new();
     public readonly List<SolveItem> SolveItems = new();

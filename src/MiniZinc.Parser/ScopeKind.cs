@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-public enum NodeKind
+public enum ScopeKind
 {
     Model,
     IncludeItem,
@@ -23,5 +23,6 @@ public enum NodeKind
     Declare,
     Parameters,
     Arguments,
-    ArrayDimensions
+    ArrayDimensions,
+    Variable
 }

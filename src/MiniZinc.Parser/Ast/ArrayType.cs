@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record ArrayType : Type
+public sealed record ArrayType : TypeInst
 {
-    public Type ValueType { get; set; }
+    public TypeInst ValueType { get; set; }
 
     public List<IExpr> Dimensions { get; set; }
 

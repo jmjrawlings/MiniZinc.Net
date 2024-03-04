@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record TestItem : IItem, IAnnotations
+public sealed record TestItem : IAnnotations
 {
     public string Name { get; set; }
     public List<DeclareExpr> Params { get; set; }

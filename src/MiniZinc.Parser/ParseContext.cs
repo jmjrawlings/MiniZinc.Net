@@ -4,13 +4,13 @@ internal readonly record struct ParseContext : IDisposable, IParseContext
 {
     private readonly Parser _parser;
     internal readonly Token Start;
-    internal readonly NodeKind Node;
+    internal readonly ScopeKind Scope;
 
-    internal ParseContext(Parser parser, Token start, NodeKind node)
+    internal ParseContext(Parser parser, Token start, ScopeKind scope)
     {
         _parser = parser;
         Start = start;
-        Node = node;
+        Scope = scope;
     }
 
     public void Dispose()
@@ -20,7 +20,7 @@ internal readonly record struct ParseContext : IDisposable, IParseContext
 
     public long Line => Start.Line;
     public long Col => Start.Col;
-    NodeKind IParseContext.Node => Node;
+    ScopeKind IParseContext.Scope => Scope;
 
-    public override string ToString() => $"Parsing {Node} at Line {Line} Col {Col}";
+    public override string ToString() => $"Parsing {Scope} at Line {Line} Col {Col}";
 }

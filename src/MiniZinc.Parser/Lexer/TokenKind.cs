@@ -16,6 +16,7 @@ internal enum TokenKind
     // Keywords
     KeywordAnnotation,
     KeywordAnn,
+    KeywordAnonEnum,
     KeywordAny,
     KeywordArray,
     KeywordBool,
