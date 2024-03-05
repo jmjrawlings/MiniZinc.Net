@@ -1,14 +1,14 @@
 ﻿namespace MiniZinc.Parser;
 
-internal readonly record struct ParseContext : IDisposable, IParseContext
+internal readonly struct ParseContext : IDisposable
 {
-    private readonly Parser _parser;
+    private Parser Parser { get; }
     public Token Start { get; }
     public string Name { get; }
 
     internal ParseContext(Parser parser, Token start, string name)
     {
-        _parser = parser;
+        Parser = parser;
         Name = name;
         Start = start;
     }
@@ -18,7 +18,7 @@ internal readonly record struct ParseContext : IDisposable, IParseContext
 
     public void Dispose()
     {
-        _parser._context.Pop();
+        Parser._context.Pop();
     }
 
     public long Line => Start.Line;

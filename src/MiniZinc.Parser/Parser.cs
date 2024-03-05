@@ -1,6 +1,4 @@
-﻿using System.Security.AccessControl;
-
-namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser;
 
 using System.Diagnostics;
 using Ast;
@@ -624,15 +622,27 @@ public sealed class Parser
                 break;
 
             case TokenKind.OpenParen:
-                expr = ParseTupleLike();
+                expr = ParseTupleLikeExpr();
                 break;
 
             case TokenKind.OpenBrace:
-                expr = ParseSetLike();
+                expr = ParseSetLikeExpr();
                 break;
 
             case TokenKind.OpenBracket:
-                expr = ParseArrayLike();
+                expr = ParseArrayLikeExpr();
+                break;
+
+            case TokenKind.KeywordIf:
+                expr = ParseIfElseExpr();
+                break;
+
+            case TokenKind.KeywordLet:
+                expr = ParseLetExpr();
+                break;
+
+            case TokenKind.Identifier:
+                expr = ParseCallLikeExpr();
                 break;
 
             default:
@@ -642,6 +652,36 @@ public sealed class Parser
         return expr;
     }
 
+    private IExpr ParseCallLikeExpr()
+    {
+        throw new NotImplementedException();
+    }
+
+    private IExpr ParseLetExpr()
+    {
+        BeginScope(ScopeKind.Let);
+        Read(TokenKind.KeywordLet);
+        Read(TokenKind.OpenBrace);
+        var result = new LetExpr();
+        while (Token.Kind is not TokenKind.CloseBrace)
+        {
+            var expr = ParseTypeInst();
+            result.Declares.Add(expr);
+            if (!Skip(TokenKind.EOL))
+                break;
+        }
+
+        Read(TokenKind.KeywordIn);
+        result.Body = ParseExpr();
+        EndScope();
+        return result;
+    }
+
+    private IExpr ParseIfElseExpr()
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Parse anything starting with a '(' eg:
     /// - (1)
@@ -649,7 +689,7 @@ public sealed class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private IExpr ParseTupleLike()
+    private IExpr ParseTupleLikeExpr()
     {
         BeginScope("tuple-like");
         Read(TokenKind.OpenParen);
@@ -2388,7 +2428,7 @@ public sealed class Parser
     /// - [| 1, 2, 3 | 4, 5, 6 |]
     /// - [ x | x in [ 1, 2, 3 ]]
     /// </summary>
-    private IExpr ParseArrayLike()
+    private IExpr ParseArrayLikeExpr()
     {
         BeginScope("array-like");
         Read(TokenKind.OpenBracket);
@@ -2467,7 +2507,7 @@ public sealed class Parser
     /// - {}
     /// - { x | x in [1,1,1,2,3,]}
     /// </summary>
-    private IExpr ParseSetLike()
+    private IExpr ParseSetLikeExpr()
     {
         BeginScope("set-like");
         Read(TokenKind.OpenBrace);
