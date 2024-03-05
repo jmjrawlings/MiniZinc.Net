@@ -4,7 +4,7 @@
     {
         var lexer = Lexer.LexString(mzn);
         var parser = new Parser(lexer);
-        parser.Move();
+        parser.Read();
         return parser;
     }
 

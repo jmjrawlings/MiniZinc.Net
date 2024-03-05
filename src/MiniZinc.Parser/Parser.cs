@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Security.AccessControl;
 
 namespace MiniZinc.Parser;
 
@@ -37,7 +37,7 @@ public sealed class Parser
     }
 
     /// Progress the parser
-    public bool Move()
+    public bool Read()
     {
         // Read next token from look ahead queue
         if (_cache.TryDequeue(out Token))
@@ -59,11 +59,11 @@ public sealed class Parser
     }
 
     /// Progress the parser if the current token is of the given kind
-    private bool Skip(in TokenKind kind)
+    private bool Skip(TokenKind kind)
     {
         if (Token.Kind != kind)
             return false;
-        Move();
+        Read();
         return true;
     }
 
@@ -73,7 +73,7 @@ public sealed class Parser
         if (Token.Kind != kind)
             Error($"Expected a {kind} but encountered a {Token.Kind}");
 
-        Move();
+        Read();
     }
 
     /// Returns the next token in the stream without progressing the parser
@@ -102,12 +102,14 @@ public sealed class Parser
 
     /// Begin a new parsing context, disposing it will
     /// close the context.
-    private void BeginScope(ScopeKind scope)
+    private void BeginScope(string name)
     {
-        var context = new ParseContext(this, Token, scope);
+        var context = new ParseContext(this, Token, name);
         _context.Push(context);
         _offset = 0;
     }
+
+    private void BeginScope(ScopeKind kind) => BeginScope(kind.ToString());
 
     private void EndScope()
     {
@@ -197,7 +199,7 @@ public sealed class Parser
         {
             // {A, B, C}
             case TokenKind.OpenBrace:
-                Move();
+                Read();
                 while (Token.Kind is not TokenKind.CloseBrace)
                 {
                     enumCase = new EnumCase { Name = ReadString(), Type = EnumCaseType.Name };
@@ -212,7 +214,7 @@ public sealed class Parser
             // enum B = _(1 .. 10);
             case TokenKind.Underscore:
             case TokenKind.KeywordAnonEnum:
-                Move();
+                Read();
                 Read(TokenKind.OpenParen);
                 enumCase = new EnumCase { Type = EnumCaseType.Anonymous, Expr = ParseExpr() };
                 item.Cases.Add(enumCase);
@@ -412,27 +414,27 @@ public sealed class Parser
         switch (Token.Kind)
         {
             case TokenKind.KeywordInt:
-                Move();
+                Read();
                 type = new TypeInst { Kind = TypeKind.Int };
                 break;
 
             case TokenKind.KeywordBool:
-                Move();
+                Read();
                 type = new TypeInst { Kind = TypeKind.Bool };
                 break;
 
             case TokenKind.KeywordFloat:
-                Move();
+                Read();
                 type = new TypeInst { Kind = TypeKind.Float };
                 break;
 
             case TokenKind.KeywordString:
-                Move();
+                Read();
                 type = new TypeInst { Kind = TypeKind.String };
                 break;
 
             case TokenKind.KeywordAnn:
-                Move();
+                Read();
                 type = new TypeInst { Kind = TypeKind.Annotation };
                 break;
 
@@ -523,23 +525,23 @@ public sealed class Parser
     public void ParseSolveItem()
     {
         BeginScope(ScopeKind.SolveItem);
-        Move();
+        Read();
 
         var item = new SolveItem();
 
         switch (Token.Kind)
         {
             case TokenKind.KeywordSatisfy:
-                Move();
+                Read();
                 item.Method = SolveMethod.Satisfy;
                 break;
             case TokenKind.KeywordMinimize:
-                Move();
+                Read();
                 item.Method = SolveMethod.Minimize;
                 item.Objective = ParseExpr();
                 break;
             case TokenKind.KeywordMaximize:
-                Move();
+                Read();
                 item.Method = SolveMethod.Maximize;
                 item.Objective = ParseExpr();
                 break;
@@ -564,7 +566,142 @@ public sealed class Parser
 
     public IExpr ParseExpr()
     {
-        return default;
+        BeginScope(ScopeKind.Expr);
+        IExpr expr;
+        switch (Token.Kind)
+        {
+            #region Unary Operators
+            case TokenKind.Plus:
+                Read();
+                expr = new UnaryOpExpr { Op = Operator.Add, Expr = ParseExpr() };
+                break;
+
+            case TokenKind.Minus:
+                Read();
+                expr = new UnaryOpExpr { Op = Operator.Minus, Expr = ParseExpr() };
+                break;
+
+            case TokenKind.KeywordNot:
+                Read();
+                expr = Expr.Unary(Operator.Not, ParseExpr());
+                break;
+
+            case TokenKind.DotDot:
+                Read();
+                expr = Expr.Range(upper: ParseExpr());
+                break;
+
+            #endregion
+
+            case TokenKind.Underscore:
+                Read();
+                expr = new WildCardExpr();
+                break;
+
+            case TokenKind.KeywordTrue:
+                Read();
+                expr = Expr.Bool(true);
+                break;
+
+            case TokenKind.KeywordFalse:
+                Read();
+                expr = Expr.Bool(false);
+                break;
+
+            case TokenKind.IntLiteral:
+                Read();
+                expr = Expr.Int(Token.Int);
+                break;
+
+            case TokenKind.FloatLiteral:
+                Read();
+                expr = Expr.Float(Token.Double);
+                break;
+
+            case TokenKind.StringLiteral:
+                Read();
+                expr = Expr.String(Token.String!);
+                break;
+
+            case TokenKind.OpenParen:
+                expr = ParseTupleLike();
+                break;
+
+            case TokenKind.OpenBrace:
+                expr = ParseSetLike();
+                break;
+
+            case TokenKind.OpenBracket:
+                expr = ParseArrayLike();
+                break;
+
+            default:
+                throw new Exception();
+        }
+        EndScope();
+        return expr;
+    }
+
+    /// <summary>
+    /// Parse anything starting with a '(' eg:
+    /// - (1)
+    /// - (2,)
+    /// - (a: 100, b:200)
+    /// </summary>
+    /// <returns></returns>
+    private IExpr ParseTupleLike()
+    {
+        BeginScope("tuple-like");
+        Read(TokenKind.OpenParen);
+        IExpr result;
+        IExpr expr;
+        IExpr name;
+
+        expr = ParseExpr();
+
+        // Bracketed expr
+        if (Token.Kind is TokenKind.CloseParen)
+        {
+            result = Expr.Bracketed(expr);
+            goto end;
+        }
+
+        // Record expr
+        // TODO - ensure its a string expr here?
+        if (Skip(TokenKind.Colon))
+        {
+            name = expr;
+            expr = ParseExpr();
+            var record = new RecordExpr();
+            result = record;
+            record.Fields.Add((name, expr));
+
+            record_field:
+            if (!Skip(TokenKind.Comma))
+                goto end;
+
+            name = ParseExpr();
+            Read(TokenKind.Colon);
+            expr = ParseExpr();
+            record.Fields.Add((name, expr));
+            goto record_field;
+        }
+
+        // Else must be a tuple
+        var tuple = new TupleExpr();
+        result = tuple;
+        tuple.Exprs.Add(expr);
+        Read(TokenKind.Comma);
+        do
+        {
+            expr = ParseExpr();
+            tuple.Exprs.Add(expr);
+        } while (Skip(TokenKind.Comma));
+
+        end:
+        Read(TokenKind.CloseParen);
+        EndScope();
+        return result;
     }
 
     public void ParseAnnotations(IAnnotations target)
@@ -589,7 +726,7 @@ public sealed class Parser
         var ctx = _context.Peek();
         var exn =
             $@"""w
-            An error occurred while parsing {ctx.Scope} on Line {ctx.Start.Line} Col {ctx.Start.Col}:
+            An error occurred while parsing {ctx.Name} on Line {ctx.Start.Line} Col {ctx.Start.Col}:
                 {msg}
             """;
 
@@ -610,125 +747,6 @@ public sealed class Parser
         Error($"Expected a {kind} but encountered a {token.Kind}");
     }
 
-    // let opp = OperatorPrecedenceParser<Expr, string, ParserState>()
-    // opp.TermParser <- (expr_atom .>> ws)
-    //
-    // let expr = opp.ExpressionParser
-    // let LeftAssoc = Associativity.Left
-    // let RightAssoc = Associativity.Right
-    // let NoAssoc = Associativity.None
-    //
-    // let addInfix (s: string) (op: BinOp) (precedence: int) (assoc: Associativity) =
-    //
-    //     let create _ left right =
-    //         Expr.BinaryOp(left, op, right)
-    //
-    //     // For 'word' operators, eg `not` we need
-    //     // to ensure it is not followed by more letters
-    //     let after =
-    //         if (Char.IsLetter s[0]) then
-    //             notFollowedBy letter
-    //             >>. ws >>. preturn ""
-    //         else
-    //             ws >>. preturn ""
-    //
-    //     // TODO - Ask MiniZinc team about non-associative operators
-    //     // as leaving it in causes expressions such as this
-    //     // to fail:
-    //     // ```R in row /\ C in col```
-    //     let assoc =
-    //         if assoc = NoAssoc then
-    //             LeftAssoc
-    //         else
-    //             assoc
-    //
-    //     let op =
-    //         InfixOperator(s, after, precedence, assoc, (), create)
-    //
-    //     opp.AddOperator op
-    //
-    // addInfix "<->"       BinOp.Equivalent       1200 LeftAssoc
-    // addInfix "->"        BinOp.Implies          1100 LeftAssoc
-    // addInfix "<-"        BinOp.ImpliedBy        1100 LeftAssoc
-    // addInfix "\\/"       BinOp.Or               1000 LeftAssoc
-    // addInfix "xor"       BinOp.Xor              1000 LeftAssoc
-    // addInfix "/\\"       BinOp.And              0900 LeftAssoc
-    // addInfix "<"         BinOp.LessThan         0800 NoAssoc
-    // addInfix ">"         BinOp.GreaterThan      0800 NoAssoc
-    // addInfix "<="        BinOp.LessThanEqual    0800 NoAssoc
-    // addInfix ">="        BinOp.GreaterThanEqual 0800 NoAssoc
-    // addInfix "=="        BinOp.Equal            0800 NoAssoc
-    // addInfix "="         BinOp.Equal            0800 NoAssoc
-    // addInfix "!="        BinOp.NotEqual         0800 NoAssoc
-    // addInfix "in"        BinOp.In               0700 NoAssoc
-    // addInfix "subset"    BinOp.Subset           0700 NoAssoc
-    // addInfix "superset"  BinOp.Superset         0700 NoAssoc
-    // addInfix "union"     BinOp.Union            0600 LeftAssoc
-    // addInfix "diff"      BinOp.Diff             0600 LeftAssoc
-    // addInfix "symdiff"   BinOp.SymDiff          0600 LeftAssoc
-    // addInfix ".."        BinOp.ClosedRange      0500 NoAssoc
-    // addInfix "<.."       BinOp.LeftOpenRange    0500 NoAssoc
-    // addInfix "..<"       BinOp.RightOpenRange   0500 NoAssoc
-    // addInfix "<..<"      BinOp.OpenRange        0500 NoAssoc
-    // addInfix "+"         BinOp.Add              0400 LeftAssoc
-    // addInfix "-"         BinOp.Subtract         0400 LeftAssoc
-    // addInfix "*"         BinOp.Multiply         0300 LeftAssoc
-    // addInfix "div"       BinOp.Div              0300 LeftAssoc
-    // addInfix "mod"       BinOp.Mod              0300 LeftAssoc
-    // addInfix "/"         BinOp.Divide           0300 LeftAssoc
-    // addInfix "intersect" BinOp.Intersect        0300 LeftAssoc
-    // addInfix "^"         BinOp.Exponent         0200 LeftAssoc
-    // addInfix "default"   BinOp.Default          0070 LeftAssoc
-    // addInfix "~!="       BinOp.TildeNotEqual    0800 NoAssoc
-    // addInfix "~="        BinOp.TildeEqual       0800 NoAssoc
-    // addInfix "~+"        BinOp.TildeAdd         0400 NoAssoc
-    // addInfix "~-"        BinOp.TildeSubtract    0400 NoAssoc
-    // addInfix "~*"        BinOp.TildeMultiply    0300 NoAssoc
-    //
-    // let concat =
-    //
-    //     let after : Parser<string> =
-    //         let error = messageError "Cannot use ++ within TypeInst expressions"
-    //         fun stream ->
-    //             let context = stream.UserState.Context
-    //             if context = Context.TypeInst then
-    //                 Reply(ReplyStatus.Error, error)
-    //             else
-    //                 stream.SkipWhitespace()
-    //                 Reply("")
-    //
-    //     let create _ left right =
-    //         Expr.BinaryOp(left, BinOp.Concat, right)
-    //
-    //     let op =
-    //         InfixOperator("++", after, 100, RightAssoc, (), create)
-    //
-    //     opp.AddOperator op
-    //
-    // let quoted_binop =
-    //
-    //     let simple_ident =
-    //         let options = IdentifierOptions(isAsciiIdStart = Char.IsLetter)
-    //         identifier options
-    //
-    //     let quoted_ident =
-    //         simple_ident
-    //         .>> (skipChar '`')
-    //         .>> ws
-    //
-    //     let create ident left right =
-    //         Expr.Call(ident, [left;right])
-    //
-    //     let op : InfixOperator<Expr, string, ParserState> =
-    //         InfixOperator("`", quoted_ident, 50, LeftAssoc, (), create)
-    //
-    //     opp.AddOperator op
-    //
-    // let addPrefix (s: string) precedence f =
-    //     let operator =
-    //         PrefixOperator(s, ws >>. preturn "", precedence, true, f)
-    //
-    //     opp.AddOperator operator
     //
     // addPrefix "+"   2000 (fun expr -> Expr.UnaryOp (UnOp.Plus, expr))
     // addPrefix "-"   2000 (fun expr -> Expr.UnaryOp (UnOp.Minus, expr))
@@ -2360,5 +2378,142 @@ public sealed class Parser
     {
         Error("xd");
         return default;
+    }
+
+    /// <summary>
+    /// Parse anything that starts with a '[', this could be:
+    ///
+    /// - [1,2,3]
+    /// - []
+    /// - [| 1, 2, 3 | 4, 5, 6 |]
+    /// - [ x | x in [ 1, 2, 3 ]]
+    /// </summary>
+    private IExpr ParseArrayLike()
+    {
+        BeginScope("array-like");
+        Read(TokenKind.OpenBracket);
+        IExpr result;
+        IExpr element;
+
+        // Empty Array
+        if (Token.Kind is TokenKind.CloseBracket)
+        {
+            result = new Array1DLit();
+            goto end;
+        }
+
+        // Array2D
+        if (Skip(TokenKind.Pipe))
+        {
+            var arr2D = new Array2DLit();
+            result = arr2D;
+            if (Skip(TokenKind.Pipe))
+                goto end;
+
+            array_2d_row:
+            arr2D.I = 0;
+            while (Token.Kind is not TokenKind.Pipe)
+            {
+                element = ParseExpr();
+                arr2D.Elements.Add(element);
+                arr2D.I++;
+                if (!Skip(TokenKind.Comma))
+                    break;
+            }
+
+            arr2D.J++;
+            Read(TokenKind.Pipe);
+            if (Token.Kind is TokenKind.CloseBracket)
+                goto end;
+            goto array_2d_row;
+        }
+
+        // Parse the first element
+        element = ParseExpr();
+
+        // Array comprehension
+        if (Skip(TokenKind.Pipe))
+        {
+            var comp = new CompExpr
+            {
+                Yields = element,
+                IsSet = false,
+                From = ParseGenerators()
+            };
+            result = comp;
+            goto end;
+        }
+
+        var arr = new Array1DLit();
+        result = arr;
+        arr.Elements.Add(element);
+        while (Token.Kind is not TokenKind.CloseBracket)
+        {
+            element = ParseExpr();
+            arr.Elements.Add(element);
+            if (!Skip(TokenKind.Comma))
+                break;
+        }
+
+        end:
+        Read(TokenKind.CloseBracket);
+        EndScope();
+        return result;
+    }
+
+    /// <summary>
+    /// Parse anything that starts with a '{', this could be:
+    /// - {1,2,3}
+    /// - {}
+    /// - { x | x in [1,1,1,2,3,]}
+    /// </summary>
+    private IExpr ParseSetLike()
+    {
+        BeginScope("set-like");
+        Read(TokenKind.OpenBrace);
+        IExpr result;
+        IExpr element;
+
+        // Empty Set
+        if (Token.Kind is TokenKind.CloseBrace)
+        {
+            result = new SetLit();
+            goto end;
+        }
+
+        element = ParseExpr();
+
+        // Set comprehension
+        if (Skip(TokenKind.Pipe))
+        {
+            result = new CompExpr
+            {
+                Yields = element,
+                IsSet = true,
+                From = ParseGenerators()
+            };
+            goto end;
+        }
+
+        // Set literal
+        var set = new SetLit();
+        result = set;
+        set.Elements.Add(element);
+        while (Token.Kind is not TokenKind.CloseBrace)
+        {
+            var item = ParseExpr();
+            set.Elements.Add(item);
+            if (!Skip(TokenKind.Comma))
+                break;
+        }
+
+        end:
+        EndScope();
+        return result;
+    }
+
+    private List<GeneratorExpr> ParseGenerators()
+    {
+        throw new NotImplementedException();
     }
 }

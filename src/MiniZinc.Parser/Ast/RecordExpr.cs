@@ -2,5 +2,5 @@
 
 public sealed record RecordExpr : IExpr
 {
-    public Dictionary<string, IExpr> Exprs { get; set; } = new();
+    public List<(IExpr, IExpr)> Fields { get; set; } = new();
 }

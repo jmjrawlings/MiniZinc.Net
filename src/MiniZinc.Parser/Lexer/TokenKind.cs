@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-internal enum TokenKind
+internal enum TokenKind : sbyte
 {
     // Nodes
     Identifier,

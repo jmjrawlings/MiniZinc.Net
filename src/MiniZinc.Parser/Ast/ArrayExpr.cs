@@ -2,7 +2,7 @@
 
 public sealed record ArrayExpr : IExpr
 {
-    public List<TypeInst> Dims { get; set; }
+    public List<int> Dims { get; set; } = new();
 
     public int N => Dims.Count;
 

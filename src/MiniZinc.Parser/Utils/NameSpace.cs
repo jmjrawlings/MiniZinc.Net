@@ -77,7 +77,7 @@ public sealed class NameSpace<T> : IReadOnlyDictionary<string, T>
     {
         return _scope.ContainsKey(key);
     }
-
+ 
     public bool TryGetValue(string key, out T value) => _scope.TryGetValue(key, out value);
 
     public T this[string key] => _scope[key];
