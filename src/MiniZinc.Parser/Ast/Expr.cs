@@ -14,10 +14,10 @@ public static class Expr
 
     public static IExpr Bracketed(IExpr expr) => new BracketedExpr { Expr = expr };
 
-    public static UnaryOpExpr Unary(Operator op, IExpr expr) =>
+    public static UnaryOpExpr UnOp(Operator op, IExpr expr) =>
         new UnaryOpExpr { Expr = expr, Op = op };
 
-    public static BinaryOpExpr Binary(IExpr left, Operator op, IExpr right) =>
+    public static BinaryOpExpr BinOp(IExpr left, Operator op, IExpr right) =>
         new BinaryOpExpr
         {
             Left = left,

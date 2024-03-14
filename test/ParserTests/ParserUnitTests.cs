@@ -4,7 +4,7 @@
     {
         var lexer = Lexer.LexString(mzn);
         var parser = new Parser(lexer);
-        parser.Read();
+        parser.Step();
         return parser;
     }
 
@@ -38,6 +38,13 @@
         var parser = Parse("output [];");
         parser.ParseOutputItem();
         parser.Model.Outputs.Should().HaveCount(1);
+    }
+    
+    [InlineData("a")]
+    void test_parse_expr(string mzn)
+    {
+        var parser = Parse("constraint a > 2;");
+        var cons = parser.ParseConstraintItem();
     }
 
     [Fact]

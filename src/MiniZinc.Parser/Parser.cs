@@ -11,156 +11,119 @@ public sealed class Parser
     private readonly IEnumerator<Token> _tokens;
     private readonly Queue<Token> _cache;
     private readonly Stopwatch _watch;
-    private readonly Model _model;
-    internal readonly Stack<ParseContext> _context;
-
-    /// The current token
-    private Token Token;
-
-    /// The offset of the current context
-    private int _offset;
-
-    public Model Model => _model;
-
+    private Token _token;
+    private TokenKind _kind;
+    private int _bufferIndex;
+    private int _bufferCount;
+    private Token[] _buffer;
+    private int _pos;
     public TimeSpan Elapsed => _watch.Elapsed;
 
     internal Parser(IEnumerator<Token> tokens)
     {
         _watch = Stopwatch.StartNew();
         _tokens = tokens;
-        _cache = new Queue<Token>();
-        _model = new Model();
-        _context = new Stack<ParseContext>();
-        BeginScope(ScopeKind.Model);
+        _buffer = new Token[1024];
+        _bufferIndex = -1;
+        _bufferCount = 0;
+        _pos = 0;
     }
 
     /// Progress the parser
     public bool Read()
     {
-        // Read next token from look ahead queue
-        if (_cache.TryDequeue(out Token))
+        // Read token from the buffer if possible
+        if (++_bufferIndex < _bufferCount)
         {
-            _offset++;
+            _token = _buffer[_bufferIndex];
+            _kind = _token.Kind;
+            _pos++;
             return true;
         }
 
-        // Read next token from source stream
-        if (_tokens.MoveNext())
-        {
-            Token = _tokens.Current;
-            _offset++;
-            return true;
-        }
+        // Fill the buffer from the source
+        _bufferIndex = 0;
+        _bufferCount = 0;
 
-        // No more tokens
-        return false;
+        while (_bufferCount <= _buffer.Length && _tokens.MoveNext())
+            _buffer[_bufferCount++] = _tokens.Current;
+
+        _pos++;
+        _token = _buffer[0];
+        _kind = _token.Kind;
+        return _bufferCount > 0;
     }
 
     /// Progress the parser if the current token is of the given kind
     private bool Skip(TokenKind kind)
     {
-        if (Token.Kind != kind)
+        if (_token.Kind != kind)
             return false;
         Read();
         return true;
     }
 
     /// Skip over the given token kind
-    private void Read(TokenKind kind)
+    private bool Expect(TokenKind kind)
     {
-        if (Token.Kind != kind)
-            Error($"Expected a {kind} but encountered a {Token.Kind}");
+        if (_token.Kind != kind)
+        {
+            Error($"Expected a {kind} but encountered a {_token.Kind}");
+            return false;
+        }
 
         Read();
+        return true;
     }
 
-    /// Returns the next token in the stream without progressing the parser
-    private Token Peek()
+    bool EndLine() => Expect(TokenKind.EOL);
+
+    public Model? ParseModel()
     {
-        // Peek from look ahead if available
-        if (_cache.TryPeek(out var token))
-            return token;
-
-        // Move the stream ahead to peek
-        if (_tokens.MoveNext())
-        {
-            token = _tokens.Current;
-            _cache.Enqueue(token);
-            return token;
-        }
-        throw new EndOfStreamException();
-    }
-
-    /// Return true if the next token is of the given kind
-    private bool Peek(TokenKind kind)
-    {
-        var next = Peek();
-        return next.Kind == kind;
-    }
-
-    /// Begin a new parsing context, disposing it will
-    /// close the context.
-    private void BeginScope(string name)
-    {
-        var context = new ParseContext(this, Token, name);
-        _context.Push(context);
-        _offset = 0;
-    }
-
-    private void BeginScope(ScopeKind kind) => BeginScope(kind.ToString());
-
-    private void EndScope()
-    {
-        var context = _context.Pop();
-        context.Dispose();
-    }
-
-    void EndLine()
-    {
-        Read(TokenKind.EOL);
-    }
-
-    public void ParseModel()
-    {
-        BeginScope(ScopeKind.Model);
+        var model = new Model();
         while (true)
         {
-            switch (Token.Kind)
+            switch (_kind)
             {
                 case TokenKind.EOF:
                     break;
 
                 case TokenKind.KeywordInclude:
-                    ParseIncludeItem();
+                    if (!ParseIncludeItem(model))
+                        return default;
                     break;
 
                 case TokenKind.KeywordSolve:
-                    ParseSolveItem();
+                    if (!ParseSolveItem(model))
+                        return default;
                     break;
 
                 case TokenKind.KeywordOutput:
-                    ParseOutputItem();
+                    if (!ParseOutputItem(model))
+                        return default;
                     break;
 
                 case TokenKind.KeywordFunction:
                 case TokenKind.KeywordPredicate:
-                    ParseFunctionDeclare(_model.NameSpace);
+                    if (!ParseFunctionDeclare(model))
+                        return default;
                     break;
 
                 case TokenKind.KeywordEnum:
-                    ParseEnumDeclare(_model.NameSpace);
+                    if (!ParseEnumDeclare(model.NameSpace))
+                        return default;
                     break;
 
                 case TokenKind.KeywordType:
-                    ParseAliasItem();
+                    ParseAliasItem(model);
                     break;
 
                 case TokenKind.BlockComment:
                 case TokenKind.LineComment:
                     break;
 
-                case TokenKind.Identifier when Peek(TokenKind.Equal):
-                    ParseVariableAssign(_model.NameSpace);
+                case TokenKind.Identifier:
+                    ParseVariableAssign(model.NameSpace);
                     break;
 
                 case TokenKind.KeywordVar:
@@ -168,6 +131,9 @@ public sealed class Parser
                 case TokenKind.KeywordArray:
                 case TokenKind.KeywordSet:
                 case TokenKind.KeywordOpt:
+                    ParseVariableAssign(model.NameSpace);
+                    break;
+
                 case TokenKind.Identifier:
                     break;
 
@@ -175,37 +141,41 @@ public sealed class Parser
                     break;
             }
         }
-
-        EndScope();
-        var a = 2;
     }
 
-    private void ParseEnumDeclare(NameSpace<IExpr> ns)
+    private bool ParseEnumDeclare(NameSpace<IExpr> ns)
     {
-        BeginScope(ScopeKind.Enum);
-        Read(TokenKind.KeywordEnum);
-        var name = ReadName();
+        if (!Expect(TokenKind.KeywordEnum))
+            return false;
+
+        if (!ReadName(out var name))
+            return false;
+
         var item = new EnumDeclare { Name = name };
-        ParseAnnotations(item);
-        if (Token.Kind is TokenKind.EOL)
+        if (!ParseAnnotations(item))
+            return false;
+
+        if (_token.Kind is TokenKind.EOL)
             goto end;
 
-        Read(TokenKind.Equal);
+        if (!Expect(TokenKind.Equal))
+            return false;
+
         enumcases:
         EnumCase enumCase;
-        switch (Token.Kind)
+        switch (_token.Kind)
         {
             // {A, B, C}
             case TokenKind.OpenBrace:
                 Read();
-                while (Token.Kind is not TokenKind.CloseBrace)
+                while (_token.Kind is not TokenKind.CloseBrace)
                 {
                     enumCase = new EnumCase { Name = ReadString(), Type = EnumCaseType.Name };
                     item.Cases.Add(enumCase);
                     if (!Skip(TokenKind.Comma))
                         break;
                 }
-                Read(TokenKind.CloseBrace);
+                Expect(TokenKind.CloseBrace);
                 break;
 
             // enum A = anon_enum(100);
@@ -213,10 +183,10 @@ public sealed class Parser
             case TokenKind.Underscore:
             case TokenKind.KeywordAnonEnum:
                 Read();
-                Read(TokenKind.OpenParen);
+                Expect(TokenKind.OpenParen);
                 enumCase = new EnumCase { Type = EnumCaseType.Anonymous, Expr = ParseExpr() };
                 item.Cases.Add(enumCase);
-                Read(TokenKind.CloseParen);
+                Expect(TokenKind.CloseParen);
                 break;
 
             // C({A,B})
@@ -230,47 +200,39 @@ public sealed class Parser
 
         end:
         EndLine();
-        EndScope();
         ns.Push(name, item);
     }
 
-    public void ParseOutputItem()
+    public bool ParseOutputItem(Model model)
     {
-        BeginScope(ScopeKind.OutputItem);
-        Read(TokenKind.KeywordOutput);
+        Expect(TokenKind.KeywordOutput);
         var expr = ParseExpr();
         var item = new OutputItem { Expr = expr };
         EndLine();
-        EndScope();
-        _model.Outputs.Add(item);
+        model.Outputs.Add(item);
     }
 
-    public void ParseAliasItem()
+    public void ParseAliasItem(Model model)
     {
-        BeginScope(ScopeKind.AliasItem);
-        Read(TokenKind.KeywordType);
+        Expect(TokenKind.KeywordType);
         var name = ReadString();
-        Read(TokenKind.Equal);
+        Expect(TokenKind.Equal);
         var type = ParseTypeInst();
         EndLine();
-        _model.NameSpace.Push(name, type);
-        EndScope();
+        model.NameSpace.Push(name, type);
     }
 
     public void ParseVariableAssign(NameSpace<IExpr> ns)
     {
-        BeginScope(ScopeKind.Assign);
         var name = ReadString();
-        Read(TokenKind.Equal);
+        Expect(TokenKind.Equal);
         var value = ParseExpr();
         EndLine();
-        EndScope();
         ns.Push(name, value);
     }
 
-    public void ParseFunctionDeclare(NameSpace<IExpr> ns)
+    public bool ParseFunctionDeclare(Model model)
     {
-        BeginScope(ScopeKind.FunctionItem);
         var func = new FunctionDeclare();
 
         if (Skip(TokenKind.KeywordPredicate))
@@ -280,28 +242,31 @@ public sealed class Parser
             Skip(TokenKind.KeywordFunction);
             func.ReturnType = ParseTypeInst();
         }
-        Read(TokenKind.Colon);
+        Expect(TokenKind.Colon);
         func.Name = ReadString(TokenKind.Identifier);
         ParseParameters(func.Parameters);
         ns.Push(func.Name, func);
     }
 
-    private string ReadString(TokenKind kind = TokenKind.StringLiteral)
+    private bool ReadString(out string result, TokenKind kind = TokenKind.StringLiteral)
     {
-        string? s = Token.String;
-        if (s is null)
-            throw new NullReferenceException();
-        Read(kind);
-        return s;
+        if (_kind == kind && _token.String is { } s)
+        {
+            Read();
+            result = s;
+            return true;
+        }
+
+        result = string.Empty;
+        return false;
     }
 
-    private string ReadName() => ReadString(TokenKind.Identifier);
+    private bool ReadName(out string name) => ReadString(out name, TokenKind.Identifier);
 
-    private void ParseParameters(List<Binding<TypeInst>>? list)
+    private bool ParseParameters(List<Binding<TypeInst>>? list)
     {
-        BeginScope(ScopeKind.Parameters);
-        Read(TokenKind.OpenParen);
-        if (Token.Kind is TokenKind.CloseParen)
+        Expect(TokenKind.OpenParen);
+        if (_token.Kind is TokenKind.CloseParen)
             goto end;
 
         next:
@@ -312,15 +277,13 @@ public sealed class Parser
             goto next;
 
         end:
-        Read(TokenKind.CloseParen);
-        EndScope();
+        Expect(TokenKind.CloseParen);
     }
 
     public void ParseArguments(List<IExpr>? list)
     {
-        BeginScope(ScopeKind.Arguments);
-        Read(TokenKind.OpenParen);
-        if (Token.Kind is TokenKind.CloseParen)
+        Expect(TokenKind.OpenParen);
+        if (_token.Kind is TokenKind.CloseParen)
             goto end;
 
         next:
@@ -331,30 +294,24 @@ public sealed class Parser
             goto next;
 
         end:
-        Read(TokenKind.CloseParen);
-        EndScope();
+        Expect(TokenKind.CloseParen);
     }
 
-    public TypeInst ParseTypeInst()
+    public bool ParseTypeInst(out TypeInst ti)
     {
-        BeginScope(ScopeKind.TypeInst);
-        TypeInst type;
-        switch (Token.Kind)
+        switch (_token.Kind)
         {
             case TokenKind.KeywordArray:
             case TokenKind.KeywordList:
-                type = ParseArrayTypeInst();
-                break;
+                return ParseArrayTypeInst(ti);
             default:
-                type = ParseBaseTypeInst();
-                break;
+                return ParseBaseTypeInst(ti);
         }
 
-        EndScope();
         return type;
     }
 
-    public TypeInst ParseBaseTypeInst()
+    public bool ParseBaseTypeInst(out TypeInst ti)
     {
         var inst = TypeFlags.Par;
         if (Skip(TokenKind.KeywordVar))
@@ -367,16 +324,16 @@ public sealed class Parser
 
         if (Skip(TokenKind.KeywordSet))
         {
-            Read(TokenKind.KeywordOf);
+            Expect(TokenKind.KeywordOf);
             inst |= TypeFlags.Set;
         }
 
-        var type = ParseBaseTypeInstTail();
-        type.Flags = inst;
-        return type;
+        ti = ParseBaseTypeInstTail();
+        ti.Flags = inst;
+        return true;
     }
 
-    public TypeInst ParseArrayTypeInst()
+    public bool ParseArrayTypeInst(out TypeInst ti)
     {
         var type = new ArrayType();
         if (Skip(TokenKind.KeywordList))
@@ -386,10 +343,9 @@ public sealed class Parser
         }
         else
         {
-            BeginScope(ScopeKind.ArrayDimensions);
-            Read(TokenKind.KeywordArray);
-            Read(TokenKind.OpenBracket);
-            if (Token.Kind is TokenKind.CloseBracket)
+            Expect(TokenKind.KeywordArray);
+            Expect(TokenKind.OpenBracket);
+            if (_token.Kind is TokenKind.CloseBracket)
                 goto end;
 
             dim:
@@ -399,135 +355,159 @@ public sealed class Parser
                 goto dim;
 
             end:
-            Read(TokenKind.CloseBracket);
+            Expect(TokenKind.CloseBracket);
         }
-        Read(TokenKind.KeywordOf);
+        Expect(TokenKind.KeywordOf);
         type.ValueType = ParseBaseTypeInst();
         return type;
     }
 
-    private TypeInst ParseBaseTypeInstTail()
+    private bool ParseBaseTypeInstTail(out TypeInst ti)
     {
-        TypeInst type;
-        switch (Token.Kind)
+        switch (_token.Kind)
         {
             case TokenKind.KeywordInt:
                 Read();
-                type = new TypeInst { Kind = TypeKind.Int };
+                ti = new TypeInst { Kind = TypeKind.Int };
                 break;
 
             case TokenKind.KeywordBool:
                 Read();
-                type = new TypeInst { Kind = TypeKind.Bool };
+                ti = new TypeInst { Kind = TypeKind.Bool };
                 break;
 
             case TokenKind.KeywordFloat:
                 Read();
-                type = new TypeInst { Kind = TypeKind.Float };
+                ti = new TypeInst { Kind = TypeKind.Float };
                 break;
 
             case TokenKind.KeywordString:
                 Read();
-                type = new TypeInst { Kind = TypeKind.String };
+                ti = new TypeInst { Kind = TypeKind.String };
                 break;
 
             case TokenKind.KeywordAnn:
                 Read();
-                type = new TypeInst { Kind = TypeKind.Annotation };
+                ti = new TypeInst { Kind = TypeKind.Annotation };
                 break;
 
             case TokenKind.KeywordRecord:
-                type = ParseRecordType();
+                ti = ParseRecordType();
                 break;
 
             case TokenKind.KeywordTuple:
-                type = ParseTupleType();
+                ti = ParseTupleType();
                 break;
 
             default:
                 var expr = ParseExpr();
-                type = new ExprType { Expr = expr };
+                ti = new ExprType { Expr = expr };
                 break;
         }
-        return type;
+
+        return true;
     }
 
-    private TupleTypeInst ParseTupleType()
+    private bool ParseTupleType(out TupleTypeInst tuple)
     {
-        Read(TokenKind.KeywordTuple);
-        Read(TokenKind.OpenParen);
-        var type = new TupleTypeInst();
+        Expect(TokenKind.KeywordTuple);
+        Expect(TokenKind.OpenParen);
+        tuple = new TupleTypeInst();
         next:
-        if (Token.Kind is TokenKind.CloseParen)
+        if (_token.Kind is TokenKind.CloseParen)
             goto end;
-        var ti = ParseTypeInst();
-        type.Items.Add(ti);
+
+        if (!ParseTypeInst(out var ti))
+            return false;
+
+        tuple.Items.Add(ti);
         if (Skip(TokenKind.Comma))
             goto next;
+
         end:
-        Read(TokenKind.CloseBracket);
-        return type;
+        return Expect(TokenKind.CloseBracket);
     }
 
-    private RecordTypeInst ParseRecordType()
+    private bool ParseRecordType(out RecordTypeInst record)
     {
-        Read(TokenKind.KeywordRecord);
-        var type = new RecordTypeInst();
+        Expect(TokenKind.KeywordRecord);
+        record = new RecordTypeInst();
         next:
-        if (Token.Kind is TokenKind.CloseParen)
+        if (_token.Kind is TokenKind.CloseParen)
             goto end;
-        var ti = ParseTypeInstAndId();
-        type.Fields.Add(ti);
+
+        if (!ParseTypeInstAndId(out var ti))
+            return false;
+
+        record.Fields.Add(ti);
         if (Skip(TokenKind.Comma))
             goto next;
+
         end:
-        Read(TokenKind.CloseBracket);
-        return type;
+        return Expect(TokenKind.CloseBracket);
     }
 
-    public VariableDeclareItem ParseVariableDeclare()
-    {
-        BeginScope(ScopeKind.Variable);
-        var name = ReadString(TokenKind.Identifier);
-        Read(TokenKind.Colon);
-        var type = ParseTypeInst();
-        var item = new VariableDeclareItem { Name = name, Type = type };
-        if (Token.Kind is not TokenKind.EOL)
-            item.Value = ParseExpr();
+    private bool At(TokenKind kind) => _kind == kind;
 
-        EndLine();
-        EndScope();
-        return item;
+    public bool ParseVariableDeclare(out VariableDeclareItem item)
+    {
+        item = new VariableDeclareItem();
+
+        if (!ReadName(out var name))
+            return false;
+
+        item.Name = name;
+
+        if (!Expect(TokenKind.Colon))
+            return false;
+
+        if (!ParseTypeInst(out var type))
+            return false;
+
+        item.Type = type;
+
+        if (Skip(TokenKind.Equal))
+            if (!ParseExpr(out item.Value))
+                return false;
+
+        return EndLine();
     }
 
-    public Binding<TypeInst> ParseTypeInstAndId()
+    public bool ParseTypeInstAndId(out Binding<TypeInst> binding)
     {
-        BeginScope(ScopeKind.TypeInstAndId);
-        var type = ParseTypeInst();
-        Read(TokenKind.Colon);
-        var name = ReadString();
-        EndScope();
-        return name.Bind(type);
+        binding = default;
+        if (!ParseTypeInst(out var type))
+            return false;
+
+        if (!Expect(TokenKind.Colon))
+            return false;
+
+        if (!ReadString(out var name))
+            return false;
+
+        binding = name.Bind(type);
+        return true;
     }
 
-    public void ParseIncludeItem()
+    public bool ParseIncludeItem(Model model)
     {
-        BeginScope(ScopeKind.IncludeItem);
-        Read(TokenKind.KeywordInclude);
-        var path = ReadString();
-        _model.Includes.Add(path);
-        EndLine();
-        EndScope();
+        if (!Expect(TokenKind.KeywordInclude))
+            return false;
+
+        if (!ReadString(out var path))
+            return false;
+
+        model.Includes.Add(path);
+        return EndLine();
     }
 
-    public void ParseSolveItem()
+    public bool ParseSolveItem(Model model)
     {
-        BeginScope(ScopeKind.SolveItem);
-        Read();
+        if (!Expect(TokenKind.KeywordSolve))
+            return false;
 
         var item = new SolveItem();
-
-        switch (Token.Kind)
+        switch (_token.Kind)
         {
             case TokenKind.KeywordSatisfy:
                 Read();
@@ -536,60 +516,67 @@ public sealed class Parser
             case TokenKind.KeywordMinimize:
                 Read();
                 item.Method = SolveMethod.Minimize;
-                item.Objective = ParseExpr();
+                if (!ParseExpr(out item.Objective))
+                    return false;
                 break;
             case TokenKind.KeywordMaximize:
                 Read();
                 item.Method = SolveMethod.Maximize;
-                item.Objective = ParseExpr();
+                if (!ParseExpr(out item.Objective))
+                    return false;
                 break;
             default:
-                Error("Expected satisfy, minimize, or maximize");
-                break;
+                return Error("Expected satisfy, minimize, or maximize");
         }
-        EndLine();
-        EndScope();
-        _model.SolveItems.Add(item);
+        model.SolveItems.Add(item);
+        return EndLine();
     }
 
-    public ConstraintItem ParseConstraintItem()
+    public bool ParseConstraintItem(out ConstraintItem constraint)
     {
-        BeginScope(ScopeKind.ConstraintItem);
-        Read(TokenKind.KeywordConstraint);
-        var expr = ParseExpr();
-        var item = new ConstraintItem { Expr = expr };
-        EndScope();
-        return item;
+        constraint = new ConstraintItem();
+        if (!Expect(TokenKind.KeywordConstraint))
+            return false;
+
+        if (!ParseExpr(out constraint.Expr))
+            return false;
+
+        return true;
     }
 
-    public IExpr ParseExpr()
+    public bool ParseExpr(out IExpr expr)
     {
-        BeginScope(ScopeKind.Expr);
-        IExpr expr;
-        switch (Token.Kind)
+        expr = null;
+
+        switch (_token.Kind)
         {
-            #region Unary Operators
             case TokenKind.Plus:
                 Read();
-                expr = new UnaryOpExpr { Op = Operator.Add, Expr = ParseExpr() };
+                if (!ParseExpr(out expr))
+                    return false;
+                expr = Expr.UnOp(Operator.Plus, expr);
                 break;
 
             case TokenKind.Minus:
                 Read();
-                expr = new UnaryOpExpr { Op = Operator.Minus, Expr = ParseExpr() };
+                if (!ParseExpr(out expr))
+                    return false;
+                expr = Expr.UnOp(Operator.Minus, expr);
                 break;
 
             case TokenKind.KeywordNot:
                 Read();
-                expr = Expr.Unary(Operator.Not, ParseExpr());
+                if (!ParseExpr(out expr))
+                    return false;
+                expr = Expr.UnOp(Operator.Not, expr);
                 break;
 
             case TokenKind.DotDot:
                 Read();
-                expr = Expr.Range(upper: ParseExpr());
+                if (!ParseExpr(out expr))
+                    return false;
+                expr = Expr.Range(upper: expr);
                 break;
-
-            #endregion
 
             case TokenKind.Underscore:
                 Read();
@@ -608,37 +595,47 @@ public sealed class Parser
 
             case TokenKind.IntLiteral:
                 Read();
-                expr = Expr.Int(Token.Int);
+                expr = Expr.Int(_token.Int);
                 break;
 
             case TokenKind.FloatLiteral:
                 Read();
-                expr = Expr.Float(Token.Double);
+                expr = Expr.Float(_token.Double);
                 break;
 
             case TokenKind.StringLiteral:
                 Read();
-                expr = Expr.String(Token.String!);
+                expr = Expr.String(_token.String!);
                 break;
 
             case TokenKind.OpenParen:
-                expr = ParseTupleLikeExpr();
+                if (!ParseTupleLikeExpr(out var let))
+                    return false;
+                expr = let;
                 break;
 
             case TokenKind.OpenBrace:
-                expr = ParseSetLikeExpr();
+                if (!ParseSetLikeExpr(out var set))
+                    return false;
+                expr = set;
                 break;
 
             case TokenKind.OpenBracket:
-                expr = ParseArrayLikeExpr();
+                if (!ParseArrayLikeExpr(out var arr))
+                    return false;
+                expr = arr;
                 break;
 
             case TokenKind.KeywordIf:
-                expr = ParseIfElseExpr();
+                if (!ParseIfElseExpr(out expr))
+                    return false;
+                expr = XD;
                 break;
 
             case TokenKind.KeywordLet:
-                expr = ParseLetExpr();
+                if (!ParseLetExpr(out expr))
+                    return false;
+                expr = XD;
                 break;
 
             case TokenKind.Identifier:
@@ -648,8 +645,8 @@ public sealed class Parser
             default:
                 throw new Exception();
         }
-        EndScope();
-        return expr;
+
+        return true;
     }
 
     private IExpr ParseCallLikeExpr()
@@ -657,29 +654,39 @@ public sealed class Parser
         throw new NotImplementedException();
     }
 
-    private IExpr ParseLetExpr()
+    private bool ParseLetExpr(out LetExpr let)
     {
-        BeginScope(ScopeKind.Let);
-        Read(TokenKind.KeywordLet);
-        Read(TokenKind.OpenBrace);
-        var result = new LetExpr();
-        while (Token.Kind is not TokenKind.CloseBrace)
+        let = new LetExpr();
+
+        if (!Expect(TokenKind.KeywordLet))
+            return false;
+
+        if (!Expect(TokenKind.OpenBrace))
+            return false;
+
+        while (_token.Kind is not TokenKind.CloseBrace)
         {
-            var expr = ParseTypeInst();
-            result.Declares.Add(expr);
+            if (!ParseTypeInst(out var type))
+                return false;
+
+            let.Declares.Add(type);
             if (!Skip(TokenKind.EOL))
                 break;
         }
 
-        Read(TokenKind.KeywordIn);
-        result.Body = ParseExpr();
-        EndScope();
-        return result;
+        if (!Expect(TokenKind.KeywordIn))
+            return false;
+
+        if (!ParseExpr(out let.Body))
+            return false;
+
+        return true;
     }
 
-    private IExpr ParseIfElseExpr()
+    private bool ParseIfElseExpr(out IfThenElseExpr ite)
     {
-        throw new NotImplementedException();
+        ite = new IfThenElseExpr();
+        return false;
     }
 
     /// <summary>
@@ -689,40 +696,45 @@ public sealed class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private IExpr ParseTupleLikeExpr()
+    private bool ParseTupleLikeExpr(out IExpr result)
     {
-        BeginScope("tuple-like");
-        Read(TokenKind.OpenParen);
-        IExpr result;
-        IExpr expr;
+        result = Expr.Null;
+        if (!Expect(TokenKind.OpenParen))
+            return false;
+
+        if (!ParseExpr(out var expr))
+            return false;
+
         IExpr name;
 
-        expr = ParseExpr();
-
         // Bracketed expr
-        if (Token.Kind is TokenKind.CloseParen)
-        {
-            result = Expr.Bracketed(expr);
-            goto end;
-        }
+        if (Skip(TokenKind.CloseParen))
+            return true;
 
         // Record expr
-        // TODO - ensure its a string expr here?
         if (Skip(TokenKind.Colon))
         {
-            name = expr;
-            expr = ParseExpr();
             var record = new RecordExpr();
             result = record;
+            name = expr;
+            if (!ParseExpr(out expr))
+                return false;
+
             record.Fields.Add((name, expr));
 
             record_field:
             if (!Skip(TokenKind.Comma))
-                goto end;
+                return Expect(TokenKind.CloseParen);
 
-            name = ParseExpr();
-            Read(TokenKind.Colon);
-            expr = ParseExpr();
+            if (!ParseExpr(out name))
+                return false;
+
+            if (!Expect(TokenKind.Colon))
+                return false;
+
+            if (!ParseExpr(out expr))
+                return false;
+
             record.Fields.Add((name, expr));
             goto record_field;
         }
@@ -731,60 +743,44 @@ public sealed class Parser
         var tuple = new TupleExpr();
         result = tuple;
         tuple.Exprs.Add(expr);
-        Read(TokenKind.Comma);
+        if (!Expect(TokenKind.Comma))
+            return false;
+
         do
         {
-            expr = ParseExpr();
+            if (!ParseExpr(out expr))
+                return false;
             tuple.Exprs.Add(expr);
         } while (Skip(TokenKind.Comma));
 
-        end:
-        Read(TokenKind.CloseParen);
-        EndScope();
-        return result;
+        return Expect(TokenKind.CloseParen);
     }
 
-    public void ParseAnnotations(IAnnotations target)
+    public bool ParseAnnotations(IAnnotations target)
     {
-        while (Token.Kind is TokenKind.DoubleColon)
+        while (_token.Kind is TokenKind.DoubleColon)
         {
-            var ann = ParseAnnotation();
+            if (!ParseAnnotation(out var ann))
+                return false;
+
             target.Annotate(ann);
         }
+
+        return true;
     }
 
-    public IExpr ParseAnnotation()
-    {
-        var expr = ParseExpr();
-        return expr;
-    }
+    public bool ParseAnnotation(out IExpr expr) => ParseExpr(out expr);
 
     /// Throw an error
-    private void Error(string msg)
+    private bool Error(string msg)
     {
         _watch.Stop();
-        var ctx = _context.Peek();
         var exn =
             $@"""w
-            An error occurred while parsing {ctx.Name} on Line {ctx.Start.Line} Col {ctx.Start.Col}:
+            An error occurred at Token {_kind} (Line {_token.Line} Col {_token.Col}):
                 {msg}
             """;
-
-        var context = _context.ToArray();
-        throw new ParseException(context.Cast<IParseContext>());
-    }
-
-    /// Expect the token to be of the given kind
-    private void Expect(TokenKind kind) => Expect(Token, kind);
-
-    /// Expect the token to be of the given kind
-    private void Expect(in Token token, TokenKind kind)
-    {
-        if (token.Kind == kind)
-            return;
-
-        var ctx = _context.Peek();
-        Error($"Expected a {kind} but encountered a {token.Kind}");
+        return false;
     }
 
     //
@@ -2414,11 +2410,7 @@ public sealed class Parser
     //     >>. sepEndBy assign_expr (skip ';')
     //     .>> ws
     //     .>> eof
-    private T XD<T>()
-    {
-        Error("xd");
-        return default;
-    }
+    private bool XD() => Error("not implemented XD");
 
     /// <summary>
     /// Parse anything that starts with a '[', this could be:
@@ -2428,15 +2420,16 @@ public sealed class Parser
     /// - [| 1, 2, 3 | 4, 5, 6 |]
     /// - [ x | x in [ 1, 2, 3 ]]
     /// </summary>
-    private IExpr ParseArrayLikeExpr()
+    private bool ParseArrayLikeExpr(out IExpr result)
     {
-        BeginScope("array-like");
-        Read(TokenKind.OpenBracket);
-        IExpr result;
+        result = Expr.Null;
+        if (!Expect(TokenKind.OpenBracket))
+            return false;
+
         IExpr element;
 
         // Empty Array
-        if (Token.Kind is TokenKind.CloseBracket)
+        if (_token.Kind is TokenKind.CloseBracket)
         {
             result = new Array1DLit();
             goto end;
@@ -2452,7 +2445,7 @@ public sealed class Parser
 
             array_2d_row:
             arr2D.I = 0;
-            while (Token.Kind is not TokenKind.Pipe)
+            while (_token.Kind is not TokenKind.Pipe)
             {
                 element = ParseExpr();
                 arr2D.Elements.Add(element);
@@ -2462,8 +2455,8 @@ public sealed class Parser
             }
 
             arr2D.J++;
-            Read(TokenKind.Pipe);
-            if (Token.Kind is TokenKind.CloseBracket)
+            Expect(TokenKind.Pipe);
+            if (_token.Kind is TokenKind.CloseBracket)
                 goto end;
             goto array_2d_row;
         }
@@ -2487,7 +2480,7 @@ public sealed class Parser
         var arr = new Array1DLit();
         result = arr;
         arr.Elements.Add(element);
-        while (Token.Kind is not TokenKind.CloseBracket)
+        while (_token.Kind is not TokenKind.CloseBracket)
         {
             element = ParseExpr();
             arr.Elements.Add(element);
@@ -2496,9 +2489,7 @@ public sealed class Parser
         }
 
         end:
-        Read(TokenKind.CloseBracket);
-        EndScope();
-        return result;
+        return Expect(TokenKind.CloseBracket);
     }
 
     /// <summary>
@@ -2507,31 +2498,30 @@ public sealed class Parser
     /// - {}
     /// - { x | x in [1,1,1,2,3,]}
     /// </summary>
-    private IExpr ParseSetLikeExpr()
+    private bool ParseSetLikeExpr(out IExpr result)
     {
-        BeginScope("set-like");
-        Read(TokenKind.OpenBrace);
-        IExpr result;
-        IExpr element;
+        result = Expr.Null;
+        if (!Expect(TokenKind.OpenBrace))
+            return false;
 
         // Empty Set
-        if (Token.Kind is TokenKind.CloseBrace)
+        if (_token.Kind is TokenKind.CloseBrace)
         {
             result = new SetLit();
             goto end;
         }
 
-        element = ParseExpr();
+        if (!ParseExpr(out var element))
+            return false;
 
         // Set comprehension
         if (Skip(TokenKind.Pipe))
         {
-            result = new CompExpr
-            {
-                Yields = element,
-                IsSet = true,
-                From = ParseGenerators()
-            };
+            var comp = new CompExpr { Yields = element, IsSet = true };
+            if (!ParseGenerators(comp.From))
+                return false;
+
+            result = comp;
             goto end;
         }
 
@@ -2539,21 +2529,22 @@ public sealed class Parser
         var set = new SetLit();
         result = set;
         set.Elements.Add(element);
-        while (Token.Kind is not TokenKind.CloseBrace)
+        while (_token.Kind is not TokenKind.CloseBrace)
         {
-            var item = ParseExpr();
+            if (!ParseExpr(out var item))
+                return false;
+
             set.Elements.Add(item);
             if (!Skip(TokenKind.Comma))
                 break;
         }
 
         end:
-        EndScope();
-        return result;
+        return Expect(TokenKind.CloseBrace);
     }
 
-    private List<GeneratorExpr> ParseGenerators()
+    private bool ParseGenerators(List<GeneratorExpr> generators)
     {
-        throw new NotImplementedException();
+        return false;
     }
 }
