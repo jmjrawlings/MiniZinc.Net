@@ -3,7 +3,7 @@
 public sealed class FunctionDeclare : INamed, IAnnotations, IExpr
 {
     public string Name { get; set; }
-    public TypeInst ReturnType { get; set; }
+    public TypeInst ReturnType;
     public List<IExpr>? Annotations { get; set; }
     public List<Binding<TypeInst>>? Parameters { get; set; }
 

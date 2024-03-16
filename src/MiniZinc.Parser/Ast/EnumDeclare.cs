@@ -4,14 +4,15 @@ public enum EnumCaseType
 {
     Name,
     Anonymous,
+    Underscore,
     Complex
 }
 
-public readonly record struct EnumCase
+public sealed record EnumCase
 {
-    public EnumCaseType Type { get; init; }
-    public string? Name { get; init; }
-    public IExpr? Expr { get; init; }
+    public EnumCaseType Type;
+    public List<string>? Names;
+    public IExpr? Expr;
 }
 
 public record EnumDeclare : INamed, IAnnotations, IExpr
