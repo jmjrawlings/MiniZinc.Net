@@ -4,67 +4,6 @@ using Ast;
 
 public partial class Parser
 {
-    private bool ParseParameters(out List<Binding<TypeInst>>? parameters)
-    {
-        parameters = null;
-        if (!Expect(TokenKind.OpenParen))
-            return false;
-
-        if (_token.Kind is TokenKind.CloseParen)
-            goto end;
-
-        next:
-        if (!ParseTypeInstAndId(out var type))
-            return false;
-
-        parameters = new List<Binding<TypeInst>> { type };
-        if (Skip(TokenKind.Comma))
-            goto next;
-
-        end:
-        return Expect(TokenKind.CloseParen);
-    }
-
-    public bool ParseArguments(out List<IExpr>? list)
-    {
-        list = null;
-        Expect(TokenKind.OpenParen);
-        if (_token.Kind is TokenKind.CloseParen)
-            goto end;
-
-        next:
-        list = new List<IExpr>();
-        if (!ParseExpr(out var expr))
-            return false;
-
-        list.Add(expr);
-        if (Skip(TokenKind.Comma))
-            goto next;
-
-        end:
-        return Expect(TokenKind.CloseParen);
-    }
-
-    public bool ParseTypeInst(out TypeInst type)
-    {
-        type = default;
-        switch (_token.Kind)
-        {
-            case TokenKind.KeywordArray:
-            case TokenKind.KeywordList:
-                if (!ParseArrayTypeInst(out var arr))
-                    return false;
-                type = arr;
-                break;
-            default:
-                if (!ParseBaseTypeInst(out type))
-                    return false;
-                break;
-        }
-
-        return true;
-    }
-
     public bool ParseBaseTypeInst(out TypeInst type)
     {
         var inst = TypeFlags.Par;
@@ -82,43 +21,62 @@ public partial class Parser
             inst |= TypeFlags.Set;
         }
 
-        if (!ParseBaseTypeInstTail(out type))
+        if (!ParseBaseTypeTail(out type))
             return false;
 
         type.Flags = inst;
         return true;
     }
 
-    public bool ParseArrayTypeInst(out ArrayType type)
+    /// <summary>
+    /// Parse a list type
+    /// </summary>
+    /// <mzn>list of int</mzn>
+    public bool ParseListType(out ArrayType type)
     {
         type = new ArrayType();
-        if (Skip(TokenKind.KeywordList))
-        {
-            var dim = new TypeInst { Kind = TypeKind.Int, Flags = TypeFlags.Par };
-            type.Dimensions.Add(dim);
-        }
-        else
-        {
-            Expect(TokenKind.KeywordArray);
-            Expect(TokenKind.OpenBracket);
-            if (_token.Kind is TokenKind.CloseBracket)
-                goto end;
+        if (!Skip(TokenKind.KeywordList))
+            return false;
 
-            dim:
-            var dim = ParseTypeInst();
-            type.Dimensions.Add(dim);
-            if (Skip(TokenKind.Comma))
-                goto dim;
+        if (!Expect(TokenKind.KeywordOf))
+            return false;
 
-            end:
-            Expect(TokenKind.CloseBracket);
-        }
-        Expect(TokenKind.KeywordOf);
-        type.ValueType = ParseBaseTypeInst();
-        return type;
+        var dim = new TypeInst { Kind = TypeKind.Int, Flags = TypeFlags.Par };
+        type.Dimensions.Add(dim);
+
+        if (!ParseType(out var expr))
+            return false;
+
+        type.Type = expr;
+        return true;
     }
 
-    private bool ParseBaseTypeInstTail(out TypeInst type)
+    /// <summary>
+    /// Parse an array type
+    /// </summary>
+    /// <mzn>array[X, 1..2} of var int</mzn>
+    public bool ParseArrayType(out ArrayType arr)
+    {
+        arr = default;
+        if (!Skip(TokenKind.KeywordArray))
+            return false;
+
+        arr = new ArrayType();
+
+        if (!ParseExprs(arr.Dimensions, TokenKind.OpenBracket, TokenKind.CloseBrace))
+            return false;
+
+        if (!Expect(TokenKind.KeywordOf))
+            return false;
+
+        if (!ParseType(out var type))
+            return false;
+
+        arr.Type = type;
+        return true;
+    }
+
+    private bool ParseBaseTypeTail(out TypeInst type)
     {
         type = default;
         switch (_token.Kind)
@@ -170,10 +128,15 @@ public partial class Parser
         return true;
     }
 
-    public bool ParseTypeInstAndId(out Binding<TypeInst> binding)
+    /// <summary>
+    /// Parse a type name pair
+    /// </summary>
+    /// <mzn>int: a</mzn>
+    /// <mzn>bool: ABC</mzn>
+    public bool ParseTypeAndName(out Binding<TypeInst> result)
     {
-        binding = default;
-        if (!ParseTypeInst(out var type))
+        result = default;
+        if (!ParseType(out var type))
             return false;
 
         if (!Expect(TokenKind.Colon))
@@ -182,36 +145,35 @@ public partial class Parser
         if (!ReadString(out var name))
             return false;
 
-        binding = name.Bind(type);
+        result = name.Bind(type);
         return true;
     }
 
     /// <summary>
     /// Parse a tuple type constructor
     /// </summary>
-    /// <mzn>tuple(int, bool, tuple(int))<mzn>
+    /// <mzn>tuple(int, bool, tuple(int))</mzn>
     private bool ParseTupleType(out TupleTypeInst tuple)
     {
-        tuple = new TupleTypeInst();
+        tuple = default;
         if (!Skip(TokenKind.KeywordTuple))
             return false;
 
+        tuple = new TupleTypeInst();
         if (!Expect(TokenKind.OpenParen))
             return false;
 
-        next:
-        if (_kind is TokenKind.CloseParen)
-            goto end;
+        while (_kind is not TokenKind.CloseParen)
+        {
+            if (!ParseType(out var ti))
+                return false;
 
-        if (!ParseTypeInst(out var ti))
-            return false;
+            tuple.Items.Add(ti);
+            if (!Skip(TokenKind.Comma))
+                break;
+        }
 
-        tuple.Items.Add(ti);
-        if (Skip(TokenKind.Comma))
-            goto next;
-
-        end:
-        return Expect(TokenKind.CloseBracket);
+        return Expect(TokenKind.CloseParen);
     }
 
     /// <summary>
@@ -224,18 +186,81 @@ public partial class Parser
         if (!Skip(TokenKind.KeywordRecord))
             return false;
         record = new RecordTypeInst();
-        next:
+
+        if (!ParseParameters(out var fields))
+            return false;
+        record.Fields = fields;
+        return true;
+    }
+
+    /// <summary>
+    /// Parse a comma separated list of types
+    /// and names between parentheses
+    /// </summary>
+    /// <mzn>(int: a, bool: b)</mzn>
+    private bool ParseParameters(out List<Binding<TypeInst>> parameters)
+    {
+        parameters = null;
+        if (!Expect(TokenKind.OpenParen))
+            return false;
+
         if (_token.Kind is TokenKind.CloseParen)
             goto end;
 
-        if (!ParseTypeInstAndId(out var field))
+        next:
+        if (!ParseTypeAndName(out var type))
             return false;
 
-        record.Fields.Add(field);
+        parameters = new List<Binding<TypeInst>> { type };
         if (Skip(TokenKind.Comma))
             goto next;
 
         end:
-        return Expect(TokenKind.CloseBracket);
+        return Expect(TokenKind.CloseParen);
+    }
+
+    /// <summary>
+    /// Parse a comma separated list of expressions
+    /// between parentheses
+    /// </summary>
+    /// <mzn>(1, 2, false)</mzn>
+    private bool ParseExprs(List<IExpr> exprs, TokenKind open, TokenKind close)
+    {
+        if (!Expect(open))
+            return false;
+
+        while (_kind != close)
+        {
+            if (!ParseExpr(out var expr))
+                return false;
+            exprs.Add(expr);
+            if (!Skip(TokenKind.Comma))
+                break;
+        }
+
+        if (!Expect(close))
+            return false;
+
+        return true;
+    }
+
+    public bool ParseType(out TypeInst type)
+    {
+        type = default;
+        switch (_token.Kind)
+        {
+            case TokenKind.KeywordArray:
+            case TokenKind.KeywordList:
+                if (!ParseArrayType(out var arr))
+                    return false;
+                type = arr;
+                break;
+            default:
+                if (!ParseBaseTypeInst(out type))
+                    return false;
+                break;
+        }
+
+        return true;
     }
 }

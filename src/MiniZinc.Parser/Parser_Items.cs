@@ -175,7 +175,7 @@ public partial class Parser
             return false;
         if (!Expect(TokenKind.Equal))
             return false;
-        if (!ParseTypeInst(out var type))
+        if (!ParseType(out var type))
             return false;
         model.NameSpace.Push(name, type);
         return EndLine();
@@ -184,7 +184,7 @@ public partial class Parser
     public bool ParseDeclareItem(out VariableDeclareItem item)
     {
         item = new VariableDeclareItem();
-        if (!ParseTypeInst(out var type))
+        if (!ParseType(out var type))
             return false;
         item.Type = type;
 

@@ -2,8 +2,10 @@
 
 using Annotation = IExpr;
 
-public record TypeInst : IAnnotations, IExpr
+public record TypeInst : IAnnotations, IExpr, INamed
 {
+    public string Name { get; set; }
+
     public TypeKind Kind { get; set; }
 
     public TypeFlags Flags { get; set; }

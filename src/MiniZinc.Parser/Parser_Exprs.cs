@@ -266,7 +266,7 @@ public partial class Parser
 
         while (_token.Kind is not TokenKind.CloseBrace)
         {
-            if (!ParseTypeInst(out var type))
+            if (!ParseType(out var type))
                 return false;
 
             let.Declares.Add(type);

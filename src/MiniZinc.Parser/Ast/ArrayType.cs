@@ -2,7 +2,7 @@
 
 public sealed record ArrayType : TypeInst
 {
-    public TypeInst ValueType { get; set; }
+    public TypeInst Type { get; set; }
 
     public List<IExpr> Dimensions { get; set; }
 
