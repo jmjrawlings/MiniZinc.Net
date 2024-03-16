@@ -4,6 +4,10 @@ using Ast;
 
 public partial class Parser
 {
+    /// <summary>
+    /// Parse a model
+    /// </summary>
+    /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
     public bool ParseModel(out Model model)
     {
         model = new Model();
@@ -29,7 +33,7 @@ public partial class Parser
                 break;
 
             case TokenKind.KeywordEnum:
-                if (!ParseEnumDeclare(model))
+                if (!ParseEnumItem(model))
                     return false;
                 break;
 
@@ -44,7 +48,7 @@ public partial class Parser
                 break;
 
             default:
-                if (!ParseDeclareOrAssign(model.NameSpace))
+                if (!ParseDeclareOrAssignItem(model.NameSpace))
                     return false;
                 break;
         }
@@ -58,12 +62,12 @@ public partial class Parser
     /// <example>enum Dir = {N,S,E,W};</example>
     /// <example>enum Z = anon_enum(10);</example>
     /// <example>enum X = Q({1,2});</example>
-    private bool ParseEnumDeclare(Model model)
+    private bool ParseEnumItem(Model model)
     {
         if (!Expect(TokenKind.KeywordEnum))
             return false;
 
-        if (!ReadName(out var name))
+        if (!ParseIdent(out var name))
             return false;
 
         var @enum = new EnumDeclare { Name = name };
@@ -86,7 +90,7 @@ public partial class Parser
             @case.Names = new List<string>();
             while (_kind is not TokenKind.CloseBrace)
             {
-                if (!ReadName(out name))
+                if (!ParseIdent(out name))
                     return false;
                 @case.Names.Add(name);
                 if (!Skip(TokenKind.Comma))
@@ -126,7 +130,7 @@ public partial class Parser
         }
 
         // Complex enum: `C(1..10)`
-        if (ReadString(out name))
+        if (ParseString(out name))
         {
             @case.Type = EnumCaseType.Complex;
             if (!Expect(TokenKind.OpenParen))
@@ -171,7 +175,7 @@ public partial class Parser
     {
         if (!Expect(TokenKind.KeywordType))
             return false;
-        if (!ReadString(out var name))
+        if (!ParseString(out var name))
             return false;
         if (!Expect(TokenKind.Equal))
             return false;
@@ -181,39 +185,27 @@ public partial class Parser
         return EndLine();
     }
 
-    public bool ParseDeclareItem(out VariableDeclareItem item)
-    {
-        item = new VariableDeclareItem();
-        if (!ParseType(out var type))
-            return false;
-        item.Type = type;
-
-        if (!Expect(TokenKind.Colon))
-            return false;
-
-        if (!ReadName(out var name))
-            return false;
-        item.Name = name;
-
-        if (Skip(TokenKind.Equal))
-            if (!ParseExpr(out item.Value))
-                return false;
-
-        return EndLine();
-    }
-
+    /// <summary>
+    /// Parse an include item
+    /// </summary>
+    /// <mzn>include "utils.mzn"</mzn>
     public bool ParseIncludeItem(Model model)
     {
         if (!Expect(TokenKind.KeywordInclude))
             return false;
 
-        if (!ReadString(out var path))
+        if (!ParseString(out var path))
             return false;
 
         model.Includes.Add(path);
         return EndLine();
     }
 
+    /// <summary>
+    /// Parse a solve item
+    /// </summary>
+    /// <mzn>solve satisfy;</mzn>
+    /// <mzn>solve maximize a;</mzn>
     public bool ParseSolveItem(Model model)
     {
         if (!Expect(TokenKind.KeywordSolve))
@@ -245,6 +237,10 @@ public partial class Parser
         return EndLine();
     }
 
+    /// <summary>
+    /// Parse a constraint
+    /// </summary>
+    /// <mzn>constraint a > b;</mzn>
     public bool ParseConstraintItem(out ConstraintItem constraint)
     {
         constraint = new ConstraintItem();
@@ -252,6 +248,54 @@ public partial class Parser
             return false;
 
         if (!ParseExpr(out constraint.Expr))
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Parse a variable declaration or variable assignment
+    /// </summary>
+    /// <mzn>a = 10;</mzn>
+    /// <mzn>set of var int: xd;</mzn>
+    public bool ParseDeclareOrAssignItem(NameSpace<IExpr> ns)
+    {
+        var var = new Variable();
+
+        if (ParseIdent(out var name))
+        {
+            if (Skip(TokenKind.Equal))
+            {
+                if (!ParseExpr(out var expr))
+                    return false;
+                ns.Push(name, expr);
+                return true;
+            }
+            var.Type = new TypeInst();
+            var.Type.Kind = TypeKind.Name;
+            var.Type.Name = name;
+            var.Type.Flags = TypeFlags.Var;
+        }
+        else if (ParseType(out var type))
+            var.Type = type;
+        else
+            return false;
+
+        if (!Expect(TokenKind.Colon))
+            return false;
+
+        if (!ParseIdent(out name))
+            return false;
+
+        var.Name = name;
+
+        if (Skip(TokenKind.Equal))
+            if (!ParseExpr(out var value))
+                return false;
+            else
+                var.Value = value;
+
+        if (!EndLine())
             return false;
 
         return true;

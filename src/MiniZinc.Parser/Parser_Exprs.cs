@@ -69,7 +69,7 @@ public partial class Parser
                 break;
 
             case TokenKind.OpenParen:
-                if (!ParseTupleLikeExpr(out expr))
+                if (!ParseParenExpr(out expr))
                     return false;
                 break;
 
@@ -96,12 +96,50 @@ public partial class Parser
                 break;
 
             case TokenKind.Identifier:
-                if (!ParseIdentiferLikeExpr(out expr))
+                if (!ParseIdentExpr(out expr))
                     return false;
                 break;
 
             default:
                 return Error();
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Parses a function call or generator call
+    /// </summary>
+    private bool ParseIdentExpr(out IExpr result)
+    {
+        result = Expr.Null;
+
+        if (!ParseString(out var name))
+            return false;
+
+        // Simple identifier
+        if (!Skip(TokenKind.OpenParen))
+        {
+            result = Expr.Ident(name);
+            return true;
+        }
+
+        // Parse the initial comma sep args so
+        var args = new List<IExpr>();
+        while (true)
+        {
+            if (!ParseExpr(out var expr))
+                return false;
+            args.Add(expr);
+            if (!Skip(TokenKind.Comma))
+                break;
+        }
+
+        // Standard call `max(1,2)`
+        if (!Skip(TokenKind.KeywordIn))
+        {
+            result = new CallExpr { Name = name, Args = args };
+            return Expect(TokenKind.CloseParen);
         }
 
         return true;
@@ -248,15 +286,9 @@ public partial class Parser
         return Error();
     }
 
-    private bool ParseIdentiferLikeExpr(out IExpr expr)
-    {
-        expr = null;
-        return Error();
-    }
-
     private bool ParseLetExpr(out LetExpr let)
     {
-        let = new LetExpr();
+        let = default;
 
         if (!Expect(TokenKind.KeywordLet))
             return false;
@@ -264,6 +296,7 @@ public partial class Parser
         if (!Expect(TokenKind.OpenBrace))
             return false;
 
+        let = new LetExpr();
         while (_token.Kind is not TokenKind.CloseBrace)
         {
             if (!ParseType(out var type))
@@ -296,7 +329,7 @@ public partial class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private bool ParseTupleLikeExpr(out IExpr result)
+    private bool ParseParenExpr(out IExpr result)
     {
         result = Expr.Null;
         if (!Expect(TokenKind.OpenParen))

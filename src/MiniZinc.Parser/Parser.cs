@@ -79,7 +79,7 @@ public sealed partial class Parser
     /// <summary>
     /// Read the current tokens string into the given variable
     /// </summary>
-    private bool ReadString(out string result, TokenKind kind = TokenKind.StringLiteral)
+    private bool ParseString(out string result, TokenKind kind = TokenKind.StringLiteral)
     {
         if (_kind == kind && _token.String is { } s)
         {
@@ -92,7 +92,7 @@ public sealed partial class Parser
         return Error($"Expected a {kind} token but encountered a {_kind}");
     }
 
-    private bool ReadName(out string name) => ReadString(out name, TokenKind.Identifier);
+    private bool ParseIdent(out string name) => ParseString(out name, TokenKind.Identifier);
 
     bool EndLine() => Expect(TokenKind.EOL);
 

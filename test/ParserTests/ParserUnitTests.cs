@@ -1,4 +1,6 @@
-﻿public class ParserUnitTests
+﻿using MiniZinc.Parser.Ast;
+
+public class ParserUnitTests
 {
     Parser Parse(string mzn)
     {
@@ -28,30 +30,26 @@
     void test_parse_include_item()
     {
         var parser = Parse("include \"xd.mzn\";");
-        parser.ParseIncludeItem();
-        parser.Model.Includes.Should().HaveCount(1);
+        var model = new Model();
+        parser.ParseIncludeItem(model);
+        model.Includes.Should().HaveCount(1);
     }
 
     [Fact]
     void test_parse_output_item()
     {
         var parser = Parse("output [];");
-        parser.ParseOutputItem();
-        parser.Model.Outputs.Should().HaveCount(1);
-    }
-    
-    [InlineData("a")]
-    void test_parse_expr(string mzn)
-    {
-        var parser = Parse("constraint a > 2;");
-        var cons = parser.ParseConstraintItem();
+        var model = new Model();
+        parser.ParseOutputItem(model);
+        model.Outputs.Should().HaveCount(1);
     }
 
     [Fact]
     void test_parse_constraint()
     {
         var parser = Parse("constraint a > 2;");
-        var cons = parser.ParseConstraintItem();
+        var ok = parser.ParseConstraintItem(out var con);
+        ok.Should().BeTrue();
     }
 
     [Theory]
@@ -60,7 +58,8 @@
     void test_parse_solve(string mzn)
     {
         var p = Parse(mzn);
-        p.ParseSolveItem();
-        p.Model.SolveItems.Should().NotBeNull();
+        var model = new Model();
+        p.ParseSolveItem(model);
+        model.SolveItems.Should().NotBeNull();
     }
 }

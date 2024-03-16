@@ -3,6 +3,14 @@
     <PropertyGroup>
         <RootNamespace>MiniZinc.Parser</RootNamespace>
     </PropertyGroup>
+            
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <NoWarn>1701;1702;1591</NoWarn>
+    </PropertyGroup>
+            
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <NoWarn>1701;1702;1591</NoWarn>
+    </PropertyGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="ParserTests" />

@@ -63,8 +63,9 @@ public partial class Parser
 
         arr = new ArrayType();
 
-        if (!ParseExprs(arr.Dimensions, TokenKind.OpenBracket, TokenKind.CloseBrace))
+        if (!ParseExprs(out var dims, TokenKind.OpenBracket, TokenKind.CloseBrace))
             return false;
+        arr.Dimensions = dims!;
 
         if (!Expect(TokenKind.KeywordOf))
             return false;
@@ -142,7 +143,7 @@ public partial class Parser
         if (!Expect(TokenKind.Colon))
             return false;
 
-        if (!ReadString(out var name))
+        if (!ParseString(out var name))
             return false;
 
         result = name.Bind(type);
@@ -219,16 +220,21 @@ public partial class Parser
         return Expect(TokenKind.CloseParen);
     }
 
+    private bool ParseArgs(out List<IExpr>? exprs) =>
+        ParseExprs(out exprs, TokenKind.OpenParen, TokenKind.CloseParen);
+
     /// <summary>
     /// Parse a comma separated list of expressions
     /// between parentheses
     /// </summary>
     /// <mzn>(1, 2, false)</mzn>
-    private bool ParseExprs(List<IExpr> exprs, TokenKind open, TokenKind close)
+    private bool ParseExprs(out List<IExpr>? exprs, TokenKind open, TokenKind close)
     {
+        exprs = null;
         if (!Expect(open))
             return false;
 
+        exprs = new List<IExpr>();
         while (_kind != close)
         {
             if (!ParseExpr(out var expr))

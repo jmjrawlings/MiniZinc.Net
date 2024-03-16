@@ -37,4 +37,6 @@ public static class Expr
             _ => item
         };
     }
+
+    public static IExpr Ident(string name) => new Identifer(name);
 }
