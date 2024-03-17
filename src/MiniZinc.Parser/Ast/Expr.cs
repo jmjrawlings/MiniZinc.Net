@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public static class Expr
+public record Expr
 {
     public static FloatLit Float(double f) => new FloatLit(f);
 
@@ -13,30 +13,6 @@ public static class Expr
     public static IExpr Null => new NullExpr();
 
     public static IExpr Bracketed(IExpr expr) => new BracketedExpr { Expr = expr };
-
-    public static UnaryOpExpr UnOp(Operator op, IExpr expr) =>
-        new UnaryOpExpr { Expr = expr, Op = op };
-
-    public static BinaryOpExpr BinOp(IExpr left, Operator op, IExpr right) =>
-        new BinaryOpExpr
-        {
-            Left = left,
-            Right = right,
-            Op = op
-        };
-
-    public static RangeExpr Range(IExpr? lower = null, IExpr? upper = null) =>
-        new RangeExpr { Lower = lower ?? Null, Upper = upper ?? Null };
-
-    public static T? CheckNull<T>(this T item)
-        where T : IExpr
-    {
-        return item switch
-        {
-            NullExpr => default,
-            _ => item
-        };
-    }
 
     public static IExpr Ident(string name) => new Identifer(name);
 }

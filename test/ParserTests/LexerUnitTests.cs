@@ -18,7 +18,7 @@
     [InlineData("aN4m3w1thnumb3r5")]
     public void Test_identifer(string mzn)
     {
-        TestTokens(mzn, TokenKind.Identifier);
+        TestTokens(mzn, TokenKind.IDENT);
     }
 
     [Fact]
@@ -26,11 +26,11 @@
     {
         TestTokens(
             "if else then constraint maximize",
-            TokenKind.KeywordIf,
-            TokenKind.KeywordElse,
-            TokenKind.KeywordThen,
-            TokenKind.KeywordConstraint,
-            TokenKind.KeywordMaximize
+            TokenKind.IF,
+            TokenKind.ELSE,
+            TokenKind.THEN,
+            TokenKind.CONSTRAINT,
+            TokenKind.MAXIMIZE
         );
     }
 
@@ -40,7 +40,7 @@
     [InlineData(""" "Escaped double \"quotes\" are fine" """)]
     void test_string_literal(string mzn)
     {
-        TestTokens(mzn, TokenKind.StringLiteral);
+        TestTokens(mzn, TokenKind.STRING_LIT);
     }
 
     [Theory]
@@ -50,7 +50,7 @@
     {
         var token = Lexer.LexString(mzn).First();
         token.Int.Should().Be(i);
-        token.Kind.Should().Be(TokenKind.IntLiteral);
+        token.Kind.Should().Be(TokenKind.INT_LIT);
     }
 
     [Theory]
@@ -60,14 +60,14 @@
     {
         var token = Lexer.LexString(mzn).First();
         token.Double.Should().Be(d);
-        token.Kind.Should().Be(TokenKind.FloatLiteral);
+        token.Kind.Should().Be(TokenKind.FLOAT_LIT);
     }
 
     [Theory]
     [InlineData("1..10")]
     void test_range_ti(string mzn)
     {
-        TestTokens(mzn, TokenKind.IntLiteral, TokenKind.DotDot, TokenKind.IntLiteral);
+        TestTokens(mzn, TokenKind.INT_LIT, TokenKind.DOT_DOT, TokenKind.INT_LIT);
     }
 
     [Theory]
@@ -76,23 +76,23 @@
     {
         TestTokens(
             mzn,
-            TokenKind.FloatLiteral,
-            TokenKind.DotDot,
-            TokenKind.FloatLiteral,
-            TokenKind.Dot,
-            TokenKind.IntLiteral
+            TokenKind.FLOAT_LIT,
+            TokenKind.DOT_DOT,
+            TokenKind.FLOAT_LIT,
+            TokenKind.DOT,
+            TokenKind.INT_LIT
         );
     }
 
     [Theory]
-    [InlineData("<", TokenKind.LessThan)]
-    [InlineData("<=", TokenKind.LessThanEqual)]
-    [InlineData("==", TokenKind.Equal)]
-    [InlineData("=", TokenKind.Equal)]
-    [InlineData(">=", TokenKind.GreaterThanEqual)]
-    [InlineData(">", TokenKind.GreaterThan)]
-    [InlineData("<>", TokenKind.Empty)]
-    [InlineData("_", TokenKind.Underscore)]
+    [InlineData("<", TokenKind.LESS_THAN)]
+    [InlineData("<=", TokenKind.LESS_THAN_EQUAL)]
+    [InlineData("==", TokenKind.EQUAL)]
+    [InlineData("=", TokenKind.EQUAL)]
+    [InlineData(">=", TokenKind.GREATER_THAN_EQUAL)]
+    [InlineData(">", TokenKind.GREATER_THAN)]
+    [InlineData("<>", TokenKind.EMPTY)]
+    [InlineData("_", TokenKind.UNDERSCORE)]
     void test_literals(string mzn, TokenKind tokenKind)
     {
         var token = Lexer.LexString(mzn).First();

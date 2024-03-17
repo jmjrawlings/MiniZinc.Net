@@ -1,8 +1,17 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record BinaryOpExpr : IExpr
+public readonly struct BinaryOpExpr : IExpr
 {
-    public IExpr Left { get; set; }
-    public Operator Op { get; set; }
-    public IExpr Right { get; set; }
+    public BinaryOpExpr(IExpr left, Operator op, string? id, IExpr right)
+    {
+        Left = left;
+        Op = op;
+        Name = id;
+        Right = right;
+    }
+
+    public IExpr Left { get; }
+    public Operator? Op { get; }
+    public string? Name { get; }
+    public IExpr Right { get; }
 }

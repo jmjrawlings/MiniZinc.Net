@@ -2,11 +2,11 @@
 
 public sealed record IfThenElseExpr : IExpr
 {
-    public IExpr If { get; set; }
+    public IExpr If;
 
-    public IExpr Then { get; set; }
+    public IExpr Then;
 
-    public List<ValueTuple<IExpr, IExpr>>? ElseIfs { get; set; }
+    public List<(IExpr @elseif, IExpr @then)>? ElseIfs { get; set; } = new();
 
     public IExpr? Else { get; set; }
 }

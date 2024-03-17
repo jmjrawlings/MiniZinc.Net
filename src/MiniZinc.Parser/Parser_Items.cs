@@ -17,33 +17,33 @@ public partial class Parser
 
         switch (_kind)
         {
-            case TokenKind.KeywordInclude:
+            case TokenKind.INCLUDE:
                 if (!ParseIncludeItem(model))
                     return false;
                 break;
 
-            case TokenKind.KeywordSolve:
+            case TokenKind.SOLVE:
                 if (!ParseSolveItem(model))
                     return false;
                 break;
 
-            case TokenKind.KeywordOutput:
+            case TokenKind.OUTPUT:
                 if (!ParseOutputItem(model))
                     return false;
                 break;
 
-            case TokenKind.KeywordEnum:
+            case TokenKind.ENUM:
                 if (!ParseEnumItem(model))
                     return false;
                 break;
 
-            case TokenKind.KeywordType:
+            case TokenKind.TYPE:
                 if (!ParseAliasItem(model))
                     return false;
                 break;
 
-            case TokenKind.BlockComment:
-            case TokenKind.LineComment:
+            case TokenKind.BLOCK_COMMENT:
+            case TokenKind.LINE_COMMENT:
                 Step();
                 break;
 
@@ -62,9 +62,9 @@ public partial class Parser
     /// <example>enum Dir = {N,S,E,W};</example>
     /// <example>enum Z = anon_enum(10);</example>
     /// <example>enum X = Q({1,2});</example>
-    private bool ParseEnumItem(Model model)
+    public bool ParseEnumItem(Model model)
     {
-        if (!Expect(TokenKind.KeywordEnum))
+        if (!Expect(TokenKind.ENUM))
             return false;
 
         if (!ParseIdent(out var name))
@@ -77,75 +77,75 @@ public partial class Parser
         if (Skip(TokenKind.EOL))
             return true;
 
-        if (!Expect(TokenKind.Equal))
+        if (!Expect(TokenKind.EQUAL))
             return false;
 
         cases:
         var @case = new EnumCase();
 
         // Named cases: 'enum Dir = {N,S,E,W};`
-        if (Skip(TokenKind.OpenBrace))
+        if (Skip(TokenKind.OPEN_BRACE))
         {
             @case.Type = EnumCaseType.Name;
             @case.Names = new List<string>();
-            while (_kind is not TokenKind.CloseBrace)
+            while (_kind is not TokenKind.CLOSE_BRACE)
             {
                 if (!ParseIdent(out name))
                     return false;
                 @case.Names.Add(name);
-                if (!Skip(TokenKind.Comma))
+                if (!Skip(TokenKind.COMMA))
                     break;
             }
 
-            if (!Expect(TokenKind.CloseParen))
+            if (!Expect(TokenKind.CLOSE_BRACE))
                 return false;
 
             goto end;
         }
 
         // Underscore enum `enum A = _(1..10);`
-        if (Skip(TokenKind.Underscore))
+        if (Skip(TokenKind.UNDERSCORE))
         {
             @case.Type = EnumCaseType.Underscore;
-            if (!Expect(TokenKind.OpenParen))
+            if (!Expect(TokenKind.OPEN_PAREN))
                 return false;
             if (!ParseExpr(out @case.Expr))
                 return false;
-            if (!Expect(TokenKind.CloseParen))
+            if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
             goto end;
         }
 
         // Anonymous enum: `anon_enum(10);`
-        if (Skip(TokenKind.KeywordAnonEnum))
+        if (Skip(TokenKind.ANONENUM))
         {
             @case.Type = EnumCaseType.Anonymous;
-            if (!Expect(TokenKind.OpenParen))
+            if (!Expect(TokenKind.OPEN_PAREN))
                 return false;
             if (!ParseExpr(out @case.Expr))
                 return false;
-            if (!Expect(TokenKind.CloseParen))
+            if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
             goto end;
         }
 
         // Complex enum: `C(1..10)`
-        if (ParseString(out name))
+        if (ParseIdent(out name))
         {
             @case.Type = EnumCaseType.Complex;
-            if (!Expect(TokenKind.OpenParen))
+            if (!Expect(TokenKind.OPEN_PAREN))
                 return false;
             if (!ParseExpr(out @case.Expr))
                 return false;
-            if (!Expect(TokenKind.CloseParen))
+            if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
             goto end;
         }
 
-        return false;
+        return Error("Expected an enum definition");
 
         end:
-        if (Skip(TokenKind.PlusPlus))
+        if (Skip(TokenKind.PLUS_PLUS))
             goto cases;
 
         model.NameSpace.Push(@enum.Name, @enum);
@@ -158,10 +158,12 @@ public partial class Parser
     /// <mzn>output ["The result is \(result)"];</mzn>
     public bool ParseOutputItem(Model model)
     {
-        if (!Expect(TokenKind.KeywordOutput))
+        if (!Expect(TokenKind.OUTPUT))
             return false;
+
         if (!ParseExpr(out var expr))
             return false;
+
         var output = new OutputItem { Expr = expr };
         model.Outputs.Add(output);
         return EndLine();
@@ -173,11 +175,11 @@ public partial class Parser
     /// <mzn>type X = 1 .. 10;</mzn>
     public bool ParseAliasItem(Model model)
     {
-        if (!Expect(TokenKind.KeywordType))
+        if (!Expect(TokenKind.TYPE))
             return false;
         if (!ParseString(out var name))
             return false;
-        if (!Expect(TokenKind.Equal))
+        if (!Expect(TokenKind.EQUAL))
             return false;
         if (!ParseType(out var type))
             return false;
@@ -191,7 +193,7 @@ public partial class Parser
     /// <mzn>include "utils.mzn"</mzn>
     public bool ParseIncludeItem(Model model)
     {
-        if (!Expect(TokenKind.KeywordInclude))
+        if (!Expect(TokenKind.INCLUDE))
             return false;
 
         if (!ParseString(out var path))
@@ -208,23 +210,23 @@ public partial class Parser
     /// <mzn>solve maximize a;</mzn>
     public bool ParseSolveItem(Model model)
     {
-        if (!Expect(TokenKind.KeywordSolve))
+        if (!Expect(TokenKind.SOLVE))
             return false;
 
         var item = new SolveItem();
         switch (_token.Kind)
         {
-            case TokenKind.KeywordSatisfy:
+            case TokenKind.SATISFY:
                 Step();
                 item.Method = SolveMethod.Satisfy;
                 break;
-            case TokenKind.KeywordMinimize:
+            case TokenKind.MINIMIZE:
                 Step();
                 item.Method = SolveMethod.Minimize;
                 if (!ParseExpr(out item.Objective))
                     return false;
                 break;
-            case TokenKind.KeywordMaximize:
+            case TokenKind.MAXIMIZE:
                 Step();
                 item.Method = SolveMethod.Maximize;
                 if (!ParseExpr(out item.Objective))
@@ -244,7 +246,7 @@ public partial class Parser
     public bool ParseConstraintItem(out ConstraintItem constraint)
     {
         constraint = new ConstraintItem();
-        if (!Expect(TokenKind.KeywordConstraint))
+        if (!Expect(TokenKind.CONSTRAINT))
             return false;
 
         if (!ParseExpr(out constraint.Expr))
@@ -264,7 +266,7 @@ public partial class Parser
 
         if (ParseIdent(out var name))
         {
-            if (Skip(TokenKind.Equal))
+            if (Skip(TokenKind.EQUAL))
             {
                 if (!ParseExpr(out var expr))
                     return false;
@@ -281,7 +283,7 @@ public partial class Parser
         else
             return false;
 
-        if (!Expect(TokenKind.Colon))
+        if (!Expect(TokenKind.COLON))
             return false;
 
         if (!ParseIdent(out name))
@@ -289,7 +291,7 @@ public partial class Parser
 
         var.Name = name;
 
-        if (Skip(TokenKind.Equal))
+        if (Skip(TokenKind.EQUAL))
             if (!ParseExpr(out var value))
                 return false;
             else

@@ -7,17 +7,17 @@ public partial class Parser
     public bool ParseBaseTypeInst(out TypeInst type)
     {
         var inst = TypeFlags.Par;
-        if (Skip(TokenKind.KeywordVar))
+        if (Skip(TokenKind.VAR))
             inst = TypeFlags.Var;
         else
-            Skip(TokenKind.KeywordPar);
+            Skip(TokenKind.PAR);
 
-        if (Skip(TokenKind.KeywordOpt))
+        if (Skip(TokenKind.OPT))
             inst |= TypeFlags.Opt;
 
-        if (Skip(TokenKind.KeywordSet))
+        if (Skip(TokenKind.SET))
         {
-            Expect(TokenKind.KeywordOf);
+            Expect(TokenKind.OF);
             inst |= TypeFlags.Set;
         }
 
@@ -35,10 +35,10 @@ public partial class Parser
     public bool ParseListType(out ArrayType type)
     {
         type = new ArrayType();
-        if (!Skip(TokenKind.KeywordList))
+        if (!Skip(TokenKind.LIST))
             return false;
 
-        if (!Expect(TokenKind.KeywordOf))
+        if (!Expect(TokenKind.OF))
             return false;
 
         var dim = new TypeInst { Kind = TypeKind.Int, Flags = TypeFlags.Par };
@@ -58,16 +58,16 @@ public partial class Parser
     public bool ParseArrayType(out ArrayType arr)
     {
         arr = default;
-        if (!Skip(TokenKind.KeywordArray))
+        if (!Skip(TokenKind.ARRAY))
             return false;
 
         arr = new ArrayType();
 
-        if (!ParseExprs(out var dims, TokenKind.OpenBracket, TokenKind.CloseBrace))
+        if (!ParseExprs(out var dims, TokenKind.OPEN_BRACKET, TokenKind.CLOSE_BRACE))
             return false;
         arr.Dimensions = dims!;
 
-        if (!Expect(TokenKind.KeywordOf))
+        if (!Expect(TokenKind.OF))
             return false;
 
         if (!ParseType(out var type))
@@ -82,38 +82,38 @@ public partial class Parser
         type = default;
         switch (_token.Kind)
         {
-            case TokenKind.KeywordInt:
+            case TokenKind.INT:
                 Step();
                 type = new TypeInst { Kind = TypeKind.Int };
                 break;
 
-            case TokenKind.KeywordBool:
+            case TokenKind.BOOL:
                 Step();
                 type = new TypeInst { Kind = TypeKind.Bool };
                 break;
 
-            case TokenKind.KeywordFloat:
+            case TokenKind.FLOAT:
                 Step();
                 type = new TypeInst { Kind = TypeKind.Float };
                 break;
 
-            case TokenKind.KeywordString:
+            case TokenKind.STRING:
                 Step();
                 type = new TypeInst { Kind = TypeKind.String };
                 break;
 
-            case TokenKind.KeywordAnn:
+            case TokenKind.ANN:
                 Step();
                 type = new TypeInst { Kind = TypeKind.Annotation };
                 break;
 
-            case TokenKind.KeywordRecord:
+            case TokenKind.RECORD:
                 if (!ParseRecordType(out var rec))
                     return false;
                 type = rec;
                 break;
 
-            case TokenKind.KeywordTuple:
+            case TokenKind.TUPLE:
                 if (!ParseTupleType(out var tup))
                     return false;
                 type = tup;
@@ -140,7 +140,7 @@ public partial class Parser
         if (!ParseType(out var type))
             return false;
 
-        if (!Expect(TokenKind.Colon))
+        if (!Expect(TokenKind.COLON))
             return false;
 
         if (!ParseString(out var name))
@@ -157,24 +157,24 @@ public partial class Parser
     private bool ParseTupleType(out TupleTypeInst tuple)
     {
         tuple = default;
-        if (!Skip(TokenKind.KeywordTuple))
+        if (!Skip(TokenKind.TUPLE))
             return false;
 
         tuple = new TupleTypeInst();
-        if (!Expect(TokenKind.OpenParen))
+        if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
-        while (_kind is not TokenKind.CloseParen)
+        while (_kind is not TokenKind.CLOSE_PAREN)
         {
             if (!ParseType(out var ti))
                 return false;
 
             tuple.Items.Add(ti);
-            if (!Skip(TokenKind.Comma))
+            if (!Skip(TokenKind.COMMA))
                 break;
         }
 
-        return Expect(TokenKind.CloseParen);
+        return Expect(TokenKind.CLOSE_PAREN);
     }
 
     /// <summary>
@@ -184,7 +184,7 @@ public partial class Parser
     private bool ParseRecordType(out RecordTypeInst record)
     {
         record = default;
-        if (!Skip(TokenKind.KeywordRecord))
+        if (!Skip(TokenKind.RECORD))
             return false;
         record = new RecordTypeInst();
 
@@ -202,10 +202,10 @@ public partial class Parser
     private bool ParseParameters(out List<Binding<TypeInst>> parameters)
     {
         parameters = null;
-        if (!Expect(TokenKind.OpenParen))
+        if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
-        if (_token.Kind is TokenKind.CloseParen)
+        if (_token.Kind is TokenKind.CLOSE_PAREN)
             goto end;
 
         next:
@@ -213,15 +213,15 @@ public partial class Parser
             return false;
 
         parameters = new List<Binding<TypeInst>> { type };
-        if (Skip(TokenKind.Comma))
+        if (Skip(TokenKind.COMMA))
             goto next;
 
         end:
-        return Expect(TokenKind.CloseParen);
+        return Expect(TokenKind.CLOSE_PAREN);
     }
 
     private bool ParseArgs(out List<IExpr>? exprs) =>
-        ParseExprs(out exprs, TokenKind.OpenParen, TokenKind.CloseParen);
+        ParseExprs(out exprs, TokenKind.OPEN_PAREN, TokenKind.CLOSE_PAREN);
 
     /// <summary>
     /// Parse a comma separated list of expressions
@@ -231,7 +231,7 @@ public partial class Parser
     private bool ParseExprs(out List<IExpr>? exprs, TokenKind open, TokenKind close)
     {
         exprs = null;
-        if (!Expect(open))
+        if (!Skip(open))
             return false;
 
         exprs = new List<IExpr>();
@@ -240,7 +240,7 @@ public partial class Parser
             if (!ParseExpr(out var expr))
                 return false;
             exprs.Add(expr);
-            if (!Skip(TokenKind.Comma))
+            if (!Skip(TokenKind.COMMA))
                 break;
         }
 
@@ -255,8 +255,8 @@ public partial class Parser
         type = default;
         switch (_token.Kind)
         {
-            case TokenKind.KeywordArray:
-            case TokenKind.KeywordList:
+            case TokenKind.ARRAY:
+            case TokenKind.LIST:
                 if (!ParseArrayType(out var arr))
                     return false;
                 type = arr;

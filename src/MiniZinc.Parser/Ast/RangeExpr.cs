@@ -1,7 +1,13 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed class RangeExpr : IExpr
+public readonly record struct RangeExpr : IExpr
 {
-    public IExpr Lower { get; set; }
-    public IExpr Upper { get; set; }
+    public RangeExpr(IExpr? lower = null, IExpr? upper = null)
+    {
+        Lower = lower;
+        Upper = upper;
+    }
+
+    public IExpr? Lower { get; }
+    public IExpr? Upper { get; }
 }

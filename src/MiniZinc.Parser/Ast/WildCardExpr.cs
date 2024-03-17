@@ -1,3 +1,3 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record WildCardExpr : IExpr { }
+public readonly struct WildCardExpr : IExpr { }

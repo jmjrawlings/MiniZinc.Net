@@ -1,7 +1,13 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record UnaryOpExpr : IExpr
+public readonly record struct UnaryOpExpr : IExpr
 {
-    public Operator Op { get; set; }
-    public IExpr Expr;
+    public UnaryOpExpr(Operator @operator, IExpr operand)
+    {
+        Operator = @operator;
+        Operand = operand;
+    }
+
+    public Operator Operator { get; }
+    public IExpr Operand { get; }
 }

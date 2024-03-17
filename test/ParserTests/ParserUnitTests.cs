@@ -1,5 +1,14 @@
 ﻿using MiniZinc.Parser.Ast;
 
+public static class ParserExtensions
+{
+    public static void Check(this Parser p)
+    {
+        if (p._error is { } err)
+            Assert.Fail(err);
+    }
+}
+
 public class ParserUnitTests
 {
     Parser Parse(string mzn)
@@ -44,12 +53,26 @@ public class ParserUnitTests
         model.Outputs.Should().HaveCount(1);
     }
 
+    [Theory]
+    [InlineData("enum Letters = {A, B, C};")]
+    [InlineData("enum Letters = {A, B, C} ++ {D, E, F};")]
+    [InlineData("enum Anon = _(1..10) ++ anon_enum(10);")]
+    [InlineData("enum Complex = C(1..10);")]
+    void test_parse_enum_item(string mzn)
+    {
+        var parser = Parse(mzn);
+        var model = new Model();
+        parser.ParseEnumItem(model);
+        parser.Check();
+        model.NameSpace.Count.Should().Be(1);
+    }
+
     [Fact]
     void test_parse_constraint()
     {
         var parser = Parse("constraint a > 2;");
-        var ok = parser.ParseConstraintItem(out var con);
-        ok.Should().BeTrue();
+        parser.ParseConstraintItem(out var con);
+        parser.Check();
     }
 
     [Theory]
@@ -61,5 +84,6 @@ public class ParserUnitTests
         var model = new Model();
         p.ParseSolveItem(model);
         model.SolveItems.Should().NotBeNull();
+        p.Check();
     }
 }

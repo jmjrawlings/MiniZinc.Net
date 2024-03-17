@@ -17,6 +17,7 @@ public sealed partial class Parser
     private int _bufferCount;
     private Token[] _buffer;
     private int _pos;
+    public string? _error;
     public TimeSpan Elapsed => _watch.Elapsed;
 
     internal Parser(IEnumerator<Token> tokens)
@@ -79,7 +80,7 @@ public sealed partial class Parser
     /// <summary>
     /// Read the current tokens string into the given variable
     /// </summary>
-    private bool ParseString(out string result, TokenKind kind = TokenKind.StringLiteral)
+    private bool ParseString(out string result, TokenKind kind = TokenKind.STRING_LIT)
     {
         if (_kind == kind && _token.String is { } s)
         {
@@ -92,7 +93,7 @@ public sealed partial class Parser
         return Error($"Expected a {kind} token but encountered a {_kind}");
     }
 
-    private bool ParseIdent(out string name) => ParseString(out name, TokenKind.Identifier);
+    private bool ParseIdent(out string name) => ParseString(out name, TokenKind.IDENT);
 
     bool EndLine() => Expect(TokenKind.EOL);
 
