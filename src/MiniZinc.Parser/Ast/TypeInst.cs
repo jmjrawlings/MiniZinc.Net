@@ -4,11 +4,11 @@ using Annotation = IExpr;
 
 public record TypeInst : IAnnotations, IExpr, INamed
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
-    public TypeKind Kind { get; set; }
+    public TypeKind Kind { get; set; } = TypeKind.Any;
 
-    public TypeFlags Flags { get; set; }
+    public TypeFlags Flags { get; set; } = TypeFlags.None;
 
     public List<Annotation>? Annotations { get; set; }
 

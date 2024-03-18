@@ -90,12 +90,10 @@ public sealed partial class Parser
         }
 
         result = string.Empty;
-        return Error($"Expected a {kind} token but encountered a {_kind}");
+        return false;
     }
 
     private bool ParseIdent(out string name) => ParseString(out name, TokenKind.IDENT);
-
-    bool EndLine() => Expect(TokenKind.EOL);
 
     // public bool ParseAssignItem(NameSpace<IExpr> ns)
     // {
@@ -144,17 +142,25 @@ public sealed partial class Parser
     //     ns.Push(func.Name, func);
     // }
 
-
-
-    /// Throw an error
+    /// Record the given message as an error and return false
     private bool Error(string? msg = null)
     {
+        if (_error is not null)
+            return false;
+
         _watch.Stop();
-        var exn =
-            $@"""w
-            An error occurred at Token {_kind} (Line {_token.Line} Col {_token.Col}):
-                {msg}
-            """;
+        var message =
+            $@"""
+An error occured after {Elapsed}
+Position {_pos}
+Token {_kind}
+Line {_token.Line}
+Column {_token.Col})
+---------------------------------------------
+{msg}
+---------------------------------------------
+""";
+        _error = message;
         return false;
     }
 }

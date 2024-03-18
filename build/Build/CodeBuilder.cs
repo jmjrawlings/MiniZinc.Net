@@ -12,6 +12,21 @@ public class CodeBuilder
     protected int _indent = 0;
     private readonly Stack<IDisposable> _context;
 
+    readonly struct Disposable : IDisposable
+    {
+        private readonly Action _action;
+
+        public Disposable(Action action)
+        {
+            _action = action;
+        }
+
+        public void Dispose()
+        {
+            _action();
+        }
+    }
+
     public CodeBuilder()
     {
         _sb = new();
@@ -46,6 +61,8 @@ public class CodeBuilder
         Append(';');
         Newline();
     }
+
+    public IDisposable If(string expr) => Block($"if ({expr})");
 
     public void WriteLt(string s)
     {

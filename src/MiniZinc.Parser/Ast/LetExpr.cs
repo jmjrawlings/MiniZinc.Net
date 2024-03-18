@@ -2,9 +2,9 @@
 
 public sealed record LetExpr : IExpr
 {
-    public List<TypeInst> Declares { get; set; } = new();
+    public NameSpace<IExpr>? NameSpace { get; set; }
 
-    public List<ConstraintItem> Constraints { get; set; } = new();
+    public List<ConstraintItem>? Constraints { get; set; }
 
-    public IExpr Body;
+    public IExpr Body { get; set; }
 }

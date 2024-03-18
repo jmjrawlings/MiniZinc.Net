@@ -17,6 +17,8 @@ Add(
 
 Add("--generate-lexer-tests", "Generate lexer tests", GenerateLexerTests.Run);
 
+Add("--generate-parser-tests", "Generate parser tests", GenerateParserTests.Run);
+
 var result = await root.InvokeAsync(args);
 return result;
 

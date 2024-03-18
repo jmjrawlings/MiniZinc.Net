@@ -57,13 +57,13 @@ public partial class Parser
     /// <mzn>array[X, 1..2} of var int</mzn>
     public bool ParseArrayType(out ArrayType arr)
     {
-        arr = default;
+        arr = default!;
         if (!Skip(TokenKind.ARRAY))
             return false;
 
         arr = new ArrayType();
 
-        if (!ParseExprs(out var dims, TokenKind.OPEN_BRACKET, TokenKind.CLOSE_BRACE))
+        if (!ParseExprs(out var dims, TokenKind.OPEN_BRACKET, TokenKind.CLOSE_BRACKET))
             return false;
         arr.Dimensions = dims!;
 
@@ -79,7 +79,7 @@ public partial class Parser
 
     private bool ParseBaseTypeTail(out TypeInst type)
     {
-        type = default;
+        type = default!;
         switch (_token.Kind)
         {
             case TokenKind.INT:
@@ -156,7 +156,7 @@ public partial class Parser
     /// <mzn>tuple(int, bool, tuple(int))</mzn>
     private bool ParseTupleType(out TupleTypeInst tuple)
     {
-        tuple = default;
+        tuple = default!;
         if (!Skip(TokenKind.TUPLE))
             return false;
 
@@ -183,7 +183,7 @@ public partial class Parser
     /// <mzn>record(int: a, bool: b)</mzn>
     private bool ParseRecordType(out RecordTypeInst record)
     {
-        record = default;
+        record = default!;
         if (!Skip(TokenKind.RECORD))
             return false;
         record = new RecordTypeInst();
@@ -201,7 +201,7 @@ public partial class Parser
     /// <mzn>(int: a, bool: b)</mzn>
     private bool ParseParameters(out List<Binding<TypeInst>> parameters)
     {
-        parameters = null;
+        parameters = default!;
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
@@ -252,7 +252,7 @@ public partial class Parser
 
     public bool ParseType(out TypeInst type)
     {
-        type = default;
+        type = default!;
         switch (_token.Kind)
         {
             case TokenKind.ARRAY:

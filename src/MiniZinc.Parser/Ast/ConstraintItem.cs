@@ -2,6 +2,6 @@
 
 public sealed record ConstraintItem : IExpr, IAnnotations
 {
-    public IExpr Expr;
+    public IExpr Expr { get; set; }
     public List<IExpr>? Annotations { get; set; }
 }

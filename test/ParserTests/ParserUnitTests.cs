@@ -15,6 +15,7 @@ public class ParserUnitTests
     {
         var lexer = Lexer.LexString(mzn);
         var parser = new Parser(lexer);
+        
         parser.Step();
         return parser;
     }
@@ -62,9 +63,7 @@ public class ParserUnitTests
     {
         var parser = Parse(mzn);
         var model = new Model();
-        parser.ParseEnumItem(model);
-        parser.Check();
-        model.NameSpace.Count.Should().Be(1);
+        parser.ParseEnumItem(out var @enum).Should().BeTrue();
     }
 
     [Fact]

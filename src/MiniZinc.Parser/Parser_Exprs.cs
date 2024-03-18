@@ -10,7 +10,7 @@ public partial class Parser
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
-    public bool ParseExpr(out IExpr expr)
+    public bool ParseExprAtom(out IExpr expr)
     {
         expr = Expr.Null;
 
@@ -107,7 +107,7 @@ public partial class Parser
                 break;
 
             default:
-                return Error();
+                return Error($"Unexpected {_kind} while parsing Expression Atom");
         }
 
         // Array access tail
@@ -117,16 +117,28 @@ public partial class Parser
         }
 
         if (_error is not null)
-            return Error(_error);
+            return false;
 
-        // Bin op tail
+        return true;
+    }
+
+    /// <summary>
+    /// Parse an Expression
+    /// </summary>
+    /// <mzn>a + b + 100</mzn>
+    /// <mzn>sum([1,2,3])</mzn>
+    /// <mzn>arr[1] * arr[2]</mzn>
+    public bool ParseExpr(out IExpr expr)
+    {
+        if (!ParseExprAtom(out expr))
+            return false;
+
         while (ParseBinOp(out var op, out var id))
         {
             if (!ParseExpr(out var right))
                 return false;
             expr = new BinaryOpExpr(expr, op, id, right);
         }
-
         return true;
     }
 
@@ -333,7 +345,7 @@ public partial class Parser
         IExpr element;
 
         // Empty Array
-        if (_token.Kind is TokenKind.CLOSE_BRACKET)
+        if (_kind is TokenKind.CLOSE_BRACKET)
         {
             result = new Array1DLit();
             return Expect(TokenKind.CLOSE_BRACKET);
@@ -349,7 +361,7 @@ public partial class Parser
 
             array_2d_row:
             arr2D.I = 0;
-            while (_token.Kind is not TokenKind.PIPE)
+            while (_kind is not TokenKind.PIPE)
             {
                 if (!ParseExpr(out element))
                     return false;
@@ -392,16 +404,20 @@ public partial class Parser
         var arr = new Array1DLit();
         result = arr;
         arr.Elements.Add(element);
-        while (_token.Kind is not TokenKind.CLOSE_BRACKET)
+
+        while (true)
         {
+            if (!Skip(TokenKind.COMMA))
+                return Expect(TokenKind.CLOSE_BRACKET);
+
+            if (Skip(TokenKind.CLOSE_BRACKET))
+                return true;
+
             if (!ParseExpr(out element))
                 return false;
-            arr.Elements.Add(element);
-            if (!Skip(TokenKind.COMMA))
-                break;
-        }
 
-        return Expect(TokenKind.CLOSE_BRACKET);
+            arr.Elements.Add(element);
+        }
     }
 
     /// <summary>
@@ -417,7 +433,7 @@ public partial class Parser
             return false;
 
         // Empty Set
-        if (_token.Kind is TokenKind.CLOSE_BRACE)
+        if (_kind is TokenKind.CLOSE_BRACE)
         {
             result = new SetLit();
             return Expect(TokenKind.CLOSE_BRACE);
@@ -442,7 +458,7 @@ public partial class Parser
         var set = new SetLit();
         result = set;
         set.Elements.Add(element);
-        while (_token.Kind is not TokenKind.CLOSE_BRACE)
+        while (_kind is not TokenKind.CLOSE_BRACE)
         {
             if (!ParseExpr(out var item))
                 return false;
@@ -461,7 +477,7 @@ public partial class Parser
 
     private bool ParseLetExpr(out LetExpr let)
     {
-        let = default;
+        let = default!;
 
         if (!Expect(TokenKind.LET))
             return false;
@@ -470,12 +486,20 @@ public partial class Parser
             return false;
 
         let = new LetExpr();
-        while (_token.Kind is not TokenKind.CLOSE_BRACE)
+        while (_kind is not TokenKind.CLOSE_BRACE)
         {
-            if (!ParseType(out var type))
+            if (ParseConstraintItem(out var cons))
+            {
+                let.Constraints ??= new List<ConstraintItem>();
+                let.Constraints.Add(cons);
+            }
+            else if (_error is not null)
+                return Error();
+
+            let.NameSpace ??= new NameSpace<IExpr>();
+            if (!ParseDeclareOrAssignItem(let.NameSpace))
                 return false;
 
-            let.Declares.Add(type);
             if (!Skip(TokenKind.EOL))
                 break;
         }
@@ -483,16 +507,17 @@ public partial class Parser
         if (!Expect(TokenKind.IN))
             return false;
 
-        if (!ParseExpr(out let.Body))
+        if (!ParseExpr(out var body))
             return false;
 
+        let.Body = body;
         return true;
     }
 
     private bool ParseIfThenCase(out IExpr @if, out IExpr @then, TokenKind ifKeyword)
     {
-        @if = default;
-        @then = default;
+        @if = default!;
+        @then = default!;
         if (!Skip(ifKeyword))
             return false;
 
@@ -515,7 +540,7 @@ public partial class Parser
     /// <mzn>if z then 100 else 200 endif</mzn>
     private bool ParseIfElseExpr(out IfThenElseExpr ite)
     {
-        ite = null;
+        ite = null!;
         if (!ParseIfThenCase(out var @if, out var @then, TokenKind.IF))
             return false;
 
@@ -606,7 +631,7 @@ public partial class Parser
 
     public bool ParseAnnotations(IAnnotations target)
     {
-        while (_token.Kind is TokenKind.COLON_COLON)
+        while (Skip(TokenKind.COLON_COLON))
         {
             if (!ParseAnnotation(out var ann))
                 return false;
@@ -617,5 +642,5 @@ public partial class Parser
         return true;
     }
 
-    public bool ParseAnnotation(out IExpr expr) => ParseExpr(out expr);
+    public bool ParseAnnotation(out IExpr expr) => ParseExprAtom(out expr);
 }

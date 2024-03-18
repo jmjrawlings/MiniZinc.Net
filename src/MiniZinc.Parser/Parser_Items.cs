@@ -22,6 +22,12 @@ public partial class Parser
                     return false;
                 break;
 
+            case TokenKind.CONSTRAINT:
+                if (!ParseConstraintItem(out var cons))
+                    return false;
+                model.Constraints.Add(cons);
+                break;
+
             case TokenKind.SOLVE:
                 if (!ParseSolveItem(model))
                     return false;
@@ -33,8 +39,9 @@ public partial class Parser
                 break;
 
             case TokenKind.ENUM:
-                if (!ParseEnumItem(model))
+                if (!ParseEnumItem(out var @enum))
                     return false;
+                model.NameSpace.Push(@enum.Name, @enum);
                 break;
 
             case TokenKind.TYPE:
@@ -62,15 +69,16 @@ public partial class Parser
     /// <example>enum Dir = {N,S,E,W};</example>
     /// <example>enum Z = anon_enum(10);</example>
     /// <example>enum X = Q({1,2});</example>
-    public bool ParseEnumItem(Model model)
+    public bool ParseEnumItem(out EnumDeclare @enum)
     {
+        @enum = default!;
         if (!Expect(TokenKind.ENUM))
             return false;
 
         if (!ParseIdent(out var name))
             return false;
 
-        var @enum = new EnumDeclare { Name = name };
+        @enum = new EnumDeclare { Name = name };
         if (!ParseAnnotations(@enum))
             return false;
 
@@ -148,8 +156,7 @@ public partial class Parser
         if (Skip(TokenKind.PLUS_PLUS))
             goto cases;
 
-        model.NameSpace.Push(@enum.Name, @enum);
-        return EndLine();
+        return Expect(TokenKind.EOL);
     }
 
     /// <summary>
@@ -166,7 +173,7 @@ public partial class Parser
 
         var output = new OutputItem { Expr = expr };
         model.Outputs.Add(output);
-        return EndLine();
+        return Expect(TokenKind.EOL);
     }
 
     /// <summary>
@@ -184,7 +191,7 @@ public partial class Parser
         if (!ParseType(out var type))
             return false;
         model.NameSpace.Push(name, type);
-        return EndLine();
+        return Expect(TokenKind.EOL);
     }
 
     /// <summary>
@@ -200,7 +207,7 @@ public partial class Parser
             return false;
 
         model.Includes.Add(path);
-        return EndLine();
+        return Expect(TokenKind.EOL);
     }
 
     /// <summary>
@@ -214,29 +221,36 @@ public partial class Parser
             return false;
 
         var item = new SolveItem();
+        IExpr objective = Expr.Null;
         switch (_token.Kind)
         {
             case TokenKind.SATISFY:
                 Step();
                 item.Method = SolveMethod.Satisfy;
+                item.Objective = Expr.Null;
                 break;
+
             case TokenKind.MINIMIZE:
                 Step();
                 item.Method = SolveMethod.Minimize;
-                if (!ParseExpr(out item.Objective))
+                if (!ParseExpr(out objective))
                     return false;
                 break;
+
             case TokenKind.MAXIMIZE:
                 Step();
                 item.Method = SolveMethod.Maximize;
-                if (!ParseExpr(out item.Objective))
+                if (!ParseExpr(out objective))
                     return false;
                 break;
+
             default:
                 return Error("Expected satisfy, minimize, or maximize");
         }
+
+        item.Objective = objective;
         model.SolveItems.Add(item);
-        return EndLine();
+        return Expect(TokenKind.EOL);
     }
 
     /// <summary>
@@ -246,13 +260,15 @@ public partial class Parser
     public bool ParseConstraintItem(out ConstraintItem constraint)
     {
         constraint = new ConstraintItem();
+
         if (!Expect(TokenKind.CONSTRAINT))
             return false;
 
-        if (!ParseExpr(out constraint.Expr))
+        if (!ParseExpr(out var expr))
             return false;
 
-        return true;
+        constraint.Expr = expr;
+        return Expect(TokenKind.EOL);
     }
 
     /// <summary>
@@ -262,7 +278,7 @@ public partial class Parser
     /// <mzn>set of var int: xd;</mzn>
     public bool ParseDeclareOrAssignItem(NameSpace<IExpr> ns)
     {
-        var var = new Variable();
+        Variable var;
 
         if (ParseIdent(out var name))
         {
@@ -270,18 +286,24 @@ public partial class Parser
             {
                 if (!ParseExpr(out var expr))
                     return false;
+
                 ns.Push(name, expr);
                 return true;
             }
+
+            var = new Variable();
             var.Type = new TypeInst();
             var.Type.Kind = TypeKind.Name;
             var.Type.Name = name;
             var.Type.Flags = TypeFlags.Var;
         }
         else if (ParseType(out var type))
+        {
+            var = new Variable();
             var.Type = type;
+        }
         else
-            return false;
+            return Error("Expected a variable declaration or assignment");
 
         if (!Expect(TokenKind.COLON))
             return false;
@@ -291,15 +313,21 @@ public partial class Parser
 
         var.Name = name;
 
-        if (Skip(TokenKind.EQUAL))
-            if (!ParseExpr(out var value))
-                return false;
-            else
-                var.Value = value;
-
-        if (!EndLine())
+        if (!ParseAnnotations(var))
             return false;
 
-        return true;
+        // Declaration only
+        if (Skip(TokenKind.EOL))
+            return true;
+
+        // Assignment
+        if (!Expect(TokenKind.EQUAL))
+            return false;
+
+        if (!ParseExpr(out var value))
+            return false;
+
+        var.Value = value;
+        return Expect(TokenKind.EOL);
     }
 }
