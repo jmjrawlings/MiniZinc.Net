@@ -1,11 +1,9 @@
 public sealed class ParserTests
 {
-    private static void Test(string path)
+    private void Test(string mzn)
     {
-        var mzn = File.ReadAllText(path);
-        var lexer = Lexer.LexString(mzn);
+        var lexer = Lexer.LexFile(mzn);
         var parser = new Parser(lexer);
-        parser.Step();
         parser.ParseModel(out var model);
         if (parser._error is { } err)
         {

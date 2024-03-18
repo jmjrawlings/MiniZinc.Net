@@ -293,8 +293,33 @@ public partial class Parser
     }
 
     /// <summary>
+    /// Parse comma seperated expressions until either
+    /// the close token is hit or no more commas are
+    /// encountered
+    /// </summary>
+    private bool ParseExprsUntil(TokenKind close, out List<IExpr>? exprs)
+    {
+        exprs = null;
+        while (_kind != close)
+        {
+            if (!ParseExpr(out var arg))
+                return false;
+
+            exprs ??= new List<IExpr>();
+            exprs.Add(arg);
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// Parses a function call or generator call
     /// </summary>
+    ///<mzn>constraint sum(xd) > 0;</mzn>
+    ///<mzn>constraint forall(i in 1..3)(xd[i] > 0);</mzn>
+    ///<mzn>constraint forall(i,j in 1..3)(xd[i] > 0);</mzn>
+    ///<mzn>constraint forall(i in 1..3, j in 1..3 where i > j)(xd[i] > 0);</mzn>
     private bool ParseIdentExpr(out IExpr result)
     {
         result = Expr.Null;
@@ -309,23 +334,117 @@ public partial class Parser
             return true;
         }
 
-        // Parse the initial comma sep args so
-        var args = new List<IExpr>();
-        while (true)
+        if (!ParseExprsUntil(TokenKind.CLOSE_PAREN, out var exprs))
+            return false;
+
+        if (!Expect(TokenKind.CLOSE_PAREN))
+            return false;
+
+        // Empty function call
+        if (exprs is null)
         {
-            if (!ParseExpr(out var expr))
-                return false;
-            args.Add(expr);
-            if (!Skip(TokenKind.COMMA))
-                break;
+            result = new CallExpr { Name = name };
+            return true;
         }
 
-        // Standard call `max(1,2)`
-        if (!Skip(TokenKind.IN))
+        // Standard function call, (no trailing gen call)
+        if (!Skip(TokenKind.OPEN_PAREN))
         {
-            result = new CallExpr { Name = name, Args = args };
-            return Expect(TokenKind.CLOSE_PAREN);
+            result = new CallExpr { Name = name, Args = exprs };
+            return true;
         }
+
+        // Must be generator
+        var gencall = new GenCallExpr { Name = name };
+
+        if (!Skip(TokenKind.IN))
+            return Error("Expected CLOSE_PAREN or IN for call expression");
+
+        // Unpack the names from the parsed args
+        var gen = new GeneratorExpr();
+        foreach (var expr in args)
+        {
+            if (expr is Identifer id)
+                gen.Names.Add(id.s);
+            else if (expr is WildCardExpr)
+                gen.Names.Add(null);
+            else
+                return Error(
+                    $"Unknown yield expression {expr} in generator. Expected an Identifer or Wildcard(_)"
+                );
+        }
+
+        if (!ParseExpr(out var @from))
+            return false;
+
+        gen.From = @from;
+
+        if (Skip(TokenKind.WHERE))
+            if (!ParseExpr(out var @where))
+                return false;
+            else
+                gen.Where = @where;
+
+        gencall.From.Add(gen);
+
+        if (Skip(TokenKind.COMMA))
+            if (!ParseGenerators(gencall.From))
+                return false;
+            else
+                return true;
+
+        if (!Expect(TokenKind.CLOSE_PAREN))
+            return false;
+
+        if (!Expect(TokenKind.OPEN_PAREN))
+            return false;
+
+        if (!ParseExpr(out var yields))
+            return false;
+
+        gencall.Yields = yields;
+        if (!Expect(TokenKind.CLOSE_PAREN))
+            return false;
+        return true;
+    }
+
+    private bool ParseGenerators(List<GeneratorExpr> generators)
+    {
+        begin:
+        var gen = new GeneratorExpr();
+        while (true)
+        {
+            if (ParseIdent(out var id))
+                gen.Names.Add(id);
+            else if (Skip(TokenKind.UNDERSCORE))
+                gen.Names.Add(null);
+            else
+                return Error("Expected identifier or underscore in generator names");
+
+            if (Skip(TokenKind.COMMA))
+                continue;
+
+            break;
+        }
+
+        if (!Expect(TokenKind.IN))
+            return false;
+
+        if (!ParseExpr(out var @from))
+            return false;
+
+        gen.From = @from;
+
+        if (Skip(TokenKind.WHERE))
+            if (!ParseExpr(out var @where))
+                return false;
+            else
+                gen.Where = @where;
+
+        generators.Add(gen);
+
+        if (Skip(TokenKind.COMMA))
+            goto begin;
 
         return true;
     }
@@ -468,11 +587,6 @@ public partial class Parser
                 break;
         }
         return Expect(TokenKind.CLOSE_BRACE);
-    }
-
-    private bool ParseGenerators(List<GeneratorExpr> generators)
-    {
-        return Error();
     }
 
     private bool ParseLetExpr(out LetExpr let)

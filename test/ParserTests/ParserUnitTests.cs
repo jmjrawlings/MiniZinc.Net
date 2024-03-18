@@ -15,7 +15,7 @@ public class ParserUnitTests
     {
         var lexer = Lexer.LexString(mzn);
         var parser = new Parser(lexer);
-        
+
         parser.Step();
         return parser;
     }
@@ -84,5 +84,17 @@ public class ParserUnitTests
         p.ParseSolveItem(model);
         model.SolveItems.Should().NotBeNull();
         p.Check();
+    }
+
+    [Theory]
+    [InlineData("constraint forall(i in 1..3)(xd[i] > 0)")]
+    [InlineData("constraint forall(i,j in 1..3)(xd[i] > 0)")]
+    [InlineData("constraint forall(i in 1..3, j in 1..3 where i > j)(xd[i] > 0)")]
+    void test_parse_gencall(string mzn)
+    {
+        var p = Parse(mzn);
+        p.ParseConstraintItem(out var cons);
+        if (cons.Expr is not GenCallExpr gencall)
+            Assert.Fail(p._error);
     }
 }
