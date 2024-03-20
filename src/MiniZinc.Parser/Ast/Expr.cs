@@ -16,5 +16,5 @@ public record Expr
 
     public static IExpr Bracketed(IExpr expr) => new BracketedExpr { Expr = expr };
 
-    public static IExpr Ident(string name) => new Identifer(name);
+    public static Identifer Ident(string name) => new Identifer(name);
 }

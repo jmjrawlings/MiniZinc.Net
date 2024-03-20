@@ -315,8 +315,6 @@ public partial class Parser
         return true;
     }
 
-    private static List<Identifer> _identifiers = new List<Identifer>();
-
     /// <summary>
     /// Parses an expression that begins with an identifier.
     /// This could be one of:
@@ -367,6 +365,7 @@ public partial class Parser
         var exprs = new List<IExpr>();
         bool maybeGen = true;
         bool isGen = false;
+        int i = 0;
 
         next:
         if (!ParseExpr(out var expr))
@@ -375,14 +374,13 @@ public partial class Parser
         switch (expr)
         {
             // Identifier are valid in either call or gencall
-            case Identifer:
+            case Identifer id:
                 exprs.Add(expr);
                 break;
 
             // `in` expressions involving identifiers could mean a gencall
             case BinaryOpExpr { Op: Operator.In, Left: Identifer id, Right: { } from }
                 when maybeGen:
-
                 if (!Skip(TokenKind.WHERE))
                 {
                     exprs.Add(expr);
@@ -394,12 +392,8 @@ public partial class Parser
                 if (!ParseExpr(out var where))
                     return false;
 
-                expr = new GeneratorExpr
-                {
-                    From = from,
-                    Names = exprs,
-                    Where = where
-                };
+                expr = new GeneratorExpr { From = from, Where = where };
+                exprs.Add(id);
                 exprs.Add(expr);
                 break;
 
@@ -432,22 +426,55 @@ public partial class Parser
         }
 
         // Could be a gencall if followed by (
-        if (!isGen && !Skip(TokenKind.OPEN_PAREN))
+        if (!isGen && _kind is not TokenKind.OPEN_PAREN)
         {
             result = new CallExpr { Name = name, Args = exprs };
             return true;
         }
 
-        // At this point it is for sure a gencall
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
         if (!ParseExpr(out var yields))
             return false;
 
-        var gencall = new GenCallExpr { Name = name, Yields = yields };
+        var generators = new List<GeneratorExpr>();
+        var gencall = new GenCallExpr
+        {
+            Name = name,
+            From = generators,
+            Yields = yields
+        };
+
+        List<Identifer>? idents = null;
+        for (i = 0; i < exprs.Count; i++)
+        {
+            switch (exprs[i])
+            {
+                // Identifiers must be collected as they are part of generators
+                case Identifer id:
+                    idents ??= new List<Identifer>();
+                    idents.Add(id);
+                    break;
+                // Already created generators get added
+                case GeneratorExpr g:
+                    g.Names = idents!;
+                    idents = null;
+                    generators.Add(g);
+                    break;
+                // Binops are now known to be generators
+                case BinaryOpExpr binop:
+                    idents ??= new List<Identifer>();
+                    idents.Add((Identifer)binop.Left);
+                    var gen = new GeneratorExpr();
+                    gen.Names = idents;
+                    gen.From = binop.Right;
+                    generators.Add(gen);
+                    idents = null;
+                    break;
+            }
+        }
         result = gencall;
-        // TODO - add generators to the gencall
         return true;
     }
 
