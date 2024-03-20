@@ -60,18 +60,18 @@ public partial class Parser
                 break;
 
             case TokenKind.INT_LIT:
-                Step();
                 expr = Expr.Int(_token.Int);
+                Step();
                 break;
 
             case TokenKind.FLOAT_LIT:
-                Step();
                 expr = Expr.Float(_token.Double);
+                Step();
                 break;
 
             case TokenKind.STRING_LIT:
-                Step();
                 expr = Expr.String(_token.String!);
+                Step();
                 break;
 
             case TokenKind.OPEN_PAREN:
@@ -289,6 +289,8 @@ public partial class Parser
             default:
                 return false;
         }
+
+        Step();
         return true;
     }
 
@@ -313,14 +315,22 @@ public partial class Parser
         return true;
     }
 
+    private static List<Identifer> _identifiers = new List<Identifer>();
+
     /// <summary>
-    /// Parses a function call or generator call
+    /// Parses an expression that begins with an identifier.
+    /// This could be one of:
+    ///  - identifier
+    ///  - function call
+    ///  - generator call
     /// </summary>
-    ///<mzn>constraint sum(xd) > 0;</mzn>
-    ///<mzn>constraint forall(i in 1..3)(xd[i] > 0);</mzn>
-    ///<mzn>constraint forall(i,j in 1..3)(xd[i] > 0);</mzn>
-    ///<mzn>constraint forall(i in 1..3, j in 1..3 where i > j)(xd[i] > 0);</mzn>
-    private bool ParseIdentExpr(out IExpr result)
+    /// <mzn>hello</mzn>
+    ///<mzn>something()</mzn>
+    ///<mzn>sum(xd)</mzn>
+    ///<mzn>forall(i in 1..3)(xd[i] > 0);</mzn>
+    ///<mzn>forall(i,j in 1..3)(xd[i] > 0);</mzn>
+    ///<mzn>forall(i in 1..3, j in 1..3 where i > j)(xd[i]);</mzn>
+    public bool ParseIdentExpr(out IExpr result)
     {
         result = Expr.Null;
 
@@ -334,77 +344,110 @@ public partial class Parser
             return true;
         }
 
-        if (!ParseExprsUntil(TokenKind.CLOSE_PAREN, out var exprs))
-            return false;
-
-        if (!Expect(TokenKind.CLOSE_PAREN))
-            return false;
-
-        // Empty function call
-        if (exprs is null)
+        // Function call without arguments
+        if (Skip(TokenKind.CLOSE_PAREN))
         {
             result = new CallExpr { Name = name };
             return true;
         }
 
-        // Standard function call, (no trailing gen call)
-        if (!Skip(TokenKind.OPEN_PAREN))
+        /* This part is tricky because we need to determine
+         * whether the call is a standard function call
+         * like `max([1,2,3])` or a generator call like
+         * `forall(x in 1..3 where x > 1)(xs[x])`
+         *
+         * Since something like `x in 1..3` could be either
+         * a generator tail expr or a boolean expr we can't
+         * correctly identify call versus gen-call until
+         * later on.
+         *
+         * Backtracking would make this trivial but I think that's
+         * more trouble than it's worth.
+         */
+        var exprs = new List<IExpr>();
+        bool maybeGen = true;
+        bool isGen = false;
+
+        next:
+        if (!ParseExpr(out var expr))
+            return false;
+
+        switch (expr)
+        {
+            // Identifier are valid in either call or gencall
+            case Identifer:
+                exprs.Add(expr);
+                break;
+
+            // `in` expressions involving identifiers could mean a gencall
+            case BinaryOpExpr { Op: Operator.In, Left: Identifer id, Right: { } from }
+                when maybeGen:
+
+                if (!Skip(TokenKind.WHERE))
+                {
+                    exprs.Add(expr);
+                    break;
+                }
+
+                // The where indicates this definitely is a gencall
+                isGen = true;
+                if (!ParseExpr(out var where))
+                    return false;
+
+                expr = new GeneratorExpr
+                {
+                    From = from,
+                    Names = exprs,
+                    Where = where
+                };
+                exprs.Add(expr);
+                break;
+
+            default:
+                if (isGen)
+                    return Error($"Unexpected {expr} while parsing a gen-call");
+                if (maybeGen)
+                    maybeGen = false;
+                exprs.Add(expr);
+                break;
+        }
+
+        if (Skip(TokenKind.COMMA))
+        {
+            if (isGen)
+                goto next;
+
+            if (_kind is not TokenKind.CLOSE_PAREN)
+                goto next;
+        }
+
+        if (!Expect(TokenKind.CLOSE_PAREN))
+            return false;
+
+        // For sure it's just a call
+        if (!maybeGen)
         {
             result = new CallExpr { Name = name, Args = exprs };
             return true;
         }
 
-        // Must be generator
-        var gencall = new GenCallExpr { Name = name };
-
-        if (!Skip(TokenKind.IN))
-            return Error("Expected CLOSE_PAREN or IN for call expression");
-
-        // Unpack the names from the parsed args
-        var gen = new GeneratorExpr();
-        foreach (var expr in args)
+        // Could be a gencall if followed by (
+        if (!isGen && !Skip(TokenKind.OPEN_PAREN))
         {
-            if (expr is Identifer id)
-                gen.Names.Add(id.s);
-            else if (expr is WildCardExpr)
-                gen.Names.Add(null);
-            else
-                return Error(
-                    $"Unknown yield expression {expr} in generator. Expected an Identifer or Wildcard(_)"
-                );
+            result = new CallExpr { Name = name, Args = exprs };
+            return true;
         }
 
-        if (!ParseExpr(out var @from))
-            return false;
-
-        gen.From = @from;
-
-        if (Skip(TokenKind.WHERE))
-            if (!ParseExpr(out var @where))
-                return false;
-            else
-                gen.Where = @where;
-
-        gencall.From.Add(gen);
-
-        if (Skip(TokenKind.COMMA))
-            if (!ParseGenerators(gencall.From))
-                return false;
-            else
-                return true;
-
-        if (!Expect(TokenKind.CLOSE_PAREN))
-            return false;
-
+        // At this point it is for sure a gencall
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
         if (!ParseExpr(out var yields))
             return false;
 
-        gencall.Yields = yields;
-        if (!Expect(TokenKind.CLOSE_PAREN))
-            return false;
+        var gencall = new GenCallExpr { Name = name, Yields = yields };
+        result = gencall;
+        // TODO - add generators to the gencall
         return true;
     }
 
@@ -414,13 +457,9 @@ public partial class Parser
         var gen = new GeneratorExpr();
         while (true)
         {
-            if (ParseIdent(out var id))
-                gen.Names.Add(id);
-            else if (Skip(TokenKind.UNDERSCORE))
-                gen.Names.Add(null);
-            else
-                return Error("Expected identifier or underscore in generator names");
-
+            if (!ParseIdent(out var id))
+                return Error("Expected identifier in generator names");
+            gen.Names.Add(Expr.Ident(id));
             if (Skip(TokenKind.COMMA))
                 continue;
 

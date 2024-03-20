@@ -87,14 +87,14 @@ public class ParserUnitTests
     }
 
     [Theory]
-    [InlineData("constraint forall(i in 1..3)(xd[i] > 0)")]
-    [InlineData("constraint forall(i,j in 1..3)(xd[i] > 0)")]
-    [InlineData("constraint forall(i in 1..3, j in 1..3 where i > j)(xd[i] > 0)")]
+    [InlineData("forall(i in 1..3)(xd[i] > 0)")]
+    [InlineData("forall(i,j in 1..3)(xd[i] > 0)")]
+    [InlineData("forall(i in 1..3, j in 1..3 where i > j)(xd[i] > 0)")]
     void test_parse_gencall(string mzn)
     {
         var p = Parse(mzn);
-        p.ParseConstraintItem(out var cons);
-        if (cons.Expr is not GenCallExpr gencall)
+        p.ParseIdentExpr(out var expr);
+        if (expr is not GenCallExpr gencall)
             Assert.Fail(p._error);
     }
 }

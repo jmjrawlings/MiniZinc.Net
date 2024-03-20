@@ -2,7 +2,7 @@
 
 public sealed record GeneratorExpr : IExpr
 {
-    public List<string?> Names { get; set; }
+    public List<IExpr> Names { get; set; }
 
     public IExpr From { get; set; }
 

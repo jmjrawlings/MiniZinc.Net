@@ -10,6 +10,8 @@ public record Expr
 
     public static StringLit String(string s) => new StringLit(s);
 
+    public static IExpr Wildcard => new WildCardExpr();
+
     public static IExpr Null => new NullExpr();
 
     public static IExpr Bracketed(IExpr expr) => new BracketedExpr { Expr = expr };
