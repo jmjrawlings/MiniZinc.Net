@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using System.Runtime.InteropServices;
+
+namespace MiniZinc.Parser;
 
 using Ast;
 
@@ -61,11 +63,19 @@ public partial class Parser
         if (!Skip(TokenKind.ARRAY))
             return false;
 
+        var dims = new List<IExpr>();
         arr = new ArrayType();
-
-        if (!ParseExprs(out var dims, TokenKind.OPEN_BRACKET, TokenKind.CLOSE_BRACKET))
+        arr.Dimensions = dims;
+        if (!Skip(TokenKind.OPEN_BRACKET))
             return false;
-        arr.Dimensions = dims!;
+        next:
+        if (!ParseBaseTypeInst(out var expr))
+            return false;
+        dims.Add(expr);
+        if (Skip(TokenKind.COMMA))
+            goto next;
+        if (!Expect(TokenKind.CLOSE_BRACKET))
+            return false;
 
         if (!Expect(TokenKind.OF))
             return false;
@@ -199,9 +209,9 @@ public partial class Parser
     /// and names between parentheses
     /// </summary>
     /// <mzn>(int: a, bool: b)</mzn>
-    private bool ParseParameters(out List<Binding<TypeInst>> parameters)
+    private bool ParseParameters(out List<Binding<TypeInst>>? parameters)
     {
-        parameters = default!;
+        parameters = default;
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 

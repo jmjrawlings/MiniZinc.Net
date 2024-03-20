@@ -222,6 +222,10 @@ public partial class Parser
             return false;
 
         var item = new SolveItem();
+
+        if (!ParseAnnotations(item))
+            return false;
+
         IExpr objective = Expr.Null;
         switch (_token.Kind)
         {
@@ -262,7 +266,7 @@ public partial class Parser
     {
         constraint = new ConstraintItem();
 
-        if (!Expect(TokenKind.CONSTRAINT))
+        if (!Skip(TokenKind.CONSTRAINT))
             return false;
 
         if (!ParseExpr(out var expr))
@@ -292,27 +296,59 @@ public partial class Parser
                 return Expect(TokenKind.EOL);
             }
 
+            var = new Variable
+            {
+                Type = new TypeInst
+                {
+                    Kind = TypeKind.Name,
+                    Name = name,
+                    Flags = TypeFlags.Var
+                }
+            };
+            if (!Expect(TokenKind.COLON))
+                return false;
+        }
+        else if (Skip(TokenKind.FUNCTION))
+        {
+            if (!ParseType(out var type))
+                return false;
+
             var = new Variable();
-            var.Type = new TypeInst();
-            var.Type.Kind = TypeKind.Name;
-            var.Type.Name = name;
-            var.Type.Flags = TypeFlags.Var;
+            var.Name = name;
+            var.Type = type;
+            var.IsFunction = true;
+            if (!Expect(TokenKind.COLON))
+                return false;
+        }
+        else if (Skip(TokenKind.PREDICATE))
+        {
+            if (!ParseIdent(out name))
+                return false;
+
+            var = new Variable();
+            var.Type = new TypeInst { Kind = TypeKind.Bool, Flags = TypeFlags.Var };
+            var.IsFunction = true;
         }
         else if (ParseType(out var type))
         {
-            var = new Variable();
-            var.Type = type;
+            var = new Variable { Type = type };
+            if (!Expect(TokenKind.COLON))
+                return false;
         }
         else
+        {
             return Error("Expected a variable declaration or assignment");
-
-        if (!Expect(TokenKind.COLON))
-            return false;
+        }
 
         if (!ParseIdent(out name))
             return false;
-
         var.Name = name;
+
+        if (var.IsFunction)
+            if (!ParseParameters(out var pars))
+                return false;
+            else
+                var.Parameters = pars;
 
         if (!ParseAnnotations(var))
             return false;
@@ -328,7 +364,7 @@ public partial class Parser
         if (!ParseExpr(out var value))
             return false;
 
-        var.Value = value;
+        var.Body = value;
         return Expect(TokenKind.EOL);
     }
 }

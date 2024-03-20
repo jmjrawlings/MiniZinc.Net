@@ -438,6 +438,9 @@ public partial class Parser
         if (!ParseExpr(out var yields))
             return false;
 
+        if (!Expect(TokenKind.CLOSE_PAREN))
+            return false;
+
         var generators = new List<GeneratorExpr>();
         var gencall = new GenCallExpr
         {
@@ -481,7 +484,7 @@ public partial class Parser
     private bool ParseGenerators(List<GeneratorExpr> generators)
     {
         begin:
-        var gen = new GeneratorExpr();
+        var gen = new GeneratorExpr { Names = new List<Identifer>() };
         while (true)
         {
             if (!ParseIdent(out var id))
@@ -631,7 +634,12 @@ public partial class Parser
         // Set comprehension
         if (Skip(TokenKind.PIPE))
         {
-            var comp = new CompExpr { Yields = element, IsSet = true };
+            var comp = new CompExpr
+            {
+                Yields = element,
+                IsSet = true,
+                From = new List<GeneratorExpr>()
+            };
             if (!ParseGenerators(comp.From))
                 return false;
 
@@ -680,8 +688,9 @@ public partial class Parser
             if (!ParseDeclareOrAssignItem(let.NameSpace))
                 return false;
 
-            if (!Skip(TokenKind.EOL))
-                break;
+            if (Skip(TokenKind.EOL) || Skip(TokenKind.COMMA))
+                continue;
+            break;
         }
 
         if (!Expect(TokenKind.IN))
@@ -741,6 +750,9 @@ public partial class Parser
             return false;
 
         ite.Else = @else;
+        if (!Expect(TokenKind.ENDIF))
+            return false;
+
         return true;
     }
 

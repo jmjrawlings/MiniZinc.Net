@@ -2,17 +2,6 @@
 
 internal enum TokenKind : sbyte
 {
-    // Nodes
-    IDENT,
-    POLYMORPHIC,
-    INT_LIT,
-    FLOAT_LIT,
-    STRING_LIT,
-    LINE_COMMENT,
-    BLOCK_COMMENT,
-    QUOTED_IDENT,
-    QUOTED_OP,
-
     // Keywords
     ANNOTATION,
     ANN,
@@ -66,6 +55,17 @@ internal enum TokenKind : sbyte
     VAR,
     WHERE,
     XOR,
+
+    // Nodes
+    IDENT,
+    POLYMORPHIC,
+    INT_LIT,
+    FLOAT_LIT,
+    STRING_LIT,
+    LINE_COMMENT,
+    BLOCK_COMMENT,
+    QUOTED_IDENT,
+    QUOTED_OP,
 
     // Binary Ops
     DOUBLE_ARROW,

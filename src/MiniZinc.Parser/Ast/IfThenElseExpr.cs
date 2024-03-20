@@ -2,9 +2,9 @@
 
 public sealed record IfThenElseExpr : IExpr
 {
-    public IExpr If;
+    public IExpr If { get; set; }
 
-    public IExpr Then;
+    public IExpr Then { get; set; }
 
     public List<(IExpr @elseif, IExpr @then)>? ElseIfs { get; set; } = new();
 

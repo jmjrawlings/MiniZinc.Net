@@ -48,7 +48,7 @@ public sealed partial class Parser
         _bufferIndex = 0;
         _bufferCount = 0;
 
-        while (_bufferCount <= _buffer.Length && _tokens.MoveNext())
+        while (_bufferCount < _buffer.Length && _tokens.MoveNext())
             _buffer[_bufferCount++] = _tokens.Current;
 
         _pos++;

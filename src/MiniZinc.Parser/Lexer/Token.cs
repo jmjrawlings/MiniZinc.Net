@@ -20,6 +20,8 @@ internal readonly struct Token(
     public readonly string? String = s;
     public readonly double Double = d;
 
+    public bool IsKeyword => Kind <= TokenKind.XOR;
+
     internal static string KindString(TokenKind kind) =>
         kind switch
         {

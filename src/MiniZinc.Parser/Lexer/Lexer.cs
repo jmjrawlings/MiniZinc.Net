@@ -100,8 +100,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 if (!LexBlockComment())
                     goto next;
                 break;
+            case FWD_SLASH when Skip(BACK_SLASH):
+                Token(TokenKind.UP_WEDGE);
+                break;
             case FWD_SLASH:
                 Token(TokenKind.FWDSLASH);
+                break;
+            case BACK_SLASH when Skip(FWD_SLASH):
+                Token(TokenKind.DOWN_WEDGE);
                 break;
             case BACK_SLASH:
                 Token(TokenKind.BACKSLASH);
