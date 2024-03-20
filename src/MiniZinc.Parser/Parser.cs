@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using System.Text;
+
+namespace MiniZinc.Parser;
 
 using System.Diagnostics;
 using Ast;
@@ -149,17 +151,30 @@ public sealed partial class Parser
             return false;
 
         _watch.Stop();
-        var message =
-            $@"""
-An error occured after {Elapsed}
-Position {_pos}
-Token {_kind}
-Line {_token.Line}
-Column {_token.Col})
----------------------------------------------
-{msg}
----------------------------------------------
-""";
+        var sb = new StringBuilder();
+        for (int i = 0; i <= _bufferIndex; i++)
+        {
+            var token = _buffer[i];
+            sb.Append(token.ToString());
+            sb.Append(' ');
+            if (token.Kind is TokenKind.EOL)
+                sb.AppendLine();
+        }
+
+        var trace = sb.ToString();
+
+        var message = $"""
+             An error occured after {Elapsed}
+             Position {_pos}
+             Token {_kind}
+             Line {_token.Line}
+             Column {_token.Col})
+             ---------------------------------------------
+             {msg}
+             ---------------------------------------------
+             {trace}
+             """;
+
         _error = message;
         return false;
     }

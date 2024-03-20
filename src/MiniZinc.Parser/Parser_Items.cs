@@ -11,6 +11,7 @@ public partial class Parser
     public bool ParseModel(out Model model)
     {
         model = new Model();
+        Step();
         next:
         if (Skip(TokenKind.EOF))
             return true;
@@ -288,7 +289,7 @@ public partial class Parser
                     return false;
 
                 ns.Push(name, expr);
-                return true;
+                return Expect(TokenKind.EOL);
             }
 
             var = new Variable();

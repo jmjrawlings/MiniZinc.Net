@@ -59,7 +59,8 @@ internal static class Keyword
 
     static void Add(TokenKind kind)
     {
-        Lookup[Token.KindString(kind)] = kind;
+        var key = Token.KindString(kind);
+        Lookup[key] = kind;
     }
 
     static Keyword()
