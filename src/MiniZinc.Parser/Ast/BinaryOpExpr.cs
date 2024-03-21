@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public readonly struct BinaryOpExpr : IExpr
+public readonly struct BinaryOpExpr : INode
 {
-    public BinaryOpExpr(IExpr left, Operator op, string? id, IExpr right)
+    public BinaryOpExpr(INode left, Operator op, string? id, INode right)
     {
         Left = left;
         Op = op;
@@ -10,8 +10,8 @@ public readonly struct BinaryOpExpr : IExpr
         Right = right;
     }
 
-    public IExpr Left { get; }
+    public INode Left { get; }
     public Operator? Op { get; }
     public string? Name { get; }
-    public IExpr Right { get; }
+    public INode Right { get; }
 }

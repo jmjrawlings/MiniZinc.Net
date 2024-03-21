@@ -3,9 +3,9 @@
 /// <summary>
 /// An array or set comprehension
 /// </summary>
-public record CompExpr : IExpr
+public record CompExpr : Expr
 {
-    public IExpr Yields { get; set; }
+    public INode Expr { get; set; }
+    public List<GeneratorExpr> Generators { get; set; }
     public bool IsSet { get; set; }
-    public List<GeneratorExpr> From { get; set; }
 }

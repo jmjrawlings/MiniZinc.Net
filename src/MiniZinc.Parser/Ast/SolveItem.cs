@@ -3,9 +3,8 @@
 /// <summary>
 /// solve maximize a;
 /// </summary>
-public record SolveItem : IAnnotations
+public record SolveItem : Expr
 {
     public SolveMethod Method { get; set; }
-    public List<IExpr>? Annotations { get; set; }
-    public IExpr Objective { get; set; }
+    public INode Objective { get; set; }
 }

@@ -2,9 +2,9 @@
 
 public static class Extensions
 {
-    public static void Annotate(this IAnnotations x, IExpr expr)
+    public static void Annotate(this IAnnotations x, INode expr)
     {
-        x.Annotations ??= new List<IExpr>(4);
+        x.Annotations ??= new List<INode>(4);
         x.Annotations.Add(expr);
     }
 }

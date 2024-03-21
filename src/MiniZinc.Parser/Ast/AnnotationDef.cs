@@ -6,5 +6,5 @@ public sealed record AnnotationDef : INamed
 
     public List<Variable>? Params { get; set; }
 
-    public IExpr? Body { get; set; }
+    public INode? Body { get; set; }
 }

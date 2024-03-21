@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record TupleExpr : IExpr
+public sealed record TupleExpr : Expr
 {
-    public List<IExpr> Exprs { get; set; } = new();
+    public List<INode> Exprs { get; set; } = new();
 }

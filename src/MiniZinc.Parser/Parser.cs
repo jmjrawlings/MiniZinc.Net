@@ -1,9 +1,7 @@
-﻿using System.Text;
-
-namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser;
 
 using System.Diagnostics;
-using Ast;
+using System.Text;
 
 /// <summary>
 /// Parses a MiniZinc AST from the given stream of tokens
@@ -19,7 +17,7 @@ public sealed partial class Parser
     private int _bufferCount;
     private Token[] _buffer;
     private int _pos;
-    public string? _error;
+    public string? Err;
     public TimeSpan Elapsed => _watch.Elapsed;
 
     internal Parser(IEnumerator<Token> tokens)
@@ -97,57 +95,10 @@ public sealed partial class Parser
 
     private bool ParseIdent(out string name) => ParseString(out name, TokenKind.IDENT);
 
-    // public bool ParseAssignItem(NameSpace<IExpr> ns)
-    // {
-    //     if (!ReadString(out var name))
-    //         return false;
-    //     if (!Expect(TokenKind.Equal))
-    //         return false;
-    //     if (!ParseExpr(out var expr))
-    //         return false;
-    //     ns.Push(name, expr);
-    //     return EndLine();
-    // }
-    //
-    // public bool ParseFunctionDeclareBody(out FunctionDeclare fun)
-    // {
-    //     fun = new FunctionDeclare();
-    //     if (!ReadName(out var name))
-    //         return false;
-    //
-    //     fun.Name = name;
-    //     if (!ParseParameters(out var parameters))
-    //         return false;
-    //     fun.Parameters = parameters;
-    // }
-
-    // public bool ParseFunctionDeclare(Model model)
-    // {
-    //     var func = new FunctionDeclare();
-    //
-    //     if (Skip(TokenKind.KeywordPredicate))
-    //         func.ReturnType = new TypeInst { Kind = TypeKind.Bool, Flags = TypeFlags.Var };
-    //     else if (Skip(TokenKind.KeywordFunction))
-    //     {
-    //         if (!ParseTypeInst(out func.ReturnType))
-    //             return false;
-    //         if (!Expect(TokenKind.Colon))
-    //             return false;
-    //     }
-    //     else
-    //     {
-    //         return false;
-    //     }
-    //
-    //     func.Name = ReadString(TokenKind.Identifier);
-    //     ParseParameters(func.Parameters);
-    //     ns.Push(func.Name, func);
-    // }
-
     /// Record the given message as an error and return false
     private bool Error(string? msg = null)
     {
-        if (_error is not null)
+        if (Err is not null)
             return false;
 
         _watch.Stop();
@@ -175,7 +126,7 @@ public sealed partial class Parser
              {trace}
              """;
 
-        _error = message;
+        Err = message;
         return false;
     }
 }

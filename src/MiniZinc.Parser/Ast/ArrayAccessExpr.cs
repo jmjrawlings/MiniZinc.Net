@@ -1,13 +1,13 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public readonly record struct ArrayAccessExpr : IExpr
+public readonly record struct ArrayAccessExpr : INode
 {
-    public IExpr Expr { get; }
-    public List<IExpr> Slice { get; }
+    public INode Array { get; }
+    public List<INode> Access { get; }
 
-    public ArrayAccessExpr(IExpr expr, List<IExpr> slice)
+    public ArrayAccessExpr(INode array, List<INode> access)
     {
-        Expr = expr;
-        Slice = slice;
+        Array = array;
+        Access = access;
     }
 }

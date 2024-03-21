@@ -1,3 +1,3 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public readonly struct WildCardExpr : IExpr { }
+public readonly struct WildCardExpr : INode { }

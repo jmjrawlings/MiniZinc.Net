@@ -34,9 +34,9 @@ public partial class Parser
     /// Parse a list type
     /// </summary>
     /// <mzn>list of int</mzn>
-    public bool ParseListType(out ArrayType type)
+    public bool ParseListType(out ArrayTypeInst typeInst)
     {
-        type = new ArrayType();
+        typeInst = new ArrayTypeInst();
         if (!Skip(TokenKind.LIST))
             return false;
 
@@ -44,12 +44,12 @@ public partial class Parser
             return false;
 
         var dim = new TypeInst { Kind = TypeKind.Int, Flags = TypeFlags.Par };
-        type.Dimensions.Add(dim);
+        typeInst.Dimensions.Add(dim);
 
         if (!ParseType(out var expr))
             return false;
 
-        type.Type = expr;
+        typeInst.Type = expr;
         return true;
     }
 
@@ -57,14 +57,14 @@ public partial class Parser
     /// Parse an array type
     /// </summary>
     /// <mzn>array[X, 1..2} of var int</mzn>
-    public bool ParseArrayType(out ArrayType arr)
+    public bool ParseArrayType(out ArrayTypeInst arr)
     {
         arr = default!;
         if (!Skip(TokenKind.ARRAY))
             return false;
 
-        var dims = new List<IExpr>();
-        arr = new ArrayType();
+        var dims = new List<INode>();
+        arr = new ArrayTypeInst();
         arr.Dimensions = dims;
         if (!Skip(TokenKind.OPEN_BRACKET))
             return false;
@@ -132,7 +132,7 @@ public partial class Parser
             default:
                 if (!ParseExpr(out var expr))
                     return false;
-                type = new ExprType { Expr = expr };
+                type = new ExprTypeInst { Expr = expr };
                 break;
         }
 
@@ -230,21 +230,21 @@ public partial class Parser
         return Expect(TokenKind.CLOSE_PAREN);
     }
 
-    private bool ParseArgs(out List<IExpr>? exprs) =>
-        ParseExprs(out exprs, TokenKind.OPEN_PAREN, TokenKind.CLOSE_PAREN);
+    // private bool ParseArgs(out List<INode>? exprs) =>
+    //     ParseExprs(out exprs, TokenKind.OPEN_PAREN, TokenKind.CLOSE_PAREN);
 
     /// <summary>
     /// Parse a comma separated list of expressions
     /// between parentheses
     /// </summary>
     /// <mzn>(1, 2, false)</mzn>
-    private bool ParseExprs(out List<IExpr>? exprs, TokenKind open, TokenKind close)
+    private bool ParseExprs(out List<INode>? exprs, TokenKind open, TokenKind close)
     {
         exprs = null;
         if (!Skip(open))
             return false;
 
-        exprs = new List<IExpr>();
+        exprs = new List<INode>();
         while (_kind != close)
         {
             if (!ParseExpr(out var expr))

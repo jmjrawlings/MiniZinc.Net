@@ -10,7 +10,7 @@ public partial class Parser
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
-    public bool ParseExprAtom(out IExpr expr)
+    public bool ParseExprAtom(out INode expr)
     {
         expr = Expr.Null;
 
@@ -41,7 +41,7 @@ public partial class Parser
                 Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new RangeExpr(upper: expr);
+                expr = new RangeExpr(Upper: expr);
                 break;
 
             case TokenKind.UNDERSCORE:
@@ -110,16 +110,31 @@ public partial class Parser
                 return Error($"Unexpected {_kind} while parsing Expression Atom");
         }
 
-        // Array access tail
-        while (ParseExprs(out var access, TokenKind.OPEN_BRACKET, TokenKind.CLOSE_BRACKET))
-        {
-            expr = new ArrayAccessExpr(expr, access!);
-        }
+        if (ParseArrayAccess(out var access))
+            expr = new ArrayAccessExpr(expr, access);
 
-        if (_error is not null)
+        return Okay;
+    }
+
+    private bool Okay => Err is null;
+
+    public bool ParseArrayAccess(out List<INode> access)
+    {
+        access = null!;
+        if (!Skip(TokenKind.OPEN_BRACKET))
             return false;
 
-        return true;
+        access = new List<INode>();
+        while (_kind is not TokenKind.CLOSE_BRACKET)
+        {
+            if (!ParseExpr(out var index))
+                return false;
+            access.Add(index);
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
+
+        return Expect(TokenKind.CLOSE_BRACKET);
     }
 
     /// <summary>
@@ -128,7 +143,7 @@ public partial class Parser
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
-    public bool ParseExpr(out IExpr expr)
+    public bool ParseExpr(out INode expr)
     {
         if (!ParseExprAtom(out expr))
             return false;
@@ -299,7 +314,7 @@ public partial class Parser
     /// the close token is hit or no more commas are
     /// encountered
     /// </summary>
-    private bool ParseExprsUntil(TokenKind close, out List<IExpr>? exprs)
+    private bool ParseExprsUntil(TokenKind close, out List<INode>? exprs)
     {
         exprs = null;
         while (_kind != close)
@@ -307,7 +322,7 @@ public partial class Parser
             if (!ParseExpr(out var arg))
                 return false;
 
-            exprs ??= new List<IExpr>();
+            exprs ??= new List<INode>();
             exprs.Add(arg);
             if (!Skip(TokenKind.COMMA))
                 break;
@@ -328,7 +343,7 @@ public partial class Parser
     ///<mzn>forall(i in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i,j in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i in 1..3, j in 1..3 where i > j)(xd[i]);</mzn>
-    public bool ParseIdentExpr(out IExpr result)
+    public bool ParseIdentExpr(out INode result)
     {
         result = Expr.Null;
 
@@ -362,7 +377,7 @@ public partial class Parser
          * Backtracking would make this trivial but I think that's
          * more trouble than it's worth.
          */
-        var exprs = new List<IExpr>();
+        var exprs = new List<INode>();
         bool maybeGen = true;
         bool isGen = false;
         int i = 0;
@@ -374,12 +389,12 @@ public partial class Parser
         switch (expr)
         {
             // Identifier are valid in either call or gencall
-            case Identifer id:
+            case Identifier id:
                 exprs.Add(expr);
                 break;
 
             // `in` expressions involving identifiers could mean a gencall
-            case BinaryOpExpr { Op: Operator.In, Left: Identifer id, Right: { } from }
+            case BinaryOpExpr { Op: Operator.In, Left: Identifier id, Right: { } from }
                 when maybeGen:
                 if (!Skip(TokenKind.WHERE))
                 {
@@ -445,18 +460,18 @@ public partial class Parser
         var gencall = new GenCallExpr
         {
             Name = name,
-            From = generators,
-            Yields = yields
+            Generators = generators,
+            Expr = yields
         };
 
-        List<Identifer>? idents = null;
+        List<Identifier>? idents = null;
         for (i = 0; i < exprs.Count; i++)
         {
             switch (exprs[i])
             {
                 // Identifiers must be collected as they are part of generators
-                case Identifer id:
-                    idents ??= new List<Identifer>();
+                case Identifier id:
+                    idents ??= new List<Identifier>();
                     idents.Add(id);
                     break;
                 // Already created generators get added
@@ -467,8 +482,8 @@ public partial class Parser
                     break;
                 // Binops are now known to be generators
                 case BinaryOpExpr binop:
-                    idents ??= new List<Identifer>();
-                    idents.Add((Identifer)binop.Left);
+                    idents ??= new List<Identifier>();
+                    idents.Add((Identifier)binop.Left);
                     var gen = new GeneratorExpr();
                     gen.Names = idents;
                     gen.From = binop.Right;
@@ -484,7 +499,7 @@ public partial class Parser
     private bool ParseGenerators(List<GeneratorExpr> generators)
     {
         begin:
-        var gen = new GeneratorExpr { Names = new List<Identifer>() };
+        var gen = new GeneratorExpr { Names = new List<Identifier>() };
         while (true)
         {
             if (!ParseIdent(out var id))
@@ -524,13 +539,13 @@ public partial class Parser
     /// </summary>
     /// <mzn>[1,2,3]</mzn>
     /// <mzn>[ x | x in [a,b,c]]</mzn>
-    private bool ParseBracketExpr(out IExpr result)
+    private bool ParseBracketExpr(out INode result)
     {
         result = Expr.Null;
         if (!Skip(TokenKind.OPEN_BRACKET))
             return false;
 
-        IExpr element;
+        INode element;
 
         // Empty Array
         if (_kind is TokenKind.CLOSE_BRACKET)
@@ -578,12 +593,12 @@ public partial class Parser
         {
             var comp = new CompExpr
             {
-                Yields = element,
+                Expr = element,
                 IsSet = false,
-                From = new List<GeneratorExpr>()
+                Generators = new List<GeneratorExpr>()
             };
             result = comp;
-            if (!ParseGenerators(comp.From))
+            if (!ParseGenerators(comp.Generators))
                 return false;
             return Expect(TokenKind.CLOSE_BRACKET);
         }
@@ -614,7 +629,7 @@ public partial class Parser
     /// </summary>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>{ x | x in [1,2,3]}</mzn>
-    private bool ParseBraceExpr(out IExpr result)
+    private bool ParseBraceExpr(out INode result)
     {
         result = Expr.Null;
         if (!Skip(TokenKind.OPEN_BRACE))
@@ -636,11 +651,11 @@ public partial class Parser
         {
             var comp = new CompExpr
             {
-                Yields = element,
+                Expr = element,
                 IsSet = true,
-                From = new List<GeneratorExpr>()
+                Generators = new List<GeneratorExpr>()
             };
-            if (!ParseGenerators(comp.From))
+            if (!ParseGenerators(comp.Generators))
                 return false;
 
             result = comp;
@@ -678,15 +693,22 @@ public partial class Parser
         {
             if (ParseConstraintItem(out var cons))
             {
-                let.Constraints ??= new List<ConstraintItem>();
-                let.Constraints.Add(cons);
+                let.Locals ??= new List<ILetLocal>();
+                let.Locals.Add(cons);
+                continue;
             }
-            else if (_error is not null)
+            if (Err is not null)
                 return Error();
 
-            let.NameSpace ??= new NameSpace<IExpr>();
-            if (!ParseDeclareOrAssignItem(let.NameSpace))
+            if (!ParseDeclareOrAssignItem(out var var, out var assign))
                 return false;
+
+            let.Locals ??= new List<ILetLocal>();
+
+            if (var is not null)
+                let.Locals.Add(var);
+            else
+                let.Locals.Add(assign!);
 
             if (Skip(TokenKind.EOL) || Skip(TokenKind.COMMA))
                 continue;
@@ -703,7 +725,7 @@ public partial class Parser
         return true;
     }
 
-    private bool ParseIfThenCase(out IExpr @if, out IExpr @then, TokenKind ifKeyword)
+    private bool ParseIfThenCase(out INode @if, out INode @then, TokenKind ifKeyword)
     {
         @if = default!;
         @then = default!;
@@ -739,7 +761,7 @@ public partial class Parser
 
         while (ParseIfThenCase(out @if, out @then, TokenKind.ELSEIF))
         {
-            ite.ElseIfs ??= new List<(IExpr elseif, IExpr then)>();
+            ite.ElseIfs ??= new List<(INode elseif, INode then)>();
             ite.ElseIfs.Add((@if, @then));
         }
 
@@ -763,7 +785,7 @@ public partial class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private bool ParseParenExpr(out IExpr result)
+    private bool ParseParenExpr(out INode result)
     {
         result = Expr.Null;
         if (!Expect(TokenKind.OPEN_PAREN))
@@ -834,5 +856,5 @@ public partial class Parser
         return true;
     }
 
-    public bool ParseAnnotation(out IExpr expr) => ParseExprAtom(out expr);
+    public bool ParseAnnotation(out INode expr) => ParseExprAtom(out expr);
 }

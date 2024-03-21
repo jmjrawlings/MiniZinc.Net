@@ -1,10 +1,10 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record GenCallExpr : IExpr
+public sealed record GenCallExpr : INode
 {
     public string Name { get; set; }
 
-    public List<GeneratorExpr> From { get; set; }
+    public List<GeneratorExpr> Generators { get; set; }
 
-    public IExpr Yields { get; set; }
+    public INode Expr { get; set; }
 }

@@ -1,8 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-using Annotation = IExpr;
-
-public record TypeInst : IAnnotations, IExpr, INamed
+public record TypeInst : IAnnotations, INamed
 {
     public string Name { get; set; } = string.Empty;
 
@@ -10,14 +8,9 @@ public record TypeInst : IAnnotations, IExpr, INamed
 
     public TypeFlags Flags { get; set; } = TypeFlags.None;
 
-    public List<Annotation>? Annotations { get; set; }
+    public List<INode>? Annotations { get; set; }
 
     public bool IsKind(TypeFlags kind) => (Flags & kind) > 0;
-}
-
-public sealed record NamedType : TypeInst, INamed
-{
-    public string Name { get; set; }
 }
 
 public sealed record RecordTypeInst : TypeInst
@@ -30,16 +23,16 @@ public sealed record TupleTypeInst : TypeInst
     public List<TypeInst> Items { get; set; } = new();
 }
 
-public sealed record ExprType : TypeInst
+public sealed record ExprTypeInst : TypeInst
 {
-    public IExpr Expr { get; set; }
+    public INode Expr { get; set; }
 }
 
-public sealed record ArrayType : TypeInst
+public sealed record ArrayTypeInst : TypeInst
 {
     public TypeInst Type { get; set; }
 
-    public List<IExpr> Dimensions { get; set; }
+    public List<INode> Dimensions { get; set; }
 
     public int N => Dimensions.Count;
 }

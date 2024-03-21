@@ -12,7 +12,9 @@ using System.Collections.Immutable;
 public sealed class NameSpace<T> : IReadOnlyDictionary<string, T>
 {
     /// The order in which names were edited
-    private readonly Stack<string> _log;
+    private readonly Stack<Binding<T>> _log;
+
+    public IEnumerable<Binding<T>> Stack => _log;
 
     /// Each variable holds a history of its values
     private readonly Dictionary<string, Stack<T>> _bindings;
@@ -48,13 +50,14 @@ public sealed class NameSpace<T> : IReadOnlyDictionary<string, T>
         }
         stack.Push(value);
         _scope[name] = value;
-        _log.Push(name);
+        _log.Push(name.Bind(value));
     }
 
     /// Pop the last binding off the namespace
     public Binding<T> Pop()
     {
-        var name = _log.Pop();
+        var b = _log.Pop();
+        var name = b.Name;
         var stack = _bindings[name];
         var value = stack.Pop();
         if (stack.Count == 0)
@@ -66,7 +69,6 @@ public sealed class NameSpace<T> : IReadOnlyDictionary<string, T>
         {
             _scope[name] = stack.Peek();
         }
-
         var binding = name.Bind(value);
         return binding;
     }

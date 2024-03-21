@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record Array1DLit : IExpr
+public sealed record Array1DLit : INode
 {
     public int I { get; set; }
-    public List<IExpr> Elements { get; set; } = new();
+    public List<INode> Elements { get; set; } = new();
 }

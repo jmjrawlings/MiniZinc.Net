@@ -2,22 +2,32 @@
 
 public enum EnumCaseType
 {
-    Name,
-    Anonymous,
+    Names,
+    Complex,
     Underscore,
-    Complex
+    Anon
 }
 
-public sealed record EnumCase
+public interface IEnumCases : INode
 {
-    public EnumCaseType Type;
-    public List<string>? Names;
-    public IExpr? Expr;
+    EnumCaseType Type { get; }
 }
 
-public record EnumDeclare : INamed, IAnnotations, IExpr
+public readonly struct NamedEnumCases(List<string> names) : IEnumCases
+{
+    public EnumCaseType Type => EnumCaseType.Names;
+    public List<string> Names => names;
+}
+
+public readonly struct ComplexEnumCase(INode expr, EnumCaseType type) : IEnumCases
+{
+    public EnumCaseType Type => type;
+    public INode Expr => expr;
+}
+
+public record EnumDeclare : Expr, INamed
 {
     public string Name { get; set; }
-    public List<IExpr>? Annotations { get; set; }
-    public List<EnumCase> Cases { get; set; } = new();
+
+    public List<IEnumCases> Cases { get; set; } = new();
 }

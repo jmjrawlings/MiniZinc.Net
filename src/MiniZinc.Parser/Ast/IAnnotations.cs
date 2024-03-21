@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public interface IAnnotations
+public interface IAnnotations : INode
 {
-    public List<IExpr>? Annotations { get; set; }
+    public List<INode>? Annotations { get; set; }
 }

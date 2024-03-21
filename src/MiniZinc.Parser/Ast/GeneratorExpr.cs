@@ -1,12 +1,10 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record GeneratorExpr : IExpr
+public sealed record GeneratorExpr : INode
 {
-    public List<Identifer> Names { get; set; }
+    public List<Identifier> Names { get; set; }
 
-    public IExpr From { get; set; }
+    public INode From { get; set; }
 
-    public IExpr? Where { get; set; }
-
-    public GeneratorExpr? Next { get; set; }
+    public INode? Where { get; set; }
 }

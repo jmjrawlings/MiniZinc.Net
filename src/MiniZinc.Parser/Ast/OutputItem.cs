@@ -2,6 +2,6 @@
 
 public sealed record OutputItem : IAnnotations
 {
-    public IExpr Expr { get; set; }
-    public List<IExpr>? Annotations { get; set; }
+    public INode Expr { get; set; }
+    public List<INode>? Annotations { get; set; }
 }

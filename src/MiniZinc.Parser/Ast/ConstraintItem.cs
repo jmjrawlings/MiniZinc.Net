@@ -1,7 +1,8 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record ConstraintItem : IExpr, IAnnotations
+public sealed record ConstraintItem : Expr, ILetLocal
 {
-    public IExpr Expr { get; set; }
-    public List<IExpr>? Annotations { get; set; }
+    public INode Expr { get; set; }
 }
+
+public interface ILetLocal : INode { }

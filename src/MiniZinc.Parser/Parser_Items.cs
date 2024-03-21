@@ -56,7 +56,7 @@ public partial class Parser
                 break;
 
             default:
-                if (!ParseDeclareOrAssignItem(model.NameSpace))
+                if (!ParseDeclareOrAssignItem(out var declare, out var assign))
                     return false;
                 break;
         }
@@ -90,70 +90,72 @@ public partial class Parser
             return false;
 
         cases:
-        var @case = new EnumCase();
+        IEnumCases @case;
 
         // Named cases: 'enum Dir = {N,S,E,W};`
         if (Skip(TokenKind.OPEN_BRACE))
         {
-            @case.Type = EnumCaseType.Name;
-            @case.Names = new List<string>();
+            var names = new NamedEnumCases(new List<string>());
             while (_kind is not TokenKind.CLOSE_BRACE)
             {
                 if (!ParseIdent(out name))
                     return false;
-                @case.Names.Add(name);
+                names.Names.Add(name);
+
                 if (!Skip(TokenKind.COMMA))
                     break;
             }
 
             if (!Expect(TokenKind.CLOSE_BRACE))
                 return false;
-
+            @case = names;
             goto end;
         }
 
         // Underscore enum `enum A = _(1..10);`
         if (Skip(TokenKind.UNDERSCORE))
         {
-            @case.Type = EnumCaseType.Underscore;
             if (!Expect(TokenKind.OPEN_PAREN))
                 return false;
-            if (!ParseExpr(out @case.Expr))
+            if (!ParseExpr(out var expr))
                 return false;
             if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
+            @case = new ComplexEnumCase(expr, EnumCaseType.Names);
             goto end;
         }
 
         // Anonymous enum: `anon_enum(10);`
         if (Skip(TokenKind.ANONENUM))
         {
-            @case.Type = EnumCaseType.Anonymous;
             if (!Expect(TokenKind.OPEN_PAREN))
                 return false;
-            if (!ParseExpr(out @case.Expr))
+            if (!ParseExpr(out var expr))
                 return false;
             if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
+            @case = new ComplexEnumCase(expr, EnumCaseType.Anon);
             goto end;
         }
 
         // Complex enum: `C(1..10)`
         if (ParseIdent(out name))
         {
-            @case.Type = EnumCaseType.Complex;
             if (!Expect(TokenKind.OPEN_PAREN))
                 return false;
-            if (!ParseExpr(out @case.Expr))
+            if (!ParseExpr(out var expr))
                 return false;
             if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
+            @case = new ComplexEnumCase(expr, EnumCaseType.Complex);
             goto end;
         }
 
         return Error("Expected an enum definition");
 
         end:
+        @enum.Cases.Add(@case);
+        
         if (Skip(TokenKind.PLUS_PLUS))
             goto cases;
 
@@ -226,7 +228,7 @@ public partial class Parser
         if (!ParseAnnotations(item))
             return false;
 
-        IExpr objective = Expr.Null;
+        INode objective = Expr.Null;
         switch (_token.Kind)
         {
             case TokenKind.SATISFY:
@@ -281,9 +283,10 @@ public partial class Parser
     /// </summary>
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
-    public bool ParseDeclareOrAssignItem(NameSpace<IExpr> ns)
+    public bool ParseDeclareOrAssignItem(out Variable? var, out Assignment? assign)
     {
-        Variable var;
+        var = null;
+        assign = null;
 
         if (ParseIdent(out var name))
         {
@@ -291,8 +294,7 @@ public partial class Parser
             {
                 if (!ParseExpr(out var expr))
                     return false;
-
-                ns.Push(name, expr);
+                assign = Expr.Assign(name, expr);
                 return Expect(TokenKind.EOL);
             }
 

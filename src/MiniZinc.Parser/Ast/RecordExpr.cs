@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record RecordExpr : IExpr
+public sealed record RecordExpr : Expr
 {
-    public List<(IExpr, IExpr)> Fields { get; set; } = new();
+    public List<(INode, INode)> Fields { get; } = new();
 }

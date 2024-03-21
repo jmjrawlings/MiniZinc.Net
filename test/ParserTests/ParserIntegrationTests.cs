@@ -6,7 +6,7 @@ public sealed class ParserTests
         var lexer = Lexer.LexFile(path);
         var parser = new Parser(lexer);
         parser.ParseModel(out var model);
-        if (parser._error is { } err)
+        if (parser.Err is { } err)
         {
             Assert.Fail(err);
         }
