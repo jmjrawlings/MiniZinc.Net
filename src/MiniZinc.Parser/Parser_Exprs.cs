@@ -106,6 +106,11 @@ public partial class Parser
                     return false;
                 break;
 
+            case TokenKind.EMPTY:
+                Step();
+                expr = Expr.Empty;
+                return true;
+
             default:
                 return Error($"Unexpected {_kind} while parsing Expression Atom");
         }
@@ -152,6 +157,7 @@ public partial class Parser
         {
             if (!ParseExpr(out var right))
                 return false;
+
             expr = new BinaryOpExpr(expr, op, id, right);
         }
         return true;
@@ -666,6 +672,7 @@ public partial class Parser
         var set = new SetLit();
         result = set;
         set.Elements.Add(element);
+        Skip(TokenKind.COMMA);
         while (_kind is not TokenKind.CLOSE_BRACE)
         {
             if (!ParseExpr(out var item))
@@ -714,6 +721,9 @@ public partial class Parser
                 continue;
             break;
         }
+
+        if (!Expect(TokenKind.CLOSE_BRACE))
+            return false;
 
         if (!Expect(TokenKind.IN))
             return false;
@@ -796,7 +806,10 @@ public partial class Parser
 
         // Bracketed expr
         if (Skip(TokenKind.CLOSE_PAREN))
+        {
+            result = expr;
             return true;
+        }
 
         // Record expr
         if (Skip(TokenKind.COLON))
@@ -847,8 +860,12 @@ public partial class Parser
     {
         while (Skip(TokenKind.COLON_COLON))
         {
-            if (!ParseAnnotation(out var ann))
-                return false;
+            INode? ann;
+            if (Skip(TokenKind.OUTPUT))
+                ann = Expr.Ident("output");
+            else if (ParseAnnotation(out ann)) { }
+            else
+                return Error();
 
             target.Annotate(ann);
         }

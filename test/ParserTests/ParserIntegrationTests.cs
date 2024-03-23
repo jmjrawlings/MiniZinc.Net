@@ -1,8 +1,13 @@
+using System.Text;
+
 public sealed class ParserTests
 {
     private void Test(string path)
     {
-        var mzn = File.ReadAllText(path);
+        var enc = Encoding.UTF8;
+        var text = File.ReadAllText(path, enc);
+        var chars = text.ToCharArray();
+        var textTokens = Lexer.LexFile(path).ToArray();
         var lexer = Lexer.LexFile(path);
         var parser = new Parser(lexer);
         parser.ParseModel(out var model);

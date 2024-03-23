@@ -129,6 +129,13 @@ public partial class Parser
                 type = tup;
                 break;
 
+            case TokenKind.POLYMORPHIC:
+                Step();
+                if (!ParseIdent(out var id))
+                    return false;
+                type = new TypeInst { Name = id, Kind = TypeKind.Any };
+                break;
+
             default:
                 if (!ParseExpr(out var expr))
                     return false;

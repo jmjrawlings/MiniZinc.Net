@@ -14,4 +14,6 @@ public readonly struct BinaryOpExpr : INode
     public Operator? Op { get; }
     public string? Name { get; }
     public INode Right { get; }
+
+    public override string ToString() => $"{Left.Write()} {Op?.ToString() ?? Name} {Right.Write()}";
 }

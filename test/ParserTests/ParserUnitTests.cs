@@ -110,10 +110,9 @@ public class ParserUnitTests
     [Fact]
     void test_xd()
     {
-        var mzn =
-            "constraint forall ( i in 1..n, j in 0..(k - 1) ) ( a[Fst[i] + j * (i + 1)] = i );";
+        var mzn = "forall ( i in 1..n, j in 0..(k - 1) ) ( a[Fst[i] + j * (i + 1)] = i );";
         var p = Parse(mzn);
-        p.ParseConstraintItem(out var cons);
+        p.ParseExpr(out var cons);
         p.Check();
     }
 }

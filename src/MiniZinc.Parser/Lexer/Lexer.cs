@@ -21,12 +21,12 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const char DASH = '-';
     const char TILDE = '~';
     const char DOLLAR = '$';
-    const char LEFT_BRACK = '[';
-    const char RIGHT_BRACK = ']';
-    const char LEFT_PAREN = '(';
-    const char RIGHT_PAREN = ')';
-    const char LEFT_BRACE = '{';
-    const char RIGHT_BRACE = '}';
+    const char OPEN_BRACKET = '[';
+    const char CLOSE_BRACKET = ']';
+    const char OPEN_PAREN = '(';
+    const char CLOSE_PAREN = ')';
+    const char OPEN_BRACE = '{';
+    const char CLOSE_BRACE = '}';
     const char PIPE = '|';
     const char PERCENT = '%';
     const char UNDERSCORE = '_';
@@ -54,19 +54,17 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private TokenKind _kind;
     private readonly StreamReader _reader;
     private readonly StringBuilder _sb;
-    public readonly LexOptions Options;
     public readonly bool LexLineComments;
     public readonly bool LexBlockComments;
 
     private Lexer(StreamReader reader, LexOptions options)
     {
-        _reader = reader;
+        LexLineComments = options.HasFlag(LexOptions.LexLineComments);
+        LexBlockComments = options.HasFlag(LexOptions.LexBlockComments);
         _sb = new StringBuilder();
         _string = string.Empty;
         _line = 1;
-        Options = options;
-        LexLineComments = options.HasFlag(LexOptions.LexLineComments);
-        LexBlockComments = options.HasFlag(LexOptions.LexBlockComments);
+        _reader = reader;
     }
 
     public bool MoveNext()
@@ -187,22 +185,22 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                         break;
                 }
                 break;
-            case LEFT_BRACK:
+            case OPEN_BRACKET:
                 Token(TokenKind.OPEN_BRACKET);
                 break;
-            case RIGHT_BRACK:
+            case CLOSE_BRACKET:
                 Token(TokenKind.CLOSE_BRACKET);
                 break;
-            case LEFT_PAREN:
+            case OPEN_PAREN:
                 Token(TokenKind.OPEN_PAREN);
                 break;
-            case RIGHT_PAREN:
+            case CLOSE_PAREN:
                 Token(TokenKind.CLOSE_PAREN);
                 break;
-            case LEFT_BRACE:
+            case OPEN_BRACE:
                 Token(TokenKind.OPEN_BRACE);
                 break;
-            case RIGHT_BRACE:
+            case CLOSE_BRACE:
                 Token(TokenKind.CLOSE_BRACE);
                 break;
             case SINGLE_QUOTE:
@@ -431,10 +429,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         bool inExpr = false;
         bool escaped = false;
-        Console.WriteLine("STRING");
         string_literal:
         Read();
-        Console.Write(_char);
         switch (_char)
         {
             case DOUBLE_QUOTE when escaped:
@@ -442,10 +438,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case DOUBLE_QUOTE:
                 StringToken(TokenKind.STRING_LIT);
                 return;
-            case RIGHT_PAREN when inExpr:
+            case CLOSE_PAREN when inExpr:
                 inExpr = false;
                 break;
-            case LEFT_PAREN when escaped && !inExpr:
+            case OPEN_PAREN when escaped && !inExpr:
                 inExpr = true;
                 escaped = false;
                 break;
@@ -522,6 +518,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _pos++;
         _length++;
         _col++;
+        // Debug.WriteLine($"Token {_pos:D4} - Line {_line:D4} - Col {_col:D4} - {_char}");
         if (_char is NEWLINE)
         {
             _line++;
@@ -574,7 +571,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     public static Lexer LexString(string s, LexOptions options = default)
     {
         var stream = new MemoryStream();
-        var writer = new StreamWriter(stream);
+        var writer = new StreamWriter(stream, Encoding.UTF8);
         writer.Write(s);
         writer.Flush();
         stream.Position = 0;
@@ -586,18 +583,18 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// <summary>
     /// Lex the given file
     /// </summary>
-    public static Lexer LexFile(
-        string path,
-        Encoding? encoding = null,
-        LexOptions options = default
-    )
+    public static Lexer LexFile(string path, LexOptions options = default)
     {
-        var stream = new StreamReader(
-            path,
-            encoding ?? Encoding.UTF8,
-            detectEncodingFromByteOrderMarks: true
-        );
-        var lexer = new Lexer(stream, options);
+        Encoding encoding;
+        using (var reader = new StreamReader(path, Encoding.UTF8, true))
+        {
+            reader.Peek(); // you need this!
+            encoding = reader.CurrentEncoding;
+        }
+
+        Console.WriteLine("Encoding for {0} is {1}", path, encoding);
+        var s = File.ReadAllText(path, encoding);
+        var lexer = LexString(s, options);
         return lexer;
     }
 

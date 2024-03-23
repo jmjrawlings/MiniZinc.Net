@@ -39,6 +39,7 @@ public sealed partial class Parser
             _token = _buffer[_bufferIndex];
             _kind = _token.Kind;
             _pos++;
+            Debug.Write(_token.ToString());
             return true;
         }
 
@@ -52,6 +53,7 @@ public sealed partial class Parser
         _pos++;
         _token = _buffer[0];
         _kind = _token.Kind;
+        Debug.Write(_token.ToString());
         return _bufferCount > 0;
     }
 
@@ -106,8 +108,17 @@ public sealed partial class Parser
         for (int i = 0; i <= _bufferIndex; i++)
         {
             var token = _buffer[i];
-            sb.Append(token.ToString());
-            sb.Append(' ');
+            if (token.Kind <= TokenKind.XOR)
+            {
+                sb.Append(' ');
+                sb.Append(token.ToString());
+                sb.Append(' ');
+            }
+            else
+            {
+                sb.Append(token.ToString());
+            }
+
             if (token.Kind is TokenKind.EOL)
                 sb.AppendLine();
         }

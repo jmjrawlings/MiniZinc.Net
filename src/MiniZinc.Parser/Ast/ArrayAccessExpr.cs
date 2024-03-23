@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser.Ast;
+﻿using System.Runtime.InteropServices.JavaScript;
+
+namespace MiniZinc.Parser.Ast;
 
 public readonly record struct ArrayAccessExpr : INode
 {
@@ -10,4 +12,6 @@ public readonly record struct ArrayAccessExpr : INode
         Array = array;
         Access = access;
     }
+
+    public override string ToString() => $"{Array.Write()}[{Access.Write()}]";
 }

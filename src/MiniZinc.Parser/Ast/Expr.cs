@@ -15,6 +15,7 @@ public record Expr : IAnnotations
     public static StringLit String(string s) => new StringLit(s);
 
     public static INode Wildcard => new WildCardExpr();
+    public static INode Empty => new EmptyExpr();
 
     public static INode Null => new NullExpr();
 

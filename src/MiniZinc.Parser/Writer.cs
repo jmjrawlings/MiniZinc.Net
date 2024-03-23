@@ -568,4 +568,29 @@ public sealed class Writer
     {
         WriteSep(gen.Names, WriteIdent);
     }
+
+    public override string ToString() => _sb.ToString();
+
+    public static string WriteNode(INode node)
+    {
+        var writer = new Writer();
+        writer.WriteExpr(node);
+        var s = writer.ToString();
+        return s;
+    }
+}
+
+public static class NodeExtensions
+{
+    public static string Write(this INode node)
+    {
+        var s = Writer.WriteNode(node);
+        return s;
+    }
+
+    public static string Write(this IEnumerable<INode> nodes, string sep = ",")
+    {
+        var s = String.Join(sep, nodes.Select(Write));
+        return s;
+    }
 }

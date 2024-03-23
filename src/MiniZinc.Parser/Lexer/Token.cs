@@ -20,9 +20,7 @@ internal readonly struct Token(
     public readonly string? String = s;
     public readonly double Double = d;
 
-    public bool IsKeyword => Kind <= TokenKind.XOR;
-
-    public string ToString() =>
+    public override string ToString() =>
         Kind switch
         {
             TokenKind.ANNOTATION => "annotation",

@@ -58,6 +58,8 @@ public partial class Parser
             default:
                 if (!ParseDeclareOrAssignItem(out var declare, out var assign))
                     return false;
+                if (!Expect(TokenKind.EOL))
+                    return false;
                 break;
         }
 
@@ -155,7 +157,7 @@ public partial class Parser
 
         end:
         @enum.Cases.Add(@case);
-        
+
         if (Skip(TokenKind.PLUS_PLUS))
             goto cases;
 
@@ -295,7 +297,7 @@ public partial class Parser
                 if (!ParseExpr(out var expr))
                     return false;
                 assign = Expr.Assign(name, expr);
-                return Expect(TokenKind.EOL);
+                return true;
             }
 
             var = new Variable
@@ -331,6 +333,34 @@ public partial class Parser
             var.Type = new TypeInst { Kind = TypeKind.Bool, Flags = TypeFlags.Var };
             var.IsFunction = true;
         }
+        else if (Skip(TokenKind.TEST))
+        {
+            if (!ParseIdent(out name))
+                return false;
+
+            var = new Variable();
+            var.Type = new TypeInst { Kind = TypeKind.Bool, Flags = TypeFlags.Par };
+            var.IsFunction = true;
+        }
+        else if (Skip(TokenKind.ANNOTATION))
+        {
+            if (!ParseIdent(out name))
+                return false;
+
+            var = new Variable();
+            var.Type = new TypeInst { Kind = TypeKind.Annotation };
+            var.Name = name;
+            var.IsFunction = true;
+        }
+        else if (Skip(TokenKind.ANY))
+        {
+            if (!ParseIdent(out name))
+                return false;
+
+            var = new Variable();
+            var.Type = new TypeInst { Kind = TypeKind.Any };
+            var.Name = name;
+        }
         else if (ParseType(out var type))
         {
             var = new Variable { Type = type };
@@ -356,7 +386,7 @@ public partial class Parser
             return false;
 
         // Declaration only
-        if (Skip(TokenKind.EOL))
+        if (_kind is TokenKind.EOL)
             return true;
 
         // Assignment
@@ -367,6 +397,6 @@ public partial class Parser
             return false;
 
         var.Body = value;
-        return Expect(TokenKind.EOL);
+        return true;
     }
 }
