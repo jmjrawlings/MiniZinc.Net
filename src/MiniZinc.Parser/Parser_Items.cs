@@ -276,6 +276,9 @@ public partial class Parser
         if (!ParseExpr(out var expr))
             return false;
 
+        if (!ParseAnnotations(constraint))
+            return false;
+
         constraint.Expr = expr;
         return Expect(TokenKind.EOL);
     }

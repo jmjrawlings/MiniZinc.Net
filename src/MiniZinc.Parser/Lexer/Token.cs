@@ -108,7 +108,6 @@ internal readonly struct Token(
             TokenKind.EOL => ";",
             TokenKind.PIPE => "|",
             TokenKind.EMPTY => "<>",
-            TokenKind.POLYMORPHIC => "$$",
             TokenKind.INT_LIT => Int.ToString(),
             TokenKind.FLOAT_LIT => Double.ToString(),
             TokenKind.STRING_LIT => $"\"{String}\"",

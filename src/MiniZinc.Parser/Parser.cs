@@ -79,6 +79,19 @@ public sealed partial class Parser
         return true;
     }
 
+    private bool ParseInt(out int i)
+    {
+        if (_kind is TokenKind.INT_LIT)
+        {
+            i = _token.Int;
+            Step();
+            return true;
+        }
+
+        i = 0;
+        return false;
+    }
+
     /// <summary>
     /// Read the current tokens string into the given variable
     /// </summary>

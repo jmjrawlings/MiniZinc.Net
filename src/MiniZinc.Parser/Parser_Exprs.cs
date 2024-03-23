@@ -115,8 +115,23 @@ public partial class Parser
                 return Error($"Unexpected {_kind} while parsing Expression Atom");
         }
 
+        access:
         if (ParseArrayAccess(out var access))
+        {
             expr = new ArrayAccessExpr(expr, access);
+            goto access;
+        }
+
+        if (Skip(TokenKind.DOT))
+        {
+            if (ParseInt(out int i))
+                expr = new TupleAccess(expr, i);
+            else if (ParseIdent(out var field))
+                expr = new RecordAccessExpr(expr, field);
+            else
+                return Error("Expected a tuple field (eg .1) or record field (eg .name)");
+            goto access;
+        }
 
         return Okay;
     }
@@ -775,13 +790,14 @@ public partial class Parser
             ite.ElseIfs.Add((@if, @then));
         }
 
-        if (!Expect(TokenKind.ELSE))
-            return false;
+        if (Skip(TokenKind.ELSE))
+        {
+            if (!ParseExpr(out var @else))
+                return false;
 
-        if (!ParseExpr(out var @else))
-            return false;
+            ite.Else = @else;
+        }
 
-        ite.Else = @else;
         if (!Expect(TokenKind.ENDIF))
             return false;
 
@@ -845,13 +861,14 @@ public partial class Parser
         tuple.Exprs.Add(expr);
         if (!Expect(TokenKind.COMMA))
             return false;
-
-        do
+        while (_kind is not TokenKind.CLOSE_PAREN)
         {
             if (!ParseExpr(out expr))
                 return false;
             tuple.Exprs.Add(expr);
-        } while (Skip(TokenKind.COMMA));
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
 
         return Expect(TokenKind.CLOSE_PAREN);
     }

@@ -129,6 +129,13 @@ public partial class Parser
                 type = tup;
                 break;
 
+            case TokenKind.ANY:
+                Step();
+                if (!Expect(TokenKind.POLYMORPHIC))
+                    return false;
+                type = new TypeInst { Kind = TypeKind.Any, Name = _token.String! };
+                break;
+
             case TokenKind.POLYMORPHIC:
                 Step();
                 if (!ParseIdent(out var id))
@@ -160,7 +167,7 @@ public partial class Parser
         if (!Expect(TokenKind.COLON))
             return false;
 
-        if (!ParseString(out var name))
+        if (!ParseIdent(out var name))
             return false;
 
         result = name.Bind(type);
