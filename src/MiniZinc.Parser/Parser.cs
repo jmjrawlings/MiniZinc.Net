@@ -108,6 +108,19 @@ public sealed partial class Parser
         return false;
     }
 
+    private bool ParseFloat(out double f)
+    {
+        if (_kind is TokenKind.FLOAT_LIT)
+        {
+            f = _token.Double;
+            Step();
+            return true;
+        }
+
+        f = default;
+        return false;
+    }
+
     private bool ParseIdent(out string name) => ParseString(out name, TokenKind.IDENT);
 
     /// Record the given message as an error and return false

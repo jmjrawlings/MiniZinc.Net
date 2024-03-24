@@ -9,6 +9,7 @@ public enum TypeKind
     Float,
     Name,
     Annotation,
+    PolyMorphic,
     Generic,
     Expr,
     Tuple,

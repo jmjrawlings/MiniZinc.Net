@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser;
 
 using Ast;
 

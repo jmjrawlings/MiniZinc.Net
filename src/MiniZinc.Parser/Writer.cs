@@ -442,7 +442,7 @@ public sealed class Writer
                 if (e.Upper is { } upper)
                     WriteExpr(upper);
                 break;
-            case RecordAccessExpr e:
+            case RecordAccess e:
                 WriteExpr(e.Expr);
                 Write(DOT);
                 Write(e.Field);

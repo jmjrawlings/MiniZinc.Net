@@ -39,9 +39,15 @@ public partial class Parser
 
             case TokenKind.DOT_DOT:
                 Step();
-                if (!ParseExpr(out expr))
-                    return false;
-                expr = new RangeExpr(Upper: expr);
+                // Used for array indices eg `a[1..2, ..]`
+                if (_kind is TokenKind.COMMA or TokenKind.CLOSE_BRACKET)
+                {
+                    expr = new RangeExpr();
+                }
+                else if (ParseExpr(out expr))
+                    expr = new RangeExpr(Upper: expr);
+                else
+                    return Error();
                 break;
 
             case TokenKind.UNDERSCORE:
@@ -115,25 +121,60 @@ public partial class Parser
                 return Error($"Unexpected {_kind} while parsing Expression Atom");
         }
 
-        access:
-        if (ParseArrayAccess(out var access))
-        {
-            expr = new ArrayAccessExpr(expr, access);
-            goto access;
-        }
-
-        if (Skip(TokenKind.DOT))
-        {
-            if (ParseInt(out int i))
-                expr = new TupleAccess(expr, i);
-            else if (ParseIdent(out var field))
-                expr = new RecordAccessExpr(expr, field);
-            else
-                return Error("Expected a tuple field (eg .1) or record field (eg .name)");
-            goto access;
-        }
+        if (!ParseExprAtomTail(expr, out expr))
+            return false;
 
         return Okay;
+    }
+
+    public bool ParseExprAtomTail(INode expr, out INode result)
+    {
+        result = expr;
+        while (true)
+        {
+            if (Skip(TokenKind.OPEN_BRACKET))
+            {
+                // Array access eg: `a[1,2]`
+                var access = new List<INode>();
+                while (_kind is not TokenKind.CLOSE_BRACKET)
+                {
+                    if (!ParseExpr(out var index))
+                        return false;
+                    access.Add(index);
+                    if (!Skip(TokenKind.COMMA))
+                        break;
+                }
+
+                result = new ArrayAccessExpr(expr, access);
+                if (!Expect(TokenKind.CLOSE_BRACKET))
+                    return false;
+            }
+            else if (Skip(TokenKind.DOT))
+            {
+                // Tuple access: `a.1`
+                if (ParseInt(out int i))
+                    result = new TupleAccess(expr, i);
+                // Record access: `a.name`
+                else if (ParseIdent(out var field))
+                    result = new RecordAccess(expr, field);
+                // A float token indicates chained tuple access
+                else if (ParseFloat(out var f))
+                {
+                    var s = f.ToString("F1");
+                    var t = s.Split(".");
+                    i = int.Parse(t[0]);
+                    int j = int.Parse(t[1]);
+                    result = new TupleAccess(new TupleAccess(expr, i), j);
+                }
+                else
+                    return Error("Expected a tuple field (eg .1) or record field (eg .name)");
+            }
+            else
+            {
+                break;
+            }
+        }
+        return true;
     }
 
     private bool Okay => Err is null;
@@ -277,7 +318,6 @@ public partial class Parser
                 op = Operator.Default;
                 break;
 
-            // "+" | "-" | "*" | "/" | "div" | "mod" | "^" | "~+" | "~-" | "~*" | "~/" | "~div"
             case TokenKind.PLUS:
                 op = Operator.Plus;
                 break;
@@ -327,27 +367,6 @@ public partial class Parser
         }
 
         Step();
-        return true;
-    }
-
-    /// <summary>
-    /// Parse comma seperated expressions until either
-    /// the close token is hit or no more commas are
-    /// encountered
-    /// </summary>
-    private bool ParseExprsUntil(TokenKind close, out List<INode>? exprs)
-    {
-        exprs = null;
-        while (_kind != close)
-        {
-            if (!ParseExpr(out var arg))
-                return false;
-
-            exprs ??= new List<INode>();
-            exprs.Add(arg);
-            if (!Skip(TokenKind.COMMA))
-                break;
-        }
         return true;
     }
 

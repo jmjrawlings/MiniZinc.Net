@@ -312,8 +312,30 @@ public partial class Parser
                     Flags = TypeFlags.Var
                 }
             };
-            if (!Expect(TokenKind.COLON))
-                return false;
+            Expect(TokenKind.COLON);
+        }
+        else if (_kind is TokenKind.POLYMORPHIC)
+        {
+            var id = _token.String!;
+            Step();
+            if (Skip(TokenKind.EQUAL))
+            {
+                if (!ParseExpr(out var expr))
+                    return false;
+                assign = Expr.Assign(name, expr);
+                return true;
+            }
+
+            var = new Variable
+            {
+                Type = new TypeInst
+                {
+                    Kind = TypeKind.PolyMorphic,
+                    Name = name,
+                    Flags = TypeFlags.Var
+                }
+            };
+            Expect(TokenKind.COLON);
         }
         else if (Skip(TokenKind.FUNCTION))
         {
@@ -323,9 +345,7 @@ public partial class Parser
             var = new Variable();
             var.Name = name;
             var.Type = type;
-            var.IsFunction = true;
-            if (!Expect(TokenKind.COLON))
-                return false;
+            Expect(TokenKind.COLON);
         }
         else if (Skip(TokenKind.PREDICATE))
         {
@@ -334,7 +354,6 @@ public partial class Parser
 
             var = new Variable();
             var.Type = new TypeInst { Kind = TypeKind.Bool, Flags = TypeFlags.Var };
-            var.IsFunction = true;
         }
         else if (Skip(TokenKind.TEST))
         {
@@ -343,7 +362,6 @@ public partial class Parser
 
             var = new Variable();
             var.Type = new TypeInst { Kind = TypeKind.Bool, Flags = TypeFlags.Par };
-            var.IsFunction = true;
         }
         else if (Skip(TokenKind.ANNOTATION))
         {
@@ -353,7 +371,6 @@ public partial class Parser
             var = new Variable();
             var.Type = new TypeInst { Kind = TypeKind.Annotation };
             var.Name = name;
-            var.IsFunction = true;
         }
         else if (Skip(TokenKind.ANY))
         {
@@ -367,35 +384,37 @@ public partial class Parser
         else if (ParseType(out var type))
         {
             var = new Variable { Type = type };
-            if (!Expect(TokenKind.COLON))
-                return false;
+            Expect(TokenKind.COLON);
         }
         else
         {
-            return Error("Expected a variable declaration or assignment");
+            Error("Expected a variable declaration or assignment");
         }
+
+        if (Err is not null)
+            return Error();
 
         if (!ParseIdent(out name))
             return false;
         var.Name = name;
 
-        if (var.IsFunction)
+        // Function call
+        if (_kind is TokenKind.OPEN_PAREN)
+        {
             if (!ParseParameters(out var pars))
                 return false;
-            else
-                var.Parameters = pars;
+            var.Parameters = pars;
+            var.IsFunction = true;
+        }
 
         if (!ParseAnnotations(var))
             return false;
 
         // Declaration only
-        if (_kind is TokenKind.EOL)
+        if (!Skip(TokenKind.EQUAL))
             return true;
 
-        // Assignment
-        if (!Expect(TokenKind.EQUAL))
-            return false;
-
+        // Assignment right hand side
         if (!ParseExpr(out var value))
             return false;
 
