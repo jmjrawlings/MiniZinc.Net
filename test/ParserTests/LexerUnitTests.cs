@@ -36,8 +36,8 @@
 
     [Theory]
     [InlineData(""" "abc" """)]
-    [InlineData(""" "Escaped single \'quotes\' are fine" """)]
-    [InlineData(""" "Escaped double \"quotes\" are fine" """)]
+    [InlineData(""" "Escaped \'quotes\' " """)]
+    [InlineData(""" "Escaped \"quotes\" " """)]
     void test_string_literal(string mzn)
     {
         TestTokens(mzn, TokenKind.STRING_LIT);
@@ -104,8 +104,7 @@
     {
         var mzn = @$" {'\r'}{'\t'}{'\n'} ";
         var tokens = Lexer.LexString(mzn).ToArray();
-        tokens.Should().HaveCount(1);
-        tokens[0].Kind.Should().Be(TokenKind.EOF);
+        tokens.Should().BeEmpty();
     }
 
     private string? Sanitize(string? s)
@@ -176,8 +175,7 @@
     void test_string(string mzn)
     {
         var tokens = Lexer.LexString(mzn).ToArray();
-        var last = tokens.Last();
-        last.Kind.Should().Be(TokenKind.EOF);
+        tokens.Should().BeEmpty();
     }
 
     public LexerUnitTests(ITestOutputHelper output)

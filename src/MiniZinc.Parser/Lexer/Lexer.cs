@@ -64,15 +64,17 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _string = string.Empty;
         _line = 1;
         _reader = reader;
+        Step();
     }
 
     public bool MoveNext()
     {
-        Step();
-
         next:
         while (IsWhiteSpace(_char))
             Step();
+
+        if (_char is EOF)
+            return false;
 
         _startPos = _pos;
         _startLine = _line;
@@ -80,9 +82,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _length = 1;
         switch (_char)
         {
-            case EOF:
-                Token(TokenKind.EOF);
-                return false;
             case PERCENT:
                 Step();
                 if (!LexLineComment())
@@ -118,7 +117,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Step();
                 if (SkipReturn(RIGHT_CHEVRON, TokenKind.EMPTY))
                     break;
-                if (SkipReturn(EQUAL, TokenKind.LESS_THAN))
+                if (SkipReturn(EQUAL, TokenKind.LESS_THAN_EQUAL))
                     break;
                 if (Skip(DASH))
                 {
@@ -248,24 +247,11 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Error(TokenKind.ERROR_UNEXPECTED_CHAR);
                 break;
             default:
-                if (IsDigit(_char))
-                {
-                    LexNumber();
+                if (LexNumber())
                     break;
-                }
 
-                if (IsLetter(_char))
-                {
-                    LexIdentifier();
-                    break;
-                }
-
-                ReadString();
-                var msg =
-                    $"Unexpected character \"{_char}\" found on line {_line}, col {_col}, position {_pos}";
-                if (!string.IsNullOrEmpty(_string))
-                    msg += $".  The contents of the string buffer were \"{_string}\"";
-                throw new Exception(msg);
+                LexIdentifier();
+                break;
         }
         return true;
     }
@@ -385,9 +371,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return true;
     }
 
-    private void Error(TokenKind kind)
+    private bool Error(TokenKind kind)
     {
         StringToken(kind);
+        return false;
     }
 
     private bool LexLineComment()
@@ -416,20 +403,20 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     void LexIdentifier(bool checkKeyword = true)
     {
-        identifier:
-        Store();
-
-        if (IsLetter(_char))
+        while (true)
         {
+            Store();
             Step();
-            goto identifier;
-        }
+            if (IsLetter(_char))
+                continue;
 
-        if (_char is UNDERSCORE || IsDigit(_char))
-        {
-            Step();
-            checkKeyword = false;
-            goto identifier;
+            if (_char is UNDERSCORE || IsDigit(_char))
+            {
+                checkKeyword = false;
+                continue;
+            }
+
+            break;
         }
 
         ReadString();
@@ -441,8 +428,11 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _token = new Token(_kind, _startLine, _startCol, _startPos, _length - 1, s: _string);
     }
 
-    private void LexStringLiteral()
+    private bool LexStringLiteral()
     {
+        if (_char is not DOUBLE_QUOTE)
+            return false;
+
         bool inExpr = false;
         bool escaped = false;
         string_literal:
@@ -450,10 +440,11 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         switch (_char)
         {
             case DOUBLE_QUOTE when escaped:
+                escaped = false;
                 break;
             case DOUBLE_QUOTE:
                 StringToken(TokenKind.STRING_LIT);
-                return;
+                return true;
             case CLOSE_PAREN when inExpr:
                 inExpr = false;
                 break;
@@ -465,8 +456,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 escaped = !escaped;
                 break;
             case EOF:
-                Error(TokenKind.ERROR_UNTERMINATED_STRING_LITERAL);
-                return;
+                return Error(TokenKind.ERROR_UNTERMINATED_STRING_LITERAL);
             default:
                 if (!escaped)
                     break;
@@ -477,24 +467,26 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
                 }
 
-                Error(TokenKind.ERROR_ESCAPED_STRING);
-                return;
+                return Error(TokenKind.ERROR_ESCAPED_STRING);
         }
 
         Store();
         goto string_literal;
     }
 
-    private void LexNumber()
+    private bool LexNumber()
     {
-        while (IsDigit(_char))
+        if (!IsDigit(_char))
+            return false;
+        do
         {
             Store();
             Step();
-        }
+        } while (IsDigit(_char));
 
         if (_char is DOT && FollowedByDigit)
         {
+            Store();
             Step();
             goto lex_float;
         }
@@ -508,7 +500,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _length - 1,
             i: int.Parse(_string!)
         );
-        return;
+        return true;
 
         lex_float:
         while (IsDigit(_char))
@@ -526,6 +518,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _length - 1,
             d: double.Parse(_string!)
         );
+        return true;
     }
 
     void Step()

@@ -108,7 +108,6 @@ internal enum TokenKind : sbyte
     PIPE,
     EMPTY,
     EOL,
-    EOF,
 
     // Errors
     ERROR,
