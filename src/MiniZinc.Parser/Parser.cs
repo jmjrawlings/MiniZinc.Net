@@ -39,7 +39,6 @@ public sealed partial class Parser
             _token = _buffer[_bufferIndex];
             _kind = _token.Kind;
             _pos++;
-            Debug.Write(_token.ToString());
             return true;
         }
 
@@ -53,7 +52,6 @@ public sealed partial class Parser
         _pos++;
         _token = _buffer[0];
         _kind = _token.Kind;
-        Debug.Write(_token.ToString());
         return _bufferCount > 0;
     }
 

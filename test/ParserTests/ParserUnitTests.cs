@@ -76,7 +76,7 @@ public class ParserUnitTests
 
     [Theory]
     [InlineData("solve satisfy;")]
-    [InlineData("solve maximize;")]
+    [InlineData("solve maximize abc;")]
     void test_parse_solve(string mzn)
     {
         var p = Parse(mzn);

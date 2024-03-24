@@ -70,11 +70,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     public bool MoveNext()
     {
         next:
+        if (_char is EOF)
+        {
+            Token(TokenKind.EOF);
+            return false;
+        }
+
         while (IsWhiteSpace(_char))
             Step();
-
-        if (_char is EOF)
-            return false;
 
         _startPos = _pos;
         _startLine = _line;
@@ -82,6 +85,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _length = 1;
         switch (_char)
         {
+            case EOF:
+                Token(TokenKind.EOF);
+                return false;
+
             case PERCENT:
                 Step();
                 if (!LexLineComment())
@@ -346,22 +353,21 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     private bool LexBlockComment()
     {
-        next:
-        switch (_char)
+        while (true)
         {
-            case STAR:
-                Step();
+            if (Skip(STAR))
+            {
                 if (Skip(FWD_SLASH))
                     break;
-                goto next;
-            case EOF:
-                Error(TokenKind.ERROR_UNTERMINATED_BLOCK_COMMENT);
-                return true;
-            default:
-                if (LexBlockComments)
-                    Store();
-                Step();
-                goto next;
+            }
+            else if (_char is EOF)
+            {
+                return Error(TokenKind.ERROR_UNTERMINATED_BLOCK_COMMENT);
+            }
+
+            if (LexBlockComments)
+                Store();
+            Step();
         }
 
         if (!LexBlockComments)
@@ -433,16 +439,27 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         if (_char is not DOUBLE_QUOTE)
             return false;
 
+#if DEBUG
+        var sb = new StringBuilder();
+        sb.Append(_char);
+#endif
+
         bool inExpr = false;
         bool escaped = false;
         string_literal:
         Step();
+
+#if DEBUG
+        sb.Append(_char);
+#endif
+
         switch (_char)
         {
             case DOUBLE_QUOTE when escaped:
                 escaped = false;
                 break;
             case DOUBLE_QUOTE:
+                Step();
                 StringToken(TokenKind.STRING_LIT);
                 return true;
             case CLOSE_PAREN when inExpr:
@@ -466,6 +483,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     escaped = false;
                     break;
                 }
+
+#if DEBUG
+                var s = _sb.ToString();
+#endif
 
                 return Error(TokenKind.ERROR_ESCAPED_STRING);
         }
