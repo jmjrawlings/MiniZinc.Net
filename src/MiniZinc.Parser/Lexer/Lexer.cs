@@ -262,7 +262,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     private void LexPolymorphicIdentifier()
     {
-        Step();
         if (!IsLetter(_char))
         {
             Error(TokenKind.ERROR_POLYMORPHIC_IDENTIFIER);
@@ -341,12 +340,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case NEWLINE:
             case EOF:
                 Error(TokenKind.ERROR_QUOTED_IDENT);
-                return;
+                break;
             default:
                 Store();
                 goto quoted_identifier;
         }
 
+        Step();
         StringToken(TokenKind.QUOTED_IDENT);
     }
 
@@ -525,7 +525,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return true;
 
         lex_float:
-        while (IsDigit(_char))
+        while (IsDigit(_char) || _char is 'e')
         {
             Store();
             Step();
@@ -580,6 +580,9 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     bool FollowedByLetter => IsLetter(Peek);
 
+    /// <summary>
+    /// Store the current character in the string builder
+    /// </summary>
     void Store()
     {
         _sb.Append(_char);

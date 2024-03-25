@@ -112,6 +112,12 @@ public partial class Parser
                     return false;
                 break;
 
+            case TokenKind.QUOTED_IDENT:
+                if (!ParseIdent(out var id))
+                    return false;
+                expr = Expr.Ident(id);
+                break;
+
             case TokenKind.EMPTY:
                 Step();
                 expr = Expr.Empty;
@@ -861,6 +867,9 @@ public partial class Parser
             if (!Skip(TokenKind.COMMA))
                 return Expect(TokenKind.CLOSE_PAREN);
 
+            if (Skip(TokenKind.CLOSE_PAREN))
+                return true;
+
             if (!ParseExpr(out name))
                 return false;
 
@@ -904,6 +913,18 @@ public partial class Parser
                 return Error();
 
             target.Annotate(ann);
+        }
+
+        return true;
+    }
+
+    public bool ParseStringAnnotations(IAnnotations target)
+    {
+        while (Skip(TokenKind.COLON_COLON))
+        {
+            if (!ParseString(out var ann))
+                return false;
+            target.Annotate(Expr.String(ann));
         }
 
         return true;

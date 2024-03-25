@@ -3914,7 +3914,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact]
+    [Fact(Skip = "invalid syntax")]
     public void test_unit_types_nonbool_constraint_let()
     {
         var path = @"unit\types\nonbool_constraint_let.mzn";

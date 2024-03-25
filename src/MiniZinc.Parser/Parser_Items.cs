@@ -13,58 +13,57 @@ public partial class Parser
         model = new Model();
         Step();
 
-        next:
-        switch (_kind)
+        while (!_fin)
         {
-            case TokenKind.EOF:
-                return true;
+            switch (_kind)
+            {
+                case TokenKind.INCLUDE:
+                    if (!ParseIncludeItem(model))
+                        return false;
+                    break;
 
-            case TokenKind.INCLUDE:
-                if (!ParseIncludeItem(model))
-                    return false;
-                break;
+                case TokenKind.CONSTRAINT:
+                    if (!ParseConstraintItem(out var cons))
+                        return false;
+                    model.Constraints.Add(cons);
+                    break;
 
-            case TokenKind.CONSTRAINT:
-                if (!ParseConstraintItem(out var cons))
-                    return false;
-                model.Constraints.Add(cons);
-                break;
+                case TokenKind.SOLVE:
+                    if (!ParseSolveItem(model))
+                        return false;
+                    break;
 
-            case TokenKind.SOLVE:
-                if (!ParseSolveItem(model))
-                    return false;
-                break;
+                case TokenKind.OUTPUT:
+                    if (!ParseOutputItem(model))
+                        return false;
+                    break;
 
-            case TokenKind.OUTPUT:
-                if (!ParseOutputItem(model))
-                    return false;
-                break;
+                case TokenKind.ENUM:
+                    if (!ParseEnumItem(out var @enum))
+                        return false;
+                    model.NameSpace.Push(@enum.Name, @enum);
+                    break;
 
-            case TokenKind.ENUM:
-                if (!ParseEnumItem(out var @enum))
-                    return false;
-                model.NameSpace.Push(@enum.Name, @enum);
-                break;
+                case TokenKind.TYPE:
+                    if (!ParseAliasItem(model))
+                        return false;
+                    break;
 
-            case TokenKind.TYPE:
-                if (!ParseAliasItem(model))
-                    return false;
-                break;
+                case TokenKind.BLOCK_COMMENT:
+                case TokenKind.LINE_COMMENT:
+                    Step();
+                    break;
 
-            case TokenKind.BLOCK_COMMENT:
-            case TokenKind.LINE_COMMENT:
-                Step();
-                break;
-
-            default:
-                if (!ParseDeclareOrAssignItem(out var declare, out var assign))
-                    return false;
-                if (!Expect(TokenKind.EOL))
-                    return false;
-                break;
+                default:
+                    if (!ParseDeclareOrAssignItem(out var declare, out var assign))
+                        return false;
+                    if (!Expect(TokenKind.EOL))
+                        return false;
+                    break;
+            }
         }
 
-        goto next;
+        return true;
     }
 
     /// <summary>
@@ -174,10 +173,15 @@ public partial class Parser
         if (!Expect(TokenKind.OUTPUT))
             return false;
 
+        var output = new OutputItem();
+
+        if (!ParseStringAnnotations(output))
+            return false;
+
         if (!ParseExpr(out var expr))
             return false;
 
-        var output = new OutputItem { Expr = expr };
+        output.Expr = expr;
         model.Outputs.Add(output);
         return Expect(TokenKind.EOL);
     }
@@ -277,7 +281,7 @@ public partial class Parser
         if (!ParseExpr(out var expr))
             return false;
 
-        if (!ParseAnnotations(constraint))
+        if (!ParseStringAnnotations(constraint))
             return false;
 
         constraint.Expr = expr;
@@ -397,7 +401,7 @@ public partial class Parser
 
         if (!ParseIdent(out name))
             return false;
-        var.Name = name;
+        var!.Name = name;
 
         // Function call
         if (_kind is TokenKind.OPEN_PAREN)

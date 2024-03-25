@@ -34,19 +34,15 @@ public sealed partial class Parser
     }
 
     /// Progress the parser
-    public void Step()
+    public bool Step()
     {
         if (_fin)
-        {
-            Error("End of File");
-            return;
-        }
+            return false;
 
         if (!_lexer.MoveNext())
         {
             _fin = true;
-            _kind = TokenKind.EOF;
-            return;
+            return false;
         }
 
         _token = _lexer.Current;
@@ -54,7 +50,7 @@ public sealed partial class Parser
         _pos = _token.Position;
 
         if (_trace is null)
-            return;
+            return true;
 
         if (_line < _token.Line)
         {
@@ -71,6 +67,7 @@ public sealed partial class Parser
         var s = _token.ToString();
         _trace.Append(s);
         _col += _token.Length;
+        return true;
     }
 
     // // Read token from the buffer if possible
@@ -159,7 +156,17 @@ public sealed partial class Parser
         return false;
     }
 
-    private bool ParseIdent(out string name) => ParseString(out name, TokenKind.IDENT);
+    private bool ParseIdent(out string id)
+    {
+        if (_kind is TokenKind.IDENT or TokenKind.QUOTED_IDENT)
+        {
+            id = _token.String!;
+            Step();
+            return true;
+        }
+        id = string.Empty;
+        return false;
+    }
 
     /// Record the given message as an error and return false
     private bool Error(string? msg = null)
