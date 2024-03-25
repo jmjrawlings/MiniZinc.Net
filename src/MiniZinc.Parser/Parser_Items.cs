@@ -11,11 +11,14 @@ public partial class Parser
     public bool ParseModel(out Model model)
     {
         model = new Model();
-        if (!Step())
-            return false;
+        Step();
+
         next:
         switch (_kind)
         {
+            case TokenKind.EOF:
+                return true;
+
             case TokenKind.INCLUDE:
                 if (!ParseIncludeItem(model))
                     return false;

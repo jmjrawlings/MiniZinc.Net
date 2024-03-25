@@ -8,52 +8,92 @@ using System.Text;
 /// </summary>
 public sealed partial class Parser
 {
-    private readonly IEnumerator<Token> _tokens;
-    private readonly Queue<Token> _cache;
+    private readonly IEnumerator<Token> _lexer;
     private readonly Stopwatch _watch;
     private Token _token;
     private TokenKind _kind;
-    private int _bufferIndex;
-    private int _bufferCount;
-    private Token[] _buffer;
-    private int _pos;
+    private uint _pos;
+    private uint _line;
+    private uint _col;
     public string? Err;
+    private bool _fin;
+    private StringBuilder? _trace;
+
     public TimeSpan Elapsed => _watch.Elapsed;
 
-    internal Parser(IEnumerator<Token> tokens)
+    internal Parser(IEnumerator<Token> lexer)
     {
         _watch = Stopwatch.StartNew();
-        _tokens = tokens;
-        _buffer = new Token[1024];
-        _bufferIndex = -1;
-        _bufferCount = 0;
+        _lexer = lexer;
         _pos = 0;
+        _line = 1;
+        _col = 1;
+#if DEBUG
+        _trace = new StringBuilder();
+#endif
     }
 
     /// Progress the parser
-    public bool Step()
+    public void Step()
     {
-        // Read token from the buffer if possible
-        if (++_bufferIndex < _bufferCount)
+        if (_fin)
         {
-            _token = _buffer[_bufferIndex];
-            _kind = _token.Kind;
-            _pos++;
-            return true;
+            Error("End of File");
+            return;
         }
 
-        // Fill the buffer from the source
-        _bufferIndex = 0;
-        _bufferCount = 0;
+        if (!_lexer.MoveNext())
+        {
+            _fin = true;
+            _kind = TokenKind.EOF;
+            return;
+        }
 
-        while (_bufferCount < _buffer.Length && _tokens.MoveNext())
-            _buffer[_bufferCount++] = _tokens.Current;
-
-        _pos++;
-        _token = _buffer[0];
+        _token = _lexer.Current;
         _kind = _token.Kind;
-        return _bufferCount > 0;
+        _pos = _token.Position;
+
+        if (_trace is null)
+            return;
+
+        if (_line < _token.Line)
+        {
+            _col = 1;
+            _trace.Append('\n');
+        }
+
+        _line = _token.Line;
+        while (_col < _token.Col)
+        {
+            _trace.Append(' ');
+            _col++;
+        }
+        var s = _token.ToString();
+        _trace.Append(s);
+        _col += _token.Length;
     }
+
+    // // Read token from the buffer if possible
+    // if (++_bufferIndex < _bufferCount)
+    // {
+    //     _token = _buffer[_bufferIndex];
+    //     _kind = _token.Kind;
+    //     _pos++;
+    //     return true;
+    // }
+    //
+    // // Fill the buffer from the source
+    // _bufferIndex = 0;
+    // _bufferCount = 0;
+    //
+    // while (_bufferCount < _buffer.Length && _tokens.MoveNext())
+    //     _buffer[_bufferCount++] = _tokens.Current;
+    //
+    // _pos++;
+    // _token = _buffer[0];
+    // _kind = _token.Kind;
+    // return _bufferCount > 0;
+
 
     /// Progress the parser if the current token is of the given kind
     private bool Skip(TokenKind kind)
@@ -128,35 +168,16 @@ public sealed partial class Parser
             return false;
 
         _watch.Stop();
-        var sb = new StringBuilder();
-        for (int i = 0; i <= _bufferIndex; i++)
-        {
-            var token = _buffer[i];
-            if (token.Kind <= TokenKind.XOR)
-            {
-                sb.Append(' ');
-                sb.Append(token.ToString());
-                sb.Append(' ');
-            }
-            else
-            {
-                sb.Append(token.ToString());
-            }
-
-            if (token.Kind is TokenKind.EOL)
-                sb.AppendLine();
-        }
-
-        var trace = sb.ToString();
-
+        var trace = _trace?.ToString() ?? string.Empty;
         var message = $"""
-             An error occured after {Elapsed}
-             Position {_pos}
-             Token {_kind}
-             Line {_token.Line}
-             Column {_token.Col})
+             
              ---------------------------------------------
              {msg}
+             ---------------------------------------------
+             Token {_kind}
+             Line {_token.Line}
+             Col {_token.Col}
+             Pos {_pos}
              ---------------------------------------------
              {trace}
              """;

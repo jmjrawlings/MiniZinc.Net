@@ -13,7 +13,8 @@ public sealed class ParserTests
         parser.ParseModel(out var model);
         if (parser.Err is { } err)
         {
-            var msg = $"{err}\n\n------------------------------------\n{text}";
+            var msg =
+                $"{err}\n\n======================= FULL OUTPUT ==========================\n{text}";
             Assert.Fail(msg);
         }
     }

@@ -14,7 +14,7 @@ internal readonly struct Token(
     public readonly TokenKind Kind = kind;
     public readonly uint Line = line;
     public readonly uint Col = col;
-    public readonly uint Start = start;
+    public readonly uint Position = start;
     public readonly uint Length = length;
     public readonly int Int = i;
     public readonly string? String = s;
@@ -109,7 +109,7 @@ internal readonly struct Token(
             TokenKind.PIPE => "|",
             TokenKind.EMPTY => "<>",
             TokenKind.INT_LIT => Int.ToString(),
-            TokenKind.FLOAT_LIT => Double.ToString(),
+            TokenKind.FLOAT_LIT => Double.ToString("F2"),
             TokenKind.STRING_LIT => $"\"{String}\"",
             TokenKind.ANONENUM => "anon_enum",
             TokenKind.DOUBLE_ARROW => "<->",
@@ -118,6 +118,7 @@ internal readonly struct Token(
             TokenKind.NOT_EQUAL => "!=",
             TokenKind.EXP => "^",
             TokenKind.COMMA => ",",
+            TokenKind.POLYMORPHIC => $"$${String}",
             _ => String ?? string.Empty
         };
 }

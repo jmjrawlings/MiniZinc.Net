@@ -49,6 +49,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private uint _length;
     private string? _string;
     private char _char;
+    private bool _fin;
     private Token _token;
     private TokenKind _kind;
     private readonly StreamReader _reader;
@@ -70,14 +71,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     public bool MoveNext()
     {
         next:
-        if (_char is EOF)
-        {
-            Token(TokenKind.EOF);
+        if (_fin)
             return false;
-        }
-
-        while (IsWhiteSpace(_char))
-            Step();
 
         _startPos = _pos;
         _startLine = _line;
@@ -85,10 +80,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _length = 1;
         switch (_char)
         {
-            case EOF:
-                Token(TokenKind.EOF);
-                return false;
-
             case PERCENT:
                 Step();
                 if (!LexLineComment())
@@ -253,6 +244,12 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
                 Error(TokenKind.ERROR_UNEXPECTED_CHAR);
                 break;
+            case '\t':
+            case '\n':
+            case '\r':
+            case ' ':
+                Step();
+                goto next;
             default:
                 if (LexNumber())
                     break;
@@ -302,12 +299,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private void StringToken(TokenKind kind)
     {
         ReadString();
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length, s: _string);
+        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, s: _string);
+        _length = 1;
     }
 
     private void Token(TokenKind kind)
     {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length);
+        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1);
+        _length = 1;
     }
 
     private bool SkipReturn(char c, TokenKind kind)
@@ -432,6 +431,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _kind = TokenKind.IDENT;
 
         _token = new Token(_kind, _startLine, _startCol, _startPos, _length - 1, s: _string);
+        _length = 1;
     }
 
     private bool LexStringLiteral()
@@ -515,12 +515,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         ReadString();
         _token = new Token(
             _kind = TokenKind.INT_LIT,
-            _line,
-            _col,
+            _startLine,
+            _startCol,
             _startPos,
             _length - 1,
             i: int.Parse(_string!)
         );
+        _length = 1;
         return true;
 
         lex_float:
@@ -533,18 +534,28 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         _token = new Token(
             _kind = TokenKind.FLOAT_LIT,
-            _line,
-            _col,
+            _startLine,
+            _startCol,
             _startPos,
             _length - 1,
             d: double.Parse(_string!)
         );
+        _length = 1;
         return true;
     }
 
     void Step()
     {
+        if (_fin)
+            return;
+
         _char = (char)_reader.Read();
+        if (_char is EOF)
+        {
+            _fin = true;
+            return;
+        }
+
         _pos++;
         _length++;
         _col++;
