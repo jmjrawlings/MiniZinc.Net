@@ -423,6 +423,9 @@ public partial class Parser
         if (!ParseExpr(out var value))
             return false;
 
+        if (!ParseAnnotations(var))
+            return false;
+
         var.Body = value;
         return true;
     }

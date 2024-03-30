@@ -156,14 +156,16 @@ public partial class Parser
     /// </summary>
     /// <mzn>int: a</mzn>
     /// <mzn>bool: ABC</mzn>
+    /// <mzn>any $$T</mzn>
     public bool ParseTypeAndName(out Binding<TypeInst> result)
     {
         result = default;
         if (!ParseType(out var type))
             return false;
 
-        if (!Expect(TokenKind.COLON))
-            return false;
+        if (type.Kind is not TypeKind.Any)
+            if (!Expect(TokenKind.COLON))
+                return false;
 
         if (!ParseIdent(out var name))
             return false;

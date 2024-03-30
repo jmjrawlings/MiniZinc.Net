@@ -539,17 +539,17 @@ public sealed class Writer
         Write(PIPE);
         int x = 0;
 
-        for (int i = 0; i < expr.I; i++)
+        for (int i = 0; i < expr.Rows; i++)
         {
-            for (int j = 0; j < expr.J; j++)
+            for (int j = 0; j < expr.Cols; j++)
             {
-                var ele = expr.Elements[x++];
-                WriteExpr(ele);
-                if (j < expr.J - 1)
+                var v = expr.Elements[x++];
+                WriteExpr(v);
+                if (j < expr.Cols - 1)
                     Write(COMMA);
             }
             Write(PIPE);
-            if (i < expr.I - 1)
+            if (i < expr.Rows - 1)
                 Write(COMMA);
         }
         Write(CLOSE_BRACKET);

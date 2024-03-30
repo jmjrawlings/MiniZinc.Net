@@ -3,7 +3,7 @@
 /// <summary>
 /// A variable
 /// </summary>
-public sealed record Variable : INamed, INode, IAnnotations, ILetLocal
+public sealed record Variable : INamed, IAnnotations, ILetLocal
 {
     public string Name { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using MiniZinc.Parser.Ast;
+using INode = FluentAssertions.Equivalency.INode;
 
 public static class ParserExtensions
 {
@@ -107,12 +108,62 @@ public class ParserUnitTests
         expr.Should().BeOfType<ArrayAccessExpr>();
     }
 
-    [Fact]
-    void test_xd()
+    [Theory]
+    [InlineData("[ 1: 1, 2: 2, 3: 3, 4: 4, 5: 5]")]
+    [InlineData("[ A: 0, B: 3, C: 5]")]
+    [InlineData("[ (1,2): 1, (1,3): 2, (2,2): 3, (2,3): 4]")]
+    [InlineData("[ 1: 1, 4: 2, 5: 3, 3: 4, 2: 5]")]
+    [InlineData("[ 1: 1, 2, 3, 4]")]
+    void test_indexed_array_1d(string mzn)
     {
-        var mzn = "forall ( i in 1..n, j in 0..(k - 1) ) ( a[Fst[i] + j * (i + 1)] = i );";
-        var p = Parse(mzn);
-        p.ParseExpr(out var cons);
-        p.Check();
+        var parser = Parse(mzn);
+        parser.ParseBracketExpr(out var expr);
+        expr.Should().BeOfType<Array1DLit>();
+        var arr = (Array1DLit)expr;
+
+        parser.Check();
     }
+
+    [Fact]
+    void test_array_2d_column_indexed()
+    {
+        var mzn = "[| A: B: C:\n | 0, 0, 0\n | 1, 1, 1\n | 2, 2, 2 |];";
+        var parser = Parse(mzn);
+        parser.ParseBracketExpr(out var expr);
+        expr.Should().BeOfType<Array2DLit>();
+        var arr = (Array2DLit)expr;
+        arr.RowIndexed.Should().BeFalse();
+        arr.ColIndexed.Should().BeTrue();
+        arr.Indices[0].ToString().Should().Be("A");
+        arr.Indices[1].ToString().Should().Be("B");
+        arr.Indices[2].ToString().Should().Be("C");
+    }
+
+    [Fact]
+    void test_array_2d_row_indexed()
+    {
+        var mzn = "[| A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |];";
+        var parser = Parse(mzn);
+        parser.ParseBracketExpr(out var expr);
+        expr.Should().BeOfType<Array2DLit>();
+        var arr = (Array2DLit)expr;
+        arr.RowIndexed.Should().BeTrue();
+        arr.ColIndexed.Should().BeFalse();
+        arr.Indices[0].ToString().Should().Be("A");
+        arr.Indices[1].ToString().Should().Be("B");
+        arr.Indices[2].ToString().Should().Be("C");
+    }
+
+    // [Theory]
+    // [InlineData("[| A: B: C:\n | 0, 0, 0\n | 1, 1, 1\n | 2, 2, 2 |];")]
+    // [InlineData("")]
+    // [InlineData("[|    A: B: C:\n | A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |]")]
+    // void test_indexed_array_2d(string mzn)
+    // {
+    //     var parser = Parse(mzn);
+    //     parser.ParseBracketExpr(out var expr);
+    //     expr.Should().BeOfType<Array2DLit>();
+    //     var arr = (Array2DLit)expr;
+    //     parser.Check();
+    // }
 }
