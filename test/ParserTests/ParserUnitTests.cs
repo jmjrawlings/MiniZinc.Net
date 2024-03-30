@@ -125,7 +125,7 @@ public class ParserUnitTests
     }
 
     [Fact]
-    void test_array_2d_column_indexed()
+    void test_array2d_column_indexed()
     {
         var mzn = "[| A: B: C:\n | 0, 0, 0\n | 1, 1, 1\n | 2, 2, 2 |];";
         var parser = Parse(mzn);
@@ -134,13 +134,15 @@ public class ParserUnitTests
         var arr = (Array2DLit)expr;
         arr.RowIndexed.Should().BeFalse();
         arr.ColIndexed.Should().BeTrue();
+        arr.Elements.Should().HaveCount(9);
+        arr.Indices.Should().HaveCount(3);
         arr.Indices[0].ToString().Should().Be("A");
         arr.Indices[1].ToString().Should().Be("B");
         arr.Indices[2].ToString().Should().Be("C");
     }
 
     [Fact]
-    void test_array_2d_row_indexed()
+    void test_array2d_row_indexed()
     {
         var mzn = "[| A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |];";
         var parser = Parse(mzn);
@@ -149,21 +151,30 @@ public class ParserUnitTests
         var arr = (Array2DLit)expr;
         arr.RowIndexed.Should().BeTrue();
         arr.ColIndexed.Should().BeFalse();
+        arr.Elements.Should().HaveCount(9);
+        arr.Indices.Should().HaveCount(3);
         arr.Indices[0].ToString().Should().Be("A");
         arr.Indices[1].ToString().Should().Be("B");
         arr.Indices[2].ToString().Should().Be("C");
     }
 
-    // [Theory]
-    // [InlineData("[| A: B: C:\n | 0, 0, 0\n | 1, 1, 1\n | 2, 2, 2 |];")]
-    // [InlineData("")]
-    // [InlineData("[|    A: B: C:\n | A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |]")]
-    // void test_indexed_array_2d(string mzn)
-    // {
-    //     var parser = Parse(mzn);
-    //     parser.ParseBracketExpr(out var expr);
-    //     expr.Should().BeOfType<Array2DLit>();
-    //     var arr = (Array2DLit)expr;
-    //     parser.Check();
-    // }
+    [Fact]
+    void test_array2d_dual_indexed()
+    {
+        var mzn = "[| A: B: C:\n | A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |]";
+        var parser = Parse(mzn);
+        parser.ParseBracketExpr(out var expr);
+        expr.Should().BeOfType<Array2DLit>();
+        var arr = (Array2DLit)expr;
+        arr.RowIndexed.Should().BeTrue();
+        arr.ColIndexed.Should().BeTrue();
+        arr.Elements.Should().HaveCount(9);
+        arr.Indices.Should().HaveCount(6);
+        arr.Indices[0].ToString().Should().Be("A");
+        arr.Indices[1].ToString().Should().Be("B");
+        arr.Indices[2].ToString().Should().Be("C");
+        arr.Indices[3].ToString().Should().Be("A");
+        arr.Indices[4].ToString().Should().Be("B");
+        arr.Indices[5].ToString().Should().Be("C");
+    }
 }
