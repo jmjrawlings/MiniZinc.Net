@@ -728,7 +728,7 @@ public partial class Parser
                 if (!Skip(TokenKind.COMMA))
                     break;
             }
-            if (Expect(TokenKind.PIPE))
+            if (!Expect(TokenKind.PIPE))
                 return false;
 
             if (Skip(TokenKind.CLOSE_BRACKET))
