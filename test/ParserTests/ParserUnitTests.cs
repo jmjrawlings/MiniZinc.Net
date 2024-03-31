@@ -177,4 +177,17 @@ public class ParserUnitTests
         arr.Indices[4].ToString().Should().Be("B");
         arr.Indices[5].ToString().Should().Be("C");
     }
+
+    [Fact]
+    void test_array2d_no_index()
+    {
+        var mzn = "[| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 | 0, _, _, _, _, _, _, _, _, _, _, 0|]";
+        var parser = Parse(mzn);
+        parser.ParseBracketExpr(out var expr);
+        expr.Should().BeOfType<Array2DLit>();
+        var arr = (Array2DLit)expr;
+        arr.RowIndexed.Should().BeFalse();
+        arr.ColIndexed.Should().BeFalse();
+        arr.Elements.Should().HaveCount(24);
+    }
 }

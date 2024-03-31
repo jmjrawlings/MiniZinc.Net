@@ -597,168 +597,49 @@ public partial class Parser
         if (!Skip(TokenKind.OPEN_BRACKET))
             return false;
 
-        INode index;
-        INode value;
-        INode element;
-        bool indexed = false;
-
         if (_kind is TokenKind.CLOSE_BRACKET)
         {
-            // Empty Array
             result = new Array1DLit();
             return Expect(TokenKind.CLOSE_BRACKET);
         }
 
         if (Skip(TokenKind.PIPE))
         {
-            /* 2D array literal
-             * Simple:
-             *  `[| 1, 2, 3 | 4, 5, 6 |]`
-             *
-             * Only column index:
-             *  [| A: B: C:
-             *   | 0, 0, 0
-             *   | 1, 1, 1
-             *   | 2, 2, 2 |];
-             *
-             * Only row index:
-             * [| A: 0, 0, 0
-             *  | B: 1, 1, 1
-             *  | C: 2, 2, 2 |];
-             *
-             * Row and column index:
-             * [|    A: B: C:
-             *  | A: 0, 0, 0
-             *  | B: 1, 1, 1
-             *  | C: 2, 2, 2 |];
-             */
-            var arr2d = new Array2DLit();
+            if (!Parse2dArrayLiteral(out var arr2d))
+                return false;
             result = arr2d;
-
-            if (Skip(TokenKind.PIPE))
-                return Expect(TokenKind.CLOSE_BRACKET);
-
-            /* Parse the first row to try and infer what sort of
-             * indexing is being used.
-             *
-             * Again it would be great to have backtracking here but
-             * oh well */
-            int j = 0;
-            while (_kind is not TokenKind.PIPE)
-            {
-                j++;
-
-                if (!ParseExpr(out value))
-                    return false;
-
-                if (Skip(TokenKind.COLON))
-                {
-                    if (j > 1)
-                    {
-                        arr2d.RowIndexed = false;
-                        arr2d.ColIndexed = true;
-                    }
-
-                    indexed = true;
-                    arr2d.Indices.Add(value);
-                    continue;
-                }
-
-                if (indexed)
-                {
-                    arr2d.RowIndexed = true;
-                    arr2d.Elements.Add(value);
-                }
-                else
-                {
-                    arr2d.Elements.Add(value);
-                }
-
-                if (!Skip(TokenKind.COMMA))
-                    break;
-            }
-
-            arr2d.Rows = 1;
-            arr2d.Cols = j;
-
-            if (!Expect(TokenKind.PIPE))
-                return false;
-
-            if (Skip(TokenKind.CLOSE_BRACKET))
-                return true;
-
-            /* Use the second row if necessary to detect dual
-             * indexing */
-            if (indexed && !arr2d.RowIndexed)
-            {
-                if (!ParseExpr(out value))
-                    return false;
-
-                if (Skip(TokenKind.COLON))
-                {
-                    arr2d.Indices.Add(value);
-                    arr2d.RowIndexed = true;
-                }
-                else
-                {
-                    arr2d.Elements.Add(value);
-                    Skip(TokenKind.COMMA);
-                }
-                goto parse_row_values;
-            }
-
-            parse_row_index:
-            if (!ParseExpr(out value))
-                return false;
-
-            if (!Expect(TokenKind.COLON))
-                return false;
-
-            arr2d.Indices.Add(value);
-
-            parse_row_values:
-            arr2d.Rows++;
-            while (_kind is not TokenKind.PIPE)
-            {
-                if (!ParseExpr(out value))
-                    return false;
-
-                arr2d.Elements.Add(value);
-
-                if (!Skip(TokenKind.COMMA))
-                    break;
-            }
-            if (!Expect(TokenKind.PIPE))
-                return false;
-
-            if (Skip(TokenKind.CLOSE_BRACKET))
-                return true;
-
-            if (arr2d.RowIndexed)
-                goto parse_row_index;
-
-            goto parse_row_values;
+            return true;
         }
 
-        /*
-         * 1D array literals.
-         *
-         * `[1, 2, 3, a, 5]`
-         *
-         * These could be of a simple form like:
-         * Or an indexed form like
-         * `[A:0, B:1, C:2]`
-         *
-         * Or a composite form like
-         * `[0: A, B, C, D]`
-         */
+        if (!Parse1dArrayLiteral(out result))
+            return false;
+        return true;
+    }
+
+    /*
+     * 1D array literals.
+     *
+     * `[1, 2, 3, a, 5]`
+     *
+     * These could be of a simple form like:
+     * Or an indexed form like
+     * `[A:0, B:1, C:2]`
+     *
+     * Or a composite form like
+     * `[0: A, B, C, D]`
+     */
+    bool Parse1dArrayLiteral(out INode result)
+    {
+        result = default!;
+        INode index;
+        INode element;
 
         // Parse the first element
-        if (!ParseExpr(out value))
+        if (!ParseExpr(out var value))
             return false;
 
         // Determine if its an indexed array
-        indexed = Skip(TokenKind.COLON);
+        bool indexed = Skip(TokenKind.COLON);
         if (indexed)
         {
             index = value;
@@ -821,6 +702,149 @@ public partial class Parser
 
             arr1d.Elements.Add(element);
         }
+    }
+
+    /* 2D array literal
+     * Simple:
+     *  `[| 1, 2, 3 | 4, 5, 6 |]`
+     *
+     * Only column index:
+     *  [| A: B: C:
+     *   | 0, 0, 0
+     *   | 1, 1, 1
+     *   | 2, 2, 2 |];
+     *
+     * Only row index:
+     * [| A: 0, 0, 0
+     *  | B: 1, 1, 1
+     *  | C: 2, 2, 2 |];
+     *
+     * Row and column index:
+     * [|    A: B: C:
+     *  | A: 0, 0, 0
+     *  | B: 1, 1, 1
+     *  | C: 2, 2, 2 |];
+     */
+    private bool Parse2dArrayLiteral(out Array2DLit arr)
+    {
+        arr = new Array2DLit();
+        bool rowIndex = false;
+        bool colIndex = false;
+        int j = 1;
+
+        if (Skip(TokenKind.PIPE))
+            return Expect(TokenKind.CLOSE_BRACKET);
+
+        if (!ParseExpr(out var value))
+            return false;
+
+        if (!Skip(TokenKind.COLON))
+        {
+            // If first value is not an index skip the rest of the check
+            arr.Elements.Add(value);
+            Skip(TokenKind.COMMA);
+            goto parse_row_values;
+        }
+
+        arr.Indices.Add(value);
+
+        if (Skip(TokenKind.PIPE))
+        {
+            colIndex = true;
+            goto parse_row_values;
+        }
+
+        colIndex = true;
+        rowIndex = true;
+
+        while (_kind is not TokenKind.PIPE)
+        {
+            j++;
+
+            if (!ParseExpr(out value))
+                return false;
+
+            if (Skip(TokenKind.COLON))
+            {
+                if (!colIndex)
+                    return Error("Invalid : in row indexed array literal");
+
+                rowIndex = false;
+                arr.Indices.Add(value);
+                continue;
+            }
+
+            colIndex = false;
+            arr.Elements.Add(value);
+
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
+
+        arr.Rows = 1;
+        arr.Cols = j;
+        arr.RowIndexed = rowIndex;
+        arr.ColIndexed = colIndex;
+
+        if (!Expect(TokenKind.PIPE))
+            return false;
+
+        if (Skip(TokenKind.CLOSE_BRACKET))
+            return true;
+
+        /* Use the second row if necessary to detect dual
+         * indexing */
+        if (!rowIndex)
+        {
+            if (!ParseExpr(out value))
+                return false;
+
+            if (Skip(TokenKind.COLON))
+            {
+                rowIndex = true;
+                arr.RowIndexed = rowIndex;
+                arr.Indices.Add(value);
+            }
+            else
+            {
+                arr.Elements.Add(value);
+                Skip(TokenKind.COMMA);
+            }
+            goto parse_row_values;
+        }
+
+        parse_row_index:
+        if (!ParseExpr(out value))
+            return false;
+
+        if (!Expect(TokenKind.COLON))
+            return false;
+
+        arr.Indices.Add(value);
+
+        parse_row_values:
+        arr.Rows++;
+        while (_kind is not TokenKind.PIPE)
+        {
+            if (!ParseExpr(out value))
+                return false;
+
+            arr.Elements.Add(value);
+
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
+
+        if (!Expect(TokenKind.PIPE))
+            return false;
+
+        if (Skip(TokenKind.CLOSE_BRACKET))
+            return true;
+
+        if (rowIndex)
+            goto parse_row_index;
+        else
+            goto parse_row_values;
     }
 
     /// <summary>
