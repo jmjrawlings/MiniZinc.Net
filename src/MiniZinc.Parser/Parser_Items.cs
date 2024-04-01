@@ -239,7 +239,7 @@ public partial class Parser
         if (!ParseAnnotations(item))
             return false;
 
-        INode objective = Expr.Null;
+        IExpr objective = Expr.Null;
         switch (_token.Kind)
         {
             case TokenKind.SATISFY:

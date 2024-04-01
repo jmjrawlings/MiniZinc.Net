@@ -10,7 +10,7 @@ public partial class Parser
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
-    public bool ParseExprAtom(out INode expr)
+    public bool ParseExprAtom(out IExpr expr)
     {
         expr = Expr.Null;
 
@@ -125,10 +125,13 @@ public partial class Parser
         if (!ParseExprAtomTail(expr, out expr))
             return false;
 
+        // ParseAnnotations()
+
+
         return Okay;
     }
 
-    public bool ParseExprAtomTail(INode expr, out INode result)
+    public bool ParseExprAtomTail(IExpr expr, out IExpr result)
     {
         result = expr;
         while (true)
@@ -136,7 +139,7 @@ public partial class Parser
             if (Skip(TokenKind.OPEN_BRACKET))
             {
                 // Array access eg: `a[1,2]`
-                var access = new List<INode>();
+                var access = new List<IExpr>();
                 while (_kind is not TokenKind.CLOSE_BRACKET)
                 {
                     if (!ParseExpr(out var index))
@@ -186,7 +189,7 @@ public partial class Parser
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
-    public bool ParseExpr(out INode expr)
+    public bool ParseExpr(out IExpr expr)
     {
         if (!ParseExprAtom(out expr))
             return false;
@@ -368,7 +371,7 @@ public partial class Parser
     ///<mzn>forall(i in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i,j in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i in 1..3, j in 1..3 where i > j)(xd[i]);</mzn>
-    public bool ParseIdentExpr(out INode result)
+    public bool ParseIdentExpr(out IExpr result)
     {
         result = Expr.Null;
 
@@ -570,7 +573,7 @@ public partial class Parser
     /// </summary>
     /// <mzn>[1,2,3]</mzn>
     /// <mzn>[ x | x in [a,b,c]]</mzn>
-    public bool ParseBracketExpr(out INode result)
+    public bool ParseBracketExpr(out IExpr result)
     {
         result = Expr.Null;
         if (!Skip(TokenKind.OPEN_BRACKET))
@@ -607,11 +610,11 @@ public partial class Parser
      * Or a composite form like
      * `[0: A, B, C, D]`
      */
-    bool Parse1dArrayLiteral(out INode result)
+    bool Parse1dArrayLiteral(out IExpr result)
     {
         result = default!;
-        INode index;
-        INode element;
+        IExpr index;
+        IExpr element;
 
         // Parse the first element
         if (!ParseExpr(out var value))
@@ -827,7 +830,7 @@ public partial class Parser
     /// </summary>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>{ x | x in [1,2,3]}</mzn>
-    private bool ParseBraceExpr(out INode result)
+    private bool ParseBraceExpr(out IExpr result)
     {
         result = Expr.Null;
         if (!Skip(TokenKind.OPEN_BRACE))
@@ -924,7 +927,7 @@ public partial class Parser
         return true;
     }
 
-    private bool ParseIfThenCase(out INode @if, out INode @then, TokenKind ifKeyword)
+    private bool ParseIfThenCase(out IExpr @if, out IExpr @then, TokenKind ifKeyword)
     {
         @if = default!;
         @then = default!;
@@ -960,7 +963,7 @@ public partial class Parser
 
         while (ParseIfThenCase(out @if, out @then, TokenKind.ELSEIF))
         {
-            ite.ElseIfs ??= new List<(INode elseif, INode then)>();
+            ite.ElseIfs ??= new List<(IExpr elseif, IExpr then)>();
             ite.ElseIfs.Add((@if, @then));
         }
 
@@ -985,7 +988,7 @@ public partial class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private bool ParseParenExpr(out INode result)
+    private bool ParseParenExpr(out IExpr result)
     {
         result = Expr.Null;
         if (!Expect(TokenKind.OPEN_PAREN))
@@ -1059,7 +1062,7 @@ public partial class Parser
     {
         while (Skip(TokenKind.COLON_COLON))
         {
-            INode? ann;
+            IExpr? ann;
             if (Skip(TokenKind.OUTPUT))
                 ann = Expr.Ident("output");
             else if (ParseAnnotation(out ann)) { }
@@ -1084,5 +1087,5 @@ public partial class Parser
         return true;
     }
 
-    public bool ParseAnnotation(out INode expr) => ParseExprAtom(out expr);
+    public bool ParseAnnotation(out IExpr expr) => ParseExprAtom(out expr);
 }

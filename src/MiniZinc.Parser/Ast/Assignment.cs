@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public readonly struct Assignment(string name, INode expr) : INamed, INode, ILetLocal
+public readonly struct Assignment(string name, INode expr) : INamed, ILetLocal
 {
     public string Name => name;
 

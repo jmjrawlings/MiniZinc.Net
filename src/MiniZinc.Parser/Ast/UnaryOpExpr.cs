@@ -1,13 +1,13 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public readonly record struct UnaryOpExpr : INode
+public readonly record struct UnaryOpExpr : IExpr
 {
-    public UnaryOpExpr(Operator @operator, INode operand)
+    public UnaryOpExpr(Operator @operator, IExpr operand)
     {
         Operator = @operator;
         Operand = operand;
     }
 
     public Operator Operator { get; }
-    public INode Operand { get; }
+    public IExpr Operand { get; }
 }

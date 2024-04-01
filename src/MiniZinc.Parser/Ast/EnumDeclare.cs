@@ -25,7 +25,7 @@ public readonly struct ComplexEnumCase(INode expr, EnumCaseType type) : IEnumCas
     public INode Expr => expr;
 }
 
-public record EnumDeclare : Expr, INamed
+public record EnumDeclare : Item, INamed
 {
     public string Name { get; set; }
 

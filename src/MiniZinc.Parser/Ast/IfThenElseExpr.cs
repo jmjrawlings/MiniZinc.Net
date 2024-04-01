@@ -1,10 +1,10 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record IfThenElseExpr : INode
+public sealed record IfThenElseExpr : IExpr
 {
-    public INode If { get; set; }
-    public INode Then { get; set; }
-    public List<(INode @elseif, INode @then)>? ElseIfs { get; set; } = new();
+    public IExpr If { get; set; }
+    public IExpr Then { get; set; }
+    public List<(IExpr @elseif, IExpr @then)>? ElseIfs { get; set; } = new();
 
-    public INode? Else { get; set; }
+    public IExpr? Else { get; set; }
 }

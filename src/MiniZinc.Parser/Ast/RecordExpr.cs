@@ -2,5 +2,5 @@
 
 public sealed record RecordExpr : Expr
 {
-    public List<Binding<INode>> Fields { get; } = new();
+    public List<Binding<IExpr>> Fields { get; } = new();
 }

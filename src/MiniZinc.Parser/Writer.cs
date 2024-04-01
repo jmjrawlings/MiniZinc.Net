@@ -295,11 +295,8 @@ public sealed class Writer
 
     void WriteAnnotations(IAnnotations expr)
     {
-        if (expr.Annotations is null)
-            return;
-        for (int i = 0; i < expr.Annotations.Count; i++)
+        foreach (var ann in expr.Annotations)
         {
-            var ann = expr.Annotations[i];
             Write(COLON);
             Write(COLON);
             WriteExpr(ann);
@@ -580,6 +577,12 @@ public sealed class Writer
 public static class NodeExtensions
 {
     public static string Write(this INode node)
+    {
+        var s = Writer.WriteNode(node);
+        return s;
+    }
+
+    public static string Write(this IExpr node)
     {
         var s = Writer.WriteNode(node);
         return s;

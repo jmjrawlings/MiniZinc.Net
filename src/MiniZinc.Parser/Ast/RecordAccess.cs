@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public readonly struct RecordAccess(INode expr, string field) : INode
+public readonly struct RecordAccess(IExpr expr, string field) : IExpr
 {
-    public INode Expr => expr;
+    public IExpr Expr => expr;
     public string Field => field;
 }

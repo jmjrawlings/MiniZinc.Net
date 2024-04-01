@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record LetExpr : INode
+public sealed record LetExpr : IExpr
 {
     public List<ILetLocal>? Locals { get; set; }
 
-    public INode Body { get; set; }
+    public IExpr Body { get; set; }
 }

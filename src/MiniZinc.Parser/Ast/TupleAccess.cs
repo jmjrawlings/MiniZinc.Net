@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public readonly struct TupleAccess(INode expr, int field) : INode
+public readonly struct TupleAccess(IExpr expr, int field) : IExpr
 {
-    public INode Expr => expr;
+    public IExpr Expr => expr;
     public int Field => field;
 }

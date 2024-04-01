@@ -1,14 +1,12 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public record TypeInst : IAnnotations, INamed
+public record TypeInst : Item, INamed
 {
     public string Name { get; set; } = string.Empty;
 
     public TypeKind Kind { get; set; } = TypeKind.Any;
 
     public TypeFlags Flags { get; set; } = TypeFlags.None;
-
-    public List<INode>? Annotations { get; set; }
 
     public bool IsKind(TypeFlags kind) => (Flags & kind) > 0;
 }

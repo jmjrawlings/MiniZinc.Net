@@ -3,7 +3,7 @@
 /// <summary>
 /// A variable
 /// </summary>
-public sealed record Variable : INamed, IAnnotations, ILetLocal
+public sealed record Variable : Item, INamed, ILetLocal
 {
     public string Name { get; set; }
 
@@ -14,6 +14,4 @@ public sealed record Variable : INamed, IAnnotations, ILetLocal
     public List<Binding<TypeInst>>? Parameters { get; set; }
 
     public bool IsFunction { get; set; }
-
-    public List<INode>? Annotations { get; set; }
 }

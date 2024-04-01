@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public record Expr : IAnnotations
+public record Expr : IExpr
 {
     public bool IsBracketed { get; set; }
 
@@ -14,15 +14,13 @@ public record Expr : IAnnotations
 
     public static StringLit String(string s) => new StringLit(s);
 
-    public static INode Wildcard => new WildCardExpr();
-    public static INode Empty => new EmptyExpr();
+    public static IExpr Wildcard => new WildCardExpr();
+    public static IExpr Empty => new EmptyExpr();
 
-    public static INode Null => new NullExpr();
+    public static IExpr Null => new NullExpr();
 
     public static Identifier Ident(string name) => new Identifier(name);
 
-    public static RangeExpr Range(INode? lower = null, INode? upper = null) =>
+    public static RangeExpr Range(IExpr? lower = null, IExpr? upper = null) =>
         new RangeExpr(lower, upper);
-
-    public List<INode>? Annotations { get; set; }
 }
