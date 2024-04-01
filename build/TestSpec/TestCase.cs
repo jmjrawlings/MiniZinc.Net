@@ -1,7 +1,9 @@
 namespace LibMiniZinc.Tests;
 
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 
+[DebuggerDisplay("{Path}")]
 public sealed record TestCase
 {
     /// Path of the test case relative to the test spec dir
@@ -25,7 +27,6 @@ public sealed record TestCase
     /// Any expected output files produced by the solver (eg flatzinc)
     public List<string>? OutputFiles { get; set; }
 
-    /// The solution, present in the case of Optimise or Satisfy
     public string? ErrorType { get; set; }
 
     public string? ErrorMessage { get; set; }

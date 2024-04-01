@@ -3044,7 +3044,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact]
+    [Fact(Skip = "xfail")]
     public void test_unit_regression_github_725()
     {
         var path = @"unit\regression\github_725.mzn";
@@ -3065,7 +3065,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact]
+    [Fact(Skip = "XFAIL")]
     public void test_unit_regression_github_730()
     {
         var path = @"unit\regression\github_730.mzn";

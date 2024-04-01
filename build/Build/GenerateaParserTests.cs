@@ -11,7 +11,15 @@ public sealed class GenerateParserTests : CodeBuilder
     public GenerateParserTests(TestSpec spec)
     {
         Spec = spec;
-        Files = spec.TestCases.Select(c => c.Path).Distinct().ToList();
+        var files = new HashSet<string>();
+        foreach (var @case in spec.TestCases)
+        {
+            if (@case.ErrorType?.Equals("SyntaxError") ?? false)
+                continue;
+            files.Add(@case.Path);
+        }
+
+        Files = files.ToList();
     }
 
     string Generate()

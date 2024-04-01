@@ -112,6 +112,8 @@ internal enum TokenKind : sbyte
 
     // Errors
     ERROR,
+    ERROR_INT_LITERAL,
+    ERROR_FLOAT_LITERAL,
     ERROR_UNEXPECTED_CHAR,
     ERROR_QUOTED_IDENT,
     ERROR_QUOTED_OPERATOR,

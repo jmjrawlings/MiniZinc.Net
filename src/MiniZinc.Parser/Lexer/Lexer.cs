@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using System.Globalization;
+
+namespace MiniZinc.Parser;
 
 using System;
 using System.Collections;
@@ -500,11 +502,12 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         if (!IsDigit(_char))
             return false;
+
         do
         {
             Store();
             Step();
-        } while (IsDigit(_char));
+        } while (IsAsciiLetterOrDigit(_char));
 
         if (_char is DOT && FollowedByDigit)
         {
@@ -514,24 +517,33 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         ReadString();
+        if (!int.TryParse(_string, NumberStyles.AllowHexSpecifier, null, out var i))
+        {
+            Error(TokenKind.ERROR_INT_LITERAL);
+            return false;
+        }
+
         _token = new Token(
             _kind = TokenKind.INT_LIT,
             _startLine,
             _startCol,
             _startPos,
             _length - 1,
-            i: int.Parse(_string!)
+            i: i
         );
         _length = 1;
         return true;
 
         lex_float:
-        while (IsDigit(_char) || _char is 'e')
+        do
         {
             Store();
             Step();
-        }
+        } while (IsDigit(_char) || _char is 'e');
         ReadString();
+
+        if (!double.TryParse(_string, null, out var d))
+            return Error(TokenKind.ERROR_FLOAT_LITERAL);
 
         _token = new Token(
             _kind = TokenKind.FLOAT_LIT,
@@ -539,7 +551,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _startCol,
             _startPos,
             _length - 1,
-            d: double.Parse(_string!)
+            d: d
         );
         _length = 1;
         return true;
