@@ -108,14 +108,9 @@ public partial class Parser
                 break;
 
             case TokenKind.IDENT:
+            case TokenKind.QUOTED_IDENT:
                 if (!ParseIdentExpr(out expr))
                     return false;
-                break;
-
-            case TokenKind.QUOTED_IDENT:
-                if (!ParseIdent(out var id))
-                    return false;
-                expr = Expr.Ident(id);
                 break;
 
             case TokenKind.EMPTY:

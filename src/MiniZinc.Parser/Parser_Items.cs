@@ -13,7 +13,7 @@ public partial class Parser
         model = new Model();
         Step();
 
-        while (!_fin)
+        while (true)
         {
             switch (_kind)
             {
@@ -42,7 +42,6 @@ public partial class Parser
                     if (!ParseEnumItem(out var @enum))
                         return false;
                     model.NameSpace.Push(@enum.Name, @enum);
-
                     break;
 
                 case TokenKind.TYPE:
@@ -55,6 +54,9 @@ public partial class Parser
                     Step();
                     continue;
 
+                case TokenKind.EOF:
+                    return true;
+
                 default:
                     if (!ParseDeclareOrAssignItem(out var declare, out var assign))
                         return false;
@@ -62,10 +64,9 @@ public partial class Parser
             }
 
             if (!Expect(TokenKind.EOL))
-                return _fin;
+                if (_kind is not TokenKind.EOF)
+                    return false;
         }
-
-        return true;
     }
 
     /// <summary>

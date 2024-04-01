@@ -1,21 +1,13 @@
-using System.Text;
-
 public sealed class ParserTests
 {
     private void Test(string path)
     {
-        var enc = Encoding.UTF8;
-        var text = File.ReadAllText(path, enc);
-        var chars = text.ToCharArray();
-        var textTokens = Lexer.LexFile(path).ToArray();
         var lexer = Lexer.LexFile(path);
         var parser = new Parser(lexer);
         parser.ParseModel(out var model);
         if (parser.Err is { } err)
         {
-            var msg =
-                $"{err}\n\n======================= FULL OUTPUT ==========================\n{text}";
-            Assert.Fail(msg);
+            Assert.Fail(err);
         }
     }
 
@@ -173,15 +165,12 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact(Skip = ENCODING_SHIT)]
+    [Fact]
     public void test_unit_compilation_optimization()
     {
         var path = @"unit\compilation\optimization.mzn";
         Test(path);
     }
-
-    private const string ENCODING_SHIT = "idkffs";
-    private const string TODO = "todo";
 
     [Fact]
     public void test_unit_compilation_par_arg_out_of_bounds()
@@ -3067,7 +3056,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact(Skip = ENCODING_SHIT)]
+    [Fact]
     public void test_unit_regression_github_730()
     {
         var path = @"unit\regression\github_730.mzn";
@@ -3340,7 +3329,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact(Skip = ENCODING_SHIT)]
+    [Fact]
     public void test_unit_regression_par_opt_equal()
     {
         var path = @"unit\regression\par_opt_equal.mzn";
@@ -3914,7 +3903,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact(Skip = "invalid syntax")]
+    [Fact]
     public void test_unit_types_nonbool_constraint_let()
     {
         var path = @"unit\types\nonbool_constraint_let.mzn";
@@ -4250,7 +4239,6 @@ public sealed class ParserTests
         Test(path);
     }
 
-    // Exponential float literals
     [Fact]
     public void test_unit_types_tuple_lit()
     {
@@ -4265,7 +4253,6 @@ public sealed class ParserTests
         Test(path);
     }
 
-    // nested tuple access eg: `a.1.2` gets parsed as a float
     [Fact]
     public void test_unit_types_tuple_output()
     {
@@ -4280,7 +4267,6 @@ public sealed class ParserTests
         Test(path);
     }
 
-    // nested tuple access eg: `a.1.2` gets parsed as a float
     [Fact]
     public void test_unit_types_tuple_var_element()
     {
@@ -4288,7 +4274,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact(Skip = ENCODING_SHIT)]
+    [Fact]
     public void test_unit_types_tuple_var_ite()
     {
         var path = @"unit\types\tuple_var_ite.mzn";
@@ -4867,7 +4853,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact(Skip = ENCODING_SHIT)]
+    [Fact]
     public void test_unit_globals_regular_globals_regular_regex_6()
     {
         var path = @"unit\globals\regular\globals_regular_regex_6.mzn";

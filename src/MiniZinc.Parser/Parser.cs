@@ -16,7 +16,6 @@ public sealed partial class Parser
     private uint _line;
     private uint _col;
     public string? Err;
-    private bool _fin;
     private StringBuilder? _trace;
 
     public TimeSpan Elapsed => _watch.Elapsed;
@@ -36,12 +35,9 @@ public sealed partial class Parser
     /// Progress the parser
     public bool Step()
     {
-        if (_fin)
-            return false;
-
         if (!_lexer.MoveNext())
         {
-            _fin = true;
+            _kind = TokenKind.EOF;
             return false;
         }
 

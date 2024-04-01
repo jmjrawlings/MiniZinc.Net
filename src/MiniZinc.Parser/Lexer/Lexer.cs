@@ -332,7 +332,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         switch (_char)
         {
             case SINGLE_QUOTE when _length > 2:
-                ReadString();
                 break;
             case SINGLE_QUOTE:
             case BACK_SLASH:
