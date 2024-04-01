@@ -13,6 +13,11 @@ public record TypeInst : IAnnotations, INamed
     public bool IsKind(TypeFlags kind) => (Flags & kind) > 0;
 }
 
+public sealed record ComplexTypeInst : TypeInst
+{
+    public List<TypeInst> Types { get; set; } = new();
+}
+
 public sealed record RecordTypeInst : TypeInst
 {
     public List<Binding<TypeInst>> Fields { get; set; } = new();

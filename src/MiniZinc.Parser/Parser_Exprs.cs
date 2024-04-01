@@ -896,7 +896,7 @@ public partial class Parser
         return Expect(TokenKind.CLOSE_BRACE);
     }
 
-    private bool ParseLetExpr(out LetExpr let)
+    public bool ParseLetExpr(out LetExpr let)
     {
         let = default!;
 
@@ -913,20 +913,17 @@ public partial class Parser
             {
                 let.Locals ??= new List<ILetLocal>();
                 let.Locals.Add(cons);
-                continue;
             }
-            if (Err is not null)
+            else if (ParseDeclareOrAssignItem(out var var, out var assign))
+            {
+                let.Locals ??= new List<ILetLocal>();
+                if (var is not null)
+                    let.Locals.Add(var);
+                else
+                    let.Locals.Add(assign!);
+            }
+            else if (Err is not null)
                 return Error();
-
-            if (!ParseDeclareOrAssignItem(out var var, out var assign))
-                return false;
-
-            let.Locals ??= new List<ILetLocal>();
-
-            if (var is not null)
-                let.Locals.Add(var);
-            else
-                let.Locals.Add(assign!);
 
             if (Skip(TokenKind.EOL) || Skip(TokenKind.COMMA))
                 continue;
@@ -1026,13 +1023,17 @@ public partial class Parser
         // Record expr
         if (Skip(TokenKind.COLON))
         {
+            if (expr is not Identifier id)
+                return Error("Must be identifier");
+
+            var name = id.s;
             var record = new RecordExpr();
             result = record;
-            var name = expr;
             if (!ParseExpr(out expr))
                 return false;
 
-            record.Fields.Add((name, expr));
+            var field = name.Bind(expr);
+            record.Fields.Add(field);
 
             record_field:
             if (!Skip(TokenKind.COMMA))
@@ -1041,7 +1042,7 @@ public partial class Parser
             if (Skip(TokenKind.CLOSE_PAREN))
                 return true;
 
-            if (!ParseExpr(out name))
+            if (!ParseIdent(out name))
                 return false;
 
             if (!Expect(TokenKind.COLON))
@@ -1050,7 +1051,8 @@ public partial class Parser
             if (!ParseExpr(out expr))
                 return false;
 
-            record.Fields.Add((name, expr));
+            field = name.Bind(expr);
+            record.Fields.Add(field);
             goto record_field;
         }
 

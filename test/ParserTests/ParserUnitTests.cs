@@ -205,4 +205,21 @@ public class ParserUnitTests
         ((IntLit)rng.Lower).Value.Should().Be(1);
         ((IntLit)rng.Upper).Value.Should().Be(1);
     }
+
+    [Fact]
+    void test_parse_let_xd()
+    {
+        var mzn = """
+      let {
+          array[1..1] of var bool: res;
+          constraint res[1];
+      } in res;
+      """;
+        var parser = Parse(mzn);
+        parser.ParseLetExpr(out var let);
+        let.Should().NotBeNull();
+        let.Locals.Should().HaveCount(2);
+        let.Body.Should().BeOfType<Identifier>();
+        let.Body.ToString().Should().Be("res");
+    }
 }

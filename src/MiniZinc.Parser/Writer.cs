@@ -519,8 +519,8 @@ public sealed class Writer
         Write(OPEN_PAREN);
         for (int i = 0; i < e.Fields.Count; i++)
         {
-            var (field, expr) = e.Fields[i];
-            Write((StringLit)field);
+            var (name, expr) = e.Fields[i];
+            Write(name);
             Write(COLON);
             WriteExpr(expr);
             if (i < e.Fields.Count - 1)

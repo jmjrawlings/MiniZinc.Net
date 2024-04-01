@@ -251,20 +251,38 @@ public partial class Parser
         return true;
     }
 
-    public bool ParseType(out TypeInst type)
+    public bool ParseType(out TypeInst result)
     {
-        type = default!;
-        switch (_token.Kind)
+        result = default!;
+        if (_kind is TokenKind.ARRAY or TokenKind.LIST)
         {
-            case TokenKind.ARRAY:
-            case TokenKind.LIST:
-                if (!ParseArrayType(out var arr))
-                    return false;
-                type = arr;
-                break;
-            default:
-                if (!ParseBaseTypeInst(out type))
-                    return false;
+            if (!ParseArrayType(out var arr))
+                return false;
+            result = arr;
+            return true;
+        }
+
+        if (!ParseBaseTypeInst(out var type))
+            return false;
+
+        if (!Skip(TokenKind.PLUS_PLUS))
+        {
+            result = type;
+            return true;
+        }
+
+        // Complex types
+        // `record(a: int) ++ record(b: int)`
+        var complex = new ComplexTypeInst { Kind = TypeKind.Complex };
+        complex.Types.Add(type);
+        result = complex;
+
+        while (true)
+        {
+            if (!ParseBaseTypeInst(out type))
+                return false;
+            complex.Types.Add(type);
+            if (!Skip(TokenKind.PLUS_PLUS))
                 break;
         }
 

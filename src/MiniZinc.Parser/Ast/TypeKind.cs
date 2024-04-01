@@ -14,5 +14,6 @@ public enum TypeKind
     Expr,
     Tuple,
     Record,
-    Array
+    Array,
+    Complex
 }
