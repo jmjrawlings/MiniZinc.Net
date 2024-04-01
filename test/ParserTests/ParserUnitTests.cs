@@ -222,4 +222,18 @@ public class ParserUnitTests
         let.Body.Should().BeOfType<Identifier>();
         let.Body.ToString().Should().Be("res");
     }
+
+    [Fact]
+    void test_record_comp()
+    {
+        var mzn = """
+                  [
+                    i: (a: some_map[i], b: some_map[i] mod 2 = 0) | i in Some
+                  ]
+                  """;
+        var parser = Parse(mzn);
+        parser.ParseBracketExpr(out var expr);
+        var arr = (CompExpr)expr;
+        arr.IsSet.Should().BeFalse();
+    }
 }

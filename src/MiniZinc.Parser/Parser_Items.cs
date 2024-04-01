@@ -63,9 +63,11 @@ public partial class Parser
                     break;
             }
 
-            if (!Expect(TokenKind.EOL))
-                if (_kind is not TokenKind.EOF)
-                    return false;
+            if (Skip(TokenKind.EOL))
+                continue;
+
+            if (_kind is not TokenKind.EOF)
+                return Error("Expected ; or end of file");
         }
     }
 

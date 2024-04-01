@@ -180,25 +180,6 @@ public partial class Parser
 
     private bool Okay => Err is null;
 
-    public bool ParseArrayAccess(out List<INode> access)
-    {
-        access = null!;
-        if (!Skip(TokenKind.OPEN_BRACKET))
-            return false;
-
-        access = new List<INode>();
-        while (_kind is not TokenKind.CLOSE_BRACKET)
-        {
-            if (!ParseExpr(out var index))
-                return false;
-            access.Add(index);
-            if (!Skip(TokenKind.COMMA))
-                break;
-        }
-
-        return Expect(TokenKind.CLOSE_BRACKET);
-    }
-
     /// <summary>
     /// Parse an Expression
     /// </summary>
