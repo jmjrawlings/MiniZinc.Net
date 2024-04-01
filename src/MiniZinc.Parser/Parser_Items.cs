@@ -42,6 +42,7 @@ public partial class Parser
                     if (!ParseEnumItem(out var @enum))
                         return false;
                     model.NameSpace.Push(@enum.Name, @enum);
+
                     break;
 
                 case TokenKind.TYPE:
@@ -52,17 +53,16 @@ public partial class Parser
                 case TokenKind.BLOCK_COMMENT:
                 case TokenKind.LINE_COMMENT:
                     Step();
-                    break;
+                    continue;
 
                 default:
                     if (!ParseDeclareOrAssignItem(out var declare, out var assign))
                         return false;
-                    if (_fin)
-                        break;
-                    if (!Expect(TokenKind.EOL))
-                        return false;
                     break;
             }
+
+            if (!Expect(TokenKind.EOL))
+                return _fin;
         }
 
         return true;
@@ -87,7 +87,7 @@ public partial class Parser
         if (!ParseAnnotations(@enum))
             return false;
 
-        if (Skip(TokenKind.EOL))
+        if (_kind is TokenKind.EOL)
             return true;
 
         if (!Expect(TokenKind.EQUAL))
@@ -162,8 +162,7 @@ public partial class Parser
 
         if (Skip(TokenKind.PLUS_PLUS))
             goto cases;
-
-        return Expect(TokenKind.EOL);
+        return true;
     }
 
     /// <summary>
@@ -185,7 +184,7 @@ public partial class Parser
 
         output.Expr = expr;
         model.Outputs.Add(output);
-        return Expect(TokenKind.EOL);
+        return true;
     }
 
     /// <summary>
@@ -203,7 +202,7 @@ public partial class Parser
         if (!ParseType(out var type))
             return false;
         model.NameSpace.Push(name, type);
-        return Expect(TokenKind.EOL);
+        return true;
     }
 
     /// <summary>
@@ -219,7 +218,7 @@ public partial class Parser
             return false;
 
         model.Includes.Add(path);
-        return Expect(TokenKind.EOL);
+        return true;
     }
 
     /// <summary>
@@ -266,7 +265,7 @@ public partial class Parser
 
         item.Objective = objective;
         model.SolveItems.Add(item);
-        return Expect(TokenKind.EOL);
+        return true;
     }
 
     /// <summary>
@@ -287,7 +286,7 @@ public partial class Parser
             return false;
 
         constraint.Expr = expr;
-        return Expect(TokenKind.EOL);
+        return true;
     }
 
     /// <summary>

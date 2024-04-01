@@ -39,7 +39,7 @@ public partial class Parser
             return false;
 
         var dims = new List<INode>();
-        arr = new ArrayTypeInst();
+        arr = new ArrayTypeInst { Kind = TypeKind.Array };
         arr.Dimensions = dims;
         if (!Skip(TokenKind.OPEN_BRACKET))
             return false;
@@ -162,7 +162,7 @@ public partial class Parser
         if (!Skip(TokenKind.TUPLE))
             return false;
 
-        tuple = new TupleTypeInst();
+        tuple = new TupleTypeInst { Kind = TypeKind.Tuple };
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
