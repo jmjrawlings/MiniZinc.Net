@@ -220,7 +220,10 @@ public partial class Parser
             if (!ParseExpr(out var right))
                 return false;
 
-            expr = new BinaryOpExpr(expr, op, id, right);
+            if (op is Operator.Range)
+                expr = new RangeExpr(expr, right);
+            else
+                expr = new BinaryOpExpr(expr, op, id, right);
         }
         return true;
     }
@@ -309,7 +312,7 @@ public partial class Parser
                 break;
 
             case TokenKind.DOT_DOT:
-                op = Operator.OpenRange;
+                op = Operator.Range;
                 break;
 
             case TokenKind.INTERSECT:
@@ -426,7 +429,7 @@ public partial class Parser
         var exprs = new List<INode>();
         bool maybeGen = true;
         bool isGen = false;
-        int i = 0;
+        int i;
 
         next:
         if (!ParseExpr(out var expr))
@@ -728,8 +731,6 @@ public partial class Parser
     private bool Parse2dArrayLiteral(out Array2DLit arr)
     {
         arr = new Array2DLit();
-        bool rowIndex = false;
-        bool colIndex = false;
         int j = 1;
 
         if (Skip(TokenKind.PIPE))
@@ -750,12 +751,12 @@ public partial class Parser
 
         if (Skip(TokenKind.PIPE))
         {
-            colIndex = true;
+            arr.ColIndexed = true;
             goto parse_row_values;
         }
 
-        colIndex = true;
-        rowIndex = true;
+        arr.ColIndexed = true;
+        arr.RowIndexed = true;
 
         while (_kind is not TokenKind.PIPE)
         {
@@ -766,15 +767,15 @@ public partial class Parser
 
             if (Skip(TokenKind.COLON))
             {
-                if (!colIndex)
+                if (!arr.ColIndexed)
                     return Error("Invalid : in row indexed array literal");
 
-                rowIndex = false;
+                arr.RowIndexed = false;
                 arr.Indices.Add(value);
                 continue;
             }
 
-            colIndex = false;
+            arr.ColIndexed = false;
             arr.Elements.Add(value);
 
             if (!Skip(TokenKind.COMMA))
@@ -783,8 +784,6 @@ public partial class Parser
 
         arr.Rows = 1;
         arr.Cols = j;
-        arr.RowIndexed = rowIndex;
-        arr.ColIndexed = colIndex;
 
         if (!Expect(TokenKind.PIPE))
             return false;
@@ -794,15 +793,14 @@ public partial class Parser
 
         /* Use the second row if necessary to detect dual
          * indexing */
-        if (!rowIndex)
+        if (!arr.RowIndexed)
         {
             if (!ParseExpr(out value))
                 return false;
 
             if (Skip(TokenKind.COLON))
             {
-                rowIndex = true;
-                arr.RowIndexed = rowIndex;
+                arr.RowIndexed = true;
                 arr.Indices.Add(value);
             }
             else
@@ -841,7 +839,7 @@ public partial class Parser
         if (Skip(TokenKind.CLOSE_BRACKET))
             return true;
 
-        if (rowIndex)
+        if (arr.RowIndexed)
             goto parse_row_index;
         else
             goto parse_row_values;
@@ -1064,14 +1062,14 @@ public partial class Parser
         // Else must be a tuple
         var tuple = new TupleExpr();
         result = tuple;
-        tuple.Exprs.Add(expr);
+        tuple.Fields.Add(expr);
         if (!Expect(TokenKind.COMMA))
             return false;
         while (_kind is not TokenKind.CLOSE_PAREN)
         {
             if (!ParseExpr(out expr))
                 return false;
-            tuple.Exprs.Add(expr);
+            tuple.Fields.Add(expr);
             if (!Skip(TokenKind.COMMA))
                 break;
         }

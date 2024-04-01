@@ -29,29 +29,6 @@ public partial class Parser
     }
 
     /// <summary>
-    /// Parse a list type
-    /// </summary>
-    /// <mzn>list of int</mzn>
-    public bool ParseListType(out ArrayTypeInst typeInst)
-    {
-        typeInst = new ArrayTypeInst();
-        if (!Skip(TokenKind.LIST))
-            return false;
-
-        if (!Expect(TokenKind.OF))
-            return false;
-
-        var dim = new TypeInst { Kind = TypeKind.Int, Flags = TypeFlags.Par };
-        typeInst.Dimensions.Add(dim);
-
-        if (!ParseType(out var expr))
-            return false;
-
-        typeInst.Type = expr;
-        return true;
-    }
-
-    /// <summary>
     /// Parse an array type
     /// </summary>
     /// <mzn>array[X, 1..2} of var int</mzn>
@@ -145,6 +122,7 @@ public partial class Parser
                 if (!ParseExpr(out var expr))
                     return false;
                 type = new ExprTypeInst { Expr = expr };
+                type.Kind = TypeKind.Expr;
                 break;
         }
 
@@ -210,8 +188,7 @@ public partial class Parser
         record = default!;
         if (!Skip(TokenKind.RECORD))
             return false;
-        record = new RecordTypeInst();
-
+        record = new RecordTypeInst { Kind = TypeKind.Record };
         if (!ParseParameters(out var fields))
             return false;
         record.Fields = fields;

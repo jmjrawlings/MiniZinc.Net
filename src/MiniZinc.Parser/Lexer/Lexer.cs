@@ -434,16 +434,12 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _length = 1;
     }
 
-    private bool LexStringLiteral()
+    private void LexStringLiteral()
     {
-        if (_char is not DOUBLE_QUOTE)
-            return false;
-
 #if DEBUG
         var sb = new StringBuilder();
         sb.Append(_char);
 #endif
-
         bool inExpr = false;
         bool escaped = false;
         string_literal:
@@ -458,10 +454,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case DOUBLE_QUOTE when escaped:
                 escaped = false;
                 break;
+
+            case DOUBLE_QUOTE when inExpr:
+                break;
+
             case DOUBLE_QUOTE:
                 Step();
                 StringToken(TokenKind.STRING_LIT);
-                return true;
+                return;
             case CLOSE_PAREN when inExpr:
                 inExpr = false;
                 break;
@@ -473,7 +473,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 escaped = !escaped;
                 break;
             case EOF:
-                return Error(TokenKind.ERROR_UNTERMINATED_STRING_LITERAL);
+                Error(TokenKind.ERROR_UNTERMINATED_STRING_LITERAL);
+                return;
             default:
                 if (!escaped)
                     break;
@@ -488,7 +489,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 var s = _sb.ToString();
 #endif
 
-                return Error(TokenKind.ERROR_ESCAPED_STRING);
+                Error(TokenKind.ERROR_ESCAPED_STRING);
+                return;
         }
 
         Store();

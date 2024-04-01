@@ -2,5 +2,5 @@
 
 public sealed record TupleExpr : Expr
 {
-    public List<INode> Exprs { get; set; } = new();
+    public List<INode> Fields { get; set; } = new();
 }

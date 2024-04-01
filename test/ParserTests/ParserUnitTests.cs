@@ -1,5 +1,4 @@
 ﻿using MiniZinc.Parser.Ast;
-using INode = FluentAssertions.Equivalency.INode;
 
 public static class ParserExtensions
 {
@@ -189,5 +188,21 @@ public class ParserUnitTests
         arr.RowIndexed.Should().BeFalse();
         arr.ColIndexed.Should().BeFalse();
         arr.Elements.Should().HaveCount(24);
+    }
+
+    [Fact]
+    void test_expr_type_inst()
+    {
+        var mzn = "record(1..1:x): a";
+        var parser = Parse(mzn);
+        parser.ParseDeclareOrAssignItem(out var var, out var assign);
+        var.Should().NotBeNull();
+        var!.Type.Should().BeOfType<RecordTypeInst>();
+        var rec = (RecordTypeInst)var.Type;
+        rec.Fields[0].Name.Should().Be("x");
+        var ti = rec.Fields[0].Value as ExprTypeInst;
+        var rng = (RangeExpr)ti.Expr;
+        ((IntLit)rng.Lower).Value.Should().Be(1);
+        ((IntLit)rng.Upper).Value.Should().Be(1);
     }
 }

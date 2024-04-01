@@ -225,10 +225,7 @@ public sealed class Writer
             case Operator.SymDiff:
                 Write(SYMDIFF);
                 break;
-            case Operator.ClosedRange:
-            case Operator.LeftOpenRange:
-            case Operator.RightOpenRange:
-            case Operator.OpenRange:
+            case Operator.Range:
                 Write(DOT);
                 Write(DOT);
                 break;
@@ -473,7 +470,7 @@ public sealed class Writer
                 break;
             case TupleExpr e:
                 Write(OPEN_PAREN);
-                WriteExprs(e.Exprs);
+                WriteExprs(e.Fields);
                 Write(CLOSE_PAREN);
                 break;
             case TupleTypeInst e:

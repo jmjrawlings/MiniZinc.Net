@@ -57,6 +57,8 @@ public partial class Parser
                 default:
                     if (!ParseDeclareOrAssignItem(out var declare, out var assign))
                         return false;
+                    if (_fin)
+                        break;
                     if (!Expect(TokenKind.EOL))
                         return false;
                     break;

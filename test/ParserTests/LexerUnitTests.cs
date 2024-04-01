@@ -107,59 +107,6 @@
         tokens.Should().BeEmpty();
     }
 
-    private string? Sanitize(string? s)
-    {
-        return s?.Replace("\\\"", "\\\"");
-    }
-
-    // public List<Token> LexFile(string path)
-    // {
-    //     var mznFile = path.ToFile();
-    //     _logger.LogInformation("{File}", mznFile);
-    //     var mzn = File.ReadAllText(mznFile.FullName);
-    //     _logger.LogInformation(mzn);
-    //     var csvFile = Path.ChangeExtension(mznFile.FullName, "csv").ToFile();
-    //     using var csvWriter = csvFile.OpenWrite();
-    //     using var csvStream = new StreamWriter(csvWriter);
-    //     csvStream.WriteLine(
-    //         string.Join(
-    //             ",",
-    //             "id",
-    //             "start",
-    //             "length",
-    //             "line",
-    //             "column",
-    //             "kind",
-    //             "string",
-    //             "int",
-    //             "double"
-    //         )
-    //     );
-    //     var tokens = new List<Token>();
-    //     var id = 0;
-    //     foreach (var token in Lexer.LexFile(mznFile))
-    //     {
-    //         var msg = string.Join(
-    //             ',',
-    //             id++,
-    //             token.Start,
-    //             token.Length,
-    //             token.Line,
-    //             token.Col,
-    //             token.Kind,
-    //             Sanitize(token.String),
-    //             token.Int,
-    //             token.Double
-    //         );
-    //         csvStream.WriteLine(msg);
-    //         tokens.Add(token);
-    //     }
-    //
-    //     _logger.LogInformation("Reading from {File}", mznFile);
-    //     _logger.LogInformation("Writing to {File}", csvFile);
-    //     return tokens;
-    // }
-
     [Fact]
     public void xd()
     {
@@ -170,12 +117,15 @@
         var z = 2;
     }
 
-    [Theory]
-    [InlineData("")]
-    void test_string(string mzn)
+    [Fact]
+    void test_string_interp()
     {
+        var mzn = "\\([\"lala\" | i in 1..3 where b])";
+        mzn = $"\"{mzn}\"";
         var tokens = Lexer.LexString(mzn).ToArray();
-        tokens.Should().BeEmpty();
+        tokens.Should().HaveCount(1);
+        tokens[0].Kind.Should().Be(TokenKind.STRING_LIT);
+        tokens[0].String.Should().Be("\\([\"lala\" | i in 1..3 where b])");
     }
 
     public LexerUnitTests(ITestOutputHelper output)

@@ -21,5 +21,8 @@ public record Expr : IAnnotations
 
     public static Identifier Ident(string name) => new Identifier(name);
 
+    public static RangeExpr Range(INode? lower = null, INode? upper = null) =>
+        new RangeExpr(lower, upper);
+
     public List<INode>? Annotations { get; set; }
 }
