@@ -224,6 +224,18 @@ public class ParserUnitTests
     }
 
     [Fact]
+    void test_partial_range_ti()
+    {
+        var mzn = "0..: xd;";
+        var parser = Parse(mzn);
+        parser.ParseExpr(out var expr);
+        expr.Should().BeOfType<RangeExpr>();
+        var rng = (RangeExpr)expr;
+        rng.Upper.Should().BeNull();
+        rng.Lower.Should().Be(Expr.Int(0));
+    }
+
+    [Fact]
     void test_record_comp()
     {
         var mzn = """
@@ -235,5 +247,16 @@ public class ParserUnitTests
         parser.ParseBracketExpr(out var expr);
         var arr = (CompExpr)expr;
         arr.IsSet.Should().BeFalse();
+    }
+
+    [Fact]
+    void test_set_of_ti()
+    {
+        var mzn = "set of var int: xd";
+        var parser = Parse(mzn);
+        var ok = parser.ParseDeclareOrAssignItem(out var var, out var ass);
+        ok.Should().BeTrue();
+        var.Should().NotBeNull();
+        var.Name.Should().Be("xd");
     }
 }

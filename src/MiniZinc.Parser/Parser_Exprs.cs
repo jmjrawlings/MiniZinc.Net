@@ -119,7 +119,7 @@ public partial class Parser
                 return true;
 
             default:
-                return Error($"Unexpected {_kind} while parsing Expression Atom");
+                return false;
         }
 
         if (!ParseExprAtomTail(expr, out expr))
@@ -162,6 +162,8 @@ public partial class Parser
                 else if (ParseIdent(out var field))
                     result = new RecordAccess(expr, field);
                 // A float token indicates chained tuple access
+                // eg `item.1.2`
+                // todo - handle in lexer?
                 else if (ParseFloat(out var f))
                 {
                     var s = f.ToString("F1");
@@ -197,7 +199,16 @@ public partial class Parser
         while (ParseBinOp(out var op, out var id))
         {
             if (!ParseExpr(out var right))
+            {
+                // Postfix range operator `1..`
+                if (op is Operator.Range)
+                {
+                    expr = Expr.Range(expr);
+                    return Okay;
+                }
+
                 return false;
+            }
 
             if (op is Operator.Range)
                 expr = new RangeExpr(expr, right);

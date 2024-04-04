@@ -314,12 +314,7 @@ public partial class Parser
 
             var = new Variable
             {
-                Type = new TypeInst
-                {
-                    Kind = TypeKind.Name,
-                    Name = name,
-                    Flags = TypeFlags.Var
-                }
+                Type = new TypeInst { Kind = TypeKind.Name, Name = name }
             };
             Expect(TokenKind.COLON);
         }
@@ -337,12 +332,7 @@ public partial class Parser
 
             var = new Variable
             {
-                Type = new TypeInst
-                {
-                    Kind = TypeKind.PolyMorphic,
-                    Name = name,
-                    Flags = TypeFlags.Var
-                }
+                Type = new TypeInst { Kind = TypeKind.PolyMorphic, Name = name }
             };
             Expect(TokenKind.COLON);
         }
@@ -362,7 +352,7 @@ public partial class Parser
                 return false;
 
             var = new Variable();
-            var.Type = new TypeInst { Kind = TypeKind.Bool, Flags = TypeFlags.Var };
+            var.Type = new TypeInst { Kind = TypeKind.Bool };
         }
         else if (Skip(TokenKind.TEST))
         {
@@ -370,7 +360,7 @@ public partial class Parser
                 return false;
 
             var = new Variable();
-            var.Type = new TypeInst { Kind = TypeKind.Bool, Flags = TypeFlags.Par };
+            var.Type = new TypeInst { Kind = TypeKind.Bool };
         }
         else if (Skip(TokenKind.ANNOTATION))
         {

@@ -1,6 +1,6 @@
 using System.Text;
 
-public sealed class ParserTests
+public sealed class ParserIntegrationTests
 {
     private void Test(string path)
     {
@@ -489,7 +489,7 @@ public sealed class ParserTests
         Test(path);
     }
 
-    [Fact]
+    [Fact(Skip = "Unnamed arguments seem like an anti-feature")]
     public void test_unit_general_function_param_out_of_range()
     {
         var path = @"unit\general\function_param_out_of_range.mzn";

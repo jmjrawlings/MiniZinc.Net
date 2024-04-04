@@ -6,9 +6,8 @@ public record TypeInst : Item, INamed
 
     public TypeKind Kind { get; set; } = TypeKind.Any;
 
-    public TypeFlags Flags { get; set; } = TypeFlags.None;
-
-    public bool IsKind(TypeFlags kind) => (Flags & kind) > 0;
+    public bool Var { get; set; }
+    public bool Opt { get; set; }
 }
 
 public sealed record ComplexTypeInst : TypeInst
@@ -38,4 +37,9 @@ public sealed record ArrayTypeInst : TypeInst
     public List<INode> Dimensions { get; set; }
 
     public int N => Dimensions.Count;
+}
+
+public sealed record SetTypeInst : TypeInst
+{
+    public TypeInst Type { get; set; }
 }

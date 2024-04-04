@@ -6,25 +6,36 @@ public partial class Parser
 {
     public bool ParseBaseTypeInst(out TypeInst type)
     {
-        var inst = TypeFlags.Par;
+        type = default;
+        var var = false;
         if (Skip(TokenKind.VAR))
-            inst = TypeFlags.Var;
+            var = true;
         else
             Skip(TokenKind.PAR);
 
-        if (Skip(TokenKind.OPT))
-            inst |= TypeFlags.Opt;
+        var opt = Skip(TokenKind.OPT);
 
         if (Skip(TokenKind.SET))
         {
-            Expect(TokenKind.OF);
-            inst |= TypeFlags.Set;
+            if (!Expect(TokenKind.OF))
+                return false;
+
+            if (!ParseBaseTypeInst(out type))
+                return false;
+            type = new SetTypeInst
+            {
+                Type = type,
+                Var = var,
+                Opt = opt
+            };
+            return true;
         }
 
         if (!ParseBaseTypeTail(out type))
             return false;
 
-        type.Flags = inst;
+        type.Var = var;
+        type.Opt = opt;
         return true;
     }
 
