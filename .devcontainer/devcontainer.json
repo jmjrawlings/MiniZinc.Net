@@ -15,12 +15,10 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "ms-dotnettools.csharp",
-                "Ionide.Ionide-fsharp"
+                "ms-dotnettools.csharp"
             ]
         },
         "settings": {
-            "FSharp.fsacRuntime": "netcore",
             "terminal.integrated.defaultProfile.linux": "zsh",
             "terminal.integrated.profiles.linux": {
                 "zsh": {
