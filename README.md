@@ -2,8 +2,11 @@
 
 Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models from .NET
 
+> ** This is work in progress **
+
+
 ## Requirements
-- [.NET8 SDK]
+- [.NET8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 
 ## Developer Guide
 - `git clone https://github.com/jmjrawlings/MiniZinc.Net.git`
