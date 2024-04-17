@@ -1,14 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <Target Name="CopyTestModels" AfterTargets="AfterBuild">
-    <ItemGroup>
-      <TestModels Include="..\..\build\libminizinc\tests\spec\**\*.mzn"/>
-    </ItemGroup>
-    <Copy
-            SourceFiles="@(TestModels)"
-            DestinationFolder="$(OutDir)\%(RecursiveDir)" />
-  </Target>
-  
+    
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0-rc.2.23479.6" />
@@ -26,9 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\MiniZinc.Parser\MiniZinc.Parser.csproj" />
-    <ProjectReference Include="..\TestUtils\TestUtils.csproj" />
-    <ProjectReference Include="..\..\src\MiniZinc.Net\MiniZinc.Net.csproj" />
+    <ProjectReference Include="../../src/MiniZinc.Parser/MiniZinc.Parser.csproj" />
+    <ProjectReference Include="../TestUtils/TestUtils.csproj" />
+    <ProjectReference Include="../../src/MiniZinc.Net/MiniZinc.Net.csproj" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <Content Include="$(ProjectDir)../libminizinc/**/*.mzn">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
 </Project>

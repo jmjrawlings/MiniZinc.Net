@@ -1,7 +1,6 @@
-ARG DOTNET_VERSION=6.0.407
 ARG DEBIAN_VERSION=11
 ARG DEBIAN_FRONTEND=noninteractive
-ARG MINIZINC_VERSION=2.7.6
+ARG MINIZINC_VERSION=2.8.3
 ARG MINIZINC_HOME=/usr/local/share/minizinc
 ARG ORTOOLS_VERSION=9.7
 ARG ORTOOLS_BUILD=2996
@@ -9,26 +8,6 @@ ARG ORTOOLS_HOME=/opt/ortools
 ARG USER_NAME=harken
 ARG USER_GID=1000
 ARG USER_UID=1000
-
-# ------------------------------------
-# base
-#
-# Base operating system
-# ------------------------------------
-FROM debian:${DEBIAN_VERSION} as base
-
-FROM base as non-root
-ARG USER_NAME
-ARG USER_GID
-ARG USER_UID
-
-# Create the user
-RUN groupadd --gid ${USER_GID} ${USER_NAME} \
-    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
-    && apt-get update \
-    && apt-get install -y sudo \
-    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
-    && chmod 0440 /etc/sudoers.d/${USER_NAME}
 
 # ********************************************************
 # MiniZinc Builder
@@ -43,8 +22,8 @@ FROM minizinc/minizinc:${MINIZINC_VERSION} as minizinc-builder
 
 # Install required packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        wget \
+    ca-certificates \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Install OR-Tools
@@ -70,55 +49,28 @@ RUN mv ${ORTOOLS_DIR_NAME} ${ORTOOLS_HOME} && \
 
 # Test installation
 RUN echo "var 1..9: x; constraint x > 5; solve satisfy;" \
-  | minizinc --solver com.google.or-tools --input-from-stdin
+    | minizinc --solver com.google.or-tools --input-from-stdin
 
 
 # ------------------------------------
 # dotnet-sdk
 # ------------------------------------
-FROM non-root as dotnet-sdk
-
-ARG DOTNET_VERSION
+FROM mcr.microsoft.com/dotnet/sdk:8.0 as dotnet-sdk
+ARG USER_NAME
+ARG USER_GID
+ARG USER_UID
 ARG DEBIAN_FRONTEND
 ENV DOTNET_RUNNING_IN_CONTAINER=true
 ENV DOTNET_INSTALL_DIR=/usr/share/dotnet
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        curl \
-        ca-certificates \
-        libc6 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libicu67 \
-        libssl1.1 \
-        libstdc++6 \
-        zlib1g \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY global.json .
-
-RUN curl -sSL https://dot.net/v1/dotnet-install.sh \
-  | bash /dev/stdin \
-     --jsonfile global.json \
-     --install-dir ${DOTNET_INSTALL_DIR} \
- && ln -s \
-     ${DOTNET_INSTALL_DIR}/dotnet \
-     /usr/bin/dotnet
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        curl \
-        ca-certificates \
-        libc6 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libicu67 \
-        libssl1.1 \
-        libstdc++6 \
-        zlib1g \
-    && rm -rf /var/lib/apt/lists/*
+# Create a non-root user
+RUN groupadd --gid ${USER_GID} ${USER_NAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
+    && chmod 0440 /etc/sudoers.d/${USER_NAME} 
 
 # ------------------------------------
 # dev
@@ -130,7 +82,6 @@ FROM dotnet-sdk as dev
 ARG USER_NAME
 ARG USER_GID
 ARG USER_UID
-ARG DEBIAN_VERSION
 ARG MINIZINC_HOME
 ARG ORTOOLS_VERSION
 ARG ORTOOLS_BUILD
@@ -139,19 +90,19 @@ ARG ORTOOLS_HOME
 # Install core packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        curl \
-        ca-certificates \
-        gnupg2 \
-        locales \
-        lsb-release \
-        wget \
+    curl \
+    ca-certificates \
+    gnupg2 \
+    locales \
+    lsb-release \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker CE CLI
 RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | apt-key add - 2>/dev/null \
     && echo "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list \
     && apt-get update && apt-get install -y --no-install-recommends \
-        docker-ce-cli \
+    docker-ce-cli \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker Compose
@@ -170,17 +121,18 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
 # Install Developer packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        autojump \
-        fonts-powerline \
-        openssh-client \
-        make \
-        micro \
-        less \
-        inotify-tools \
-        htop \
-        git \
-        tree \
-        zsh \
+    autojump \
+    fonts-powerline \
+    openssh-client \
+    make \
+    micro \
+    less \
+    inotify-tools \
+    iputils-ping \
+    htop \
+    git \
+    tree \
+    zsh \
     && rm -rf /var/lib/apt/lists/*    
 
 # Install D2
@@ -190,17 +142,3 @@ RUN curl -fsSL https://d2lang.com/install.sh | sh -s --
 COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
 COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=minizinc-builder $ORTOOLS_HOME $ORTOOLS_HOME
-
-# Install ZSH
-USER ${USER_NAME}
-ENV HOME=/home/${USER_NAME}
-WORKDIR $HOME
-COPY .devcontainer/.p10k.zsh .p10k.zsh
-RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
-    -p git \
-    -p docker \
-    -p autojump \
-    -p https://github.com/zsh-users/zsh-autosuggestions \
-    -p https://github.com/zsh-users/zsh-completions \
- && echo "[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh" >> .zshrc \
- && .oh-my-zsh/custom/themes/powerlevel10k/gitstatus/install

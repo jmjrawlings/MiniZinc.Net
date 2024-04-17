@@ -40,7 +40,8 @@ public static class Spec
                     if (model.Extension != ".mzn")
                         continue;
 
-                    var path = Path.GetRelativePath(dir.FullName, model.FullName);
+                    var path = Path.GetRelativePath(dir.FullName, model.FullName)
+                        .Replace('\\', '/');
                     modelPaths.Add(path);
                 }
             }

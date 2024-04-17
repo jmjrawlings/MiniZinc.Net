@@ -1,3 +1,5 @@
-build
-src
-tests
+Dockerfile*
+**/bin/
+**/obj/
+**/out/
+**/*.md

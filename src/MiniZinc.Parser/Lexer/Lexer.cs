@@ -703,8 +703,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             reader.Peek(); // you need this!
             encoding = reader.CurrentEncoding;
         }
-
-        Console.WriteLine("Encoding for {0} is {1}", path, encoding);
         var s = File.ReadAllText(path, encoding);
         var lexer = LexString(s, options);
         return lexer;
