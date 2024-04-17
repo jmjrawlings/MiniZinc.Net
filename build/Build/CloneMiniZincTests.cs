@@ -1,7 +1,6 @@
-﻿using CommunityToolkit.Diagnostics;
+﻿namespace Build;
 
-namespace Build;
-
+using CommunityToolkit.Diagnostics;
 using MiniZinc.Build;
 using MiniZinc.Process;
 
@@ -9,16 +8,17 @@ public static class CloneLibMiniZincTests
 {
     public static async Task Run()
     {
+        Console.WriteLine("Cloning libminiznc tests");
         var url = $"https://github.com/MiniZinc/libminizinc.git";
-        var libDir = Repo.LibMiniZincDir.CreateOrClear();
         var cloneDir = Environment
-            .CurrentDirectory.JoinPath(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
-            .ToDirectory()
+            .CurrentDirectory.ToDirectory()
+            .JoinDir("libminiznc")
             .CreateOrClear();
 
         async Task Run(params string[] args)
         {
             var cmd = Command.Create(args).WithWorkingDirectory(cloneDir);
+            Console.WriteLine(cmd.String);
             var result = await cmd.Run();
             Guard.IsEqualTo((int)result.Status, (int)ProcessStatus.Ok);
         }
@@ -30,8 +30,8 @@ public static class CloneLibMiniZincTests
         await Run("git", "checkout", "master");
 
         var sourceDir = cloneDir.JoinDir("tests", "spec").EnsureExists();
-        var targetDir = libDir;
+        var targetDir = Repo.LibMiniZincDir.CreateOrClear();
+        Console.WriteLine($"Copying tests to {targetDir}");
         sourceDir.CopyContentsTo(targetDir);
-        cloneDir.Delete(true);
     }
 }

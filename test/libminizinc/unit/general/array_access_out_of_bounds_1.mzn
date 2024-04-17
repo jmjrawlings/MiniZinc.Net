@@ -8,4 +8,3 @@ expected: !Error
 enum Foo = {A, B, C};
 array [{A, B}] of int: x = [1, 2];
 any: v = x[C];
-Ipq5

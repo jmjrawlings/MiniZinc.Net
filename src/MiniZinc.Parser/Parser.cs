@@ -16,7 +16,7 @@ public sealed partial class Parser
     private uint _pos;
     private uint _line;
     private uint _col;
-    public string? ErrorString;
+    public string? ErrorString { get; private set; }
     private StringBuilder? _trace;
     public bool Err => ErrorString is not null;
     public TimeSpan Elapsed => _watch.Elapsed;

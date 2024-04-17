@@ -11,12 +11,14 @@ jobs:
       Tests
     runs-on:
       ubuntu-latest
-    steps:
+    steps: 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Install DotNet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
+        with: 
+          dotnet-version: 8
       
       - name: Dotnet Restore
         run: dotnet restore
@@ -27,58 +29,58 @@ jobs:
       - name: Dotnet Test        
         run: dotnet test --no-build --verbosity normal
 
-  test-client:
-    if: false
-    name:
-      Client Tests v${{ matrix.minizinc-version }}
-    runs-on:
-      ubuntu-latest
-    strategy:
-      matrix:
-        minizinc-version:
-          - "2.8.2"
-          #- "2.6.4"
-          #- "2.5.5"
-    env:
-      MINIZINC_URL: https://github.com/MiniZinc/MiniZincIDE/releases/download/${{ matrix.minizinc-version }}/MiniZincIDE-${{ matrix.minizinc-version }}-x86_64.AppImage
-      MINIZINC_VERSION: ${{ matrix.minizinc-version }}
-      PROJ: tests/MiniZinc.ClientTests/MiniZinc.ClientTests.fsproj
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # test-client:
+  #   if: false
+  #   name:
+  #     Client Tests v${{ matrix.minizinc-version }}
+  #   runs-on:
+  #     ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       minizinc-version:
+  #         - "2.8.4"
+  #         #- "2.6.4"
+  #         #- "2.5.5"
+  #   env:
+  #     MINIZINC_URL: https://github.com/MiniZinc/MiniZincIDE/releases/download/${{ matrix.minizinc-version }}/MiniZincIDE-${{ matrix.minizinc-version }}-x86_64.AppImage
+  #     MINIZINC_VERSION: ${{ matrix.minizinc-version }}
+  #     PROJ: tests/MiniZinc.ClientTests/MiniZinc.ClientTests.fsproj
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
         
-      - name: Add bin/ to PATH
-        run: |
-          mkdir -p ${{ github.workspace }}/bin
-          echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+  #     - name: Add bin/ to PATH
+  #       run: |
+  #         mkdir -p ${{ github.workspace }}/bin
+  #         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
           
-      - name: Install libfuse (AppImage dependency)
-        run: |
-          sudo apt-get update
-          sudo apt-get install libfuse2 libegl1
+  #     - name: Install libfuse (AppImage dependency)
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install libfuse2 libegl1
           
-      - name: Cache MiniZinc
-        id: cache-minizinc
-        uses: actions/cache@v2
-        with:
-          path: ${{ github.workspace }}/bin/minizinc
-          key: minizinc-v${{ matrix.minizinc-version }}
+  #     - name: Cache MiniZinc
+  #       id: cache-minizinc
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ${{ github.workspace }}/bin/minizinc
+  #         key: minizinc-v${{ matrix.minizinc-version }}
           
-      - name: Download MiniZinc
-        if: steps.cache-minizinc.outputs.cache-hit != 'true'
-        run: |
-          sudo curl -o ${{ github.workspace }}/bin/minizinc -L $MINIZINC_URL
-          sudo chmod +x ${{ github.workspace }}/bin/minizinc
-          minizinc --version
+  #     - name: Download MiniZinc
+  #       if: steps.cache-minizinc.outputs.cache-hit != 'true'
+  #       run: |
+  #         sudo curl -o ${{ github.workspace }}/bin/minizinc -L $MINIZINC_URL
+  #         sudo chmod +x ${{ github.workspace }}/bin/minizinc
+  #         minizinc --version
           
-      - name: Install DotNet
-        uses: actions/setup-dotnet@v3
+  #     - name: Install DotNet
+  #       uses: actions/setup-dotnet@v3
         
-      - name: Dotnet Restore
-        run: dotnet restore $PROJ
+  #     - name: Dotnet Restore
+  #       run: dotnet restore $PROJ
         
-      - name: Dotnet Build
-        run: dotnet build $PROJ --no-restore
+  #     - name: Dotnet Build
+  #       run: dotnet build $PROJ --no-restore
         
-      - name: Dotnet Test
-        run: dotnet test $PROJ --no-build --verbosity normal
+  #     - name: Dotnet Test
+  #       run: dotnet test $PROJ --no-build --verbosity normal
