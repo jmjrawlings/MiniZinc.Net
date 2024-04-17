@@ -5,17 +5,14 @@
         "dockerfile": "../Dockerfile",
         "target": "dev"
     },
-
     "mounts": [
-        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
-        // "source=${localEnv:HOME}/.zshrc,target=/root/.zshrc,type=bind,readonly",
-        // "source=${localEnv:HOME}/.p10k.zsh,target=/root/.p10k.zsh,type=bind,readonly"
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ],
-    
     "customizations": {
         "vscode": {
             "extensions": [
-                "ms-dotnettools.csharp"
+                "ms-dotnettools.csdevkit",
+                "ms-azuretools.vscode-docker"
             ]
         },
         "settings": {
@@ -41,5 +38,4 @@
     "containerEnv": {
         "DO_NOT_TRACK": "1"
     }
-    
 }
