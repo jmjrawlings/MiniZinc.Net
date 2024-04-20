@@ -1,5 +1,5 @@
 {
-    "name": "minizinc.net",
+    "name": "MiniZinc.NET",
     "build": {
         "context": "..",
         "dockerfile": "../Dockerfile",
@@ -8,6 +8,7 @@
     "mounts": [
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ],
+    "remoteUser": "harken",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -33,9 +34,10 @@
     "runArgs": [
         "--init",
         "--hostname",
-        "host"
+        "monash"
     ],
     "containerEnv": {
-        "DO_NOT_TRACK": "1"
+        "DO_NOT_TRACK": "1",
+        "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
     }
 }

@@ -5,9 +5,9 @@ ARG MINIZINC_HOME=/usr/local/share/minizinc
 ARG ORTOOLS_VERSION=9.7
 ARG ORTOOLS_BUILD=2996
 ARG ORTOOLS_HOME=/opt/ortools
-ARG USER_NAME=harken
-ARG USER_GID=1000
 ARG USER_UID=1000
+ARG USER_GID=1000
+ARG USER_NAME=harken
 
 # ********************************************************
 # MiniZinc Builder
@@ -53,39 +53,42 @@ RUN echo "var 1..9: x; constraint x > 5; solve satisfy;" \
 
 
 # ------------------------------------
-# dotnet-sdk
+# base
+#
+# Base operating system
 # ------------------------------------
-FROM mcr.microsoft.com/dotnet/sdk:8.0 as dotnet-sdk
+FROM debian:${DEBIAN_VERSION} as base
+
 ARG USER_NAME
 ARG USER_GID
 ARG USER_UID
-ARG DEBIAN_FRONTEND
-ENV DOTNET_RUNNING_IN_CONTAINER=true
-ENV DOTNET_INSTALL_DIR=/usr/share/dotnet
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-# Create a non-root user
 RUN groupadd --gid ${USER_GID} ${USER_NAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
     && apt-get update \
     && apt-get install -y sudo \
     && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
-    && chmod 0440 /etc/sudoers.d/${USER_NAME} 
+    && chmod 0440 /etc/sudoers.d/${USER_NAME}
 
 # ------------------------------------
 # dev
 #
 # Development environment
 # ------------------------------------
-FROM dotnet-sdk as dev
+FROM base as dev
 
-ARG USER_NAME
-ARG USER_GID
-ARG USER_UID
+ARG DEBIAN_FRONTEND
+ARG DEBIAN_VERSION
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV DOTNET_INSTALL_DIR=/usr/share/dotnet
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ARG MINIZINC_HOME
 ARG ORTOOLS_VERSION
 ARG ORTOOLS_BUILD
 ARG ORTOOLS_HOME
+ARG USER_ID
+ARG USER_GID
+ARG USER_NAME
 
 # Install core packages
 RUN apt-get update \
@@ -97,6 +100,15 @@ RUN apt-get update \
     lsb-release \
     wget \
     && rm -rf /var/lib/apt/lists/*
+
+# Install DOTNETSDK
+RUN wget https://packages.microsoft.com/config/debian/${DEBIAN_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && sudo dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update  \
+    && apt-get install -y dotnet-sdk-8.0 \
+    && rm -rf /var/lib/apt/lists/*
+
 
 # Install Docker CE CLI
 RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | apt-key add - 2>/dev/null \
@@ -142,3 +154,15 @@ RUN curl -fsSL https://d2lang.com/install.sh | sh -s --
 COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
 COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=minizinc-builder $ORTOOLS_HOME $ORTOOLS_HOME
+
+# Install ZSH
+USER ${USER_NAME}
+WORKDIR /home/${USER_NAME}
+RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
+    -p git \
+    -p docker \
+    -p autojump \
+    -p https://github.com/zsh-users/zsh-autosuggestions \
+    -p https://github.com/zsh-users/zsh-completions
+
+COPY .devcontainer/.p10k.zsh .devcontainer/.zshrc /home/${USER_NAME}
