@@ -697,14 +697,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// </summary>
     public static Lexer LexFile(string path, LexOptions options = default)
     {
-        Encoding encoding;
-        using (var reader = new StreamReader(path, Encoding.UTF8, true))
-        {
-            reader.Peek(); // you need this!
-            encoding = reader.CurrentEncoding;
-        }
-        var s = File.ReadAllText(path, encoding);
-        var lexer = LexString(s, options);
+        var test = File.ReadAllText(path);
+        var lexer = LexString(test, options);
         return lexer;
     }
 
