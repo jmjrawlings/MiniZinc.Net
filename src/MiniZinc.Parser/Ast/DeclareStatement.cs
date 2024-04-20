@@ -5,11 +5,11 @@
 /// </summary>
 public sealed record DeclareStatement : Node, INamed, ILetLocal
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
-    public TypeInst Type { get; set; }
+    public required TypeInst Type { get; set; }
 
-    public Node Body { get; set; }
+    public Node? Body { get; set; }
 
     public List<Binding<TypeInst>>? Parameters { get; set; }
 

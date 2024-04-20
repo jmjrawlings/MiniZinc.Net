@@ -15,9 +15,9 @@ public record EnumCases : Node
     public Expr? Expr { get; set; }
 }
 
-public sealed record Enum : Node, INamed
+public sealed record EnumStatement : Node, INamed
 {
-    public string Name { get; set; }
+    public required string Name { get; set; }
 
-    public List<EnumCases> Cases { get; set; } = new();
+    public List<EnumCases> Cases { get; } = new();
 }

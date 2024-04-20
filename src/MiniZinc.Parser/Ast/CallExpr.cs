@@ -2,6 +2,6 @@
 
 public sealed record CallExpr : Expr, INamed
 {
-    public string Name { get; set; }
+    public required string Name { get; init; }
     public List<Node>? Args { get; set; }
 }

@@ -27,19 +27,19 @@ public sealed record TupleTypeInst : TypeInst
 
 public sealed record ExprTypeInst : TypeInst
 {
-    public Node Expr { get; set; }
+    public Expr Expr { get; set; } = Expr.Null;
 }
 
 public sealed record ArrayTypeInst : TypeInst
 {
-    public TypeInst Type { get; set; }
+    public required TypeInst Type { get; set; }
 
-    public List<Node> Dimensions { get; set; }
+    public required List<Node> Dimensions { get; set; }
 
     public int N => Dimensions.Count;
 }
 
 public sealed record SetTypeInst : TypeInst
 {
-    public TypeInst Type { get; set; }
+    public required TypeInst Type { get; init; }
 }

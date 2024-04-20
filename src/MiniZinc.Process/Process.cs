@@ -48,7 +48,7 @@ public sealed class Process : IDisposable
     private readonly ILogger _logger;
 
     /// If iterating, a channel to implement AsyncEnumerable
-    private Channel<ProcessEventMessage> _channel;
+    private Channel<ProcessEventMessage>? _channel;
     private IAsyncEnumerable<ProcessEventMessage>? _events;
 
     /// If running, marks the completion

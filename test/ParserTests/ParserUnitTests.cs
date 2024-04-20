@@ -201,20 +201,20 @@ public class ParserUnitTests
         var rec = (RecordTypeInst)var.Type;
         rec.Fields[0].Name.Should().Be("x");
         var ti = rec.Fields[0].Value as ExprTypeInst;
-        var rng = (RangeExpr)ti.Expr;
-        ((IntLit)rng.Lower).Value.Should().Be(1);
-        ((IntLit)rng.Upper).Value.Should().Be(1);
+        var rng = (RangeExpr)ti!.Expr;
+        ((IntLit)rng.Lower!).Value.Should().Be(1);
+        ((IntLit)rng.Upper!).Value.Should().Be(1);
     }
 
     [Fact]
     void test_parse_let_xd()
     {
         var mzn = """
-      let {
-          array[1..1] of var bool: res;
-          constraint res[1];
-      } in res;
-      """;
+            let {
+                array[1..1] of var bool: res;
+                constraint res[1];
+            } in res;
+            """;
         var parser = Parse(mzn);
         parser.ParseLetExpr(out var let);
         let.Should().NotBeNull();
@@ -239,10 +239,10 @@ public class ParserUnitTests
     void test_record_comp()
     {
         var mzn = """
-                  [
-                    i: (a: some_map[i], b: some_map[i] mod 2 = 0) | i in Some
-                  ]
-                  """;
+            [
+              i: (a: some_map[i], b: some_map[i] mod 2 = 0) | i in Some
+            ]
+            """;
         var parser = Parse(mzn);
         parser.ParseExpr(out var expr);
         var arr = (CompExpr)expr;
@@ -257,7 +257,7 @@ public class ParserUnitTests
         var ok = parser.ParseDeclareOrAssignItem(out var var, out var ass);
         ok.Should().BeTrue();
         var.Should().NotBeNull();
-        var.Name.Should().Be("xd");
+        var!.Name.Should().Be("xd");
     }
 
     [Fact]
@@ -267,7 +267,7 @@ public class ParserUnitTests
         var parser = Parse(mzn);
         var ok = parser.ParseDeclareOrAssignItem(out var dec, out var ass);
         dec.Should().NotBeNull();
-        dec.Name.Should().Be("xd");
+        dec!.Name.Should().Be("xd");
 
         var type = (ExprTypeInst)dec.Type;
         type.Var.Should().BeTrue();

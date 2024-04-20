@@ -6,7 +6,7 @@ public partial class Parser
 {
     public bool ParseBaseType(out TypeInst type)
     {
-        type = default;
+        type = default!;
         var var = false;
         if (Skip(TokenKind.VAR))
             var = true;
@@ -50,16 +50,16 @@ public partial class Parser
             return false;
 
         var dims = new List<Node>();
-        arr = new ArrayTypeInst { Kind = TypeKind.Array };
-        arr.Dimensions = dims;
         if (!Skip(TokenKind.OPEN_BRACKET))
             return false;
         next:
         if (!ParseBaseType(out var expr))
             return false;
         dims.Add(expr);
+
         if (Skip(TokenKind.COMMA))
             goto next;
+
         if (!Expect(TokenKind.CLOSE_BRACKET))
             return false;
 
@@ -69,7 +69,12 @@ public partial class Parser
         if (!ParseType(out var type))
             return false;
 
-        arr.Type = type;
+        arr = new ArrayTypeInst
+        {
+            Kind = TypeKind.Array,
+            Dimensions = dims,
+            Type = type
+        };
         return true;
     }
 

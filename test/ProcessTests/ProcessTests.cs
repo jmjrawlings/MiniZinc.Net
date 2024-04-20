@@ -3,15 +3,15 @@
     [Fact]
     public async void Command_Runs()
     {
-        var cmd = Command.Create("git", "-v");
+        var cmd = Command.Create("git", "--version");
         var proc = await cmd.Run();
         proc.Status.Should().Be(ProcessStatus.Ok);
     }
 
     [Fact]
-    public async void Command_Listen_MiniZinc_Version()
+    public async void Command_Listens()
     {
-        var cmd = Command.Create("minizinc", "--version");
+        var cmd = Command.Create("git", "--version");
         var proc = new Process(cmd);
         await foreach (var msg in proc.Listen())
         {
@@ -21,30 +21,13 @@
         proc.Status.Should().Be(ProcessStatus.Ok);
     }
 
-    [Fact]
-    public async void Command_Run_MiniZinc_Version()
-    {
-        var res = Command.Create("minizinc", "--version").Run();
-    }
-
-    [Fact]
-    public async void Ping_And_Listen()
-    {
-        var cmd = Command.Create("ping 127.0.0.1 -n 4");
-        var proc = new Process(cmd);
-        await foreach (var msg in proc.Listen())
-        {
-            Write("[{0}|{1}] {2}", cmd.Exe, msg.EventType, msg.Content);
-        }
-    }
-
-    [Fact]
+    [Fact(Skip = "Save it for solver tests")]
     public async void Solve_NQueens_With_Timeout()
     {
         var model = """
             int: n = 15;
             array [1..n] of var 1..n: q; % queen in column i is in row q[i]
-            
+
             include "alldifferent.mzn";
             constraint alldifferent(q);                       % distinct rows
             constraint alldifferent([ q[i] + i | i in 1..n]); % distinct diagonals

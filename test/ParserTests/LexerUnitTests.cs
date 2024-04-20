@@ -116,7 +116,6 @@
             $"""output ["full var: \(x)\nvar array: \(y)\nnested: \(z)\nelement: \(z.2.1)\npartial: \(init)\ndata: \(dat)\nenumtup: \(enumtup)\n"];""";
         var x = Lexer.LexString(s);
         var a = x.ToArray();
-        var z = 2;
     }
 
     [Fact]

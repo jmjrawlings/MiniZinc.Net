@@ -295,7 +295,10 @@ public sealed class Writer
 
     void WriteAnnotations(IAnnotations expr)
     {
-        foreach (var ann in expr.Annotations)
+        if (expr.Annotations is not { } anns)
+            return;
+
+        foreach (var ann in anns)
         {
             Write(COLON);
             Write(COLON);
@@ -362,7 +365,7 @@ public sealed class Writer
                 Write(OPEN_CHEVRON);
                 Write(CLOSE_CHEVRON);
                 break;
-            case Enum e:
+            case EnumStatement e:
                 Write(ENUM);
                 Space();
                 Write(e.Name);
@@ -420,14 +423,14 @@ public sealed class Writer
             case LetExpr e:
                 Write(LET);
                 Write(OPEN_BRACE);
-                IEnumerable<Node> locals = e.Locals.Select(
-                    x =>
-                        x switch
-                        {
-                            ConstraintStatement c => (Node)c,
-                            AssignStatement a => (Node)a,
-                            DeclareStatement v => (Node)v
-                        }
+                var locals = e.Locals?.Select(x =>
+                    x switch
+                    {
+                        ConstraintStatement c => (Node)c,
+                        AssignStatement a => a,
+                        DeclareStatement v => v,
+                        _ => null!
+                    }
                 );
 
                 WriteExprs(locals);

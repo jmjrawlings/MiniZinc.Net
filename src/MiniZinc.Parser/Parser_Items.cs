@@ -77,7 +77,7 @@ public partial class Parser
     /// <example>enum Dir = {N,S,E,W};</example>
     /// <example>enum Z = anon_enum(10);</example>
     /// <example>enum X = Q({1,2});</example>
-    public bool ParseEnumItem(out Enum @enum)
+    public bool ParseEnumItem(out EnumStatement @enum)
     {
         @enum = default!;
         if (!Expect(TokenKind.ENUM))
@@ -86,7 +86,7 @@ public partial class Parser
         if (!ParseIdent(out var name))
             return false;
 
-        @enum = new Enum { Name = name };
+        @enum = new EnumStatement { Name = name };
         if (!ParseAnnotations(@enum))
             return false;
 
@@ -278,13 +278,15 @@ public partial class Parser
     /// <mzn>constraint a > b;</mzn>
     public bool ParseConstraintItem(out ConstraintStatement constraint)
     {
-        constraint = new ConstraintStatement();
+        constraint = default!;
 
         if (!Skip(TokenKind.CONSTRAINT))
             return false;
 
         if (!ParseExpr(out var expr))
             return false;
+
+        constraint = new ConstraintStatement { Expr = expr };
 
         if (!ParseStringAnnotations(constraint))
             return false;
@@ -342,9 +344,7 @@ public partial class Parser
             if (!ParseType(out var type))
                 return false;
 
-            var = new DeclareStatement();
-            var.Name = name;
-            var.Type = type;
+            var = new DeclareStatement { Type = type };
             Expect(TokenKind.COLON);
         }
         else if (Skip(TokenKind.PREDICATE))
@@ -352,34 +352,28 @@ public partial class Parser
             if (!ParseIdent(out name))
                 return false;
 
-            var = new DeclareStatement();
-            var.Type = new TypeInst { Kind = TypeKind.Bool };
+            var = new DeclareStatement { Type = new TypeInst { Kind = TypeKind.Bool } };
         }
         else if (Skip(TokenKind.TEST))
         {
             if (!ParseIdent(out name))
                 return false;
 
-            var = new DeclareStatement();
-            var.Type = new TypeInst { Kind = TypeKind.Bool };
+            var = new DeclareStatement { Type = new TypeInst { Kind = TypeKind.Bool } };
         }
         else if (Skip(TokenKind.ANNOTATION))
         {
             if (!ParseIdent(out name))
                 return false;
 
-            var = new DeclareStatement();
-            var.Type = new TypeInst { Kind = TypeKind.Annotation };
-            var.Name = name;
+            var = new DeclareStatement { Type = new TypeInst { Kind = TypeKind.Annotation } };
         }
         else if (Skip(TokenKind.ANY))
         {
             if (!ParseIdent(out name))
                 return false;
 
-            var = new DeclareStatement();
-            var.Type = new TypeInst { Kind = TypeKind.Any };
-            var.Name = name;
+            var = new DeclareStatement { Type = new TypeInst { Kind = TypeKind.Any } };
         }
         else if (ParseType(out var type))
         {
@@ -396,6 +390,7 @@ public partial class Parser
 
         if (!ParseIdent(out name))
             return false;
+
         var!.Name = name;
 
         // Function call

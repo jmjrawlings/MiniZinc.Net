@@ -5,5 +5,5 @@ using System.Text.Json.Serialization;
 
 public sealed record StatisticsMessage : MiniZincMessage
 {
-    public JsonObject Statistics { get; init; }
+    public required JsonObject Statistics { get; init; }
 }

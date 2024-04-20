@@ -466,7 +466,7 @@ public partial class Parser
                     break;
                 // Already created generators get added
                 case GeneratorExpr g:
-                    g.Names = idents!;
+                    g.Names.AddRange(idents!);
                     idents = null;
                     generators.Add(g);
                     break;
@@ -475,6 +475,7 @@ public partial class Parser
                     idents ??= new List<Identifier>();
                     idents.Add((Identifier)binop.Left);
                     var gen = new GeneratorExpr();
+                    gen.Names.AddRange(idents);
                     gen.Names = idents;
                     gen.From = binop.Right;
                     generators.Add(gen);
@@ -489,7 +490,7 @@ public partial class Parser
     private bool ParseGenerators(List<GeneratorExpr> generators)
     {
         begin:
-        var gen = new GeneratorExpr { Names = new List<Identifier>() };
+        var gen = new GeneratorExpr();
         while (true)
         {
             Identifier name;
@@ -1007,9 +1008,7 @@ public partial class Parser
         if (!ParseIfThenCase(out var @if, out var @then, TokenKind.IF))
             return false;
 
-        ite = new IfThenElseExpr();
-        ite.If = @if;
-        ite.Then = @then;
+        ite = new IfThenElseExpr { If = @if, Then = @then };
 
         while (ParseIfThenCase(out @if, out @then, TokenKind.ELSEIF))
         {

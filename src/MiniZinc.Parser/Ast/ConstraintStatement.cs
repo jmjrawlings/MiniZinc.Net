@@ -2,5 +2,5 @@
 
 public sealed record ConstraintStatement : Node, ILetLocal
 {
-    public Expr Expr { get; set; }
+    public required Expr Expr { get; set; }
 }

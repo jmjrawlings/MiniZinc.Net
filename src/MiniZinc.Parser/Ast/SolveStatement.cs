@@ -7,5 +7,5 @@ public record SolveStatement : Node
 {
     public SolveMethod Method { get; set; }
 
-    public Expr Objective { get; set; }
+    public Expr Objective { get; set; } = Expr.Null;
 }

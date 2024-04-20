@@ -2,7 +2,7 @@
 
 public sealed record OutputStatement : Node
 {
-    public Node Expr { get; set; }
+    public Expr Expr { get; set; } = Expr.Null;
 }
 
 public record Node : IAnnotations

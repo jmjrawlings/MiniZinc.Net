@@ -11,5 +11,6 @@
         <RepositoryUrl>https://github.com/jmjrawlings/MiniZinc.Net</RepositoryUrl>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>preview</LangVersion>
+        <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
 </Project>

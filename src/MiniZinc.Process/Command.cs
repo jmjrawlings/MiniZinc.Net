@@ -95,6 +95,9 @@ public readonly record struct Command
         return String;
     }
 
+    /// <summary>
+    /// Run this command
+    /// </summary>
     public async Task<Process> Run(CancellationToken cancellation = default)
     {
         using var proc = new Process(this);

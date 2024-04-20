@@ -2,7 +2,7 @@
 
 public sealed record TraceMessage : MiniZincMessage
 {
-    public string Section { get; init; }
+    public string Section { get; init; } = string.Empty;
 
-    public string Message { get; init; }
+    public string Message { get; init; } = string.Empty;
 }

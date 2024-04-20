@@ -14,7 +14,7 @@ internal readonly struct Token(
     public readonly uint Col = col;
     public readonly uint Position = start;
     public readonly uint Length = length;
-    public readonly object? Data = o;
+    public object? Data => o;
 
     public int IntValue => (int)o!;
     public string StringValue => (string)o!;

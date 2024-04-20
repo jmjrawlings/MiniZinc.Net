@@ -115,10 +115,10 @@ public static class Yaml
         private static JsonNode ParseScalar(IParser parser, string? tag)
         {
             var str = (parser.Current as Scalar)!.Value;
-            JsonNode node = ParseValue(str);
+            JsonNode? node = ParseValue(str);
 
             if (tag is null)
-                return node;
+                return node!;
 
             var type = GetTypeNameFromTag(tag);
             if (tag is TAG_RANGE)
@@ -199,7 +199,7 @@ public static class Yaml
             return map;
         }
 
-        private JsonNode ParseSequence(IParser parser, string? tag)
+        private JsonNode ParseSequence(IParser parser, string? _)
         {
             parser.MoveNext();
             var node = new JsonArray();

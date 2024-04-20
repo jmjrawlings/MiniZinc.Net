@@ -26,6 +26,6 @@ public record MiniZincMessage
     public static MiniZincMessage Deserialize(string json)
     {
         var message = JsonSerializer.Deserialize<MiniZincMessage>(json, JsonSerializerOptions);
-        return message;
+        return message!;
     }
 }

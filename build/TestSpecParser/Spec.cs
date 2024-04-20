@@ -148,10 +148,7 @@ public static class Spec
             {
                 testCase.Type = TestType.Satisfy;
             }
-            else
-            {
-                var a = 2;
-            }
+            else { }
         }
 
         var nsols = testCase.Solutions?.Count ?? 0;
@@ -207,7 +204,7 @@ public static class Spec
         using var stream = file.OpenRead();
         using var reader = new StreamReader(stream);
 
-        const char EOF = '\uffff';
+        // const char EOF = '\uffff';
         char c;
         int i = -1;
 
