@@ -3,7 +3,7 @@
     [Fact]
     public async void Command_Runs()
     {
-        var cmd = Command.Create("git", "--version");
+        var cmd = Command.Create("minizinc", "--version");
         var proc = await cmd.Run();
         proc.Status.Should().Be(ProcessStatus.Ok);
     }
@@ -11,7 +11,7 @@
     [Fact]
     public async void Command_Listens()
     {
-        var cmd = Command.Create("git", "--version");
+        var cmd = Command.Create("minizinc", "--version");
         var proc = new Process(cmd);
         await foreach (var msg in proc.Listen())
         {
@@ -21,7 +21,7 @@
         proc.Status.Should().Be(ProcessStatus.Ok);
     }
 
-    [Fact(Skip = "Save it for solver tests")]
+    [Fact]
     public async void Solve_NQueens_With_Timeout()
     {
         var model = """
@@ -49,7 +49,6 @@
                 Write(data);
         }
 
-        var a = 2;
         proc.Status.Should().Be(ProcessStatus.Cancelled);
     }
 

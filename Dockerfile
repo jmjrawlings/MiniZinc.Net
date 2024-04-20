@@ -70,6 +70,7 @@ RUN groupadd --gid ${USER_GID} ${USER_NAME} \
     && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
     && chmod 0440 /etc/sudoers.d/${USER_NAME}
 
+
 # ------------------------------------
 # dev
 #
@@ -83,9 +84,6 @@ ENV DOTNET_RUNNING_IN_CONTAINER=true
 ENV DOTNET_INSTALL_DIR=/usr/share/dotnet
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ARG MINIZINC_HOME
-ARG ORTOOLS_VERSION
-ARG ORTOOLS_BUILD
-ARG ORTOOLS_HOME
 ARG USER_ID
 ARG USER_GID
 ARG USER_NAME
@@ -166,3 +164,61 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
     -p https://github.com/zsh-users/zsh-completions
 
 COPY .devcontainer/.p10k.zsh .devcontainer/.zshrc /home/${USER_NAME}
+
+
+# ------------------------------------
+# test
+# ------------------------------------
+FROM base as test
+
+ARG DEBIAN_FRONTEND
+ARG DEBIAN_VERSION
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV DOTNET_INSTALL_DIR=/usr/share/dotnet
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+ARG MINIZINC_HOME
+ARG ORTOOLS_HOME
+ARG USER_UID
+ARG USER_GID
+ARG USER_NAME
+
+# Install core packages
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    git \
+    gnupg2 \
+    locales \
+    lsb-release \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install .NET SDK
+RUN wget https://packages.microsoft.com/config/debian/${DEBIAN_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && sudo dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update  \
+    && apt-get install -y dotnet-sdk-8.0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install MiniZinc + ORTools
+COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
+COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
+
+USER ${USER_NAME}
+ARG PROJECT_DIR=/home/${USER_NAME}/MiniZinc.Net
+RUN mkdir -p ${PROJECT_DIR}
+WORKDIR ${PROJECT_DIR}
+
+COPY --chown=$USER_UID:$USER_GID global.json Directory.Build.props ./
+COPY --chown=$USER_UID:$USER_GID src ./src
+COPY --chown=$USER_UID:$USER_GID test ./test
+
+RUN dotnet new sln \
+    && dotnet sln add src/**/*.csproj \
+    && dotnet sln add test/**/*.csproj 
+
+RUN dotnet build
+
+CMD [ "dotnet","test" ]
