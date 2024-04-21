@@ -13,8 +13,7 @@ public class ParserUnitTests
 {
     Parser Parse(string mzn)
     {
-        var lexer = Lexer.LexString(mzn);
-        var parser = new Parser(lexer);
+        var parser = new Parser(mzn);
 
         parser.Step();
         return parser;

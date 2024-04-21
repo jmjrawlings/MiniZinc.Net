@@ -8,7 +8,7 @@ using System.Text;
 /// </summary>
 public sealed partial class Parser
 {
-    private readonly IEnumerator<Token> _lexer;
+    private readonly Token[] _tokens;
     private readonly Stopwatch _watch;
     private Token _token;
     private TokenKind _kind;
@@ -16,18 +16,34 @@ public sealed partial class Parser
     private uint _pos;
     private uint _line;
     private uint _col;
+    private int _i;
     public string? ErrorString { get; private set; }
     private StringBuilder? _trace;
     public bool Err => ErrorString is not null;
     public TimeSpan Elapsed => _watch.Elapsed;
 
-    internal Parser(IEnumerator<Token> lexer)
+    public static Parser ParseFile(string path)
     {
+        var mzn = File.ReadAllText(path);
+        var parser = new Parser(mzn);
+        return parser;
+    }
+
+    public static Parser ParseString(string text)
+    {
+        var parser = new Parser(text);
+        return parser;
+    }
+
+    internal Parser(string mzn)
+    {
+        using var lexer = Lexer.LexString(mzn);
         _watch = Stopwatch.StartNew();
-        _lexer = lexer;
+        _tokens = lexer.ToArray();
         _pos = 0;
         _line = 1;
         _col = 1;
+        _i = 0;
 #if DEBUG
         _trace = new StringBuilder();
 #endif
@@ -36,13 +52,13 @@ public sealed partial class Parser
     /// Progress the parser
     public bool Step()
     {
-        if (!_lexer.MoveNext())
+        if (_i >= _tokens.Length)
         {
             _kind = TokenKind.EOF;
             return false;
         }
 
-        _token = _lexer.Current;
+        _token = _tokens[_i++];
         _kind = _token.Kind;
         _pos = _token.Position;
 
@@ -66,28 +82,6 @@ public sealed partial class Parser
         _col += _token.Length;
         return true;
     }
-
-    // // Read token from the buffer if possible
-    // if (++_bufferIndex < _bufferCount)
-    // {
-    //     _token = _buffer[_bufferIndex];
-    //     _kind = _token.Kind;
-    //     _pos++;
-    //     return true;
-    // }
-    //
-    // // Fill the buffer from the source
-    // _bufferIndex = 0;
-    // _bufferCount = 0;
-    //
-    // while (_bufferCount < _buffer.Length && _tokens.MoveNext())
-    //     _buffer[_bufferCount++] = _tokens.Current;
-    //
-    // _pos++;
-    // _token = _buffer[0];
-    // _kind = _token.Kind;
-    // return _bufferCount > 0;
-
 
     /// Progress the parser if the current token is of the given kind
     private bool Skip(TokenKind kind)
@@ -174,17 +168,17 @@ public sealed partial class Parser
         _watch.Stop();
         var trace = _trace?.ToString() ?? string.Empty;
         var message = $"""
-             
-             ---------------------------------------------
-             {msg}
-             ---------------------------------------------
-             Token {_kind}
-             Line {_token.Line}
-             Col {_token.Col}
-             Pos {_pos}
-             ---------------------------------------------
-             {trace}
-             """;
+
+            ---------------------------------------------
+            {msg}
+            ---------------------------------------------
+            Token {_kind}
+            Line {_token.Line}
+            Col {_token.Col}
+            Pos {_pos}
+            ---------------------------------------------
+            {trace}
+            """;
 
         ErrorString = message;
         return false;

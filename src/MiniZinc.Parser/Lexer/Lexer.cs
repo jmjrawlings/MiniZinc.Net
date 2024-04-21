@@ -1,6 +1,4 @@
-﻿using MiniZinc.Parser.Ast;
-
-namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser;
 
 using System;
 using System.Collections;
@@ -59,6 +57,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private readonly StringBuilder _sb;
     public readonly bool LexLineComments;
     public readonly bool LexBlockComments;
+
+    const string ERROR_QUOTED_IDENTIFIER = "Error quoted identifier";
+    const string ERROR_UNEXPECTED_CHAR = "Error unexpected char";
+    const string ERROR_BACKTICK_IDENTIFIER = "Error backtick identifier";
+    const string ERROR_POLYMORPHIC_IDENTIFIER = "Error polymorphic identifier";
+    const string ERROR_UNTERMINATED_STRING_LITERAL = "Error unterminated string literal";
+    const string ERROR_ESCAPED_STRING = "Error escaped string";
+    const string ERROR_INT_LITERAL = "Error int literal";
 
     private Lexer(StreamReader reader, LexOptions options)
     {
@@ -249,7 +255,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Step();
                 if (SkipReturn(EQUAL, TokenKind.NOT_EQUAL))
                     break;
-                Error(TokenKind.ERROR_UNEXPECTED_CHAR);
+                Error(ERROR_UNEXPECTED_CHAR);
                 break;
             case '\t':
             case '\n':
@@ -271,7 +277,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         if (!IsLetter(_char))
         {
-            Error(TokenKind.ERROR_POLYMORPHIC_IDENTIFIER);
+            Error(ERROR_POLYMORPHIC_IDENTIFIER);
             return;
         }
 
@@ -296,7 +302,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
         else
         {
-            Error(TokenKind.ERROR_BACKTICK_IDENTIFIER);
+            Error(ERROR_BACKTICK_IDENTIFIER);
             return;
         }
         StringToken(TokenKind.QUOTED_OP);
@@ -371,7 +377,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case RETURN:
             case NEWLINE:
             case EOF:
-                Error(TokenKind.ERROR_QUOTED_IDENTIFIER);
+                Error(ERROR_QUOTED_IDENTIFIER);
                 break;
             default:
                 Store();
@@ -393,7 +399,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             }
             else if (_char is EOF)
             {
-                return Error(TokenKind.ERROR_UNTERMINATED_BLOCK_COMMENT);
+                return Error(ERROR_UNTERMINATED_BLOCK_COMMENT);
             }
 
             if (LexBlockComments)
@@ -408,9 +414,18 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return true;
     }
 
-    private bool Error(TokenKind kind)
+    private const string ERROR_UNTERMINATED_BLOCK_COMMENT = "Unterminated block comment";
+
+    private bool Error(string msg)
     {
-        StringToken(kind);
+        _token = new Token(
+            _kind = TokenKind.ERROR,
+            _startLine,
+            _startCol,
+            _startPos,
+            _length - 1,
+            msg
+        );
         return false;
     }
 
@@ -505,7 +520,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 escaped = !escaped;
                 break;
             case EOF:
-                Error(TokenKind.ERROR_UNTERMINATED_STRING_LITERAL);
+                Error(ERROR_UNTERMINATED_STRING_LITERAL);
                 return;
             default:
                 if (!escaped)
@@ -521,7 +536,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 var s = _sb.ToString();
 #endif
 
-                Error(TokenKind.ERROR_ESCAPED_STRING);
+                Error(ERROR_ESCAPED_STRING);
                 return;
         }
 
@@ -540,7 +555,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         if (int.TryParse(_string, NumberStyles.AllowHexSpecifier, null, out var i))
             IntToken(i);
         else
-            Error(TokenKind.ERROR_INT_LITERAL);
+            Error($"Could not parsed \"{_string}\" as an integer");
     }
 
     private void LexOctalInt()
@@ -558,7 +573,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
         catch (Exception)
         {
-            Error(TokenKind.ERROR_INT_LITERAL);
+            Error($"Could not parsed \"{_string}\" as an integer");
         }
     }
 
@@ -598,7 +613,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         if (int.TryParse(_string, NumberStyles.None, null, out var i))
             IntToken(i);
         else
-            Error(TokenKind.ERROR_INT_LITERAL);
+            Error($"Could not parsed \"{_string}\" as an integer");
         return;
 
         lex_float:
@@ -612,7 +627,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         if (double.TryParse(_string, null, out var d))
             FloatToken(d);
         else
-            Error(TokenKind.ERROR_FLOAT_LITERAL);
+            Error($"Could not parsed \"{_string}\" as a float");
     }
 
     void Step()
@@ -692,15 +707,15 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return lexer;
     }
 
-    /// <summary>
-    /// Lex the given file
-    /// </summary>
-    public static Lexer LexFile(string path, LexOptions options = default)
-    {
-        var test = File.ReadAllText(path);
-        var lexer = LexString(test, options);
-        return lexer;
-    }
+    // /// <summary>
+    // /// Lex the given file
+    // /// </summary>
+    // public static Lexer LexFile(string path, LexOptions options = default)
+    // {
+    //     var test = File.ReadAllText(path);
+    //     var lexer = LexString(test, options);
+    //     return lexer;
+    // }
 
     public void Reset()
     {
