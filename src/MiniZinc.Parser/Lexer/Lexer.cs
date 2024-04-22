@@ -39,6 +39,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const char COLON = ':';
     const char NEWLINE = '\n';
     const char RETURN = '\r';
+    const char TAB = '\t';
+    const char SPACE = ' ';
     const char EOF = '\uffff';
 
     private uint _line;
@@ -257,10 +259,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
                 Error(ERROR_UNEXPECTED_CHAR);
                 break;
-            case '\t':
-            case '\n':
-            case '\r':
-            case ' ':
+            case TAB:
+            case NEWLINE:
+            case RETURN:
+            case SPACE:
                 Step();
                 goto next;
             default:
@@ -432,15 +434,16 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private bool LexLineComment()
     {
         line_comment:
-        Step();
 
         switch (_char)
         {
             case NEWLINE:
+            case RETURN:
             case EOF:
                 break;
 
             default:
+                Step();
                 if (LexLineComments)
                     Store();
                 goto line_comment;
