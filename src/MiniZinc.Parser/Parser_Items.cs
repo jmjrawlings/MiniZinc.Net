@@ -321,7 +321,7 @@ public partial class Parser
             };
             Expect(TokenKind.COLON);
         }
-        else if (_kind is TokenKind.POLYMORPHIC)
+        else if (_kind is TokenKind.GENERIC)
         {
             var id = _token.StringValue;
             Step();

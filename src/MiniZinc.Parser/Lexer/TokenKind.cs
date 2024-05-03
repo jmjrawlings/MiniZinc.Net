@@ -58,7 +58,8 @@ internal enum TokenKind : sbyte
 
     // Nodes
     IDENT,
-    POLYMORPHIC,
+    GENERIC,
+    GENERIC_SEQ,
     INT_LIT,
     FLOAT_LIT,
     STRING_LIT,

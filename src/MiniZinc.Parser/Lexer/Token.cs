@@ -118,7 +118,8 @@ internal readonly struct Token(
             TokenKind.NOT_EQUAL => "!=",
             TokenKind.EXP => "^",
             TokenKind.COMMA => ",",
-            TokenKind.POLYMORPHIC => $"$${StringValue}",
+            TokenKind.GENERIC_SEQ => $"$${StringValue}",
+            TokenKind.GENERIC => $"${StringValue}",
             _ => o?.ToString() ?? string.Empty
         };
 }

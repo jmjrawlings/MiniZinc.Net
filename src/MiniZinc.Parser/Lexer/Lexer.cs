@@ -229,8 +229,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case DOLLAR:
                 Step();
-                Skip(DOLLAR);
-                LexPolymorphicIdentifier();
+                LexGenericIdentifier();
                 break;
             case COLON:
                 Step();
@@ -275,8 +274,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return true;
     }
 
-    private void LexPolymorphicIdentifier()
+    private void LexGenericIdentifier()
     {
+        var iterable = Skip(DOLLAR);
+
         if (!IsLetter(_char))
         {
             Error(ERROR_POLYMORPHIC_IDENTIFIER);
@@ -288,8 +289,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Store();
             Step();
         }
-
-        StringToken(TokenKind.POLYMORPHIC);
+        StringToken(iterable ? TokenKind.GENERIC_SEQ : TokenKind.GENERIC);
     }
 
     private void LexBacktickIdentifier()

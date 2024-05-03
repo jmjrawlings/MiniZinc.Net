@@ -122,16 +122,15 @@ public partial class Parser
 
             case TokenKind.ANY:
                 Step();
-                if (!Expect(TokenKind.POLYMORPHIC))
+                if (!(Expect(TokenKind.GENERIC) || Expect(TokenKind.GENERIC_SEQ)))
                     return false;
                 type = new TypeInst { Kind = TypeKind.Any, Name = _token.StringValue };
                 break;
 
-            case TokenKind.POLYMORPHIC:
+            case TokenKind.GENERIC:
+            case TokenKind.GENERIC_SEQ:
                 Step();
-                if (!ParseIdent(out var id))
-                    return false;
-                type = new TypeInst { Name = id, Kind = TypeKind.Any };
+                type = new TypeInst { Name = _token.StringValue, Kind = TypeKind.Any };
                 break;
 
             default:
