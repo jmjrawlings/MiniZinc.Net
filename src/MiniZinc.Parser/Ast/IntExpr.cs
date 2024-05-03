@@ -1,10 +1,10 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record IntLit(int Value) : Expr
+public sealed record IntExpr(int Value) : Expr
 {
-    public static implicit operator int(IntLit expr) => expr.Value;
+    public static implicit operator int(IntExpr expr) => expr.Value;
 
-    public static implicit operator IntLit(int i) => new IntLit(i);
+    public static implicit operator IntExpr(int i) => new IntExpr(i);
 
     public override string ToString() => Value.ToString();
 }

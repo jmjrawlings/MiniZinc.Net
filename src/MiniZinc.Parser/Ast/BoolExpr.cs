@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record BoolLit(bool Value) : Expr
+public sealed record BoolExpr(bool Value) : Expr
 {
-    public static implicit operator bool(BoolLit lit) => lit.Value;
+    public static implicit operator bool(BoolExpr expr) => expr.Value;
 
     public override string ToString() => Value.ToString();
 }

@@ -3,7 +3,7 @@
 /// <summary>
 /// A MiniZinc model
 /// </summary>
-public sealed class Model
+public sealed class SyntaxTree
 {
     public readonly NameSpace<SyntaxNode> NameSpace = new();
     public readonly List<SyntaxNode> Nodes = new();

@@ -1,15 +1,15 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record BinaryOpExpr : Expr
+public sealed record BinaryExpr : Expr
 {
-    public BinaryOpExpr(Expr left, Operator op, Expr right)
+    public BinaryExpr(Expr left, Operator op, Expr right)
     {
         Left = left;
         Op = op;
         Right = right;
     }
 
-    public BinaryOpExpr(Expr left, string id, Expr right)
+    public BinaryExpr(Expr left, string id, Expr right)
     {
         Left = left;
         Name = id;

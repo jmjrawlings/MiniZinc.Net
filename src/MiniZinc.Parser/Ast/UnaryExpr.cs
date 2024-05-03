@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record UnaryOpExpr : Expr
+public sealed record UnaryExpr : Expr
 {
-    public UnaryOpExpr(Operator @operator, Expr operand)
+    public UnaryExpr(Operator @operator, Expr operand)
     {
         Operator = @operator;
         Operand = operand;
