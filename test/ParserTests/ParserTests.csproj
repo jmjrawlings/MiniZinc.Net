@@ -2,6 +2,7 @@
     
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
+    <PackageReference Include="FluentAssertions" Version="7.0.0-alpha.3" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0-rc.2.23479.6" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0-rc.2.23479.6" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
@@ -19,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="../../src/MiniZinc.Parser/MiniZinc.Parser.csproj" />
     <ProjectReference Include="../TestUtils/TestUtils.csproj" />
-    <ProjectReference Include="../../src/MiniZinc.Net/MiniZinc.Net.csproj" />
   </ItemGroup>
   
   <ItemGroup>
