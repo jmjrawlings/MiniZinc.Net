@@ -8,9 +8,9 @@ public partial class Parser
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    public bool ParseModel(out Model model)
+    public bool ParseModel(out SyntaxTree syntaxTree)
     {
-        model = new Model();
+        syntaxTree = new SyntaxTree();
         Step();
 
         while (true)
@@ -18,34 +18,34 @@ public partial class Parser
             switch (_kind)
             {
                 case TokenKind.INCLUDE:
-                    if (!ParseIncludeStatement(model))
+                    if (!ParseIncludeStatement(syntaxTree))
                         return false;
                     break;
 
                 case TokenKind.CONSTRAINT:
                     if (!ParseConstraintItem(out var cons))
                         return false;
-                    model.Constraints.Add(cons);
+                    syntaxTree.Constraints.Add(cons);
                     break;
 
                 case TokenKind.SOLVE:
-                    if (!ParseSolveItem(model))
+                    if (!ParseSolveItem(syntaxTree))
                         return false;
                     break;
 
                 case TokenKind.OUTPUT:
-                    if (!ParseOutputItem(model))
+                    if (!ParseOutputItem(syntaxTree))
                         return false;
                     break;
 
                 case TokenKind.ENUM:
                     if (!ParseEnumItem(out var @enum))
                         return false;
-                    model.NameSpace.Push(@enum.Name, @enum);
+                    syntaxTree.NameSpace.Add(@enum.Name, @enum);
                     break;
 
                 case TokenKind.TYPE:
-                    if (!ParseAliasItem(model))
+                    if (!ParseAliasItem(syntaxTree))
                         return false;
                     break;
 
@@ -172,7 +172,7 @@ public partial class Parser
     /// Parse an Output Item
     /// </summary>
     /// <mzn>output ["The result is \(result)"];</mzn>
-    public bool ParseOutputItem(Model model)
+    public bool ParseOutputItem(SyntaxTree syntaxTree)
     {
         if (!Expect(TokenKind.OUTPUT))
             return false;
@@ -186,7 +186,7 @@ public partial class Parser
             return false;
 
         item.Expr = expr;
-        model.Outputs.Add(item);
+        syntaxTree.Outputs.Add(item);
         return true;
     }
 
@@ -194,7 +194,7 @@ public partial class Parser
     /// Parse a type alias
     /// </summary>
     /// <mzn>type X = 1 .. 10;</mzn>
-    public bool ParseAliasItem(Model model)
+    public bool ParseAliasItem(SyntaxTree syntaxTree)
     {
         if (!Expect(TokenKind.TYPE))
             return false;
@@ -204,7 +204,7 @@ public partial class Parser
             return false;
         if (!ParseType(out var type))
             return false;
-        model.NameSpace.Push(name, type);
+        syntaxTree.NameSpace.Add(name, type);
         return true;
     }
 
@@ -212,7 +212,7 @@ public partial class Parser
     /// Parse an include item
     /// </summary>
     /// <mzn>include "utils.mzn"</mzn>
-    public bool ParseIncludeStatement(Model model)
+    public bool ParseIncludeStatement(SyntaxTree syntaxTree)
     {
         if (!Expect(TokenKind.INCLUDE))
             return false;
@@ -221,7 +221,7 @@ public partial class Parser
             return false;
 
         var item = new IncludeStatement { Path = path };
-        model.Includes.Add(item);
+        syntaxTree.Includes.Add(item);
         return true;
     }
 
@@ -230,7 +230,7 @@ public partial class Parser
     /// </summary>
     /// <mzn>solve satisfy;</mzn>
     /// <mzn>solve maximize a;</mzn>
-    public bool ParseSolveItem(Model model)
+    public bool ParseSolveItem(SyntaxTree syntaxTree)
     {
         if (!Expect(TokenKind.SOLVE))
             return false;
@@ -268,7 +268,7 @@ public partial class Parser
         }
 
         item.Objective = objective;
-        model.SolveItems.Add(item);
+        syntaxTree.SolveItems.Add(item);
         return true;
     }
 
@@ -321,7 +321,7 @@ public partial class Parser
             };
             Expect(TokenKind.COLON);
         }
-        else if (_kind is TokenKind.GENERIC)
+        else if (_kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQ)
         {
             var id = _token.StringValue;
             Step();
@@ -335,7 +335,11 @@ public partial class Parser
 
             var = new DeclareStatement
             {
-                Type = new TypeInst { Kind = TypeKind.PolyMorphic, Name = name }
+                Type = new TypeInst
+                {
+                    Kind = _kind is TokenKind.GENERIC ? TypeKind.Generic : TypeKind.GenericSeq,
+                    Name = name
+                }
             };
             Expect(TokenKind.COLON);
         }

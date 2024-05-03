@@ -8,14 +8,14 @@ public enum EnumCaseType
     Anon
 }
 
-public record EnumCases : Node
+public record EnumCases : SyntaxNode
 {
     public EnumCaseType Type { get; set; }
     public List<string>? Names { get; set; }
     public Expr? Expr { get; set; }
 }
 
-public sealed record EnumStatement : Node, INamed
+public sealed record EnumStatement : SyntaxNode, INamed
 {
     public required string Name { get; set; }
 

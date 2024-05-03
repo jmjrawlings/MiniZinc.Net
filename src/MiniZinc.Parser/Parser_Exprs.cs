@@ -18,27 +18,27 @@ public partial class Parser
         switch (_kind)
         {
             case TokenKind.INT_LIT:
-                expr = new IntLit(_token.IntValue);
+                expr = new IntExpr(_token.IntValue);
                 Step();
                 break;
 
             case TokenKind.FLOAT_LIT:
-                expr = new FloatLit(_token.DoubleValue);
+                expr = new FloatExpr(_token.DoubleValue);
                 Step();
                 break;
 
             case TokenKind.TRUE:
                 Step();
-                expr = new BoolLit(true);
+                expr = new BoolExpr(true);
                 break;
 
             case TokenKind.FALSE:
                 Step();
-                expr = new BoolLit(false);
+                expr = new BoolExpr(false);
                 break;
 
             case TokenKind.STRING_LIT:
-                expr = new StringLit(_token.StringValue);
+                expr = new StringExpr(_token.StringValue);
                 Step();
                 break;
 
@@ -46,21 +46,21 @@ public partial class Parser
                 Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOpExpr(Operator.Positive, expr);
+                expr = new UnaryExpr(Operator.Positive, expr);
                 break;
 
             case TokenKind.MINUS:
                 Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOpExpr(Operator.Negative, expr);
+                expr = new UnaryExpr(Operator.Negative, expr);
                 break;
 
             case TokenKind.NOT:
                 Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOpExpr(Operator.Not, expr);
+                expr = new UnaryExpr(Operator.Not, expr);
                 break;
 
             case TokenKind.DOT_DOT:
@@ -158,7 +158,7 @@ public partial class Parser
             {
                 // Tuple access: `a.1`
                 if (ParseInt(out int i))
-                    expr = new TupleAccess(expr, i);
+                    expr = new TupleAccessExpr(expr, i);
                 // Record access: `a.name`
                 else if (ParseIdent(out var field))
                     expr = new RecordAccess(expr, field);
@@ -171,7 +171,7 @@ public partial class Parser
                     var t = s.Split(".");
                     i = int.Parse(t[0]);
                     int j = int.Parse(t[1]);
-                    expr = new TupleAccess(new TupleAccess(expr, i), j);
+                    expr = new TupleAccessExpr(new TupleAccessExpr(expr, i), j);
                 }
                 else
                     return Error("Expected a tuple field (eg .1) or record field (eg .name)");
@@ -219,7 +219,7 @@ public partial class Parser
         Step();
         if (!ParseExpr(out var right, _precedence))
             return false;
-        left = new BinaryOpExpr(left, op, right);
+        left = new BinaryExpr(left, op, right);
         return true;
     }
 
@@ -367,7 +367,7 @@ public partial class Parser
          * Backtracking would make this trivial but I think that's
          * more trouble than it's worth.
          */
-        var exprs = new List<Node>();
+        var exprs = new List<SyntaxNode>();
         bool maybeGen = true;
         bool isGen = false;
         int i;
@@ -384,8 +384,7 @@ public partial class Parser
                 break;
 
             // `in` expressions involving identifiers could mean a gencall
-            case BinaryOpExpr { Op: Operator.In, Left: Identifier id, Right: { } from }
-                when maybeGen:
+            case BinaryExpr { Op: Operator.In, Left: Identifier id, Right: { } from } when maybeGen:
                 if (!Skip(TokenKind.WHERE))
                 {
                     exprs.Add(expr);
@@ -471,7 +470,7 @@ public partial class Parser
                     generators.Add(g);
                     break;
                 // Binops are now known to be generators
-                case BinaryOpExpr binop:
+                case BinaryExpr binop:
                     idents ??= new List<Identifier>();
                     idents.Add((Identifier)binop.Left);
                     var gen = new GeneratorExpr();
@@ -543,7 +542,7 @@ public partial class Parser
 
         if (_kind is TokenKind.CLOSE_BRACKET)
         {
-            result = new Array1DLit();
+            result = new Array1DExpr();
             return Expect(TokenKind.CLOSE_BRACKET);
         }
 
@@ -622,7 +621,7 @@ public partial class Parser
         }
 
         // 1D Array literal
-        var arr1d = new Array1DLit();
+        var arr1d = new Array1DExpr();
         result = arr1d;
         arr1d.Elements.Add(element);
 
@@ -679,9 +678,9 @@ public partial class Parser
      *  | B: 1, 1, 1
      *  | C: 2, 2, 2 |];
      */
-    private bool Parse2dArrayLiteral(out Array2dLit arr)
+    private bool Parse2dArrayLiteral(out Array2dExpr arr)
     {
-        arr = new Array2dLit();
+        arr = new Array2dExpr();
         int j = 1;
 
         if (Skip(TokenKind.PIPE))
@@ -807,9 +806,9 @@ public partial class Parser
      * `[| |1,1|1,1|, |2,2|2,2|, |3,3|3,3| |]`
      *
      */
-    private bool Parse3dArrayLiteral(out Array3dLit arr)
+    private bool Parse3dArrayLiteral(out Array3dExpr arr)
     {
-        arr = new Array3dLit();
+        arr = new Array3dExpr();
 
         if (!Expect(TokenKind.PIPE))
             return false;
@@ -877,7 +876,7 @@ public partial class Parser
         // Empty Set
         if (_kind is TokenKind.CLOSE_BRACE)
         {
-            result = new SetLit();
+            result = new SetLitExpr();
             return Expect(TokenKind.CLOSE_BRACE);
         }
 
@@ -902,7 +901,7 @@ public partial class Parser
         }
 
         // Set literal
-        var set = new SetLit();
+        var set = new SetLitExpr();
         result = set;
         set.Elements.Add(element);
         Skip(TokenKind.COMMA);
@@ -1110,7 +1109,7 @@ public partial class Parser
     /// Parse annotations for the given node
     /// </summary>
     /// <returns>True if no error was encountered</returns>
-    public bool ParseAnnotations(Node node)
+    public bool ParseAnnotations(SyntaxNode node)
     {
         while (Skip(TokenKind.COLON_COLON))
         {
@@ -1128,13 +1127,13 @@ public partial class Parser
         return true;
     }
 
-    public bool ParseStringAnnotations(IAnnotations expr)
+    public bool ParseStringAnnotations(SyntaxNode node)
     {
         while (Skip(TokenKind.COLON_COLON))
         {
             if (!ParseString(out var ann))
                 return false;
-            expr.Annotate(new StringLit(ann));
+            node.Annotate(new StringExpr(ann));
         }
 
         return true;

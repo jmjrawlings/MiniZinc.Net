@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-using MiniZinc.Parser.Ast;
+using Ast;
 
 public interface IBinding<out T>
 {
@@ -13,16 +13,7 @@ public interface IBinding<out T>
 /// </summary>
 public readonly record struct Binding<T>(string Name, T Value) : IBinding<T>, ILetLocal { }
 
-
-
 public static class BindingExtensions
 {
     public static Binding<T> Bind<T>(this string name, T value) => new Binding<T>(name, value);
-
-    public static Binding<T> ToBinding<T>(this T item)
-        where T : INamed
-    {
-        var bnd = new Binding<T>(item.Name, item);
-        return bnd;
-    }
 }

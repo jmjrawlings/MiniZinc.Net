@@ -5,7 +5,7 @@
 /// </summary>
 public record CompExpr : Expr
 {
-    public required Node Expr { get; set; }
+    public required SyntaxNode Expr { get; set; }
     public required List<GeneratorExpr> Generators { get; set; }
     public bool IsSet { get; set; }
 }

@@ -3,7 +3,7 @@
 /// <summary>
 /// solve maximize a;
 /// </summary>
-public record SolveStatement : Node
+public record SolveStatement : SyntaxNode
 {
     public SolveMethod Method { get; set; }
 

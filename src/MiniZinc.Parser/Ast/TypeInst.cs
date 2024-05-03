@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public record TypeInst : Node, INamed
+public record TypeInst : SyntaxNode, INamed
 {
     public string Name { get; set; } = string.Empty;
 
@@ -34,7 +34,7 @@ public sealed record ArrayTypeInst : TypeInst
 {
     public required TypeInst Type { get; set; }
 
-    public required List<Node> Dimensions { get; set; }
+    public required List<SyntaxNode> Dimensions { get; set; }
 
     public int N => Dimensions.Count;
 }

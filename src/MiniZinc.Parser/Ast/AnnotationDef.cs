@@ -6,5 +6,5 @@ public sealed record AnnotationDef : INamed
 
     public List<DeclareStatement>? Params { get; set; }
 
-    public Node? Body { get; set; }
+    public SyntaxNode? Body { get; set; }
 }

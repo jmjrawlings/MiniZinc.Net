@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public abstract record Expr : Node
+public abstract record Expr : SyntaxNode
 {
     public static Expr Wildcard => new WildCardExpr();
 

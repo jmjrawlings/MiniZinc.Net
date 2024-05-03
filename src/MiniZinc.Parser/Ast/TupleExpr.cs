@@ -2,5 +2,5 @@
 
 public sealed record TupleExpr : Expr
 {
-    public List<Node> Fields { get; set; } = new();
+    public List<SyntaxNode> Fields { get; set; } = new();
 }

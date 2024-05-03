@@ -49,7 +49,7 @@ public partial class Parser
         if (!Skip(TokenKind.ARRAY))
             return false;
 
-        var dims = new List<Node>();
+        var dims = new List<SyntaxNode>();
         if (!Skip(TokenKind.OPEN_BRACKET))
             return false;
         next:
@@ -236,21 +236,18 @@ public partial class Parser
         return Expect(TokenKind.CLOSE_PAREN);
     }
 
-    // private bool ParseArgs(out List<Node>? exprs) =>
-    //     ParseExprs(out exprs, TokenKind.OPEN_PAREN, TokenKind.CLOSE_PAREN);
-
     /// <summary>
     /// Parse a comma separated list of expressions
     /// between parentheses
     /// </summary>
     /// <mzn>(1, 2, false)</mzn>
-    private bool ParseExprs(out List<Node>? exprs, TokenKind open, TokenKind close)
+    private bool ParseExprs(out List<SyntaxNode>? exprs, TokenKind open, TokenKind close)
     {
         exprs = null;
         if (!Skip(open))
             return false;
 
-        exprs = new List<Node>();
+        exprs = new List<SyntaxNode>();
         while (_kind != close)
         {
             if (!ParseExpr(out var expr))

@@ -3,13 +3,13 @@
 /// <summary>
 /// A variable
 /// </summary>
-public sealed record DeclareStatement : Node, INamed, ILetLocal
+public sealed record DeclareStatement : SyntaxNode, INamed, ILetLocal
 {
     public string Name { get; set; } = string.Empty;
 
     public required TypeInst Type { get; set; }
 
-    public Node? Body { get; set; }
+    public SyntaxNode? Body { get; set; }
 
     public List<Binding<TypeInst>>? Parameters { get; set; }
 

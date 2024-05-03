@@ -3,5 +3,5 @@
 public sealed record CallExpr : Expr, INamed
 {
     public required string Name { get; init; }
-    public List<Node>? Args { get; set; }
+    public List<SyntaxNode>? Args { get; set; }
 }
