@@ -1,7 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public record ArrayExpr(Token start) : SyntaxNode(start)
+public sealed record SetLiteralSyntax(in Token Start) : SyntaxNode(Start)
 {
     public List<SyntaxNode> Elements { get; set; } = new();
-    public int N => Elements.Count;
 }

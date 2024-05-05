@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record Array1DExpr : ArrayExpr
+public sealed record Array1DExpr(Token start) : ArrayExpr(start)
 {
     public bool Indexed { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record Array3dExpr : ArrayExpr
+public sealed record Array3dExpr(Token start) : ArrayExpr(start)
 {
     public int I { get; set; }
     public int J { get; set; }

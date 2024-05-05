@@ -1,12 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public record SyntaxNode
+public abstract record SyntaxNode(in Token Start)
 {
-    public List<Expr>? Annotations { get; private set; }
-
-    public void Annotate(Expr ann)
-    {
-        Annotations ??= new List<Expr>();
-        Annotations.Add(ann);
-    }
+    public List<SyntaxNode>? Annotations { get; set; } = null;
 }

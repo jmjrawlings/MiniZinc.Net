@@ -2,9 +2,9 @@
 
 public interface ILetLocal { }
 
-public sealed record LetExpr : Expr
+public sealed record LetSyntax(Token Start) : SyntaxNode(Start)
 {
     public List<ILetLocal>? Locals { get; set; }
 
-    public Expr Body { get; set; } = Null;
+    public SyntaxNode Body { get; set; }
 }

@@ -12,6 +12,7 @@ public sealed partial class Parser
     private readonly Stopwatch _watch;
     private Token _token;
     private TokenKind _kind;
+    private Token _start;
     private ushort _precedence;
     private uint _pos;
     private uint _line;
@@ -50,12 +51,12 @@ public sealed partial class Parser
     }
 
     /// Progress the parser
-    public bool Step()
+    public Token Step()
     {
         if (_i >= _tokens.Length)
         {
             _kind = TokenKind.EOF;
-            return false;
+            return _token;
         }
 
         _token = _tokens[_i++];
@@ -63,7 +64,7 @@ public sealed partial class Parser
         _pos = _token.Position;
 
         if (_trace is null)
-            return true;
+            return _token;
 
         if (_line < _token.Line)
         {
@@ -80,7 +81,7 @@ public sealed partial class Parser
         var s = _token.ToString();
         _trace.Append(s);
         _col += _token.Length;
-        return true;
+        return _token;
     }
 
     /// Progress the parser if the current token is of the given kind
@@ -105,32 +106,30 @@ public sealed partial class Parser
         return true;
     }
 
-    private bool ParseInt(out int i)
+    private bool ParseInt(out Token token)
     {
         if (_kind is TokenKind.INT_LIT)
         {
-            i = _token.IntValue;
-            Step();
+            token = Step();
             return true;
         }
 
-        i = 0;
+        token = default;
         return false;
     }
 
     /// <summary>
     /// Read the current tokens string into the given variable
     /// </summary>
-    private bool ParseString(out string result, TokenKind kind = TokenKind.STRING_LIT)
+    private bool ParseString(out Token result, TokenKind kind = TokenKind.STRING_LIT)
     {
         if (_kind == kind)
         {
-            Step();
-            result = _token.StringValue;
+            result = Step();
             return true;
         }
 
-        result = string.Empty;
+        result = default;
         return false;
     }
 
@@ -147,17 +146,22 @@ public sealed partial class Parser
         return false;
     }
 
-    private bool ParseIdent(out string id)
+    private bool ParseIdent(out Token token)
     {
         if (_kind is TokenKind.IDENT or TokenKind.QUOTED_IDENT)
         {
-            id = _token.StringValue;
+            token = _token;
             Step();
             return true;
         }
-        id = string.Empty;
-        return false;
+        else
+        {
+            token = default;
+            return false;
+        }
     }
+
+    private bool Expected(string msg) => Error($"Expected {msg}");
 
     /// Record the given message as an error and return false
     private bool Error(string? msg = null)

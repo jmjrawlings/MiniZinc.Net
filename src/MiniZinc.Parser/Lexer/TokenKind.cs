@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-internal enum TokenKind : sbyte
+public enum TokenKind : sbyte
 {
     // Keywords
     ANNOTATION,

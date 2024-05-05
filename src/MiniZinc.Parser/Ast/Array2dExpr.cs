@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record Array2dExpr : ArrayExpr
+public sealed record Array2dExpr(Token start) : ArrayExpr(start)
 {
-    public List<Expr> Indices { get; set; } = new();
+    public List<SyntaxNode> Indices { get; set; } = new();
 
     public int I { get; set; }
 
