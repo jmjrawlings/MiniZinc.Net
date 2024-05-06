@@ -19,7 +19,6 @@ public sealed partial class Parser
     private int _i;
     public string? ErrorString { get; private set; }
     private StringBuilder? _trace;
-    public bool Err => ErrorString is not null;
     public TimeSpan Elapsed => _watch.Elapsed;
 
     public static Parser ParseFile(string path)
@@ -50,12 +49,12 @@ public sealed partial class Parser
     }
 
     /// Progress the parser
-    public Token Step()
+    public bool Step()
     {
         if (_i >= _tokens.Length)
         {
             _kind = TokenKind.EOF;
-            return _token;
+            return false;
         }
 
         _token = _tokens[_i++];
@@ -63,7 +62,7 @@ public sealed partial class Parser
         _pos = _token.Position;
 
         if (_trace is null)
-            return _token;
+            return true;
 
         if (_line < _token.Line)
         {
@@ -80,7 +79,7 @@ public sealed partial class Parser
         var s = _token.ToString();
         _trace.Append(s);
         _col += _token.Length;
-        return _token;
+        return true;
     }
 
     /// Progress the parser if the current token is of the given kind
@@ -111,7 +110,8 @@ public sealed partial class Parser
             return Expected($"a {kind} but encountered a {_token.Kind}");
         }
 
-        token = Step();
+        token = _token;
+        Step();
         return true;
     }
 
@@ -119,7 +119,8 @@ public sealed partial class Parser
     {
         if (_kind is TokenKind.INT_LIT)
         {
-            token = Step();
+            token = _token;
+            Step();
             return true;
         }
 
@@ -134,7 +135,8 @@ public sealed partial class Parser
     {
         if (_kind == kind)
         {
-            result = Step();
+            result = _token;
+            Step();
             return true;
         }
 

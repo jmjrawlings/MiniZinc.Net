@@ -11,10 +11,10 @@ public partial class Parser
     public bool ParseModel(out SyntaxTree tree)
     {
         tree = new SyntaxTree();
-        var token = Step();
+        Step();
         while (true)
         {
-            switch (token.Kind)
+            switch (_kind)
             {
                 case TokenKind.INCLUDE:
                     if (!ParseIncludeStatement(out var inc))
@@ -69,7 +69,7 @@ public partial class Parser
             if (Skip(TokenKind.EOL))
                 continue;
 
-            if (token.Kind is not TokenKind.EOF)
+            if (_kind is not TokenKind.EOF)
                 return Expected("; or end of file");
         }
     }
@@ -256,8 +256,8 @@ public partial class Parser
         SyntaxNode? objective = null;
         SolveMethod method = SolveMethod.Satisfy;
 
-        var token = Step();
-        switch (token.Kind)
+        Step();
+        switch (_kind)
         {
             case TokenKind.SATISFY:
                 method = SolveMethod.Satisfy;

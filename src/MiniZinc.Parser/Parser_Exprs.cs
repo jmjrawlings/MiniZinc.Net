@@ -14,97 +14,108 @@ public partial class Parser
     public bool ParseExprAtom(out SyntaxNode expr)
     {
         expr = null!;
-        var token = Step();
+        var start = _token;
 
-        switch (token.Kind)
+        switch (_kind)
         {
             case TokenKind.INT_LIT:
-                expr = new IntLiteralSyntax(token);
+                Step();
+                expr = new IntLiteralSyntax(_token);
                 break;
 
             case TokenKind.FLOAT_LIT:
-                expr = new FloatLiteralSyntax(token);
+                Step();
+                expr = new FloatLiteralSyntax(_token);
                 break;
 
             case TokenKind.TRUE:
-                expr = new BoolSyntax(token);
+                Step();
+                expr = new BoolSyntax(_token);
                 break;
 
             case TokenKind.FALSE:
-                expr = new BoolSyntax(token);
+                Step();
+                expr = new BoolSyntax(_token);
                 break;
 
             case TokenKind.STRING_LIT:
-                expr = new StringLiteralSyntax(token);
+                Step();
+                expr = new StringLiteralSyntax(_token);
                 break;
 
             case TokenKind.PLUS:
+                Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOperatorSyntax(token, Operator.Positive, expr);
+                expr = new UnaryOperatorSyntax(start, Operator.Positive, expr);
                 break;
 
             case TokenKind.MINUS:
+                Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOperatorSyntax(token, Operator.Negative, expr);
+                expr = new UnaryOperatorSyntax(start, Operator.Negative, expr);
                 break;
 
             case TokenKind.NOT:
+                Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOperatorSyntax(token, Operator.Not, expr);
+                expr = new UnaryOperatorSyntax(start, Operator.Not, expr);
                 break;
 
             case TokenKind.DOT_DOT:
+                Step();
                 if (ParseExpr(out var right))
-                    expr = new RangeLiteralSyntax(token, Upper: expr);
-                else if (Err)
+                    expr = new RangeLiteralSyntax(start, Upper: expr);
+                else if (ErrorString is not null)
                     return false;
                 else
-                    expr = new RangeLiteralSyntax(token);
+                    expr = new RangeLiteralSyntax(start);
                 break;
 
             case TokenKind.UNDERSCORE:
-                expr = new WildCardExpr(token);
+                Step();
+                expr = new WildCardExpr(start);
                 break;
 
             case TokenKind.OPEN_PAREN:
-                if (!ParseParenExpr(token, out expr))
+                if (!ParseParenExpr(out expr))
                     return false;
                 break;
 
             case TokenKind.OPEN_BRACE:
-                if (!ParseBraceExpr(token, out expr))
+                if (!ParseBraceExpr(out expr))
                     return false;
                 break;
 
             case TokenKind.OPEN_BRACKET:
-                if (!ParseBracketExpr(token, out expr))
+                if (!ParseBracketExpr(out expr))
                     return false;
                 break;
 
             case TokenKind.IF:
-                if (!ParseIfElseExpr(token, out var ite))
+                if (!ParseIfElseExpr(out var ite))
                     return false;
                 expr = ite;
                 break;
 
             case TokenKind.LET:
-                if (!ParseLetExpr(token, out var let))
+                if (!ParseLetExpr(out var let))
                     return false;
                 expr = let;
                 break;
 
             case TokenKind.IDENT:
             case TokenKind.QUOTED_IDENT:
-                if (!ParseIdentExpr(token, ref expr))
+                if (!ParseIdentExpr(out expr))
                     return false;
                 break;
 
             case TokenKind.EMPTY:
-                expr = new EmptyExpr(token);
-                return true;
+                Step();
+                expr = new EmptyExpr(start);
+                break;
 
             default:
                 return false;
@@ -265,7 +276,7 @@ public partial class Parser
         Expect(TokenKind.DOT_DOT);
         if (ParseExpr(out var right, _precedence))
             left = new RangeLiteralSyntax(left.Start, left, right);
-        else if (Err)
+        else if (ErrorString is not null)
             return false;
         else
             left = new RangeLiteralSyntax(left.Start, left);
@@ -326,8 +337,15 @@ public partial class Parser
     ///<mzn>forall(i in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i,j in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i in 1..3, j in 1..3 where i > j)(xd[i]);</mzn>
-    public bool ParseIdentExpr(in Token name, ref SyntaxNode result)
+    public bool ParseIdentExpr(out SyntaxNode result)
     {
+        result = null!;
+        var name = _token;
+        if (_kind is not (TokenKind.IDENT or TokenKind.QUOTED_IDENT))
+            return Expected("Identifier");
+
+        Step();
+
         // Simple identifier
         if (!Skip(TokenKind.OPEN_PAREN))
         {
@@ -526,9 +544,12 @@ public partial class Parser
     /// </summary>
     /// <mzn>[1,2,3]</mzn>
     /// <mzn>[ x | x in [a,b,c]]</mzn>
-    public bool ParseBracketExpr(in Token start, out SyntaxNode result)
+    public bool ParseBracketExpr(out SyntaxNode result)
     {
         result = null!;
+
+        if (!Expect(TokenKind.OPEN_BRACKET, out var start))
+            return false;
 
         if (_kind is TokenKind.CLOSE_BRACKET)
         {
@@ -857,9 +878,12 @@ public partial class Parser
     /// </summary>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>{ x | x in [1,2,3]}</mzn>
-    private bool ParseBraceExpr(in Token start, out SyntaxNode result)
+    private bool ParseBraceExpr(out SyntaxNode result)
     {
         result = null!;
+
+        if (!Expect(TokenKind.OPEN_BRACE, out var start))
+            return false;
 
         // Empty Set
         if (_kind is TokenKind.CLOSE_BRACE)
@@ -904,14 +928,17 @@ public partial class Parser
         return Expect(TokenKind.CLOSE_BRACE);
     }
 
-    public bool ParseLetExpr(in Token start, out LetSyntax let)
+    public bool ParseLetExpr(out LetSyntax let)
     {
         let = null!;
+
+        if (!Expect(TokenKind.LET, out var start))
+            return false;
 
         if (!Expect(TokenKind.OPEN_BRACE))
             return false;
 
-        let = new LetSyntax(start);
+        List<ILetLocal>? locals = null;
 
         while (_kind is not TokenKind.CLOSE_BRACE)
         {
@@ -919,8 +946,8 @@ public partial class Parser
             if (!ParseLetLocal(out var local))
                 return false;
 
-            let.Locals ??= new List<ILetLocal>();
-            let.Locals.Add(local);
+            locals ??= new List<ILetLocal>();
+            locals.Add(local);
 
             if (Skip(TokenKind.EOL) || Skip(TokenKind.COMMA))
                 continue;
@@ -936,7 +963,7 @@ public partial class Parser
         if (!ParseExpr(out var body))
             return false;
 
-        let.Body = body;
+        let = new LetSyntax(start, locals, body);
         return true;
     }
 
@@ -989,9 +1016,13 @@ public partial class Parser
     /// </summary>
     /// <mzn>if x > 0 then y > 0 else true endif</mzn>
     /// <mzn>if z then 100 else 200 endif</mzn>
-    private bool ParseIfElseExpr(in Token start, out SyntaxNode node)
+    private bool ParseIfElseExpr(out SyntaxNode node)
     {
         node = null!;
+
+        if (!Expect(TokenKind.IF, out var start))
+            return false;
+
         if (!ParseIfThenCase(out var ifCase, out var thenCase, TokenKind.IF))
             return false;
 
@@ -1025,9 +1056,13 @@ public partial class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private bool ParseParenExpr(in Token start, out SyntaxNode result)
+    private bool ParseParenExpr(out SyntaxNode result)
     {
         result = null!;
+
+        if (!Expect(TokenKind.OPEN_PAREN, out var start))
+            return false;
+
         if (!ParseExpr(out var expr))
             return false;
 
@@ -1102,10 +1137,10 @@ public partial class Parser
         while (Skip(TokenKind.COLON_COLON))
         {
             SyntaxNode? ann;
-            var token = Step();
+            Step();
             // int : x :: output = 3;
-            if (token.Kind is TokenKind.OUTPUT)
-                ann = new IdentifierSyntax(token);
+            if (_kind is TokenKind.OUTPUT)
+                ann = new IdentifierSyntax(_token);
             else if (!ParseExprAtom(out ann))
             {
                 Expected("Annotation");
