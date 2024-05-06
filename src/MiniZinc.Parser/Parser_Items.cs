@@ -11,44 +11,45 @@ public partial class Parser
     public bool ParseModel(out SyntaxTree tree)
     {
         tree = new SyntaxTree();
+        var token = Step();
         while (true)
         {
-            var token = Step();
             switch (token.Kind)
             {
                 case TokenKind.INCLUDE:
-                    if (!ParseIncludeStatement(token, out var inc))
+                    if (!ParseIncludeStatement(out var inc))
                         return false;
                     tree.Includes.Add(inc);
                     break;
 
                 case TokenKind.CONSTRAINT:
-                    if (!ParseConstraintItem(token, out var cons))
+                    if (!ParseConstraintItem(out var cons))
                         return false;
                     tree.Constraints.Add(cons);
                     break;
 
                 case TokenKind.SOLVE:
-                    if (!ParseSolveItem(token, out var solve))
+                    if (!ParseSolveItem(out var solve))
                         return false;
                     tree.SolveItems.Add(solve);
                     break;
 
                 case TokenKind.OUTPUT:
-                    if (!ParseOutputItem(token, out var output))
+                    if (!ParseOutputItem(out var output))
                         return false;
                     tree.Outputs.Add(output);
                     break;
 
                 case TokenKind.ENUM:
-                    if (!ParseEnumItem(token, out var @enum))
+                    if (!ParseEnumItem(out var @enum))
                         return false;
-                    tree.Nodes.Add(@enum);
+                    tree.Enums.Add(@enum);
                     break;
 
                 case TokenKind.TYPE:
-                    if (!ParseAliasItem(tree))
+                    if (!ParseAliasItem(out var alias))
                         return false;
+                    tree.Aliases.Add(alias);
                     break;
 
                 case TokenKind.BLOCK_COMMENT:
@@ -60,7 +61,7 @@ public partial class Parser
                     return true;
 
                 default:
-                    if (!ParseDeclareOrAssignItem(token, out var declare, out var assign))
+                    if (!ParseDeclareOrAssignItem(out var declare, out var assign))
                         return false;
                     break;
             }
@@ -76,13 +77,13 @@ public partial class Parser
     /// <summary>
     /// Parse an enumeration declaration
     /// </summary>
-    /// <example>enum Dir = {N,S,E,W};</example>
-    /// <example>enum Z = anon_enum(10);</example>
-    /// <example>enum X = Q({1,2});</example>
-    public bool ParseEnumItem(in Token start, out EnumDeclarationSyntax @enum)
+    /// <mzn>enum Dir = {N,S,E,W};</mzn>
+    /// <mzn>enum Z = anon_enum(10);</mzn>
+    /// <mzn>enum X = Q({1,2});</mzn>
+    public bool ParseEnumItem(out EnumDeclarationSyntax @enum)
     {
         @enum = null!;
-        if (!Expect(TokenKind.ENUM))
+        if (!Expect(TokenKind.ENUM, out var start))
             return false;
 
         if (!ParseIdent(out var name))
@@ -177,9 +178,12 @@ public partial class Parser
     /// Parse an Output Item
     /// </summary>
     /// <mzn>output ["The result is \(result)"];</mzn>
-    public bool ParseOutputItem(in Token start, out OutputSyntax node)
+    public bool ParseOutputItem(out OutputSyntax node)
     {
         node = null!;
+
+        if (!Expect(TokenKind.OUTPUT, out var start))
+            return false;
 
         if (!ParseStringAnnotations(out var anns))
             return false;
@@ -196,17 +200,23 @@ public partial class Parser
     /// Parse a type alias
     /// </summary>
     /// <mzn>type X = 1 .. 10;</mzn>
-    public bool ParseAliasItem(SyntaxTree syntaxTree)
+    public bool ParseAliasItem(out TypeAliasSyntax alias)
     {
-        if (!Expect(TokenKind.TYPE))
+        alias = null!;
+
+        if (!Expect(TokenKind.TYPE, out var start))
             return false;
+
         if (!ParseString(out var name))
             return false;
+
         if (!Expect(TokenKind.EQUAL))
             return false;
+
         if (!ParseType(out var type))
             return false;
-        syntaxTree.Nodes.Add(type);
+
+        alias = new TypeAliasSyntax(start, type);
         return true;
     }
 
@@ -214,9 +224,13 @@ public partial class Parser
     /// Parse an include item
     /// </summary>
     /// <mzn>include "utils.mzn"</mzn>
-    public bool ParseIncludeStatement(in Token token, out IncludeSyntax node)
+    public bool ParseIncludeStatement(out IncludeSyntax node)
     {
         node = null!;
+
+        if (!Expect(TokenKind.INCLUDE, out var token))
+            return false;
+
         if (!ParseString(out var path))
             return false;
 
@@ -229,9 +243,12 @@ public partial class Parser
     /// </summary>
     /// <mzn>solve satisfy;</mzn>
     /// <mzn>solve maximize a;</mzn>
-    public bool ParseSolveItem(in Token start, out SolveSyntax node)
+    public bool ParseSolveItem(out SolveSyntax node)
     {
         node = null!;
+
+        if (!Expect(TokenKind.SOLVE, out var start))
+            return false;
 
         if (!ParseAnnotations(out var anns))
             return false;
@@ -270,9 +287,12 @@ public partial class Parser
     /// Parse a constraint
     /// </summary>
     /// <mzn>constraint a > b;</mzn>
-    public bool ParseConstraintItem(in Token start, out ConstraintSyntax constraint)
+    public bool ParseConstraintItem(out ConstraintSyntax constraint)
     {
         constraint = null!;
+
+        if (!Expect(TokenKind.CONSTRAINT, out var start))
+            return false;
 
         if (!ParseExpr(out var expr))
             return false;
@@ -291,14 +311,14 @@ public partial class Parser
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
     public bool ParseDeclareOrAssignItem(
-        in Token token,
         out VariableDeclarationSyntax? var,
         out VariableAssignmentSyntax? assign
     )
     {
         var = null;
         assign = null;
-        var kind = token.Kind;
+        var token = _token;
+        var kind = _kind;
         Token name;
 
         if (kind is TokenKind.IDENT or TokenKind.QUOTED_IDENT)

@@ -272,10 +272,7 @@ public class ParserUnitTests
     void test_array3d_literal()
     {
         var mzn = "[| |1,1|1,1|, |2,2|2,2|, |3,3|3,3| |]";
-        var parser = Parse(mzn);
-        parser.ParseExpr(out var expr);
-        expr.Should().BeOfType<Array3dExpr>();
-        var arr = (Array3dExpr)expr;
+        var arr = ParseNode<Array3dExpr>(mzn);
         arr.I.Should().Be(3);
         arr.J.Should().Be(2);
         arr.K.Should().Be(2);

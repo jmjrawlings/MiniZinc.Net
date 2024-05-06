@@ -40,3 +40,5 @@ public sealed record SetTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
 {
     public required TypeInstSyntax Type { get; init; }
 }
+
+public sealed record TypeAliasSyntax(Token Start, TypeInstSyntax type) : SyntaxNode(Start) { }

@@ -915,9 +915,8 @@ public partial class Parser
 
         while (_kind is not TokenKind.CLOSE_BRACE)
         {
-            var token = Step();
-
-            if (!ParseLetLocal(token, out var local))
+            Step();
+            if (!ParseLetLocal(out var local))
                 return false;
 
             let.Locals ??= new List<ILetLocal>();
@@ -941,12 +940,12 @@ public partial class Parser
         return true;
     }
 
-    private bool ParseLetLocal(in Token token, out ILetLocal result)
+    private bool ParseLetLocal(out ILetLocal result)
     {
         result = null!;
-        if (token.Kind is TokenKind.CONSTRAINT)
+        if (_kind is TokenKind.CONSTRAINT)
         {
-            if (ParseConstraintItem(token, out var con))
+            if (ParseConstraintItem(out var con))
             {
                 result = con;
                 return true;
@@ -955,7 +954,7 @@ public partial class Parser
             return false;
         }
 
-        if (!ParseDeclareOrAssignItem(token, out var var, out var assign))
+        if (!ParseDeclareOrAssignItem(out var var, out var assign))
             return false;
 
         if (var is not null)

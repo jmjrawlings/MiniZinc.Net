@@ -12,7 +12,6 @@ public sealed partial class Parser
     private readonly Stopwatch _watch;
     private Token _token;
     private TokenKind _kind;
-    private Token _start;
     private ushort _precedence;
     private uint _pos;
     private uint _line;
@@ -97,12 +96,22 @@ public sealed partial class Parser
     private bool Expect(TokenKind kind)
     {
         if (_kind != kind)
-        {
-            Error($"Expected a {kind} but encountered a {_token.Kind}");
-            return false;
-        }
+            return Expected($"a {kind} but encountered a {_token.Kind}");
 
         Step();
+        return true;
+    }
+
+    /// Skip over the given token kind
+    private bool Expect(TokenKind kind, out Token token)
+    {
+        if (_kind != kind)
+        {
+            token = default;
+            return Expected($"a {kind} but encountered a {_token.Kind}");
+        }
+
+        token = Step();
         return true;
     }
 

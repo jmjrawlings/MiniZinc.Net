@@ -80,32 +80,32 @@ public partial class Parser
     private bool ParseBaseTypeTail(out TypeInstSyntax type)
     {
         type = default!;
-        _start = _token;
+        var start = _token;
         switch (_kind)
         {
             case TokenKind.INT:
                 Step();
-                type = new TypeInstSyntax(_start) { Kind = TypeKind.Int };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Int };
                 break;
 
             case TokenKind.BOOL:
                 Step();
-                type = new TypeInstSyntax(_start) { Kind = TypeKind.Bool };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Bool };
                 break;
 
             case TokenKind.FLOAT:
                 Step();
-                type = new TypeInstSyntax(_start) { Kind = TypeKind.Float };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Float };
                 break;
 
             case TokenKind.STRING:
                 Step();
-                type = new TypeInstSyntax(_start) { Kind = TypeKind.String };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.String };
                 break;
 
             case TokenKind.ANN:
                 Step();
-                type = new TypeInstSyntax(_start) { Kind = TypeKind.Annotation };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Annotation };
                 break;
 
             case TokenKind.RECORD:
@@ -122,21 +122,21 @@ public partial class Parser
 
             case TokenKind.ANY:
                 Step();
-                if (!(Expect(TokenKind.GENERIC) || Expect(TokenKind.GENERIC_SEQ)))
-                    return false;
-                type = new TypeInstSyntax(_start) { Kind = TypeKind.Any, Name = _token };
+                if (!(Skip(TokenKind.GENERIC) || Skip(TokenKind.GENERIC_SEQ)))
+                    return Expected("a Generic ($$) or Generic Sequence ($) variable");
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Any, Name = _token };
                 break;
 
             case TokenKind.GENERIC:
             case TokenKind.GENERIC_SEQ:
                 Step();
-                type = new TypeInstSyntax(_start) { Name = _token, Kind = TypeKind.Any };
+                type = new TypeInstSyntax(start) { Name = _token, Kind = TypeKind.Any };
                 break;
 
             default:
                 if (!ParseExpr(out var expr))
                     return false;
-                type = new ExprTypeInst(_start, expr);
+                type = new ExprTypeInst(start, expr);
                 break;
         }
 
@@ -173,10 +173,10 @@ public partial class Parser
     private bool ParseTupleType(out TupleTypeInstSyntax tuple)
     {
         tuple = null!;
-        if (!Skip(TokenKind.TUPLE))
+        if (!Expect(TokenKind.TUPLE, out var start))
             return false;
 
-        tuple = new TupleTypeInstSyntax(_start) { Kind = TypeKind.Tuple };
+        tuple = new TupleTypeInstSyntax(start) { Kind = TypeKind.Tuple };
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
@@ -200,10 +200,10 @@ public partial class Parser
     private bool ParseRecordType(out RecordTypeInstSyntax record)
     {
         record = default!;
-        if (!Skip(TokenKind.RECORD))
+        if (!Expect(TokenKind.RECORD, out var start))
             return false;
 
-        record = new RecordTypeInstSyntax(_start) { Kind = TypeKind.Record };
+        record = new RecordTypeInstSyntax(start) { Kind = TypeKind.Record };
 
         if (!ParseParameters(out var fields))
             return false;
