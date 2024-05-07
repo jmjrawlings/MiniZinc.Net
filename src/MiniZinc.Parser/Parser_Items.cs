@@ -11,7 +11,6 @@ public partial class Parser
     public bool ParseModel(out SyntaxTree tree)
     {
         tree = new SyntaxTree();
-        Step();
         while (true)
         {
             switch (_kind)
@@ -61,8 +60,12 @@ public partial class Parser
                     return true;
 
                 default:
-                    if (!ParseDeclareOrAssignItem(out var declare, out var assign))
+                    if (!ParseDeclarationOrAssignment(out var declare, out var assign))
                         return false;
+                    if (declare is not null)
+                        tree.Nodes.Add(declare);
+                    if (assign is not null)
+                        tree.Nodes.Add(assign);
                     break;
             }
 
@@ -255,21 +258,22 @@ public partial class Parser
 
         SyntaxNode? objective = null;
         SolveMethod method = SolveMethod.Satisfy;
-
-        Step();
         switch (_kind)
         {
             case TokenKind.SATISFY:
+                Step();
                 method = SolveMethod.Satisfy;
                 break;
 
             case TokenKind.MINIMIZE:
+                Step();
                 method = SolveMethod.Minimize;
                 if (!ParseExpr(out objective))
                     return false;
                 break;
 
             case TokenKind.MAXIMIZE:
+                Step();
                 method = SolveMethod.Maximize;
                 if (!ParseExpr(out objective))
                     return false;
@@ -310,36 +314,34 @@ public partial class Parser
     /// </summary>
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
-    public bool ParseDeclareOrAssignItem(
-        out VariableDeclarationSyntax? var,
+    public bool ParseDeclarationOrAssignment(
+        out VariableDeclarationSyntax? variable,
         out VariableAssignmentSyntax? assign
     )
     {
-        var = null;
+        variable = null;
         assign = null;
         var token = _token;
         var kind = _kind;
-        Token name;
 
-        if (kind is TokenKind.IDENT or TokenKind.QUOTED_IDENT)
+        if (ParseIdent(out var name))
         {
             if (Skip(TokenKind.EQUAL))
             {
                 if (!ParseExpr(out var expr))
                     return false;
-                assign = new VariableAssignmentSyntax(token, expr);
+                assign = new VariableAssignmentSyntax(name, expr);
                 return true;
             }
 
-            var = new VariableDeclarationSyntax(token)
+            variable = new VariableDeclarationSyntax(token)
             {
-                Type = new TypeInstSyntax(_token) { Kind = TypeKind.Name, Name = token }
+                Type = new NamedTypeInst(token, name) { Kind = TypeKind.Name }
             };
             Expect(TokenKind.COLON);
         }
         else if (kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQ)
         {
-            var id = _token.StringValue;
             Step();
             if (Skip(TokenKind.EQUAL))
             {
@@ -349,12 +351,11 @@ public partial class Parser
                 return true;
             }
 
-            var = new VariableDeclarationSyntax(token)
+            variable = new VariableDeclarationSyntax(token)
             {
-                Type = new TypeInstSyntax(_token)
+                Type = new NamedTypeInst(token, token)
                 {
-                    Kind = _kind is TokenKind.GENERIC ? TypeKind.Generic : TypeKind.GenericSeq,
-                    Name = token
+                    Kind = _kind is TokenKind.GENERIC ? TypeKind.Generic : TypeKind.GenericSeq
                 }
             };
             Expect(TokenKind.COLON);
@@ -364,7 +365,7 @@ public partial class Parser
             if (!ParseType(out var type))
                 return false;
 
-            var = new VariableDeclarationSyntax(token) { Type = type };
+            variable = new VariableDeclarationSyntax(token) { Type = type };
             Expect(TokenKind.COLON);
         }
         else if (kind is TokenKind.PREDICATE)
@@ -372,7 +373,7 @@ public partial class Parser
             if (!ParseIdent(out name))
                 return false;
 
-            var = new VariableDeclarationSyntax(token)
+            variable = new VariableDeclarationSyntax(token)
             {
                 Type = new TypeInstSyntax(name) { Kind = TypeKind.Bool }
             };
@@ -382,7 +383,7 @@ public partial class Parser
             if (!ParseIdent(out name))
                 return false;
 
-            var = new VariableDeclarationSyntax(token)
+            variable = new VariableDeclarationSyntax(token)
             {
                 Type = new TypeInstSyntax(name) { Kind = TypeKind.Bool }
             };
@@ -392,7 +393,7 @@ public partial class Parser
             if (!ParseIdent(out name))
                 return false;
 
-            var = new VariableDeclarationSyntax(token)
+            variable = new VariableDeclarationSyntax(token)
             {
                 Type = new TypeInstSyntax(name) { Kind = TypeKind.Annotation }
             };
@@ -402,14 +403,14 @@ public partial class Parser
             if (!ParseIdent(out name))
                 return false;
 
-            var = new VariableDeclarationSyntax(token)
+            variable = new VariableDeclarationSyntax(token)
             {
                 Type = new TypeInstSyntax(name) { Kind = TypeKind.Any }
             };
         }
         else if (ParseType(out var type))
         {
-            var = new VariableDeclarationSyntax(token) { Type = type };
+            variable = new VariableDeclarationSyntax(token) { Type = type };
             Expect(TokenKind.COLON);
         }
         else
@@ -423,21 +424,21 @@ public partial class Parser
         if (!ParseIdent(out name))
             return false;
 
-        var!.Name = name;
+        variable!.Name = name;
 
         // Function call
         if (_kind is TokenKind.OPEN_PAREN)
         {
             if (!ParseParameters(out var pars))
                 return false;
-            var.Parameters = pars;
-            var.IsFunction = true;
+            variable.Parameters = pars;
+            variable.IsFunction = true;
         }
 
         if (!ParseAnnotations(out var anns))
             return false;
 
-        var.Annotations = anns;
+        variable.Annotations = anns;
 
         // Declaration only
         if (!Skip(TokenKind.EQUAL))
@@ -447,7 +448,7 @@ public partial class Parser
         if (!ParseExpr(out var value))
             return false;
 
-        var.Body = value;
+        variable.Body = value;
         return true;
     }
 }

@@ -14,13 +14,13 @@ public partial class Parser
     public bool ParseExprAtom(out SyntaxNode expr)
     {
         expr = null!;
-        var start = _token;
+        var token = _token;
 
         switch (_kind)
         {
             case TokenKind.INT_LIT:
                 Step();
-                expr = new IntLiteralSyntax(_token);
+                expr = new IntLiteralSyntax(token);
                 break;
 
             case TokenKind.FLOAT_LIT:
@@ -30,53 +30,53 @@ public partial class Parser
 
             case TokenKind.TRUE:
                 Step();
-                expr = new BoolSyntax(_token);
+                expr = new BoolSyntax(token);
                 break;
 
             case TokenKind.FALSE:
                 Step();
-                expr = new BoolSyntax(_token);
+                expr = new BoolSyntax(token);
                 break;
 
             case TokenKind.STRING_LIT:
                 Step();
-                expr = new StringLiteralSyntax(_token);
+                expr = new StringLiteralSyntax(token);
                 break;
 
             case TokenKind.PLUS:
                 Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOperatorSyntax(start, Operator.Positive, expr);
+                expr = new UnaryOperatorSyntax(token, Operator.Positive, expr);
                 break;
 
             case TokenKind.MINUS:
                 Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOperatorSyntax(start, Operator.Negative, expr);
+                expr = new UnaryOperatorSyntax(token, Operator.Negative, expr);
                 break;
 
             case TokenKind.NOT:
                 Step();
                 if (!ParseExpr(out expr))
                     return false;
-                expr = new UnaryOperatorSyntax(start, Operator.Not, expr);
+                expr = new UnaryOperatorSyntax(token, Operator.Not, expr);
                 break;
 
             case TokenKind.DOT_DOT:
                 Step();
                 if (ParseExpr(out var right))
-                    expr = new RangeLiteralSyntax(start, Upper: expr);
+                    expr = new RangeLiteralSyntax(token, Upper: expr);
                 else if (ErrorString is not null)
                     return false;
                 else
-                    expr = new RangeLiteralSyntax(start);
+                    expr = new RangeLiteralSyntax(token);
                 break;
 
             case TokenKind.UNDERSCORE:
                 Step();
-                expr = new WildCardExpr(start);
+                expr = new WildCardExpr(token);
                 break;
 
             case TokenKind.OPEN_PAREN:
@@ -114,7 +114,7 @@ public partial class Parser
 
             case TokenKind.EMPTY:
                 Step();
-                expr = new EmptyExpr(start);
+                expr = new EmptyExpr(token);
                 break;
 
             default:
@@ -942,7 +942,6 @@ public partial class Parser
 
         while (_kind is not TokenKind.CLOSE_BRACE)
         {
-            Step();
             if (!ParseLetLocal(out var local))
                 return false;
 
@@ -981,7 +980,7 @@ public partial class Parser
             return false;
         }
 
-        if (!ParseDeclareOrAssignItem(out var var, out var assign))
+        if (!ParseDeclarationOrAssignment(out var var, out var assign))
             return false;
 
         if (var is not null)

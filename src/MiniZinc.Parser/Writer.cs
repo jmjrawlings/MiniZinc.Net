@@ -463,7 +463,7 @@ public sealed class Writer
             case RecordTypeInstSyntax e:
                 Write(RECORD);
                 Write(OPEN_PAREN);
-                WriteParameters(e.Fields);
+                WriteParameters(e.Items);
                 Write(CLOSE_PAREN);
                 break;
             case SetLiteralSyntax e:

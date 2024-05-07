@@ -23,6 +23,13 @@ public class ParserUnitTests
     {
         var tree = Parse(mzn);
         var nodes = tree.Nodes;
+        nodes.AddRange(tree.Includes);
+        nodes.AddRange(tree.Constraints);
+        nodes.AddRange(tree.SolveItems);
+        nodes.AddRange(tree.Aliases);
+        nodes.AddRange(tree.Outputs);
+        nodes.AddRange(tree.Enums);
+
         var node = nodes[0];
         if (node is not T t)
         {
@@ -46,7 +53,8 @@ public class ParserUnitTests
         // ns.Pop().Value.Should().Be(2);
         // ns["a"].Should().Be(1);
         // ns.Pop();
-        // ns.ContainsKey("a").Should().BeFalse();
+        // ns.ContainsKey("a").Should
+        // ().BeFalse();
     }
 
     [Fact]
@@ -172,9 +180,10 @@ public class ParserUnitTests
     void test_expr_type_inst()
     {
         var mzn = "record(1..1:x): a";
-        var node = ParseNode<RecordTypeInstSyntax>(mzn);
-        var (name, type) = node.Fields[0];
-        name.Should().Be("x");
+        var node = ParseNode<VariableDeclarationSyntax>(mzn);
+        var record = node.Type as RecordTypeInstSyntax;
+        var (name, type) = record!.Items[0];
+        name.ToString().Should().Be("x");
         var ti = type as ExprTypeInst;
         var rng = (RangeLiteralSyntax)ti!.Expr;
         ((IntLiteralSyntax)rng.Lower!).Value.Should().Be(1);
@@ -190,7 +199,9 @@ public class ParserUnitTests
                 constraint res[1];
             } in res;
             """;
-        var let = ParseNode<LetSyntax>(mzn);
+        var tree = Parse(mzn);
+        var con = tree.Constraints.First();
+        var let = (LetSyntax)con.Expr;
         let.Locals.Should().HaveCount(2);
         let.Body.Should().BeOfType<IdentifierSyntax>();
         let.Body.ToString().Should().Be("res");
@@ -213,21 +224,21 @@ public class ParserUnitTests
     void test_record_comp()
     {
         var mzn = """
+            x = 
             [
               i: (a: some_map[i], b: some_map[i] mod 2 = 0) | i in Some
             ]
             """;
-        var node = ParseNode<ComprehensionSyntax>(mzn);
-        node.IsSet.Should().BeFalse();
-        var item = (ComprehensionSyntax)node.Expr;
+        var var = ParseNode<VariableAssignmentSyntax>(mzn);
+        var expr = (ComprehensionSyntax)var.Expr;
     }
 
     [Fact]
     void test_set_of_ti()
     {
         var mzn = "set of var int: xd";
-        var node = ParseNode<TypeInstSyntax>(mzn);
-        node.Name.Should().Be("xd");
+        var node = ParseNode<VariableDeclarationSyntax>(mzn);
+        node.Name.ToString().Should().Be("xd");
     }
 
     [Fact]
@@ -276,7 +287,6 @@ public class ParserUnitTests
     {
         var parser = new Parser(mzn);
         parser.ParseExpr(out var expr);
-
         int eval(SyntaxNode expr)
         {
             if (expr is IntLiteralSyntax i)

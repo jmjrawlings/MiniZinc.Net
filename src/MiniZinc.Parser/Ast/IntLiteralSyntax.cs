@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public sealed record IntLiteralSyntax(Token start) : SyntaxNode(start)
+public sealed record IntLiteralSyntax(in Token start) : SyntaxNode(start)
 {
     public int Value => start.IntValue;
 

@@ -10,15 +10,12 @@ public sealed partial class Parser
 {
     private readonly Token[] _tokens;
     private readonly Stopwatch _watch;
+    private string _text;
     private Token _token;
     private TokenKind _kind;
     private ushort _precedence;
-    private uint _pos;
-    private uint _line;
-    private uint _col;
     private int _i;
     public string? ErrorString { get; private set; }
-    private StringBuilder? _trace;
     public TimeSpan Elapsed => _watch.Elapsed;
 
     public static Parser ParseFile(string path)
@@ -28,24 +25,20 @@ public sealed partial class Parser
         return parser;
     }
 
-    public static Parser ParseString(string text)
+    public static Parser ParseText(string text)
     {
         var parser = new Parser(text);
         return parser;
     }
 
-    internal Parser(string mzn)
+    internal Parser(string text)
     {
-        using var lexer = Lexer.LexString(mzn);
         _watch = Stopwatch.StartNew();
+        using var lexer = Lexer.Lex(text);
         _tokens = lexer.ToArray();
-        _pos = 0;
-        _line = 1;
-        _col = 1;
+        _text = text;
         _i = 0;
-#if DEBUG
-        _trace = new StringBuilder();
-#endif
+        Step();
     }
 
     /// Progress the parser
@@ -59,26 +52,6 @@ public sealed partial class Parser
 
         _token = _tokens[_i++];
         _kind = _token.Kind;
-        _pos = _token.Position;
-
-        if (_trace is null)
-            return true;
-
-        if (_line < _token.Line)
-        {
-            _col = 1;
-            _trace.Append('\n');
-        }
-
-        _line = _token.Line;
-        while (_col < _token.Col)
-        {
-            _trace.Append(' ');
-            _col++;
-        }
-        var s = _token.ToString();
-        _trace.Append(s);
-        _col += _token.Length;
         return true;
     }
 
@@ -181,7 +154,7 @@ public sealed partial class Parser
             return false;
 
         _watch.Stop();
-        var trace = _trace?.ToString() ?? string.Empty;
+        var trace = _text[..(int)_token.Position];
         var message = $"""
 
             ---------------------------------------------
@@ -190,7 +163,7 @@ public sealed partial class Parser
             Token {_kind}
             Line {_token.Line}
             Col {_token.Col}
-            Pos {_pos}
+            Pos {_token.Position}
             ---------------------------------------------
             {trace}
             """;

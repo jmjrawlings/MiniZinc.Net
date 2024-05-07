@@ -2,7 +2,7 @@
 {
     void TestTokens(string mzn, params TokenKind[] kinds)
     {
-        var tokens = Lexer.LexString(mzn).ToArray();
+        var tokens = Lexer.Lex(mzn).ToArray();
         for (int i = 0; i < tokens.Length - 1; i++)
         {
             var token = tokens[i];
@@ -50,7 +50,7 @@
     [InlineData("0o3123", 1619)]
     void test_int(string mzn, int i)
     {
-        var token = Lexer.LexString(mzn).First();
+        var token = Lexer.Lex(mzn).First();
         token.IntValue.Should().Be(i);
         token.Kind.Should().Be(TokenKind.INT_LIT);
     }
@@ -60,7 +60,7 @@
     [InlineData("100.0043", 100.0043)]
     void test_float(string mzn, double d)
     {
-        var token = Lexer.LexString(mzn).First();
+        var token = Lexer.Lex(mzn).First();
         token.DoubleValue.Should().Be(d);
         token.Kind.Should().Be(TokenKind.FLOAT_LIT);
     }
@@ -97,7 +97,7 @@
     [InlineData("_", TokenKind.UNDERSCORE)]
     void test_literals(string mzn, TokenKind tokenKind)
     {
-        var token = Lexer.LexString(mzn).First();
+        var token = Lexer.Lex(mzn).First();
         token.Kind.Should().Be(tokenKind);
     }
 
@@ -105,7 +105,7 @@
     void test_whitespace()
     {
         var mzn = @$" {'\r'}{'\t'}{'\n'} ";
-        var tokens = Lexer.LexString(mzn).ToArray();
+        var tokens = Lexer.Lex(mzn).ToArray();
         tokens.Should().BeEmpty();
     }
 
@@ -114,7 +114,7 @@
     {
         var s =
             $"""output ["full var: \(x)\nvar array: \(y)\nnested: \(z)\nelement: \(z.2.1)\npartial: \(init)\ndata: \(dat)\nenumtup: \(enumtup)\n"];""";
-        var x = Lexer.LexString(s);
+        var x = Lexer.Lex(s);
         var a = x.ToArray();
     }
 
@@ -123,7 +123,7 @@
     {
         var mzn = "\\([\"lala\" | i in 1..3 where b])";
         mzn = $"\"{mzn}\"";
-        var tokens = Lexer.LexString(mzn).ToArray();
+        var tokens = Lexer.Lex(mzn).ToArray();
         tokens.Should().HaveCount(1);
         tokens[0].Kind.Should().Be(TokenKind.STRING_LIT);
         tokens[0].StringValue.Should().Be("\\([\"lala\" | i in 1..3 where b])");

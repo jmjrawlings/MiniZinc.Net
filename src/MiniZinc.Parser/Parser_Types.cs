@@ -26,9 +26,10 @@ public partial class Parser
 
             type = new SetTypeInstSyntax(start)
             {
-                Type = type,
+                Items = type,
                 Var = var,
-                Opt = opt
+                Opt = opt,
+                Kind = TypeKind.Set
             };
             return true;
         }
@@ -72,7 +73,7 @@ public partial class Parser
         {
             Kind = TypeKind.Array,
             Dimensions = dims,
-            Type = type
+            Items = type
         };
         return true;
     }
@@ -122,21 +123,25 @@ public partial class Parser
 
             case TokenKind.ANY:
                 Step();
-                if (!(Skip(TokenKind.GENERIC) || Skip(TokenKind.GENERIC_SEQ)))
-                    return Expected("a Generic ($$) or Generic Sequence ($) variable");
-                type = new TypeInstSyntax(start) { Kind = TypeKind.Any, Name = _token };
+                // if (!(Skip(TokenKind.GENERIC) || Skip(TokenKind.GENERIC_SEQ)))
+                //     return Expected("a Generic ($$) or Generic Sequence ($) variable");
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Any };
                 break;
 
             case TokenKind.GENERIC:
+                Step();
+                type = new NamedTypeInst(start, _token) { Kind = TypeKind.Generic };
+                break;
+
             case TokenKind.GENERIC_SEQ:
                 Step();
-                type = new TypeInstSyntax(start) { Name = _token, Kind = TypeKind.Any };
+                type = new NamedTypeInst(start, _token) { Kind = TypeKind.GenericSeq };
                 break;
 
             default:
                 if (!ParseExpr(out var expr))
                     return false;
-                type = new ExprTypeInst(start, expr);
+                type = new ExprTypeInst(start, expr) { Kind = TypeKind.Expr };
                 break;
         }
 
@@ -208,7 +213,7 @@ public partial class Parser
         if (!ParseParameters(out var fields))
             return false;
 
-        record.Fields = fields!;
+        record.Items = fields!;
         return true;
     }
 

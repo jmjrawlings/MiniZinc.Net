@@ -3,7 +3,7 @@ public sealed class LexerIntegrationTests
     private void Test(string path)
     {
         var mzn = File.ReadAllText(path);
-        using var lexer = Lexer.LexString(mzn);
+        using var lexer = Lexer.Lex(mzn);
         // last.Kind.Should().Be(TokenKind.EOF);
     }
 
