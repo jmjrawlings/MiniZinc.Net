@@ -15,6 +15,7 @@ public enum TypeKind
     Tuple,
     Record,
     Array,
+    List,
     Complex,
     Set
 }

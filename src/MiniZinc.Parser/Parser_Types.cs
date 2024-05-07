@@ -8,6 +8,13 @@ public partial class Parser
     {
         type = default!;
         var start = _token;
+
+        if (Skip(TokenKind.ANY))
+        {
+            type = new TypeInstSyntax(start) { Kind = TypeKind.Any };
+            return true;
+        }
+
         var var = false;
         if (Skip(TokenKind.VAR))
             var = true;
@@ -45,16 +52,22 @@ public partial class Parser
     /// <summary>
     /// Parse an array type
     /// </summary>
-    /// <mzn>array[X, 1..2} of var int</mzn>
-    public bool ParseArrayType(in Token start, out ArrayTypeInstSyntax arr)
+    /// <mzn>array[X, 1..2] of var int</mzn>
+    public bool ParseArrayType(out ArrayTypeInstSyntax arr)
     {
         arr = default!;
         var dims = new List<SyntaxNode>();
-        if (!Skip(TokenKind.OPEN_BRACKET))
+
+        if (!Expect(TokenKind.ARRAY, out var start))
             return false;
+
+        if (!Expect(TokenKind.OPEN_BRACKET))
+            return false;
+
         next:
         if (!ParseBaseType(out var expr))
             return false;
+
         dims.Add(expr);
 
         if (Skip(TokenKind.COMMA))
@@ -119,13 +132,6 @@ public partial class Parser
                 if (!ParseTupleType(out var tup))
                     return false;
                 type = tup;
-                break;
-
-            case TokenKind.ANY:
-                Step();
-                // if (!(Skip(TokenKind.GENERIC) || Skip(TokenKind.GENERIC_SEQ)))
-                //     return Expected("a Generic ($$) or Generic Sequence ($) variable");
-                type = new TypeInstSyntax(start) { Kind = TypeKind.Any };
                 break;
 
             case TokenKind.GENERIC:
@@ -274,12 +280,19 @@ public partial class Parser
     {
         result = default!;
         var start = _token;
-        if (start.Kind is TokenKind.ARRAY or TokenKind.LIST)
+        if (_kind is TokenKind.ARRAY)
         {
-            Step();
-            if (!ParseArrayType(start, out var arr))
+            if (!ParseArrayType(out var arr))
                 return false;
             result = arr;
+            return true;
+        }
+
+        if (_kind is TokenKind.LIST)
+        {
+            if (!ParseListType(out var list))
+                return false;
+            result = list;
             return true;
         }
 
@@ -307,6 +320,27 @@ public partial class Parser
                 break;
         }
 
+        return true;
+    }
+
+    /// <summary>
+    /// Parse a list type
+    /// </summary>
+    /// <mzn>list of var int</mzn>
+    private bool ParseListType(out ListTypeInstSyntax arr)
+    {
+        arr = null!;
+
+        if (!Expect(TokenKind.LIST, out var start))
+            return false;
+
+        if (!Expect(TokenKind.OF))
+            return false;
+
+        if (!ParseBaseType(out var items))
+            return false;
+
+        arr = new ListTypeInstSyntax(start) { Kind = TypeKind.List, Items = items };
         return true;
     }
 }

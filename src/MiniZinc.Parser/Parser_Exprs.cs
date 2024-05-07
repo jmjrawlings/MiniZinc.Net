@@ -1136,14 +1136,18 @@ public partial class Parser
         while (Skip(TokenKind.COLON_COLON))
         {
             SyntaxNode? ann;
-            Step();
+
+            // Edge case where 'output' keyword can be used
+            // in a non-keyword context, eg:
             // int : x :: output = 3;
             if (_kind is TokenKind.OUTPUT)
+            {
                 ann = new IdentifierSyntax(_token);
+                Step();
+            }
             else if (!ParseExprAtom(out ann))
             {
-                Expected("Annotation");
-                return false;
+                return Expected("Annotation");
             }
 
             annotations ??= new List<SyntaxNode>();

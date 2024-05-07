@@ -11,7 +11,7 @@ public static class ParserExtensions
 
 public class ParserUnitTests
 {
-    SyntaxTree Parse(string mzn)
+    SyntaxTree ParseText(string mzn)
     {
         var parser = new Parser(mzn);
         if (!parser.ParseModel(out var tree))
@@ -19,9 +19,19 @@ public class ParserUnitTests
         return tree;
     }
 
+    T ParseExpr<T>(string mzn)
+        where T : SyntaxNode
+    {
+        var parser = new Parser(mzn);
+        var result = parser.ParseExpr(out var expr);
+        result.Should().BeTrue();
+        expr.Should().BeOfType<T>();
+        return (T)expr;
+    }
+
     T ParseNode<T>(string mzn)
     {
-        var tree = Parse(mzn);
+        var tree = ParseText(mzn);
         var nodes = tree.Nodes;
         nodes.AddRange(tree.Includes);
         nodes.AddRange(tree.Constraints);
@@ -100,14 +110,14 @@ public class ParserUnitTests
     [InlineData("forall(i in 1..3, j in 1..3 where i > j)(xd[i] > 0)")]
     void test_parse_gencall(string mzn)
     {
-        var node = ParseNode<GeneratorCallSyntax>(mzn);
+        var expr = ParseExpr<GeneratorCallSyntax>(mzn);
     }
 
     [Theory]
     [InlineData("a[Fst[i] + j * (i + 1)]")]
     void test_array_access(string mzn)
     {
-        var node = ParseNode<ArrayAccessExpr>(mzn);
+        var node = ParseExpr<ArrayAccessExpr>(mzn);
     }
 
     [Theory]
@@ -118,14 +128,14 @@ public class ParserUnitTests
     [InlineData("[ 1: 1, 2, 3, 4]")]
     void test_indexed_array_1d(string mzn)
     {
-        var node = ParseNode<Array1DExpr>(mzn);
+        var expr = ParseExpr<Array1DExpr>(mzn);
     }
 
     [Fact]
     void test_array2d_column_indexed()
     {
         var mzn = "[| A: B: C:\n | 0, 0, 0\n | 1, 1, 1\n | 2, 2, 2 |];";
-        var arr = ParseNode<Array2dExpr>(mzn);
+        var arr = ParseExpr<Array2dExpr>(mzn);
         arr.RowIndexed.Should().BeFalse();
         arr.ColIndexed.Should().BeTrue();
         arr.Elements.Should().HaveCount(9);
@@ -139,7 +149,7 @@ public class ParserUnitTests
     void test_array2d_row_indexed()
     {
         var mzn = "[| A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |];";
-        var arr = ParseNode<Array2dExpr>(mzn);
+        var arr = ParseExpr<Array2dExpr>(mzn);
         arr.RowIndexed.Should().BeTrue();
         arr.ColIndexed.Should().BeFalse();
         arr.Elements.Should().HaveCount(9);
@@ -153,7 +163,7 @@ public class ParserUnitTests
     void test_array2d_dual_indexed()
     {
         var mzn = "[| A: B: C:\n | A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |]";
-        var arr = ParseNode<Array2dExpr>(mzn);
+        var arr = ParseExpr<Array2dExpr>(mzn);
         arr.RowIndexed.Should().BeTrue();
         arr.ColIndexed.Should().BeTrue();
         arr.Elements.Should().HaveCount(9);
@@ -170,7 +180,7 @@ public class ParserUnitTests
     void test_array2d_no_index()
     {
         var mzn = "[| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 | 0, _, _, _, _, _, _, _, _, _, _, 0|]";
-        var arr = ParseNode<Array2dExpr>(mzn);
+        var arr = ParseExpr<Array2dExpr>(mzn);
         arr.RowIndexed.Should().BeFalse();
         arr.ColIndexed.Should().BeFalse();
         arr.Elements.Should().HaveCount(24);
@@ -194,14 +204,12 @@ public class ParserUnitTests
     void test_parse_let_xd()
     {
         var mzn = """
-            constraint let {
+            let {
                 array[1..1] of var bool: res;
                 constraint res[1];
             } in res;
             """;
-        var tree = Parse(mzn);
-        var con = tree.Constraints.First();
-        var let = (LetSyntax)con.Expr;
+        var let = ParseExpr<LetSyntax>(mzn);
         let.Locals.Should().HaveCount(2);
         let.Body.Should().BeOfType<IdentifierSyntax>();
         let.Body.ToString().Should().Be("res");
@@ -224,13 +232,11 @@ public class ParserUnitTests
     void test_record_comp()
     {
         var mzn = """
-            x = 
             [
               i: (a: some_map[i], b: some_map[i] mod 2 = 0) | i in Some
             ]
             """;
-        var var = ParseNode<VariableAssignmentSyntax>(mzn);
-        var expr = (ComprehensionSyntax)var.Expr;
+        var expr = ParseExpr<ComprehensionSyntax>(mzn);
     }
 
     [Fact]
@@ -258,7 +264,7 @@ public class ParserUnitTests
     void test_array3d_literal()
     {
         var mzn = "[| |1,1|1,1|, |2,2|2,2|, |3,3|3,3| |]";
-        var arr = ParseNode<Array3dExpr>(mzn);
+        var arr = ParseExpr<Array3dExpr>(mzn);
         arr.I.Should().Be(3);
         arr.J.Should().Be(2);
         arr.K.Should().Be(2);
@@ -271,7 +277,7 @@ public class ParserUnitTests
     void test_array3d_empty()
     {
         var mzn = "[| || |]";
-        var arr = ParseNode<Array3dExpr>(mzn);
+        var arr = ParseExpr<Array3dExpr>(mzn);
         arr.I.Should().Be(0);
         arr.J.Should().Be(0);
         arr.K.Should().Be(0);

@@ -35,6 +35,11 @@ public sealed record ArrayTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
     public int N => Dimensions.Count;
 }
 
+public sealed record ListTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
+{
+    public required TypeInstSyntax Items { get; set; }
+}
+
 public sealed record SetTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
 {
     public required TypeInstSyntax Items { get; init; }
