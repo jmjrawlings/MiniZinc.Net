@@ -8,45 +8,47 @@ public partial class Parser
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    public bool ParseModel(out Model model)
+    internal bool Parse(out SyntaxTree tree)
     {
-        model = new Model();
-        Step();
-
+        tree = new SyntaxTree();
         while (true)
         {
             switch (_kind)
             {
                 case TokenKind.INCLUDE:
-                    if (!ParseIncludeStatement(model))
+                    if (!ParseIncludeStatement(out var inc))
                         return false;
+                    tree.Includes.Add(inc);
                     break;
 
                 case TokenKind.CONSTRAINT:
                     if (!ParseConstraintItem(out var cons))
                         return false;
-                    model.Constraints.Add(cons);
+                    tree.Constraints.Add(cons);
                     break;
 
                 case TokenKind.SOLVE:
-                    if (!ParseSolveItem(model))
+                    if (!ParseSolveItem(out var solve))
                         return false;
+                    tree.SolveItems.Add(solve);
                     break;
 
                 case TokenKind.OUTPUT:
-                    if (!ParseOutputItem(model))
+                    if (!ParseOutputItem(out var output))
                         return false;
+                    tree.Outputs.Add(output);
                     break;
 
                 case TokenKind.ENUM:
                     if (!ParseEnumItem(out var @enum))
                         return false;
-                    model.NameSpace.Push(@enum.Name, @enum);
+                    tree.Enums.Add(@enum);
                     break;
 
                 case TokenKind.TYPE:
-                    if (!ParseAliasItem(model))
+                    if (!ParseAliasItem(out var alias))
                         return false;
+                    tree.Aliases.Add(alias);
                     break;
 
                 case TokenKind.BLOCK_COMMENT:
@@ -57,9 +59,19 @@ public partial class Parser
                 case TokenKind.EOF:
                     return true;
 
-                default:
-                    if (!ParseDeclareOrAssignItem(out var declare, out var assign))
+                case TokenKind.ANNOTATION:
+                    if (!ParseAnnotationDeclaration(out var ann))
                         return false;
+                    tree.Annotations.Add(ann);
+                    break;
+
+                default:
+                    if (!ParseDeclarationOrAssignment(out var declare, out var assign))
+                        return false;
+                    if (declare is not null)
+                        tree.Nodes.Add(declare);
+                    if (assign is not null)
+                        tree.Nodes.Add(assign);
                     break;
             }
 
@@ -67,27 +79,38 @@ public partial class Parser
                 continue;
 
             if (_kind is not TokenKind.EOF)
-                return Error("Expected ; or end of file");
+                return Expected("; or end of file");
         }
+    }
+
+    private bool ParseAnnotationDeclaration(out AnnotationDeclarationSyntax ann)
+    {
+        ann = null!;
+        if (!Expect(TokenKind.ANNOTATION, out var start))
+            return false;
+        if (!ParseBaseTypeTail(out var sig))
+            return false;
+
+        ann = new AnnotationDeclarationSyntax(start, sig);
+        return true;
     }
 
     /// <summary>
     /// Parse an enumeration declaration
     /// </summary>
-    /// <example>enum Dir = {N,S,E,W};</example>
-    /// <example>enum Z = anon_enum(10);</example>
-    /// <example>enum X = Q({1,2});</example>
-    public bool ParseEnumItem(out EnumStatement @enum)
+    /// <mzn>enum Dir = {N,S,E,W};</mzn>
+    /// <mzn>enum Z = anon_enum(10);</mzn>
+    /// <mzn>enum X = Q({1,2});</mzn>
+    public bool ParseEnumItem(out EnumDeclarationSyntax @enum)
     {
-        @enum = default!;
-        if (!Expect(TokenKind.ENUM))
+        @enum = null!;
+        if (!Expect(TokenKind.ENUM, out var start))
             return false;
 
         if (!ParseIdent(out var name))
             return false;
 
-        @enum = new EnumStatement { Name = name };
-        if (!ParseAnnotations(@enum))
+        if (!ParseAnnotations(out var anns))
             return false;
 
         if (_kind is TokenKind.EOL)
@@ -96,13 +119,17 @@ public partial class Parser
         if (!Expect(TokenKind.EQUAL))
             return false;
 
+        @enum = new EnumDeclarationSyntax(start, name);
+        @enum.Annotations = anns;
+
         cases:
-        EnumCases @case;
+        EnumCasesSyntax @case;
+        var caseStart = _token;
 
         // Named cases: 'enum Dir = {N,S,E,W};`
         if (Skip(TokenKind.OPEN_BRACE))
         {
-            var names = new List<string>();
+            var names = new List<Token>();
             while (_kind is not TokenKind.CLOSE_BRACE)
             {
                 if (!ParseIdent(out name))
@@ -115,7 +142,7 @@ public partial class Parser
 
             if (!Expect(TokenKind.CLOSE_BRACE))
                 return false;
-            @case = new EnumCases { Type = EnumCaseType.Names, Names = names };
+            @case = new EnumCasesSyntax(caseStart, EnumCaseType.Names) { Names = names };
             goto end;
         }
 
@@ -128,7 +155,7 @@ public partial class Parser
                 return false;
             if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
-            @case = new EnumCases { Type = EnumCaseType.Underscore, Expr = expr };
+            @case = new EnumCasesSyntax(caseStart, EnumCaseType.Underscore, expr);
             goto end;
         }
 
@@ -141,7 +168,7 @@ public partial class Parser
                 return false;
             if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
-            @case = new EnumCases { Type = EnumCaseType.Anon, Expr = expr };
+            @case = new EnumCasesSyntax(caseStart, EnumCaseType.Anon, expr);
             goto end;
         }
 
@@ -154,7 +181,7 @@ public partial class Parser
                 return false;
             if (!Expect(TokenKind.CLOSE_PAREN))
                 return false;
-            @case = new EnumCases { Type = EnumCaseType.Complex, Expr = expr };
+            @case = new EnumCasesSyntax(caseStart, EnumCaseType.Complex, expr);
             goto end;
         }
 
@@ -172,21 +199,21 @@ public partial class Parser
     /// Parse an Output Item
     /// </summary>
     /// <mzn>output ["The result is \(result)"];</mzn>
-    public bool ParseOutputItem(Model model)
+    public bool ParseOutputItem(out OutputSyntax node)
     {
-        if (!Expect(TokenKind.OUTPUT))
+        node = null!;
+
+        if (!Expect(TokenKind.OUTPUT, out var start))
             return false;
 
-        var item = new OutputStatement();
-
-        if (!ParseStringAnnotations(item))
+        if (!ParseStringAnnotations(out var anns))
             return false;
 
         if (!ParseExpr(out var expr))
             return false;
 
-        item.Expr = expr;
-        model.Outputs.Add(item);
+        node = new OutputSyntax(start, expr);
+        node.Annotations = anns;
         return true;
     }
 
@@ -194,17 +221,23 @@ public partial class Parser
     /// Parse a type alias
     /// </summary>
     /// <mzn>type X = 1 .. 10;</mzn>
-    public bool ParseAliasItem(Model model)
+    public bool ParseAliasItem(out TypeAliasSyntax alias)
     {
-        if (!Expect(TokenKind.TYPE))
+        alias = null!;
+
+        if (!Expect(TokenKind.TYPE, out var start))
             return false;
+
         if (!ParseString(out var name))
             return false;
+
         if (!Expect(TokenKind.EQUAL))
             return false;
+
         if (!ParseType(out var type))
             return false;
-        model.NameSpace.Push(name, type);
+
+        alias = new TypeAliasSyntax(start, type);
         return true;
     }
 
@@ -212,16 +245,17 @@ public partial class Parser
     /// Parse an include item
     /// </summary>
     /// <mzn>include "utils.mzn"</mzn>
-    public bool ParseIncludeStatement(Model model)
+    public bool ParseIncludeStatement(out IncludeSyntax node)
     {
-        if (!Expect(TokenKind.INCLUDE))
+        node = null!;
+
+        if (!Expect(TokenKind.INCLUDE, out var token))
             return false;
 
         if (!ParseString(out var path))
             return false;
 
-        var item = new IncludeStatement { Path = path };
-        model.Includes.Add(item);
+        node = new IncludeSyntax(token, path);
         return true;
     }
 
@@ -230,35 +264,35 @@ public partial class Parser
     /// </summary>
     /// <mzn>solve satisfy;</mzn>
     /// <mzn>solve maximize a;</mzn>
-    public bool ParseSolveItem(Model model)
+    public bool ParseSolveItem(out SolveSyntax node)
     {
-        if (!Expect(TokenKind.SOLVE))
+        node = null!;
+
+        if (!Expect(TokenKind.SOLVE, out var start))
             return false;
 
-        var item = new SolveStatement();
-
-        if (!ParseAnnotations(item))
+        if (!ParseAnnotations(out var anns))
             return false;
 
-        Expr objective = Expr.Null;
-        switch (_token.Kind)
+        SyntaxNode? objective = null;
+        SolveMethod method = SolveMethod.Satisfy;
+        switch (_kind)
         {
             case TokenKind.SATISFY:
                 Step();
-                item.Method = SolveMethod.Satisfy;
-                item.Objective = Expr.Null;
+                method = SolveMethod.Satisfy;
                 break;
 
             case TokenKind.MINIMIZE:
                 Step();
-                item.Method = SolveMethod.Minimize;
+                method = SolveMethod.Minimize;
                 if (!ParseExpr(out objective))
                     return false;
                 break;
 
             case TokenKind.MAXIMIZE:
                 Step();
-                item.Method = SolveMethod.Maximize;
+                method = SolveMethod.Maximize;
                 if (!ParseExpr(out objective))
                     return false;
                 break;
@@ -267,8 +301,7 @@ public partial class Parser
                 return Error("Expected satisfy, minimize, or maximize");
         }
 
-        item.Objective = objective;
-        model.SolveItems.Add(item);
+        node = new SolveSyntax(start, method, objective);
         return true;
     }
 
@@ -276,22 +309,21 @@ public partial class Parser
     /// Parse a constraint
     /// </summary>
     /// <mzn>constraint a > b;</mzn>
-    public bool ParseConstraintItem(out ConstraintStatement constraint)
+    public bool ParseConstraintItem(out ConstraintSyntax constraint)
     {
-        constraint = default!;
+        constraint = null!;
 
-        if (!Skip(TokenKind.CONSTRAINT))
+        if (!Expect(TokenKind.CONSTRAINT, out var start))
             return false;
 
         if (!ParseExpr(out var expr))
             return false;
 
-        constraint = new ConstraintStatement { Expr = expr };
-
-        if (!ParseStringAnnotations(constraint))
+        if (!ParseStringAnnotations(out var anns))
             return false;
 
-        constraint.Expr = expr;
+        constraint = new ConstraintSyntax(start, expr);
+        constraint.Annotations = anns;
         return Okay;
     }
 
@@ -300,10 +332,15 @@ public partial class Parser
     /// </summary>
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
-    public bool ParseDeclareOrAssignItem(out DeclareStatement? var, out AssignStatement? assign)
+    public bool ParseDeclarationOrAssignment(
+        out VariableDeclarationSyntax? variable,
+        out VariableAssignmentSyntax? assign
+    )
     {
-        var = null;
+        variable = null;
         assign = null;
+        var token = _token;
+        var kind = _kind;
 
         if (ParseIdent(out var name))
         {
@@ -311,78 +348,92 @@ public partial class Parser
             {
                 if (!ParseExpr(out var expr))
                     return false;
-                assign = new AssignStatement(name, expr);
+                assign = new VariableAssignmentSyntax(name, expr);
                 return true;
             }
 
-            var = new DeclareStatement
+            variable = new VariableDeclarationSyntax(token)
             {
-                Type = new TypeInst { Kind = TypeKind.Name, Name = name }
+                Type = new NamedTypeInst(token, name) { Kind = TypeKind.Name }
             };
             Expect(TokenKind.COLON);
         }
-        else if (_kind is TokenKind.GENERIC)
+        else if (kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQ)
         {
-            var id = _token.StringValue;
             Step();
             if (Skip(TokenKind.EQUAL))
             {
                 if (!ParseExpr(out var expr))
                     return false;
-                assign = new AssignStatement(name, expr);
+                assign = new VariableAssignmentSyntax(token, expr);
                 return true;
             }
 
-            var = new DeclareStatement
+            variable = new VariableDeclarationSyntax(token)
             {
-                Type = new TypeInst { Kind = TypeKind.PolyMorphic, Name = name }
+                Type = new NamedTypeInst(token, token)
+                {
+                    Kind = _kind is TokenKind.GENERIC ? TypeKind.Generic : TypeKind.GenericSeq
+                }
             };
             Expect(TokenKind.COLON);
         }
-        else if (Skip(TokenKind.FUNCTION))
+        else if (kind is TokenKind.FUNCTION)
         {
             if (!ParseType(out var type))
                 return false;
 
-            var = new DeclareStatement { Type = type };
+            variable = new VariableDeclarationSyntax(token) { Type = type };
             Expect(TokenKind.COLON);
         }
-        else if (Skip(TokenKind.PREDICATE))
+        else if (kind is TokenKind.PREDICATE)
         {
             if (!ParseIdent(out name))
                 return false;
 
-            var = new DeclareStatement { Type = new TypeInst { Kind = TypeKind.Bool } };
+            variable = new VariableDeclarationSyntax(token)
+            {
+                Type = new TypeInstSyntax(name) { Kind = TypeKind.Bool }
+            };
         }
-        else if (Skip(TokenKind.TEST))
+        else if (kind is TokenKind.TEST)
         {
             if (!ParseIdent(out name))
                 return false;
 
-            var = new DeclareStatement { Type = new TypeInst { Kind = TypeKind.Bool } };
+            variable = new VariableDeclarationSyntax(token)
+            {
+                Type = new TypeInstSyntax(name) { Kind = TypeKind.Bool }
+            };
         }
-        else if (Skip(TokenKind.ANNOTATION))
+        else if (kind is TokenKind.ANNOTATION)
         {
             if (!ParseIdent(out name))
                 return false;
 
-            var = new DeclareStatement { Type = new TypeInst { Kind = TypeKind.Annotation } };
+            variable = new VariableDeclarationSyntax(token)
+            {
+                Type = new TypeInstSyntax(name) { Kind = TypeKind.Annotation }
+            };
         }
-        else if (Skip(TokenKind.ANY))
+        else if (kind is TokenKind.ANY)
         {
             if (!ParseIdent(out name))
                 return false;
 
-            var = new DeclareStatement { Type = new TypeInst { Kind = TypeKind.Any } };
+            variable = new VariableDeclarationSyntax(token)
+            {
+                Type = new TypeInstSyntax(name) { Kind = TypeKind.Any }
+            };
         }
         else if (ParseType(out var type))
         {
-            var = new DeclareStatement { Type = type };
+            variable = new VariableDeclarationSyntax(token) { Type = type };
             Expect(TokenKind.COLON);
         }
         else
         {
-            Error("Expected a variable declaration or assignment");
+            Expected("variable declaration or assignment");
         }
 
         if (ErrorString is not null)
@@ -391,19 +442,21 @@ public partial class Parser
         if (!ParseIdent(out name))
             return false;
 
-        var!.Name = name;
+        variable!.Name = name;
 
         // Function call
         if (_kind is TokenKind.OPEN_PAREN)
         {
             if (!ParseParameters(out var pars))
                 return false;
-            var.Parameters = pars;
-            var.IsFunction = true;
+            variable.Parameters = pars;
+            variable.IsFunction = true;
         }
 
-        if (!ParseAnnotations(var))
+        if (!ParseAnnotations(out var anns))
             return false;
+
+        variable.Annotations = anns;
 
         // Declaration only
         if (!Skip(TokenKind.EQUAL))
@@ -413,7 +466,7 @@ public partial class Parser
         if (!ParseExpr(out var value))
             return false;
 
-        var.Body = value;
+        variable.Body = value;
         return true;
     }
 }

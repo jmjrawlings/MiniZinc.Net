@@ -558,7 +558,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         if (int.TryParse(_string, NumberStyles.AllowHexSpecifier, null, out var i))
             IntToken(i);
         else
-            Error($"Could not parsed \"{_string}\" as an integer");
+            Error($"Could not parse \"{_string}\" as an integer");
     }
 
     private void LexOctalInt()
@@ -576,7 +576,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
         catch (Exception)
         {
-            Error($"Could not parsed \"{_string}\" as an integer");
+            Error($"Could not parse \"{_string}\" as an integer");
         }
     }
 
@@ -616,7 +616,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         if (int.TryParse(_string, NumberStyles.None, null, out var i))
             IntToken(i);
         else
-            Error($"Could not parsed \"{_string}\" as an integer");
+            Error($"Could not parse \"{_string}\" as an integer");
         return;
 
         lex_float:
@@ -630,7 +630,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         if (double.TryParse(_string, null, out var d))
             FloatToken(d);
         else
-            Error($"Could not parsed \"{_string}\" as a float");
+            Error($"Could not parse \"{_string}\" as a float");
     }
 
     void Step()
@@ -698,7 +698,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// <summary>
     /// Lex the given string
     /// </summary>
-    public static Lexer LexString(string s, LexOptions options = default)
+    public static Lexer Lex(string s, LexOptions options = default)
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream, Encoding.UTF8);

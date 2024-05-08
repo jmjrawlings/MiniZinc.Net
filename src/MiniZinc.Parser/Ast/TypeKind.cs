@@ -9,11 +9,13 @@ public enum TypeKind
     Float,
     Name,
     Annotation,
-    PolyMorphic,
     Generic,
+    GenericSeq,
     Expr,
     Tuple,
     Record,
     Array,
-    Complex
+    List,
+    Complex,
+    Set
 }

@@ -3,7 +3,7 @@ public sealed class ParserIntegrationTests
     private void Test(string path)
     {
         var parser = Parser.ParseFile(path);
-        parser.ParseModel(out var model);
+        parser.Parse(out var model);
         if (parser.ErrorString is { } err)
         {
             Assert.Fail(err);

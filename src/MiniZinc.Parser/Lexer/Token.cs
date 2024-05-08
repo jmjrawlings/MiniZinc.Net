@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-internal readonly struct Token(
+public readonly struct Token(
     TokenKind kind,
     uint line,
     uint col,

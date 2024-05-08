@@ -4,9 +4,17 @@ using Ast;
 
 public partial class Parser
 {
-    public bool ParseBaseType(out TypeInst type)
+    public bool ParseBaseType(out TypeInstSyntax type)
     {
         type = default!;
+        var start = _token;
+
+        if (Skip(TokenKind.ANY))
+        {
+            type = new TypeInstSyntax(start) { Kind = TypeKind.Any };
+            return true;
+        }
+
         var var = false;
         if (Skip(TokenKind.VAR))
             var = true;
@@ -22,11 +30,13 @@ public partial class Parser
 
             if (!ParseBaseType(out type))
                 return false;
-            type = new SetTypeInst
+
+            type = new SetTypeInstSyntax(start)
             {
-                Type = type,
+                Items = type,
                 Var = var,
-                Opt = opt
+                Opt = opt,
+                Kind = TypeKind.Set
             };
             return true;
         }
@@ -42,19 +52,22 @@ public partial class Parser
     /// <summary>
     /// Parse an array type
     /// </summary>
-    /// <mzn>array[X, 1..2} of var int</mzn>
-    public bool ParseArrayType(out ArrayTypeInst arr)
+    /// <mzn>array[X, 1..2] of var int</mzn>
+    public bool ParseArrayType(out ArrayTypeInstSyntax arr)
     {
         arr = default!;
-        if (!Skip(TokenKind.ARRAY))
+        var dims = new List<SyntaxNode>();
+
+        if (!Expect(TokenKind.ARRAY, out var start))
             return false;
 
-        var dims = new List<Node>();
-        if (!Skip(TokenKind.OPEN_BRACKET))
+        if (!Expect(TokenKind.OPEN_BRACKET))
             return false;
+
         next:
         if (!ParseBaseType(out var expr))
             return false;
+
         dims.Add(expr);
 
         if (Skip(TokenKind.COMMA))
@@ -69,43 +82,44 @@ public partial class Parser
         if (!ParseType(out var type))
             return false;
 
-        arr = new ArrayTypeInst
+        arr = new ArrayTypeInstSyntax(start)
         {
             Kind = TypeKind.Array,
             Dimensions = dims,
-            Type = type
+            Items = type
         };
         return true;
     }
 
-    private bool ParseBaseTypeTail(out TypeInst type)
+    private bool ParseBaseTypeTail(out TypeInstSyntax type)
     {
         type = default!;
-        switch (_token.Kind)
+        var start = _token;
+        switch (_kind)
         {
             case TokenKind.INT:
                 Step();
-                type = new TypeInst { Kind = TypeKind.Int };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Int };
                 break;
 
             case TokenKind.BOOL:
                 Step();
-                type = new TypeInst { Kind = TypeKind.Bool };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Bool };
                 break;
 
             case TokenKind.FLOAT:
                 Step();
-                type = new TypeInst { Kind = TypeKind.Float };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Float };
                 break;
 
             case TokenKind.STRING:
                 Step();
-                type = new TypeInst { Kind = TypeKind.String };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.String };
                 break;
 
             case TokenKind.ANN:
                 Step();
-                type = new TypeInst { Kind = TypeKind.Annotation };
+                type = new TypeInstSyntax(start) { Kind = TypeKind.Annotation };
                 break;
 
             case TokenKind.RECORD:
@@ -120,24 +134,20 @@ public partial class Parser
                 type = tup;
                 break;
 
-            case TokenKind.ANY:
+            case TokenKind.GENERIC:
                 Step();
-                if (!(Expect(TokenKind.GENERIC) || Expect(TokenKind.GENERIC_SEQ)))
-                    return false;
-                type = new TypeInst { Kind = TypeKind.Any, Name = _token.StringValue };
+                type = new NamedTypeInst(start, _token) { Kind = TypeKind.Generic };
                 break;
 
-            case TokenKind.GENERIC:
             case TokenKind.GENERIC_SEQ:
                 Step();
-                type = new TypeInst { Name = _token.StringValue, Kind = TypeKind.Any };
+                type = new NamedTypeInst(start, _token) { Kind = TypeKind.GenericSeq };
                 break;
 
             default:
                 if (!ParseExpr(out var expr))
                     return false;
-                type = new ExprTypeInst { Expr = expr };
-                type.Kind = TypeKind.Expr;
+                type = new ExprTypeInst(start, expr) { Kind = TypeKind.Expr };
                 break;
         }
 
@@ -150,7 +160,7 @@ public partial class Parser
     /// <mzn>int: a</mzn>
     /// <mzn>bool: ABC</mzn>
     /// <mzn>any $$T</mzn>
-    public bool ParseTypeAndName(out Binding<TypeInst> result)
+    public bool ParseTypeAndName(out (Token, TypeInstSyntax) result)
     {
         result = default;
         if (!ParseType(out var type))
@@ -163,7 +173,7 @@ public partial class Parser
         if (!ParseIdent(out var name))
             return false;
 
-        result = name.Bind(type);
+        result = (name, type);
         return true;
     }
 
@@ -171,13 +181,13 @@ public partial class Parser
     /// Parse a tuple type constructor
     /// </summary>
     /// <mzn>tuple(int, bool, tuple(int))</mzn>
-    private bool ParseTupleType(out TupleTypeInst tuple)
+    private bool ParseTupleType(out TupleTypeInstSyntax tuple)
     {
-        tuple = default!;
-        if (!Skip(TokenKind.TUPLE))
+        tuple = null!;
+        if (!Expect(TokenKind.TUPLE, out var start))
             return false;
 
-        tuple = new TupleTypeInst { Kind = TypeKind.Tuple };
+        tuple = new TupleTypeInstSyntax(start) { Kind = TypeKind.Tuple };
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
@@ -198,15 +208,18 @@ public partial class Parser
     /// Parse a record type constructor
     /// </summary>
     /// <mzn>record(int: a, bool: b)</mzn>
-    private bool ParseRecordType(out RecordTypeInst record)
+    private bool ParseRecordType(out RecordTypeInstSyntax record)
     {
         record = default!;
-        if (!Skip(TokenKind.RECORD))
+        if (!Expect(TokenKind.RECORD, out var start))
             return false;
-        record = new RecordTypeInst { Kind = TypeKind.Record };
+
+        record = new RecordTypeInstSyntax(start) { Kind = TypeKind.Record };
+
         if (!ParseParameters(out var fields))
             return false;
-        record.Fields = fields!;
+
+        record.Items = fields!;
         return true;
     }
 
@@ -215,7 +228,7 @@ public partial class Parser
     /// and names between parentheses
     /// </summary>
     /// <mzn>(int: a, bool: b)</mzn>
-    private bool ParseParameters(out List<Binding<TypeInst>>? parameters)
+    private bool ParseParameters(out List<(Token, TypeInstSyntax)>? parameters)
     {
         parameters = default;
         if (!Expect(TokenKind.OPEN_PAREN))
@@ -228,7 +241,7 @@ public partial class Parser
         if (!ParseTypeAndName(out var type))
             return false;
 
-        parameters = new List<Binding<TypeInst>> { type };
+        parameters = new List<(Token, TypeInstSyntax)> { type };
         if (Skip(TokenKind.COMMA))
             goto next;
 
@@ -236,21 +249,18 @@ public partial class Parser
         return Expect(TokenKind.CLOSE_PAREN);
     }
 
-    // private bool ParseArgs(out List<Node>? exprs) =>
-    //     ParseExprs(out exprs, TokenKind.OPEN_PAREN, TokenKind.CLOSE_PAREN);
-
     /// <summary>
     /// Parse a comma separated list of expressions
     /// between parentheses
     /// </summary>
     /// <mzn>(1, 2, false)</mzn>
-    private bool ParseExprs(out List<Node>? exprs, TokenKind open, TokenKind close)
+    private bool ParseExprs(out List<SyntaxNode>? exprs, TokenKind open, TokenKind close)
     {
         exprs = null;
         if (!Skip(open))
             return false;
 
-        exprs = new List<Node>();
+        exprs = new List<SyntaxNode>();
         while (_kind != close)
         {
             if (!ParseExpr(out var expr))
@@ -266,14 +276,23 @@ public partial class Parser
         return true;
     }
 
-    public bool ParseType(out TypeInst result)
+    public bool ParseType(out TypeInstSyntax result)
     {
         result = default!;
-        if (_kind is TokenKind.ARRAY or TokenKind.LIST)
+        var start = _token;
+        if (_kind is TokenKind.ARRAY)
         {
             if (!ParseArrayType(out var arr))
                 return false;
             result = arr;
+            return true;
+        }
+
+        if (_kind is TokenKind.LIST)
+        {
+            if (!ParseListType(out var list))
+                return false;
+            result = list;
             return true;
         }
 
@@ -288,7 +307,7 @@ public partial class Parser
 
         // Complex types
         // `record(a: int) ++ record(b: int)`
-        var complex = new ComplexTypeInst { Kind = TypeKind.Complex };
+        var complex = new ComplexTypeInstSyntax(start) { Kind = TypeKind.Complex };
         complex.Types.Add(type);
         result = complex;
 
@@ -301,6 +320,27 @@ public partial class Parser
                 break;
         }
 
+        return true;
+    }
+
+    /// <summary>
+    /// Parse a list type
+    /// </summary>
+    /// <mzn>list of var int</mzn>
+    private bool ParseListType(out ListTypeInstSyntax arr)
+    {
+        arr = null!;
+
+        if (!Expect(TokenKind.LIST, out var start))
+            return false;
+
+        if (!Expect(TokenKind.OF))
+            return false;
+
+        if (!ParseBaseType(out var items))
+            return false;
+
+        arr = new ListTypeInstSyntax(start) { Kind = TypeKind.List, Items = items };
         return true;
     }
 }
