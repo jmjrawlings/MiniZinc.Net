@@ -8,7 +8,7 @@ public partial class Parser
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    public bool ParseModel(out SyntaxTree tree)
+    internal bool Parse(out SyntaxTree tree)
     {
         tree = new SyntaxTree();
         while (true)
@@ -59,6 +59,12 @@ public partial class Parser
                 case TokenKind.EOF:
                     return true;
 
+                case TokenKind.ANNOTATION:
+                    if (!ParseAnnotationDeclaration(out var ann))
+                        return false;
+                    tree.Annotations.Add(ann);
+                    break;
+
                 default:
                     if (!ParseDeclarationOrAssignment(out var declare, out var assign))
                         return false;
@@ -75,6 +81,18 @@ public partial class Parser
             if (_kind is not TokenKind.EOF)
                 return Expected("; or end of file");
         }
+    }
+
+    private bool ParseAnnotationDeclaration(out AnnotationDeclarationSyntax ann)
+    {
+        ann = null!;
+        if (!Expect(TokenKind.ANNOTATION, out var start))
+            return false;
+        if (!ParseBaseTypeTail(out var sig))
+            return false;
+
+        ann = new AnnotationDeclarationSyntax(start, sig);
+        return true;
     }
 
     /// <summary>

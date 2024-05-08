@@ -12,4 +12,5 @@ public sealed class SyntaxTree
     public readonly List<ConstraintSyntax> Constraints = new();
     public readonly List<OutputSyntax> Outputs = new();
     public readonly List<SolveSyntax> SolveItems = new();
+    public readonly List<AnnotationDeclarationSyntax> Annotations = new();
 }

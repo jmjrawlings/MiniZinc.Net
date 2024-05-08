@@ -14,4 +14,6 @@ public sealed record VariableDeclarationSyntax(Token Start) : SyntaxNode(Start),
     public List<(Token, TypeInstSyntax)>? Parameters { get; set; }
 
     public bool IsFunction { get; set; }
+
+    public bool IsAnnotation { get; set; }
 }

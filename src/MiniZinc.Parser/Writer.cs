@@ -319,13 +319,13 @@ public sealed class Writer
 
         switch (expr)
         {
-            case Array1DExpr e:
+            case Array1DSyntax e:
                 WriteArray1D(e);
                 break;
-            case Array2dExpr e:
+            case Array2dSyntax e:
                 WriteArray2D(e);
                 break;
-            case ArrayAccessExpr e:
+            case ArrayAccessSyntax e:
                 WriteArrayAccess(e);
                 break;
             case ArrayTypeInstSyntax e:
@@ -518,7 +518,7 @@ public sealed class Writer
         WriteExpr(type);
     }
 
-    private void WriteArrayAccess(ArrayAccessExpr e)
+    private void WriteArrayAccess(ArrayAccessSyntax e)
     {
         WriteExpr(e.Array);
         Write(OPEN_BRACKET);
@@ -542,7 +542,7 @@ public sealed class Writer
         Write(CLOSE_PAREN);
     }
 
-    private void WriteArray2D(Array2dExpr expr)
+    private void WriteArray2D(Array2dSyntax expr)
     {
         Write(OPEN_BRACKET);
         Write(PIPE);
@@ -564,7 +564,7 @@ public sealed class Writer
         Write(CLOSE_BRACKET);
     }
 
-    private void WriteArray1D(Array1DExpr e)
+    private void WriteArray1D(Array1DSyntax e)
     {
         Write(OPEN_BRACKET);
         WriteExprs(e.Elements);

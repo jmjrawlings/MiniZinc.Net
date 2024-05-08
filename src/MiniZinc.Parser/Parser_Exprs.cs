@@ -152,7 +152,7 @@ public partial class Parser
                         break;
                 }
 
-                expr = new ArrayAccessExpr(expr, access);
+                expr = new ArrayAccessSyntax(expr, access);
                 if (!Expect(TokenKind.CLOSE_BRACKET))
                     return false;
             }
@@ -553,7 +553,7 @@ public partial class Parser
 
         if (_kind is TokenKind.CLOSE_BRACKET)
         {
-            result = new Array1DExpr(start);
+            result = new Array1DSyntax(start);
             return Expect(TokenKind.CLOSE_BRACKET);
         }
 
@@ -631,7 +631,7 @@ public partial class Parser
         }
 
         // 1D Array literal
-        var arr1d = new Array1DExpr(start);
+        var arr1d = new Array1DSyntax(start);
         result = arr1d;
         arr1d.Elements.Add(element);
 
@@ -688,9 +688,9 @@ public partial class Parser
      *  | B: 1, 1, 1
      *  | C: 2, 2, 2 |];
      */
-    private bool Parse2dArrayLiteral(in Token start, out Array2dExpr arr)
+    private bool Parse2dArrayLiteral(in Token start, out Array2dSyntax arr)
     {
-        arr = new Array2dExpr(start);
+        arr = new Array2dSyntax(start);
         int j = 1;
 
         if (Skip(TokenKind.PIPE))
@@ -816,9 +816,9 @@ public partial class Parser
      * `[| |1,1|1,1|, |2,2|2,2|, |3,3|3,3| |]`
      *
      */
-    private bool Parse3dArrayLiteral(in Token start, out Array3dExpr arr)
+    private bool Parse3dArrayLiteral(in Token start, out Array3dSyntax arr)
     {
-        arr = new Array3dExpr(start);
+        arr = new Array3dSyntax(start);
 
         if (!Expect(TokenKind.PIPE))
             return false;
