@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
-public record TypeInstSyntax(Token Start) : SyntaxNode(Start)
+public record TypeSyntax(Token Start) : SyntaxNode(Start)
 {
     public TypeKind Kind { get; set; } = TypeKind.Any;
 
@@ -9,42 +9,42 @@ public record TypeInstSyntax(Token Start) : SyntaxNode(Start)
     public bool Opt { get; set; }
 }
 
-public sealed record ComplexTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
+public sealed record ComplexTypeSyntax(Token Start) : TypeSyntax(Start)
 {
-    public List<TypeInstSyntax> Types { get; set; } = new();
+    public List<TypeSyntax> Types { get; set; } = new();
 }
 
-public sealed record RecordTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
+public sealed record RecordTypeSyntax(Token Start) : TypeSyntax(Start)
 {
-    public List<(Token, TypeInstSyntax)> Items { get; set; } = new();
+    public List<(Token, TypeSyntax)> Items { get; set; } = new();
 }
 
-public sealed record TupleTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
+public sealed record TupleTypeSyntax(Token Start) : TypeSyntax(Start)
 {
-    public List<TypeInstSyntax> Items { get; set; } = new();
+    public List<TypeSyntax> Items { get; set; } = new();
 }
 
-public sealed record ExprTypeInst(Token Start, SyntaxNode Expr) : TypeInstSyntax(Start) { }
+public sealed record ExprType(Token Start, SyntaxNode Expr) : TypeSyntax(Start) { }
 
-public sealed record ArrayTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
+public sealed record ArrayTypeSyntax(Token Start) : TypeSyntax(Start)
 {
-    public required TypeInstSyntax Items { get; set; }
+    public required TypeSyntax Items { get; set; }
 
     public required List<SyntaxNode> Dimensions { get; set; }
 
     public int N => Dimensions.Count;
 }
 
-public sealed record ListTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
+public sealed record ListTypeSyntax(Token Start) : TypeSyntax(Start)
 {
-    public required TypeInstSyntax Items { get; set; }
+    public required TypeSyntax Items { get; set; }
 }
 
-public sealed record SetTypeInstSyntax(Token Start) : TypeInstSyntax(Start)
+public sealed record SetTypeSyntax(Token Start) : TypeSyntax(Start)
 {
-    public required TypeInstSyntax Items { get; init; }
+    public required TypeSyntax Items { get; init; }
 }
 
-public sealed record NamedTypeInst(Token Start, Token Name) : TypeInstSyntax(Start) { }
+public sealed record NamedType(Token Start, Token Name) : TypeSyntax(Start) { }
 
-public sealed record TypeAliasSyntax(Token Start, TypeInstSyntax Type) : SyntaxNode(Start) { }
+public sealed record TypeAliasSyntax(Token Start, TypeSyntax Type) : SyntaxNode(Start) { }

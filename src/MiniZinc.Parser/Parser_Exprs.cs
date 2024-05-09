@@ -609,7 +609,7 @@ public partial class Parser
             index = value;
             if (!ParseExpr(out value))
                 return false;
-            element = new IndexAndValue(index, value);
+            element = new IndexAndNode(index, value);
         }
         else
         {
@@ -656,7 +656,7 @@ public partial class Parser
 
                 if (!ParseExpr(out value))
                     return false;
-                element = new IndexAndValue(index, value);
+                element = new IndexAndNode(index, value);
             }
             else if (!ParseExpr(out value))
                 return false;

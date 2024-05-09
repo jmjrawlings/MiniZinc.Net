@@ -131,13 +131,6 @@ public sealed class Writer
         _sb.Append(s);
     }
 
-    // void WriteNamespace(NameSpace<object>? ns)
-    // {
-    //     if (ns is null)
-    //         return;
-    //     foreach (var b in ns.Stack) { }
-    // }
-
     void WriteSep<T>(IEnumerable<T>? exprs, Action<T> write, char sep = COMMA)
     {
         if (exprs is null)
@@ -328,7 +321,7 @@ public sealed class Writer
             case ArrayAccessSyntax e:
                 WriteArrayAccess(e);
                 break;
-            case ArrayTypeInstSyntax e:
+            case ArrayTypeSyntax e:
                 break;
             case BinaryOperatorSyntax e:
                 WriteExpr(e.Left);
@@ -384,7 +377,7 @@ public sealed class Writer
                 WriteExprs(e.Cases);
                 Write(EOL);
                 break;
-            case ExprTypeInst e:
+            case ExprType e:
                 break;
             case FloatLiteralSyntax e:
                 Write(e.Value);
@@ -433,7 +426,7 @@ public sealed class Writer
                     {
                         ConstraintSyntax c => (SyntaxNode)c,
                         VariableAssignmentSyntax a => a,
-                        VariableDeclarationSyntax v => v,
+                        DeclarationSyntax v => v,
                         _ => null!
                     }
                 );
@@ -460,7 +453,7 @@ public sealed class Writer
             case RecordLiteralSyntax e:
                 WriteRecord(e);
                 break;
-            case RecordTypeInstSyntax e:
+            case RecordTypeSyntax e:
                 Write(RECORD);
                 Write(OPEN_PAREN);
                 WriteParameters(e.Items);
@@ -486,19 +479,19 @@ public sealed class Writer
                 WriteExprs(e.Fields);
                 Write(CLOSE_PAREN);
                 break;
-            case TupleTypeInstSyntax e:
+            case TupleTypeSyntax e:
                 Write(TUPLE);
                 Write(OPEN_PAREN);
                 WriteExprs(e.Items);
                 Write(CLOSE_PAREN);
                 break;
-            case TypeInstSyntax e:
+            case TypeSyntax e:
                 break;
             case UnaryOperatorSyntax e:
                 WriteOp(e.Operator);
                 WriteExpr(e.Expr);
                 break;
-            case VariableDeclarationSyntax e:
+            case DeclarationSyntax e:
                 break;
             case WildCardExpr e:
                 break;
@@ -507,10 +500,10 @@ public sealed class Writer
         }
     }
 
-    private void WriteParameters(List<(Token, TypeInstSyntax)> parameters) =>
-        WriteSep(parameters, WriteNameTypeInst);
+    private void WriteParameters(List<(Token, TypeSyntax)> parameters) =>
+        WriteSep(parameters, WriteNameType);
 
-    private void WriteNameTypeInst((Token, TypeInstSyntax) x)
+    private void WriteNameType((Token, TypeSyntax) x)
     {
         var (name, type) = x;
         Write(name);

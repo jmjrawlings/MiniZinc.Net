@@ -1,55 +1,7 @@
 ﻿using MiniZinc.Parser.Ast;
 
-public static class ParserExtensions
-{
-    public static void Check(this Parser p)
-    {
-        if (p.ErrorString is { } err)
-            Assert.Fail(err);
-    }
-}
-
 public class ParserUnitTests
 {
-    SyntaxTree ParseText(string mzn)
-    {
-        var parser = new Parser(mzn);
-        if (!parser.Parse(out var tree))
-            Assert.Fail(parser.ErrorString ?? "");
-        return tree;
-    }
-
-    T ParseExpr<T>(string mzn)
-        where T : SyntaxNode
-    {
-        var parser = new Parser(mzn);
-        var result = parser.ParseExpr(out var expr);
-        result.Should().BeTrue();
-        expr.Should().BeOfType<T>();
-        return (T)expr;
-    }
-
-    T ParseNode<T>(string mzn)
-    {
-        var tree = ParseText(mzn);
-        var nodes = tree.Nodes;
-        nodes.AddRange(tree.Includes);
-        nodes.AddRange(tree.Constraints);
-        nodes.AddRange(tree.SolveItems);
-        nodes.AddRange(tree.Aliases);
-        nodes.AddRange(tree.Outputs);
-        nodes.AddRange(tree.Enums);
-
-        var node = nodes[0];
-        if (node is not T t)
-        {
-            Assert.Fail($"Parsed node {node} was not of expected type {typeof(T)}");
-            return default;
-        }
-
-        return t;
-    }
-
     [Fact]
     void test_namespace()
     {
@@ -58,13 +10,6 @@ public class ParserUnitTests
         ns.Add("a", 2);
         ns.Add("a", 3);
         ns["a"].Should().Be(3);
-        // ns.Pop();
-        // ns["a"].Should().Be(2);
-        // ns.Pop().Value.Should().Be(2);
-        // ns["a"].Should().Be(1);
-        // ns.Pop();
-        // ns.ContainsKey("a").Should
-        // ().BeFalse();
     }
 
     [Fact]
@@ -190,11 +135,11 @@ public class ParserUnitTests
     void test_expr_type_inst()
     {
         var mzn = "record(1..1:x): a";
-        var node = ParseNode<VariableDeclarationSyntax>(mzn);
-        var record = node.Type as RecordTypeInstSyntax;
+        var node = ParseNode<DeclarationSyntax>(mzn);
+        var record = node.Type as RecordTypeSyntax;
         var (name, type) = record!.Items[0];
         name.ToString().Should().Be("x");
-        var ti = type as ExprTypeInst;
+        var ti = type as ExprType;
         var rng = (RangeLiteralSyntax)ti!.Expr;
         ((IntLiteralSyntax)rng.Lower!).Value.Should().Be(1);
         ((IntLiteralSyntax)rng.Upper!).Value.Should().Be(1);
@@ -219,8 +164,8 @@ public class ParserUnitTests
     void test_partial_range_ti()
     {
         var mzn = "0..: xd;";
-        var node = ParseNode<VariableDeclarationSyntax>(mzn);
-        var type = node.Type as ExprTypeInst;
+        var node = ParseNode<DeclarationSyntax>(mzn);
+        var type = node.Type as ExprType;
         var expr = type!.Expr;
         expr.Should().BeOfType<RangeLiteralSyntax>();
         var rng = (RangeLiteralSyntax)expr;
@@ -243,7 +188,7 @@ public class ParserUnitTests
     void test_set_of_ti()
     {
         var mzn = "set of var int: xd";
-        var node = ParseNode<VariableDeclarationSyntax>(mzn);
+        var node = ParseNode<DeclarationSyntax>(mzn);
         node.Name.ToString().Should().Be("xd");
     }
 
@@ -251,9 +196,9 @@ public class ParserUnitTests
     void test_postfix_range_operator()
     {
         var mzn = "var 0..: xd";
-        var node = ParseNode<VariableDeclarationSyntax>(mzn);
+        var node = ParseNode<DeclarationSyntax>(mzn);
         node.Name.StringValue.Should().Be("xd");
-        var type = node.Type as ExprTypeInst;
+        var type = node.Type as ExprType;
         // type.Var.Should().BeTrue();
         // var range = (RangeLiteralSyntax)type.Expr;
         // range.Lower.Should().Be(new IntLiteralSyntax(0));
@@ -282,6 +227,15 @@ public class ParserUnitTests
         arr.J.Should().Be(0);
         arr.K.Should().Be(0);
         arr.Elements.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("annotation xd")]
+    [InlineData("annotation something(int: x)")]
+    void test_annotation_declaration(string mzn)
+    {
+        var tree = ParseText(mzn);
+        var ann = tree.Annotations.First();
     }
 
     [Theory]
@@ -320,5 +274,44 @@ public class ParserUnitTests
 
         var result = eval(expr);
         result.Should().Be(expected);
+    }
+
+    SyntaxTree ParseText(string mzn)
+    {
+        var parser = new Parser(mzn);
+        if (!parser.Parse(out var tree))
+            Assert.Fail(parser.ErrorString ?? "");
+        return tree;
+    }
+
+    T ParseExpr<T>(string mzn)
+        where T : SyntaxNode
+    {
+        var parser = new Parser(mzn);
+        var result = parser.ParseExpr(out var expr);
+        result.Should().BeTrue();
+        expr.Should().BeOfType<T>();
+        return (T)expr;
+    }
+
+    T ParseNode<T>(string mzn)
+    {
+        var tree = ParseText(mzn);
+        var nodes = tree.Nodes;
+        nodes.AddRange(tree.Includes);
+        nodes.AddRange(tree.Constraints);
+        nodes.AddRange(tree.SolveItems);
+        nodes.AddRange(tree.Aliases);
+        nodes.AddRange(tree.Outputs);
+        nodes.AddRange(tree.Enums);
+
+        var node = nodes[0];
+        if (node is not T t)
+        {
+            Assert.Fail($"Parsed node {node} was not of expected type {typeof(T)}");
+            return default;
+        }
+
+        return t;
     }
 }
