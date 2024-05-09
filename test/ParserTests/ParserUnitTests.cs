@@ -234,8 +234,8 @@ public class ParserUnitTests
     [InlineData("annotation something(int: x)")]
     void test_annotation_declaration(string mzn)
     {
-        var tree = ParseText(mzn);
-        var ann = tree.Annotations.First();
+        var ann = ParseNode<DeclarationSyntax>(mzn);
+        ann.Type.Kind.Should().Be(TypeKind.Annotation);
     }
 
     [Theory]
@@ -298,13 +298,6 @@ public class ParserUnitTests
     {
         var tree = ParseText(mzn);
         var nodes = tree.Nodes;
-        nodes.AddRange(tree.Includes);
-        nodes.AddRange(tree.Constraints);
-        nodes.AddRange(tree.SolveItems);
-        nodes.AddRange(tree.Aliases);
-        nodes.AddRange(tree.Outputs);
-        nodes.AddRange(tree.Enums);
-
         var node = nodes[0];
         if (node is not T t)
         {

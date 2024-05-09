@@ -425,7 +425,7 @@ public sealed class Writer
                     x switch
                     {
                         ConstraintSyntax c => (SyntaxNode)c,
-                        VariableAssignmentSyntax a => a,
+                        AssignmentSyntax a => a,
                         DeclarationSyntax v => v,
                         _ => null!
                     }

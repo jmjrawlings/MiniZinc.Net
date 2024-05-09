@@ -46,5 +46,3 @@ public sealed record SetTypeSyntax(Token Start) : TypeSyntax(Start)
 }
 
 public sealed record NamedType(Token Start, Token Name) : TypeSyntax(Start) { }
-
-public sealed record TypeAliasSyntax(Token Start, TypeSyntax Type) : SyntaxNode(Start) { }

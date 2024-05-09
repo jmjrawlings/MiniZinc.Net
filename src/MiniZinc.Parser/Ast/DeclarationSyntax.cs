@@ -10,8 +10,4 @@ public sealed record DeclarationSyntax(Token Start, TypeSyntax Type) : SyntaxNod
     public SyntaxNode? Body { get; set; }
 
     public List<(Token, TypeSyntax)>? Parameters { get; set; }
-
-    public bool IsFunction { get; set; }
-
-    public bool IsAnnotation { get; set; }
 }
