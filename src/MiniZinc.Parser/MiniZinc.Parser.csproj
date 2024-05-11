@@ -16,8 +16,4 @@
         <InternalsVisibleTo Include="ParserTests" />
     </ItemGroup>
     
-    <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
-    </ItemGroup>
-    
 </Project>

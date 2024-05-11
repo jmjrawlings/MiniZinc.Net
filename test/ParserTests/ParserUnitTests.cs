@@ -137,9 +137,9 @@ public class ParserUnitTests
         var mzn = "record(1..1:x): a";
         var node = ParseNode<DeclarationSyntax>(mzn);
         var record = node.Type as RecordTypeSyntax;
-        var (name, type) = record!.Items[0];
-        name.ToString().Should().Be("x");
-        var ti = type as ExprType;
+        var field = record!.Fields[0];
+        field.Name.ToString().Should().Be("x");
+        var ti = field.Type as ExprType;
         var rng = (RangeLiteralSyntax)ti!.Expr;
         ((IntLiteralSyntax)rng.Lower!).Value.Should().Be(1);
         ((IntLiteralSyntax)rng.Upper!).Value.Should().Be(1);

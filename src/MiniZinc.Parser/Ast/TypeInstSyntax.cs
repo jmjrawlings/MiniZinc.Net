@@ -16,7 +16,7 @@ public sealed record ComplexTypeSyntax(Token Start) : TypeSyntax(Start)
 
 public sealed record RecordTypeSyntax(Token Start) : TypeSyntax(Start)
 {
-    public List<(Token, TypeSyntax)> Items { get; set; } = new();
+    public List<ParameterSyntax> Fields { get; set; } = new();
 }
 
 public sealed record TupleTypeSyntax(Token Start) : TypeSyntax(Start)
@@ -45,4 +45,4 @@ public sealed record SetTypeSyntax(Token Start) : TypeSyntax(Start)
     public required TypeSyntax Items { get; init; }
 }
 
-public sealed record NamedType(Token Start, Token Name) : TypeSyntax(Start) { }
+public sealed record NameTypeSyntax(Token Start, Token Name) : TypeSyntax(Start) { }

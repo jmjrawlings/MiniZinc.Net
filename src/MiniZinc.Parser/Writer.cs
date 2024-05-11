@@ -456,7 +456,7 @@ public sealed class Writer
             case RecordTypeSyntax e:
                 Write(RECORD);
                 Write(OPEN_PAREN);
-                WriteParameters(e.Items);
+                WriteParameters(e.Fields);
                 Write(CLOSE_PAREN);
                 break;
             case SetLiteralSyntax e:
@@ -500,17 +500,17 @@ public sealed class Writer
         }
     }
 
-    private void WriteParameters(List<(Token, TypeSyntax)> parameters) =>
-        WriteSep(parameters, WriteNameType);
+    private void WriteParameters(List<ParameterSyntax> parameters) =>
+        WriteSep(parameters, WriteParameter);
 
-    private void WriteNameType((Token, TypeSyntax) x)
+    private void WriteParameter(ParameterSyntax x)
     {
-        var (name, type) = x;
-        Write(name);
+        Write(x.Name);
         Write(COLON);
-        WriteExpr(type);
+        WriteExpr(x.Type);
+        WriteAnnotations(x);
     }
-
+    
     private void WriteArrayAccess(ArrayAccessSyntax e)
     {
         WriteExpr(e.Array);
