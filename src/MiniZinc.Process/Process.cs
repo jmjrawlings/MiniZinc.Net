@@ -2,7 +2,6 @@
 
 using System.Diagnostics;
 using System.Threading.Channels;
-using CommunityToolkit.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SystemProcess = System.Diagnostics.Process;
@@ -106,7 +105,7 @@ public sealed class Process : IDisposable
         }
 
         if (Status is not ProcessStatus.Idle)
-            ThrowHelper.ThrowInvalidOperationException();
+            throw new InvalidOperationException();
 
         StartTime = DateTimeOffset.Now;
         EndTime = StartTime;
@@ -136,7 +135,7 @@ public sealed class Process : IDisposable
             return _events;
 
         if (Status is not ProcessStatus.Idle)
-            ThrowHelper.ThrowInvalidOperationException();
+            throw new InvalidOperationException();
 
         StartTime = DateTimeOffset.Now;
         EndTime = StartTime;

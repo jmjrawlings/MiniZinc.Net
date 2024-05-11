@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Text;
-using CommunityToolkit.Diagnostics;
 
 /// <summary>
 /// Specifies a shell command and arguments (eg: git -v)
@@ -76,9 +75,7 @@ public readonly record struct Command
     public static Command Create(IEnumerable<Arg> args)
     {
         var arr = args.ToArray();
-        Guard.IsNotEmpty(arr);
         var exe = arr[0];
-        Guard.IsTrue(exe.ArgType is ArgType.ValueOnly);
         if (arr.Length == 1)
         {
             return new Command(exe.Value!);
