@@ -74,15 +74,14 @@
 
     [Theory]
     [InlineData("1.1..1.2.0")]
-    void test_bad_range(string mzn)
+    void test_dot_access(string mzn)
     {
         TestTokens(
             mzn,
             TokenKind.FLOAT_LIT,
             TokenKind.DOT_DOT,
             TokenKind.FLOAT_LIT,
-            TokenKind.DOT,
-            TokenKind.INT_LIT
+            TokenKind.TUPLE_ACCESS
         );
     }
 

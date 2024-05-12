@@ -144,6 +144,21 @@ public sealed class Parser
             return Expected("Identifier");
         }
     }
+    
+    private bool ParseGeneric(out Token token)
+    {
+        if (_kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQ)
+        {
+            token = _token;
+            Step();
+            return true;
+        }
+        else
+        {
+            token = default;
+            return Expected("Identifier");
+        }
+    }
 
     /// <summary>
     /// Parse a model
@@ -160,53 +175,62 @@ public sealed class Parser
                 case TokenKind.INCLUDE:
                     if (!ParseIncludeStatement(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
-
+                
                 case TokenKind.CONSTRAINT:
                     if (!ParseConstraintItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
 
                 case TokenKind.SOLVE:
                     if (!ParseSolveItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
 
                 case TokenKind.OUTPUT:
                     if (!ParseOutputItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
 
                 case TokenKind.ENUM:
                     if (!ParseEnumItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
 
                 case TokenKind.TYPE:
                     if (!ParseAliasItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
                 
                 case TokenKind.FUNCTION:
                     if (!ParseFunctionItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
                     
                 case TokenKind.PREDICATE:
                     if (!ParsePredicateItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
                 
                 case TokenKind.TEST:
                     if (!ParseTestItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
                     
                 case TokenKind.ANNOTATION:
                     if (!ParseAnnotationItem(out node))
                         return false;
+                    tree.Nodes.Add(node);
                     break;
-                    
 
                 case TokenKind.BLOCK_COMMENT:
                 case TokenKind.LINE_COMMENT:
@@ -234,6 +258,7 @@ public sealed class Parser
             if (_kind is not TokenKind.EOF)
                 return Expected("; or end of file");
         }
+        
     }
 
     
@@ -311,7 +336,7 @@ public sealed class Parser
         if (!ParseIdent(out var name))
             return false;
 
-        if (!ParseParameters(out var pars, optional:true))
+        if (!ParseParameters(out var pars))
             return false;
         
         Token? ann = null;
@@ -328,20 +353,17 @@ public sealed class Parser
         if (!ParseAnnotations(out var anns))
             return false;
 
-        if (!Expect(TokenKind.EQUAL))
-            return false;
-
-        if (!ParseExpr(out var body))
-            return false;
-
+        SyntaxNode? body = null;
+        if (Skip(TokenKind.EQUAL))
+            if (!ParseExpr(out body))
+                return false;
+        
         node = new FunctionDeclarationSyntax(
             start,
             name,
             type,
             pars,
             body) { Ann = ann };
-       
-        
         return true;
     }
     
@@ -470,6 +492,7 @@ public sealed class Parser
 
         if (Skip(TokenKind.PLUS_PLUS))
             goto cases;
+        result = @enum;
         return true;
     }
 
@@ -610,6 +633,7 @@ public sealed class Parser
     /// </summary>
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
+    /// <mzn>$T: identity($T: x) = x;</mzn>
     internal bool ParseDeclareOrAssign(
         out DeclarationSyntax? declare,
         out AssignmentSyntax? assign
@@ -619,97 +643,75 @@ public sealed class Parser
         assign = null;
         var token = _token;
         var kind = _kind;
-        TypeSyntax type;
+        TypeSyntax? type = null;
         Token name;
+        List<ParameterSyntax>? pars = null;
+        List<SyntaxNode>? anns = null;
         
         if (kind is TokenKind.IDENT or TokenKind.QUOTED_IDENT)
         {
             Step();
             if (Skip(TokenKind.EQUAL))
             {
-                // Variable assignment
-                // `a = 10`
-                if (!ParseExpr(out var expr))
-                    return false;
-                
-                assign = new AssignmentSyntax(token, expr);
-                return true;
+                name = token;
+                goto body;
             }
             else
-            {
-                // The identifier is a type name
-                // - a type name `Direction get_direction(..)`
-                type = new NameTypeSyntax(token, token) { Kind = TypeKind.Name };
-                declare = new DeclarationSyntax(token, type);
-                Expect(TokenKind.COLON);
-            }
-        }
-        else if (kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQ)
-        {
-            throw new Exception();
-            Step();
-            if (Skip(TokenKind.EQUAL))
-            {
-                if (!ParseExpr(out var expr))
-                    return false;
-                assign = new AssignmentSyntax(token, expr);
-                return true;
-            }
-
-            type = new NameTypeSyntax(token, token)
-            {
-                Kind = _kind is TokenKind.GENERIC ? TypeKind.Generic : TypeKind.GenericSeq
-            };
-            declare = new DeclarationSyntax(token, type);
-            Expect(TokenKind.COLON);
-        }
-        
+                type = new NameTypeSyntax(token, token);
+        } 
         else if (kind is TokenKind.ANY)
         {
-            Step();
-            type = new TypeSyntax(_token) { Kind = TypeKind.Any };
-            declare = new DeclarationSyntax(token, type);
+            return false;
         }
-        else if (ParseType(out type))
+        else if (!ParseType(out type))
         {
-            declare = new DeclarationSyntax(token, type);
-            Expect(TokenKind.COLON);
-        }
-        else
-        {
-            Expected("variable declaration or assignment");
+            return false;
         }
 
-        if (ErrorString is not null)
-            return Error();
-
+        if (!Expect(TokenKind.COLON))
+            return false;
+        
         if (!ParseIdent(out name))
             return false;
-
-        declare!.Name = name;
-
-        // Function call
-        if (_kind is TokenKind.OPEN_PAREN)
-        {
-            if (!ParseParameters(out var pars))
-                return false;
-            declare.Parameters = pars;
-        }
-
-        if (!ParseAnnotations(out var anns))
+        
+        if (!ParseParameters(out pars))
             return false;
-
-        declare.Annotations = anns;
-
+        
+        if (!ParseAnnotations(out anns))
+            return false;
+        
         // Declaration only
         if (!Skip(TokenKind.EQUAL))
+        {
+            declare = new DeclarationSyntax(token, type)
+            {
+                Name = name,
+                Parameters = pars,
+                Annotations = anns
+            };
             return true;
-
+        }
+        
+        body:
         // Assignment right hand side
         if (!ParseExpr(out var value))
             return false;
 
-        declare.Body = value;
+        if (type is null)
+        {
+            assign = new AssignmentSyntax(name, value);
+        }
+        else
+        {
+            declare = new DeclarationSyntax(token, type)
+            {
+                Name = name,
+                Parameters = pars,
+                Annotations = anns,
+                Body = value
+            };
+        }
+
         return true;
     }
 
@@ -865,27 +867,15 @@ public sealed class Parser
                 if (!Expect(TokenKind.CLOSE_BRACKET))
                     return false;
             }
-            else if (Skip(TokenKind.DOT))
+            else if (_kind is TokenKind.TUPLE_ACCESS)
             {
-                // Tuple access: `a.1`
-                if (ParseInt(out var i))
-                    expr = new TupleAccessSyntax(expr, i);
-                // Record access: `a.name`
-                else if (ParseIdent(out var field))
-                    expr = new RecordAccessSyntax(expr, field);
-                // A float token indicates chained tuple access
-                // eg `item.1.2`
-                // todo - handle in lexer?
-                else if (ParseFloat(out var f))
-                {
-                    var s = f.ToString("F1");
-                    var t = s.Split(".");
-                    // i = int.Parse(t[0]);
-                    // int j = int.Parse(t[1]);
-                    expr = new TupleAccessSyntax(new TupleAccessSyntax(expr, i), default);
-                }
-                else
-                    return Error("Expected a tuple field (eg .1) or record field (eg .name)");
+                expr = new TupleAccessSyntax(expr, _token);
+                Step();
+            } 
+            else if (_kind is TokenKind.RECORD_ACCESS)
+            {
+                expr = new RecordAccessSyntax(expr, _token);
+                Step();
             }
             else
             {
@@ -1885,21 +1875,6 @@ public sealed class Parser
         return true;
     }
 
-    internal bool ParseGeneric(out Token token)
-    {
-        if (_kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQ)
-        {
-            token = _token;
-            Step();
-            return true;
-        }
-        else
-        {
-            token = default;
-            return false;
-        }
-    }
-
     internal bool ParseBaseType(out TypeSyntax type)
     {
         type = default!;
@@ -1907,17 +1882,17 @@ public sealed class Parser
 
         if (Skip(TokenKind.ANY))
         {
-            if (ParseGeneric(out var ident))
-                type = new NameTypeSyntax(start, ident)
-                {
-                    Kind =
-                        ident.Kind is TokenKind.GENERIC_SEQ ? TypeKind.GenericSeq : TypeKind.Generic
-                };
-            else
-                type = new TypeSyntax(start) { Kind = TypeKind.Any };
+            if (!ParseGeneric(out var ident))
+                return false;
+            
+            type = new NameTypeSyntax(start, ident)
+            {
+                Kind =
+                    ident.Kind is TokenKind.GENERIC_SEQ ? TypeKind.GenericSeq : TypeKind.Generic
+            };
             return true;
         }
-
+        
         var var = false;
         if (Skip(TokenKind.VAR))
             var = true;
@@ -2068,17 +2043,21 @@ public sealed class Parser
         param = null!;
         if (!ParseType(out var type))
             return false;
-        
-        if (type.Kind is not TypeKind.Any)
-            if (!Expect(TokenKind.COLON))
-                return false;
 
+        // Parameters can have a type only
+        // `int: get_two(int) = 2`
+        if (!Skip(TokenKind.COLON))
+        {
+            param = new ParameterSyntax(type, null);
+            return true;
+        }
+        
         if (!ParseIdent(out var name))
             return false;
 
         if (!ParseAnnotations(out var anns))
             return false;
-
+        
         param = new ParameterSyntax(type, name);
         param.Annotations = anns;
         return true;
@@ -2120,30 +2099,31 @@ public sealed class Parser
         record = default!;
         if (!Expect(TokenKind.RECORD, out var start))
             return false;
-
+        
         record = new RecordTypeSyntax(start) { Kind = TypeKind.Record };
 
         if (!ParseParameters(out var fields))
             return false;
 
-        record.Fields = fields!;
+        if (fields is null)
+            return Expected("Record fields");
+
+        record.Fields = fields;
         return true;
     }
 
     /// <summary>
-    /// Parse a comma separated list of types
+    /// Parse an *OPTIONAL* comma separated list of types 
     /// and names between parentheses
     /// </summary>
     /// <mzn>(int: a, bool: b)</mzn>
-    private bool ParseParameters(out List<ParameterSyntax>? parameters, bool optional = false)
+
+    private bool ParseParameters(out List<ParameterSyntax>? parameters)
     {
         parameters = default;
         if (!Skip(TokenKind.OPEN_PAREN))
-            if (optional)
-                return true;
-            else
-                return Expected("(");
-            
+            return true;
+        
         if (_kind is TokenKind.CLOSE_PAREN)
             goto end;
 

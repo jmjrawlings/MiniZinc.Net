@@ -234,7 +234,7 @@ public class ParserUnitTests
     [InlineData("annotation something(int: x)")]
     void test_annotation_declaration(string mzn)
     {
-        var ann = ParseNode<DeclarationSyntax>(mzn);
+        var ann = ParseNode<FunctionDeclarationSyntax>(mzn);
         ann.Type.Kind.Should().Be(TypeKind.Annotation);
     }
 

@@ -50,7 +50,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private uint _startLine;
     private uint _startCol;
     private uint _length;
-    private string? _string;
+    private string _string;
     private char _char;
     private bool _fin;
     private Token _token;
@@ -153,9 +153,31 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case DOT:
                 Step();
+                // ..
                 if (SkipReturn(DOT, TokenKind.DOT_DOT))
-                    break;
-                Token(TokenKind.DOT);
+                {
+                }
+                // Tuple access
+                else if (IsDigit(_char))
+                {
+                    do
+                    {
+                        Store();
+                        Step();
+                    } while (IsDigit(_char));
+                    ReadString();
+                    IntToken( int.Parse(_string),TokenKind.TUPLE_ACCESS);
+                }
+                // Record access
+                else
+                {
+                    while (IsAsciiLetter(_char) || _char is UNDERSCORE)
+                    {
+                        Store();
+                        Step();
+                    }
+                    StringToken( TokenKind.RECORD_ACCESS);
+                }
                 break;
             case PLUS:
                 Step();
@@ -310,17 +332,17 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         StringToken(TokenKind.QUOTED_OP);
     }
 
-    private void StringToken(TokenKind kind)
+    private void StringToken(in TokenKind kind)
     {
         ReadString();
         _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, _string);
         _length = 1;
     }
-
-    private void IntToken(int i)
+    
+    private void IntToken(in int i, TokenKind kind =TokenKind.INT_LIT)
     {
         _token = new Token(
-            _kind = TokenKind.INT_LIT,
+            _kind = kind,
             _startLine,
             _startCol,
             _startPos,
@@ -358,7 +380,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         Token(kind);
         return true;
     }
-
+    
     private bool SkipReturn(TokenKind kind)
     {
         Step();
@@ -579,7 +601,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Error($"Could not parse \"{_string}\" as an integer");
         }
     }
-
+    
     private void LexNumber()
     {
         if (_char is '0')

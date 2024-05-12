@@ -505,9 +505,12 @@ public sealed class Writer
 
     private void WriteParameter(ParameterSyntax x)
     {
-        Write(x.Name);
-        Write(COLON);
         WriteExpr(x.Type);
+        if (x.Name is { } name)
+        {
+            Write(COLON);
+            Write(name);
+        }
         WriteAnnotations(x);
     }
     

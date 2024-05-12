@@ -97,7 +97,7 @@ public readonly struct Token(
             TokenKind.CLOSE_PAREN => ")",
             TokenKind.OPEN_BRACE => "{",
             TokenKind.CLOSE_BRACE => "}",
-            TokenKind.DOT => ".",
+            TokenKind.TUPLE_ACCESS => $".{IntValue}",
             TokenKind.PERCENT => "%",
             TokenKind.UNDERSCORE => "_",
             TokenKind.TILDE => "~",
