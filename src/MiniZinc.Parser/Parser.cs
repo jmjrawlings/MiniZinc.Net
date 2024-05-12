@@ -132,7 +132,7 @@ public sealed class Parser
 
     private bool ParseIdent(out Token token)
     {
-        if (_kind is TokenKind.IDENT or TokenKind.QUOTED_IDENT)
+        if (_kind is TokenKind.IDENT)
         {
             token = _token;
             Step();
@@ -641,25 +641,23 @@ public sealed class Parser
     {
         declare = null;
         assign = null;
-        var token = _token;
-        var kind = _kind;
+        var start = _token;
         TypeSyntax? type = null;
         Token name;
         List<ParameterSyntax>? pars = null;
         List<SyntaxNode>? anns = null;
         
-        if (kind is TokenKind.IDENT or TokenKind.QUOTED_IDENT)
+        if (Skip(TokenKind.IDENT))
         {
-            Step();
             if (Skip(TokenKind.EQUAL))
             {
-                name = token;
+                name = start;
                 goto body;
             }
             else
-                type = new NameTypeSyntax(token, token);
+                type = new NameTypeSyntax(start, start);
         } 
-        else if (kind is TokenKind.ANY)
+        else if (start.Kind is TokenKind.ANY)
         {
             return false;
         }
@@ -683,7 +681,7 @@ public sealed class Parser
         // Declaration only
         if (!Skip(TokenKind.EQUAL))
         {
-            declare = new DeclarationSyntax(token, type)
+            declare = new DeclarationSyntax(start, type)
             {
                 Name = name,
                 Parameters = pars,
@@ -703,7 +701,7 @@ public sealed class Parser
         }
         else
         {
-            declare = new DeclarationSyntax(token, type)
+            declare = new DeclarationSyntax(start, type)
             {
                 Name = name,
                 Parameters = pars,
@@ -818,7 +816,6 @@ public sealed class Parser
                 break;
 
             case TokenKind.IDENT:
-            case TokenKind.QUOTED_IDENT:
                 if (!ParseIdentExpr(out expr))
                     return false;
                 break;
@@ -957,7 +954,6 @@ public sealed class Parser
             TokenKind.PLUS_PLUS => ParseBinopExpr(ref left, Operator.Concat),
             TokenKind.DEFAULT => ParseBinopExpr(ref left, Operator.Default),
             TokenKind.QUOTED_OP => ParseQuotedBinopExpr(ref left),
-            TokenKind.QUOTED_IDENT => ParseQuotedBinopExpr(ref left),
             TokenKind.TILDE_PLUS => ParseBinopExpr(ref left, Operator.TildeAdd),
             TokenKind.TILDE_MINUS => ParseBinopExpr(ref left, Operator.TildeSubtract),
             TokenKind.TILDE_STAR => ParseBinopExpr(ref left, Operator.TildeMultiply),
@@ -967,7 +963,7 @@ public sealed class Parser
 
     private bool ParseQuotedBinopExpr(ref SyntaxNode left)
     {
-        throw new NotImplementedException();
+        return Error("xd");
     }
 
     private bool ParseDotDotExpr(ref SyntaxNode left)
@@ -1015,7 +1011,6 @@ public sealed class Parser
             TokenKind.PLUS_PLUS => 100,
             TokenKind.DEFAULT => 70,
             TokenKind.QUOTED_OP => 50,
-            TokenKind.QUOTED_IDENT => 50,
             TokenKind.TILDE_PLUS => 10,
             TokenKind.TILDE_MINUS => 10,
             TokenKind.TILDE_STAR => 10,
@@ -1040,11 +1035,11 @@ public sealed class Parser
     {
         result = null!;
         var name = _token;
-        if (_kind is not (TokenKind.IDENT or TokenKind.QUOTED_IDENT))
+        if (_kind is not TokenKind.IDENT)
             return Expected("Identifier");
-
+        
         Step();
-
+        
         // Simple identifier
         if (!Skip(TokenKind.OPEN_PAREN))
         {

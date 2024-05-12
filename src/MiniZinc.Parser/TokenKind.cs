@@ -55,7 +55,7 @@ public enum TokenKind : sbyte
     VAR,
     WHERE,
     XOR,
-
+    
     // Nodes
     IDENT,
     GENERIC,
@@ -65,9 +65,8 @@ public enum TokenKind : sbyte
     STRING_LIT,
     LINE_COMMENT,
     BLOCK_COMMENT,
-    QUOTED_IDENT,
     QUOTED_OP,
-
+    
     // Binary Ops
     DOUBLE_ARROW,
     LEFT_ARROW,
