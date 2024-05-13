@@ -18,7 +18,7 @@
     [InlineData("aN4m3w1thnumb3r5")]
     public void Test_identifer(string mzn)
     {
-        TestTokens(mzn, TokenKind.IDENT);
+        TestTokens(mzn, TokenKind.IDENTIFIER);
     }
 
     [Fact]
@@ -40,7 +40,7 @@
     [InlineData(""" "Escaped \"quotes\" " """)]
     void test_string_literal(string mzn)
     {
-        TestTokens(mzn, TokenKind.STRING_LIT);
+        TestTokens(mzn, TokenKind.STRING_LITERAL);
     }
 
     [Theory]
@@ -52,7 +52,7 @@
     {
         var token = Lexer.Lex(mzn).First();
         token.IntValue.Should().Be(i);
-        token.Kind.Should().Be(TokenKind.INT_LIT);
+        token.Kind.Should().Be(TokenKind.INT_LITERAL);
     }
 
     [Theory]
@@ -62,27 +62,26 @@
     {
         var token = Lexer.Lex(mzn).First();
         token.DoubleValue.Should().Be(d);
-        token.Kind.Should().Be(TokenKind.FLOAT_LIT);
+        token.Kind.Should().Be(TokenKind.FLOAT_LITERAL);
     }
-
+    
     [Theory]
     [InlineData("1..10")]
     void test_range_ti(string mzn)
     {
-        TestTokens(mzn, TokenKind.INT_LIT, TokenKind.DOT_DOT, TokenKind.INT_LIT);
+        TestTokens(mzn, TokenKind.INT_LITERAL, TokenKind.DOT_DOT, TokenKind.INT_LITERAL);
     }
 
     [Theory]
     [InlineData("1.1..1.2.0")]
-    void test_bad_range(string mzn)
+    void test_dot_access(string mzn)
     {
         TestTokens(
             mzn,
-            TokenKind.FLOAT_LIT,
+            TokenKind.FLOAT_LITERAL,
             TokenKind.DOT_DOT,
-            TokenKind.FLOAT_LIT,
-            TokenKind.DOT,
-            TokenKind.INT_LIT
+            TokenKind.FLOAT_LITERAL,
+            TokenKind.TUPLE_ACCESS
         );
     }
 
@@ -125,7 +124,7 @@
         mzn = $"\"{mzn}\"";
         var tokens = Lexer.Lex(mzn).ToArray();
         tokens.Should().HaveCount(1);
-        tokens[0].Kind.Should().Be(TokenKind.STRING_LIT);
+        tokens[0].Kind.Should().Be(TokenKind.STRING_LITERAL);
         tokens[0].StringValue.Should().Be("\\([\"lala\" | i in 1..3 where b])");
     }
 

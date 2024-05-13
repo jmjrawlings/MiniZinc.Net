@@ -1,7 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
 using System.Collections;
-using System.Collections.Immutable;
 
 /// <summary>
 /// A lookup from names to values.  This differs from

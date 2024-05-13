@@ -1,25 +1,26 @@
 ﻿namespace MiniZinc.Parser;
 
-public readonly struct Token(
-    TokenKind kind,
-    uint line,
-    uint col,
-    uint start,
-    uint length,
-    object? o = null
-)
-{
-    public readonly TokenKind Kind = kind;
-    public readonly uint Line = line;
-    public readonly uint Col = col;
-    public readonly uint Position = start;
-    public readonly uint Length = length;
-    public object? Data => o;
-
-    public int IntValue => (int)o!;
-    public string StringValue => (string)o!;
-    public double DoubleValue => (double)o!;
-
+public readonly struct Token {
+    
+    public readonly TokenKind Kind;
+    public readonly int Line;
+    public readonly int Col;
+    public readonly int Start;
+    public readonly int Length;
+    public readonly object? Data;
+    public int IntValue => (int)Data!;
+    public string StringValue => (string)Data!;
+    public double DoubleValue => (double)Data!;
+    public int End => Start + Length;
+    public Token(TokenKind kind, int line, int col, int start, int length, object? data = null)
+    {
+        Kind = kind;
+        Line = line;
+        Col = col;
+        Start = start;
+        Length = length;
+        Data = data;
+    }
     public override string ToString() =>
         Kind switch
         {
@@ -97,7 +98,7 @@ public readonly struct Token(
             TokenKind.CLOSE_PAREN => ")",
             TokenKind.OPEN_BRACE => "{",
             TokenKind.CLOSE_BRACE => "}",
-            TokenKind.DOT => ".",
+            TokenKind.TUPLE_ACCESS => $".{IntValue}",
             TokenKind.PERCENT => "%",
             TokenKind.UNDERSCORE => "_",
             TokenKind.TILDE => "~",
@@ -108,9 +109,9 @@ public readonly struct Token(
             TokenKind.EOL => ";",
             TokenKind.PIPE => "|",
             TokenKind.EMPTY => "<>",
-            TokenKind.INT_LIT => IntValue.ToString(),
-            TokenKind.FLOAT_LIT => DoubleValue.ToString("F2"),
-            TokenKind.STRING_LIT => $"\"{StringValue}\"",
+            TokenKind.INT_LITERAL => IntValue.ToString(),
+            TokenKind.FLOAT_LITERAL => DoubleValue.ToString("F2"),
+            TokenKind.STRING_LITERAL => $"\"{StringValue}\"",
             TokenKind.ANONENUM => "anon_enum",
             TokenKind.DOUBLE_ARROW => "<->",
             TokenKind.LEFT_ARROW => "<-",
@@ -118,8 +119,9 @@ public readonly struct Token(
             TokenKind.NOT_EQUAL => "!=",
             TokenKind.EXP => "^",
             TokenKind.COMMA => ",",
-            TokenKind.GENERIC_SEQ => $"$${StringValue}",
+            TokenKind.GENERIC_SEQUENCE => $"$${StringValue}",
             TokenKind.GENERIC => $"${StringValue}",
-            _ => o?.ToString() ?? string.Empty
+            TokenKind.INFIX_IDENTIFIER => $"`{StringValue}`",
+            _ => Data?.ToString() ?? string.Empty
         };
 }

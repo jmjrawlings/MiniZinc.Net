@@ -2,6 +2,8 @@
 
 public enum TokenKind : sbyte
 {
+    ERROR,
+
     // Keywords
     ANNOTATION,
     ANN,
@@ -55,19 +57,18 @@ public enum TokenKind : sbyte
     VAR,
     WHERE,
     XOR,
-
+    
     // Nodes
-    IDENT,
+    IDENTIFIER,
     GENERIC,
-    GENERIC_SEQ,
-    INT_LIT,
-    FLOAT_LIT,
-    STRING_LIT,
+    GENERIC_SEQUENCE,
+    INT_LITERAL,
+    FLOAT_LITERAL,
+    STRING_LITERAL,
     LINE_COMMENT,
     BLOCK_COMMENT,
-    QUOTED_IDENT,
-    QUOTED_OP,
-
+    INFIX_IDENTIFIER,
+    
     // Binary Ops
     DOUBLE_ARROW,
     LEFT_ARROW,
@@ -87,6 +88,8 @@ public enum TokenKind : sbyte
     SLASH,
     EXP,
     PLUS_PLUS,
+    TUPLE_ACCESS,
+    RECORD_ACCESS,
     TILDE_EQUALS,
     TILDE_PLUS,
     TILDE_MINUS,
@@ -97,7 +100,6 @@ public enum TokenKind : sbyte
     CLOSE_PAREN,
     OPEN_BRACE,
     CLOSE_BRACE,
-    DOT,
     PERCENT,
     UNDERSCORE,
     COMMA,
@@ -110,6 +112,4 @@ public enum TokenKind : sbyte
     EMPTY,
     EOL,
     EOF,
-
-    ERROR
 }

@@ -325,16 +325,7 @@ public sealed class Writer
                 break;
             case BinaryOperatorSyntax e:
                 WriteExpr(e.Left);
-                if (e.Name is { } name)
-                {
-                    Write(BACKTICK);
-                    Write(BACKTICK);
-                }
-                else
-                {
-                    WriteOp(e.Op!);
-                }
-
+                Write(e.Infix);
                 WriteExpr(e.Right);
                 break;
             case BoolSyntax boolLit:
@@ -425,7 +416,7 @@ public sealed class Writer
                     x switch
                     {
                         ConstraintSyntax c => (SyntaxNode)c,
-                        VariableAssignmentSyntax a => a,
+                        AssignmentSyntax a => a,
                         DeclarationSyntax v => v,
                         _ => null!
                     }
@@ -456,7 +447,7 @@ public sealed class Writer
             case RecordTypeSyntax e:
                 Write(RECORD);
                 Write(OPEN_PAREN);
-                WriteParameters(e.Items);
+                WriteParameters(e.Fields);
                 Write(CLOSE_PAREN);
                 break;
             case SetLiteralSyntax e:
@@ -500,17 +491,20 @@ public sealed class Writer
         }
     }
 
-    private void WriteParameters(List<(Token, TypeSyntax)> parameters) =>
-        WriteSep(parameters, WriteNameType);
+    private void WriteParameters(List<ParameterSyntax> parameters) =>
+        WriteSep(parameters, WriteParameter);
 
-    private void WriteNameType((Token, TypeSyntax) x)
+    private void WriteParameter(ParameterSyntax x)
     {
-        var (name, type) = x;
-        Write(name);
-        Write(COLON);
-        WriteExpr(type);
+        WriteExpr(x.Type);
+        if (x.Name is { } name)
+        {
+            Write(COLON);
+            Write(name);
+        }
+        WriteAnnotations(x);
     }
-
+    
     private void WriteArrayAccess(ArrayAccessSyntax e)
     {
         WriteExpr(e.Array);

@@ -137,9 +137,9 @@ public class ParserUnitTests
         var mzn = "record(1..1:x): a";
         var node = ParseNode<DeclarationSyntax>(mzn);
         var record = node.Type as RecordTypeSyntax;
-        var (name, type) = record!.Items[0];
-        name.ToString().Should().Be("x");
-        var ti = type as ExprType;
+        var field = record!.Fields[0];
+        field.Name.ToString().Should().Be("x");
+        var ti = field.Type as ExprType;
         var rng = (RangeLiteralSyntax)ti!.Expr;
         ((IntLiteralSyntax)rng.Lower!).Value.Should().Be(1);
         ((IntLiteralSyntax)rng.Upper!).Value.Should().Be(1);
@@ -234,8 +234,8 @@ public class ParserUnitTests
     [InlineData("annotation something(int: x)")]
     void test_annotation_declaration(string mzn)
     {
-        var tree = ParseText(mzn);
-        var ann = tree.Annotations.First();
+        var ann = ParseNode<FunctionDeclarationSyntax>(mzn);
+        ann.Type.Kind.Should().Be(TypeKind.Annotation);
     }
 
     [Theory]
@@ -257,7 +257,7 @@ public class ParserUnitTests
 
             var left = eval(binop.Left);
             var right = eval(binop.Right);
-            switch (binop.Op)
+            switch (binop.Operator)
             {
                 case Operator.Add:
                     return left + right;
@@ -298,13 +298,6 @@ public class ParserUnitTests
     {
         var tree = ParseText(mzn);
         var nodes = tree.Nodes;
-        nodes.AddRange(tree.Includes);
-        nodes.AddRange(tree.Constraints);
-        nodes.AddRange(tree.SolveItems);
-        nodes.AddRange(tree.Aliases);
-        nodes.AddRange(tree.Outputs);
-        nodes.AddRange(tree.Enums);
-
         var node = nodes[0];
         if (node is not T t)
         {
