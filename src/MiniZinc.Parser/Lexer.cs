@@ -329,18 +329,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Return(TokenKind.INFIX_IDENTIFIER, _string);
     }
     
-    private void FloatReturn(in double f)
-    {
-        _token = new Token(
-            _kind = TokenKind.FLOAT_LITERAL,
-            _startLine,
-            _startCol,
-            _startPos,
-            _length - 1,
-            f
-        );
-    }
-    
     private void Return(in TokenKind kind, object? data = null)
     {
         _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, data);
@@ -606,9 +594,9 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
         } while (IsDigit(_char) || _char is 'e');
         ReadString();
-
+        
         if (double.TryParse(_string, null, out var d))
-            FloatReturn(d);
+            Return(TokenKind.FLOAT_LITERAL, d);
         else
             Error($"Could not parse \"{_string}\" as a float");
     }
