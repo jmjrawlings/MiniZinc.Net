@@ -50,28 +50,31 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const string ERROR_UNTERMINATED_STRING_LITERAL = "Error unterminated string literal";
     const string ERROR_ESCAPED_STRING = "Error escaped string";
     const string ERROR_INT_LITERAL = "Error int literal";
-    
-    private uint _line;
-    private uint _col;
-    private uint _pos;
-    private uint _startPos;
-    private uint _startLine;
-    private uint _startCol;
-    private uint _length;
+    const string ERROR_UNTERMINATED_BLOCK_COMMENT = "Unterminated block comment";
+
+    private string _source;
+    private int _sourceLength;
+    private int _line;
+    private int _col;
+    private int _index;
+    private int _startPos;
+    private int _startLine;
+    private int _startCol;
+    private int _length;
+    private bool _fin;
     private string _string;
     private char _char;
-    private bool _fin;
     private Token _token;
     private TokenKind _kind;
-    private readonly StreamReader _reader;
     private readonly StringBuilder _sb;
-
-    private Lexer(StreamReader reader)
+    
+    private Lexer(string source)
     {
         _sb = new StringBuilder();
         _string = string.Empty;
         _line = 1;
-        _reader = reader;
+        _source = source;
+        _sourceLength = source.Length;
         Step();
     }
     
@@ -80,7 +83,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         next:
         if (_fin)
             return false;
-        _startPos = _pos;
+        
+        _startPos = _index;
         _startLine = _line;
         _startCol = _col;
         _length = 1;
@@ -154,13 +158,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                         Step();
                     } while (IsDigit(_char));
                     ReadString();
-                    ReturnInt( int.Parse(_string),TokenKind.TUPLE_ACCESS);
+                    Return(TokenKind.TUPLE_ACCESS, int.Parse(_string));
                 }
                 // Record access
                 else
                 {
                     LexIdentifier();
-                    ReturnString(TokenKind.RECORD_ACCESS);
+                    Return(TokenKind.RECORD_ACCESS, _string);
                 }
                 break;
             case PLUS:
@@ -216,7 +220,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case SINGLE_QUOTE:
                 LexIdentifier();
-                ReturnString(_kind);
+                Return(_kind, _string);
                 break;
             case DOUBLE_QUOTE:
                 LexStringLiteral();
@@ -271,7 +275,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     if (Keyword.Lookup.TryGetValue(_string, out _kind))
                         Return(_kind);
                     else
-                        ReturnString(TokenKind.IDENTIFIER);
+                        Return(TokenKind.IDENTIFIER, _string);
                 }
                 break;
         }
@@ -298,7 +302,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
         }
         ReadString();
-        ReturnString(seq ? TokenKind.GENERIC_SEQUENCE : TokenKind.GENERIC);
+        Return(seq ? TokenKind.GENERIC_SEQUENCE : TokenKind.GENERIC, _string);
     }
     
     /// <summary>
@@ -322,27 +326,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         else if (!IsLetter(_string[0]))
             Error(ERROR_BACKTICK_IDENTIFIER);
         else
-            ReturnString(TokenKind.INFIX_IDENTIFIER);
+            Return(TokenKind.INFIX_IDENTIFIER, _string);
     }
     
-    private void ReturnString(in TokenKind kind)
-    {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, _string);
-    }
-    
-    private void ReturnInt(in int i, TokenKind kind = TokenKind.INT_LITERAL)
-    {
-        _token = new Token(
-            _kind = kind,
-            _startLine,
-            _startCol,
-            _startPos,
-            _length - 1,
-            i
-        );
-    }
-
-    private void ReturnFloat(double f)
+    private void FloatReturn(in double f)
     {
         _token = new Token(
             _kind = TokenKind.FLOAT_LITERAL,
@@ -354,11 +341,11 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         );
     }
     
-    private void Return(in TokenKind kind)
+    private void Return(in TokenKind kind, object? data = null)
     {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1);
+        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, data);
     }
-
+    
     private bool SkipReturn(in char c, in TokenKind kind)
     {
         if (_char != c)
@@ -375,7 +362,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         Step();
     }
 
-    private bool LexBlockComment()
+    private void LexBlockComment()
     {
         while (true)
         {
@@ -386,21 +373,20 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             }
             else if (_char is EOF)
             {
-                return Error(ERROR_UNTERMINATED_BLOCK_COMMENT);
+                Error(ERROR_UNTERMINATED_BLOCK_COMMENT);
+                return;
             }
 
             Store();
             Step();
         }
-
+        
         ReadString();
-        ReturnString(TokenKind.BLOCK_COMMENT);
-        return true;
+        Return(TokenKind.BLOCK_COMMENT,_string);
     }
 
-    private const string ERROR_UNTERMINATED_BLOCK_COMMENT = "Unterminated block comment";
 
-    private bool Error(string msg)
+    private void Error(string msg)
     {
         _token = new Token(
             _kind = TokenKind.ERROR,
@@ -410,9 +396,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _length - 1,
             msg
         );
-        return false;
     }
-
+    
     private void LexLineComment()
     {
         Step();
@@ -431,7 +416,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 goto line_comment;
         }
         ReadString();
-        ReturnString(TokenKind.LINE_COMMENT);
+        Return(TokenKind.LINE_COMMENT,_string);
     }
     
     /// <summary>
@@ -505,7 +490,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case DOUBLE_QUOTE:
                 Step();
                 ReadString();
-                ReturnString(TokenKind.STRING_LITERAL);
+                Return(TokenKind.STRING_LITERAL, _string);
                 return;
             case CLOSE_PAREN when inExpr:
                 inExpr = false;
@@ -551,7 +536,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         } while (IsAsciiLetterOrDigit(_char));
         ReadString();
         if (int.TryParse(_string, NumberStyles.AllowHexSpecifier, null, out var i))
-            ReturnInt(i);
+            Return(TokenKind.INT_LITERAL, i);
         else
             Error($"Could not parse \"{_string}\" as an integer");
     }
@@ -567,7 +552,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         try
         {
             int i = Convert.ToInt32(_string, 8);
-            ReturnInt(i);
+            Return(TokenKind.INT_LITERAL, i);
         }
         catch (Exception)
         {
@@ -606,10 +591,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
             goto lex_float;
         }
-
+        
         ReadString();
         if (int.TryParse(_string, NumberStyles.None, null, out var i))
-            ReturnInt(i);
+            Return(TokenKind.INT_LITERAL, i);
         else
             Error($"Could not parse \"{_string}\" as an integer");
         return;
@@ -623,34 +608,35 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         ReadString();
 
         if (double.TryParse(_string, null, out var d))
-            ReturnFloat(d);
+            FloatReturn(d);
         else
             Error($"Could not parse \"{_string}\" as a float");
     }
 
     void Step()
     {
-        if (_fin)
-            return;
-
-        _char = (char)_reader.Read();
-        if (_char is EOF)
+        if (_index < _sourceLength)
         {
-            _fin = true;
-            return;
+            _char = _source[_index++];
+            _length++;
+            if (_char is NEWLINE)
+            {
+                _line++;
+                _col = 0;
+            }
+            else
+            {
+                _col++;
+            }
         }
-
-        _pos++;
-        _length++;
-        _col++;
-        if (_char is NEWLINE)
+        else
         {
-            _line++;
-            _col = 0;
+            _char = EOF;
+            _fin = true;
         }
     }
-
-    char Peek => (char)_reader.Peek();
+    
+    private char Peek => _index == _sourceLength ? EOF : _source[_index];
 
     /// <summary>
     /// Store the current character in the string builder
@@ -659,7 +645,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         _sb.Append(_char);
     }
-
+    
     bool Skip(char c)
     {
         if (_char == c)
@@ -677,24 +663,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _string = _sb.ToString();
         _sb.Clear();
     }
-
-    public void Dispose()
-    {
-        _reader.Dispose();
-    }
-
+    
     /// <summary>
     /// Lex the given string
     /// </summary>
     public static Lexer Lex(string s)
     {
-        var stream = new MemoryStream();
-        var writer = new StreamWriter(stream, Encoding.UTF8);
-        writer.Write(s);
-        writer.Flush();
-        stream.Position = 0;
-        var reader = new StreamReader(stream);
-        var lexer = new Lexer(reader);
+        var lexer = new Lexer(s);
         return lexer;
     }
 
@@ -710,4 +685,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     public IEnumerator<Token> GetEnumerator() => this;
 
     IEnumerator IEnumerable.GetEnumerator() => this;
+
+    public void Dispose()
+    {
+    }
 }

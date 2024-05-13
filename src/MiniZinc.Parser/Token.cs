@@ -1,25 +1,26 @@
 ﻿namespace MiniZinc.Parser;
 
-public readonly struct Token(
-    TokenKind kind,
-    uint line,
-    uint col,
-    uint start,
-    uint length,
-    object? o = null
-)
-{
-    public readonly TokenKind Kind = kind;
-    public readonly uint Line = line;
-    public readonly uint Col = col;
-    public readonly uint Position = start;
-    public readonly uint Length = length;
-    public object? Data => o;
-
-    public int IntValue => (int)o!;
-    public string StringValue => (string)o!;
-    public double DoubleValue => (double)o!;
-
+public readonly struct Token {
+    
+    public readonly TokenKind Kind;
+    public readonly int Line;
+    public readonly int Col;
+    public readonly int Start;
+    public readonly int Length;
+    public readonly object? Data;
+    public int IntValue => (int)Data!;
+    public string StringValue => (string)Data!;
+    public double DoubleValue => (double)Data!;
+    public int End => Start + Length;
+    public Token(TokenKind kind, int line, int col, int start, int length, object? data = null)
+    {
+        Kind = kind;
+        Line = line;
+        Col = col;
+        Start = start;
+        Length = length;
+        Data = data;
+    }
     public override string ToString() =>
         Kind switch
         {
@@ -120,6 +121,7 @@ public readonly struct Token(
             TokenKind.COMMA => ",",
             TokenKind.GENERIC_SEQUENCE => $"$${StringValue}",
             TokenKind.GENERIC => $"${StringValue}",
-            _ => o?.ToString() ?? string.Empty
+            TokenKind.INFIX_IDENTIFIER => $"`{StringValue}`",
+            _ => Data?.ToString() ?? string.Empty
         };
 }

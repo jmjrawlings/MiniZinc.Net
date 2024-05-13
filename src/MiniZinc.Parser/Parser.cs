@@ -2263,9 +2263,9 @@ public sealed class Parser
     {
         if (ErrorString is not null)
             return false;
-
+        
         _watch.Stop();
-        var trace = _text[..(int)_token.Position];
+        var trace = _text[..(_token.End)];
         var message = $"""
 
             ---------------------------------------------
@@ -2274,7 +2274,7 @@ public sealed class Parser
             Token {_kind}
             Line {_token.Line}
             Col {_token.Col}
-            Pos {_token.Position}
+            Pos {_token.Start}
             ---------------------------------------------
             {trace}
             """;
