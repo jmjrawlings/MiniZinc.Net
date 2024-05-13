@@ -43,6 +43,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const char SPACE = ' ';
     const char EOF = '\uffff';
 
+    const string ERROR_QUOTED_IDENTIFIER = "Error quoted identifier";
+    const string ERROR_UNEXPECTED_CHAR = "Error unexpected char";
+    const string ERROR_BACKTICK_IDENTIFIER = "Error backtick identifier";
+    const string ERROR_POLYMORPHIC_IDENTIFIER = "Error polymorphic identifier";
+    const string ERROR_UNTERMINATED_STRING_LITERAL = "Error unterminated string literal";
+    const string ERROR_ESCAPED_STRING = "Error escaped string";
+    const string ERROR_INT_LITERAL = "Error int literal";
+    
     private uint _line;
     private uint _col;
     private uint _pos;
@@ -58,14 +66,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private readonly StreamReader _reader;
     private readonly StringBuilder _sb;
 
-    const string ERROR_QUOTED_IDENTIFIER = "Error quoted identifier";
-    const string ERROR_UNEXPECTED_CHAR = "Error unexpected char";
-    const string ERROR_BACKTICK_IDENTIFIER = "Error backtick identifier";
-    const string ERROR_POLYMORPHIC_IDENTIFIER = "Error polymorphic identifier";
-    const string ERROR_UNTERMINATED_STRING_LITERAL = "Error unterminated string literal";
-    const string ERROR_ESCAPED_STRING = "Error escaped string";
-    const string ERROR_INT_LITERAL = "Error int literal";
-
     private Lexer(StreamReader reader)
     {
         _sb = new StringBuilder();
@@ -80,7 +80,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         next:
         if (_fin)
             return false;
-
         _startPos = _pos;
         _startLine = _line;
         _startCol = _col;
@@ -88,16 +87,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         switch (_char)
         {
             case PERCENT:
-                Step();
-                if (!LexLineComment())
-                    goto next;
+                LexLineComment();
                 break;
             case FWD_SLASH:
                 Step();
                 if (Skip(STAR))
-                    if (!LexBlockComment())
-                        goto next;
-                if (!SkipReturn(BACK_SLASH, TokenKind.UP_WEDGE))
+                    LexBlockComment();
+                else if (!SkipReturn(BACK_SLASH, TokenKind.UP_WEDGE))
                     Return(TokenKind.FWDSLASH);
                 break;
             case BACK_SLASH:
@@ -220,7 +216,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case SINGLE_QUOTE:
                 LexIdentifier();
-                Return(_kind);
+                ReturnString(_kind);
                 break;
             case DOUBLE_QUOTE:
                 LexStringLiteral();
@@ -262,7 +258,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case NEWLINE:
             case RETURN:
             case SPACE:
-                Step();
+                do { Step(); } while (_char is TAB or NEWLINE or RETURN or SPACE);
                 goto next;
             default:
                 if (IsDigit(_char))
@@ -272,9 +268,11 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 else
                 {
                     LexIdentifier();
-                    
+                    if (Keyword.Lookup.TryGetValue(_string, out _kind))
+                        Return(_kind);
+                    else
+                        ReturnString(TokenKind.IDENTIFIER);
                 }
-
                 break;
         }
         return true;
@@ -299,7 +297,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Store();
             Step();
         }
-        ReturnString(seq ? TokenKind.GENERIC_SEQ : TokenKind.GENERIC);
+        ReadString();
+        ReturnString(seq ? TokenKind.GENERIC_SEQUENCE : TokenKind.GENERIC);
     }
     
     /// <summary>
@@ -314,30 +313,24 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// </summary>
     private void LexBacktickIdentifier()
     {
-        loop:
         Step();
-        if (_char is BACKTICK && _length > 2) { }
-        else if (IsAsciiLetterOrDigit(_char))
-        {
-            Store();
-            goto loop;
-        }
-        else
-        {
+        LexIdentifier();
+        if (!Skip(BACKTICK))
             Error(ERROR_BACKTICK_IDENTIFIER);
-            return;
-        }
-        ReturnString(TokenKind.QUOTED_OP);
+        else if (_length <= 2)
+            Error(ERROR_BACKTICK_IDENTIFIER);
+        else if (!IsLetter(_string[0]))
+            Error(ERROR_BACKTICK_IDENTIFIER);
+        else
+            ReturnString(TokenKind.INFIX_IDENTIFIER);
     }
     
     private void ReturnString(in TokenKind kind)
     {
-        ReadString();
         _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, _string);
-        _length = 1;
     }
     
-    private void ReturnInt(in int i, TokenKind kind =TokenKind.INT_LIT)
+    private void ReturnInt(in int i, TokenKind kind = TokenKind.INT_LITERAL)
     {
         _token = new Token(
             _kind = kind,
@@ -347,26 +340,23 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _length - 1,
             i
         );
-        _length = 1;
     }
 
     private void ReturnFloat(double f)
     {
         _token = new Token(
-            _kind = TokenKind.FLOAT_LIT,
+            _kind = TokenKind.FLOAT_LITERAL,
             _startLine,
             _startCol,
             _startPos,
             _length - 1,
             f
         );
-        _length = 1;
     }
     
     private void Return(in TokenKind kind)
     {
         _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1);
-        _length = 1;
     }
 
     private bool SkipReturn(in char c, in TokenKind kind)
@@ -403,6 +393,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
         }
 
+        ReadString();
         ReturnString(TokenKind.BLOCK_COMMENT);
         return true;
     }
@@ -422,10 +413,11 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return false;
     }
 
-    private bool LexLineComment()
+    private void LexLineComment()
     {
+        Step();
         line_comment:
-
+        
         switch (_char)
         {
             case NEWLINE:
@@ -438,8 +430,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Store();
                 goto line_comment;
         }
+        ReadString();
         ReturnString(TokenKind.LINE_COMMENT);
-        return true;
     }
     
     /// <summary>
@@ -449,7 +441,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// - `_string` will hold variable will be filled
     /// - `_kind` will be one of (IDENT / ERROR / KEYWORD)
     /// </summary>
-    void LexIdentifier()
+    private void LexIdentifier()
     {   
         if (_char is SINGLE_QUOTE)
         {
@@ -471,12 +463,12 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     Store();
                     goto quoted;
             }
+            Step();
             ReadString();
-            _kind = TokenKind.IDENT;
+            _kind = TokenKind.IDENTIFIER;
             return;
         }
-
-        bool checkKeyword = true;
+        
         while (true)
         {
             Store();
@@ -485,18 +477,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 continue;
 
             if (_char is UNDERSCORE || IsDigit(_char))
-            {
-                checkKeyword = false;
                 continue;
-            }
             
             break;
         }
         
         ReadString();
-        if (checkKeyword)
-            if (!Keyword.Lookup.TryGetValue(_string, out _kind))
-                _kind = TokenKind.IDENT;
+        _kind = TokenKind.IDENTIFIER;
     }
 
     private void LexStringLiteral()
@@ -517,7 +504,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
             case DOUBLE_QUOTE:
                 Step();
-                ReturnString(TokenKind.STRING_LIT);
+                ReadString();
+                ReturnString(TokenKind.STRING_LITERAL);
                 return;
             case CLOSE_PAREN when inExpr:
                 inExpr = false;

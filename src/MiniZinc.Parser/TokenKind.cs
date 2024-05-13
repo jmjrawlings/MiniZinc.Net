@@ -2,6 +2,8 @@
 
 public enum TokenKind : sbyte
 {
+    ERROR,
+
     // Keywords
     ANNOTATION,
     ANN,
@@ -57,15 +59,15 @@ public enum TokenKind : sbyte
     XOR,
     
     // Nodes
-    IDENT,
+    IDENTIFIER,
     GENERIC,
-    GENERIC_SEQ,
-    INT_LIT,
-    FLOAT_LIT,
-    STRING_LIT,
+    GENERIC_SEQUENCE,
+    INT_LITERAL,
+    FLOAT_LITERAL,
+    STRING_LITERAL,
     LINE_COMMENT,
     BLOCK_COMMENT,
-    QUOTED_OP,
+    INFIX_IDENTIFIER,
     
     // Binary Ops
     DOUBLE_ARROW,
@@ -110,5 +112,4 @@ public enum TokenKind : sbyte
     EMPTY,
     EOL,
     EOF,
-    ERROR
 }

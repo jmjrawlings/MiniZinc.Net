@@ -325,16 +325,7 @@ public sealed class Writer
                 break;
             case BinaryOperatorSyntax e:
                 WriteExpr(e.Left);
-                if (e.Name is { } name)
-                {
-                    Write(BACKTICK);
-                    Write(BACKTICK);
-                }
-                else
-                {
-                    WriteOp(e.Op!);
-                }
-
+                Write(e.Infix);
                 WriteExpr(e.Right);
                 break;
             case BoolSyntax boolLit:

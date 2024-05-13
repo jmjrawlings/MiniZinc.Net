@@ -40,25 +40,26 @@ public sealed class Parser
         _i = 0;
         Step();
     }
-
+    
     /// Progress the parser
-    private bool Step()
+    private void Step()
     {
+        next:
         if (_i >= _tokens.Length)
         {
             _kind = TokenKind.EOF;
-            return false;
+            return;
         }
-
         _token = _tokens[_i++];
         _kind = _token.Kind;
-        return true;
+        if (_kind is TokenKind.LINE_COMMENT or TokenKind.BLOCK_COMMENT)
+            goto next;
     }
-
+    
     /// Progress the parser if the current token is of the given kind
     private bool Skip(TokenKind kind)
     {
-        if (_token.Kind != kind)
+        if (_kind != kind)
             return false;
         Step();
         return true;
@@ -90,7 +91,7 @@ public sealed class Parser
 
     private bool ParseInt(out Token token)
     {
-        if (_kind is TokenKind.INT_LIT)
+        if (_kind is TokenKind.INT_LITERAL)
         {
             token = _token;
             Step();
@@ -104,7 +105,7 @@ public sealed class Parser
     /// <summary>
     /// Read the current tokens string into the given variable
     /// </summary>
-    private bool ParseString(out Token result, TokenKind kind = TokenKind.STRING_LIT)
+    private bool ParseString(out Token result, TokenKind kind = TokenKind.STRING_LITERAL)
     {
         if (_kind == kind)
         {
@@ -119,7 +120,7 @@ public sealed class Parser
 
     private bool ParseFloat(out double f)
     {
-        if (_kind is TokenKind.FLOAT_LIT)
+        if (_kind is TokenKind.FLOAT_LITERAL)
         {
             f = _token.DoubleValue;
             Step();
@@ -132,7 +133,7 @@ public sealed class Parser
 
     private bool ParseIdent(out Token token)
     {
-        if (_kind is TokenKind.IDENT)
+        if (_kind is TokenKind.IDENTIFIER)
         {
             token = _token;
             Step();
@@ -147,7 +148,7 @@ public sealed class Parser
     
     private bool ParseGeneric(out Token token)
     {
-        if (_kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQ)
+        if (_kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQUENCE)
         {
             token = _token;
             Step();
@@ -231,7 +232,7 @@ public sealed class Parser
                         return false;
                     tree.Nodes.Add(node);
                     break;
-
+                
                 case TokenKind.BLOCK_COMMENT:
                 case TokenKind.LINE_COMMENT:
                     Step();
@@ -240,7 +241,7 @@ public sealed class Parser
                 case TokenKind.EOF:
                     return true;
 
-                default:
+                default: 
                     if (!ParseDeclareOrAssign(out var declare, out var assign))
                         return false;
 
@@ -251,16 +252,20 @@ public sealed class Parser
 
                     break;
             }
-
+            
             if (Skip(TokenKind.EOL))
                 continue;
-
-            if (_kind is not TokenKind.EOF)
-                return Expected("; or end of file");
+            
+            if (!Skip(TokenKind.EOF))
+                Error("Expected ; or end of file");
+            
+            break;
         }
         
+        _watch.Stop();
+        return ErrorString is null;
     }
-
+    
     
     /// <summary>
     /// Parse a predicate declaration
@@ -647,7 +652,7 @@ public sealed class Parser
         List<ParameterSyntax>? pars = null;
         List<SyntaxNode>? anns = null;
         
-        if (Skip(TokenKind.IDENT))
+        if (Skip(TokenKind.IDENTIFIER))
         {
             if (Skip(TokenKind.EQUAL))
             {
@@ -727,12 +732,12 @@ public sealed class Parser
 
         switch (_kind)
         {
-            case TokenKind.INT_LIT:
+            case TokenKind.INT_LITERAL:
                 Step();
                 expr = new IntLiteralSyntax(token);
                 break;
 
-            case TokenKind.FLOAT_LIT:
+            case TokenKind.FLOAT_LITERAL:
                 Step();
                 expr = new FloatLiteralSyntax(_token);
                 break;
@@ -747,7 +752,7 @@ public sealed class Parser
                 expr = new BoolSyntax(token);
                 break;
 
-            case TokenKind.STRING_LIT:
+            case TokenKind.STRING_LITERAL:
                 Step();
                 expr = new StringLiteralSyntax(token);
                 break;
@@ -815,7 +820,7 @@ public sealed class Parser
                 expr = let;
                 break;
 
-            case TokenKind.IDENT:
+            case TokenKind.IDENTIFIER:
                 if (!ParseIdentExpr(out expr))
                     return false;
                 break;
@@ -912,63 +917,84 @@ public sealed class Parser
         return true;
     }
 
-    private bool ParseBinopExpr(ref SyntaxNode left, Operator op)
+    internal bool ParseInfixExpr(ref SyntaxNode left)
     {
+        switch (_kind)
+        {
+            case TokenKind.DOT_DOT:
+                return ParseRangeInfixExpr(ref left);
+            case TokenKind.INFIX_IDENTIFIER:
+                return ParseNamedInfixExpr(ref left);
+            default:
+                return ParseBuiltinBinopExpr(ref left);
+        };
+    }
+    
+    internal bool ParseBuiltinBinopExpr(ref SyntaxNode left)
+    {
+        Operator? op = _kind switch
+        {
+            TokenKind.DOUBLE_ARROW => Operator.Equivalent,
+            TokenKind.RIGHT_ARROW => Operator.Implies,
+            TokenKind.LEFT_ARROW => Operator.ImpliedBy,
+            TokenKind.DOWN_WEDGE => Operator.Or,
+            TokenKind.XOR => Operator.Xor,
+            TokenKind.UP_WEDGE => Operator.And,
+            TokenKind.LESS_THAN => Operator.LessThan,
+            TokenKind.GREATER_THAN => Operator.GreaterThan,
+            TokenKind.LESS_THAN_EQUAL => Operator.LessThan,
+            TokenKind.GREATER_THAN_EQUAL => Operator.GreaterThanEqual,
+            TokenKind.EQUAL => Operator.Equal,
+            TokenKind.NOT_EQUAL => Operator.NotEqual,
+            TokenKind.IN => Operator.In,
+            TokenKind.SUBSET => Operator.Subset,
+            TokenKind.SUPERSET => Operator.Superset,
+            TokenKind.UNION => Operator.Union,
+            TokenKind.DIFF => Operator.Diff,
+            TokenKind.SYMDIFF => Operator.SymDiff,
+            TokenKind.PLUS => Operator.Add,
+            TokenKind.MINUS => Operator.Subtract,
+            TokenKind.STAR => Operator.Multiply,
+            TokenKind.DIV => Operator.Div,
+            TokenKind.MOD => Operator.Mod,
+            TokenKind.FWDSLASH => Operator.Divide,
+            TokenKind.INTERSECT => Operator.Intersect,
+            TokenKind.EXP => Operator.Exponent,
+            TokenKind.PLUS_PLUS => Operator.Concat,
+            TokenKind.DEFAULT => Operator.Default,
+            TokenKind.TILDE_PLUS => Operator.TildeAdd,
+            TokenKind.TILDE_MINUS => Operator.TildeSubtract,
+            TokenKind.TILDE_STAR => Operator.TildeMultiply,
+            TokenKind.TILDE_EQUALS => Operator.TildeEqual,
+            _ => null
+        };
+        if (op is null)
+            return Expected("builtin binary operator");
+
+        var infix = _token;
         Step();
         if (!ParseExpr(out var right, _precedence))
             return false;
-        left = new BinaryOperatorSyntax(left, op, right);
+        
+        left = new BinaryOperatorSyntax(left, infix, op, right);
+        return true;
+    }
+    
+    private bool ParseNamedInfixExpr(ref SyntaxNode left)
+    {
+        var infix = _token;
+        Step();
+        
+        if (!ParseExpr(out var right, _precedence))
+            return false;
+        
+        left = new BinaryOperatorSyntax(left, infix, null, right);
         return true;
     }
 
-    internal bool ParseInfixExpr(ref SyntaxNode left) =>
-        _kind switch
-        {
-            TokenKind.DOUBLE_ARROW => ParseBinopExpr(ref left, Operator.Equivalent),
-            TokenKind.RIGHT_ARROW => ParseBinopExpr(ref left, Operator.Implies),
-            TokenKind.LEFT_ARROW => ParseBinopExpr(ref left, Operator.ImpliedBy),
-            TokenKind.DOWN_WEDGE => ParseBinopExpr(ref left, Operator.Or),
-            TokenKind.XOR => ParseBinopExpr(ref left, Operator.Xor),
-            TokenKind.UP_WEDGE => ParseBinopExpr(ref left, Operator.And),
-            TokenKind.LESS_THAN => ParseBinopExpr(ref left, Operator.LessThan),
-            TokenKind.GREATER_THAN => ParseBinopExpr(ref left, Operator.GreaterThan),
-            TokenKind.LESS_THAN_EQUAL => ParseBinopExpr(ref left, Operator.LessThan),
-            TokenKind.GREATER_THAN_EQUAL => ParseBinopExpr(ref left, Operator.GreaterThanEqual),
-            TokenKind.EQUAL => ParseBinopExpr(ref left, Operator.Equal),
-            TokenKind.NOT_EQUAL => ParseBinopExpr(ref left, Operator.NotEqual),
-            TokenKind.IN => ParseBinopExpr(ref left, Operator.In),
-            TokenKind.SUBSET => ParseBinopExpr(ref left, Operator.Subset),
-            TokenKind.SUPERSET => ParseBinopExpr(ref left, Operator.Superset),
-            TokenKind.UNION => ParseBinopExpr(ref left, Operator.Union),
-            TokenKind.DIFF => ParseBinopExpr(ref left, Operator.Diff),
-            TokenKind.SYMDIFF => ParseBinopExpr(ref left, Operator.SymDiff),
-            TokenKind.DOT_DOT => ParseDotDotExpr(ref left),
-            TokenKind.PLUS => ParseBinopExpr(ref left, Operator.Add),
-            TokenKind.MINUS => ParseBinopExpr(ref left, Operator.Subtract),
-            TokenKind.STAR => ParseBinopExpr(ref left, Operator.Multiply),
-            TokenKind.DIV => ParseBinopExpr(ref left, Operator.Div),
-            TokenKind.MOD => ParseBinopExpr(ref left, Operator.Mod),
-            TokenKind.FWDSLASH => ParseBinopExpr(ref left, Operator.Divide),
-            TokenKind.INTERSECT => ParseBinopExpr(ref left, Operator.Intersect),
-            TokenKind.EXP => ParseBinopExpr(ref left, Operator.Exponent),
-            TokenKind.PLUS_PLUS => ParseBinopExpr(ref left, Operator.Concat),
-            TokenKind.DEFAULT => ParseBinopExpr(ref left, Operator.Default),
-            TokenKind.QUOTED_OP => ParseQuotedBinopExpr(ref left),
-            TokenKind.TILDE_PLUS => ParseBinopExpr(ref left, Operator.TildeAdd),
-            TokenKind.TILDE_MINUS => ParseBinopExpr(ref left, Operator.TildeSubtract),
-            TokenKind.TILDE_STAR => ParseBinopExpr(ref left, Operator.TildeMultiply),
-            TokenKind.TILDE_EQUALS => ParseBinopExpr(ref left, Operator.TildeEqual),
-            _ => Error("Expected binary operator")
-        };
-
-    private bool ParseQuotedBinopExpr(ref SyntaxNode left)
+    private bool ParseRangeInfixExpr(ref SyntaxNode left)
     {
-        return Error("xd");
-    }
-
-    private bool ParseDotDotExpr(ref SyntaxNode left)
-    {
-        Expect(TokenKind.DOT_DOT);
+        Step();
         if (ParseExpr(out var right, _precedence))
             left = new RangeLiteralSyntax(left.Start, left, right);
         else if (ErrorString is not null)
@@ -1010,7 +1036,7 @@ public sealed class Parser
             TokenKind.EXP => 200,
             TokenKind.PLUS_PLUS => 100,
             TokenKind.DEFAULT => 70,
-            TokenKind.QUOTED_OP => 50,
+            TokenKind.INFIX_IDENTIFIER => 50,
             TokenKind.TILDE_PLUS => 10,
             TokenKind.TILDE_MINUS => 10,
             TokenKind.TILDE_STAR => 10,
@@ -1035,7 +1061,7 @@ public sealed class Parser
     {
         result = null!;
         var name = _token;
-        if (_kind is not TokenKind.IDENT)
+        if (_kind is not TokenKind.IDENTIFIER)
             return Expected("Identifier");
         
         Step();
@@ -1086,7 +1112,7 @@ public sealed class Parser
             // `in` expressions involving identifiers could mean a gencall
             case BinaryOperatorSyntax
             {
-                Op: Operator.In,
+                Operator: Operator.In,
                 Left: IdentifierSyntax id,
                 Right: { } from
             } when maybeGen:
@@ -1883,7 +1909,7 @@ public sealed class Parser
             type = new NameTypeSyntax(start, ident)
             {
                 Kind =
-                    ident.Kind is TokenKind.GENERIC_SEQ ? TypeKind.GenericSeq : TypeKind.Generic
+                    ident.Kind is TokenKind.GENERIC_SEQUENCE ? TypeKind.GenericSeq : TypeKind.Generic
             };
             return true;
         }
@@ -2012,7 +2038,7 @@ public sealed class Parser
                 type = new NameTypeSyntax(start, _token) { Kind = TypeKind.Generic };
                 break;
 
-            case TokenKind.GENERIC_SEQ:
+            case TokenKind.GENERIC_SEQUENCE:
                 Step();
                 type = new NameTypeSyntax(start, _token) { Kind = TypeKind.GenericSeq };
                 break;

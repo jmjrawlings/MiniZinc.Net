@@ -257,7 +257,7 @@ public class ParserUnitTests
 
             var left = eval(binop.Left);
             var right = eval(binop.Right);
-            switch (binop.Op)
+            switch (binop.Operator)
             {
                 case Operator.Add:
                     return left + right;

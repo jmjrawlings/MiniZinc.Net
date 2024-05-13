@@ -108,9 +108,9 @@ public readonly struct Token(
             TokenKind.EOL => ";",
             TokenKind.PIPE => "|",
             TokenKind.EMPTY => "<>",
-            TokenKind.INT_LIT => IntValue.ToString(),
-            TokenKind.FLOAT_LIT => DoubleValue.ToString("F2"),
-            TokenKind.STRING_LIT => $"\"{StringValue}\"",
+            TokenKind.INT_LITERAL => IntValue.ToString(),
+            TokenKind.FLOAT_LITERAL => DoubleValue.ToString("F2"),
+            TokenKind.STRING_LITERAL => $"\"{StringValue}\"",
             TokenKind.ANONENUM => "anon_enum",
             TokenKind.DOUBLE_ARROW => "<->",
             TokenKind.LEFT_ARROW => "<-",
@@ -118,7 +118,7 @@ public readonly struct Token(
             TokenKind.NOT_EQUAL => "!=",
             TokenKind.EXP => "^",
             TokenKind.COMMA => ",",
-            TokenKind.GENERIC_SEQ => $"$${StringValue}",
+            TokenKind.GENERIC_SEQUENCE => $"$${StringValue}",
             TokenKind.GENERIC => $"${StringValue}",
             _ => o?.ToString() ?? string.Empty
         };

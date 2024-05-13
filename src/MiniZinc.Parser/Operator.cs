@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Parser.Ast;
 
 /// <summary>
-/// Binary and unary operators
+/// Built in binary and unary operators
 /// </summary>
 public enum Operator
 {
