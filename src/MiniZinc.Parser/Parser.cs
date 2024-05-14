@@ -165,7 +165,7 @@ public sealed class Parser
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    internal bool Parse(out SyntaxTree tree)
+    public bool Parse(out SyntaxTree tree)
     {
         tree = new SyntaxTree(_token);
         while (true)
