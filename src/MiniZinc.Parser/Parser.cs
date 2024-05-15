@@ -248,7 +248,7 @@ public sealed class Parser
                     if (assign is not null)
                         tree.Nodes.Add(assign);
                     else
-                        tree.Nodes.Add(declare);
+                        tree.Nodes.Add(declare!);
 
                     break;
             }
@@ -895,7 +895,6 @@ public sealed class Parser
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
-    /// TODO - Operator precedence parsing
     internal bool ParseExpr(out SyntaxNode expr, ushort minPrecedence = ushort.MaxValue)
     {
         if (!ParseExprAtom(out expr))
@@ -927,7 +926,7 @@ public sealed class Parser
                 return ParseNamedInfixExpr(ref left);
             default:
                 return ParseBuiltinBinopExpr(ref left);
-        };
+        }
     }
     
     internal bool ParseBuiltinBinopExpr(ref SyntaxNode left)

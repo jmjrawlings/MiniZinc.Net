@@ -1,7 +1,6 @@
 ﻿namespace LibMiniZinc.Tests;
 
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 public sealed record TestSpec
