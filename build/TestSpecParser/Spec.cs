@@ -53,12 +53,6 @@ public static class Spec
             foreach (var yaml in ParseTestCaseYaml(model))
             {
                 var node = Yaml.ParseString<JsonObject>(yaml);
-                if (node is null)
-                {
-                    Console.WriteLine($"Could not parse test case for {modelPath}");
-                    continue;
-                }
-
                 var testCase = ParseTestCase(modelPath, node);
                 spec.TestCases.Add(testCase);
             }
@@ -206,7 +200,6 @@ public static class Spec
 
         // const char EOF = '\uffff';
         char c;
-        int i = -1;
 
         if (!Skip('/'))
             yield break;
@@ -255,7 +248,6 @@ public static class Spec
 
         void Read()
         {
-            i++;
             c = (char)reader.Read();
         }
     }

@@ -6,7 +6,7 @@ using static Console;
 
 public static class ParseLibMiniZincTests
 {
-    public static async Task Run()
+    public static Task Run()
     {
         WriteLine("Parsing libminiznc test suite");
         FileInfo input = Repo.TestSpecYaml;
@@ -17,5 +17,6 @@ public static class ParseLibMiniZincTests
 
         WriteLine($"Writing to {output.FullName}");
         TestSpec.ToJsonFile(spec, output);
+        return Task.CompletedTask;
     }
 }
