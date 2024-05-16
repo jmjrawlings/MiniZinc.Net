@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser.Ast;
+﻿namespace MiniZinc.Parser.Syntax;
 
 public sealed record GeneratorSyntax(Token Start) : SyntaxNode(Start)
 {

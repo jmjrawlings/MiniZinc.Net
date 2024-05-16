@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-using Ast;
+using Syntax;
 
 public interface IBinding<out T>
 {

@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser.Ast;
+﻿namespace MiniZinc.Parser.Syntax;
 
 public record ArraySyntax(Token Start) : SyntaxNode(Start)
 {

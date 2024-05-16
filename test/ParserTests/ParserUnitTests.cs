@@ -1,4 +1,4 @@
-﻿using MiniZinc.Parser.Ast;
+﻿using MiniZinc.Parser.Syntax;
 
 public class ParserUnitTests
 {

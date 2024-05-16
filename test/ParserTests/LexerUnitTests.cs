@@ -51,18 +51,18 @@
     void test_int(string mzn, int i)
     {
         var token = Lexer.Lex(mzn).First();
-        token.IntValue.Should().Be(i);
         token.Kind.Should().Be(TokenKind.INT_LITERAL);
+        token.IntValue.Should().Be(i);
     }
-
+    
     [Theory]
-    [InlineData("1.123.", 1.123)]
+    [InlineData("1.123.1", 1.123)]
     [InlineData("100.0043", 100.0043)]
     void test_float(string mzn, double d)
     {
         var token = Lexer.Lex(mzn).First();
-        token.DoubleValue.Should().Be(d);
         token.Kind.Should().Be(TokenKind.FLOAT_LITERAL);
+        token.DoubleValue.Should().Be(d);
     }
     
     [Theory]

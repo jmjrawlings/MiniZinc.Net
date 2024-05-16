@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Parser;
 
 using System.Diagnostics;
-using Ast;
+using Syntax;
 
 /// <summary>
 /// Parses a MiniZinc AST from the given stream of tokens
