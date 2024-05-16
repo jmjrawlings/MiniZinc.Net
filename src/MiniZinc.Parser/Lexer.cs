@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Text;
 using static Char;
 
-internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
+sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 {
     const char FWD_SLASH = '/';
     const char BACK_SLASH = '\\';
@@ -53,14 +53,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const string ERROR_UNTERMINATED_BLOCK_COMMENT = "Unterminated block comment";
 
     private string _source;
-    private int _sourceLength;
-    private int _line;
-    private int _col;
-    private int _index;
-    private int _startPos;
-    private int _startLine;
-    private int _startCol;
-    private int _length;
+    private uint _sourceLength;
+    private uint _line;
+    private uint _col;
+    private uint _index;
+    private uint _startPos;
+    private uint _startLine;
+    private uint _startCol;
+    private uint _length;
     private bool _fin;
     private string _string;
     private char _char;
@@ -74,7 +74,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _string = string.Empty;
         _line = 1;
         _source = source;
-        _sourceLength = source.Length;
+        _sourceLength = (uint)source.Length;
         Step();
     }
     
@@ -605,7 +605,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         if (_index < _sourceLength)
         {
-            _char = _source[_index++];
+            _char = _source[(int)_index++];
             _length++;
             if (_char is NEWLINE)
             {
@@ -623,9 +623,9 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _fin = true;
         }
     }
-    
-    private char Peek => _index == _sourceLength ? EOF : _source[_index];
 
+    private char Peek => _index < _sourceLength ? _source[(int)_index] : EOF;
+    
     /// <summary>
     /// Store the current character in the string builder
     /// </summary>
@@ -655,12 +655,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// <summary>
     /// Lex the given string
     /// </summary>
-    public static Lexer Lex(string s)
+    public static Token[] Lex(string s)
     {
         var lexer = new Lexer(s);
-        return lexer;
+        var tokens = lexer.ToArray();
+        return tokens;
     }
-
+    
     public void Reset()
     {
         throw new NotImplementedException();
