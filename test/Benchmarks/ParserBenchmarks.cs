@@ -31,7 +31,6 @@ public class ParserBenchmarks
     [Benchmark]
     public void Benchmark()
     {
-        var parser = Parser.ParseText(Mzn);
-        parser.Parse(out var tree);
+        var result = Parser.ParseText(Mzn, out var tree);
     }
 }

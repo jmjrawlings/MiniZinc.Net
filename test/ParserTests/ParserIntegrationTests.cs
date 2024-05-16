@@ -2,12 +2,8 @@ public sealed class ParserIntegrationTests
 {
     private void Test(string path)
     {
-        var parser = Parser.ParseFile(path);
-        parser.Parse(out var model);
-        if (parser.ErrorString is { } err)
-        {
-            Assert.Fail(err);
-        }
+        var results = Parser.ParseFile(path, out var tree);
+        results.ErrorTrace.Should().BeNull();
     }
 
     [Fact(DisplayName = "unit/test-globals-float.mzn")]

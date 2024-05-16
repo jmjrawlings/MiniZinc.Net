@@ -9,34 +9,18 @@ using Ast;
 public sealed class Parser
 {
     private readonly Token[] _tokens;
-    private readonly Stopwatch _watch;
-    private string _text;
+    private string _sourceText;
     private Token _token;
     private TokenKind _kind;
     private ushort _precedence;
     private int _i;
-    internal string? ErrorString { get; private set; }
-    internal TimeSpan Elapsed => _watch.Elapsed;
-
-    public static Parser ParseFile(string path)
+    private string? _errorMessage;
+    private string? _errorTrace;
+    
+    internal Parser(string sourceText)
     {
-        var mzn = File.ReadAllText(path);
-        var parser = new Parser(mzn);
-        return parser;
-    }
-
-    public static Parser ParseText(string text)
-    {
-        var parser = new Parser(text);
-        return parser;
-    }
-
-    internal Parser(string text)
-    {
-        _watch = Stopwatch.StartNew();
-        using var lexer = Lexer.Lex(text);
-        _tokens = lexer.ToArray();
-        _text = text;
+        _tokens = Lexer.Lex(sourceText);
+        _sourceText = sourceText;
         _i = 0;
         Step();
     }
@@ -88,7 +72,7 @@ public sealed class Parser
         Step();
         return true;
     }
-
+    
     private bool ParseInt(out Token token)
     {
         if (_kind is TokenKind.INT_LITERAL)
@@ -160,14 +144,15 @@ public sealed class Parser
             return Expected("Identifier");
         }
     }
-
+    
     /// <summary>
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    public bool Parse(out SyntaxTree tree)
+    internal bool ParseTree(out SyntaxTree tree)
     {
         tree = new SyntaxTree(_token);
+        
         while (true)
         {
             SyntaxNode? node = null;
@@ -233,15 +218,10 @@ public sealed class Parser
                     tree.Nodes.Add(node);
                     break;
                 
-                case TokenKind.BLOCK_COMMENT:
-                case TokenKind.LINE_COMMENT:
-                    Step();
-                    continue;
-
                 case TokenKind.EOF:
                     return true;
 
-                default: 
+                default:
                     if (!ParseDeclareOrAssign(out var declare, out var assign))
                         return false;
 
@@ -257,13 +237,10 @@ public sealed class Parser
                 continue;
             
             if (!Skip(TokenKind.EOF))
-                Error("Expected ; or end of file");
-            
-            break;
+                return Error("Expected ; or end of file");
+
+            return true;
         }
-        
-        _watch.Stop();
-        return ErrorString is null;
     }
     
     
@@ -630,7 +607,7 @@ public sealed class Parser
 
         constraint = new ConstraintSyntax(start, expr);
         constraint.Annotations = anns;
-        return Okay;
+        return IsOk;
     }
 
     /// <summary>
@@ -782,7 +759,7 @@ public sealed class Parser
                 Step();
                 if (ParseExpr(out var right))
                     expr = new RangeLiteralSyntax(token, Upper: expr);
-                else if (ErrorString is not null)
+                else if (_errorMessage is not null)
                     return false;
                 else
                     expr = new RangeLiteralSyntax(token);
@@ -886,9 +863,9 @@ public sealed class Parser
         }
         return true;
     }
-
-    private bool Okay => ErrorString is null;
-
+    
+    private bool IsOk => _errorMessage is null;
+    
     /// <summary>
     /// Parse an Expression
     /// </summary>
@@ -996,7 +973,7 @@ public sealed class Parser
         Step();
         if (ParseExpr(out var right, _precedence))
             left = new RangeLiteralSyntax(left.Start, left, right);
-        else if (ErrorString is not null)
+        else if (_errorMessage is not null)
             return false;
         else
             left = new RangeLiteralSyntax(left.Start, left);
@@ -1548,7 +1525,7 @@ public sealed class Parser
         {
             Expect(TokenKind.PIPE);
             Expect(TokenKind.CLOSE_BRACKET);
-            return Okay;
+            return IsOk;
         }
 
         int i = 0;
@@ -2260,25 +2237,77 @@ public sealed class Parser
     /// Record the given message as an error and return false
     private bool Error(string? msg = null)
     {
-        if (ErrorString is not null)
+        if (_errorMessage is not null)
             return false;
         
-        _watch.Stop();
-        var trace = _text[..(_token.End)];
-        var message = $"""
+        _errorTrace = _sourceText[..(int)_token.End];
+        _errorTrace = $"""
+       ---------------------------------------------
+       {msg}
+       ---------------------------------------------
+       Token {_kind}
+       Line {_token.Line}
+       Col {_token.Col}
+       Pos {_token.Start}
+       ---------------------------------------------
+       {_errorTrace}
+       """;
 
-            ---------------------------------------------
-            {msg}
-            ---------------------------------------------
-            Token {_kind}
-            Line {_token.Line}
-            Col {_token.Col}
-            Pos {_token.Start}
-            ---------------------------------------------
-            {trace}
-            """;
-
-        ErrorString = message;
+        _errorMessage = msg;
         return false;
+    }
+    
+    /// <summary>
+    /// Parse the given minizinc model or data file 
+    /// </summary>
+    /// <example>Parser.ParseFile("model.mzn")</example>
+    /// <example>Parser.ParseFile("data.dzn")</example>
+    public static ParseResult ParseFile(string path, out SyntaxTree tree)
+    {
+        var watch = Stopwatch.StartNew();
+        var mzn = File.ReadAllText(path);
+        var parser = new Parser(mzn);
+        var ok = parser.ParseTree(out tree);
+        var elapsed = watch.Elapsed;
+        var result = new ParseResult
+        {
+            SourceFile = path,
+            SourceText = mzn,
+            Ok = ok,
+            FinalToken = parser._token,
+            Elapsed = elapsed,
+            ErrorMessage = parser._errorMessage,
+            ErrorTrace = parser._errorTrace
+        };
+        return result;
+    }
+    
+    /// <summary>
+    /// Parse the given minizinc model or data string 
+    /// </summary>
+    /// <example>
+    /// Parser.ParseText("""
+    ///     var bool: a;
+    ///     var bool: b;
+    ///     constraint a /\ b;
+    ///     """);
+    /// </example>
+    public static ParseResult ParseText(string text, out SyntaxTree tree)
+    {
+        var watch = Stopwatch.StartNew();
+        var parser = new Parser(text);
+        var ok = parser.ParseTree(out tree);
+        var elapsed = watch.Elapsed;
+        var result = new ParseResult
+        {
+            SourceFile = null,
+            SourceText = text,
+            Ok = ok,
+            FinalToken = parser._token,
+            Elapsed = elapsed,
+            ErrorMessage = parser._errorMessage,
+            ErrorTrace = parser._errorTrace
+        };
+        return result;
     }
 }

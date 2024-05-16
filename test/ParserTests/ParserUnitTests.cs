@@ -278,9 +278,8 @@ public class ParserUnitTests
 
     SyntaxTree ParseText(string mzn)
     {
-        var parser = new Parser(mzn);
-        if (!parser.Parse(out var tree))
-            Assert.Fail(parser.ErrorString ?? "");
+        var result = Parser.ParseText(mzn, out var tree);
+        result.ErrorTrace.Should().BeNull();
         return tree;
     }
 
