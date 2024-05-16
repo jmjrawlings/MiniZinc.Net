@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Parser;
 
 using System.Text;
-using Ast;
+using Syntax;
 
 public sealed class Writer
 {

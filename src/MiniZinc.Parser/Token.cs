@@ -3,16 +3,16 @@
 public readonly struct Token {
     
     public readonly TokenKind Kind;
-    public readonly uint Line;
-    public readonly uint Col;
-    public readonly uint Start;
-    public readonly uint Length;
+    public readonly int Line;
+    public readonly int Col;
+    public readonly int Start;
+    public readonly int Length;
     public readonly object? Data;
     public int IntValue => (int)Data!;
     public string StringValue => (string)Data!;
     public double DoubleValue => (double)Data!;
-    public uint End => Start + Length;
-    public Token(TokenKind kind, uint line, uint col, uint start, uint length, object? data = null)
+    public int End => Start + Length;
+    public Token(TokenKind kind, int line, int col, int start, int length, object? data = null)
     {
         Kind = kind;
         Line = line;

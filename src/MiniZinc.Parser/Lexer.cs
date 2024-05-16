@@ -4,7 +4,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using static Char;
 
 sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
@@ -52,29 +51,28 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const string ERROR_INT_LITERAL = "Error int literal";
     const string ERROR_UNTERMINATED_BLOCK_COMMENT = "Unterminated block comment";
 
-    private string _source;
-    private uint _sourceLength;
-    private uint _line;
-    private uint _col;
-    private uint _index;
-    private uint _startPos;
-    private uint _startLine;
-    private uint _startCol;
-    private uint _length;
+    private string _sourceText;
+    private int _n;
+    private int _line;
+    private int _col;
+    private int _index;
+    private int _startPos;
+    private int _startLine;
+    private int _startCol;
+    private int _length;
     private bool _fin;
-    private string _string;
     private char _char;
     private Token _token;
     private TokenKind _kind;
-    private readonly StringBuilder _sb;
+    private int _startString;
     
-    private Lexer(string source)
+    private Lexer(string sourceText)
     {
-        _sb = new StringBuilder();
-        _string = string.Empty;
         _line = 1;
-        _source = source;
-        _sourceLength = (uint)source.Length;
+        _startString = 0;
+        _index = -1;
+        _sourceText = sourceText;
+        _n = sourceText.Length - 1;
         Step();
     }
     
@@ -83,7 +81,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         next:
         if (_fin)
             return false;
-        
+
         _startPos = _index;
         _startLine = _line;
         _startCol = _col;
@@ -129,6 +127,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     Return(TokenKind.LEFT_ARROW);
                     break;
                 }
+
                 Return(TokenKind.LESS_THAN);
                 break;
             case RIGHT_CHEVRON:
@@ -145,27 +144,14 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case DOT:
                 Step();
-                // ..
                 if (SkipReturn(DOT, TokenKind.DOT_DOT))
                 {
-                }
-                // Tuple access
+                }   
                 else if (IsDigit(_char))
-                {
-                    do
-                    {
-                        Store();
-                        Step();
-                    } while (IsDigit(_char));
-                    ReadString();
-                    Return(TokenKind.TUPLE_ACCESS, int.Parse(_string));
-                }
-                // Record access
+                    LexTupleAccess();
                 else
-                {
-                    LexIdentifier();
-                    Return(TokenKind.RECORD_ACCESS, _string);
-                }
+                    LexRecordAccess();
+
                 break;
             case PLUS:
                 Step();
@@ -199,6 +185,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                         Return(TokenKind.TILDE);
                         break;
                 }
+
                 break;
             case OPEN_BRACKET:
                 SkipReturn(TokenKind.OPEN_BRACKET);
@@ -219,8 +206,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 SkipReturn(TokenKind.CLOSE_BRACE);
                 break;
             case SINGLE_QUOTE:
-                LexIdentifier();
-                Return(_kind, _string);
+                LexQuotedIdentifier();
                 break;
             case DOUBLE_QUOTE:
                 LexStringLiteral();
@@ -247,6 +233,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 {
                     SkipReturn(TokenKind.UNDERSCORE);
                 }
+
                 break;
             case COMMA:
                 Step();
@@ -262,7 +249,11 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case NEWLINE:
             case RETURN:
             case SPACE:
-                do { Step(); } while (_char is TAB or NEWLINE or RETURN or SPACE);
+                do
+                {
+                    Step();
+                } while (_char is TAB or NEWLINE or RETURN or SPACE);
+
                 goto next;
             default:
                 if (IsDigit(_char))
@@ -271,15 +262,42 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 }
                 else
                 {
-                    LexIdentifier();
-                    if (Keyword.Lookup.TryGetValue(_string, out _kind))
+                    string ident = LexIdentifier();
+                    if (Keyword.Lookup.TryGetValue(ident, out _kind))
                         Return(_kind);
                     else
-                        Return(TokenKind.IDENTIFIER, _string);
+                        Return(TokenKind.IDENTIFIER, ident);
                 }
+
                 break;
         }
+
         return true;
+    }
+
+    private void LexRecordAccess()
+    {
+        string ident = LexIdentifier();
+        Return(TokenKind.RECORD_ACCESS, ident);
+    }
+    
+    private void LexTupleAccess()
+    {
+        BeginString();
+        do
+        {
+            Step();
+        } while (IsDigit(_char));
+
+        var span = ReadSpan();
+        int item = int.Parse(span);
+        Return(TokenKind.TUPLE_ACCESS, item);
+    }
+    
+    private void LexQuotedIdentifier()
+    {
+        string ident = LexIdentifier();
+        Return(_kind, ident);
     }
 
     /// <summary>
@@ -289,22 +307,21 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         Step();
         var seq = Skip(DOLLAR);
-        
         if (!IsLetter(_char))
         {
             Error(ERROR_POLYMORPHIC_IDENTIFIER);
             return;
         }
-        
+
+        BeginString();
         while (IsAsciiLetterOrDigit(_char))
-        {
-            Store();
             Step();
-        }
-        ReadString();
-        Return(seq ? TokenKind.GENERIC_SEQUENCE : TokenKind.GENERIC, _string);
+
+        var ident = ReadString();
+        Return(seq ? TokenKind.GENERIC_SEQUENCE : TokenKind.GENERIC, ident);
     }
-    
+
+
     /// <summary>
     /// Lex an identifier enclosed in backticks, used
     /// for turning normal functions into infix operators
@@ -318,40 +335,24 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private void LexBacktickIdentifier()
     {
         Step();
-        LexIdentifier();
+        string ident = LexIdentifier();
         if (!Skip(BACKTICK))
             Error(ERROR_BACKTICK_IDENTIFIER);
         else if (_length <= 2)
             Error(ERROR_BACKTICK_IDENTIFIER);
-        else if (!IsLetter(_string[0]))
+        else if (!IsLetter(ident[0]))
             Error(ERROR_BACKTICK_IDENTIFIER);
         else
-            Return(TokenKind.INFIX_IDENTIFIER, _string);
-    }
-    
-    private void Return(in TokenKind kind, object? data = null)
-    {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, data);
-    }
-    
-    private bool SkipReturn(in char c, in TokenKind kind)
-    {
-        if (_char != c)
-            return false;
-
-        Step();
-        Return(kind);
-        return true;
-    }
-    
-    private void SkipReturn(in TokenKind kind)
-    {
-        Return(kind);
-        Step();
+            Return(TokenKind.INFIX_IDENTIFIER, ident);
     }
 
+    /// <summary>
+    /// Lex a block comment
+    /// </summary>
+    /// <mzn>/* this is a block comment */</mzn>
     private void LexBlockComment()
     {
+        BeginString();
         while (true)
         {
             if (Skip(STAR))
@@ -365,15 +366,17 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 return;
             }
 
-            Store();
             Step();
         }
-        
-        ReadString();
-        Return(TokenKind.BLOCK_COMMENT,_string);
+
+        var comment = ReadString();
+        Return(TokenKind.BLOCK_COMMENT, comment);
     }
 
-
+    /// <summary>
+    /// Set the current token to an Error token with
+    /// the given message
+    /// </summary>
     private void Error(string msg)
     {
         _token = new Token(
@@ -385,12 +388,17 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             msg
         );
     }
-    
+
+    /// <summary>
+    /// Lex a line comment
+    /// </summary>
+    /// <mzn>var int: a % comment</mzn>
     private void LexLineComment()
     {
         Step();
+        BeginString();
         line_comment:
-        
+
         switch (_char)
         {
             case NEWLINE:
@@ -399,14 +407,14 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
 
             default:
-                Step(); 
-                Store();
+                Step();
                 goto line_comment;
         }
-        ReadString();
-        Return(TokenKind.LINE_COMMENT,_string);
+
+        var comment = ReadString();
+        Return(TokenKind.LINE_COMMENT, comment);
     }
-    
+
     /// <summary>
     /// Attempt to parse a valid identifer into the string buffer.
     /// This function will also check for reserved keywords.
@@ -414,8 +422,9 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// - `_string` will hold variable will be filled
     /// - `_kind` will be one of (IDENT / ERROR / KEYWORD)
     /// </summary>
-    private void LexIdentifier()
-    {   
+    private string LexIdentifier()
+    {
+        BeginString();
         if (_char is SINGLE_QUOTE)
         {
             // Quoted identifer 'like this'
@@ -431,123 +440,136 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 case NEWLINE:
                 case EOF:
                     _kind = TokenKind.ERROR;
-                    return;
+                    return string.Empty;
                 default:
-                    Store();
                     goto quoted;
             }
-            Step();
-            ReadString();
-            _kind = TokenKind.IDENTIFIER;
-            return;
-        }
-        
-        while (true)
-        {
-            Store();
-            Step();
-            if (IsLetter(_char))
-                continue;
 
-            if (_char is UNDERSCORE || IsDigit(_char))
-                continue;
-            
-            break;
+            Step();
         }
-        
-        ReadString();
+        else
+        {
+            while (true)
+            {
+                Step();
+                if (IsLetter(_char))
+                    continue;
+
+                if (_char is UNDERSCORE || IsDigit(_char))
+                    continue;
+
+                break;
+            }
+        }
+
         _kind = TokenKind.IDENTIFIER;
+        string str = ReadString();
+        return str;
     }
 
+    /// <summary>
+    /// Lex a string literal
+    /// </summary>
     private void LexStringLiteral()
     {
         bool inExpr = false;
         bool escaped = false;
-        string_literal:
         Step();
-        
-        switch (_char)
+        BeginString();
+        while (true)
         {
-            case DOUBLE_QUOTE when escaped:
-                escaped = false;
-                break;
-
-            case DOUBLE_QUOTE when inExpr:
-                break;
-
-            case DOUBLE_QUOTE:
-                Step();
-                ReadString();
-                Return(TokenKind.STRING_LITERAL, _string);
-                return;
-            case CLOSE_PAREN when inExpr:
-                inExpr = false;
-                break;
-            case OPEN_PAREN when escaped && !inExpr:
-                inExpr = true;
-                escaped = false;
-                break;
-            case BACK_SLASH:
-                escaped = !escaped;
-                break;
-            case EOF:
-                Error(ERROR_UNTERMINATED_STRING_LITERAL);
-                return;
-            default:
-                if (!escaped)
-                    break;
-
-                if (_char is 'n' or 't' or SINGLE_QUOTE)
-                {
+            switch (_char)
+            {
+                case DOUBLE_QUOTE when escaped:
                     escaped = false;
                     break;
-                }
+                case DOUBLE_QUOTE when inExpr:
+                    break;
+                case DOUBLE_QUOTE:
+                    string lit = ReadString();
+                    Return(TokenKind.STRING_LITERAL, lit);
+                    Step();
+                    return;
+                case CLOSE_PAREN when inExpr:
+                    inExpr = false;
+                    break;
+                case OPEN_PAREN when escaped && !inExpr:
+                    inExpr = true;
+                    escaped = false;
+                    break;
+                case BACK_SLASH:
+                    escaped = !escaped;
+                    break;
+                case EOF:
+                    Error(ERROR_UNTERMINATED_STRING_LITERAL);
+                    return;
+                default:
+                    if (!escaped)
+                        break;
 
-#if DEBUG
-                var s = _sb.ToString();
-#endif
+                    if (_char is 'n' or 't' or SINGLE_QUOTE)
+                    {
+                        escaped = false;
+                        break;
+                    }
 
-                Error(ERROR_ESCAPED_STRING);
-                return;
+                    Error(ERROR_ESCAPED_STRING);
+                    return;
+            }
+
+            Step();
         }
-
-        Store();
-        goto string_literal;
     }
 
+    /// <summary>
+    /// Lex a hexadecimal integer eg `0x1b7`
+    /// </summary>
     private void LexHexInt()
     {
+        Step(); // 0
+        Step(); // x
+        BeginString();
         do
         {
-            Store();
             Step();
         } while (IsAsciiLetterOrDigit(_char));
-        ReadString();
-        if (int.TryParse(_string, NumberStyles.AllowHexSpecifier, null, out var i))
+        
+        var hex = ReadSpan();
+        if (int.TryParse(hex, NumberStyles.AllowHexSpecifier, null, out var i))
             Return(TokenKind.INT_LITERAL, i);
         else
-            Error($"Could not parse \"{_string}\" as an integer");
+            Error($"Could not parse \"{hex.ToString()}\" as an integer");
     }
-
+    
+    /// <summary>
+    /// Lex an octal integer eg `0o777`
+    /// </summary>
     private void LexOctalInt()
     {
+        Step(); // 0
+        Step(); // o
+        BeginString();
         do
         {
-            Store();
             Step();
         } while (IsDigit(_char));
-        ReadString();
+
+        string oct = ReadString();
         try
         {
-            int i = Convert.ToInt32(_string, 8);
+            int i = Convert.ToInt32(oct, 8);
             Return(TokenKind.INT_LITERAL, i);
         }
         catch (Exception)
         {
-            Error($"Could not parse \"{_string}\" as an integer");
+            Error($"Could not parse \"{oct}\" as an integer");
         }
     }
     
+    /// <summary>
+    /// Lex a number, it can be either a standard integer,
+    /// hexadecimal, octal, or float
+    /// </summary>
     private void LexNumber()
     {
         if (_char is '0')
@@ -555,57 +577,52 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             switch (Peek)
             {
                 case 'o':
-                    Step();
-                    Step();
                     LexOctalInt();
                     return;
 
                 case 'x':
-                    Step();
-                    Step();
                     LexHexInt();
                     return;
             }
         }
 
+        BeginString();
+
         do
         {
-            Store();
             Step();
         } while (IsAsciiLetterOrDigit(_char));
+        
         if (_char is DOT && IsDigit(Peek))
         {
-            Store();
             Step();
-            goto lex_float;
+            do
+                Step();
+            while
+                (IsDigit(_char) || _char is 'e');
+
+            var span = ReadSpan();
+            if (double.TryParse(span, null, out var d))
+                Return(TokenKind.FLOAT_LITERAL, d);
+            else
+                Error($"Could not parse \"{span}\" as a float");
         }
-        
-        ReadString();
-        if (int.TryParse(_string, NumberStyles.None, null, out var i))
-            Return(TokenKind.INT_LITERAL, i);
         else
-            Error($"Could not parse \"{_string}\" as an integer");
-        return;
-
-        lex_float:
-        do
         {
-            Store();
-            Step();
-        } while (IsDigit(_char) || _char is 'e');
-        ReadString();
-        
-        if (double.TryParse(_string, null, out var d))
-            Return(TokenKind.FLOAT_LITERAL, d);
-        else
-            Error($"Could not parse \"{_string}\" as a float");
+            var span = ReadSpan();
+            if (int.TryParse(span, NumberStyles.None, null, out var i))
+                Return(TokenKind.INT_LITERAL, i);
+            else
+                Error($"Could not parse \"{span}\" as an integer");
+            return;
+        }
     }
-
+    
     void Step()
     {
-        if (_index < _sourceLength)
+        if (++_index <= _n)
         {
-            _char = _source[(int)_index++];
+            _char = _sourceText[_index];
             _length++;
             if (_char is NEWLINE)
             {
@@ -624,16 +641,8 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
     }
 
-    private char Peek => _index < _sourceLength ? _source[(int)_index] : EOF;
-    
-    /// <summary>
-    /// Store the current character in the string builder
-    /// </summary>
-    void Store()
-    {
-        _sb.Append(_char);
-    }
-    
+    private char Peek => _index < _n ? _sourceText[_index+1] : EOF;
+
     bool Skip(char c)
     {
         if (_char == c)
@@ -641,16 +650,40 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
             return true;
         }
+
         return false;
     }
-
-    /// Read the contents of the current string buffer
-    /// TODO - use spans for string data?
-    private void ReadString()
+    private void Return(in TokenKind kind, object? data = null)
     {
-        _string = _sb.ToString();
-        _sb.Clear();
+        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, data);
     }
+
+    private bool SkipReturn(in char c, in TokenKind kind)
+    {
+        if (_char != c)
+            return false;
+
+        Step();
+        Return(kind);
+        return true;
+    }
+
+    private void SkipReturn(in TokenKind kind)
+    {
+        Return(kind);
+        Step();
+    }
+
+    void BeginString()
+    {
+        _startString = _index;
+    }
+    
+    string ReadString() =>
+        _sourceText.Substring(_startString, _index - _startString);
+
+    ReadOnlySpan<char> ReadSpan() =>
+        _sourceText.AsSpan(_startString, _index - _startString);
     
     /// <summary>
     /// Lex the given string
@@ -661,7 +694,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         var tokens = lexer.ToArray();
         return tokens;
     }
-    
+
     public void Reset()
     {
         throw new NotImplementedException();

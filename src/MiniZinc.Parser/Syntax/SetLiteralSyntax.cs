@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser.Ast;
+﻿namespace MiniZinc.Parser.Syntax;
 
 public sealed record SetLiteralSyntax(in Token Start) : SyntaxNode(Start)
 {
