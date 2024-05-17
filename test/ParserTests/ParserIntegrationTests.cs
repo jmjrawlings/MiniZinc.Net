@@ -2,8 +2,10 @@ public sealed class ParserIntegrationTests
 {
     private void Test(string path)
     {
-        var results = Parser.ParseFile(path, out var tree);
+        var results = Parser.ParseFile(path);
         results.ErrorTrace.Should().BeNull();
+        var output = results.Syntax.Write();
+
     }
 
     [Fact(DisplayName = "unit/test-globals-float.mzn")]

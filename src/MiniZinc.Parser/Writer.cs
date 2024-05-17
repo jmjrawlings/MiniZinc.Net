@@ -3,7 +3,12 @@
 using System.Text;
 using Syntax;
 
-public sealed class Writer
+/// <summary>
+/// Writes a minzinc model.
+/// Intended to be used via the
+/// SyntaxNode extension method `node.Write()`
+/// </summary> 
+internal sealed class Writer
 {
     const char FWD_SLASH = '/';
     const char BACK_SLASH = '\\';
@@ -89,49 +94,57 @@ public sealed class Writer
     const string WHERE = "where";
     const string XOR = "xor";
     const string EOL = ";";
-
-    private readonly StringBuilder _sb;
-
+    
+    readonly StringBuilder _sb;
+    
     public Writer()
     {
         _sb = new StringBuilder();
     }
-
-    private void WriteSpaced(char c)
+    
+    void WriteSpaced(char c)
     {
         Space();
         Write(c);
         Space();
     }
-
-    private void WriteSpaced(string c)
+    
+    void WriteSpaced(string c)
     {
         Space();
         Write(c);
         Space();
     }
-
-    private void Write(char c)
+    
+    void Write(char c)
     {
         _sb.Append(c);
     }
 
-    private void Write(in Token token)
+    void Newline()
     {
-        _sb.Append(token.ToString());
+        _sb.Append(NEWLINE);
     }
-
-    private void Space()
+    
+    void Write(IdentifierSyntax id) => _sb.Append(id);
+    
+    void Space()
     {
         _sb.Append(SPACE);
     }
-
-    private void Write(string s)
+    
+    void Write(string s)
     {
         _sb.Append(s);
     }
-
-    void WriteSep<T>(IEnumerable<T>? exprs, Action<T> write, char sep = COMMA)
+    
+    void WriteSpace(string s)
+    {
+        _sb.Append(s);
+        _sb.Append(SPACE);
+    }
+    
+    void WriteSep<T>(IEnumerable<T>? exprs, Action<T> write, string sep = ",")
     {
         if (exprs is null)
             return;
@@ -151,10 +164,12 @@ public sealed class Writer
     void Write(int i) => _sb.Append(i);
 
     void Write(double f) => _sb.Append(f);
-
-    void WriteExprs<T>(IEnumerable<T>? exprs, char sep = COMMA)
-        where T : SyntaxNode => WriteSep(exprs, WriteExpr, sep);
-
+    
+    void Write(bool b) => _sb.Append(b);
+    
+    void WriteExprs<T>(IEnumerable<T>? exprs, string sep = ",")
+        where T : SyntaxNode => WriteSep(exprs, Write, sep);
+    
     public void WriteOp(Operator? op)
     {
         switch (op)
@@ -290,70 +305,115 @@ public sealed class Writer
                 break;
         }
     }
-
+    
     void WriteAnnotations(SyntaxNode node)
     {
-        if (node.Annotations is not { } anns)
+        if (node.Annotations is not {Count: > 0 } anns)
             return;
-
+        
         foreach (var ann in anns)
         {
-            Write(COLON);
-            Write(COLON);
-            WriteExpr(ann);
             Space();
+            Write(COLON);
+            Write(COLON);
+            Write(ann);
         }
     }
-
-    public void WriteExpr(SyntaxNode? expr)
+    
+    public void Write(SyntaxNode? expr)
     {
         if (expr is null)
             return;
-
+        
         switch (expr)
         {
+            case TypeSyntax e:
+                WriteType(e);
+                break;
+            
+            case SyntaxTree e:
+                foreach (var node in e.Nodes)
+                    Write(node);
+                break;
+            
             case Array1DSyntax e:
                 WriteArray1D(e);
                 break;
+            
             case Array2dSyntax e:
                 WriteArray2D(e);
                 break;
+            
+            case Array3dSyntax e:
+                WriteArray3d(e);
+                break;
+            
             case ArrayAccessSyntax e:
                 WriteArrayAccess(e);
                 break;
-            case ArrayTypeSyntax e:
-                break;
+            
             case BinaryOperatorSyntax e:
-                WriteExpr(e.Left);
-                Write(e.Infix);
-                WriteExpr(e.Right);
+                Write(e.Left);
+                Write(e.Infix.StringValue);
+                Write(e.Right);
                 break;
-            case BoolSyntax boolLit:
-                _sb.Append(boolLit.Value);
+            
+            case IntLiteralSyntax e:
+                Write(e.Value);
                 break;
+            
+            case BoolLiteralSyntax e:
+                Write(e.Value);
+                break;
+            
+            case FloatLiteralSyntax e:
+                Write(e.Value);
+                break;
+            
+            case StringLiteralSyntax e:
+                Write(DOUBLE_QUOTE);
+                Write(e.Value);
+                Write(DOUBLE_QUOTE);
+                break;
+            
+            case FunctionDeclarationSyntax e:
+                WriteFunction(e);
+                break;
+            
             case CallSyntax e:
                 Write(e.Name);
                 Write(OPEN_PAREN);
                 WriteExprs(e.Args);
                 Write(CLOSE_PAREN);
                 break;
+            
+            case IncludeSyntax e:
+                WriteSpace(INCLUDE);
+                Write(DOUBLE_QUOTE);
+                Write(e.Path.StringValue);
+                Write(DOUBLE_QUOTE);
+                break;
+            
             case ComprehensionSyntax e:
                 Write(e.IsSet ? OPEN_BRACE : OPEN_BRACKET);
-                WriteExpr(e.Expr);
+                Write(e.Expr);
                 Write(PIPE);
                 WriteExprs(e.Generators);
                 Write(e.IsSet ? CLOSE_BRACE : CLOSE_BRACKET);
                 break;
+            
             case ConstraintSyntax e:
                 Write(CONSTRAINT);
                 Space();
-                WriteExpr(e.Expr);
+                Write(e.Expr);
                 Write(EOL);
                 break;
+            
             case EmptyExpr e:
                 Write(OPEN_CHEVRON);
                 Write(CLOSE_CHEVRON);
                 break;
+            
             case EnumDeclarationSyntax e:
                 Write(ENUM);
                 Space();
@@ -368,135 +428,262 @@ public sealed class Writer
                 WriteExprs(e.Cases);
                 Write(EOL);
                 break;
-            case ExprType e:
-                break;
-            case FloatLiteralSyntax e:
-                Write(e.Value);
-                break;
+            
             case GeneratorCallSyntax e:
                 Write(e.Name);
                 Write(OPEN_PAREN);
                 WriteSep(e.Generators, WriteGenerator);
                 Write(CLOSE_PAREN);
                 Write(OPEN_PAREN);
-                WriteExpr(e.Expr);
+                Write(e.Expr);
                 Write(CLOSE_PAREN);
                 break;
+            
             case GeneratorSyntax e:
                 WriteGenerator(e);
                 break;
+            
             case IdentifierSyntax e:
-                Write(e.Token);
+                Write(e.Token.StringValue);
                 break;
+            
             case IfElseSyntax e:
                 Write(IF);
                 Space();
-                WriteExpr(e.If);
+                Write(e.If);
                 WriteSpaced(THEN);
-                WriteExpr(e.Then);
+                Write(e.Then);
                 if (e.ElseIfs is { } cases)
                 {
                     foreach (var (elseif, then) in cases)
                     {
                         WriteSpaced(ELSEIF);
-                        WriteExpr(elseif);
+                        Write(elseif);
                         WriteSpaced(THEN);
-                        WriteExpr(then);
+                        Write(then);
                     }
                 }
                 Write(ENDIF);
                 break;
-            case IntLiteralSyntax e:
-                _sb.Append(e);
-                break;
-            case LetSyntax e:
-                Write(LET);
-                Write(OPEN_BRACE);
-                var locals = e.Locals?.Select(x =>
-                    x switch
-                    {
-                        ConstraintSyntax c => (SyntaxNode)c,
-                        AssignmentSyntax a => a,
-                        DeclarationSyntax v => v,
-                        _ => null!
-                    }
-                );
-
-                WriteExprs(locals);
-                Write(CLOSE_BRACE);
-                WriteSpaced(IN);
-                WriteExpr(e.Body);
+            
+            case SolveSyntax e:
+                WriteSpace(SOLVE);
+                WriteAnnotations(e);
+                switch (e.Method)
+                {
+                    case SolveMethod.Satisfy:
+                        Write(SATISFY);
+                        break;
+                    case SolveMethod.Maximize:
+                        WriteSpace(MAXIMIZE);
+                        Write(e.Objective);
+                        break;
+                    case SolveMethod.Minimize:
+                        WriteSpace(MINIMIZE);
+                        Write(e.Objective);
+                        break;
+                }
                 Write(EOL);
                 break;
+            
+            case LetSyntax e:
+                WriteLet(e);
+                break;
+            
             case RangeLiteralSyntax e:
-                if (e.Lower is { } lower)
-                    WriteExpr(lower);
-                Write(DOT);
-                Write(DOT);
-                if (e.Upper is { } upper)
-                    WriteExpr(upper);
+                WriteRange(e);
                 break;
+            
             case RecordAccessSyntax e:
-                WriteExpr(e.Expr);
+                Write(e.Expr);
                 Write(DOT);
-                Write(e.Field);
+                Write(e.Field.StringValue);
                 break;
+            
             case RecordLiteralSyntax e:
                 WriteRecord(e);
                 break;
+            
+            case SetLiteralSyntax e:
+                Write(OPEN_BRACE);
+                WriteExprs(e.Elements);
+                Write(CLOSE_BRACE);
+                break;
+            
+            case TupleAccessSyntax e:
+                Write(e.Expr);
+                Write(DOT);
+                Write(e.Field.StringValue);
+                break;
+            
+            case TupleLiteralSyntax e:
+                Write(OPEN_PAREN);
+                WriteExprs(e.Fields);
+                Write(CLOSE_PAREN);
+                break;
+            
+            case UnaryOperatorSyntax e:
+                WriteOp(e.Operator);
+                Write(e.Expr);
+                break;
+
+            case DeclarationSyntax e:
+                WriteDeclare(e);
+                break;
+            
+            case AssignmentSyntax e:
+                Write(e.Name);
+                Space();
+                Write(EQUAL);
+                Space();
+                Write(e.Expr);
+                break;
+            
+            case OutputSyntax e:
+                Write(OUTPUT);
+                Space();
+                Write(e.Expr);
+                break;
+            
+            case WildCardExpr e:
+                Write(UNDERSCORE);
+                break;
+            
+            default:
+                throw new Exception(expr.GetType().ToString());
+        }
+    }
+
+    private void WriteFunction(FunctionDeclarationSyntax e)
+    {
+        Write(FUNCTION);
+        Space();
+        Write(e.Type);
+        Write(COLON);
+        Space();
+        Write(e.Name);
+        WriteParameters(e.Parameters);
+        if (e.Body is { } body)
+        {
+            Newline();
+            Write(body);
+        }
+
+        Write(EOL);
+    }
+
+    void WriteArray3d(Array3dSyntax e)
+    {
+        throw new NotImplementedException();
+    }
+
+    void WriteDeclare(DeclarationSyntax dec)
+    {
+        WriteType(dec.Type);
+        Write(COLON);
+        Write(dec.Name);
+        if (dec.Body is { } body)
+        {
+            Write(EQUAL);
+            Write(body);
+        }
+        Write(EOL);
+    }
+    
+    void WriteType(TypeSyntax type)
+    {
+        if (type.Var)
+            WriteSpace(VAR);
+        
+        if (type.Opt)
+            WriteSpace(OPT);
+
+        switch (type)
+        {
+
+            case ArrayTypeSyntax e:
+                Write(ARRAY);
+                Write(OPEN_BRACKET);
+                WriteSep(e.Dimensions, Write);
+                Write(CLOSE_BRACKET);
+                Space();
+                Write(OF);
+                Space();
+                WriteType(e.Items);
+                break;
+            
+            case ComplexTypeSyntax e:
+                WriteSep(e.Types, Write, sep:"++");
+                break;
+            
+            case ExprType e:
+                Write(e.Expr);
+                break;
+            
+            case ListTypeSyntax e:
+                WriteSpace(LIST);
+                WriteSpace(OF);
+                Write(e.Items);
+                break;
+            
+            case NameTypeSyntax e:
+                Write(e.Name);
+                break;
+
             case RecordTypeSyntax e:
                 Write(RECORD);
                 Write(OPEN_PAREN);
                 WriteParameters(e.Fields);
                 Write(CLOSE_PAREN);
                 break;
-            case SetLiteralSyntax e:
-                Write(OPEN_BRACE);
-                WriteExprs(e.Elements);
-                Write(CLOSE_BRACE);
+            
+            case SetTypeSyntax e:
+                WriteSpace(SET);
+                WriteSpaced(OF);
+                Write(e.Items);
                 break;
-            case StringLiteralSyntax s:
-                Write(DOUBLE_QUOTE);
-                Write(s);
-                Write(DOUBLE_QUOTE);
-                break;
-            case TupleAccessSyntax e:
-                WriteExpr(e.Expr);
-                Write(DOT);
-                Write(e.Field);
-                break;
-            case TupleLiteralSyntax e:
-                Write(OPEN_PAREN);
-                WriteExprs(e.Fields);
-                Write(CLOSE_PAREN);
-                break;
+
             case TupleTypeSyntax e:
                 Write(TUPLE);
                 Write(OPEN_PAREN);
                 WriteExprs(e.Items);
                 Write(CLOSE_PAREN);
                 break;
-            case TypeSyntax e:
-                break;
-            case UnaryOperatorSyntax e:
-                WriteOp(e.Operator);
-                WriteExpr(e.Expr);
-                break;
-            case DeclarationSyntax e:
-                break;
-            case WildCardExpr e:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(expr));
+
         }
     }
-
-    private void WriteParameters(List<ParameterSyntax> parameters) =>
-        WriteSep(parameters, WriteParameter);
-
-    private void WriteParameter(ParameterSyntax x)
+    
+    void WriteRange(RangeLiteralSyntax e)
     {
-        WriteExpr(x.Type);
+        if (e.Lower is { } lower)
+            Write(lower);
+        Write(DOT);
+        Write(DOT);
+        if (e.Upper is { } upper)
+            Write(upper);
+    }
+    
+    void WriteLet(LetSyntax e)
+    {
+        Write(LET);
+        Write(OPEN_BRACE);
+        WriteExprs(e.Locals?.Cast<SyntaxNode>());
+        Write(CLOSE_BRACE);
+        WriteSpaced(IN);
+        Write(e.Body);
+        Write(EOL);
+    }
+
+    void WriteParameters(List<ParameterSyntax>? parameters)
+    {
+        if (parameters is null)
+            return;
+        WriteSep(parameters, WriteParameter);
+    }
+
+    void WriteParameter(ParameterSyntax x)
+    {
+        Write(x.Type);
         if (x.Name is { } name)
         {
             Write(COLON);
@@ -505,15 +692,15 @@ public sealed class Writer
         WriteAnnotations(x);
     }
     
-    private void WriteArrayAccess(ArrayAccessSyntax e)
+    void WriteArrayAccess(ArrayAccessSyntax e)
     {
-        WriteExpr(e.Array);
+        Write(e.Array);
         Write(OPEN_BRACKET);
         WriteExprs(e.Access);
         Write(CLOSE_BRACKET);
     }
-
-    private void WriteRecord(RecordLiteralSyntax e)
+    
+    void WriteRecord(RecordLiteralSyntax e)
     {
         Write(OPEN_PAREN);
         for (int i = 0; i < e.Fields.Count; i++)
@@ -521,7 +708,7 @@ public sealed class Writer
             var (name, expr) = e.Fields[i];
             Write(name);
             Write(COLON);
-            WriteExpr(expr);
+            Write(expr);
             if (i < e.Fields.Count - 1)
                 Write(COMMA);
         }
@@ -529,7 +716,7 @@ public sealed class Writer
         Write(CLOSE_PAREN);
     }
 
-    private void WriteArray2D(Array2dSyntax expr)
+    void WriteArray2D(Array2dSyntax expr)
     {
         Write(OPEN_BRACKET);
         Write(PIPE);
@@ -540,7 +727,7 @@ public sealed class Writer
             for (int j = 0; j < expr.J; j++)
             {
                 var v = expr.Elements[x++];
-                WriteExpr(v);
+                Write(v);
                 if (j < expr.J - 1)
                     Write(COMMA);
             }
@@ -551,42 +738,36 @@ public sealed class Writer
         Write(CLOSE_BRACKET);
     }
 
-    private void WriteArray1D(Array1DSyntax e)
+    void WriteArray1D(Array1DSyntax e)
     {
         Write(OPEN_BRACKET);
         WriteExprs(e.Elements);
         Write(CLOSE_BRACKET);
     }
-
-    private void WriteIdent(IdentifierSyntax id) => _sb.Append(id);
-
-    private void WriteGenerator(GeneratorSyntax gen)
+    
+    void WriteGenerator(GeneratorSyntax gen)
     {
-        WriteSep(gen.Names, WriteIdent);
+        WriteSep(gen.Names, Write);
     }
-
-    public override string ToString() => _sb.ToString();
-
+    
     public static string WriteNode(SyntaxNode node)
     {
         var writer = new Writer();
-        writer.WriteExpr(node);
-        var s = writer.ToString();
+        writer.Write(node);
+        var s = writer._sb.ToString();
         return s;
     }
 }
 
-public static class NodeExtensions
+public static class SyntaxExtensions
 {
+    /// <summary>
+    /// Write the given node as a minizinc model string
+    /// </summary>
     public static string Write(this SyntaxNode node)
     {
         var s = Writer.WriteNode(node);
         return s;
     }
-
-    public static string Write(this IEnumerable<SyntaxNode> nodes, string sep = ",")
-    {
-        var s = String.Join(sep, nodes.Select(Write));
-        return s;
-    }
+    
 }

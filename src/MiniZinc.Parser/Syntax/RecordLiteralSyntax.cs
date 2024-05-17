@@ -2,5 +2,5 @@
 
 public sealed record RecordLiteralSyntax(Token Start) : SyntaxNode(Start)
 {
-    public List<(Token, SyntaxNode)> Fields { get; } = new();
+    public List<(IdentifierSyntax, SyntaxNode)> Fields { get; } = new();
 }
