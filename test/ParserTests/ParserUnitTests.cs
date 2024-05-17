@@ -183,7 +183,7 @@ public class ParserUnitTests
             """;
         var expr = ParseExpr<ComprehensionSyntax>(mzn);
     }
-
+    
     [Fact]
     void test_set_of_ti()
     {
@@ -191,13 +191,13 @@ public class ParserUnitTests
         var node = ParseNode<DeclarationSyntax>(mzn);
         node.Name.ToString().Should().Be("xd");
     }
-
+    
     [Fact]
     void test_postfix_range_operator()
     {
         var mzn = "var 0..: xd";
         var node = ParseNode<DeclarationSyntax>(mzn);
-        node.Name.StringValue.Should().Be("xd");
+        node.Name.ToString().Should().Be("xd");
         var type = node.Type as ExprType;
         // type.Var.Should().BeTrue();
         // var range = (RangeLiteralSyntax)type.Expr;
@@ -278,9 +278,9 @@ public class ParserUnitTests
 
     SyntaxTree ParseText(string mzn)
     {
-        var result = Parser.ParseText(mzn, out var tree);
+        var result = Parser.ParseText(mzn);
         result.ErrorTrace.Should().BeNull();
-        return tree;
+        return result.Syntax;
     }
 
     T ParseExpr<T>(string mzn)

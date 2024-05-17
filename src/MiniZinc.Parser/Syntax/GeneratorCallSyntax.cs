@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
 public sealed record GeneratorCallSyntax(
-    Token Name,
+    IdentifierSyntax Name,
     SyntaxNode Expr,
     List<GeneratorSyntax> Generators
-) : SyntaxNode(Name) { }
+) : SyntaxNode(Name.Start) { }

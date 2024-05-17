@@ -5,7 +5,7 @@
 /// </summary>
 public sealed record DeclarationSyntax(Token Start, TypeSyntax Type) : SyntaxNode(Start), ILetLocal
 {
-    public Token Name { get; set; }
+    public IdentifierSyntax Name { get; set; }
     
     public SyntaxNode? Body { get; set; }
     

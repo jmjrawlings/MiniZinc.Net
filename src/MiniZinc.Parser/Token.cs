@@ -10,7 +10,8 @@ public readonly struct Token {
     public readonly object? Data;
     public int IntValue => (int)Data!;
     public string StringValue => (string)Data!;
-    public double DoubleValue => (double)Data!;
+    public double DoubleValue => (double)Data!; 
+    public bool BoolValue => Kind is TokenKind.TRUE;
     public int End => Start + Length;
     public Token(TokenKind kind, int line, int col, int start, int length, object? data = null)
     {
@@ -99,6 +100,7 @@ public readonly struct Token {
             TokenKind.OPEN_BRACE => "{",
             TokenKind.CLOSE_BRACE => "}",
             TokenKind.TUPLE_ACCESS => $".{IntValue}",
+            TokenKind.RECORD_ACCESS => $".{Data}",
             TokenKind.PERCENT => "%",
             TokenKind.UNDERSCORE => "_",
             TokenKind.TILDE => "~",
@@ -111,7 +113,7 @@ public readonly struct Token {
             TokenKind.EMPTY => "<>",
             TokenKind.INT_LITERAL => IntValue.ToString(),
             TokenKind.FLOAT_LITERAL => DoubleValue.ToString("F2"),
-            TokenKind.STRING_LITERAL => $"\"{StringValue}\"",
+            TokenKind.STRING_LITERAL => $"\"{Data}\"",
             TokenKind.ANONENUM => "anon_enum",
             TokenKind.DOUBLE_ARROW => "<->",
             TokenKind.LEFT_ARROW => "<-",
@@ -119,9 +121,9 @@ public readonly struct Token {
             TokenKind.NOT_EQUAL => "!=",
             TokenKind.EXP => "^",
             TokenKind.COMMA => ",",
-            TokenKind.GENERIC_SEQUENCE => $"$${StringValue}",
-            TokenKind.GENERIC => $"${StringValue}",
-            TokenKind.INFIX_IDENTIFIER => $"`{StringValue}`",
+            TokenKind.GENERIC_SEQUENCE => $"$${Data}",
+            TokenKind.GENERIC => $"${Data}",
+            TokenKind.INFIX_IDENTIFIER => $"`{Data}`",
             _ => Data?.ToString() ?? string.Empty
         };
 }

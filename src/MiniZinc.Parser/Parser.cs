@@ -114,34 +114,34 @@ public sealed class Parser
         f = default;
         return false;
     }
-
-    private bool ParseIdent(out Token token)
+    
+    private bool ParseIdent(out IdentifierSyntax node)
     {
         if (_kind is TokenKind.IDENTIFIER)
         {
-            token = _token;
+            node = new IdentifierSyntax(_token);
             Step();
             return true;
         }
         else
         {
-            token = default;
+            node = null!;
             return Expected("Identifier");
         }
     }
     
-    private bool ParseGeneric(out Token token)
+    private bool ParseGeneric(out IdentifierSyntax ident)
     {
         if (_kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQUENCE)
         {
-            token = _token;
+            ident = new IdentifierSyntax(_token);
             Step();
             return true;
         }
         else
         {
-            token = default;
-            return Expected("Identifier");
+            ident = null!;
+            return Expected("Generic Variable ($$T, $T)");
         }
     }
     
@@ -321,7 +321,7 @@ public sealed class Parser
         if (!ParseParameters(out var pars))
             return false;
         
-        Token? ann = null;
+        IdentifierSyntax? ann = null;
         if (Skip(TokenKind.ANN))
         {
             if (!Expect(TokenKind.COLON))
@@ -402,7 +402,7 @@ public sealed class Parser
         // Named cases: 'enum Dir = {N,S,E,W};`
         if (Skip(TokenKind.OPEN_BRACE))
         {
-            var names = new List<Token>();
+            var names = new List<IdentifierSyntax>();
             while (_kind is not TokenKind.CLOSE_BRACE)
             {
                 if (!ParseIdent(out name))
@@ -625,7 +625,7 @@ public sealed class Parser
         assign = null;
         var start = _token;
         TypeSyntax? type = null;
-        Token name;
+        IdentifierSyntax name;
         List<ParameterSyntax>? pars = null;
         List<SyntaxNode>? anns = null;
         
@@ -633,20 +633,17 @@ public sealed class Parser
         {
             if (Skip(TokenKind.EQUAL))
             {
-                name = start;
+                name = new IdentifierSyntax(start);
                 goto body;
             }
             else
-                type = new NameTypeSyntax(start, start);
+                type = new NameTypeSyntax(start, new IdentifierSyntax(start)){ Kind=TypeKind.Name };
         } 
         else if (start.Kind is TokenKind.ANY)
-        {
             return false;
-        }
+
         else if (!ParseType(out type))
-        {
             return false;
-        }
 
         if (!Expect(TokenKind.COLON))
             return false;
@@ -659,7 +656,7 @@ public sealed class Parser
         
         if (!ParseAnnotations(out anns))
             return false;
-        
+
         // Declaration only
         if (!Skip(TokenKind.EQUAL))
         {
@@ -721,12 +718,12 @@ public sealed class Parser
 
             case TokenKind.TRUE:
                 Step();
-                expr = new BoolSyntax(token);
+                expr = new BoolLiteralSyntax(token);
                 break;
 
             case TokenKind.FALSE:
                 Step();
-                expr = new BoolSyntax(token);
+                expr = new BoolLiteralSyntax(token);
                 break;
 
             case TokenKind.STRING_LITERAL:
@@ -1036,7 +1033,7 @@ public sealed class Parser
     internal bool ParseIdentExpr(out SyntaxNode result)
     {
         result = null!;
-        var name = _token;
+        var name = new IdentifierSyntax(_token);
         if (_kind is not TokenKind.IDENTIFIER)
             return Expected("Identifier");
         
@@ -1045,7 +1042,7 @@ public sealed class Parser
         // Simple identifier
         if (!Skip(TokenKind.OPEN_PAREN))
         {
-            result = new IdentifierSyntax(name);
+            result = name;
             return true;
         }
 
@@ -1097,13 +1094,13 @@ public sealed class Parser
                     exprs.Add(expr);
                     break;
                 }
-
+                
                 // The where indicates this definitely is a gencall
                 isGen = true;
                 if (!ParseExpr(out var where))
                     return false;
-
-                expr = new GeneratorSyntax(name)
+                
+                expr = new GeneratorSyntax(expr.Start)
                 {
                     From = from,
                     Where = where,
@@ -1159,7 +1156,7 @@ public sealed class Parser
 
         var generators = new List<GeneratorSyntax>();
         var gencall = new GeneratorCallSyntax(name, yields, generators);
-
+        
         List<IdentifierSyntax>? idents = null;
         for (i = 0; i < exprs.Count; i++)
         {
@@ -1193,6 +1190,7 @@ public sealed class Parser
     private bool ParseGenerators(List<GeneratorSyntax> generators)
     {
         var start = _token;
+        
         begin:
         var names = new List<IdentifierSyntax>();
         while (true)
@@ -1200,9 +1198,7 @@ public sealed class Parser
             IdentifierSyntax name;
             if (Skip(TokenKind.UNDERSCORE))
                 name = new IdentifierSyntax(_token);
-            else if (ParseIdent(out var id))
-                name = new IdentifierSyntax(id);
-            else
+            else if (!ParseIdent(out name))
                 return Error("Expected identifier in generator names");
 
             names.Add(name);
@@ -1771,7 +1767,7 @@ public sealed class Parser
         // Record expr
         if (Skip(TokenKind.COLON))
         {
-            if (expr is not IdentifierSyntax id)
+            if (expr is not IdentifierSyntax name)
                 return Expected("Identifier");
 
             var record = new RecordLiteralSyntax(start);
@@ -1779,10 +1775,9 @@ public sealed class Parser
             if (!ParseExpr(out expr))
                 return false;
 
-            var name = id.Token;
             var field = (name, expr);
             record.Fields.Add(field);
-
+            
             record_field:
             if (!Skip(TokenKind.COMMA))
                 return Expect(TokenKind.CLOSE_PAREN);
@@ -2011,12 +2006,12 @@ public sealed class Parser
 
             case TokenKind.GENERIC:
                 Step();
-                type = new NameTypeSyntax(start, _token) { Kind = TypeKind.Generic };
+                type = new NameTypeSyntax(start, new IdentifierSyntax(_token)) { Kind = TypeKind.Generic };
                 break;
 
             case TokenKind.GENERIC_SEQUENCE:
                 Step();
-                type = new NameTypeSyntax(start, _token) { Kind = TypeKind.GenericSeq };
+                type = new NameTypeSyntax(start, new IdentifierSyntax(_token)) { Kind = TypeKind.GenericSeq };
                 break;
 
             default:
@@ -2240,7 +2235,7 @@ public sealed class Parser
         if (_errorMessage is not null)
             return false;
         
-        _errorTrace = _sourceText[..(int)_token.End];
+        _errorTrace = _sourceText[.._token.End];
         _errorTrace = $"""
        ---------------------------------------------
        {msg}
@@ -2262,15 +2257,16 @@ public sealed class Parser
     /// </summary>
     /// <example>Parser.ParseFile("model.mzn")</example>
     /// <example>Parser.ParseFile("data.dzn")</example>
-    public static ParseResult ParseFile(string path, out SyntaxTree tree)
+    public static ParseResult ParseFile(string path)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
         var parser = new Parser(mzn);
-        var ok = parser.ParseTree(out tree);
+        var ok = parser.ParseTree(out var tree);
         var elapsed = watch.Elapsed;
         var result = new ParseResult
         {
+            Syntax = tree,
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
@@ -2292,14 +2288,15 @@ public sealed class Parser
     ///     constraint a /\ b;
     ///     """);
     /// </example>
-    public static ParseResult ParseText(string text, out SyntaxTree tree)
+    public static ParseResult ParseText(string text)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
-        var ok = parser.ParseTree(out tree);
+        var ok = parser.ParseTree(out var tree);
         var elapsed = watch.Elapsed;
         var result = new ParseResult
         {
+            Syntax = tree,
             SourceFile = null,
             SourceText = text,
             Ok = ok,

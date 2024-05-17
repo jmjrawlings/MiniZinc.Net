@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record AssignmentSyntax(in Token Name, SyntaxNode Expr) : SyntaxNode(Name), ILetLocal
+public sealed record AssignmentSyntax(IdentifierSyntax Name, SyntaxNode Expr) : SyntaxNode(Name.Start), ILetLocal
 {
-    public override string ToString() => $"{Name} = {Expr}";
+    
 }

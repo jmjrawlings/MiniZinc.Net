@@ -4,6 +4,7 @@ using Syntax;
 
 public sealed record ParseResult
 {
+    public required SyntaxTree Syntax { get; init; }
     public required string? SourceFile {get; init;}
     public required string SourceText {get; init;}
     public required bool Ok { get; init; }

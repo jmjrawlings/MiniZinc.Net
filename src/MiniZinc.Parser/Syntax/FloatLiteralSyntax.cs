@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record FloatLiteralSyntax(Token start) : SyntaxNode(start)
+public sealed record FloatLiteralSyntax(in Token Start) : SyntaxNode(Start)
 {
-    public double Value => start.DoubleValue;
+    public double Value => Start.DoubleValue;
 
     public static implicit operator double(FloatLiteralSyntax expr) => expr.Value;
 
