@@ -5,7 +5,6 @@ public sealed class ParserIntegrationTests
         var results = Parser.ParseFile(path);
         results.ErrorTrace.Should().BeNull();
         var output = results.Syntax.Write();
-
     }
 
     [Fact(DisplayName = "unit/test-globals-float.mzn")]

@@ -183,7 +183,7 @@ public class ParserUnitTests
             """;
         var expr = ParseExpr<ComprehensionSyntax>(mzn);
     }
-    
+
     [Fact]
     void test_set_of_ti()
     {
@@ -191,18 +191,20 @@ public class ParserUnitTests
         var node = ParseNode<DeclarationSyntax>(mzn);
         node.Name.ToString().Should().Be("xd");
     }
-    
+
     [Fact]
     void test_postfix_range_operator()
     {
         var mzn = "var 0..: xd";
         var node = ParseNode<DeclarationSyntax>(mzn);
         node.Name.ToString().Should().Be("xd");
-        var type = node.Type as ExprType;
-        // type.Var.Should().BeTrue();
-        // var range = (RangeLiteralSyntax)type.Expr;
-        // range.Lower.Should().Be(new IntLiteralSyntax(0));
-        // range.Upper.Should().BeNull();
+        var type = (ExprType)node.Type;
+        type.Var.Should().BeTrue();
+        var range = (RangeLiteralSyntax)type.Expr;
+        range.Lower.Should().BeOfType<IntLiteralSyntax>();
+        range.Upper.Should().BeNull();
+        var lo = (IntLiteralSyntax)range.Lower!;
+        lo.Value.Should().Be(0);
     }
 
     [Fact]
@@ -271,9 +273,20 @@ public class ParserUnitTests
                     throw new Exception();
             }
         }
-
         var result = eval(expr);
         result.Should().Be(expected);
+    }
+
+    [Fact]
+    void test_float_range()
+    {
+        var mzn = "0.01..1.123;";
+        var parser = new Parser(mzn);
+        var ok = parser.ParseExpr(out var expr);
+        ok.Should().BeTrue();
+        var node = (RangeLiteralSyntax)expr;
+        node.Lower.Should().BeOfType<FloatLiteralSyntax>();
+        node.Upper.Should().BeOfType<FloatLiteralSyntax>();
     }
 
     SyntaxTree ParseText(string mzn)

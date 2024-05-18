@@ -11,6 +11,7 @@ public enum EnumCaseType
 public record EnumCasesSyntax(Token Start, EnumCaseType Type, SyntaxNode? Expr = null)
     : SyntaxNode(Start)
 {
+    public IdentifierSyntax? Constructor { get; set; } = null;
     public List<IdentifierSyntax>? Names { get; set; } = null;
 }
 
