@@ -65,7 +65,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private Token _token;
     private TokenKind _kind;
     private int _startString;
-    
+
     private Lexer(string sourceText)
     {
         _line = 1;
@@ -75,7 +75,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _n = sourceText.Length - 1;
         Step();
     }
-    
+
     public bool MoveNext()
     {
         next:
@@ -144,9 +144,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case DOT:
                 Step();
-                if (SkipReturn(DOT, TokenKind.DOT_DOT))
-                {
-                }   
+                if (SkipReturn(DOT, TokenKind.DOT_DOT)) { }
                 else if (IsDigit(_char))
                     LexTupleAccess();
                 else
@@ -226,8 +224,8 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             case UNDERSCORE:
                 if (IsLetter(Peek))
                 {
-                    LexIdentifier();
-                    Return(_kind);
+                    var ident = LexIdentifier();
+                    Return(_kind, ident);
                 }
                 else
                 {
@@ -280,7 +278,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         string ident = LexIdentifier();
         Return(TokenKind.RECORD_ACCESS, ident);
     }
-    
+
     private void LexTupleAccess()
     {
         BeginString();
@@ -293,7 +291,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         int item = int.Parse(span);
         Return(TokenKind.TUPLE_ACCESS, item);
     }
-    
+
     private void LexQuotedIdentifier()
     {
         string ident = LexIdentifier();
@@ -320,7 +318,6 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         var ident = ReadString();
         Return(seq ? TokenKind.GENERIC_SEQUENCE : TokenKind.GENERIC, ident);
     }
-
 
     /// <summary>
     /// Lex an identifier enclosed in backticks, used
@@ -533,14 +530,14 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         {
             Step();
         } while (IsAsciiLetterOrDigit(_char));
-        
+
         var hex = ReadSpan();
         if (int.TryParse(hex, NumberStyles.AllowHexSpecifier, null, out var i))
             Return(TokenKind.INT_LITERAL, i);
         else
             Error($"Could not parse \"{hex.ToString()}\" as an integer");
     }
-    
+
     /// <summary>
     /// Lex an octal integer eg `0o777`
     /// </summary>
@@ -565,7 +562,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Error($"Could not parse \"{oct}\" as an integer");
         }
     }
-    
+
     /// <summary>
     /// Lex a number, it can be either a standard integer,
     /// hexadecimal, octal, or float
@@ -592,14 +589,12 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         {
             Step();
         } while (IsAsciiLetterOrDigit(_char));
-        
+
         if (_char is DOT && IsDigit(Peek))
         {
             Step();
-            do
-                Step();
-            while
-                (IsDigit(_char) || _char is 'e');
+            do Step();
+            while (IsDigit(_char) || _char is 'e');
 
             var span = ReadSpan();
             if (double.TryParse(span, null, out var d))
@@ -617,7 +612,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             return;
         }
     }
-    
+
     void Step()
     {
         if (++_index <= _n)
@@ -641,7 +636,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
     }
 
-    private char Peek => _index < _n ? _sourceText[_index+1] : EOF;
+    private char Peek => _index < _n ? _sourceText[_index + 1] : EOF;
 
     bool Skip(char c)
     {
@@ -653,6 +648,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         return false;
     }
+
     private void Return(in TokenKind kind, object? data = null)
     {
         _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, data);
@@ -678,13 +674,11 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         _startString = _index;
     }
-    
-    string ReadString() =>
-        _sourceText.Substring(_startString, _index - _startString);
 
-    ReadOnlySpan<char> ReadSpan() =>
-        _sourceText.AsSpan(_startString, _index - _startString);
-    
+    string ReadString() => _sourceText.Substring(_startString, _index - _startString);
+
+    ReadOnlySpan<char> ReadSpan() => _sourceText.AsSpan(_startString, _index - _startString);
+
     /// <summary>
     /// Lex the given string
     /// </summary>
@@ -708,7 +702,5 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     IEnumerator IEnumerable.GetEnumerator() => this;
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }
