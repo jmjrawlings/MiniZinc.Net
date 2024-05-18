@@ -49,3 +49,4 @@ TODO
 - [Basic Modelling Course 1](https://www.coursera.org/learn/basic-modeling)
 - [Advanced Modelling Course 2](https://www.coursera.org/learn/advanced-modeling)
 - [libminizinc repository](https://github.com/MiniZinc/libminizinc)
+- [Modelling for Combinatorial Optimisation [M4CO]"](https://user.it.uu.se/~pierref/courses/COCP/slides/)
