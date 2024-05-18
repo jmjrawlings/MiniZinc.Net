@@ -432,8 +432,12 @@ internal sealed class Writer
         if (e.Operator is { } op)
             Write(op);
         else
+        {
+            Write(BACKTICK);
             Write(e.Infix.StringValue);
-        Write(e.Infix.StringValue);
+            Write(BACKTICK);
+        }
+
         Write(SPACE);
         Write(e.Right);
         Write(CLOSE_PAREN);
