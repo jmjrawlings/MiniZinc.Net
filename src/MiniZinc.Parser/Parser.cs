@@ -374,8 +374,12 @@ public sealed class Parser
         if (!ParseAnnotations(out var anns))
             return false;
 
+        // Enum without assignments are valid
         if (_kind is TokenKind.EOL)
+        {
+            result = new EnumDeclarationSyntax(start, name);
             return true;
+        }
 
         if (!Expect(TokenKind.EQUAL))
             return false;
@@ -511,7 +515,7 @@ public sealed class Parser
         if (!ParseType(out var type))
             return false;
 
-        alias = new DeclarationSyntax(start, type) { Name = name };
+        alias = new TypeAliasSyntax(start, name, type);
         return true;
     }
 
