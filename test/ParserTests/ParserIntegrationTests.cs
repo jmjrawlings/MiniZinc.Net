@@ -2,9 +2,11 @@ public sealed class ParserIntegrationTests
 {
     private void Test(string path)
     {
-        var results = Parser.ParseFile(path);
-        results.ErrorTrace.Should().BeNull();
-        var output = results.Syntax.Write();
+        var result = Parser.ParseFile(path);
+        result.ErrorTrace.Should().BeNull();
+        var output = result.Syntax.Write();
+        var roundtrip = Parser.ParseText(output);
+        roundtrip.ErrorTrace.Should().BeNull();
     }
 
     [Fact(DisplayName = "unit/test-globals-float.mzn")]

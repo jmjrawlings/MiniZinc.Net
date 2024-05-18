@@ -10,4 +10,6 @@ public sealed record WriteOptions
     /// If true, the shortest possible output will be generated
     /// </summary>
     public bool Minify { get; init; }
+
+    public static WriteOptions Minified = new WriteOptions { Minify = true };
 }
