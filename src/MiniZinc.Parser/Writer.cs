@@ -255,6 +255,7 @@ internal sealed class Writer
             case TupleLiteralSyntax e:
                 Write(OPEN_PAREN);
                 WriteSep(e.Fields);
+                Write(COMMA);
                 Write(CLOSE_PAREN);
                 break;
 

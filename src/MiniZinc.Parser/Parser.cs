@@ -1190,10 +1190,15 @@ public sealed class Parser
         while (true)
         {
             IdentifierSyntax name;
-            if (Skip(TokenKind.UNDERSCORE))
+            if (_kind is TokenKind.UNDERSCORE)
+            {
                 name = new IdentifierSyntax(_token);
+                Step();
+            }
             else if (!ParseIdent(out name))
+            {
                 return Error("Expected identifier in generator names");
+            }
 
             names.Add(name);
             if (Skip(TokenKind.COMMA))
