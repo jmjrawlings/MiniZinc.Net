@@ -13,5 +13,5 @@ public abstract record SyntaxNode(in Token Start)
         return s;
     }
 
-    public override string ToString() => Write(WriteOptions.Minified);
+    public override string ToString() => Write();
 }

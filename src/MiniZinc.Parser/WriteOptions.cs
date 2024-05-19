@@ -11,5 +11,14 @@ public sealed record WriteOptions
     /// </summary>
     public bool Minify { get; init; }
 
-    public static WriteOptions Minified = new WriteOptions { Minify = true };
+    /// <summary>
+    /// If true, the output will be "prettified""
+    /// </summary>
+    public bool Prettify { get; init; }
+
+    public static WriteOptions Minimal = new WriteOptions { Minify = true };
+
+    public static WriteOptions Pretty = new WriteOptions { Prettify = true };
+
+    public static WriteOptions Default = new WriteOptions { };
 }

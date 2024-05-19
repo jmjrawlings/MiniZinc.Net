@@ -2314,4 +2314,7 @@ public sealed class Parser
         };
         return result;
     }
+
+    /// <inheritdoc cref="ParseFile(string)"/>
+    public static ParseResult ParseFile(FileInfo file) => ParseFile(file.FullName);
 }
