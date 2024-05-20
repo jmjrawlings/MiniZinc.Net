@@ -25,6 +25,12 @@ class Program
             {
                 var cwd = new DirectoryInfo(Directory.GetCurrentDirectory());
                 var files = new List<FileInfo>();
+                if (result.Tokens.Count == 0)
+                {
+                    result.ErrorMessage = "Expected a filepath or pattern (eg: ./*.mzn)";
+                    return files;
+                }
+
                 foreach (var token in result.Tokens)
                 {
                     if (File.Exists(token.Value))
@@ -57,7 +63,7 @@ class Program
             async (context) =>
             {
                 var files = context.ParseResult.GetValueForArgument(filePatternArg);
-                await Minify(context, files);
+                await Format(context, files);
             }
         );
 
