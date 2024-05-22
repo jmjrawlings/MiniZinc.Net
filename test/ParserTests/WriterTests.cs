@@ -23,7 +23,7 @@ public sealed class WriterTests
         var expected = """
             var int: a;
             constraint
-                (a > 100);
+                a > 100;
             """;
 
         var result = Parser.ParseText(input);
@@ -53,5 +53,14 @@ public sealed class WriterTests
         var opts = new WriteOptions { Prettify = true, Minify = true };
         var output = tree.Write(opts);
         output.Should().Be(expected);
+    }
+
+    [Fact]
+    void test_write_precedence()
+    {
+        var input = "a  <-> (2 + b)";
+        var expr = Parser.ParseNode<BinaryOperatorSyntax>(input)!;
+        var output = expr.Write();
+        output.Should().Be("a - 2 > 100 <-> b * 10 < c");
     }
 }

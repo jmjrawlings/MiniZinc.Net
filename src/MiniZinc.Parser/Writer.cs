@@ -112,7 +112,7 @@ internal sealed class Writer
         _tabSize = options.TabSize;
     }
 
-    private void Write(SyntaxNode? expr)
+    private void Write(SyntaxNode? expr, int precedence = 0)
     {
         if (expr is null)
             return;
@@ -160,7 +160,7 @@ internal sealed class Writer
                 break;
 
             case BinaryOperatorSyntax e:
-                WriteBinOp(e);
+                WriteBinOp(e, precedence);
                 break;
 
             case IntLiteralSyntax e:
@@ -472,13 +472,21 @@ internal sealed class Writer
         EndStatement();
     }
 
-    private void WriteBinOp(BinaryOperatorSyntax e)
+    private void WriteBinOp(BinaryOperatorSyntax e, int precedence = 0)
     {
-        Write(OPEN_PAREN);
-        Write(e.Left);
-        Write(SPACE);
+        int prec = Parser.Precedence(e.Infix.Kind);
+        bool bracketed = prec < precedence;
+
+        if (bracketed)
+            Write(OPEN_PAREN);
+
+        Write(e.Left, prec);
+        Space();
+
         if (e.Operator is { } op)
+        {
             Write(op);
+        }
         else
         {
             Write(BACKTICK);
@@ -486,9 +494,11 @@ internal sealed class Writer
             Write(BACKTICK);
         }
 
-        Write(SPACE);
-        Write(e.Right);
-        Write(CLOSE_PAREN);
+        Space();
+        Write(e.Right, prec);
+
+        if (bracketed)
+            Write(CLOSE_PAREN);
     }
 
     private void WriteSolve(SolveSyntax e)
@@ -690,7 +700,7 @@ internal sealed class Writer
         Write(CLOSE_PAREN);
     }
 
-    void WriteParameter(ParameterSyntax x)
+    void WriteParameter(ParameterSyntax x, int precedence = 0)
     {
         Write(x.Type);
         if (x.Name is { } name)
@@ -754,7 +764,7 @@ internal sealed class Writer
         Write(CLOSE_BRACKET);
     }
 
-    void WriteGenerator(GeneratorSyntax gen)
+    void WriteGenerator(GeneratorSyntax gen, int precedence = 0)
     {
         WriteSep(gen.Names, Write);
         Spaced(IN);
@@ -829,7 +839,12 @@ internal sealed class Writer
         _sb.Append(SPACE);
     }
 
-    void WriteSep<T>(IEnumerable<T>? nodes, Action<T>? write = null, string sep = ",")
+    void WriteSep<T>(
+        IEnumerable<T>? nodes,
+        Action<T, int>? write = null,
+        int precedence = 0,
+        string sep = ","
+    )
         where T : SyntaxNode
     {
         if (nodes is null)
@@ -841,11 +856,11 @@ internal sealed class Writer
             return;
 
         write ??= Write;
-        write(enumerator.Current);
+        write(enumerator.Current, precedence);
         while (enumerator.MoveNext())
         {
             Write(sep);
-            write(enumerator.Current);
+            write(enumerator.Current, precedence);
         }
     }
 
@@ -863,7 +878,9 @@ internal sealed class Writer
                 break;
 
             case Operator.Equivalent:
-                Write(EQUAL);
+                Write(OPEN_CHEVRON);
+                Write(DASH);
+                Write(CLOSE_CHEVRON);
                 break;
             case Operator.Implies:
                 Write(DASH);

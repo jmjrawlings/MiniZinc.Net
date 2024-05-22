@@ -971,7 +971,7 @@ public sealed class Parser
         return true;
     }
 
-    private static ushort Precedence(in TokenKind kind) =>
+    internal static ushort Precedence(in TokenKind kind) =>
         kind switch
         {
             TokenKind.DOUBLE_ARROW => 1200,
@@ -2317,4 +2317,17 @@ public sealed class Parser
 
     /// <inheritdoc cref="ParseFile(string)"/>
     public static ParseResult ParseFile(FileInfo file) => ParseFile(file.FullName);
+
+    internal static T? ParseNode<T>(string text)
+        where T : SyntaxNode
+    {
+        var parser = new Parser(text);
+        if (!parser.ParseExpr(out var node))
+            return null;
+
+        if (node is not T t)
+            return null;
+
+        return t;
+    }
 }
