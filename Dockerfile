@@ -1,5 +1,3 @@
-ARG DEBIAN_VERSION=11
-ARG DEBIAN_FRONTEND=noninteractive
 ARG MINIZINC_VERSION=2.8.3
 ARG MINIZINC_HOME=/usr/local/share/minizinc
 ARG ORTOOLS_VERSION=9.7
@@ -7,7 +5,14 @@ ARG ORTOOLS_BUILD=2996
 ARG ORTOOLS_HOME=/opt/ortools
 ARG USER_UID=1000
 ARG USER_GID=1000
-ARG USER_NAME=harken
+ARG USER_NAME=dev
+
+# ********************************************************
+# Dotnet SDK
+# ********************************************************
+FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim as dotnet-sdk
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+
 
 # ********************************************************
 # MiniZinc Builder
@@ -19,6 +24,7 @@ ARG USER_NAME=harken
 #
 # ********************************************************
 FROM minizinc/minizinc:${MINIZINC_VERSION} as minizinc-builder
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install required packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -27,13 +33,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install OR-Tools
-ARG DEBIAN_VERSION
+ARG DEBIAN_VERSION=11
 ARG MINIZINC_HOME
 ARG ORTOOLS_VERSION
 ARG ORTOOLS_BUILD
 ARG ORTOOLS_HOME
 ARG ORTOOLS_VERSION_BUILD=${ORTOOLS_VERSION}.${ORTOOLS_BUILD}
-ARG ORTOOLS_TAR_NAME=or-tools_amd64_debian-${DEBIAN_VERSION}_cpp_v${ORTOOLS_VERSION_BUILD}.tar.gz
+ARG ORTOOLS_TAR_NAME=or-tools_amd64_debian-11_cpp_v${ORTOOLS_VERSION_BUILD}.tar.gz
 ARG ORTOOLS_TAR_URL=https://github.com/google/or-tools/releases/download/v${ORTOOLS_VERSION}/${ORTOOLS_TAR_NAME}
 ARG ORTOOLS_DIR_NAME=or-tools_x86_64_Debian-${DEBIAN_VERSION}_cpp_v${ORTOOLS_VERSION_BUILD}
 
@@ -52,42 +58,14 @@ RUN echo "var 1..9: x; constraint x > 5; solve satisfy;" \
     | minizinc --solver com.google.or-tools --input-from-stdin
 
 
-# ------------------------------------
-# base
-#
-# Base operating system
-# ------------------------------------
-FROM debian:${DEBIAN_VERSION} as base
-
-ARG USER_NAME
-ARG USER_GID
-ARG USER_UID
-
-RUN groupadd --gid ${USER_GID} ${USER_NAME} \
-    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
-    && apt-get update \
-    && apt-get install -y sudo \
-    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
-    && chmod 0440 /etc/sudoers.d/${USER_NAME}
-
-
-# ------------------------------------
-# dev
-#
+# ********************************************************
 # Development environment
-# ------------------------------------
-FROM base as dev
+# ********************************************************
+FROM dotnet-sdk as dev
 
-ARG DEBIAN_FRONTEND
-ARG DEBIAN_VERSION
-ENV DOTNET_RUNNING_IN_CONTAINER=true
-ENV DOTNET_INSTALL_DIR=/usr/share/dotnet
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+ARG DEBIAN_FRONTEND=noninteractive
 ARG MINIZINC_HOME
 ARG ORTOOLS_HOME
-ARG USER_ID
-ARG USER_GID
-ARG USER_NAME
 
 # Install core packages
 RUN apt-get update \
@@ -99,15 +77,6 @@ RUN apt-get update \
     lsb-release \
     wget \
     && rm -rf /var/lib/apt/lists/*
-
-# Install DOTNETSDK
-RUN wget https://packages.microsoft.com/config/debian/${DEBIAN_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && sudo dpkg -i packages-microsoft-prod.deb \
-    && rm packages-microsoft-prod.deb \
-    && apt-get update  \
-    && apt-get install -y dotnet-sdk-8.0 \
-    && rm -rf /var/lib/apt/lists/*
-
 
 # Install Docker CE CLI
 RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | apt-key add - 2>/dev/null \
@@ -154,6 +123,18 @@ COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
 COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=minizinc-builder $ORTOOLS_HOME $ORTOOLS_HOME
 
+# Add nonroot user
+ARG USER_NAME
+ARG USER_GID
+ARG USER_UID
+
+RUN groupadd --gid ${USER_GID} ${USER_NAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
+    && chmod 0440 /etc/sudoers.d/${USER_NAME}
+
 # Install ZSH
 USER ${USER_NAME}
 WORKDIR /home/${USER_NAME}
@@ -166,55 +147,38 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 
 COPY .devcontainer/.p10k.zsh .devcontainer/.zshrc /home/${USER_NAME}
 
-
 # ------------------------------------
 # test
 # ------------------------------------
-FROM base as test
+FROM dotnet-sdk as test
 
+ARG DEBIAN_FRONTEND=noninteractive
 ARG DEBIAN_FRONTEND
-ARG DEBIAN_VERSION
-ENV DOTNET_RUNNING_IN_CONTAINER=true
-ENV DOTNET_INSTALL_DIR=/usr/share/dotnet
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ARG MINIZINC_HOME
 ARG ORTOOLS_HOME
-ARG USER_UID
-ARG USER_GID
 ARG USER_NAME
+ARG USER_GID
+ARG USER_UID
 
-# Install core packages
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    git \
-    gnupg2 \
-    locales \
-    lsb-release \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
+# Add nonroot user
+RUN groupadd --gid ${USER_GID} ${USER_NAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
+    && chmod 0440 /etc/sudoers.d/${USER_NAME} \
 
-# Install .NET SDK
-RUN wget https://packages.microsoft.com/config/debian/${DEBIAN_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && sudo dpkg -i packages-microsoft-prod.deb \
-    && rm packages-microsoft-prod.deb \
-    && apt-get update  \
-    && apt-get install -y dotnet-sdk-8.0 \
-    && rm -rf /var/lib/apt/lists/*
+USER ${USER_NAME}
+WORKDIR /app
 
 # Install MiniZinc + ORTools
 COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
 COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
 
-USER ${USER_NAME}
-ARG PROJECT_DIR=/home/${USER_NAME}/MiniZinc.Net
-RUN mkdir -p ${PROJECT_DIR}
-WORKDIR ${PROJECT_DIR}
-
-COPY --chown=$USER_UID:$USER_GID global.json Directory.Build.props ./
-COPY --chown=$USER_UID:$USER_GID src ./src
-COPY --chown=$USER_UID:$USER_GID test ./test
+COPY global.json Directory.Build.props ./
+COPY src ./src
+COPY test ./test
+RUN rm -rf ./test/Benchmarks
 
 RUN dotnet new sln \
     && dotnet sln add src/**/*.csproj \
@@ -223,3 +187,15 @@ RUN dotnet new sln \
 RUN dotnet build
 
 CMD [ "dotnet","test" ]
+
+# ------------------------------------
+# Toolkit
+# ------------------------------------
+FROM mcr.microsoft.com/dotnet/nightly/sdk:8.0-jammy-aot as toolkit
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND
+WORKDIR /app
+COPY global.json Directory.Build.props ./
+COPY src ./src
+RUN dotnet publish src/MiniZinc.Toolkit/MiniZinc.Toolkit.csproj -c Release -o build
