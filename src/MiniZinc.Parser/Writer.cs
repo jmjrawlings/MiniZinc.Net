@@ -5,109 +5,114 @@ using Syntax;
 
 /// <summary>
 /// Writes a minzinc model.
-/// Intended to be used via the
-/// SyntaxNode extension method `node.Write()`
+/// Intended to be used via the SyntaxNode extension method `node.Write()`
 /// </summary>
 internal sealed class Writer
 {
-    const char FWD_SLASH = '/';
-    const char BACK_SLASH = '\\';
-    const char STAR = '*';
-    const char DELIMITER = ';';
-    const char EQUAL = '=';
-    const char OPEN_CHEVRON = '<';
-    const char CLOSE_CHEVRON = '>';
-    const char UP_CHEVRON = '^';
-    const char DOT = '.';
-    const char PLUS = '+';
-    const char DASH = '-';
-    const char TILDE = '~';
-    const char DOLLAR = '$';
-    const char OPEN_BRACKET = '[';
-    const char CLOSE_BRACKET = ']';
-    const char OPEN_PAREN = '(';
-    const char CLOSE_PAREN = ')';
-    const char OPEN_BRACE = '{';
-    const char CLOSE_BRACE = '}';
-    const char PIPE = '|';
-    const char PERCENT = '%';
-    const char UNDERSCORE = '_';
-    const char COMMA = ',';
-    const char EXCLAMATION = '!';
-    const char SINGLE_QUOTE = '\'';
-    const char DOUBLE_QUOTE = '"';
-    const char BACKTICK = '`';
-    const char SPACE = ' ';
-    const char COLON = ':';
-    const char NEWLINE = '\n';
-    const char RETURN = '\r';
-    const char EOF = '\uffff';
-    const string ANNOTATION = "annotation";
-    const string ANN = "ann";
-    const string ANY = "any";
-    const string ARRAY = "array";
-    const string BOOL = "bool";
-    const string CASE = "case";
-    const string CONSTRAINT = "constraint";
-    const string DEFAULT = "default";
-    const string DIFF = "diff";
-    const string DIV = "div";
-    const string ELSE = "else";
-    const string ELSEIF = "elseif";
-    const string ENDIF = "endif";
-    const string ENUM = "enum";
-    const string FALSE = "false";
-    const string FLOAT = "float";
-    const string FUNCTION = "function";
-    const string IF = "if";
-    const string IN = "in";
-    const string INCLUDE = "include";
-    const string INT = "int";
-    const string INTERSECT = "intersect";
-    const string LET = "let";
-    const string LIST = "list";
-    const string MAXIMIZE = "maximize";
-    const string MINIMIZE = "minimize";
-    const string MOD = "mod";
-    const string NOT = "not";
-    const string OF = "of";
-    const string OP = "op";
-    const string OPT = "opt";
-    const string OUTPUT = "output";
-    const string PAR = "par";
-    const string PREDICATE = "predicate";
-    const string RECORD = "record";
-    const string SATISFY = "satisfy";
-    const string SET = "set";
-    const string SOLVE = "solve";
-    const string STRING = "string";
-    const string SUBSET = "subset";
-    const string SUPERSET = "superset";
-    const string SYMDIFF = "symdiff";
-    const string TEST = "test";
-    const string THEN = "then";
-    const string TRUE = "true";
-    const string TUPLE = "tuple";
-    const string TYPE = "type";
-    const string UNION = "union";
-    const string VAR = "var";
-    const string WHERE = "where";
-    const string XOR = "xor";
-    const string EOL = ";";
-    const string ANON_ENUM = "anon_enum";
+    private const char FWD_SLASH = '/';
+    private const char BACK_SLASH = '\\';
+    private const char STAR = '*';
+    private const char DELIMITER = ';';
+    private const char EQUAL = '=';
+    private const char OPEN_CHEVRON = '<';
+    private const char CLOSE_CHEVRON = '>';
+    private const char UP_CHEVRON = '^';
+    private const char DOT = '.';
+    private const char PLUS = '+';
+    private const char DASH = '-';
+    private const char TILDE = '~';
+    private const char DOLLAR = '$';
+    private const char OPEN_BRACKET = '[';
+    private const char CLOSE_BRACKET = ']';
+    private const char OPEN_PAREN = '(';
+    private const char CLOSE_PAREN = ')';
+    private const char OPEN_BRACE = '{';
+    private const char CLOSE_BRACE = '}';
+    private const char PIPE = '|';
+    private const char PERCENT = '%';
+    private const char UNDERSCORE = '_';
+    private const char COMMA = ',';
+    private const char EXCLAMATION = '!';
+    private const char SINGLE_QUOTE = '\'';
+    private const char DOUBLE_QUOTE = '"';
+    private const char BACKTICK = '`';
+    private const char SPACE = ' ';
+    private const char COLON = ':';
+    private const char NEWLINE = '\n';
+    private const char RETURN = '\r';
+    private const char EOF = '\uffff';
+    private const string ANNOTATION = "annotation";
+    private const string ANN = "ann";
+    private const string ANY = "any";
+    private const string ARRAY = "array";
+    private const string BOOL = "bool";
+    private const string CASE = "case";
+    private const string CONSTRAINT = "constraint";
+    private const string DEFAULT = "default";
+    private const string DIFF = "diff";
+    private const string DIV = "div";
+    private const string ELSE = "else";
+    private const string ELSEIF = "elseif";
+    private const string ENDIF = "endif";
+    private const string ENUM = "enum";
+    private const string FALSE = "false";
+    private const string FLOAT = "float";
+    private const string FUNCTION = "function";
+    private const string IF = "if";
+    private const string IN = "in";
+    private const string INCLUDE = "include";
+    private const string INT = "int";
+    private const string INTERSECT = "intersect";
+    private const string LET = "let";
+    private const string LIST = "list";
+    private const string MAXIMIZE = "maximize";
+    private const string MINIMIZE = "minimize";
+    private const string MOD = "mod";
+    private const string NOT = "not";
+    private const string OF = "of";
+    private const string OP = "op";
+    private const string OPT = "opt";
+    private const string OUTPUT = "output";
+    private const string PAR = "par";
+    private const string PREDICATE = "predicate";
+    private const string RECORD = "record";
+    private const string SATISFY = "satisfy";
+    private const string SET = "set";
+    private const string SOLVE = "solve";
+    private const string STRING = "string";
+    private const string SUBSET = "subset";
+    private const string SUPERSET = "superset";
+    private const string SYMDIFF = "symdiff";
+    private const string TEST = "test";
+    private const string THEN = "then";
+    private const string TRUE = "true";
+    private const string TUPLE = "tuple";
+    private const string TYPE = "type";
+    private const string UNION = "union";
+    private const string VAR = "var";
+    private const string WHERE = "where";
+    private const string XOR = "xor";
+    private const string EOL = ";";
+    private const string ANON_ENUM = "anon_enum";
 
     private readonly StringBuilder _sb;
     private readonly WriteOptions _options;
     private readonly bool _minify;
+    private readonly bool _prettify;
+    private int _indent;
+    private int _tabSize;
 
     public Writer(WriteOptions options)
     {
         _sb = new StringBuilder();
         _options = options;
         _minify = _options.Minify;
+        _prettify = options.Prettify;
+        _indent = 0;
+        _tabSize = options.TabSize;
     }
 
-    public void Write(SyntaxNode? expr)
+    private void Write(SyntaxNode? expr)
     {
         if (expr is null)
             return;
@@ -313,9 +318,7 @@ internal sealed class Writer
     private void WriteAssignment(AssignmentSyntax e)
     {
         Write(e.Name);
-        Space();
-        Write(EQUAL);
-        Space();
+        Spaced(EQUAL);
         Write(e.Expr);
         EndStatement();
     }
@@ -363,15 +366,53 @@ internal sealed class Writer
 
     private void WriteTree(SyntaxTree e)
     {
-        foreach (var node in e.Nodes)
+        var nodes = e.Nodes;
+        if (_prettify)
+        {
+            nodes = new List<SyntaxNode>(e.Nodes);
+            nodes.Sort(_prettyPrintComparer);
+        }
+
+        foreach (var node in nodes)
             Write(node);
+        return;
+    }
+
+    static PrettyPrintNodeComparer _prettyPrintComparer = new();
+
+    /// <summary>
+    /// Used for ordering nodes for pretty printing
+    /// </summary>
+    class PrettyPrintNodeComparer : IComparer<SyntaxNode>
+    {
+        static int Order(SyntaxNode? node) =>
+            node switch
+            {
+                IncludeSyntax => 0,
+                DeclarationSyntax => 1,
+                AssignmentSyntax => 1,
+                FunctionDeclarationSyntax => 1,
+                ConstraintSyntax => 2,
+                OutputSyntax => 4,
+                SolveSyntax => 3,
+                _ => 10
+            };
+
+        public int Compare(SyntaxNode? x, SyntaxNode? y)
+        {
+            int i = Order(x);
+            int j = Order(y);
+            return i.CompareTo(j);
+        }
     }
 
     private void WriteConstraint(ConstraintSyntax e)
     {
         Write(CONSTRAINT);
-        Space();
+        Indent();
+        Newline();
         Write(e.Expr);
+        Dedent();
         EndStatement();
     }
 
@@ -405,10 +446,16 @@ internal sealed class Writer
         if (e.Body is { } body)
         {
             Write(EQUAL);
+            Indent();
             Newline();
             Write(body);
+            EndStatement();
+            Dedent();
         }
-        EndStatement();
+        else
+        {
+            EndStatement();
+        }
     }
 
     private void WriteEnum(EnumDeclarationSyntax e)
@@ -419,7 +466,7 @@ internal sealed class Writer
         WriteAnnotations(e);
         if (e.Cases.Count > 0)
         {
-            Write(EQUAL);
+            Spaced(EQUAL);
             WriteSep(e.Cases, sep: "++");
         }
         EndStatement();
@@ -455,11 +502,17 @@ internal sealed class Writer
                 break;
             case SolveMethod.Maximize:
                 WriteSpace(MAXIMIZE);
+                Indent();
+                Newline();
                 Write(e.Objective);
+                Dedent();
                 break;
             case SolveMethod.Minimize:
                 WriteSpace(MINIMIZE);
+                Indent();
+                Newline();
                 Write(e.Objective);
+                Dedent();
                 break;
         }
         EndStatement();
@@ -526,10 +579,11 @@ internal sealed class Writer
     {
         WriteType(dec.Type);
         Write(COLON);
+        Space();
         Write(dec.Name);
         if (dec.Body is { } body)
         {
-            Write(EQUAL);
+            Spaced(EQUAL);
             Write(body);
         }
         EndStatement();
@@ -733,14 +787,28 @@ internal sealed class Writer
 
     void Newline()
     {
-        Write(NEWLINE);
+        if (_minify)
+            return;
+
+        _sb.AppendLine();
+        _sb.Append(SPACE, _tabSize * _indent);
+    }
+
+    void Indent()
+    {
+        _indent++;
+    }
+
+    void Dedent()
+    {
+        _indent--;
     }
 
     void Write(IdentifierSyntax id) => _sb.Append(id);
 
     void Space()
     {
-        Write(SPACE);
+        _sb.Append(SPACE);
     }
 
     void Write(string s)
@@ -932,16 +1000,26 @@ internal sealed class Writer
         {
             Space();
             Write(COLON);
-            Write(COLON);
             Write(ann);
+            Write(COLON);
         }
     }
 
+    /// <summary>
+    /// Write the given node to a string
+    /// </summary>
     public static string WriteNode(SyntaxNode node, WriteOptions? options = null)
     {
         var writer = new Writer(options ?? new WriteOptions());
         writer.Write(node);
-        var s = writer._sb.ToString();
-        return s;
+
+        // Trim trailing whitespace
+        var sb = writer._sb;
+        var n = sb.Length;
+        while (char.IsWhiteSpace(sb[--n])) { }
+        sb.Length = n + 1;
+
+        var text = writer._sb.ToString();
+        return text;
     }
 }

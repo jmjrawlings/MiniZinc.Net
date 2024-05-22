@@ -6,7 +6,7 @@ public sealed class WriterTests
     [InlineData("var int: a = 2;")]
     [InlineData("var bool: b = [1,2,3];")]
     [InlineData("solve satisfy   ;")]
-    void test_writer_minified(string input)
+    void test_write_minified(string input)
     {
         var result = Parser.ParseText(input);
         result.Ok.Should().BeTrue("Text should parse");
@@ -14,5 +14,44 @@ public sealed class WriterTests
         var options = new WriteOptions { Minify = true };
         var output = tree.Write(options);
         var a = 2;
+    }
+
+    [Fact]
+    void test_write()
+    {
+        var input = "var int: a; constraint a > 100";
+        var expected = """
+            var int: a;
+            constraint
+                (a > 100);
+            """;
+
+        var result = Parser.ParseText(input);
+        result.Ok.Should().BeTrue("Text should parse");
+        var tree = result.Syntax;
+        var output = tree.Write();
+        output.Should().Be(expected);
+    }
+
+    [Fact]
+    void test_write_pretty()
+    {
+        var input = """
+            var int: a;
+            solve maximize a;
+            include "b.mzn";
+            output ["\(a)"];
+            include "a.mzn";
+            """;
+
+        var expected =
+            """include "b.mzn";include "a.mzn";var int: a;solve maximize a;output ["\(a)"];""";
+
+        var result = Parser.ParseText(input);
+        result.Ok.Should().BeTrue("Text should parse");
+        var tree = result.Syntax;
+        var opts = new WriteOptions { Prettify = true, Minify = true };
+        var output = tree.Write(opts);
+        output.Should().Be(expected);
     }
 }

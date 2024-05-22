@@ -16,6 +16,11 @@ public sealed record WriteOptions
     /// </summary>
     public bool Prettify { get; init; }
 
+    /// <summary>
+    /// Spaces to use for a Tab
+    /// </summary>
+    public int TabSize { get; init; } = 4;
+
     public static WriteOptions Minimal = new WriteOptions { Minify = true };
 
     public static WriteOptions Pretty = new WriteOptions { Prettify = true };
