@@ -112,7 +112,7 @@ internal sealed class Writer
         _tabSize = options.TabSize;
     }
 
-    private void Write(SyntaxNode? expr, int precedence = 0)
+    private void Write(SyntaxNode? expr, int precedence = int.MaxValue)
     {
         if (expr is null)
             return;
@@ -472,10 +472,10 @@ internal sealed class Writer
         EndStatement();
     }
 
-    private void WriteBinOp(BinaryOperatorSyntax e, int precedence = 0)
+    private void WriteBinOp(BinaryOperatorSyntax e, int precedence = int.MaxValue)
     {
         int prec = Parser.Precedence(e.Infix.Kind);
-        bool bracketed = prec < precedence;
+        bool bracketed = prec > precedence;
 
         if (bracketed)
             Write(OPEN_PAREN);
@@ -700,7 +700,7 @@ internal sealed class Writer
         Write(CLOSE_PAREN);
     }
 
-    void WriteParameter(ParameterSyntax x, int precedence = 0)
+    void WriteParameter(ParameterSyntax x, int precedence = int.MaxValue)
     {
         Write(x.Type);
         if (x.Name is { } name)
@@ -764,7 +764,7 @@ internal sealed class Writer
         Write(CLOSE_BRACKET);
     }
 
-    void WriteGenerator(GeneratorSyntax gen, int precedence = 0)
+    void WriteGenerator(GeneratorSyntax gen, int precedence = int.MaxValue)
     {
         WriteSep(gen.Names, Write);
         Spaced(IN);

@@ -55,12 +55,14 @@ public sealed class WriterTests
         output.Should().Be(expected);
     }
 
-    [Fact]
-    void test_write_precedence()
+    [Theory]
+    [InlineData("""a <-> (b \/ c)""", """a <-> b \/ c""")]
+    [InlineData("""(a <-> b) \/ c""", """(a <-> b) \/ c""")]
+    [InlineData("""a <-> b \/ c""", """a <-> b \/ c""")]
+    void test_write_precedence(string input, string expected)
     {
-        var input = "a  <-> (2 + b)";
         var expr = Parser.ParseNode<BinaryOperatorSyntax>(input)!;
         var output = expr.Write();
-        output.Should().Be("a - 2 > 100 <-> b * 10 < c");
+        output.Should().Be(expected);
     }
 }
