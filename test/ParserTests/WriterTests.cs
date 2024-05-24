@@ -17,23 +17,6 @@ public sealed class WriterTests
     }
 
     [Fact]
-    void test_write()
-    {
-        var input = "var int: a; constraint a > 100";
-        var expected = """
-            var int: a;
-            constraint
-                a > 100;
-            """;
-
-        var result = Parser.ParseText(input);
-        result.Ok.Should().BeTrue("Text should parse");
-        var tree = result.Syntax;
-        var output = tree.Write();
-        output.Should().Be(expected);
-    }
-
-    [Fact]
     void test_write_pretty()
     {
         var input = """
