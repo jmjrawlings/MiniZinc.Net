@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 public enum TypeKind
 {
@@ -16,6 +16,6 @@ public enum TypeKind
     Record,
     Array,
     List,
-    Complex,
+    Composite,
     Set
 }

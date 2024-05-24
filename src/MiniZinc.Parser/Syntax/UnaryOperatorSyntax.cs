@@ -1,4 +1,4 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record UnaryOperatorSyntax(Token Start, Operator Operator, SyntaxNode Expr)
+public sealed record UnaryOperatorSyntax(in Token Start, Operator Operator, SyntaxNode Expr)
     : SyntaxNode(Start) { }

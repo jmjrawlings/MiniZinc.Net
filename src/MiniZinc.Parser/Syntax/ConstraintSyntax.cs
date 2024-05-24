@@ -1,5 +1,5 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record ConstraintSyntax(Token Start, SyntaxNode Expr)
+public sealed record ConstraintSyntax(in Token Start, SyntaxNode Expr)
     : SyntaxNode(Start),
         ILetLocal { }

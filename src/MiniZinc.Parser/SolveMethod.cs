@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 public enum SolveMethod : byte
 {
