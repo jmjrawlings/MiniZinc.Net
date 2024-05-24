@@ -13,6 +13,17 @@ ARG USER_NAME=dev
 FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim as dotnet-sdk
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
+# Add nonroot user
+ARG USER_NAME
+ARG USER_GID
+ARG USER_UID
+
+RUN groupadd --gid ${USER_GID} ${USER_NAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
+    && chmod 0440 /etc/sudoers.d/${USER_NAME} 
 
 # ********************************************************
 # MiniZinc Builder
@@ -123,18 +134,6 @@ COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
 COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=minizinc-builder $ORTOOLS_HOME $ORTOOLS_HOME
 
-# Add nonroot user
-ARG USER_NAME
-ARG USER_GID
-ARG USER_UID
-
-RUN groupadd --gid ${USER_GID} ${USER_NAME} \
-    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
-    && apt-get update \
-    && apt-get install -y sudo \
-    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
-    && chmod 0440 /etc/sudoers.d/${USER_NAME}
-
 # Install ZSH
 USER ${USER_NAME}
 WORKDIR /home/${USER_NAME}
@@ -160,14 +159,6 @@ ARG USER_NAME
 ARG USER_GID
 ARG USER_UID
 
-# Add nonroot user
-RUN groupadd --gid ${USER_GID} ${USER_NAME} \
-    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME} \
-    && apt-get update \
-    && apt-get install -y sudo \
-    && echo ${USER_NAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USER_NAME} \
-    && chmod 0440 /etc/sudoers.d/${USER_NAME} \
-
 USER ${USER_NAME}
 WORKDIR /app
 
@@ -176,22 +167,22 @@ COPY --from=minizinc-builder $MINIZINC_HOME $MINIZINC_HOME
 COPY --from=minizinc-builder /usr/local/bin/ /usr/local/bin/
 
 COPY global.json Directory.Build.props ./
-COPY src ./src
-COPY test ./test
-RUN rm -rf ./test/Benchmarks
+COPY --chown=$USER_UID src ./src
+COPY --chown=$USER_UID test/libminizinc test/libminizinc
+COPY --chown=$USER_UID test/ParserTests test/ParserTests
+COPY --chown=$USER_UID test/ProcessTests test/ProcessTests
+COPY --chown=$USER_UID test/TestUtils test/TestUtils
 
 RUN dotnet new sln \
     && dotnet sln add src/**/*.csproj \
     && dotnet sln add test/**/*.csproj 
-
-RUN dotnet build
 
 CMD [ "dotnet","test" ]
 
 # ------------------------------------
 # Toolkit
 # ------------------------------------
-FROM mcr.microsoft.com/dotnet/nightly/sdk:8.0-jammy-aot as toolkit
+FROM mcr.microsoft.com/dotnet/nightly/sdk:8.0-jammy-aot as toolkit-builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEBIAN_FRONTEND

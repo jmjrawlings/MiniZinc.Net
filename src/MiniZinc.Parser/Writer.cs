@@ -211,7 +211,7 @@ internal sealed class Writer
                 break;
 
             case IdentifierSyntax e:
-                Write(e.Token.StringValue);
+                Write(e.Token.ToString());
                 break;
 
             case IfElseSyntax e:
@@ -556,6 +556,8 @@ internal sealed class Writer
                 Write(then);
             }
         }
+
+        Space();
         Write(ENDIF);
     }
 
@@ -1017,8 +1019,8 @@ internal sealed class Writer
         {
             Space();
             Write(COLON);
-            Write(ann);
             Write(COLON);
+            Write(ann);
         }
     }
 

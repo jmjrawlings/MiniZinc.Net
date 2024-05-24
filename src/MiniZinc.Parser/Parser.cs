@@ -620,6 +620,7 @@ public sealed class Parser
         IdentifierSyntax name;
         List<ParameterSyntax>? pars = null;
         List<SyntaxNode>? anns = null;
+        bool needs_value = false;
 
         if (Skip(TokenKind.IDENTIFIER))
         {
@@ -634,8 +635,10 @@ public sealed class Parser
                     Kind = TypeKind.Name
                 };
         }
-        else if (start.Kind is TokenKind.ANY)
-            return false;
+        else if (Skip(TokenKind.ANY))
+        {
+            needs_value = true;
+        }
         else if (!ParseType(out type))
             return false;
 
@@ -654,6 +657,9 @@ public sealed class Parser
         // Declaration only
         if (!Skip(TokenKind.EQUAL))
         {
+            if (needs_value)
+                return Expected("=");
+
             declare = new DeclarationSyntax(start, type)
             {
                 Name = name,
@@ -1709,9 +1715,7 @@ public sealed class Parser
     private bool ParseIfElseExpr(out SyntaxNode node)
     {
         node = null!;
-
-        if (!Expect(TokenKind.IF, out var start))
-            return false;
+        var start = _token;
 
         if (!ParseIfThenCase(out var ifCase, out var thenCase, TokenKind.IF))
             return false;

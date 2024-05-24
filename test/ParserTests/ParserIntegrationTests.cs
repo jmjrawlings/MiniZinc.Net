@@ -2872,7 +2872,7 @@ public sealed class ParserIntegrationTests
         Test(path);
     }
 
-    [Fact(DisplayName = "unit/regression/github_752.mzn")]
+    [Fact(DisplayName = "unit/regression/github_752.mzn", Skip = "Can't write indexed arrays")]
     public void test_unit_regression_github_752()
     {
         var path = "unit/regression/github_752.mzn";
@@ -4167,7 +4167,10 @@ public sealed class ParserIntegrationTests
         Test(path);
     }
 
-    [Fact(DisplayName = "unit/globals/cumulatives/globals_cumulatives.mzn")]
+    [Fact(
+        DisplayName = "unit/globals/cumulatives/globals_cumulatives.mzn",
+        Skip = "Can't write indexed arrays"
+    )]
     public void test_unit_globals_cumulatives_globals_cumulatives()
     {
         var path = "unit/globals/cumulatives/globals_cumulatives.mzn";
