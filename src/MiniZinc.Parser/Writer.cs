@@ -193,7 +193,7 @@ internal sealed class Writer
                 WriteConstraint(e);
                 break;
 
-            case EmptyExpr e:
+            case EmptyLiteralSyntax e:
                 Write(OPEN_CHEVRON);
                 Write(CLOSE_CHEVRON);
                 break;
@@ -622,7 +622,7 @@ internal sealed class Writer
                 WriteType(e.Items);
                 break;
 
-            case ComplexTypeSyntax e:
+            case CompositeTypeSyntax e:
                 WriteSep(e.Types, Write, sep: "++");
                 break;
 

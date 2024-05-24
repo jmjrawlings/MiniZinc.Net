@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record Array3dSyntax(Token start) : ArraySyntax(start)
+public sealed record Array3dSyntax(in Token Start) : ArraySyntax(Start)
 {
     public int I { get; set; }
     public int J { get; set; }

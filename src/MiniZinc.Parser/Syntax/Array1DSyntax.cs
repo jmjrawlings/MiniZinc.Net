@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record Array1DSyntax(Token Start) : ArraySyntax(Start)
+public sealed record Array1DSyntax(in Token Start) : ArraySyntax(Start)
 {
     public bool Indexed { get; set; }
 

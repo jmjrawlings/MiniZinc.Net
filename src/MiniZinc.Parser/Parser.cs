@@ -801,7 +801,7 @@ public sealed class Parser
 
             case TokenKind.EMPTY:
                 Step();
-                expr = new EmptyExpr(token);
+                expr = new EmptyLiteralSyntax(token);
                 break;
 
             default:
@@ -2201,7 +2201,7 @@ public sealed class Parser
 
         // Complex types
         // `record(a: int) ++ record(b: int)`
-        var complex = new ComplexTypeSyntax(start) { Kind = TypeKind.Complex };
+        var complex = new CompositeTypeSyntax(start) { Kind = TypeKind.Composite };
         complex.Types.Add(type);
         result = complex;
 

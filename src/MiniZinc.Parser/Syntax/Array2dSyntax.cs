@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record Array2dSyntax(Token start) : ArraySyntax(start)
+public sealed record Array2dSyntax(in Token Start) : ArraySyntax(Start)
 {
     public List<SyntaxNode> Indices { get; set; } = new();
 

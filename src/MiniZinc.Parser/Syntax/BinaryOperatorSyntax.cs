@@ -1,7 +1,8 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record BinaryOperatorSyntax
-    (SyntaxNode Left, Token Infix, Operator? Operator, SyntaxNode Right) : SyntaxNode(Left.Start)
-{
-}
-
+public sealed record BinaryOperatorSyntax(
+    SyntaxNode Left,
+    in Token Infix,
+    Operator? Operator,
+    SyntaxNode Right
+) : SyntaxNode(Left.Start) { }
