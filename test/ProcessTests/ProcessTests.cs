@@ -13,7 +13,7 @@
     {
         var cmd = Command.Create("minizinc", "--version");
         var proc = new Process(cmd);
-        await foreach (var msg in proc.Listen())
+        await foreach (var msg in proc.Watch())
         {
             Write("{0}", msg.Content);
         }
@@ -42,7 +42,7 @@
         var cmd = Command.Create("minizinc", "-a", "--json-stream", tmp.FullName);
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
         var proc = new Process(cmd);
-        await foreach (var msg in proc.Listen(cts.Token))
+        await foreach (var msg in proc.Watch(cts.Token))
         {
             Write("{0}", msg.EventType);
             if (msg.Content is { } data)

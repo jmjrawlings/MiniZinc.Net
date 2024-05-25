@@ -2,7 +2,7 @@
 
 public sealed record StatusMessage : MiniZincMessage
 {
-    public SolverStatus Status { get; init; }
+    public required string Status { get; init; }
 
     public int? Time { get; init; }
 }
