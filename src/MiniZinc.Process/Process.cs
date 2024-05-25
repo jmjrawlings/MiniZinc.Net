@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Process;
+﻿using System.Text;
+
+namespace MiniZinc.Process;
 
 using System.Diagnostics;
 using System.Threading.Channels;
@@ -29,14 +31,8 @@ public sealed class Process : IDisposable
     /// The process exit code if it has exited
     public int ExitCode { get; private set; }
 
-    /// Should stdout be buffered?
-    public bool BufferStdOut { get; init; }
-
-    /// Should stderr be buffered?
-    public bool BufferStdErr { get; init; }
-
     /// If listening, the last ProcessMessage received
-    public ProcessEventMessage Current { get; private set; }
+    public ProcessMessage Current { get; private set; }
 
     /// The Id of the process if it ever started
     public int ProcessId { get; private set; }
@@ -47,11 +43,8 @@ public sealed class Process : IDisposable
     private readonly ILogger _logger;
 
     /// If iterating, a channel to implement AsyncEnumerable
-    private Channel<ProcessEventMessage>? _channel;
-    private IAsyncEnumerable<ProcessEventMessage>? _events;
-
-    /// If running, marks the completion
-    private TaskCompletionSource? _completion;
+    private Channel<ProcessMessage>? _channel;
+    private IAsyncEnumerable<ProcessMessage>? _events;
 
     /// <summary>
     /// Create a process from the given command
@@ -96,40 +89,62 @@ public sealed class Process : IDisposable
     /// Run the process until it either terminates or a cancellation
     /// is requested.
     /// </summary>
-    public async Task Run(CancellationToken cancellation = default)
+    public async Task<ProcessResult> Wait(
+        bool captureStdOut = true,
+        bool captureStdErr = true,
+        CancellationToken cancellation = default
+    )
     {
-        if (_completion is not null)
+        StringBuilder? stdout = null;
+        StringBuilder? stderr = null;
+
+        await foreach (var msg in Watch(cancellation))
         {
-            await _completion.Task;
-            return;
+            switch (msg.EventType)
+            {
+                case ProcessEventType.Started:
+                    break;
+                case ProcessEventType.StdOut:
+                    if (captureStdOut)
+                        (stdout ??= new StringBuilder()).Append(msg.Content);
+                    break;
+                case ProcessEventType.StdErr:
+                    if (captureStdErr)
+                        (stderr ??= new StringBuilder()).Append(msg.Content);
+                    break;
+                case ProcessEventType.Exited:
+                    break;
+            }
         }
 
-        if (Status is not ProcessStatus.Idle)
-            throw new InvalidOperationException();
+        var output = stdout?.ToString() ?? string.Empty;
+        var error = stderr?.ToString() ?? string.Empty;
 
-        StartTime = DateTimeOffset.Now;
-        EndTime = StartTime;
-
-        _completion = new TaskCompletionSource();
-        _watch.Start();
-        _process.Start();
-        _process.BeginOutputReadLine();
-        _process.BeginErrorReadLine();
-        _logger.LogInformation("ProcessId is {ProcessId}", _process.Id);
-
-        if (cancellation.IsCancellationRequested)
-            Stop();
-        else
-            cancellation.Register(Stop, useSynchronizationContext: false);
-
-        await _completion.Task.ConfigureAwait(false);
+        var result = new ProcessResult
+        {
+            Command = Command.String,
+            Status = Status,
+            StdOut = output,
+            StdErr = error,
+            StartTime = StartTime,
+            EndTime = EndTime,
+            Duration = Elapsed,
+            ExitCode = ExitCode
+        };
+        return result;
     }
+
+    /// <inheritdoc cref="Wait(bool,bool,System.Threading.CancellationToken)"/>
+    public async Task<ProcessResult> Wait(CancellationToken cancellation = default) =>
+        await Wait(true, true, cancellation);
+
+    public ProcessResult WaitSync() => Wait(CancellationToken.None).Result;
 
     /// <summary>
     /// Start the process and consume events until it
     /// terminates
     /// </summary>
-    public IAsyncEnumerable<ProcessEventMessage> Listen(CancellationToken cancellation = default)
+    public IAsyncEnumerable<ProcessMessage> Watch(CancellationToken cancellation = default)
     {
         if (_events is not null)
             return _events;
@@ -142,7 +157,7 @@ public sealed class Process : IDisposable
         Status = ProcessStatus.Running;
         _logger.LogInformation("Starting process");
         Status = ProcessStatus.Running;
-        _channel = Channel.CreateUnbounded<ProcessEventMessage>(
+        _channel = Channel.CreateUnbounded<ProcessMessage>(
             new UnboundedChannelOptions
             {
                 SingleWriter = true,
@@ -158,7 +173,7 @@ public sealed class Process : IDisposable
         _logger.LogInformation("ProcessId is {ProcessId}", _process.Id);
 
         ProcessId = _process.Id;
-        Current = new ProcessEventMessage
+        Current = new ProcessMessage
         {
             EventType = ProcessEventType.Started,
             TimeStamp = StartTime
@@ -201,7 +216,7 @@ public sealed class Process : IDisposable
         _logger.LogDebug("{Output}", data);
 
         var elapsed = Elapsed;
-        var msg = new ProcessEventMessage
+        var msg = new ProcessMessage
         {
             Content = data,
             EventType = ProcessEventType.StdOut,
@@ -219,7 +234,7 @@ public sealed class Process : IDisposable
         _logger.LogError("{Error}", data);
 
         var elapsed = Elapsed;
-        var msg = new ProcessEventMessage
+        var msg = new ProcessMessage
         {
             Content = e.Data,
             EventType = ProcessEventType.StdErr,
@@ -254,13 +269,12 @@ public sealed class Process : IDisposable
                 break;
         }
 
-        Current = new ProcessEventMessage
+        Current = new ProcessMessage
         {
             EventType = ProcessEventType.Exited,
             TimeStamp = StartTime + Elapsed
         };
 
-        _completion?.SetResult();
         _channel?.Writer.TryWrite(Current);
         _channel?.Writer.TryComplete();
     }

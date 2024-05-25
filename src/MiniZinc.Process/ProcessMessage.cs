@@ -3,7 +3,7 @@
 /// <summary>
 /// Message streamed
 /// </summary>
-public readonly record struct ProcessEventMessage
+public readonly record struct ProcessMessage
 {
     /// Time this message was created
     public required DateTimeOffset TimeStamp { get; init; }
