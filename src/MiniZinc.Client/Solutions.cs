@@ -1,6 +1,7 @@
 ﻿namespace MiniZinc.Client;
 
 using System.Text.Json.Nodes;
+using Parser.Syntax;
 
 public record Solution
 {
@@ -87,4 +88,42 @@ public record Solution
     /// Any warnings returned by the solver
     /// </summary>
     public required JsonObject? Warnings { get; init; }
+
+    /// <summary>
+    /// Get the solution assigned to the given variable
+    /// </summary>
+    /// <param name="id">Name of the model variable</param>
+    /// <typeparam name="T"></typeparam>
+    /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
+    public T GetVar<T>(string id)
+        where T : SyntaxNode
+    {
+        if (Variables is not null)
+            if (Variables.TryGetValue(id, out var var))
+                if (var is T t)
+                    return t;
+
+        throw new Exception();
+    }
+
+    /// Get the int solution for the given variable
+    public int GetInt(string id) => GetVar<IntLiteralSyntax>(id).Value;
+
+    /// Get the bool solution for the given variable
+    public bool GetBool(string id) => GetVar<BoolLiteralSyntax>(id).Value;
+
+    /// Get the float solution for the given variable
+    public decimal GetFloat(string id) => GetVar<FloatLiteralSyntax>(id).Value;
+
+    /// Get the array solution for the given variable
+    public IEnumerable<T> GetArray1D<T>(string id)
+    {
+        var array = GetVar<Array1DSyntax>(id);
+        foreach (var node in array.Elements)
+        {
+            if (node is not SyntaxNode<T> literal)
+                throw new Exception();
+            yield return literal.Value;
+        }
+    }
 }

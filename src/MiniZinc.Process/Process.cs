@@ -1,8 +1,7 @@
-﻿using System.Text;
-
-namespace MiniZinc.Process;
+﻿namespace MiniZinc.Process;
 
 using System.Diagnostics;
+using System.Text;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

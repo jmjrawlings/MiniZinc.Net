@@ -1,10 +1,7 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record FloatLiteralSyntax(in Token Start) : SyntaxNode(Start)
+public sealed record FloatLiteralSyntax(in Token Start)
+    : SyntaxNode<decimal>(Start, Start.FloatValue)
 {
-    public double Value => Start.DoubleValue;
-
-    public static implicit operator double(FloatLiteralSyntax expr) => expr.Value;
-
     public override string ToString() => Value.ToString("g");
 }
