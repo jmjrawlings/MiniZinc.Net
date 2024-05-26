@@ -18,8 +18,8 @@ public sealed partial class MiniZincClient
     public readonly FileInfo Executable;
     private readonly ILogger _logger;
     private readonly Version _version;
-    private readonly List<SolverInfo> _solvers;
-    private readonly Dictionary<string, SolverInfo> _solverLookup;
+    private readonly List<Solver> _solvers;
+    private readonly Dictionary<string, Solver> _solverLookup;
 
     /// <summary>
     /// The version of the minizinc executable
@@ -29,42 +29,32 @@ public sealed partial class MiniZincClient
     /// <summary>
     /// All installed solvers discovered through `--solvers-json`
     /// </summary>
-    public IEnumerable<SolverInfo> Solvers => _solvers;
+    public IEnumerable<Solver> Solvers => _solvers;
 
-    public SolverInfo GetSolver(string key) => _solverLookup[key];
+    public Solver GetSolver(string key) => _solverLookup[key];
 
-    /// <summary>
-    /// The included Gecode solver
-    /// </summary>
-    public SolverInfo Gecode => GetSolver("gecode");
-
-    /// <summary>
-    /// The included Chuffed solver
-    /// </summary>
-    public SolverInfo Chuffed => GetSolver("chuffed");
-
-    public SolverInstance SolveModelFile(string modelPath, SolverInfo? solver = default)
+    public Solve SolveModelFile(string modelPath, string? solverId = default)
     {
         var parsed = Parser.ParseFile(modelPath);
         Guard.IsTrue(parsed.Ok);
         var model = parsed.Syntax;
-        var process = SolveModel(model, solver);
+        var process = SolveModel(model, solverId);
         return process;
     }
 
-    public SolverInstance SolveModelText(string modelText, SolverInfo? solver = default)
+    public Solve SolveModelText(string modelText, string? solverId = default)
     {
         var parsed = Parser.ParseText(modelText);
         Guard.IsTrue(parsed.Ok);
         var model = parsed.Syntax;
-        var process = SolveModel(model, solver);
+        var process = SolveModel(model, solverId);
         return process;
     }
 
-    public SolverInstance SolveModel(SyntaxTree model, SolverInfo? solver = default)
+    public Solve SolveModel(SyntaxTree model, string? solverId = default)
     {
-        solver ??= Gecode;
-        var process = new SolverInstance(this, solver, model);
+        var solver = GetSolver(solverId ?? Solver.Gecode);
+        var process = new Solve(this, solver, model);
         return process;
     }
 
@@ -74,7 +64,7 @@ public sealed partial class MiniZincClient
         _logger = logger ?? NullLogger.Instance;
         _version = GetVersion();
         _solvers = GetInstalledSolvers();
-        _solverLookup = new Dictionary<string, SolverInfo>();
+        _solverLookup = new Dictionary<string, Solver>();
         foreach (var solver in _solvers)
         {
             var code = solver.Id.Split('.')[^1];
@@ -84,12 +74,12 @@ public sealed partial class MiniZincClient
         }
     }
 
-    private List<SolverInfo> GetInstalledSolvers()
+    private List<Solver> GetInstalledSolvers()
     {
         var result = CreateProcess("--solvers-json").WaitSync();
         Guard.IsEqualTo(result.ExitCode, 0);
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var solvers = JsonSerializer.Deserialize<List<SolverInfo>>(result.StdOut, options)!;
+        var solvers = JsonSerializer.Deserialize<List<Solver>>(result.StdOut, options)!;
         foreach (var solver in solvers)
         {
             _logger.LogInformation(

@@ -5,8 +5,12 @@ using System.Text.Json.Nodes;
 /// <summary>
 /// Solver info as provided by `minizinc --solvers`
 /// </summary>
-public sealed record SolverInfo
+public sealed record Solver
 {
+    public const string Gecode = "gecode";
+
+    public const string Chuffed = "chuffed";
+
     public required string Id { get; init; }
     public required string Name { get; init; }
     public string? Description { get; init; }

@@ -279,7 +279,8 @@ internal sealed class Writer
                 break;
 
             case OutputSyntax e:
-                WriteOutput(e);
+                if (!_options.SkipOutput)
+                    WriteOutput(e);
                 break;
 
             case WildCardExpr e:

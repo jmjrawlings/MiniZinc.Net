@@ -15,7 +15,7 @@ public class ClientIntegrationTests : TestBase, IClassFixture<ClientFixture>
     private async void Test(string path)
     {
         var solver = Client.SolveModelFile(path);
-        var sol = await solver.Wait();
+        var sol = await solver.Solution();
     }
 
     [Fact(DisplayName = "unit/test-globals-float.mzn")]
