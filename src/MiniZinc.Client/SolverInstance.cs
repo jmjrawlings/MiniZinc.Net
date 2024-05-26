@@ -178,7 +178,10 @@ public class SolverInstance
         return solution!;
     }
 
-    public void Dispose() { }
+    public void Dispose()
+    {
+        Process.Dispose();
+    }
 
     public override string ToString() => Solver.Name;
 };

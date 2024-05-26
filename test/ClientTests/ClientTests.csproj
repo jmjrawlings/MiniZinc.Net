@@ -19,5 +19,11 @@
       <ProjectReference Include="..\..\src\MiniZinc.Client\MiniZinc.Client.csproj" />
       <ProjectReference Include="..\TestUtils\TestUtils.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="$(ProjectDir)../libminizinc/**/*.mzn">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
     
 </Project>

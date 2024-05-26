@@ -15,3 +15,5 @@ public abstract record SyntaxNode(in Token Start)
 
     public override string ToString() => Write();
 }
+
+public abstract record SyntaxNode<T>(in Token Start, T Value) : SyntaxNode(Start) { }

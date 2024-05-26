@@ -557,6 +557,12 @@ internal sealed class Writer
             }
         }
 
+        if (e.Else is { } @else)
+        {
+            Space();
+            Write(@else);
+        }
+
         Space();
         Write(ENDIF);
     }
@@ -869,6 +875,8 @@ internal sealed class Writer
     void Write(int i) => _sb.Append(i);
 
     void Write(double f) => _sb.Append(f);
+
+    void Write(decimal f) => _sb.Append(f);
 
     void Write(bool b) => _sb.Append(b);
 

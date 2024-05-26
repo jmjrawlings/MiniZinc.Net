@@ -11,5 +11,5 @@ public record ErrorMessage : MiniZincMessage
 
     public ErrorLocation? Location { get; init; }
 
-    public required IEnumerable<ErrorStack> Stack { get; init; }
+    public IEnumerable<ErrorStack>? Stack { get; init; }
 }

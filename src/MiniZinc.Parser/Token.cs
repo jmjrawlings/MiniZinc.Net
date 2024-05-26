@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Parser;
 
-public readonly struct Token {
-    
+public readonly struct Token
+{
     public readonly TokenKind Kind;
     public readonly int Line;
     public readonly int Col;
@@ -10,9 +10,11 @@ public readonly struct Token {
     public readonly object? Data;
     public int IntValue => (int)Data!;
     public string StringValue => (string)Data!;
-    public double DoubleValue => (double)Data!; 
+    public double DoubleValue => (double)Data!;
+    public decimal FloatValue => (decimal)Data!;
     public bool BoolValue => Kind is TokenKind.TRUE;
     public int End => Start + Length;
+
     public Token(TokenKind kind, int line, int col, int start, int length, object? data = null)
     {
         Kind = kind;
@@ -22,6 +24,7 @@ public readonly struct Token {
         Length = length;
         Data = data;
     }
+
     public override string ToString() =>
         Kind switch
         {

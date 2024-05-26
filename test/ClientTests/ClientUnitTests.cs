@@ -3,11 +3,11 @@
 using Client;
 using Parser.Syntax;
 
-public class MiniZincClientTests : TestBase, IClassFixture<ClientFixture>
+public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
 {
     public readonly MiniZincClient Client;
 
-    public MiniZincClientTests(ClientFixture fixture, ITestOutputHelper output)
+    public ClientUnitTests(ClientFixture fixture, ITestOutputHelper output)
         : base(output)
     {
         Client = fixture.Client;
@@ -33,8 +33,8 @@ public class MiniZincClientTests : TestBase, IClassFixture<ClientFixture>
     {
         var solver = Client.SolveModelText("var 10..20: a; var 40..100: b;");
         var sol = await solver.Wait();
-        var a = (IntLiteralSyntax)sol.Variables["a"];
-        var b = (IntLiteralSyntax)sol.Variables["b"];
+        var a = sol.GetInt("a");
+        var b = sol.GetInt("b");
         sol.Status.Should().Be(SolveStatus.Satisfied);
     }
 
@@ -52,10 +52,19 @@ public class MiniZincClientTests : TestBase, IClassFixture<ClientFixture>
         var solver = Client.SolveModelText("var 10..20: a; var 10..20: b; solve maximize a + b;");
         var sol = await solver.Wait();
         sol.Status.Should().Be(SolveStatus.Optimal);
-        var a = (IntLiteralSyntax)sol.Variables["a"];
-        var b = (IntLiteralSyntax)sol.Variables["b"];
-        a.Value.Should().Be(20);
-        b.Value.Should().Be(20);
+        var a = sol.GetInt("a");
+        var b = sol.GetInt("b");
+        a.Should().Be(20);
+        b.Should().Be(20);
         sol.Objective.Should().Be(40);
+    }
+
+    [Fact]
+    async void test_solve_return_array()
+    {
+        var mzn = "array[1..10] of var 0..100: xd;";
+        var solver = Client.SolveModelText(mzn);
+        var sol = await solver.Wait();
+        var result = sol.GetArray1D<int>("xd").ToArray();
     }
 }
