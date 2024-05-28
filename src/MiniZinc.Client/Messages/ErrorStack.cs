@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Client.Messages;
 
-public sealed record ErrorStack
+internal sealed record ErrorStack
 {
     public required ErrorLocation Location { get; init; }
 

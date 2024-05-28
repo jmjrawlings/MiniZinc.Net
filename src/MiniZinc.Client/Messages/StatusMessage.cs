@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Client.Messages;
 
-public sealed record StatusMessage : MiniZincMessage
+internal sealed record StatusMessage : MiniZincMessage
 {
     public required string Status { get; init; }
 

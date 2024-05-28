@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Client.Messages;
 
-public sealed record ErrorLocation
+internal sealed record ErrorLocation
 {
     public string Filename { get; init; } = string.Empty;
     public int FirstLine { get; init; }

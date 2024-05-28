@@ -33,28 +33,27 @@ public sealed partial class MiniZincClient
 
     public Solver GetSolver(string key) => _solverLookup[key];
 
-    public Solve SolveModelFile(string modelPath, string? solverId = default)
+    public Instance SolveModelFile(string modelPath, SolveOptions? options = null)
     {
         var parsed = Parser.ParseFile(modelPath);
         Guard.IsTrue(parsed.Ok);
         var model = parsed.Syntax;
-        var process = SolveModel(model, solverId);
+        var process = SolveModel(model, options);
         return process;
     }
-
-    public Solve SolveModelText(string modelText, string? solverId = default)
+    
+    public Instance SolveModelText(string modelText, SolveOptions? options = null)
     {
         var parsed = Parser.ParseText(modelText);
         Guard.IsTrue(parsed.Ok);
         var model = parsed.Syntax;
-        var process = SolveModel(model, solverId);
+        var process = SolveModel(model, options);
         return process;
     }
 
-    public Solve SolveModel(SyntaxTree model, string? solverId = default)
+    public Instance SolveModel(SyntaxTree model, SolveOptions? options = null)
     {
-        var solver = GetSolver(solverId ?? Solver.Gecode);
-        var process = new Solve(this, solver, model);
+        var process = new Instance(this, model, options ?? new SolveOptions());
         return process;
     }
 
@@ -110,7 +109,7 @@ public sealed partial class MiniZincClient
     /// <summary>
     /// Create a minizinc command with the given arguments
     /// </summary>
-    public Command CreateCommand(IEnumerable<string> args)
+    public Command CreateCommand(IEnumerable<object> args)
     {
         var sb = new StringBuilder();
         sb.Append('"');
@@ -125,7 +124,7 @@ public sealed partial class MiniZincClient
     /// <summary>
     /// Create a minizinc process for the given command line arguments
     /// </summary>
-    public Process CreateProcess(params string[] args)
+    public Process CreateProcess(params object[] args)
     {
         var command = CreateCommand(args);
         var process = new Process(command, _logger);

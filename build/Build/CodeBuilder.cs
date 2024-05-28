@@ -52,6 +52,12 @@ public class CodeBuilder
         Newline();
     }
 
+    protected void Attribute(string s)
+    {
+        Write($"[{s}]");
+        Newline();
+    }
+
     public void Var(string name, string s)
     {
         Write("var ");

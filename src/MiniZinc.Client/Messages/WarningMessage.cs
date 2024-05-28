@@ -1,3 +1,3 @@
 ﻿namespace MiniZinc.Client.Messages;
 
-public sealed record WarningMessage : ErrorMessage { }
+internal sealed record WarningMessage : ErrorMessage { }

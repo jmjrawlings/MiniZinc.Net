@@ -15,9 +15,11 @@ Add(
     ParseLibMiniZincTests.Run
 );
 
-Add("--generate-lexer-tests", "Generate lexer tests", GenerateLexerTests.Run);
+Add("--generate-lexer-tests", "Generate lexer tests", MakeLexerTests.Run);
 
-Add("--generate-parser-tests", "Generate parser tests", GenerateParserTests.Run);
+Add("--generate-parser-tests", "Generate parser tests", MakeParserTests.Run);
+
+Add("--generate-solver-tests", "Generate solver tests", MakeSolverTests.Run);
 
 var result = await root.InvokeAsync(args);
 return result;

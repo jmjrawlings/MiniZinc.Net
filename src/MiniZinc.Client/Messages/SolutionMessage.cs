@@ -5,7 +5,7 @@
 /// the solver. 
 /// "https://www.minizinc.org/doc-latest/en/json-stream.html"
 /// </summary>
-public sealed record SolutionMessage : MiniZincMessage
+internal sealed record SolutionMessage : MiniZincMessage
 {
     public int? Time { get; set; }
 

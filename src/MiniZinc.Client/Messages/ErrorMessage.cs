@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-public record ErrorMessage : MiniZincMessage
+internal record ErrorMessage : MiniZincMessage
 {
     [JsonPropertyName("what")]
     public string Kind { get; init; } = string.Empty;
