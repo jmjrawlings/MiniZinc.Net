@@ -2,7 +2,7 @@
 
 using System.Text.Json.Nodes;
 
-public sealed record StatisticsMessage : MiniZincMessage
+internal sealed record StatisticsMessage : MiniZincMessage
 {
     public required JsonObject Statistics { get; init; }
 }

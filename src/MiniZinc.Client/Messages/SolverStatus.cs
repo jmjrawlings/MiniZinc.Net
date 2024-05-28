@@ -1,1 +1,0 @@
-﻿namespace MiniZinc.Client.Messages;

@@ -9,6 +9,9 @@ public sealed record TestCase
     /// Path of the test case relative to the test spec dir
     public required string Path { get; init; }
 
+    /// Sequence of this test from 1..n in the same file
+    public int Sequence { get; set; }
+
     /// Solvers for which to run the test on
     public List<string>? Solvers { get; set; }
 

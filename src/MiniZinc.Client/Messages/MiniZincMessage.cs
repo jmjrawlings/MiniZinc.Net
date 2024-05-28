@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 [JsonDerivedType(typeof(ErrorMessage), typeDiscriminator: "error")]
 [JsonDerivedType(typeof(WarningMessage), typeDiscriminator: "warning")]
 [JsonDerivedType(typeof(StatusMessage), typeDiscriminator: "status")]
-public record MiniZincMessage
+internal record MiniZincMessage
 {
     public static readonly JsonSerializerOptions JsonSerializerOptions;
 

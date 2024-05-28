@@ -221,7 +221,7 @@ public static class Yaml
         }
     }
 
-    public static JsonNode ParseString(string s)
+    public static JsonNode? ParseString(string s)
     {
         var deserializer = new DeserializerBuilder()
             .WithTagMapping(TAG_TEST, typeof(object))
@@ -240,7 +240,7 @@ public static class Yaml
         return node;
     }
 
-    public static T ParseString<T>(string s)
+    public static T? ParseString<T>(string s)
         where T : JsonNode
     {
         var result = ParseString(s);
@@ -248,10 +248,10 @@ public static class Yaml
         if (result is T t)
             return t;
 
-        throw new Exception($"Yaml string was parsed as a {result} but expected a {typeof(T)}");
+        return null;
     }
-
-    public static JsonNode ParseFile(FileInfo fi)
+    
+    public static JsonNode? ParseFile(FileInfo fi)
     {
         var text = File.ReadAllText(fi.FullName, Encoding.UTF8);
         var node = ParseString(text);

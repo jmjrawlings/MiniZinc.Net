@@ -53,6 +53,8 @@ public static class Spec
             foreach (var yaml in ParseTestCaseYaml(model))
             {
                 var node = Yaml.ParseString<JsonObject>(yaml);
+                if (node is null)
+                    continue;
                 var testCase = ParseTestCase(modelPath, node);
                 spec.TestCases.Add(testCase);
             }
@@ -102,16 +104,15 @@ public static class Spec
                         testCase.Type = TestType.Satisfy;
                         break;
                     }
-
+                    
                     var output = sol.Pop("_output_item")?.ToString();
-                    var objective = sol.Pop("objective")?.AsValue();
+                    var dzn = ParseSolutionVariables(sol);
                     var solution = new TestSolution
                     {
-                        Objective = objective,
                         Output = output,
-                        Vars = sol
+                        Dzn = dzn
                     };
-
+                    
                     testCase.Solutions ??= new List<TestSolution>();
                     testCase.Solutions.Add(solution);
                 }
@@ -146,47 +147,109 @@ public static class Spec
         }
 
         var nsols = testCase.Solutions?.Count ?? 0;
-
-        //
-        //     testCase.Solutions = solutions;
-        //     if (allSolutions)
-        //         testCase.Type = TestType.AllSolutions;
-        //     else
-        //         testCase.Type = TestType.Satisfy;
-        // }
-        // else if (tag is Yaml.TAG_ERROR)
-        // {
-        //     testCase.Type = TestType.Error;
-        // }
-        // else if (tag is Yaml.TAG_RESULT)
-        // {
-        //     if (status is Yaml.UNSATISFIABLE)
-        //         testCase.Type = TestType.Unsatisfiable;
-        //     else
-        //     {
-        //         var sol = ParseSolution(expected);
-        //         testCase.Solution = sol;
-        //     }
-        // }
-        // else if (type is "compile")
-        // {
-        //     var fzn = expected.GetValue<string>(Yaml.FLATZINC);
-        //     testCase.Type = TestType.Compile;
-        //     testCase.OutputFiles = new() { fzn };
-        // }
-        // else if (type is "output-model")
-        // {
-        //     var ozn = expected.GetValue<string>(Yaml.OUTPUT_MODEL);
-        //     testCase.Type = TestType.Compile;
-        //     testCase.OutputFiles = new() { ozn };
-        // }
-        // else
-        // {
-        //     throw new Exception("Unhandled path");
-        // }
-
-
         return testCase;
+    }
+    
+    /// <summary>
+    /// Parse solution variables as a dzn string
+    /// </summary>
+    private static string ParseSolutionVariables(JsonObject sol)
+    {
+        var sb = new StringBuilder();
+        foreach (var kv in sol)
+        {
+            var name = kv.Key;
+            sb.Append(name);
+            sb.Append('=');
+            var value = ParseSolutionValue(kv.Value!);
+            sb.Append(value);
+            sb.Append(';');
+        }
+
+        var dzn = sb.ToString();
+        return dzn;
+    }
+
+    private static string ParseSolutionValue(JsonNode n)
+    {
+        string dzn = "";
+        switch (n)
+        {
+            case null:
+                dzn = "<>";
+                break;
+            
+            case JsonArray x:
+                var items = new List<string>();
+                foreach (var node in x)
+                {
+                    var item = ParseSolutionValue(node);
+                    items.Add(item);
+                }
+
+                dzn = string.Join(',', items);
+                dzn = '[' + dzn + ']';
+                break;
+                
+            case JsonObject x:
+                if (x.Pop("range") is JsonArray rng)
+                {
+                    var lo = rng[0];
+                    var hi = rng[1];
+                    var dznLo = ParseSolutionValue(lo);
+                    var dznHi = ParseSolutionValue(hi);
+                    dzn = $"{dznLo}..{dznHi}";
+                }
+                else if (x.Pop("approx") is JsonValue v)
+                {
+                    dzn = ParseSolutionValue(v);
+                    break;
+                }
+                else if (x.Pop("set") is JsonArray set)
+                {
+                    items = new List<string>();
+                    foreach (var node in set)
+                    {
+                        var item = ParseSolutionValue(node);
+                        items.Add(item);
+                    }
+
+                    dzn = string.Join(',', items);
+                    dzn = '{' + dzn + '}';
+                    break;
+                }
+                else 
+                {
+                    items = new List<string>();
+                    foreach (var kv in x)
+                    {
+                        var field = kv.Key;
+                        var value = ParseSolutionValue(kv.Value);
+                        items.Add($"{field}: {value}");
+                    }
+
+                    dzn = '(' + string.Join(", ", items) + ')';
+                }
+                // else if (x is JsonArray tuple)
+                // {
+                //     items = new List<string>();
+                //     foreach (var node in tuple)
+                //     {
+                //         var item = ParseSolutionValue(node);
+                //         items.Add(item);
+                //     }
+                //     dzn = '(' + string.Join(", ", items) + ')';
+                // }
+                break;
+            
+            case JsonValue x:
+                dzn = x.ToString();
+                break;
+            default:
+                break;
+        }
+
+        return dzn;
     }
 
     /// <summary>
@@ -197,7 +260,7 @@ public static class Spec
         var sb = new StringBuilder();
         using var stream = file.OpenRead();
         using var reader = new StreamReader(stream);
-
+        
         // const char EOF = '\uffff';
         char c;
 

@@ -3,12 +3,12 @@
 using LibMiniZinc.Tests;
 using MiniZinc.Build;
 
-public sealed class GenerateLexerTests : CodeBuilder
+public sealed class MakeLexerTests : CodeBuilder
 {
     public readonly TestSpec Spec;
     public readonly IEnumerable<string> Files;
 
-    private GenerateLexerTests(TestSpec spec)
+    private MakeLexerTests(TestSpec spec)
     {
         Spec = spec;
         Files = spec.TestCases.Select(c => c.Path).Distinct().ToList();
@@ -45,7 +45,7 @@ public sealed class GenerateLexerTests : CodeBuilder
     public static async Task Run()
     {
         var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-        var gen = new GenerateLexerTests(spec);
+        var gen = new MakeLexerTests(spec);
         var source = gen.Generate();
         var file = Projects.ParserTests.Dir.JoinFile("LexerIntegrationTests.cs");
         await File.WriteAllTextAsync(file.FullName, source);
