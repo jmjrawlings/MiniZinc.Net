@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Process;
+﻿namespace MiniZinc.Command;
 
 /// <summary>
 /// Type of argument

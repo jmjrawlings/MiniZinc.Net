@@ -1,5 +1,6 @@
-﻿namespace MiniZinc.Process;
+﻿namespace MiniZinc.Command;
 
+using System.Collections;
 using System.Text.RegularExpressions;
 
 /// <summary>
@@ -63,44 +64,7 @@ public readonly partial record struct Arg
     /// </summary>
     const string RegexPattern = """(-{1,2}[a-zA-Z][a-zA-Z0-9_-]*)?\s*(=)?\s*("[^"]*"|[^\s]+)?""";
 
-    /// <summary>
-    /// Parse the given string into many arguments
-    /// </summary>
-    public static IEnumerable<Arg> Parse(string s)
-    {
-        var regex = Regex();
-        var matches = regex.Matches(s);
-        foreach (Match m in matches)
-        {
-            if (m.Length <= 0)
-                continue;
-            var arg = FromMatch(m);
-            yield return arg;
-        }
-    }
-
-    /// <summary>
-    /// Parse a single argument from the given string
-    /// </summary>
-    public static Arg ParseSingle(string s)
-    {
-        var regex = Regex();
-        var match = regex.Match(s);
-        if (!match.Success)
-        {
-            throw new Exception($"Could not parse {s} as an arg");
-        }
-
-        if (match.Length < s.Length)
-        {
-            throw new Exception($"Could not parse {s} as an arg");
-        }
-
-        var arg = FromMatch(match);
-        return arg;
-    }
-
-    private static Arg FromMatch(Match m)
+    internal static Arg FromMatch(Match m)
     {
         Group g;
         g = m.Groups[1];
@@ -115,20 +79,6 @@ public readonly partial record struct Arg
         return arg;
     }
 
-    /// <summary>
-    /// Parse command line arguments from the given strings
-    /// </summary>
-    public static IEnumerable<Arg> Parse(params string[] inputs)
-    {
-        foreach (var input in inputs)
-        {
-            foreach (var arg in Parse(input))
-            {
-                yield return arg;
-            }
-        }
-    }
-
     [GeneratedRegex(RegexPattern)]
     internal static partial Regex Regex();
 
@@ -136,5 +86,51 @@ public readonly partial record struct Arg
     public override string ToString()
     {
         return String;
+    }
+
+    /// <summary>
+    /// Parse args from the given string
+    /// </summary>
+    public static IEnumerable<Arg> Parse(string s)
+    {
+        var regex = Arg.Regex();
+        var matches = regex.Matches(s);
+        foreach (Match m in matches)
+        {
+            if (m.Length <= 0)
+                continue;
+            var arg = Arg.FromMatch(m);
+            yield return arg;
+        }
+    }
+
+    /// <summary>
+    /// Parse args from the given parameters
+    /// </summary>
+    public static IEnumerable<Arg> Parse(params object[] inputs)
+    {
+        foreach (var input in inputs)
+        {
+            switch (input)
+            {
+                case Arg a:
+                    yield return a;
+                    break;
+                case string s:
+                    foreach (var arg in Parse(s))
+                        yield return arg;
+                    break;
+                case IEnumerable e:
+                    foreach (var item in e)
+                    foreach (var arg in Parse(item))
+                        yield return arg;
+                    break;
+                default:
+                    var x = input.ToString();
+                    foreach (var arg in Parse(x))
+                        yield return arg;
+                    break;
+            }
+        }
     }
 }

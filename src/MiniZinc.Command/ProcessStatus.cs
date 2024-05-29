@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Process;
+﻿namespace MiniZinc.Command;
 
 /// <summary>
 /// The state of a Process

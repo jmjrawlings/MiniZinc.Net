@@ -1,6 +1,4 @@
-﻿using MiniZinc.Process;
-
-namespace MiniZinc.Client;
+﻿namespace MiniZinc.Client;
 
 public record SolveOptions
 {
@@ -12,7 +10,7 @@ public record SolveOptions
     /// <summary>
     /// Extra args passed to the command line
     /// </summary>
-    public Args? ExtraArgs { get; init; }
+    public IEnumerable<string>? ExtraArgs { get; init; }
 
     /// <summary>
     /// If given, stops the solver after the given time

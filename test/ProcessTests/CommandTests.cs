@@ -48,7 +48,9 @@
     [InlineData("--output-json")]
     public void Parse_Value_With_Dashes(string s)
     {
-        var arg = Arg.ParseSingle(s);
+        var args = Arg.Parse(s).ToList();
+        args.Count.Should().Be(1);
+        var arg = args[0];
         arg.ArgType.Should().Be(ArgType.FlagOnly);
         arg.Flag.Should().Be(s);
     }

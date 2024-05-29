@@ -2,17 +2,16 @@
 
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Client.Messages;
 using Xunit.Abstractions;
 
 public class MessageTests : TestBase
 {
     void test_roundtrip(string input)
     {
-        var message1 = MiniZincMessage.Deserialize(input);
-        var string1 = JsonSerializer.Serialize(message1, MiniZincMessage.JsonSerializerOptions);
-        var message2 = MiniZincMessage.Deserialize(string1);
-        var string2 = JsonSerializer.Serialize(message2, MiniZincMessage.JsonSerializerOptions);
+        var message1 = MiniZincJsonMessage.Deserialize(input);
+        var string1 = JsonSerializer.Serialize(message1, MiniZincJsonMessage.JsonSerializerOptions);
+        var message2 = MiniZincJsonMessage.Deserialize(string1);
+        var string2 = JsonSerializer.Serialize(message2, MiniZincJsonMessage.JsonSerializerOptions);
         var norm1 = Regex.Replace(string1, @"\s", "");
         var norm2 = Regex.Replace(string2, @"\s", "");
         bool eq = String.Equals(norm1, norm2, StringComparison.OrdinalIgnoreCase);
@@ -24,16 +23,16 @@ public class MessageTests : TestBase
     {
         test_roundtrip(
             """
-                       {
-                         "type": "solution",
-                         "time": 1000,
-                         "output": {
-                           "foo": "foo output section",
-                           "bar": "bar output section"
-                         },
-                         "sections": ["foo", "bar"]
-                       }
-                       """
+            {
+              "type": "solution",
+              "time": 1000,
+              "output": {
+                "foo": "foo output section",
+                "bar": "bar output section"
+              },
+              "sections": ["foo", "bar"]
+            }
+            """
         );
     }
 

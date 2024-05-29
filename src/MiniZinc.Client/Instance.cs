@@ -1,12 +1,11 @@
 ﻿namespace MiniZinc.Client;
 
 using System.Runtime.CompilerServices;
-using Messages;
+using Command;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Parser;
 using Parser.Syntax;
-using Process;
 
 /// <summary>
 /// An instance of a model being solved
@@ -20,9 +19,9 @@ public class Instance
     public readonly string ModelPath;
     public readonly string ModelText;
     public readonly SolveMethod SolveMethod;
-    public Process? Process;
+    public Command Command;
     private readonly ILogger _logger;
-    private readonly Args _args;
+    private readonly List<string> Args;
 
     internal Instance(
         MiniZincClient minizinc,
@@ -32,8 +31,7 @@ public class Instance
     )
     {
         _logger = logger ?? NullLogger.Instance;
-        _args = new Args();
-        _args.Add("--solver", options.SolverId);
+        Command = minizinc.Command("--solver", options.SolverId);
         Minizinc = minizinc;
         Solver = minizinc.GetSolver(options.SolverId);
         Model = model;
@@ -67,9 +65,9 @@ public class Instance
     {
         Solution? solution = null;
         await foreach (var sol in Start(token))
-            continue;
+            solution = sol;
 
-        return solution;
+        return solution!;
     }
 
     /// <summary>
@@ -80,8 +78,7 @@ public class Instance
         [EnumeratorCancellation] CancellationToken token = default
     )
     {
-        _args.Add("--json-stream", "--output-objective", ModelPath);
-        Process = Minizinc.CreateProcess(_args);
+        Command = Command.Add("--json-stream", "--output-objective", ModelPath);
         var solveStart = DateTimeOffset.Now;
         var iterStart = solveStart;
         var iteration = 0;
@@ -89,20 +86,21 @@ public class Instance
         var warnings = new List<string>();
         var status = SolveStatus.Pending;
         int objective = 0;
-
-        await foreach (var msg in Process.Watch(token))
+        int processId = 0;
+        await foreach (var msg in Command.Watch().WithCancellation(token))
         {
-            MiniZincMessage? message = null;
+            MiniZincJsonMessage? message = null;
             switch (msg.EventType, msg.Content)
             {
                 case (ProcessEventType.Started, _):
                     status = SolveStatus.Started;
+                    processId = msg.ProcessId;
                     break;
                 case (ProcessEventType.StdErr, var data):
-                    message = MiniZincMessage.Deserialize(data!);
+                    message = MiniZincJsonMessage.Deserialize(data!);
                     break;
                 case (ProcessEventType.StdOut, var data):
-                    message = MiniZincMessage.Deserialize(data!);
+                    message = MiniZincJsonMessage.Deserialize(data!);
                     break;
                 case (ProcessEventType.Exited, _):
                     break;
@@ -113,7 +111,7 @@ public class Instance
 
             switch (message)
             {
-                case StatusMessage m:
+                case MiniZincStatusMessage m:
                     _logger.LogInformation("Status {Status}", m.Status);
 
                     switch (m.Status)
@@ -143,7 +141,7 @@ public class Instance
                     break;
 
                 // TODO - specialised dzn parser
-                case SolutionMessage m:
+                case MiniZincSolutionMessage m:
                     iteration++;
                     status = SolveStatus.Satisfied;
                     var dzn = m.Output["dzn"].ToString();
@@ -161,18 +159,18 @@ public class Instance
                         objective = (IntLiteralSyntax)obj;
                     }
                     break;
-                case CommentMessage m:
+                case MiniZincCommentMessage m:
                     _logger.LogInformation("{Comment}", m.Comment);
                     break;
-                case WarningMessage m:
+                case MiniZincWarningMessage m:
                     _logger.LogWarning("{Kind} - {Message}", m.Kind, m.Message);
                     break;
-                case ErrorMessage m:
+                case MiniZincErrorMessage m:
                     _logger.LogError("{Kind} - {Message}", m.Kind, m.Message);
                     break;
-                case StatisticsMessage m:
+                case MiniZincStatMessage m:
                     break;
-                case TraceMessage m:
+                case MiniZincTraceMessage m:
                     break;
             }
 
@@ -181,8 +179,8 @@ public class Instance
             var iterTime = iterStart.ToPeriod(time);
             var solution = new Solution
             {
-                Command = Process.Command.String,
-                ProcessId = Process.ProcessId,
+                Command = Command,
+                ProcessId = processId,
                 TotalTime = solveTime,
                 IterationTime = iterTime,
                 Iteration = iteration,
@@ -201,11 +199,6 @@ public class Instance
             iterStart = time;
             yield return solution;
         }
-    }
-
-    public void Dispose()
-    {
-        Process?.Dispose();
     }
 
     public override string ToString() => Solver.Name;

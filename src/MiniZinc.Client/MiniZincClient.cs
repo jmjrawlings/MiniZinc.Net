@@ -2,13 +2,15 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using Command;
 using CommunityToolkit.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Parser;
 using Parser.Syntax;
-using Process;
 
 /// <summary>
 /// MiniZinc Client
@@ -20,6 +22,22 @@ public sealed partial class MiniZincClient
     private readonly Version _version;
     private readonly List<Solver> _solvers;
     private readonly Dictionary<string, Solver> _solverLookup;
+    private readonly Command _command;
+
+    private MiniZincClient(FileInfo executable, ILogger? logger = null)
+    {
+        Executable = executable;
+        _command = new Command($"\"{Executable.FullName}\"");
+        _logger = logger ?? NullLogger.Instance;
+        _version = GetVersion();
+        _solvers = GetInstalledSolvers();
+        _solverLookup = new Dictionary<string, Solver>();
+        foreach (var solver in _solvers)
+        {
+            _solverLookup[solver.Id.ToLower()] = solver;
+            _solverLookup[solver.Name.ToLower()] = solver;
+        }
+    }
 
     /// <summary>
     /// The version of the minizinc executable
@@ -31,7 +49,13 @@ public sealed partial class MiniZincClient
     /// </summary>
     public IEnumerable<Solver> Solvers => _solvers;
 
-    public Solver GetSolver(string key) => _solverLookup[key];
+    /// <summary>
+    /// Get the installed solver corresponding to the given key
+    /// where key can be:
+    /// - a solver id (eg: org.minizinc.mip.highs)
+    /// - a solver name (eg: coin-bc)
+    /// </summary>
+    public Solver GetSolver(string key) => _solverLookup[key.ToLower()];
 
     public Instance SolveModelFile(string modelPath, SolveOptions? options = null)
     {
@@ -41,7 +65,7 @@ public sealed partial class MiniZincClient
         var process = SolveModel(model, options);
         return process;
     }
-    
+
     public Instance SolveModelText(string modelText, SolveOptions? options = null)
     {
         var parsed = Parser.ParseText(modelText);
@@ -57,25 +81,9 @@ public sealed partial class MiniZincClient
         return process;
     }
 
-    private MiniZincClient(FileInfo executable, ILogger? logger = null)
-    {
-        Executable = executable;
-        _logger = logger ?? NullLogger.Instance;
-        _version = GetVersion();
-        _solvers = GetInstalledSolvers();
-        _solverLookup = new Dictionary<string, Solver>();
-        foreach (var solver in _solvers)
-        {
-            var code = solver.Id.Split('.')[^1];
-            _solverLookup[solver.Id] = solver;
-            _solverLookup[solver.Name] = solver;
-            _solverLookup[code] = solver;
-        }
-    }
-
     private List<Solver> GetInstalledSolvers()
     {
-        var result = CreateProcess("--solvers-json").WaitSync();
+        var result = Command("--solvers-json").Run().Result;
         Guard.IsEqualTo(result.ExitCode, 0);
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var solvers = JsonSerializer.Deserialize<List<Solver>>(result.StdOut, options)!;
@@ -94,7 +102,7 @@ public sealed partial class MiniZincClient
 
     private Version GetVersion()
     {
-        var result = CreateProcess("--version").WaitSync();
+        var result = Command("--version").Run().Result;
         Guard.IsEqualTo(result.ExitCode, 0);
         var match = VersionRegex().Match(result.StdOut);
         var version = new Version(
@@ -107,28 +115,12 @@ public sealed partial class MiniZincClient
     }
 
     /// <summary>
-    /// Create a minizinc command with the given arguments
+    /// Create a command for minizinc with the given arguments
     /// </summary>
-    public Command CreateCommand(IEnumerable<object> args)
+    public Command Command(params object[] args)
     {
-        var sb = new StringBuilder();
-        sb.Append('"');
-        sb.Append(Executable.FullName);
-        sb.Append('"');
-        sb.Append(' ');
-        sb.AppendJoin(' ', args);
-        var command = Command.Create(sb.ToString());
-        return command;
-    }
-
-    /// <summary>
-    /// Create a minizinc process for the given command line arguments
-    /// </summary>
-    public Process CreateProcess(params object[] args)
-    {
-        var command = CreateCommand(args);
-        var process = new Process(command, _logger);
-        return process;
+        var cmd = _command.Add(args);
+        return cmd;
     }
 
     /// <summary>

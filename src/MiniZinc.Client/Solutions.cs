@@ -1,6 +1,7 @@
 ﻿namespace MiniZinc.Client;
 
 using System.Text.Json.Nodes;
+using Command;
 using Parser.Syntax;
 
 public record Solution
@@ -8,7 +9,7 @@ public record Solution
     /// <summary>
     /// The command line string used to start the solver
     /// </summary>
-    public required string Command { get; init; }
+    public required Command Command { get; init; }
 
     /// <summary>
     /// The associated process id from the solver
