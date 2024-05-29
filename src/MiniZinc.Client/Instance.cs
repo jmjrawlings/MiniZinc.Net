@@ -21,7 +21,6 @@ public class Instance
     public readonly SolveMethod SolveMethod;
     public Command Command;
     private readonly ILogger _logger;
-    private readonly List<string> Args;
 
     internal Instance(
         MiniZincClient minizinc,
@@ -82,9 +81,10 @@ public class Instance
         var solveStart = DateTimeOffset.Now;
         var iterStart = solveStart;
         var iteration = 0;
-        var variables = new Dictionary<string, object>();
+        var data = new Dictionary<string, SyntaxNode>();
         var warnings = new List<string>();
         var status = SolveStatus.Pending;
+        string dzn = "";
         int objective = 0;
         int processId = 0;
         await foreach (var msg in Command.Watch().WithCancellation(token))
@@ -96,11 +96,11 @@ public class Instance
                     status = SolveStatus.Started;
                     processId = msg.ProcessId;
                     break;
-                case (ProcessEventType.StdErr, var data):
-                    message = MiniZincJsonMessage.Deserialize(data!);
+                case (ProcessEventType.StdErr, var s):
+                    message = MiniZincJsonMessage.Deserialize(s!);
                     break;
-                case (ProcessEventType.StdOut, var data):
-                    message = MiniZincJsonMessage.Deserialize(data!);
+                case (ProcessEventType.StdOut, var s):
+                    message = MiniZincJsonMessage.Deserialize(s!);
                     break;
                 case (ProcessEventType.Exited, _):
                     break;
@@ -140,21 +140,21 @@ public class Instance
                     }
                     break;
 
-                // TODO - specialised dzn parser
                 case MiniZincSolutionMessage m:
                     iteration++;
                     status = SolveStatus.Satisfied;
-                    var dzn = m.Output["dzn"].ToString();
-                    var parsed = Parser.ParseText(dzn!);
-                    var data = parsed.Syntax;
-                    foreach (var node in data.Nodes)
+                    dzn = m.Output["dzn"].ToString()!;
+                    var parsed = Parser.ParseText(dzn);
+                    foreach (var node in parsed.Syntax.Nodes)
                     {
-                        if (node is not AssignmentSyntax var)
+                        if (node is not AssignmentSyntax assign)
                             throw new Exception();
-                        variables[var.Name.ToString()] = var.Expr;
+                        var name = assign.Name.ToString();
+                        var value = assign.Expr;
+                        data[name] = value;
                     }
 
-                    if (variables.TryGetValue("_objective", out var obj))
+                    if (data.TryGetValue("_objective", out var obj))
                     {
                         objective = (IntLiteralSyntax)obj;
                     }
@@ -191,7 +191,8 @@ public class Instance
                 RelativeGap = null,
                 AbsoluteDelta = null,
                 RelativeDelta = null,
-                Variables = variables,
+                DataText = dzn,
+                Data = data,
                 Outputs = null,
                 Statistics = null,
                 Warnings = null

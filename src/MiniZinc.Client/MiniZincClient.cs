@@ -1,9 +1,6 @@
 ﻿namespace MiniZinc.Client;
 
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Command;
 using CommunityToolkit.Diagnostics;
@@ -18,11 +15,11 @@ using Parser.Syntax;
 public sealed partial class MiniZincClient
 {
     public readonly FileInfo Executable;
-    private readonly ILogger _logger;
     private readonly Version _version;
     private readonly List<Solver> _solvers;
     private readonly Dictionary<string, Solver> _solverLookup;
     private readonly Command _command;
+    private readonly ILogger _logger;
 
     private MiniZincClient(FileInfo executable, ILogger? logger = null)
     {
@@ -147,7 +144,7 @@ public sealed partial class MiniZincClient
 
     public override string ToString()
     {
-        return $"MiniZinc Client \"{Executable}";
+        return $"MiniZinc Client (\"{Executable})";
     }
 
     [GeneratedRegex(@"MiniZinc to FlatZinc converter, version (\d).(\d).(\d), build (\d*)")]

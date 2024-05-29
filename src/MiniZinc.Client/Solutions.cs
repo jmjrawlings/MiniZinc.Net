@@ -71,9 +71,14 @@ public record Solution
     public required float? RelativeDelta { get; init; }
 
     /// <summary>
-    /// Variables and their solutions
+    /// The .dzn text returned by minizinc
     /// </summary>
-    public required IReadOnlyDictionary<string, object>? Variables { get; init; }
+    public required string DataText { get; init; }
+
+    /// <summary>
+    /// The assigned values to each variable in the model
+    /// </summary>
+    public required IReadOnlyDictionary<string, SyntaxNode>? Data { get; init; }
 
     /// <summary>
     /// Items from the output section
@@ -99,8 +104,8 @@ public record Solution
     public T GetVar<T>(string id)
         where T : SyntaxNode
     {
-        if (Variables is not null)
-            if (Variables.TryGetValue(id, out var var))
+        if (Data is not null)
+            if (Data.TryGetValue(id, out var var))
                 if (var is T t)
                     return t;
 

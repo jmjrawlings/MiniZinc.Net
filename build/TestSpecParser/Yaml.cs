@@ -250,13 +250,6 @@ public static class Yaml
 
         return null;
     }
-    
-    public static JsonNode? ParseFile(FileInfo fi)
-    {
-        var text = File.ReadAllText(fi.FullName, Encoding.UTF8);
-        var node = ParseString(text);
-        return node;
-    }
 
     public static T ParseFile<T>(FileInfo fi)
         where T : JsonNode
