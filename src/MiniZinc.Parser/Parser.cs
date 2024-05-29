@@ -647,7 +647,7 @@ public sealed class Parser
             if (needs_value)
                 return Expected("=");
 
-            declare = new DeclarationSyntax(start, type)
+            declare = new DeclarationSyntax(start, type!)
             {
                 Name = name,
                 Parameters = pars,
