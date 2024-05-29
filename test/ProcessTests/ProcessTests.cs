@@ -3,22 +3,19 @@
     [Fact]
     public async void Command_Runs()
     {
-        var cmd = Command.Create("minizinc", "--version");
-        var proc = await cmd.Run();
-        proc.Status.Should().Be(ProcessStatus.Ok);
+        var cmd = new Command("minizinc", "--version");
+        var result = await cmd.Run();
+        result.Status.Should().Be(ProcessStatus.Ok);
     }
 
     [Fact]
     public async void Command_Listens()
     {
-        var cmd = Command.Create("minizinc", "--version");
-        var proc = new Process(cmd);
-        await foreach (var msg in proc.Watch())
+        var cmd = new Command("minizinc", "--version");
+        await foreach (var msg in cmd.Watch())
         {
             Write("{0}", msg.Content);
         }
-
-        proc.Status.Should().Be(ProcessStatus.Ok);
     }
 
     [Fact]
@@ -39,17 +36,15 @@
             """;
         var tmp = Path.GetTempPath().ToDirectory().JoinFile("nqueens.mzn");
         File.WriteAllText(tmp.FullName, model);
-        var cmd = Command.Create("minizinc", "-a", "--json-stream", tmp.FullName);
+        var cmd = new Command("minizinc", "-a", "--json-stream", tmp.FullName);
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var proc = new Process(cmd);
+        var proc = new CommandRunner(cmd);
         await foreach (var msg in proc.Watch(cts.Token))
         {
             Write("{0}", msg.EventType);
             if (msg.Content is { } data)
                 Write(data);
         }
-
-        proc.Status.Should().Be(ProcessStatus.Cancelled);
     }
 
     public ProcessTests(ITestOutputHelper output)

@@ -1,56 +1,51 @@
-﻿namespace MiniZinc.Process;
+﻿namespace MiniZinc.Command;
 
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Channels;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using SystemProcess = System.Diagnostics.Process;
 
-/// <summary>
-/// Wraps and starts a System.Diagnostics.Process
-/// </summary>
-public sealed class Process : IDisposable
+internal sealed class CommandRunner : IDisposable
 {
     /// The originating command
-    public readonly Command Command;
+    private readonly Command _command;
 
     /// Current state of the process
-    public ProcessStatus Status { get; private set; }
+    private ProcessStatus _status;
 
     /// Time the process was started
-    public DateTimeOffset StartTime { get; private set; }
+    private DateTimeOffset _startTime;
 
     /// Time the process ended if it has ended
-    public DateTimeOffset EndTime { get; private set; }
+    private DateTimeOffset _endTime;
 
     /// Current elapsed duration or total duration if exted
-    public TimeSpan Elapsed => _watch.Elapsed;
+    private TimeSpan _elapsed => _watch.Elapsed;
 
     /// The process exit code if it has exited
-    public int ExitCode { get; private set; }
+    private int _exitCode;
 
     /// If listening, the last ProcessMessage received
-    public ProcessMessage Current { get; private set; }
+    private ProcessMessage _current;
 
     /// The Id of the process if it ever started
-    public int ProcessId { get; private set; }
+    private int _processId;
 
     private readonly ProcessStartInfo _startInfo;
-    private readonly SystemProcess _process;
+
+    private readonly Process _process;
+
     private readonly Stopwatch _watch;
-    private readonly ILogger _logger;
 
     /// If iterating, a channel to implement AsyncEnumerable
     private Channel<ProcessMessage>? _channel;
+
     private IAsyncEnumerable<ProcessMessage>? _events;
 
     /// <summary>
     /// Create a process from the given command
     /// </summary>
-    public Process(in Command command, ILogger? logger = null)
+    internal CommandRunner(in Command command, string? workingDir = null)
     {
-        _logger = logger ?? new NullLogger<Process>();
         _watch = new Stopwatch();
         _startInfo = new ProcessStartInfo
         {
@@ -61,34 +56,31 @@ public sealed class Process : IDisposable
             CreateNoWindow = true
         };
 
-        _logger.LogInformation("Command is {Command}", command.String);
         foreach (var arg in command.Args)
         {
-            _logger.LogDebug("{Arg}", arg);
             _startInfo.ArgumentList.Add(arg.String);
         }
 
-        if (command.WorkingDir is { } path)
+        if (workingDir is { } path)
         {
-            _logger.LogInformation("Setting working directory to {Path}", path);
             _startInfo.WorkingDirectory = path;
         }
 
-        _process = new SystemProcess();
+        _process = new Process();
         _process.EnableRaisingEvents = true;
         _process.StartInfo = _startInfo;
         _process.OutputDataReceived += OnOutput;
         _process.ErrorDataReceived += OnError;
         _process.Exited += OnExit;
 
-        Command = command;
+        _command = command;
     }
 
     /// <summary>
     /// Run the process until it either terminates or a cancellation
     /// is requested.
     /// </summary>
-    public async Task<ProcessResult> Wait(
+    internal async Task<ProcessResult> Run(
         bool captureStdOut = true,
         bool captureStdErr = true,
         CancellationToken cancellation = default
@@ -121,41 +113,40 @@ public sealed class Process : IDisposable
 
         var result = new ProcessResult
         {
-            Command = Command.String,
-            Status = Status,
+            Command = _command.String,
+            Status = _status,
             StdOut = output,
             StdErr = error,
-            StartTime = StartTime,
-            EndTime = EndTime,
-            Duration = Elapsed,
-            ExitCode = ExitCode
+            StartTime = _startTime,
+            EndTime = _endTime,
+            Duration = _elapsed,
+            ExitCode = _exitCode
         };
         return result;
     }
 
-    /// <inheritdoc cref="Wait(bool,bool,System.Threading.CancellationToken)"/>
-    public async Task<ProcessResult> Wait(CancellationToken cancellation = default) =>
-        await Wait(true, true, cancellation);
+    /// <inheritdoc cref="Run(bool,bool,System.Threading.CancellationToken)"/>
+    internal async Task<ProcessResult> Run(CancellationToken cancellation = default) =>
+        await Run(true, true, cancellation);
 
-    public ProcessResult WaitSync() => Wait(CancellationToken.None).Result;
+    internal ProcessResult WaitSync() => Run(CancellationToken.None).Result;
 
     /// <summary>
     /// Start the process and consume events until it
     /// terminates
     /// </summary>
-    public IAsyncEnumerable<ProcessMessage> Watch(CancellationToken cancellation = default)
+    internal IAsyncEnumerable<ProcessMessage> Watch(CancellationToken cancellation = default)
     {
         if (_events is not null)
             return _events;
 
-        if (Status is not ProcessStatus.Idle)
+        if (_status is not ProcessStatus.Idle)
             throw new InvalidOperationException();
 
-        StartTime = DateTimeOffset.Now;
-        EndTime = StartTime;
-        Status = ProcessStatus.Running;
-        _logger.LogInformation("Starting process");
-        Status = ProcessStatus.Running;
+        _startTime = DateTimeOffset.Now;
+        _endTime = _startTime;
+        _status = ProcessStatus.Running;
+        _status = ProcessStatus.Running;
         _channel = Channel.CreateUnbounded<ProcessMessage>(
             new UnboundedChannelOptions
             {
@@ -169,13 +160,13 @@ public sealed class Process : IDisposable
         _process.Start();
         _process.BeginOutputReadLine();
         _process.BeginErrorReadLine();
-        _logger.LogInformation("ProcessId is {ProcessId}", _process.Id);
 
-        ProcessId = _process.Id;
-        Current = new ProcessMessage
+        _processId = _process.Id;
+        _current = new ProcessMessage
         {
+            ProcessId = _processId,
             EventType = ProcessEventType.Started,
-            TimeStamp = StartTime
+            TimeStamp = _startTime
         };
 
         if (cancellation.IsCancellationRequested)
@@ -188,23 +179,18 @@ public sealed class Process : IDisposable
 
     private void Stop()
     {
-        _logger.LogInformation("Stop requested");
-        if (Status is not ProcessStatus.Running)
+        if (_status is not ProcessStatus.Running)
             return;
 
         if (_process.HasExited)
             return;
 
-        _logger.LogInformation("Killing process");
-        Status = ProcessStatus.Signalled;
+        _status = ProcessStatus.Signalled;
         try
         {
             _process.Kill();
         }
-        catch
-        {
-            _logger.LogError("Could not kill the {Exe}", Command.Exe);
-        }
+        catch { }
     }
 
     private void OnOutput(object _, DataReceivedEventArgs e)
@@ -212,16 +198,15 @@ public sealed class Process : IDisposable
         if (e.Data is not { } data)
             return;
 
-        _logger.LogDebug("{Output}", data);
-
-        var elapsed = Elapsed;
+        var elapsed = _elapsed;
         var msg = new ProcessMessage
         {
+            ProcessId = _processId,
             Content = data,
             EventType = ProcessEventType.StdOut,
-            TimeStamp = StartTime + elapsed
+            TimeStamp = _startTime + elapsed
         };
-        Current = msg;
+        _current = msg;
         _channel?.Writer.TryWrite(msg);
     }
 
@@ -230,51 +215,43 @@ public sealed class Process : IDisposable
         if (e.Data is not { } data)
             return;
 
-        _logger.LogError("{Error}", data);
-
-        var elapsed = Elapsed;
+        var elapsed = _elapsed;
         var msg = new ProcessMessage
         {
+            ProcessId = _processId,
             Content = e.Data,
             EventType = ProcessEventType.StdErr,
-            TimeStamp = StartTime + elapsed
+            TimeStamp = _startTime + elapsed
         };
-        Current = msg;
+        _current = msg;
         _channel?.Writer.TryWrite(msg);
     }
 
     private void OnExit(object? _s, EventArgs _e)
     {
         _watch.Stop();
-        ExitCode = _process.ExitCode;
-        switch (ExitCode)
+        _exitCode = _process.ExitCode;
+        switch (_exitCode)
         {
             case 0:
-                Status = ProcessStatus.Ok;
-                _logger.LogInformation("{Exe} succeeded after {Elapsed}", Command.Exe, Elapsed);
+                _status = ProcessStatus.Ok;
                 break;
-            case { } when Status is ProcessStatus.Signalled:
-                Status = ProcessStatus.Cancelled;
-                _logger.LogInformation("{Exe} was cancelled after {Elapsed}", Command.Exe, Elapsed);
+            case { } when _status is ProcessStatus.Signalled:
+                _status = ProcessStatus.Cancelled;
                 break;
             default:
-                _logger.LogError(
-                    "{Exe} failed with code {ExitCode} after {Elapsed}",
-                    Command.Exe,
-                    ExitCode,
-                    Elapsed
-                );
-                Status = ProcessStatus.Error;
+                _status = ProcessStatus.Error;
                 break;
         }
 
-        Current = new ProcessMessage
+        _current = new ProcessMessage
         {
+            ProcessId = _processId,
             EventType = ProcessEventType.Exited,
-            TimeStamp = StartTime + Elapsed
+            TimeStamp = _startTime + _elapsed
         };
 
-        _channel?.Writer.TryWrite(Current);
+        _channel?.Writer.TryWrite(_current);
         _channel?.Writer.TryComplete();
     }
 
@@ -288,6 +265,6 @@ public sealed class Process : IDisposable
     ///
     public override string ToString()
     {
-        return $"<Process \"{Command.Exe}\" | {Status} after {_watch.Elapsed.TotalSeconds}s>";
+        return $"<Process \"{_command.Exe}\" | {_status} after {_watch.Elapsed.TotalSeconds}s>";
     }
 }

@@ -2,7 +2,7 @@
 
 using CommunityToolkit.Diagnostics;
 using MiniZinc.Build;
-using MiniZinc.Process;
+using MiniZinc.Command;
 
 public static class CloneLibMiniZincTests
 {
@@ -14,12 +14,12 @@ public static class CloneLibMiniZincTests
             .CurrentDirectory.ToDirectory()
             .JoinDir("libminiznc")
             .CreateOrClear();
-        
+
         async Task Exe(params string[] args)
         {
-            var cmd = Command.Create(args).WithWorkingDirectory(cloneDir);
+            var cmd = new Command("git", args);
             Console.WriteLine(cmd.String);
-            var result = await cmd.Run();
+            var result = await cmd.Run(workingDir: cloneDir.FullName);
             Guard.IsEqualTo((int)result.Status, (int)ProcessStatus.Ok);
         }
 

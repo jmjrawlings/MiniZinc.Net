@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Process;
+﻿namespace MiniZinc.Command;
 
 /// <summary>
 /// The result of running a Process
@@ -34,16 +34,4 @@ public readonly record struct ProcessResult
 
     /// Did the command complete without error?
     public bool IsOk => ExitCode == 0;
-
-    /// <summary>
-    /// Throw an exception if the command was not successful
-    /// </summary>
-    public ProcessResult EnsureSuccess()
-    {
-        if (IsOk)
-            return this;
-
-        var msg = $"The command \"{Command}\" exited with code {ExitCode}";
-        throw new Exception(msg);
-    }
 }

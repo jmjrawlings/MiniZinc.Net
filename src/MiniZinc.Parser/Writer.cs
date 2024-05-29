@@ -561,6 +561,8 @@ internal sealed class Writer
         if (e.Else is { } @else)
         {
             Space();
+            Write(ELSE);
+            Space();
             Write(@else);
         }
 

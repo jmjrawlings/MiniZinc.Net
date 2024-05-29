@@ -54,17 +54,17 @@
         token.Kind.Should().Be(TokenKind.INT_LITERAL);
         token.IntValue.Should().Be(i);
     }
-    
+
     [Theory]
     [InlineData("1.123.1", 1.123)]
     [InlineData("100.0043", 100.0043)]
-    void test_float(string mzn, double d)
+    void test_float(string mzn, decimal d)
     {
         var token = Lexer.Lex(mzn).First();
         token.Kind.Should().Be(TokenKind.FLOAT_LITERAL);
-        token.DoubleValue.Should().Be(d);
+        token.DecimalValue.Should().Be(d);
     }
-    
+
     [Theory]
     [InlineData("1..10")]
     void test_range_ti(string mzn)

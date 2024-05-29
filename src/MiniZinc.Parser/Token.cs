@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using System.Globalization;
+
+namespace MiniZinc.Parser;
 
 public readonly struct Token
 {
@@ -10,8 +12,7 @@ public readonly struct Token
     public readonly object? Data;
     public int IntValue => (int)Data!;
     public string StringValue => (string)Data!;
-    public double DoubleValue => (double)Data!;
-    public decimal FloatValue => (decimal)Data!;
+    public decimal DecimalValue => (decimal)Data!;
     public bool BoolValue => Kind is TokenKind.TRUE;
     public int End => Start + Length;
 
@@ -115,7 +116,7 @@ public readonly struct Token
             TokenKind.PIPE => "|",
             TokenKind.EMPTY => "<>",
             TokenKind.INT_LITERAL => IntValue.ToString(),
-            TokenKind.FLOAT_LITERAL => DoubleValue.ToString("F2"),
+            TokenKind.FLOAT_LITERAL => DecimalValue.ToString(CultureInfo.InvariantCulture),
             TokenKind.STRING_LITERAL => $"\"{Data}\"",
             TokenKind.ANONENUM => "anon_enum",
             TokenKind.DOUBLE_ARROW => "<->",

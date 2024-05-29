@@ -24,7 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Parser", "src\Mini
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtils", "test\TestUtils\TestUtils.csproj", "{946DF570-4C9D-45FF-9A8D-F2F88B3B5DE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Process", "src\MiniZinc.Process\MiniZinc.Process.csproj", "{4F68F172-3C02-4403-A8EC-82DD7A20770A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Command", "src\MiniZinc.Command\MiniZinc.Command.csproj", "{4F68F172-3C02-4403-A8EC-82DD7A20770A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessTests", "test\ProcessTests\ProcessTests.csproj", "{F1613067-E515-4D30-BE74-A5EB7EE33618}"
 EndProject

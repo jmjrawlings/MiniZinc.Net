@@ -102,19 +102,6 @@ public sealed class Parser
         return false;
     }
 
-    private bool ParseFloat(out double f)
-    {
-        if (_kind is TokenKind.FLOAT_LITERAL)
-        {
-            f = _token.DoubleValue;
-            Step();
-            return true;
-        }
-
-        f = default;
-        return false;
-    }
-
     private bool ParseIdent(out IdentifierSyntax node)
     {
         if (_kind is TokenKind.IDENTIFIER)
