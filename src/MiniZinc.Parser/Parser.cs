@@ -2286,7 +2286,7 @@ public sealed class Parser
     ///     constraint a /\ b;
     ///     """);
     /// </example>
-    public static ParseResult ParseText(string text)
+    public static ParseResult ParseString(string text)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);

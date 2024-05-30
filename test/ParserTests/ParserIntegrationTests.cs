@@ -5,7 +5,7 @@ public sealed class ParserIntegrationTests
         var result = Parser.ParseFile(path);
         result.ErrorTrace.Should().BeNull();
         var output = result.Syntax.Write();
-        var roundtrip = Parser.ParseText(output);
+        var roundtrip = Parser.ParseString(output);
         roundtrip.ErrorTrace.Should().BeNull();
     }
 

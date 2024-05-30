@@ -101,7 +101,7 @@ public record Solution
     /// <param name="id">Name of the model variable</param>
     /// <typeparam name="T"></typeparam>
     /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
-    public T GetVar<T>(string id)
+    public T Get<T>(string id)
         where T : SyntaxNode
     {
         if (Data is not null)
@@ -113,18 +113,18 @@ public record Solution
     }
 
     /// Get the int solution for the given variable
-    public int GetInt(string id) => GetVar<IntLiteralSyntax>(id).Value;
+    public int GetInt(string id) => Get<IntLiteralSyntax>(id).Value;
 
     /// Get the bool solution for the given variable
-    public bool GetBool(string id) => GetVar<BoolLiteralSyntax>(id).Value;
+    public bool GetBool(string id) => Get<BoolLiteralSyntax>(id).Value;
 
     /// Get the float solution for the given variable
-    public decimal GetFloat(string id) => GetVar<FloatLiteralSyntax>(id).Value;
+    public decimal GetFloat(string id) => Get<FloatLiteralSyntax>(id).Value;
 
     /// Get the array solution for the given variable
     public IEnumerable<T> GetArray1D<T>(string id)
     {
-        var array = GetVar<Array1DSyntax>(id);
+        var array = Get<Array1DSyntax>(id);
         foreach (var node in array.Elements)
         {
             if (node is not SyntaxNode<T> literal)
