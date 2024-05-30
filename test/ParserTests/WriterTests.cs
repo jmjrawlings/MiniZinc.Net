@@ -8,7 +8,7 @@ public sealed class WriterTests
     [InlineData("solve satisfy   ;")]
     void test_write_minified(string input)
     {
-        var result = Parser.ParseText(input);
+        var result = Parser.ParseString(input);
         result.Ok.Should().BeTrue("Text should parse");
         var tree = result.Syntax;
         var options = new WriteOptions { Minify = true };
@@ -30,7 +30,7 @@ public sealed class WriterTests
         var expected =
             """include "b.mzn";include "a.mzn";var int: a;solve maximize a;output ["\(a)"];""";
 
-        var result = Parser.ParseText(input);
+        var result = Parser.ParseString(input);
         result.Ok.Should().BeTrue("Text should parse");
         var tree = result.Syntax;
         var opts = new WriteOptions { Prettify = true, Minify = true };

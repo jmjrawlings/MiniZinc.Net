@@ -1,6 +1,10 @@
 ﻿namespace MiniZinc.Client;
 
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Command;
 using CommunityToolkit.Diagnostics;
@@ -54,28 +58,187 @@ public sealed partial class MiniZincClient
     /// </summary>
     public Solver GetSolver(string key) => _solverLookup[key.ToLower()];
 
-    public Instance SolveModelFile(string modelPath, SolveOptions? options = null)
+    public async IAsyncEnumerable<Solution> Solve(
+        Model model,
+        SolveOptions? options = default,
+        [EnumeratorCancellation] CancellationToken token = default
+    )
     {
-        var parsed = Parser.ParseFile(modelPath);
-        Guard.IsTrue(parsed.Ok);
-        var model = parsed.Syntax;
-        var process = SolveModel(model, options);
-        return process;
-    }
+        var sb = new StringBuilder();
+        string mzn;
+        foreach (var path in model.Files ?? Enumerable.Empty<string>())
+        {
+            var parser = Parser.ParseFile(path);
+            if (!parser.Ok)
+                throw new Exception(parser.ErrorMessage);
+            mzn = parser.Syntax.Write();
+            sb.AppendLine(mzn);
+        }
 
-    public Instance SolveModelText(string modelText, SolveOptions? options = null)
-    {
-        var parsed = Parser.ParseText(modelText);
-        Guard.IsTrue(parsed.Ok);
-        var model = parsed.Syntax;
-        var process = SolveModel(model, options);
-        return process;
-    }
+        foreach (var txt in instance.ModelStrings ?? Enumerable.Empty<string>())
+        {
+            var parser = Parser.ParseString(txt);
+            if (!parser.Ok)
+                throw new Exception(parser.ErrorMessage);
+            mzn = parser.Syntax.Write();
+            sb.AppendLine(mzn);
+        }
+        
+        mzn = sb.ToString();
+        var result = Parser.ParseString(mzn);
+        if (!result.Ok)
+            throw new Exception(result.ErrorMessage);
+        var solver = GetSolver(options?.SolverId ?? Solver.Gecode);
+        var modelText = model.Write(new WriteOptions { SkipOutput = true });
+        var outputPath = options?.OutputFolder ?? Path.GetTempPath();
+        var modelPath = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".mzn");
+        var method = SolveMethod.Satisfy;
+        foreach (var node in model.Nodes)
+        {
+            switch (node)
+            {
+                case SolveSyntax n:
+                    method = n.Method;
+                    break;
+            }
+        }
+        
+        await File.WriteAllTextAsync(modelPath, modelText, token);
+        _logger.LogInformation(
+            "Model with {Nodes} nodes saved to {Path}",
+            model.Nodes.Count,
+            modelPath
+        );
 
-    public Instance SolveModel(SyntaxTree model, SolveOptions? options = null)
-    {
-        var process = new Instance(this, model, options ?? new SolveOptions());
-        return process;
+        var command = Command(
+            "--solver",
+            instance.SolverId,
+            "--json-stream",
+            "--output-objective",
+            modelPath
+        );
+        var solveStart = DateTimeOffset.Now;
+        var iterStart = solveStart;
+        var iteration = 0;
+        var data = new Dictionary<string, SyntaxNode>();
+        var warnings = new List<string>();
+        var status = SolveStatus.Pending;
+        string dzn = "";
+        int objective = 0;
+        int processId = 0;
+        await foreach (var msg in command.Watch().WithCancellation(token))
+        {
+            JsonOutput? message = null;
+            switch (msg.EventType, msg.Content)
+            {
+                case (ProcessEventType.Started, _):
+                    status = SolveStatus.Started;
+                    processId = msg.ProcessId;
+                    break;
+                case (ProcessEventType.StdErr, var s):
+                    message = JsonOutput.Deserialize(s!);
+                    break;
+                case (ProcessEventType.StdOut, var s):
+                    message = JsonOutput.Deserialize(s!);
+                    break;
+                case (ProcessEventType.Exited, _):
+                    break;
+            }
+
+            if (message is null)
+                continue;
+
+            switch (message)
+            {
+                case StatusOutput m:
+                    _logger.LogInformation("Status {Status}", m.Status);
+
+                    switch (m.Status)
+                    {
+                        case "ALL_SOLUTIONS":
+                            status = SolveStatus.AllSolutions;
+                            break;
+                        case "OPTIMAL_SOLUTION":
+                            status = SolveStatus.Optimal;
+                            break;
+                        case "UNSATISFIABLE":
+                            status = SolveStatus.Unsatisfiable;
+                            break;
+                        case "UNBOUNDED":
+                            status = SolveStatus.Unbounded;
+                            break;
+                        case "UNSAT_OR_UNBOUNDED":
+                            status = SolveStatus.UnsatOrUnbounded;
+                            break;
+                        case "UNKNOWN":
+                            status = SolveStatus.Error;
+                            break;
+                        case "ERROR":
+                            status = SolveStatus.Error;
+                            break;
+                    }
+                    break;
+
+                case SolutionOutput m:
+                    iteration++;
+                    status = SolveStatus.Satisfied;
+                    dzn = m.Output["dzn"].ToString()!;
+                    var parsed = Parser.ParseString(dzn);
+                    foreach (var node in parsed.Syntax.Nodes)
+                    {
+                        if (node is not AssignmentSyntax assign)
+                            throw new Exception();
+                        var name = assign.Name.ToString();
+                        var value = assign.Expr;
+                        data[name] = value;
+                    }
+
+                    if (data.TryGetValue("_objective", out var obj))
+                    {
+                        objective = (IntLiteralSyntax)obj;
+                    }
+                    break;
+                case CommentOutput m:
+                    _logger.LogInformation("{Comment}", m.Comment);
+                    break;
+                case WarningOutput m:
+                    _logger.LogWarning("{Kind} - {Message}", m.Kind, m.Message);
+                    break;
+                case ErrorOutput m:
+                    _logger.LogError("{Kind} - {Message}", m.Kind, m.Message);
+                    break;
+                case StatOutput m:
+                    break;
+                case TraceOutput m:
+                    break;
+            }
+
+            var time = DateTimeOffset.Now;
+            var solveTime = solveStart.ToPeriod(time);
+            var iterTime = iterStart.ToPeriod(time);
+            var solution = new Solution
+            {
+                Command = command,
+                ProcessId = processId,
+                TotalTime = solveTime,
+                IterationTime = iterTime,
+                Iteration = iteration,
+                Status = status,
+                Objective = objective,
+                Bound = null,
+                AbsoluteGap = null,
+                RelativeGap = null,
+                AbsoluteDelta = null,
+                RelativeDelta = null,
+                DataText = dzn,
+                Data = data,
+                Outputs = null,
+                Statistics = null,
+                Warnings = null
+            };
+            iterStart = time;
+            yield return solution;
+        }
     }
 
     private List<Solver> GetInstalledSolvers()
@@ -112,7 +275,7 @@ public sealed partial class MiniZincClient
     }
 
     /// <summary>
-    /// Create a command for minizinc with the given arguments
+    /// Create a minizinc command with the given arguments
     /// </summary>
     public Command Command(params object[] args)
     {
@@ -149,4 +312,105 @@ public sealed partial class MiniZincClient
 
     [GeneratedRegex(@"MiniZinc to FlatZinc converter, version (\d).(\d).(\d), build (\d*)")]
     private static partial Regex VersionRegex();
+
+    /// <summary>
+    /// MiniZinc messages from --json-output
+    /// </summary>
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+    [JsonDerivedType(typeof(SolutionOutput), typeDiscriminator: "solution")]
+    [JsonDerivedType(typeof(StatOutput), typeDiscriminator: "statistics")]
+    [JsonDerivedType(typeof(CommentOutput), typeDiscriminator: "comment")]
+    [JsonDerivedType(typeof(TraceOutput), typeDiscriminator: "trace")]
+    [JsonDerivedType(typeof(ErrorOutput), typeDiscriminator: "error")]
+    [JsonDerivedType(typeof(WarningOutput), typeDiscriminator: "warning")]
+    [JsonDerivedType(typeof(StatusOutput), typeDiscriminator: "status")]
+    private record JsonOutput
+    {
+        public static readonly JsonSerializerOptions JsonSerializerOptions;
+
+        static JsonOutput()
+        {
+            JsonSerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+        }
+
+        public static JsonOutput Deserialize(string json)
+        {
+            var message = JsonSerializer.Deserialize<JsonOutput>(json, JsonSerializerOptions);
+            return message!;
+        }
+    }
+
+    private sealed record WarningOutput : ErrorOutput { }
+
+    private sealed record StatOutput : JsonOutput
+    {
+        public required JsonObject Statistics { get; init; }
+    }
+
+    private sealed record TraceOutput : JsonOutput
+    {
+        public string Section { get; init; } = string.Empty;
+
+        public string Message { get; init; } = string.Empty;
+    }
+
+    private sealed record MiniZincErrorLocationMessage
+    {
+        public string Filename { get; init; } = string.Empty;
+        public int FirstLine { get; init; }
+        public int FirstColumn { get; init; }
+        public int LastLine { get; init; }
+        public int LastColumn { get; init; }
+    }
+
+    private sealed record CommentOutput : JsonOutput
+    {
+        [JsonPropertyName("comment")]
+        public required string Comment { get; init; }
+    }
+
+    private record ErrorOutput : JsonOutput
+    {
+        [JsonPropertyName("what")]
+        public string Kind { get; init; } = string.Empty;
+
+        public string Message { get; init; } = string.Empty;
+
+        public MiniZincErrorLocationMessage? Location { get; init; }
+
+        public IEnumerable<MiniZincErrorStack>? Stack { get; init; }
+    }
+
+    private sealed record MiniZincErrorStack
+    {
+        public required MiniZincErrorLocationMessage Location { get; init; }
+
+        public bool IsCompIter { get; init; }
+
+        public required string Description { get; init; }
+    }
+
+    /// <summary>
+    /// The solution message provided by the
+    /// the solver.
+    /// "https://www.minizinc.org/doc-latest/en/json-stream.html"
+    /// </summary>
+    private sealed record SolutionOutput : JsonOutput
+    {
+        public int? Time { get; set; }
+
+        public List<string>? Sections { get; set; }
+
+        public Dictionary<string, object>? Output { get; set; }
+    }
+
+    private sealed record StatusOutput : JsonOutput
+    {
+        public required string Status { get; init; }
+
+        public int? Time { get; init; }
+    }
 }

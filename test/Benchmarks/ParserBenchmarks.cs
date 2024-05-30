@@ -30,6 +30,6 @@ public class ParserBenchmarks
     [Benchmark]
     public void Benchmark()
     {
-        var result = Parser.ParseText(Mzn);
+        var result = Parser.ParseString(Mzn);
     }
 }

@@ -31,7 +31,9 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_satisfy()
     {
-        var solver = Client.SolveModelText("var 10..20: a; var 40..100: b;");
+        var model = Model.FromFile("var 10..20: a; var 40..100: b;");
+        var sol = await Client.Solve(model);
+
         var sol = await solver.Solution();
         var a = sol.GetInt("a");
         var b = sol.GetInt("b");
@@ -63,6 +65,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     async void test_solve_return_array()
     {
         var mzn = "array[1..10] of var 0..100: xd;";
+        var inst = Model.
         var solver = Client.SolveModelText(mzn);
         var sol = await solver.Solution();
         var result = sol.GetArray1D<int>("xd").ToArray();

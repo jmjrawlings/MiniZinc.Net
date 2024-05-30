@@ -289,9 +289,9 @@ public class ParserUnitTests
         node.Upper.Should().BeOfType<FloatLiteralSyntax>();
     }
 
-    SyntaxTree ParseText(string mzn)
+    SyntaxTree ParseString(string mzn)
     {
-        var result = Parser.ParseText(mzn);
+        var result = Parser.ParseString(mzn);
         result.ErrorTrace.Should().BeNull();
         return result.Syntax;
     }
@@ -308,7 +308,7 @@ public class ParserUnitTests
 
     T ParseNode<T>(string mzn)
     {
-        var tree = ParseText(mzn);
+        var tree = ParseString(mzn);
         var nodes = tree.Nodes;
         var node = nodes[0];
         if (node is not T t)
