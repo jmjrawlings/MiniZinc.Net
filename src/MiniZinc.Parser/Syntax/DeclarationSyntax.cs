@@ -3,6 +3,8 @@
 /// <summary>
 /// A variable
 /// </summary>
+/// <mzn>int: a = 10</mzn>
+/// <mzn>var int: a = 10</mzn>
 public sealed record DeclarationSyntax(in Token Start, TypeSyntax Type)
     : SyntaxNode(Start),
         ILetLocal
