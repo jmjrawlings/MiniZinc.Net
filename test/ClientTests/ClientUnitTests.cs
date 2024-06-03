@@ -33,8 +33,6 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     {
         var model = Model.FromFile("var 10..20: a; var 40..100: b;");
         var sol = await Client.Solve(model);
-
-        var sol = await solver.Solution();
         var a = sol.GetInt("a");
         var b = sol.GetInt("b");
         sol.Status.Should().Be(SolveStatus.Satisfied);
@@ -43,16 +41,19 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_unsat()
     {
-        var solver = Client.SolveModelText("var 10..20: a; constraint a < 0;");
-        var sol = await solver.Solution();
-        sol.Status.Should().Be(SolveStatus.Unsatisfiable);
+        var model = Model.FromString("var 10..20: a; constraint a < 0;");
+        var solution = await Client.Solve(model);
+        solution.Status.Should().Be(SolveStatus.Unsatisfiable);
     }
 
     [Fact]
     async void test_solve_maximize()
     {
-        var solver = Client.SolveModelText("var 10..20: a; var 10..20: b; solve maximize a + b;");
-        var sol = await solver.Solution();
+        var model = Model.Create();
+        model.AddString("var 10..20: a;");
+        model.AddString("var 10..20: b;");
+        model.Maximize("a + b");
+        var sol = await Client.Solve(model);
         sol.Status.Should().Be(SolveStatus.Optimal);
         var a = sol.GetInt("a");
         var b = sol.GetInt("b");
@@ -64,10 +65,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_return_array()
     {
-        var mzn = "array[1..10] of var 0..100: xd;";
-        var inst = Model.
-        var solver = Client.SolveModelText(mzn);
-        var sol = await solver.Solution();
+        var model = Model.FromString("array[1..10] of var 0..100: xd;");
+        var sol = await Client.Solve(model);
         var result = sol.GetArray1D<int>("xd").ToArray();
     }
 }

@@ -293,7 +293,7 @@ public class ParserUnitTests
     {
         var result = Parser.ParseString(mzn);
         result.ErrorTrace.Should().BeNull();
-        return result.Syntax;
+        return result.SyntaxNode;
     }
 
     T ParseExpr<T>(string mzn)

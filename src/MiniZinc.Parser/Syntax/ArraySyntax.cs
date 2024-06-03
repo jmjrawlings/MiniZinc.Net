@@ -2,6 +2,6 @@
 
 public record ArraySyntax(in Token Start) : SyntaxNode(Start)
 {
-    public List<SyntaxNode> Elements { get; set; } = new();
+    public List<SyntaxNode> Elements { get; } = new();
     public int N => Elements.Count;
 }

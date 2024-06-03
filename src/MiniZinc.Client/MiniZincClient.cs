@@ -58,65 +58,47 @@ public sealed partial class MiniZincClient
     /// </summary>
     public Solver GetSolver(string key) => _solverLookup[key.ToLower()];
 
-    public async IAsyncEnumerable<Solution> Solve(
+    /// <summary>
+    /// Solve the given model, returning the best
+    /// solution found or an error if it occured
+    /// </summary>
+    public async Task<Solution> Solve(
+        Model model,
+        SolveOptions? options = default,
+        CancellationToken token = default
+    )
+    {
+        Solution? best = null;
+        await foreach (var solution in Solutions(model, options, token))
+        {
+            best = solution;
+        }
+
+        return best!;
+    }
+
+    /// <summary>
+    /// Solve the given model with the given options
+    /// </summary>
+    public async IAsyncEnumerable<Solution> Solutions(
         Model model,
         SolveOptions? options = default,
         [EnumeratorCancellation] CancellationToken token = default
     )
     {
-        var sb = new StringBuilder();
-        string mzn;
-        foreach (var path in model.Files ?? Enumerable.Empty<string>())
-        {
-            var parser = Parser.ParseFile(path);
-            if (!parser.Ok)
-                throw new Exception(parser.ErrorMessage);
-            mzn = parser.Syntax.Write();
-            sb.AppendLine(mzn);
-        }
-
-        foreach (var txt in instance.ModelStrings ?? Enumerable.Empty<string>())
-        {
-            var parser = Parser.ParseString(txt);
-            if (!parser.Ok)
-                throw new Exception(parser.ErrorMessage);
-            mzn = parser.Syntax.Write();
-            sb.AppendLine(mzn);
-        }
-        
-        mzn = sb.ToString();
-        var result = Parser.ParseString(mzn);
-        if (!result.Ok)
-            throw new Exception(result.ErrorMessage);
-        var solver = GetSolver(options?.SolverId ?? Solver.Gecode);
+        model.EnsureOk();
         var modelText = model.Write(new WriteOptions { SkipOutput = true });
+        var solver = GetSolver(options?.SolverId ?? Solver.Gecode);
+        var method = model.Method;
         var outputPath = options?.OutputFolder ?? Path.GetTempPath();
-        var modelPath = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".mzn");
-        var method = SolveMethod.Satisfy;
-        foreach (var node in model.Nodes)
-        {
-            switch (node)
-            {
-                case SolveSyntax n:
-                    method = n.Method;
-                    break;
-            }
-        }
-        
+        var modelPath = Path.Combine(
+            outputPath,
+            Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".mzn"
+        );
         await File.WriteAllTextAsync(modelPath, modelText, token);
-        _logger.LogInformation(
-            "Model with {Nodes} nodes saved to {Path}",
-            model.Nodes.Count,
-            modelPath
-        );
+        _logger.LogInformation("Model saved to {Path}", modelPath);
 
-        var command = Command(
-            "--solver",
-            instance.SolverId,
-            "--json-stream",
-            "--output-objective",
-            modelPath
-        );
+        var command = Command("--solver", solver, "--json-stream", "--output-objective", modelPath);
         var solveStart = DateTimeOffset.Now;
         var iterStart = solveStart;
         var iteration = 0;
@@ -184,7 +166,7 @@ public sealed partial class MiniZincClient
                     status = SolveStatus.Satisfied;
                     dzn = m.Output["dzn"].ToString()!;
                     var parsed = Parser.ParseString(dzn);
-                    foreach (var node in parsed.Syntax.Nodes)
+                    foreach (var node in parsed.SyntaxNode.Nodes)
                     {
                         if (node is not AssignmentSyntax assign)
                             throw new Exception();

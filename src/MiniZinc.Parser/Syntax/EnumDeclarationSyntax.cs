@@ -11,12 +11,13 @@ public enum EnumCaseType
 public record EnumCasesSyntax(in Token Start, EnumCaseType Type, SyntaxNode? Expr = null)
     : SyntaxNode(Start)
 {
-    public IdentifierSyntax? Constructor { get; set; } = null;
-    public List<IdentifierSyntax>? Names { get; set; } = null;
+    public IdentifierSyntax? Constructor { get; init; } = null;
+    public List<IdentifierSyntax>? Names { get; init; } = null;
 }
 
 public sealed record EnumDeclarationSyntax(in Token Start, IdentifierSyntax Name)
-    : SyntaxNode(Start)
+    : SyntaxNode(Start),
+        INamedSyntax
 {
     public List<EnumCasesSyntax> Cases { get; } = new();
 }
