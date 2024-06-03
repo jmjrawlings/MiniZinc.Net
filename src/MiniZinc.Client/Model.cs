@@ -1,23 +1,75 @@
 ﻿namespace MiniZinc.Client;
 
+using System.Text;
 using Parser;
 using Parser.Syntax;
 
+/// <summary>
+/// A MiniZinc model
+/// </summary>
+/// <remarks>
+/// This class extracts useful semantic information
+/// from <see cref="SyntaxTree"/>
+/// </remarks>
 public sealed class Model
 {
-    public readonly List<SyntaxNode> Nodes;
+    private readonly List<SyntaxNode> _nodes;
 
-    public readonly Dictionary<string, object> NameSpace;
+    private Dictionary<string, INamedSyntax> _namespace;
 
-    public readonly HashSet<string> Variables;
+    private HashSet<string>? _variables;
 
-    public List<SyntaxNode> Constraints { get; private set; }
+    private List<ConstraintSyntax>? _constraints;
 
-    public SolveMethod SolveMethod { get; private set; }
+    private List<OutputSyntax>? _outputs;
 
-    public SyntaxNode? Objective { get; private set; }
+    private SolveSyntax? _solve;
 
-    public List<SyntaxNode> Outputs { get; private set; }
+    private List<string>? _warnings;
+
+    private List<string>? _errors;
+
+    private StringBuilder _sourceText;
+
+    public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
+
+    public IEnumerable<string> Errors => _errors ?? Enumerable.Empty<string>();
+
+    public IEnumerable<SyntaxNode> Nodes => _nodes;
+
+    public IEnumerable<ConstraintSyntax> Constraints =>
+        _constraints ?? Enumerable.Empty<ConstraintSyntax>();
+
+    public IEnumerable<OutputSyntax> Outputs => _outputs ?? Enumerable.Empty<OutputSyntax>();
+
+    public SolveSyntax? Solve => _solve;
+
+    public SolveMethod Method => _solve?.Method ?? SolveMethod.Satisfy;
+
+    public SyntaxNode? Objective => _solve?.Objective;
+
+    public int WarningCount => _warnings?.Count ?? 0;
+
+    public int ErrorCount => _errors?.Count ?? 0;
+
+    public bool HasErrors => _errors is null;
+
+    public bool HasWarnings => _warnings is null;
+
+    private Model(IEnumerable<SyntaxNode>? nodes = null)
+    {
+        _errors = null;
+        _warnings = null;
+        _outputs = null;
+        _constraints = null;
+        _nodes = new List<SyntaxNode>();
+        _variables = new HashSet<string>();
+        _namespace = new Dictionary<string, INamedSyntax>();
+        _sourceText = new StringBuilder();
+        if (nodes is not null)
+            foreach (var node in nodes)
+                AddNode(node);
+    }
 
     /// <summary>
     /// Include the given file in the model
@@ -28,7 +80,7 @@ public sealed class Model
     }
 
     /// <summary>
-    /// Include the given file in the model
+    /// Add an include statement to the model
     /// </summary>
     public void Include(FileInfo file)
     {
@@ -68,17 +120,18 @@ public sealed class Model
     }
 
     /// <summary>
-    /// Add a constraint
+    /// Add a constraint with an optional name
     /// </summary>
-    public void Constraint(string expr, params string[] annotations)
+    public void Constraint(string expr, string? name = null)
     {
-        if (annotations.Length is 0)
+        if (name is null)
             AddString($"constraint {expr};");
         else
-            AddString($"constraint {expr} " + Annotations(annotations) + ';');
+            AddString($"constraint {expr} :: \"{name}\"");
     }
 
-    private string Annotations(params string[] args) => string.Join("::", args);
+    private string? Annotations(params string[] args) =>
+        args.Length == 0 ? null : string.Join("::", args);
 
     /// <summary>
     /// Set the model objective to minimize the given expression
@@ -104,144 +157,89 @@ public sealed class Model
         AddString("solve satisfy;");
     }
 
-    public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
-
-    public IEnumerable<string> Errors => _errors ?? Enumerable.Empty<string>();
-
-    private List<string>? _warnings;
-    private List<string>? _errors;
-
-    private Model(IEnumerable<SyntaxNode>? nodes = null)
-    {
-        _errors = null;
-        _warnings = null;
-        Outputs = new List<SyntaxNode>();
-        Constraints = new List<SyntaxNode>();
-        SolveMethod = SolveMethod.Satisfy;
-        Objective = null;
-        Nodes = new List<SyntaxNode>();
-        Variables = new HashSet<string>();
-        NameSpace = new Dictionary<string, object>();
-        if (nodes is not null)
-            AddNodes(nodes);
-    }
-
-    /// <summary>
-    /// Compile this model from the files and strings
-    /// </summary>
-    public Model AddNodes(IEnumerable<SyntaxNode> nodes)
-    {
-        foreach (var node in nodes)
-            AddNode(node);
-    }
-
     /// <summary>
     /// Add the given syntax node to the model
     /// </summary>
-    void AddNode(SyntaxNode node)
+    void AddNode(SyntaxNode syntaxNode)
     {
-        switch (node)
+        switch (syntaxNode)
         {
-            case ArrayAccessSyntax arrayAccessSyntax:
+            case SolveSyntax node:
+                if (_solve is null)
+                    _solve = node;
+                else
+                    Error($"Can not override \"{_solve}\" with \"{syntaxNode}\"");
                 break;
-            case Array2dSyntax array2dSyntax:
+
+            case OutputSyntax node:
+                _outputs ??= new List<OutputSyntax>();
+                _outputs.Add(node);
                 break;
-            case Array3dSyntax array3dSyntax:
+
+            case ConstraintSyntax node:
+                _constraints ??= new List<ConstraintSyntax>();
+                _constraints.Add(node);
                 break;
-            case Array1DSyntax array1DSyntax:
+
+            case AssignmentSyntax node:
+                var name = node.Name.ToString();
+                var expr = node.Expr;
+                if (_namespace.TryGetValue(name, out var old))
+                {
+                    switch (old)
+                    {
+                        // Unassigned variable
+                        case DeclarationSyntax { Body: null } syntax:
+                            var copy = syntax.Clone();
+                            copy.Body = expr;
+                            _namespace[name] = copy;
+                            break;
+
+                        default:
+                            Error($"Reassigned variable {name} from {old} to {expr}");
+                            break;
+                    }
+                }
+                else
+                {
+                    _namespace[name] = node;
+                }
                 break;
-            case ArraySyntax arraySyntax:
+
+            case DeclarationSyntax node:
+                name = node.Name.ToString();
+                if (_namespace.TryGetValue(name, out old))
+                    Error($"Variable {name} was already declared as {node.Type.SourceText}");
+                else
+                    _namespace[name] = node;
                 break;
-            case ArrayTypeSyntax arrayTypeSyntax:
+
+            case EnumDeclarationSyntax node:
+                name = node.Name.ToString();
+                if (_namespace.TryGetValue(name, out old))
+                    Error($"Variable {name} was already declared as an Enumeration");
+                else
+                    _namespace[name] = node;
                 break;
-            case AssignmentSyntax assignmentSyntax:
+
+            case FunctionDeclarationSyntax node:
+                name = node.Name.ToString();
+                if (_namespace.TryGetValue(name, out old))
+                    Error($"Variable {name} was already declared as a Function");
+                else
+                    _namespace[name] = node;
                 break;
-            case BinaryOperatorSyntax binaryOperatorSyntax:
+
+            // TODO - follow links?
+            case IncludeSyntax node:
+                var path = node.Path.StringValue;
+                AddFile(path);
                 break;
-            case BoolLiteralSyntax boolLiteralSyntax:
+
+            case SyntaxTree tree:
+                foreach (var node in tree.Nodes)
+                    AddNode(node);
                 break;
-            case CallSyntax callSyntax:
-                break;
-            case CompositeTypeSyntax compositeTypeSyntax:
-                break;
-            case ComprehensionSyntax comprehensionSyntax:
-                break;
-            case ConstraintSyntax constraintSyntax:
-                break;
-            case DeclarationSyntax declarationSyntax:
-                break;
-            case EmptyLiteralSyntax emptyLiteralSyntax:
-                break;
-            case EnumCasesSyntax enumCasesSyntax:
-                break;
-            case EnumDeclarationSyntax enumDeclarationSyntax:
-                break;
-            case ExprType exprType:
-                break;
-            case FloatLiteralSyntax floatLiteralSyntax:
-                break;
-            case FunctionDeclarationSyntax functionDeclarationSyntax:
-                break;
-            case GeneratorCallSyntax generatorCallSyntax:
-                break;
-            case GeneratorSyntax generatorSyntax:
-                break;
-            case IdentifierSyntax identifierSyntax:
-                break;
-            case IfElseSyntax ifElseSyntax:
-                break;
-            case IncludeSyntax includeSyntax:
-                break;
-            case IndexAndNode indexAndNode:
-                break;
-            case IntLiteralSyntax intLiteralSyntax:
-                break;
-            case LetSyntax letSyntax:
-                break;
-            case ListTypeSyntax listTypeSyntax:
-                break;
-            case NameTypeSyntax nameTypeSyntax:
-                break;
-            case OutputSyntax outputSyntax:
-                break;
-            case ParameterSyntax parameterSyntax:
-                break;
-            case RangeLiteralSyntax rangeLiteralSyntax:
-                break;
-            case RecordAccessSyntax recordAccessSyntax:
-                break;
-            case RecordLiteralSyntax recordLiteralSyntax:
-                break;
-            case RecordTypeSyntax recordTypeSyntax:
-                break;
-            case SetLiteralSyntax setLiteralSyntax:
-                break;
-            case SetTypeSyntax setTypeSyntax:
-                break;
-            case SolveSyntax solveSyntax:
-                break;
-            case StringLiteralSyntax stringLiteralSyntax:
-                break;
-            case SyntaxNode<TODO> syntaxNode:
-                break;
-            case SyntaxTree syntaxTree:
-                break;
-            case TupleAccessSyntax tupleAccessSyntax:
-                break;
-            case TupleLiteralSyntax tupleLiteralSyntax:
-                break;
-            case TupleTypeSyntax tupleTypeSyntax:
-                break;
-            case TypeAliasSyntax typeAliasSyntax:
-                break;
-            case TypeSyntax typeSyntax:
-                break;
-            case UnaryOperatorSyntax unaryOperatorSyntax:
-                break;
-            case WildCardExpr wildCardExpr:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(node));
         }
     }
 
@@ -274,35 +272,39 @@ public sealed class Model
     /// <summary>
     /// Add the given file to this model (.mzn or .dzn)
     /// </summary>
-    public Model AddFile(string path)
+    public void AddFile(string path)
     {
         var file = new FileInfo(path);
-        return AddFile(file);
+        AddFile(file);
     }
 
     /// <summary>
     /// Add the given file to this model (.mzn or .dzn)
     /// </summary>
-    public Model AddFile(FileInfo file)
+    public void AddFile(FileInfo file)
     {
-        if (!file.Exists)
-            return Error($"File \"{file.FullName}\" does not exist");
-
         var result = Parser.ParseFile(file);
-        if (!result.Ok)
-            return Error(result.ErrorMessage!);
-
-        return AddNodes(result.Syntax.Nodes);
+        result.EnsureOk();
+        _sourceText.AppendLine(result.SourceText);
+        AddNode(result.SyntaxNode);
     }
 
     /// <summary>
     /// Add the given error to this model
     /// </summary>
-    Model Error(string msg)
+    void Error(string msg)
     {
         _errors ??= new List<string>();
         _errors.Add(msg);
-        return this;
+    }
+
+    /// <summary>
+    /// Add the given warning to this model
+    /// </summary>
+    void Warning(string msg)
+    {
+        _warnings ??= new List<string>();
+        _warnings.Add(msg);
     }
 
     /// <summary>
@@ -315,12 +317,12 @@ public sealed class Model
         return this;
     }
 
-    public Model AddString(string mzn)
+    public void AddString(string mzn)
     {
         var result = Parser.ParseString(mzn);
-        if (!result.Ok)
-            return Error(result.ErrorMessage!);
-        return AddNodes(result.Syntax.Nodes);
+        result.EnsureOk();
+        _sourceText.AppendLine(result.SourceText);
+        AddNode(result.SyntaxNode);
     }
 
     public Model AddStrings(params string[] strings)
@@ -330,18 +332,39 @@ public sealed class Model
         return this;
     }
 
-    public Model Copy()
+    public Model Clone()
     {
-        var mzn = ToString();
+        var mzn = Write(WriteOptions.Minimal);
         var copy = FromString(mzn);
         return copy;
     }
 
-    public override string ToString()
+    public string Write(WriteOptions? options = null)
     {
         var tree = new SyntaxTree(default);
-        tree.Nodes.AddRange(Nodes);
-        var mzn = tree.Write();
+        tree.Nodes.AddRange(_nodes);
+        var mzn = tree.Write(options);
+        return mzn;
+    }
+
+    public void EnsureOk()
+    {
+        if (_errors is null)
+            return;
+
+        var msg = new StringBuilder();
+        msg.AppendLine($"The mode has {_errors.Count} errors:");
+        foreach (var err in _errors)
+        {
+            msg.AppendLine("-------------------------------------");
+            msg.AppendLine(err);
+            msg.AppendLine();
+        }
+    }
+
+    public override string ToString()
+    {
+        var mzn = Write(WriteOptions.Minimal);
         return mzn;
     }
 }

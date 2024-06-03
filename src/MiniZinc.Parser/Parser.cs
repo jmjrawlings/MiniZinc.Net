@@ -477,8 +477,7 @@ public sealed class Parser
         if (!ParseExpr(out var expr))
             return false;
 
-        node = new OutputSyntax(start, expr);
-        node.Annotations = anns;
+        node = new OutputSyntax(start, expr) { Annotations = anns };
         return true;
     }
 
@@ -587,8 +586,7 @@ public sealed class Parser
         if (!ParseStringAnnotations(out var anns))
             return false;
 
-        constraint = new ConstraintSyntax(start, expr);
-        constraint.Annotations = anns;
+        constraint = new ConstraintSyntax(start, expr) { Annotations = anns };
         return IsOk;
     }
 
@@ -647,9 +645,8 @@ public sealed class Parser
             if (needs_value)
                 return Expected("=");
 
-            declare = new DeclarationSyntax(start, type!)
+            declare = new DeclarationSyntax(start, type!, name)
             {
-                Name = name,
                 Parameters = pars,
                 Annotations = anns
             };
@@ -667,9 +664,8 @@ public sealed class Parser
         }
         else
         {
-            declare = new DeclarationSyntax(start, type)
+            declare = new DeclarationSyntax(start, type, name)
             {
-                Name = name,
                 Parameters = pars,
                 Annotations = anns,
                 Body = value
@@ -2255,16 +2251,16 @@ public sealed class Parser
     /// </summary>
     /// <example>Parser.ParseFile("model.mzn")</example>
     /// <example>Parser.ParseFile("data.dzn")</example>
-    public static ParseResult ParseFile(string path)
+    public static ParseResult<SyntaxTree> ParseFile(string path)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
         var parser = new Parser(mzn);
         var ok = parser.ParseTree(out var tree);
         var elapsed = watch.Elapsed;
-        var result = new ParseResult
+        var result = new ParseResult<SyntaxTree>
         {
-            Syntax = tree,
+            SyntaxNode = tree,
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
@@ -2277,7 +2273,7 @@ public sealed class Parser
     }
 
     /// <summary>
-    /// Parse the given minizinc model or data string
+    /// Parse the given minizinc string
     /// </summary>
     /// <example>
     /// Parser.ParseText("""
@@ -2286,15 +2282,15 @@ public sealed class Parser
     ///     constraint a /\ b;
     ///     """);
     /// </example>
-    public static ParseResult ParseString(string text)
+    public static ParseResult<SyntaxTree> ParseString(string text)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
         var ok = parser.ParseTree(out var tree);
         var elapsed = watch.Elapsed;
-        var result = new ParseResult
+        var result = new ParseResult<SyntaxTree>
         {
-            Syntax = tree,
+            SyntaxNode = tree,
             SourceFile = null,
             SourceText = text,
             Ok = ok,
@@ -2306,10 +2302,37 @@ public sealed class Parser
         return result;
     }
 
-    /// <inheritdoc cref="ParseFile(string)"/>
-    public static ParseResult ParseFile(FileInfo file) => ParseFile(file.FullName);
+    /// <summary>
+    /// Parse a node from the given minizinc string
+    /// </summary>
+    /// <example>
+    /// Parser.ParseString&ltConstraintSyntax&gt("constraint a > b;")
+    /// </example>
+    public static ParseResult<T> ParseString<T>(string text)
+        where T : SyntaxNode
+    {
+        var result = ParseString(text);
+        var node = result.SyntaxNode.Nodes[0];
+        if (node is not T t)
+            throw new Exception();
+        return new ParseResult<T>
+        {
+            SyntaxNode = t,
+            SourceFile = null,
+            SourceText = text,
+            Ok = result.Ok,
+            FinalToken = result.FinalToken,
+            Elapsed = result.Elapsed,
+            ErrorMessage = result.ErrorMessage,
+            ErrorTrace = result.ErrorTrace
+        };
+    }
 
-    internal static T? ParseNode<T>(string text)
+    /// <inheritdoc cref="ParseFile(string)"/>
+    public static ParseResult<SyntaxTree> ParseFile(FileInfo file) => ParseFile(file.FullName);
+
+    /// Parse an expression from text
+    internal static T? ParseExpr<T>(string text)
         where T : SyntaxNode
     {
         var parser = new Parser(text);

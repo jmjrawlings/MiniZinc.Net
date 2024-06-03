@@ -112,12 +112,12 @@ internal sealed class Writer
         _tabSize = options.TabSize;
     }
 
-    private void Write(SyntaxNode? expr, int precedence = int.MaxValue)
+    private void Write(SyntaxNode? node, int precedence = int.MaxValue)
     {
-        if (expr is null)
+        if (node is null)
             return;
 
-        switch (expr)
+        switch (node)
         {
             case SyntaxTree e:
                 WriteTree(e);
@@ -294,7 +294,7 @@ internal sealed class Writer
                 break;
 
             default:
-                throw new Exception(expr.GetType().ToString());
+                throw new Exception(node.GetType().ToString());
         }
     }
 
@@ -1040,7 +1040,7 @@ internal sealed class Writer
     /// </summary>
     public static string WriteNode(SyntaxNode node, WriteOptions? options = null)
     {
-        var writer = new Writer(options ?? new WriteOptions());
+        var writer = new Writer(options ?? WriteOptions.Default);
         writer.Write(node);
 
         // Trim trailing whitespace

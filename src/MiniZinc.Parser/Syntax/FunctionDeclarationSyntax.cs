@@ -9,7 +9,7 @@ public sealed record FunctionDeclarationSyntax(
     TypeSyntax Type,
     List<ParameterSyntax>? Parameters,
     SyntaxNode? Body
-) : SyntaxNode(Start)
+) : SyntaxNode(Start), INamedSyntax
 {
     public IdentifierSyntax? Ann { get; set; }
 }

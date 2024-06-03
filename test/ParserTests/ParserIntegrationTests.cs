@@ -1,10 +1,12 @@
+using MiniZinc.Parser.Syntax;
+
 public sealed class ParserIntegrationTests
 {
     private void Test(string path)
     {
         var result = Parser.ParseFile(path);
         result.ErrorTrace.Should().BeNull();
-        var output = result.Syntax.Write();
+        var output = result.SyntaxNode.Write();
         var roundtrip = Parser.ParseString(output);
         roundtrip.ErrorTrace.Should().BeNull();
     }

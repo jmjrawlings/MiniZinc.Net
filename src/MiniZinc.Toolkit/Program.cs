@@ -5,6 +5,7 @@ using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.Diagnostics;
 using Parser;
+using Parser.Syntax;
 
 class Program
 {
@@ -83,7 +84,7 @@ class Program
             return;
         }
 
-        var model = result.Syntax;
+        var model = result.SyntaxNode;
         var minified = model.Write(WriteOptions.Minimal);
         File.WriteAllText(file.FullName, minified);
         console.WriteLine(file.FullName);
@@ -112,7 +113,7 @@ class Program
             context.ExitCode = 100;
             return;
         }
-        var model = result.Syntax;
+        var model = result.SyntaxNode;
         var output = model.Write(WriteOptions.Pretty);
         File.WriteAllText(file.FullName, output);
         console.WriteLine(file.FullName);

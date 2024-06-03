@@ -10,7 +10,7 @@ public sealed class WriterTests
     {
         var result = Parser.ParseString(input);
         result.Ok.Should().BeTrue("Text should parse");
-        var tree = result.Syntax;
+        var tree = result.SyntaxNode;
         var options = new WriteOptions { Minify = true };
         var output = tree.Write(options);
         var a = 2;
@@ -32,7 +32,7 @@ public sealed class WriterTests
 
         var result = Parser.ParseString(input);
         result.Ok.Should().BeTrue("Text should parse");
-        var tree = result.Syntax;
+        var tree = result.SyntaxNode;
         var opts = new WriteOptions { Prettify = true, Minify = true };
         var output = tree.Write(opts);
         output.Should().Be(expected);
@@ -45,7 +45,7 @@ public sealed class WriterTests
     [InlineData("""2 * i""", """2 * i""")]
     void test_write_precedence(string input, string expected)
     {
-        var expr = Parser.ParseNode<BinaryOperatorSyntax>(input)!;
+        var expr = Parser.ParseExpr<BinaryOperatorSyntax>(input)!;
         var output = expr.Write();
         output.Should().Be(expected);
     }
