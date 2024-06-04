@@ -87,7 +87,7 @@ public sealed partial class MiniZincClient
     )
     {
         model.EnsureOk();
-        var modelText = model.Write(new WriteOptions { SkipOutput = true });
+        var modelText = model.SourceText;
         var solver = GetSolver(options?.SolverId ?? Solver.Gecode);
         var method = model.Method;
         var outputPath = options?.OutputFolder ?? Path.GetTempPath();
@@ -98,14 +98,14 @@ public sealed partial class MiniZincClient
         await File.WriteAllTextAsync(modelPath, modelText, token);
         _logger.LogInformation("Model saved to {Path}", modelPath);
 
-        var command = Command("--solver", solver, "--json-stream", "--output-objective", modelPath);
+        var command = Command("--solver", solver.Id, "--json-stream", "--output-objective", modelPath);
         var solveStart = DateTimeOffset.Now;
         var iterStart = solveStart;
         var iteration = 0;
         var data = new Dictionary<string, SyntaxNode>();
         var warnings = new List<string>();
         var status = SolveStatus.Pending;
-        string dzn = "";
+        var text = "";
         int objective = 0;
         int processId = 0;
         await foreach (var msg in command.Watch().WithCancellation(token))
@@ -164,8 +164,8 @@ public sealed partial class MiniZincClient
                 case SolutionOutput m:
                     iteration++;
                     status = SolveStatus.Satisfied;
-                    dzn = m.Output["dzn"].ToString()!;
-                    var parsed = Parser.ParseString(dzn);
+                    text = m.Output["dzn"].ToString()!;
+                    var parsed = Parser.ParseString(text);
                     foreach (var node in parsed.SyntaxNode.Nodes)
                     {
                         if (node is not AssignmentSyntax assign)
@@ -212,7 +212,7 @@ public sealed partial class MiniZincClient
                 RelativeGap = null,
                 AbsoluteDelta = null,
                 RelativeDelta = null,
-                DataText = dzn,
+                Text = text,
                 Data = data,
                 Outputs = null,
                 Statistics = null,
