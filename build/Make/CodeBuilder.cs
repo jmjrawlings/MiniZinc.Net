@@ -1,4 +1,4 @@
-﻿namespace Build;
+﻿namespace Make;
 
 using System.Diagnostics;
 using System.Text;

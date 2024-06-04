@@ -1,4 +1,4 @@
-﻿namespace Build;
+﻿namespace Make;
 
 using LibMiniZinc.Tests;
 using MiniZinc.Build;

@@ -1,4 +1,4 @@
-﻿namespace Build;
+﻿namespace Make;
 
 using CommunityToolkit.Diagnostics;
 using MiniZinc.Build;

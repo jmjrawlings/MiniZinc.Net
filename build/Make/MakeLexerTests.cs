@@ -1,38 +1,26 @@
-﻿namespace Build;
+﻿namespace Make;
 
 using LibMiniZinc.Tests;
 using MiniZinc.Build;
 
-public sealed class MakeParserTests : CodeBuilder
+public sealed class MakeLexerTests : CodeBuilder
 {
     public readonly TestSpec Spec;
     public readonly IEnumerable<string> Files;
 
-    private MakeParserTests(TestSpec spec)
+    private MakeLexerTests(TestSpec spec)
     {
         Spec = spec;
-        var files = new HashSet<string>();
-        foreach (var @case in spec.TestCases)
-        {
-            if (@case.Type is TestType.Error)
-                continue;
-
-            files.Add(@case.Path);
-        }
-
-        Files = files.ToList();
+        Files = spec.TestCases.Select(c => c.Path).Distinct().ToList();
     }
 
-    string Make()
+    string Generate()
     {
-        Block("public sealed class ParserIntegrationTests");
+        Block("public sealed class LexerIntegrationTests");
         using (Block("private void Test(string path)"))
         {
             Var("lexer", "Lexer.LexFile(path)");
-            Var("parser", "new Parser(lexer)");
-            WriteLn("parser.ParseModel(out var model);");
-            using (If("parser.ErrorString is { } err"))
-                WriteLn("Assert.Fail(err);");
+            Var("tokens", "lexer.ToArray()");
         }
 
         foreach (var path in Files)
@@ -42,7 +30,7 @@ public sealed class MakeParserTests : CodeBuilder
             testName = testName.Replace("-", "_");
             testName = $"test_{testName}";
             Newline();
-            WriteLn($"[Fact(DisplayName=\"{path}\")]");
+            WriteLn($"[Fact(DisplayName = \"{path}\")]");
             using (Block($"public void {testName}()"))
             {
                 Var("path", $"\"{path}\"");
@@ -57,9 +45,9 @@ public sealed class MakeParserTests : CodeBuilder
     public static async Task Run()
     {
         var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-        var gen = new MakeParserTests(spec);
-        var source = gen.Make();
-        var file = Projects.ParserTests.Dir.JoinFile("ParserIntegrationTests.cs");
+        var gen = new MakeLexerTests(spec);
+        var source = gen.Generate();
+        var file = Projects.ParserTests.Dir.JoinFile("LexerIntegrationTests.cs");
         await File.WriteAllTextAsync(file.FullName, source);
     }
 }

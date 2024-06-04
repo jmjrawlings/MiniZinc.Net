@@ -2,7 +2,6 @@
 
 public enum SolveStatus : short
 {
-    Pending,
     Started,
     Satisfied,
     SubOptimal,
