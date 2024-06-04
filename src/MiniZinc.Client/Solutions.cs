@@ -71,10 +71,10 @@ public record Solution
     public required float? RelativeDelta { get; init; }
 
     /// <summary>
-    /// The .dzn text returned by minizinc
+    /// Raw minizinc text 
     /// </summary>
-    public required string DataText { get; init; }
-
+    public required string Text { get; init; }
+    
     /// <summary>
     /// The assigned values to each variable in the model
     /// </summary>

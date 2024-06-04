@@ -1,7 +1,6 @@
 ﻿namespace MiniZinc.Tests;
 
 using Client;
-using Parser.Syntax;
 
 public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
 {
@@ -31,7 +30,9 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_satisfy()
     {
-        var model = Model.FromFile("var 10..20: a; var 40..100: b;");
+        var model = Model.Create();
+        model.Var("a", "10..20");
+        model.Var("b", "10..20");
         var sol = await Client.Solve(model);
         var a = sol.GetInt("a");
         var b = sol.GetInt("b");
@@ -50,8 +51,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     async void test_solve_maximize()
     {
         var model = Model.Create();
-        model.AddString("var 10..20: a;");
-        model.AddString("var 10..20: b;");
+        model.Var("a", "10..20");
+        model.Var("b", "10..20");
         model.Maximize("a + b");
         var sol = await Client.Solve(model);
         sol.Status.Should().Be(SolveStatus.Optimal);

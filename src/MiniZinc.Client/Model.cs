@@ -13,8 +13,6 @@ using Parser.Syntax;
 /// </remarks>
 public sealed class Model
 {
-    private readonly List<SyntaxNode> _nodes;
-
     private Dictionary<string, INamedSyntax> _namespace;
 
     private HashSet<string>? _variables;
@@ -31,11 +29,11 @@ public sealed class Model
 
     private StringBuilder _sourceText;
 
+    public string SourceText => _sourceText.ToString();
+
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
 
     public IEnumerable<string> Errors => _errors ?? Enumerable.Empty<string>();
-
-    public IEnumerable<SyntaxNode> Nodes => _nodes;
 
     public IEnumerable<ConstraintSyntax> Constraints =>
         _constraints ?? Enumerable.Empty<ConstraintSyntax>();
@@ -62,7 +60,6 @@ public sealed class Model
         _warnings = null;
         _outputs = null;
         _constraints = null;
-        _nodes = new List<SyntaxNode>();
         _variables = new HashSet<string>();
         _namespace = new Dictionary<string, INamedSyntax>();
         _sourceText = new StringBuilder();
@@ -98,10 +95,24 @@ public sealed class Model
     }
 
     /// <summary>
+    /// Declare a parameter
+    /// </summary>
+    /// <returns>The name of the declared parameter</returns>
+    public string Par(string name, string type, string? value = null) =>
+        Declare(name, type, value);
+    
+    /// <summary>
+    /// Declare a variable
+    /// </summary>
+    /// <returns>The name of the declared parameter</returns>
+    public string Var(string name, string type, string? value = null) =>
+        Declare(name, $"var {type}",value);
+
+    /// <summary>
     /// Declare a parameter, variable, or type alias
     /// </summary>
     /// <returns>The name of the declared variable</returns>
-    public string Declare(string name, string type, string? value)
+    public string Declare(string name, string type, string? value = null)
     {
         if (value != null)
             AddString($"{type}: {name} = {value};");
@@ -288,7 +299,7 @@ public sealed class Model
         _sourceText.AppendLine(result.SourceText);
         AddNode(result.SyntaxNode);
     }
-
+    
     /// <summary>
     /// Add the given error to this model
     /// </summary>
@@ -334,19 +345,10 @@ public sealed class Model
 
     public Model Clone()
     {
-        var mzn = Write(WriteOptions.Minimal);
-        var copy = FromString(mzn);
+        var copy = FromString(SourceText);
         return copy;
     }
-
-    public string Write(WriteOptions? options = null)
-    {
-        var tree = new SyntaxTree(default);
-        tree.Nodes.AddRange(_nodes);
-        var mzn = tree.Write(options);
-        return mzn;
-    }
-
+    
     public void EnsureOk()
     {
         if (_errors is null)
@@ -364,7 +366,6 @@ public sealed class Model
 
     public override string ToString()
     {
-        var mzn = Write(WriteOptions.Minimal);
-        return mzn;
+        return SourceText;
     }
 }
