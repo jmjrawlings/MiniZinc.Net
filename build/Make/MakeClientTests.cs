@@ -1,18 +1,18 @@
-﻿namespace Build;
+﻿namespace Make;
 
 using LibMiniZinc.Tests;
 using MiniZinc.Build;
 
-public sealed class MakeSolverTests : CodeBuilder
+public sealed class MakeClientTests : CodeBuilder
 {
-    private MakeSolverTests(TestSpec spec)
+    private MakeClientTests(TestSpec spec)
     {
-        Block("public class SolverIntegrationTests");
+        Block("public class ClientIntegrationTests : IClassFixture<ClientFixture>");
         Newline();
         WriteLn("private readonly MiniZincClient _client;");
         Newline();
         using (
-            Block("public SolverIntegrationTests(ClientFixture fixture, ITestOutputHelper output)")
+            Block("public ClientIntegrationTests(ClientFixture fixture, ITestOutputHelper output)")
         )
         {
             WriteLn("_client = fixture.Client;");
@@ -50,7 +50,14 @@ public sealed class MakeSolverTests : CodeBuilder
 
         Attribute($"Theory(DisplayName=\"{path}\")");
         foreach (var solver in solvers)
-            Attribute($"InlineData(\"{solver}\")");
+        {
+            var solverId = solver switch
+            {
+                "cbc" => "coin-bc",
+                var s => s
+            };
+            Attribute($"InlineData(\"{solverId}\")");
+        }
 
         var block = Block($"public async void {testName}(string solver)");
         Var("path", $"\"{path}\"");
@@ -84,51 +91,53 @@ public sealed class MakeSolverTests : CodeBuilder
 
     private void MakeErrorTest(string testName, TestCase testCase)
     {
-        throw new NotImplementedException();
     }
 
     private void MakeUnsatisfiableTest(string testName, TestCase testCase)
     {
-        throw new NotImplementedException();
     }
 
     private void MakeOutputTest(string testName, TestCase testCase)
     {
-        throw new NotImplementedException();
     }
 
     private void MakeAllSolutionsTest(string testName, TestCase testCase)
     {
-        Var("solve", "_client.SolveModelFile(path, solver)");
-        Var("solution", "await solve.Solution()");
-        WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
+        Var("model", "Model.FromFile(path)");
+        Var("solutions", "new List<Solution>()");
+        Var("options", "SolveOptions.Create(solverId:solver)");
+        using (Block("await foreach (var solution in _client.Solutions(model,options))"))
+        {
+            WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
+        }        
     }
 
     private void MakeAnySolutionTest(string testName, TestCase testCase)
     {
-        Var("solve", "_client.SolveModelFile(path, solver)");
-        Var("solution", "await solve.Solution()");
+        Var("model", "Model.FromFile(path)");
+        Var("options", "SolveOptions.Create(solverId:solver)");
+        Var("solution", "await _client.Solve(model, options)");
         WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
     }
 
     private void MakeSatisfyTest(string testName, TestCase testCase)
     {
-        Var("solve", "_client.SolveModelFile(path, solver)");
-        Var("solution", "await solve.Solution()");
+        Var("model", "Model.FromFile(path)");
+        Var("options", "SolveOptions.Create(solverId:solver)");
+        Var("solution", "await _client.Solve(model,options)");
         WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
     }
-
+    
     private void MakeCompileTest(string testName, TestCase testCase)
     {
-        throw new NotImplementedException();
     }
 
     public static async Task Run()
     {
         var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-        var generator = new MakeSolverTests(spec);
+        var generator = new MakeClientTests(spec);
         var source = generator.ToString();
-        var file = Projects.ClientTests.Dir.JoinFile("ParserIntegrationTests.cs");
+        var file = Projects.ClientTests.Dir.JoinFile("ClientIntegrationTests.cs");
         await File.WriteAllTextAsync(file.FullName, source);
     }
 }

@@ -104,7 +104,7 @@ public sealed partial class MiniZincClient
         var iteration = 0;
         var data = new Dictionary<string, SyntaxNode>();
         var warnings = new List<string>();
-        var status = SolveStatus.Pending;
+        var status = SolveStatus.Started;
         var text = "";
         int objective = 0;
         int processId = 0;
