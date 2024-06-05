@@ -89,17 +89,11 @@ public sealed class MakeClientTests : CodeBuilder
         Newline();
     }
 
-    private void MakeErrorTest(string testName, TestCase testCase)
-    {
-    }
+    private void MakeErrorTest(string testName, TestCase testCase) { }
 
-    private void MakeUnsatisfiableTest(string testName, TestCase testCase)
-    {
-    }
+    private void MakeUnsatisfiableTest(string testName, TestCase testCase) { }
 
-    private void MakeOutputTest(string testName, TestCase testCase)
-    {
-    }
+    private void MakeOutputTest(string testName, TestCase testCase) { }
 
     private void MakeAllSolutionsTest(string testName, TestCase testCase)
     {
@@ -109,7 +103,7 @@ public sealed class MakeClientTests : CodeBuilder
         using (Block("await foreach (var solution in _client.Solutions(model,options))"))
         {
             WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
-        }        
+        }
     }
 
     private void MakeAnySolutionTest(string testName, TestCase testCase)
@@ -127,10 +121,8 @@ public sealed class MakeClientTests : CodeBuilder
         Var("solution", "await _client.Solve(model,options)");
         WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
     }
-    
-    private void MakeCompileTest(string testName, TestCase testCase)
-    {
-    }
+
+    private void MakeCompileTest(string testName, TestCase testCase) { }
 
     public static async Task Run()
     {
