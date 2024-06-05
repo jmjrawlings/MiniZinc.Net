@@ -42,6 +42,15 @@ public readonly struct SolveOptions
         _extraArgs = extraArgs?.ToList();
     }
 
+    /// <summary>
+    /// Create a new SolveOptions with the
+    /// given arguments
+    /// </summary>
+    /// <param name="solverId"></param>
+    /// <param name="extraArgs"></param>
+    /// <param name="outputFolder"></param>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
     public static SolveOptions Create(
         string? solverId = null,
         IEnumerable<string>? extraArgs = null,
@@ -59,7 +68,7 @@ public readonly struct SolveOptions
 
     public SolveOptions WithSolver(Solver solver) =>
         new(solver.Id, _extraArgs, OutputFolder, Timeout);
-    
+
     public SolveOptions WithArgs(params object[] args)
     {
         var args_ = Arg.Parse(args).Select(x => x.ToString());

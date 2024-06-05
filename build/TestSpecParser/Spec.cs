@@ -104,15 +104,11 @@ public static class Spec
                         testCase.Type = TestType.Satisfy;
                         break;
                     }
-                    
+
                     var output = sol.Pop("_output_item")?.ToString();
                     var dzn = ParseSolutionVariables(sol);
-                    var solution = new TestSolution
-                    {
-                        Output = output,
-                        Dzn = dzn
-                    };
-                    
+                    var solution = new TestSolution { Output = output, Dzn = dzn };
+
                     testCase.Solutions ??= new List<TestSolution>();
                     testCase.Solutions.Add(solution);
                 }
@@ -149,7 +145,7 @@ public static class Spec
         var nsols = testCase.Solutions?.Count ?? 0;
         return testCase;
     }
-    
+
     /// <summary>
     /// Parse solution variables as a dzn string
     /// </summary>
@@ -178,7 +174,7 @@ public static class Spec
             case null:
                 dzn = "<>";
                 break;
-            
+
             case JsonArray x:
                 var items = new List<string>();
                 foreach (var node in x)
@@ -190,7 +186,7 @@ public static class Spec
                 dzn = string.Join(',', items);
                 dzn = '[' + dzn + ']';
                 break;
-                
+
             case JsonObject x:
                 if (x.Pop("range") is JsonArray rng)
                 {
@@ -218,7 +214,7 @@ public static class Spec
                     dzn = '{' + dzn + '}';
                     break;
                 }
-                else 
+                else
                 {
                     items = new List<string>();
                     foreach (var kv in x)
@@ -241,7 +237,7 @@ public static class Spec
                 //     dzn = '(' + string.Join(", ", items) + ')';
                 // }
                 break;
-            
+
             case JsonValue x:
                 dzn = x.ToString();
                 break;
@@ -260,7 +256,7 @@ public static class Spec
         var sb = new StringBuilder();
         using var stream = file.OpenRead();
         using var reader = new StreamReader(stream);
-        
+
         // const char EOF = '\uffff';
         char c;
 
