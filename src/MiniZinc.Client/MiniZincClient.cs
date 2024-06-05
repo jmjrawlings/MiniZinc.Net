@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Client;
 
 using System.Runtime.CompilerServices;
-using System.Text;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -14,24 +14,27 @@ using Parser;
 using Parser.Syntax;
 
 /// <summary>
-/// MiniZinc Client
+/// Executes commands and solves models against
+/// a given MiniZinc executable
 /// </summary>
 public sealed partial class MiniZincClient
 {
-    public readonly FileInfo Executable;
+    private readonly FileInfo _exe;
+    private readonly DirectoryInfo _home;
     private readonly Version _version;
-    private readonly List<Solver> _solvers;
+    private readonly IReadOnlyList<Solver> _solvers;
     private readonly Dictionary<string, Solver> _solverLookup;
     private readonly Command _command;
     private readonly ILogger _logger;
 
-    private MiniZincClient(FileInfo executable, ILogger? logger = null)
+    private MiniZincClient(FileInfo exe, ILogger? logger = null)
     {
-        Executable = executable;
-        _command = new Command($"\"{Executable.FullName}\"");
+        _exe = exe;
+        _home = exe.Directory!;
+        _command = new Command($"\"{_exe.FullName}\"");
         _logger = logger ?? NullLogger.Instance;
         _version = GetVersion();
-        _solvers = GetInstalledSolvers();
+        _solvers = GetSolvers();
         _solverLookup = new Dictionary<string, Solver>();
         foreach (var solver in _solvers)
         {
@@ -41,14 +44,19 @@ public sealed partial class MiniZincClient
     }
 
     /// <summary>
-    /// The version of the minizinc executable
+    /// The location of the MiniZinc executable
     /// </summary>
-    public Version Version => _version;
+    public FileInfo Exe => _exe;
 
     /// <summary>
-    /// All installed solvers discovered through `--solvers-json`
+    /// The MiniZinc home directory
     /// </summary>
-    public IEnumerable<Solver> Solvers => _solvers;
+    public DirectoryInfo Home => _home;
+
+    /// <summary>
+    /// The version of the MiniZinc executable
+    /// </summary>
+    public Version Version => _version;
 
     /// <summary>
     /// Get the installed solver corresponding to the given key
@@ -98,7 +106,13 @@ public sealed partial class MiniZincClient
         await File.WriteAllTextAsync(modelPath, modelText, token);
         _logger.LogInformation("Model saved to {Path}", modelPath);
 
-        var command = Command("--solver", solver.Id, "--json-stream", "--output-objective", modelPath);
+        var command = Command(
+            "--solver",
+            solver.Id,
+            "--json-stream",
+            "--output-objective",
+            modelPath
+        );
         var solveStart = DateTimeOffset.Now;
         var iterStart = solveStart;
         var iteration = 0;
@@ -223,7 +237,11 @@ public sealed partial class MiniZincClient
         }
     }
 
-    private List<Solver> GetInstalledSolvers()
+    /// <summary>
+    /// Get all installed solvers by running the --solvers-json
+    /// command.
+    /// </summary>
+    public IReadOnlyList<Solver> GetSolvers()
     {
         var result = Command("--solvers-json").Run().Result;
         Guard.IsEqualTo(result.ExitCode, 0);
@@ -238,7 +256,6 @@ public sealed partial class MiniZincClient
                 solver.Version
             );
         }
-
         return solvers;
     }
 
@@ -265,31 +282,67 @@ public sealed partial class MiniZincClient
         return cmd;
     }
 
-    /// <summary>
-    /// Create a new MiniZinc client
-    /// </summary>
-    /// <param name="path">Filepath of the minizinc executable</param>
-    /// <returns></returns>
-    public static MiniZincClient Create(string path)
+    private static async Task<string?> FindMiniZincExecutableAsync()
     {
-        var exe = new FileInfo(path);
-        var client = Create(exe);
+        Command command;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            command = new Command("where", "minizinc");
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            command = new Command("find", "minizinc");
+        else
+            throw new NotSupportedException();
+
+        string? path = null;
+        await foreach (var msg in command.Watch())
+        {
+            if (msg.EventType is ProcessEventType.StdOut)
+            {
+                path = msg.Content;
+                break;
+            }
+        }
+
+        return path;
+    }
+
+    /// <summary>
+    /// Find the location of the minizinc executable
+    /// on the current system.
+    /// </summary>
+    /// <returns>Path to the `minizinc` executable if found</returns>
+    public static string? FindMiniZincExecutable()
+    {
+        var exe = FindMiniZincExecutableAsync().Result;
+        return exe;
+    }
+
+    /// <summary>
+    /// Create a client for the given minizinc executable.
+    /// If no path is provided, attempt to search for installed exe
+    /// </summary>
+    /// <param name="exe">Filepath of the minizinc executable</param>
+    public static MiniZincClient Create(string? exe = null)
+    {
+        exe ??= FindMiniZincExecutable();
+        Guard.IsNotNull(exe);
+        var client = Create(new FileInfo(exe));
         return client;
     }
 
     /// <summary>
-    /// Create a new MiniZinc client
+    /// Create a client for the given MiniZinc executable
     /// </summary>
     /// <param name="exe">The minizinc executable</param>
     public static MiniZincClient Create(FileInfo exe)
     {
+        Guard.IsTrue(exe.Exists);
         var client = new MiniZincClient(exe);
         return client;
     }
 
     public override string ToString()
     {
-        return $"MiniZinc Client (\"{Executable})";
+        return $"MiniZinc Client (\"{_exe}\")";
     }
 
     [GeneratedRegex(@"MiniZinc to FlatZinc converter, version (\d).(\d).(\d), build (\d*)")]
