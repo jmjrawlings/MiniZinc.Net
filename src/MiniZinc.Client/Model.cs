@@ -1,6 +1,8 @@
 ﻿namespace MiniZinc.Client;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using CommunityToolkit.Diagnostics;
 using Parser;
 using Parser.Syntax;
 
@@ -29,6 +31,8 @@ public sealed class Model
 
     private StringBuilder _sourceText;
 
+    private List<DirectoryInfo> _searchDirectories;
+
     public string SourceText => _sourceText.ToString();
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
@@ -46,6 +50,8 @@ public sealed class Model
 
     public SyntaxNode? Objective => _solve?.Objective;
 
+    public IReadOnlyList<DirectoryInfo> SearchDirectories => _searchDirectories;
+
     public int WarningCount => _warnings?.Count ?? 0;
 
     public int ErrorCount => _errors?.Count ?? 0;
@@ -54,7 +60,7 @@ public sealed class Model
 
     public bool HasWarnings => _warnings is null;
 
-    private Model(IEnumerable<SyntaxNode>? nodes = null)
+    private Model()
     {
         _errors = null;
         _warnings = null;
@@ -63,22 +69,19 @@ public sealed class Model
         _variables = new HashSet<string>();
         _namespace = new Dictionary<string, INamedSyntax>();
         _sourceText = new StringBuilder();
-        if (nodes is not null)
-            foreach (var node in nodes)
-                AddNode(node);
+        _searchDirectories = new List<DirectoryInfo>();
     }
 
     /// <summary>
     /// Include the given file in the model
     /// </summary>
-    public void Include(string path)
+    /// <example>model.Include("data.dzn");</example>
+    public void Include(string filepath)
     {
-        AddString($"include \"{path}\";");
+        AddString($"include \"{filepath}\";");
     }
 
-    /// <summary>
-    /// Add an include statement to the model
-    /// </summary>
+    /// <inheritdoc cref="Include(string)"/>
     public void Include(FileInfo file)
     {
         Include(file.FullName);
@@ -97,16 +100,19 @@ public sealed class Model
     /// <summary>
     /// Declare a parameter
     /// </summary>
-    /// <returns>The name of the declared parameter</returns>
-    public string Par(string name, string type, string? value = null) =>
-        Declare(name, type, value);
-    
+    /// <returns>
+    /// The name of the declared parameter
+    /// </returns>
+    public string Par(string name, string type, string? value = null) => Declare(name, type, value);
+
     /// <summary>
     /// Declare a variable
     /// </summary>
-    /// <returns>The name of the declared parameter</returns>
+    /// <returns>
+    /// The name of the declared parameter
+    /// </returns>
     public string Var(string name, string type, string? value = null) =>
-        Declare(name, $"var {type}",value);
+        Declare(name, $"var {type}", value);
 
     /// <summary>
     /// Declare a parameter, variable, or type alias
@@ -133,20 +139,32 @@ public sealed class Model
     /// <summary>
     /// Add a constraint with an optional name
     /// </summary>
-    public void Constraint(string expr, string? name = null)
+    /// <returns>
+    /// The constraint name if one was provided
+    /// </returns>
+    [return: NotNullIfNotNull(nameof(name))]
+    public string? Constraint(string expr, string? name = null)
     {
         if (name is null)
+        {
             AddString($"constraint {expr};");
+            return null;
+        }
         else
+        {
             AddString($"constraint {expr} :: \"{name}\"");
+            return name;
+        }
     }
 
-    private string? Annotations(params string[] args) =>
+    private static string? Annotations(params string[] args) =>
         args.Length == 0 ? null : string.Join("::", args);
 
     /// <summary>
-    /// Set the model objective to minimize the given expression
+    /// Set a model objective to minimize the given expression
     /// </summary>
+    /// <example>model.Minimize("a+b")</example>
+    /// <example>model.Minimize("makespan", "int_search(q, first_fail, indomain_min)")</example>
     public void Minimize(string expr, params string[] annotations)
     {
         AddString($"solve minimize {expr}{Annotations(annotations)};");
@@ -155,17 +173,32 @@ public sealed class Model
     /// <summary>
     /// Set the model objective to maximize the given expression
     /// </summary>
+    /// <example>model.Maximize("a+b")</example>
+    /// <example>model.Maximize("makespan", "int_search(q, first_fail, indomain_min)")</example>
     public void Maximize(string expr, params string[] annotations)
     {
         AddString($"solve maximize {expr}{Annotations(annotations)};");
     }
 
     /// <summary>
-    /// Set the model objective to satisfy
+    /// Set the model objective to find a satisfactory solution
     /// </summary>
+    /// <example>model.Satisfy();</example>
+    /// <example>model.Satisfy("int_search(q, first_fail, indomain_min)")</example>
     public void Satisfy(params string[] annotations)
     {
-        AddString("solve satisfy;");
+        AddString($"solve satisfy{Annotations(annotations)};");
+    }
+
+    void AddSourceText(string text)
+    {
+        _sourceText.AppendLine(text);
+    }
+
+    void AddSourceText(SyntaxNode node)
+    {
+        var mzn = node.Write();
+        _sourceText.AppendLine(mzn);
     }
 
     /// <summary>
@@ -177,19 +210,27 @@ public sealed class Model
         {
             case SolveSyntax node:
                 if (_solve is null)
+                {
                     _solve = node;
+                    AddSourceText(node);
+                }
                 else
+                {
                     Error($"Can not override \"{_solve}\" with \"{syntaxNode}\"");
+                }
+
                 break;
 
             case OutputSyntax node:
                 _outputs ??= new List<OutputSyntax>();
                 _outputs.Add(node);
+                AddSourceText(node);
                 break;
 
             case ConstraintSyntax node:
                 _constraints ??= new List<ConstraintSyntax>();
                 _constraints.Add(node);
+                AddSourceText(node);
                 break;
 
             case AssignmentSyntax node:
@@ -215,6 +256,7 @@ public sealed class Model
                 {
                     _namespace[name] = node;
                 }
+                AddSourceText(node);
                 break;
 
             case DeclarationSyntax node:
@@ -223,6 +265,8 @@ public sealed class Model
                     Error($"Variable {name} was already declared as {node.Type.SourceText}");
                 else
                     _namespace[name] = node;
+
+                AddSourceText(node);
                 break;
 
             case EnumDeclarationSyntax node:
@@ -231,6 +275,8 @@ public sealed class Model
                     Error($"Variable {name} was already declared as an Enumeration");
                 else
                     _namespace[name] = node;
+
+                AddSourceText(node);
                 break;
 
             case FunctionDeclarationSyntax node:
@@ -239,12 +285,25 @@ public sealed class Model
                     Error($"Variable {name} was already declared as a Function");
                 else
                     _namespace[name] = node;
+                AddSourceText(node);
                 break;
 
-            // TODO - follow links?
             case IncludeSyntax node:
                 var path = node.Path.StringValue;
-                AddFile(path);
+                var file = FindFile(path);
+                // TODO - differentiate between stdlib files
+                if (file is null)
+                {
+                    var msg = CreateFileNotFoundMessage(path);
+                    Warning(msg);
+                    AddSourceText(node);
+                }
+                else
+                {
+                    var result = Parser.ParseFile(file);
+                    result.EnsureOk();
+                    AddNode(result.SyntaxNode);
+                }
                 break;
 
             case SyntaxTree tree:
@@ -281,25 +340,65 @@ public sealed class Model
     }
 
     /// <summary>
-    /// Add the given file to this model (.mzn or .dzn)
+    /// Find the file at it's given location, or search through
+    /// the registered search directories.
     /// </summary>
-    public void AddFile(string path)
+    /// <param name="path"></param>
+    FileInfo? FindFile(string path)
     {
         var file = new FileInfo(path);
-        AddFile(file);
+        if (file.Exists)
+            return file;
+
+        int i = 0;
+        while (i < _searchDirectories.Count)
+        {
+            var dir = _searchDirectories[i++];
+            file = new FileInfo(Path.Join(dir.FullName, path));
+            if (file.Exists)
+                return file;
+        }
+
+        return null;
+    }
+
+    private string CreateFileNotFoundMessage(string path)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Could not find \"{path}\" in any of the search directories:");
+        foreach (var dir in _searchDirectories)
+        {
+            sb.AppendLine($"- {dir.FullName}");
+        }
+
+        var error = sb.ToString();
+        return error;
     }
 
     /// <summary>
     /// Add the given file to this model (.mzn or .dzn)
     /// </summary>
-    public void AddFile(FileInfo file)
+    /// <example>model.AddFile("~/models/model.mzn");</example>
+    /// <example>model.AddFile("C://models//scenario1.dzn");</example>
+    public void AddFile(FileInfo file) => AddFile(file.FullName);
+
+    /// <inheritdoc cref="AddFile(System.IO.FileInfo)"/>
+    public void AddFile(string path)
     {
+        // TODO - use sets for search paths?
+        var file = FindFile(path);
+        if (file is null)
+        {
+            var message = CreateFileNotFoundMessage(path);
+            throw new FileNotFoundException(message, path);
+        }
         var result = Parser.ParseFile(file);
         result.EnsureOk();
-        _sourceText.AppendLine(result.SourceText);
+        if (file.Directory is { } dir)
+            AddSearchDirectory(dir);
         AddNode(result.SyntaxNode);
     }
-    
+
     /// <summary>
     /// Add the given error to this model
     /// </summary>
@@ -343,12 +442,25 @@ public sealed class Model
         return this;
     }
 
+    /// <summary>
+    /// Add the directory as a place to search for models
+    /// referenced by the minizinc `include` statement.
+    /// </summary>
+    public void AddSearchDirectory(DirectoryInfo directory)
+    {
+        _searchDirectories.Add(directory);
+    }
+
+    /// <inheritdoc cref="AddSearchDirectory(System.IO.DirectoryInfo)"/>
+    public void AddSearchDirectory(string directory) =>
+        AddSearchDirectory(new DirectoryInfo(directory));
+
     public Model Clone()
     {
         var copy = FromString(SourceText);
         return copy;
     }
-    
+
     public void EnsureOk()
     {
         if (_errors is null)

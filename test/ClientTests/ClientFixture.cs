@@ -4,13 +4,11 @@ using Client;
 
 public class ClientFixture : IDisposable
 {
-    const string PATH = "C://Program Files//MiniZinc//minizinc.exe";
-
     public readonly MiniZincClient Client;
 
     public ClientFixture()
     {
-        Client = MiniZincClient.Create(PATH);
+        Client = MiniZincClient.Create();
     }
 
     public void Dispose() { }
