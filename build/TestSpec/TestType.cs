@@ -6,6 +6,7 @@ public enum TestType
     Satisfy,
     AnySolution,
     AllSolutions,
+    Optimise,
     OutputModel,
     Unsatisfiable,
     Error

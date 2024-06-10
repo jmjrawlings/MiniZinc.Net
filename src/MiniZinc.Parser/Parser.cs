@@ -565,7 +565,7 @@ public sealed class Parser
                 return Error("Expected satisfy, minimize, or maximize");
         }
 
-        node = new SolveSyntax(start, method, objective);
+        node = new SolveSyntax(start, method, objective) { Annotations = anns };
         return true;
     }
 
@@ -898,7 +898,7 @@ public sealed class Parser
             TokenKind.UP_WEDGE => Operator.And,
             TokenKind.LESS_THAN => Operator.LessThan,
             TokenKind.GREATER_THAN => Operator.GreaterThan,
-            TokenKind.LESS_THAN_EQUAL => Operator.LessThan,
+            TokenKind.LESS_THAN_EQUAL => Operator.LessThanEqual,
             TokenKind.GREATER_THAN_EQUAL => Operator.GreaterThanEqual,
             TokenKind.EQUAL => Operator.Equal,
             TokenKind.NOT_EQUAL => Operator.NotEqual,
@@ -1371,7 +1371,7 @@ public sealed class Parser
     private bool Parse2dArrayLiteral(in Token start, out Array2dSyntax arr)
     {
         arr = new Array2dSyntax(start);
-        
+
         if (Skip(TokenKind.PIPE))
             return Expect(TokenKind.CLOSE_BRACKET);
 
@@ -1379,7 +1379,7 @@ public sealed class Parser
             return false;
 
         int j = 1;
-        
+
         if (!Skip(TokenKind.COLON))
         {
             // If first value is not an index skip the rest of the check
@@ -1395,14 +1395,14 @@ public sealed class Parser
             arr.ColIndexed = true;
             goto parse_row_values;
         }
-        
+
         arr.ColIndexed = true;
         arr.RowIndexed = true;
 
         while (_kind is not TokenKind.PIPE)
         {
             j++;
-            
+
             if (!ParseExpr(out value))
                 return false;
 
@@ -1434,7 +1434,7 @@ public sealed class Parser
 
         /* Use the second row if necessary to detect dual
          * indexing */
-        if (!arr.RowIndexed) 
+        if (!arr.RowIndexed)
         {
             if (!ParseExpr(out value))
                 return false;
@@ -1455,7 +1455,7 @@ public sealed class Parser
         parse_row_index:
         if (!ParseExpr(out value))
             return false;
-        
+
         if (!Expect(TokenKind.COLON))
             return false;
 
@@ -1469,7 +1469,7 @@ public sealed class Parser
                 return false;
 
             j++;
-            
+
             arr.Elements.Add(value);
 
             if (!Skip(TokenKind.COMMA))
@@ -1481,15 +1481,14 @@ public sealed class Parser
 
         if (!Expect(TokenKind.PIPE))
             return false;
-        
+
         // Optional double pipe at the end
         // [|1, 2,|3, 4,||]
         if (Skip(TokenKind.PIPE))
             return Expect(TokenKind.CLOSE_BRACKET);
-        
+
         if (Skip(TokenKind.CLOSE_BRACKET))
             return true;
-        
 
         if (arr.RowIndexed)
             goto parse_row_index;

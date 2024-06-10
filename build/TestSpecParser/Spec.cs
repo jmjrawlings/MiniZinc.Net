@@ -74,12 +74,14 @@ public static class Spec
         var test_type = node["type"]?.GetValue<string>();
         var inputFiles = node["extra_files"]?.ToNonEmptyList<string>();
         var results = node["expected"].AsListOf<JsonObject>();
+        var checkAgainst = node["check_against"]?.ToNonEmptyList<string>();
 
         var testCase = new TestCase
         {
             Solvers = solvers,
             Options = options?.Count > 0 ? options : null,
             InputFiles = inputFiles,
+            CheckAgainstSolvers = checkAgainst,
             Path = path,
             Type = allSolutions ? TestType.AllSolutions : TestType.AnySolution
         };
@@ -108,6 +110,9 @@ public static class Spec
                     var output = sol.Pop("_output_item")?.ToString();
                     var dzn = ParseSolutionVariables(sol);
                     var solution = new TestSolution { Output = output, Dzn = dzn };
+
+                    if (status is Yaml.OPTIMAL)
+                        testCase.Type = TestType.Optimise;
 
                     testCase.Solutions ??= new List<TestSolution>();
                     testCase.Solutions.Add(solution);

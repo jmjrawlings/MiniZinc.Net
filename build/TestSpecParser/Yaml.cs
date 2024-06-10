@@ -30,6 +30,7 @@ public static class Yaml
     public const string TAG_ERROR = "!Error";
     public const string TAG_FLATZINC = "!FlatZinc";
     public const string FLATZINC = "flatzinc";
+    public const string OPTIMAL = "OPTIMAL_SOLUTION";
     public const string TAG = "__tag__";
     public const string TRUE = "true";
     public const string FALSE = "false";

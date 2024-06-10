@@ -40,7 +40,7 @@ public sealed class MakeParserTests : CodeBuilder
             var testName = path.Replace(".mzn", "");
             testName = testName.Replace("/", "_");
             testName = testName.Replace("-", "_");
-            testName = $"test_{testName}";
+            testName = $"test_parse_{testName}";
             Newline();
             WriteLn($"[Fact(DisplayName=\"{path}\")]");
             using (Block($"public void {testName}()"))

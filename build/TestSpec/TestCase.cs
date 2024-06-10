@@ -12,8 +12,11 @@ public sealed record TestCase
     /// Sequence of this test from 1..n in the same file
     public int Sequence { get; set; }
 
-    /// Solvers for which to run the test on
+    /// Solvers for run the test on
     public List<string>? Solvers { get; set; }
+
+    /// Solvers to check against
+    public List<string>? CheckAgainstSolvers { get; set; }
 
     /// Any additional input files (eg: json data)
     public List<string>? InputFiles { get; set; }
