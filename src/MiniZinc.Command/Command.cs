@@ -1,43 +1,54 @@
 ﻿namespace MiniZinc.Command;
 
 using System.Runtime.CompilerServices;
-using System.Text;
 
+/// <summary>
+/// A shell command
+/// </summary>
 public readonly struct Command
 {
     public readonly string Exe;
 
-    private readonly List<Arg> _args;
-    public IReadOnlyList<Arg> Args => _args;
+    public readonly Arg[] Arguments;
 
-    public readonly string String;
-
-    public Command(string exe, params object[] args)
+    public Command(string exe, Arg[]? args = null)
     {
         if (string.IsNullOrEmpty(exe))
             throw new ArgumentNullException(exe);
         Exe = exe;
-        _args = new List<Arg>();
-        var sb = new StringBuilder();
-        sb.Append(exe);
-        foreach (var arg in Arg.Parse(args))
-        {
-            _args.Add(arg);
-            sb.Append(' ');
-            sb.Append(arg.String);
-        }
-        String = sb.ToString();
+        Arguments = args ?? Array.Empty<Arg>();
     }
 
-    public Command Add(params object[] args)
+    public Command(string exe, IEnumerable<Arg> args)
+        : this(exe, args.ToArray()) { }
+
+    public Command(string exe, params string[] args)
+        : this(exe, Args.Parse(args)) { }
+
+    /// <summary>
+    /// Create a new command with the given args added
+    /// </summary>
+    /// <example>new Command("git").AddArgs("checkout","-b","develop")</example>
+    public Command AddArgs(params string[] args) => AddArgs(Args.Parse(args));
+
+    /// <summary>
+    /// Create a new command with the given args added
+    /// </summary>
+    public Command AddArgs(Arg[] args)
     {
-        var cmd = new Command(Exe, Args, args);
+        var args_ = Args.Concat(Arguments, args);
+        var cmd = new Command(Exe, args_);
         return cmd;
     }
 
     public override string ToString()
     {
-        return String;
+        string s;
+        if (Arguments.Length is 0)
+            s = Exe;
+        else
+            s = $"{Exe} {string.Join(' ', Arguments)}";
+        return s;
     }
 
     public async Task<ProcessResult> Run(

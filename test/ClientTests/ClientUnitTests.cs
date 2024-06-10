@@ -30,7 +30,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_satisfy()
     {
-        var model = Model.Create();
+        var model = new Model();
         model.Var("a", "10..20");
         model.Var("b", "10..20");
         var sol = await Client.Solve(model);
@@ -50,7 +50,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_maximize()
     {
-        var model = Model.Create();
+        var model = new Model();
         model.Var("a", "10..20");
         model.Var("b", "10..20");
         model.Maximize("a + b");

@@ -93,44 +93,16 @@ public readonly partial record struct Arg
     /// </summary>
     public static IEnumerable<Arg> Parse(string s)
     {
-        var regex = Arg.Regex();
+        var regex = Regex();
         var matches = regex.Matches(s);
         foreach (Match m in matches)
         {
             if (m.Length <= 0)
                 continue;
-            var arg = Arg.FromMatch(m);
+            var arg = FromMatch(m);
             yield return arg;
         }
     }
 
-    /// <summary>
-    /// Parse args from the given parameters
-    /// </summary>
-    public static IEnumerable<Arg> Parse(params object[] inputs)
-    {
-        foreach (var input in inputs)
-        {
-            switch (input)
-            {
-                case Arg a:
-                    yield return a;
-                    break;
-                case string s:
-                    foreach (var arg in Parse(s))
-                        yield return arg;
-                    break;
-                case IEnumerable e:
-                    foreach (var item in e)
-                    foreach (var arg in Parse(item))
-                        yield return arg;
-                    break;
-                default:
-                    var x = input.ToString();
-                    foreach (var arg in Parse(x))
-                        yield return arg;
-                    break;
-            }
-        }
-    }
+    public static implicit operator string(Arg a) => a.String;
 }

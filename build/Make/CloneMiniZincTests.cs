@@ -18,7 +18,7 @@ public static class CloneLibMiniZincTests
         async Task Exe(params string[] args)
         {
             var cmd = new Command("git", args);
-            Console.WriteLine(cmd.String);
+            Console.WriteLine(cmd);
             var result = await cmd.Run(workingDir: cloneDir.FullName);
             Guard.IsEqualTo((int)result.Status, (int)ProcessStatus.Ok);
         }
