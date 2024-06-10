@@ -15,6 +15,8 @@ using Parser.Syntax;
 /// </remarks>
 public sealed class Model
 {
+    public string Name { get; set; } = "";
+
     private Dictionary<string, INamedSyntax> _namespace;
 
     private HashSet<string>? _variables;
@@ -60,7 +62,7 @@ public sealed class Model
 
     public bool HasWarnings => _warnings is null;
 
-    private Model()
+    public Model()
     {
         _errors = null;
         _warnings = null;
@@ -218,13 +220,12 @@ public sealed class Model
                 {
                     Error($"Can not override \"{_solve}\" with \"{syntaxNode}\"");
                 }
-
                 break;
 
             case OutputSyntax node:
                 _outputs ??= new List<OutputSyntax>();
                 _outputs.Add(node);
-                AddSourceText(node);
+                // AddSourceText(node);
                 break;
 
             case ConstraintSyntax node:
@@ -314,12 +315,6 @@ public sealed class Model
     }
 
     /// <summary>
-    /// Create an empty model
-    /// </summary>
-    /// <returns></returns>
-    public static Model Create() => new Model();
-
-    /// <summary>
     /// Create a new model from the given filepath
     /// </summary>
     public static Model FromFile(string path)
@@ -394,6 +389,8 @@ public sealed class Model
         }
         var result = Parser.ParseFile(file);
         result.EnsureOk();
+
+        // Added models become a search directory
         if (file.Directory is { } dir)
             AddSearchDirectory(dir);
         AddNode(result.SyntaxNode);

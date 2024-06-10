@@ -1152,8 +1152,8 @@ public sealed class Parser
                     break;
                 // Already created generators get added
                 case GeneratorSyntax g:
-                    g.Names.AddRange(idents!);
-                    idents = null;
+                    // g.Names.AddRange(idents!);
+                    // idents = null;
                     generators.Add(g);
                     break;
                 // Binops are now known to be generators
@@ -1371,14 +1371,15 @@ public sealed class Parser
     private bool Parse2dArrayLiteral(in Token start, out Array2dSyntax arr)
     {
         arr = new Array2dSyntax(start);
-        int j = 1;
-
+        
         if (Skip(TokenKind.PIPE))
             return Expect(TokenKind.CLOSE_BRACKET);
 
         if (!ParseExpr(out var value))
             return false;
 
+        int j = 1;
+        
         if (!Skip(TokenKind.COLON))
         {
             // If first value is not an index skip the rest of the check
@@ -1394,14 +1395,14 @@ public sealed class Parser
             arr.ColIndexed = true;
             goto parse_row_values;
         }
-
+        
         arr.ColIndexed = true;
         arr.RowIndexed = true;
 
         while (_kind is not TokenKind.PIPE)
         {
             j++;
-
+            
             if (!ParseExpr(out value))
                 return false;
 
@@ -1433,7 +1434,7 @@ public sealed class Parser
 
         /* Use the second row if necessary to detect dual
          * indexing */
-        if (!arr.RowIndexed)
+        if (!arr.RowIndexed) 
         {
             if (!ParseExpr(out value))
                 return false;
@@ -1454,7 +1455,7 @@ public sealed class Parser
         parse_row_index:
         if (!ParseExpr(out value))
             return false;
-
+        
         if (!Expect(TokenKind.COLON))
             return false;
 
@@ -1467,17 +1468,28 @@ public sealed class Parser
             if (!ParseExpr(out value))
                 return false;
 
+            j++;
+            
             arr.Elements.Add(value);
 
             if (!Skip(TokenKind.COMMA))
                 break;
         }
 
+        if (arr.J is 0)
+            arr.J = j;
+
         if (!Expect(TokenKind.PIPE))
             return false;
-
+        
+        // Optional double pipe at the end
+        // [|1, 2,|3, 4,||]
+        if (Skip(TokenKind.PIPE))
+            return Expect(TokenKind.CLOSE_BRACKET);
+        
         if (Skip(TokenKind.CLOSE_BRACKET))
             return true;
+        
 
         if (arr.RowIndexed)
             goto parse_row_index;

@@ -18,20 +18,18 @@ public readonly struct SolveOptions
     public TimeSpan? Timeout { get; }
 
     /// <summary>
-    /// Extra args passed to the command line
+    /// Extra arguments to pass to the command line
     /// </summary>
-    public IEnumerable<string> ExtraArgs => _extraArgs ?? Enumerable.Empty<string>();
+    public Arg[] Arguments { get; }
 
     /// <summary>
     /// A folder to write outputs
     /// </summary>
     public string? OutputFolder { get; }
 
-    private readonly List<string>? _extraArgs;
-
-    private SolveOptions(
+    public SolveOptions(
         string? solverId = null,
-        IEnumerable<string>? extraArgs = null,
+        Arg[]? args = null,
         string? outputFolder = null,
         TimeSpan? timeout = null
     )
@@ -39,7 +37,7 @@ public readonly struct SolveOptions
         SolverId = solverId;
         OutputFolder = outputFolder;
         Timeout = timeout;
-        _extraArgs = extraArgs?.ToList();
+        Arguments = args ?? Array.Empty<Arg>();
     }
 
     /// <summary>
@@ -47,31 +45,49 @@ public readonly struct SolveOptions
     /// given arguments
     /// </summary>
     /// <param name="solverId"></param>
-    /// <param name="extraArgs"></param>
+    /// <param name="args"></param>
     /// <param name="outputFolder"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
     public static SolveOptions Create(
         string? solverId = null,
-        IEnumerable<string>? extraArgs = null,
+        Arg[]? args = null,
         string? outputFolder = null,
         TimeSpan? timeout = null
-    ) => new(solverId, extraArgs, outputFolder, timeout);
+    ) => new(solverId, args, outputFolder, timeout);
 
     public SolveOptions WithTimeout(TimeSpan timeout) =>
-        new(SolverId, _extraArgs, OutputFolder, timeout);
+        new(SolverId, Arguments, OutputFolder, timeout);
 
-    public SolveOptions WithOutputFolder(string path) => new(SolverId, _extraArgs, path, Timeout);
+    public SolveOptions WithOutputFolder(string path) => new(SolverId, Arguments, path, Timeout);
 
     public SolveOptions WithSolver(string solverId) =>
-        new(solverId, _extraArgs, OutputFolder, Timeout);
+        new(solverId, Arguments, OutputFolder, Timeout);
 
     public SolveOptions WithSolver(Solver solver) =>
-        new(solver.Id, _extraArgs, OutputFolder, Timeout);
+        new(solver.Id, Arguments, OutputFolder, Timeout);
 
-    public SolveOptions WithArgs(params object[] args)
+    public SolveOptions WithArgs(params string[] args)
     {
-        var args_ = Arg.Parse(args).Select(x => x.ToString());
+        var opts = new SolveOptions(SolverId, Args.Parse(args), OutputFolder, Timeout);
+        return opts;
+    }
+
+    /// <summary>
+    /// Return a new SolveOptions with the given arguments added
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public SolveOptions AddArgs(params string[] args) => AddArgs(Args.Parse(args));
+
+    /// <summary>
+    /// Return a new SolveOptions with the given arguments added
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public SolveOptions AddArgs(params Arg[] args)
+    {
+        var args_ = Args.Concat(Arguments, args);
         var opts = new SolveOptions(SolverId, args_, OutputFolder, Timeout);
         return opts;
     }

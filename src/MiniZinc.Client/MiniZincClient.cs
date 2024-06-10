@@ -106,13 +106,39 @@ public sealed partial class MiniZincClient
         await File.WriteAllTextAsync(modelPath, modelText, token);
         _logger.LogInformation("Model saved to {Path}", modelPath);
 
-        var command = Command(
-            "--solver",
-            solver.Id,
-            "--json-stream",
-            "--output-objective",
-            modelPath
-        );
+        var command = Command("--solver", solver.Id, "--json-stream", "--output-objective");
+        var timeout = options?.Timeout;
+        if (options?.Arguments is { } args)
+        {
+            foreach (var arg in args)
+            {
+                switch (arg.Flag)
+                {
+                    case null:
+                        break;
+                    case "timeout":
+                        if (timeout.HasValue)
+                            _logger.LogWarning("Discarding command line arg \"timeout\"");
+                        else if (arg.Value is not { } val)
+                            break;
+                        else
+                            timeout = TimeSpan.FromMilliseconds(int.Parse(val));
+                        break;
+                    case "solver":
+                        _logger.LogWarning("Discarding command line arg \"solver\"");
+                        break;
+                    default:
+                        command = command.AddArgs(arg);
+                        break;
+                }
+            }
+        }
+
+        if (timeout.HasValue)
+            command = command.AddArgs("--time-limit", timeout.Value.TotalMilliseconds.ToString());
+
+        command = command.AddArgs(modelPath);
+
         var solveStart = DateTimeOffset.Now;
         var iterStart = solveStart;
         var iteration = 0;
@@ -132,7 +158,7 @@ public sealed partial class MiniZincClient
                     processId = msg.ProcessId;
                     break;
                 case (ProcessEventType.StdErr, var s):
-                    message = JsonOutput.Deserialize(s!);
+                    _logger.LogWarning("{Message}", s);
                     break;
                 case (ProcessEventType.StdOut, var s):
                     message = JsonOutput.Deserialize(s!);
@@ -201,6 +227,8 @@ public sealed partial class MiniZincClient
                     _logger.LogWarning("{Kind} - {Message}", m.Kind, m.Message);
                     break;
                 case ErrorOutput m:
+                    status = SolveStatus.Error;
+                    text = m.Message;
                     _logger.LogError("{Kind} - {Message}", m.Kind, m.Message);
                     break;
                 case StatOutput m:
@@ -276,9 +304,9 @@ public sealed partial class MiniZincClient
     /// <summary>
     /// Create a minizinc command with the given arguments
     /// </summary>
-    public Command Command(params object[] args)
+    public Command Command(params string[] args)
     {
-        var cmd = _command.Add(args);
+        var cmd = _command.AddArgs(args);
         return cmd;
     }
 

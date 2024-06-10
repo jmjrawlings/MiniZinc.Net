@@ -50,16 +50,12 @@ internal sealed class CommandRunner : IDisposable
         _startInfo = new ProcessStartInfo
         {
             FileName = command.Exe,
+            Arguments = string.Join(' ', command.Arguments),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true
         };
-
-        foreach (var arg in command.Args)
-        {
-            _startInfo.ArgumentList.Add(arg.String);
-        }
 
         if (workingDir is { } path)
         {
@@ -113,7 +109,7 @@ internal sealed class CommandRunner : IDisposable
 
         var result = new ProcessResult
         {
-            Command = _command.String,
+            Command = _command.ToString(),
             Status = _status,
             StdOut = output,
             StdErr = error,

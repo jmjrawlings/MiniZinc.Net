@@ -168,7 +168,10 @@ internal sealed class Writer
                 break;
 
             case BoolLiteralSyntax e:
-                Write(e.Value);
+                if (e.Value)
+                    Write(TRUE);
+                else
+                    Write(FALSE);
                 break;
 
             case FloatLiteralSyntax e:
@@ -762,8 +765,8 @@ internal sealed class Writer
                     Write(COMMA);
             }
             Write(PIPE);
-            if (i < expr.I - 1)
-                Write(COMMA);
+            // if (i < expr.I - 1)
+            //     Write(COMMA);
         }
         Write(CLOSE_BRACKET);
     }

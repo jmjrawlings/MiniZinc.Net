@@ -58,6 +58,20 @@ public class ParserUnitTests
         var expr = ParseExpr<GeneratorCallSyntax>(mzn);
     }
 
+    [Fact]
+    void test_parser_gencall_2()
+    {
+        var mzn = "sum (i in class where i >= s) (class_sizes[i])";
+        var call = ParseExpr<GeneratorCallSyntax>(mzn);
+        call.Name.Name.Should().Be("sum");
+        call.Expr.Should().BeOfType<ArrayAccessSyntax>();
+        call.Generators.Should().HaveCount(1);
+        var gen = call.Generators[0];
+        gen.Names.Should().HaveCount(1);
+        var name = gen.Names[0].Name;
+        name.Should().Be("i");
+    }
+    
     [Theory]
     [InlineData("a[Fst[i] + j * (i + 1)]")]
     void test_array_access(string mzn)
@@ -105,6 +119,18 @@ public class ParserUnitTests
     }
 
     [Fact]
+    void test_array2d_opt()
+    {
+        var mzn ="[|<>, 5,|5, 5,||]";
+        var arr = ParseExpr<Array2dSyntax>(mzn);
+        arr.I.Should().Be(2);
+        arr.J.Should().Be(2);
+        arr.Elements.Count.Should().Be(4);
+        
+        
+    }
+
+    [Fact]
     void test_array2d_dual_indexed()
     {
         var mzn = "[| A: B: C:\n | A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |]";
@@ -130,6 +156,35 @@ public class ParserUnitTests
         arr.ColIndexed.Should().BeFalse();
         arr.Elements.Should().HaveCount(24);
     }
+    
+    [Fact]
+    void test_array2d_call()
+    {
+        var mzn = """
+            [| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+             | 0, _, _, _, _, _, _, _, _, _, _, 0
+             | 0, _, _, _, _, _, _, _, _, _, _, 0
+             | 0, _, _, _, _, _, _, _, _, _, _, 0
+             | 0, _, _, _, _, _, _, _, _, _, _, 0
+             | 0, _, _, _, _, _, _, _, _, _, _, 0
+             | 0, _, _, _, _, _, _, _, _, _, _, 0
+             | 0, _, _, _, _, _, _, _, _, _, _, 0
+             | 0, _, _, _, _, _, _, _, 0, _, 0, 0
+             | 0, _, _, _, _, _, _, _, _, 0, _, 0
+             | 0, _, _, _, _, _, _, _, _, _, _, 0
+             | 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+             |]
+        )
+        """;
+        var arr = ParseExpr<Array2dSyntax>(mzn);
+        arr.I.Should().Be(12);
+        arr.J.Should().Be(12);
+        arr.Elements.Count.Should().Be(144);
+        
+    }
+    
+    
+    
 
     [Fact]
     void test_expr_type_inst()
