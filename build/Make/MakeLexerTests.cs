@@ -28,7 +28,7 @@ public sealed class MakeLexerTests : CodeBuilder
             var testName = path.Replace(".mzn", "");
             testName = testName.Replace("/", "_");
             testName = testName.Replace("-", "_");
-            testName = $"test_{testName}";
+            testName = $"test_lex_{testName}";
             Newline();
             WriteLn($"[Fact(DisplayName = \"{path}\")]");
             using (Block($"public void {testName}()"))

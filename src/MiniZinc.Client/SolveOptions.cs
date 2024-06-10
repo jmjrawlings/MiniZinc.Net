@@ -59,6 +59,8 @@ public readonly struct SolveOptions
     public SolveOptions WithTimeout(TimeSpan timeout) =>
         new(SolverId, Arguments, OutputFolder, timeout);
 
+    public SolveOptions WithNoTimeout() => new(SolverId, Arguments, OutputFolder, null);
+
     public SolveOptions WithOutputFolder(string path) => new(SolverId, Arguments, path, Timeout);
 
     public SolveOptions WithSolver(string solverId) =>

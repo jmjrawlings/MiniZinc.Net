@@ -1036,6 +1036,7 @@ internal sealed class Writer
             Write(COLON);
             Write(ann);
         }
+        Space();
     }
 
     /// <summary>
