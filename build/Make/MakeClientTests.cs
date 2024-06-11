@@ -164,7 +164,7 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
     private void MakeAnySolutionTest(string testName, TestCase testCase)
     {
         Var("solution", "await MiniZinc.Solve(model, options)");
-        WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
+        WriteLn("solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);");
     }
 
     private void MakeSatisfyTest(string testName, TestCase testCase)
