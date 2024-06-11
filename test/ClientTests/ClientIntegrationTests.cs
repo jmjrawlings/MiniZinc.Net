@@ -32,7 +32,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/compilation/annotate_from_array.mzn")]
@@ -65,7 +65,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/compilation/call_root_ctx.mzn")]
@@ -127,7 +127,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/compilation/debug_mode_true.mzn")]
@@ -140,7 +140,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("--debug");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/compilation/defines_var_cycle_breaking.mzn")]
@@ -172,7 +172,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/compilation/if_then_no_else.mzn")]
@@ -184,7 +184,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/compilation/implied_exists_chain.mzn")]
@@ -317,7 +317,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/compilation/time_limit.mzn")]
@@ -342,7 +342,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/division/test_div11.mzn")]
@@ -356,7 +356,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/division/test_div12.mzn")]
@@ -382,7 +382,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/division/test_div_mod_bounds.mzn")]
@@ -395,7 +395,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/division/test_fldiv_01.mzn")]
@@ -407,7 +407,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/division/test_fldiv_02.mzn")]
@@ -419,7 +419,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/annotated_expression_1.mzn")]
@@ -431,7 +431,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/array_access_out_of_bounds_1.mzn")]
@@ -495,7 +495,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/array_union_intersect_enum.mzn")]
@@ -507,7 +507,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/builtins_arg_max.mzn")]
@@ -519,7 +519,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/builtins_debug.mzn")]
@@ -531,7 +531,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/comprehension_var_ub.mzn")]
@@ -568,7 +568,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/enum_order.mzn")]
@@ -612,7 +612,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/fix_struct.mzn")]
@@ -624,7 +624,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/function_param_out_of_range.mzn")]
@@ -678,7 +678,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/let_struct_domain.mzn")]
@@ -715,7 +715,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/md_forall.mzn")]
@@ -740,7 +740,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/general/md_iffall.mzn")]
@@ -765,7 +765,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/general/md_product_int.mzn")]
@@ -802,7 +802,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/general/md_sum_int.mzn")]
@@ -840,7 +840,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/general/mortgage.mzn")]
@@ -854,7 +854,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/overload_bottom.mzn")]
@@ -866,7 +866,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/param_out_of_range_float.mzn")]
@@ -1103,7 +1103,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/quoted_id_2.mzn")]
@@ -1115,7 +1115,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/quoted_id_3.mzn")]
@@ -1127,7 +1127,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/quoted_id_4.mzn")]
@@ -1139,7 +1139,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/range_var_enum.mzn")]
@@ -1151,7 +1151,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/stack_overflow.mzn")]
@@ -1187,7 +1187,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/general/test_negated_and.mzn")]
@@ -1252,7 +1252,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/test_rounding_a.mzn")]
@@ -1302,7 +1302,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/test_set_lt_1.mzn")]
@@ -1338,7 +1338,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/general/test_set_lt_3.mzn")]
@@ -1352,7 +1352,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/test_times_int_float_eq.mzn")]
@@ -1389,7 +1389,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/test_undefined_enum.mzn")]
@@ -1413,7 +1413,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/general/test_var_set_element.mzn")]
@@ -1427,7 +1427,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/general/unicode_file_name_μ.mzn")]
@@ -1466,7 +1466,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/anon_enum_json.mzn")]
@@ -1534,7 +1534,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/enum_constructor_basic_2.mzn")]
@@ -1546,7 +1546,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/enum_constructor_int.mzn")]
@@ -1558,7 +1558,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/enum_constructor_nested.mzn")]
@@ -1570,7 +1570,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/enum_escaping.mzn")]
@@ -1582,7 +1582,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/float_json_exponent.mzn")]
@@ -1594,7 +1594,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/json_array2d_set.mzn")]
@@ -1618,7 +1618,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/json_input_1.mzn")]
@@ -1630,7 +1630,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/json_unicode_escapes.mzn")]
@@ -1642,7 +1642,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/mult_dim_enum.mzn")]
@@ -1654,7 +1654,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/json/record_json_input.mzn")]
@@ -1847,7 +1847,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/optional/opt_array_access.mzn")]
@@ -1938,7 +1938,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/optional/test-opt-if-then-else.mzn")]
@@ -1997,7 +1997,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/optional/test_deopt_absent.mzn")]
@@ -2009,7 +2009,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/optional/test_if_then_else_opt_bool.mzn")]
@@ -2110,7 +2110,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/optional/test_opt_dom_empty.mzn")]
@@ -2146,7 +2146,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/array_of_array.mzn")]
@@ -2170,7 +2170,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/dzn_output_array.mzn")]
@@ -2202,7 +2202,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/local_output.mzn")]
@@ -2214,7 +2214,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_annotations_1.mzn")]
@@ -2226,7 +2226,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_annotations_2.mzn")]
@@ -2238,7 +2238,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_annotations_3.mzn")]
@@ -2250,7 +2250,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_annotations_4.mzn")]
@@ -2262,7 +2262,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
@@ -2274,7 +2274,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
@@ -2287,7 +2287,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("--only-sections foo,bar");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
@@ -2300,7 +2300,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("--not-sections foo,bar");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
@@ -2312,7 +2312,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
@@ -2325,7 +2325,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("--only-sections foo,bar");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
@@ -2338,7 +2338,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("--not-sections foo,bar");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_3.mzn")]
@@ -2350,7 +2350,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_4.mzn")]
@@ -2362,7 +2362,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_5.mzn")]
@@ -2374,7 +2374,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_6.mzn")]
@@ -2386,7 +2386,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_7.mzn")]
@@ -2398,7 +2398,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/output/quoted_id_ozn.mzn")]
@@ -2443,7 +2443,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_array.mzn")]
@@ -2456,7 +2456,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("--param-file ./spec/unit/param_file/param_file_array.json");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_blacklist.mzn")]
@@ -2510,7 +2510,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/arg-reif-array-float.mzn")]
@@ -2601,7 +2601,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/array_var_set_element_nosets.mzn")]
@@ -2615,7 +2615,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/assign_reverse_map.mzn")]
@@ -2627,7 +2627,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bind-defines-var.mzn")]
@@ -2667,7 +2667,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bounds_for_linear_01_max_1.mzn")]
@@ -2682,7 +2682,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bounds_for_linear_01_min_0.mzn")]
@@ -2697,7 +2697,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bounds_for_linear_01_min_1.mzn")]
@@ -2712,7 +2712,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bug110.mzn")]
@@ -2725,7 +2725,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bug131.mzn")]
@@ -2764,7 +2764,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bug244.mzn")]
@@ -2789,7 +2789,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug284.mzn")]
@@ -2801,7 +2801,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bug318_orig.mzn")]
@@ -2814,7 +2814,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug335.mzn")]
@@ -2826,7 +2826,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bug380.mzn")]
@@ -2839,7 +2839,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug532.mzn")]
@@ -2851,7 +2851,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug534.mzn")]
@@ -2863,7 +2863,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug536.mzn")]
@@ -2876,7 +2876,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("-O2");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug552.mzn")]
@@ -2888,7 +2888,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug565.mzn")]
@@ -2900,7 +2900,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug570.mzn")]
@@ -2936,7 +2936,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/bug82.mzn")]
@@ -2949,7 +2949,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug_629.mzn")]
@@ -2983,7 +2983,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/bug_opt_polymorphic.mzn")]
@@ -2995,7 +2995,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_mzn_check_var.mzn")]
@@ -3007,7 +3007,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_opt.mzn")]
@@ -3019,7 +3019,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_params.mzn")]
@@ -3031,7 +3031,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_same_var.mzn")]
@@ -3043,7 +3043,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_var_bug.mzn")]
@@ -3055,7 +3055,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/coercion_par.mzn")]
@@ -3067,7 +3067,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/constructor_of_set.mzn")]
@@ -3079,7 +3079,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/cse_array_lit.mzn")]
@@ -3111,7 +3111,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/flatten_comp_in.mzn")]
@@ -3123,7 +3123,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/flat_set_lit.mzn")]
@@ -3220,7 +3220,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_b.mzn")]
@@ -3232,7 +3232,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_c.mzn")]
@@ -3244,7 +3244,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_d.mzn")]
@@ -3256,7 +3256,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_e.mzn")]
@@ -3268,7 +3268,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_646.mzn")]
@@ -3280,7 +3280,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_648_par_array_decl.mzn")]
@@ -3334,7 +3334,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_664.mzn")]
@@ -3346,7 +3346,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_666.mzn")]
@@ -3373,7 +3373,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_668.mzn")]
@@ -3385,7 +3385,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_669.mzn")]
@@ -3397,7 +3397,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_670.mzn")]
@@ -3421,7 +3421,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_673.mzn")]
@@ -3433,7 +3433,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/github_674.mzn")]
@@ -3447,7 +3447,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_675a.mzn")]
@@ -3459,7 +3459,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_675b.mzn")]
@@ -3494,7 +3494,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_683.mzn")]
@@ -3506,7 +3506,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_685.mzn")]
@@ -3518,7 +3518,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_687.mzn")]
@@ -3530,7 +3530,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_691.mzn")]
@@ -3542,7 +3542,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_693_part1.mzn")]
@@ -3554,7 +3554,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_693_part2.mzn")]
@@ -3566,7 +3566,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_695.mzn")]
@@ -3590,7 +3590,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/github_700_bad_sol.mzn")]
@@ -3649,7 +3649,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_730.mzn")]
@@ -3671,7 +3671,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_747.mzn")]
@@ -3683,7 +3683,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_748.mzn")]
@@ -3720,7 +3720,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_752.mzn")]
@@ -3756,7 +3756,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_758.mzn")]
@@ -3769,7 +3769,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("-O0");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_760.mzn")]
@@ -3781,7 +3781,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_761.mzn")]
@@ -3805,7 +3805,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_765.mzn")]
@@ -3861,7 +3861,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_773.mzn")]
@@ -3883,7 +3883,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/github_778.mzn")]
@@ -3943,7 +3943,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/in_array_eval_error.mzn")]
@@ -3955,7 +3955,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/let_domain_from_generator.mzn")]
@@ -3979,7 +3979,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/multi_goal_hierarchy_error.mzn")]
@@ -4013,7 +4013,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/nosets_set_search.mzn")]
@@ -4026,7 +4026,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/opt_minmax.mzn")]
@@ -4038,7 +4038,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/opt_noncontiguous_domain.mzn")]
@@ -4075,7 +4075,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/output_only_fn.mzn")]
@@ -4117,7 +4117,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/par_opt_dom.mzn")]
@@ -4141,7 +4141,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/pow_undefined.mzn")]
@@ -4166,7 +4166,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/slice_enum_indexset.mzn")]
@@ -4178,7 +4178,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/subsets_100.mzn")]
@@ -4191,7 +4191,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_annotation_on_exists.mzn")]
@@ -4240,7 +4240,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug72.mzn")]
@@ -4264,7 +4264,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_476.mzn")]
@@ -4276,7 +4276,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_483.mzn")]
@@ -4298,7 +4298,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_494.mzn")]
@@ -4310,7 +4310,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_520.mzn")]
@@ -4322,7 +4322,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_521.mzn")]
@@ -4334,7 +4334,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_527.mzn")]
@@ -4346,7 +4346,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_529.mzn")]
@@ -4358,7 +4358,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_588.mzn")]
@@ -4370,7 +4370,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_637.mzn")]
@@ -4394,7 +4394,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_ite_array_eq.mzn")]
@@ -4406,7 +4406,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_pred_arg.mzn")]
@@ -4431,7 +4431,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/regression/test_parout.mzn")]
@@ -4475,7 +4475,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/regression/var_opt_unconstrained.mzn")]
@@ -4502,7 +4502,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/int_choice_1.mzn")]
@@ -4515,7 +4515,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/int_choice_2.mzn")]
@@ -4528,7 +4528,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/int_choice_6.mzn")]
@@ -4541,7 +4541,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/int_var_select_1.mzn")]
@@ -4554,7 +4554,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/int_var_select_2.mzn")]
@@ -4567,7 +4567,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/search/int_var_select_3.mzn")]
@@ -4579,7 +4579,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/int_var_select_4.mzn")]
@@ -4592,7 +4592,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/int_var_select_6.mzn")]
@@ -4605,7 +4605,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/test-ff1.mzn")]
@@ -4618,7 +4618,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/test-ff2.mzn")]
@@ -4631,7 +4631,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/test-ff3.mzn")]
@@ -4644,7 +4644,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/search/test-large1.mzn")]
@@ -4656,7 +4656,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/search/test-large1.mzn")]
@@ -4668,7 +4668,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/test-med1.mzn")]
@@ -4681,7 +4681,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/search/test-small1.mzn")]
@@ -4694,7 +4694,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/alias.mzn")]
@@ -4706,7 +4706,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/alias_call.mzn")]
@@ -4718,7 +4718,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/alias_extern_dom.mzn")]
@@ -4772,7 +4772,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/cv_comprehension.mzn")]
@@ -4784,7 +4784,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/enum_decl.mzn")]
@@ -4808,7 +4808,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/github_647.mzn")]
@@ -4820,7 +4820,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/nested_type_inst_id.mzn")]
@@ -4862,7 +4862,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/overload_inst_tuple_return.mzn")]
@@ -4898,7 +4898,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/record_access_error.mzn")]
@@ -4920,7 +4920,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/record_array_access_error.mzn")]
@@ -4942,7 +4942,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/record_binop_var.mzn")]
@@ -4954,7 +4954,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/record_comprehensions.mzn")]
@@ -4966,7 +4966,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/record_decl_error.mzn")]
@@ -5020,7 +5020,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/record_subtyping.mzn")]
@@ -5032,7 +5032,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/record_var_element.mzn")]
@@ -5056,7 +5056,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/specialise_large_struct.mzn")]
@@ -5068,7 +5068,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_array_coercion.mzn")]
@@ -5080,7 +5080,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_bind_1.mzn")]
@@ -5116,7 +5116,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_2.mzn")]
@@ -5128,7 +5128,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_3.mzn")]
@@ -5140,7 +5140,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_4.mzn")]
@@ -5152,7 +5152,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_5.mzn")]
@@ -5208,7 +5208,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_1.mzn")]
@@ -5220,7 +5220,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_2.mzn")]
@@ -5232,7 +5232,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_3.mzn")]
@@ -5266,7 +5266,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/struct_specialise_return.mzn")]
@@ -5278,7 +5278,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/test_any_enum_typeinstid.mzn")]
@@ -5322,7 +5322,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_array_access_error.mzn")]
@@ -5344,7 +5344,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_binop_var.mzn")]
@@ -5356,7 +5356,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_comprehensions.mzn")]
@@ -5368,7 +5368,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_int_set_of_int_specialisation.mzn")]
@@ -5380,7 +5380,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_ite_error.mzn")]
@@ -5402,7 +5402,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_mkpar.mzn")]
@@ -5414,7 +5414,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_output.mzn")]
@@ -5426,7 +5426,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_subtyping.mzn")]
@@ -5438,7 +5438,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_var_element.mzn")]
@@ -5462,7 +5462,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/types/var_ann_a.mzn")]
@@ -5730,7 +5730,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/globals/cumulatives/globals_cumulatives.mzn")]
@@ -5744,7 +5744,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		options = options.WithTimeout(DefaultTimeout);
 		options = options.AddArgs("-G std");
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/globals/global_cardinality/globals_global_cardinality_low_up_set.mzn")]
@@ -5849,7 +5849,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/globals/inverse/inverse_opt.mzn")]
@@ -5887,7 +5887,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/globals/lex_chain/globals_lex_chain__orbitope.mzn")]
@@ -5901,7 +5901,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/globals/lex_greater/globals_lex_greater.mzn")]
@@ -5991,7 +5991,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/globals/range/globals_range.mzn")]
@@ -6016,7 +6016,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="unit/globals/regular/globals_regular_regex_3.mzn")]
@@ -6199,7 +6199,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="examples/battleships_7.mzn")]
@@ -6213,7 +6213,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="examples/factory_planning_instance.mzn")]
@@ -6227,7 +6227,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="examples/knights.mzn")]
@@ -6240,7 +6240,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="examples/magicsq_4.mzn")]
@@ -6253,7 +6253,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="examples/magicsq_5.mzn")]
@@ -6266,7 +6266,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="examples/oss.mzn")]
@@ -6280,7 +6280,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="examples/packing.mzn")]
@@ -6293,7 +6293,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Theory(DisplayName="examples/radiation.mzn")]
@@ -6331,7 +6331,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
@@ -6356,7 +6356,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.WithTimeout(DefaultTimeout);
 		var solution = await MiniZinc.Solve(model, options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
 	}
