@@ -15,19 +15,19 @@ public static class CloneLibMiniZincTests
             .JoinDir("libminiznc")
             .CreateOrClear();
 
-        async Task Exe(params string[] args)
+        async Task Git(params string[] args)
         {
-            var cmd = new Command("git", args);
+            var cmd = new Command("git", args).WithWorkingDirectory(cloneDir);
             Console.WriteLine(cmd);
-            var result = await cmd.Run(workingDir: cloneDir.FullName);
+            var result = await cmd.Run();
             Guard.IsEqualTo((int)result.Status, (int)ProcessStatus.Ok);
         }
 
-        await Exe("git", "init");
-        await Exe("git", "remote", "add", "origin", url);
-        await Exe("git", "sparse-checkout", "set", "tests/spec");
-        await Exe("git", "fetch", "origin", "master");
-        await Exe("git", "checkout", "master");
+        await Git("init");
+        await Git("remote", "add", "origin", url);
+        await Git("sparse-checkout", "set", "tests/spec");
+        await Git("fetch", "origin", "master");
+        await Git("checkout", "master");
 
         var sourceDir = cloneDir.JoinDir("tests", "spec").EnsureExists();
         var targetDir = Repo.LibMiniZincDir.CreateOrClear();

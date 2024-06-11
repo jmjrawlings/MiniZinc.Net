@@ -44,7 +44,7 @@ internal sealed class CommandRunner : IDisposable
     /// <summary>
     /// Create a process from the given command
     /// </summary>
-    internal CommandRunner(in Command command, string? workingDir = null)
+    internal CommandRunner(in Command command)
     {
         _watch = new Stopwatch();
         _startInfo = new ProcessStartInfo
@@ -57,7 +57,7 @@ internal sealed class CommandRunner : IDisposable
             CreateNoWindow = true
         };
 
-        if (workingDir is { } path)
+        if (command.WorkingDirectory is { } path)
         {
             _startInfo.WorkingDirectory = path;
         }
