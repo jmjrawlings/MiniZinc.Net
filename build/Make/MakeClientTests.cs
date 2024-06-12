@@ -143,8 +143,10 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
         Call("Write", "model.SourceText");
         using (ForEach("var warn in model.Warnings"))
             Call("WriteWarning", "warn");
+
         using (ForEach("var err in model.Errors"))
             Call("WriteError", "err");
+
         Call("WriteSection");
         Var("options", "SolveOptions.Create(solverId:solver)");
         WriteLn("options = options.WithTimeout(DefaultTimeout);");

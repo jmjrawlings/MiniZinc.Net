@@ -33,8 +33,6 @@ public sealed record TestCase
     /// Any expected output files produced by the solver (eg flatzinc)
     public List<string>? OutputFiles { get; set; }
 
-    public string? ErrorType { get; set; }
-
     public string? ErrorMessage { get; set; }
 
     public string? ErrorRegex { get; set; }

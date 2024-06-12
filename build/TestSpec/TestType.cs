@@ -9,5 +9,10 @@ public enum TestType
     Optimise,
     OutputModel,
     Unsatisfiable,
+    AssertionError,
+    EvaluationError,
+    MiniZincError,
+    TypeError,
+    SyntaxError,
     Error
 }
