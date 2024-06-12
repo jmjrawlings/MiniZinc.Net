@@ -35,6 +35,8 @@ public sealed class Model
 
     private List<DirectoryInfo> _searchDirectories;
 
+    private HashSet<string>? _parsedFiles;
+
     public string SourceText => _sourceText.ToString();
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
@@ -292,7 +294,10 @@ public sealed class Model
             case IncludeSyntax node:
                 var path = node.Path.StringValue;
                 var file = FindFile(path);
-                // TODO - differentiate between stdlib files
+
+                /* If we couldn't find the included file then for now
+                just assume it's a stdlib file and let minizinc sort
+                it out */
                 if (file is null)
                 {
                     var msg = CreateFileNotFoundMessage(path);
@@ -301,9 +306,18 @@ public sealed class Model
                 }
                 else
                 {
-                    var result = Parser.ParseFile(file);
-                    result.EnsureOk();
-                    AddNode(result.SyntaxNode);
+                    _parsedFiles ??= new HashSet<string>();
+                    if (_parsedFiles.Contains(file.FullName))
+                    {
+                        Error($"Detected recursive include of \"{file.FullName}\"");
+                    }
+                    else
+                    {
+                        _parsedFiles.Add(file.FullName);
+                        var result = Parser.ParseFile(file);
+                        result.EnsureOk();
+                        AddNode(result.SyntaxNode);
+                    }
                 }
                 break;
 
