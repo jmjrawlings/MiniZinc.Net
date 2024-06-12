@@ -724,14 +724,14 @@ public sealed class Parser
 
             case TokenKind.MINUS:
                 Step();
-                if (!ParseExpr(out expr))
+                if (!ParseExprAtom(out expr))
                     return false;
                 expr = new UnaryOperatorSyntax(token, Operator.Negative, expr);
                 break;
 
             case TokenKind.NOT:
                 Step();
-                if (!ParseExpr(out expr))
+                if (!ParseExprAtom(out expr))
                     return false;
                 expr = new UnaryOperatorSyntax(token, Operator.Not, expr);
                 break;

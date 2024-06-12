@@ -270,7 +270,7 @@ internal sealed class Writer
             case UnaryOperatorSyntax e:
                 Write(e.Operator);
                 Write(SPACE);
-                Write(e.Expr);
+                Write(e.Expr, precedence: 0);
                 break;
 
             case DeclarationSyntax e:

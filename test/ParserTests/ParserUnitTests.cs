@@ -381,6 +381,15 @@ public class ParserUnitTests
         ozn.Should().Be("a diff (b union c)");
     }
 
+    [Fact]
+    void test_parse_unary_prec()
+    {
+        var mzn = @"not(A -> B) -> not(C -> D)";
+        var expr = ParseExpr<BinaryOperatorSyntax>(mzn);
+        expr.Left.Should().BeOfType<UnaryOperatorSyntax>();
+        expr.Right.Should().BeOfType<UnaryOperatorSyntax>();
+    }
+
     SyntaxTree ParseString(string mzn)
     {
         var result = Parser.ParseString(mzn);
