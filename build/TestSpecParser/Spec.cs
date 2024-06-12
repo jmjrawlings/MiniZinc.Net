@@ -93,7 +93,17 @@ public static class Spec
 
             if (tag is Yaml.TAG_ERROR)
             {
-                testCase.Type = TestType.Error;
+                testCase.ErrorRegex = result.TryGetValue<string>("regex");
+                testCase.ErrorMessage = result.TryGetValue<string>("message");
+                testCase.Type = result.TryGetValue<string>("type") switch
+                {
+                    "AssertionError" => TestType.AssertionError,
+                    "EvaluationError" => TestType.EvaluationError,
+                    "MiniZincError" => TestType.MiniZincError,
+                    "TypeError" => TestType.TypeError,
+                    "SyntaxError" => TestType.SyntaxError,
+                    _ => TestType.Error
+                };
             }
             else if (result.Pop("solution") is { } x)
             {
