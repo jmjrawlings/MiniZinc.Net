@@ -121,6 +121,10 @@ public sealed class MakeClientTests : CodeBuilder
             }
         }
 
+        if (testCase.CheckAgainstSolvers is not null)
+            // TODO
+            return;
+
         IDisposable block;
         if (solverIds.Count > 1)
         {
