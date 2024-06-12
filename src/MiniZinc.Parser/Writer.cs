@@ -690,6 +690,10 @@ internal sealed class Writer
                 Write(ANN);
                 break;
 
+            case { Kind: TypeKind.Any }:
+                Write(ANY);
+                break;
+
             default:
                 throw new NotImplementedException(type.ToString());
         }

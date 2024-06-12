@@ -622,6 +622,7 @@ public sealed class Parser
         }
         else if (Skip(TokenKind.ANY))
         {
+            type = new TypeSyntax(start) { Kind = TypeKind.Any };
             needs_value = true;
         }
         else if (!ParseType(out type))
