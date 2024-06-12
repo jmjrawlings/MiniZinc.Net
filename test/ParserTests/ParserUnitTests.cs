@@ -50,12 +50,46 @@ public class ParserUnitTests
     }
 
     [Theory]
-    [InlineData("forall(i in 1..3)(xd[i] > 0)")]
-    [InlineData("forall(i,j in 1..3)(xd[i] > 0)")]
-    [InlineData("forall(i in 1..3, j in 1..3 where i > j)(xd[i] > 0)")]
-    void test_parse_gencall(string mzn)
+    [InlineData("forall(i in 1..3)(true)")]
+    void test_parse_gencall_single_name(string mzn)
     {
         var expr = ParseExpr<GeneratorCallSyntax>(mzn);
+        expr.Name.ToString().Should().Be("forall");
+        expr.Generators.Should()
+            .SatisfyRespectively(gen =>
+            {
+                gen.Names.Should()
+                    .SatisfyRespectively(name =>
+                    {
+                        name.ToString().Should().Be("i");
+                    });
+            });
+    }
+
+    [Theory]
+    [InlineData("forall(i,j,k in 1..3)(true)")]
+    void test_parse_gencall_multiple_names(string mzn)
+    {
+        var expr = ParseExpr<GeneratorCallSyntax>(mzn);
+        expr.Name.ToString().Should().Be("forall");
+        expr.Generators.Should()
+            .SatisfyRespectively(gen =>
+            {
+                gen.Names.Select(x => x.ToString()).Should().Equal("i", "j", "k");
+            });
+    }
+
+    [Theory]
+    [InlineData("forall (i, j, k, l in -3..3 where i <= j /\\ k <= l)(true)")]
+    void test_parse_gencall_multiple_names_multiple_filters(string mzn)
+    {
+        var expr = ParseExpr<GeneratorCallSyntax>(mzn);
+        expr.Name.ToString().Should().Be("forall");
+        expr.Generators.Should()
+            .SatisfyRespectively(gen =>
+            {
+                gen.Names.Select(x => x.ToString()).Should().Equal("i", "j", "k", "l");
+            });
     }
 
     [Fact]
@@ -71,7 +105,7 @@ public class ParserUnitTests
         var name = gen.Names[0].Name;
         name.Should().Be("i");
     }
-    
+
     [Theory]
     [InlineData("a[Fst[i] + j * (i + 1)]")]
     void test_array_access(string mzn)
@@ -121,13 +155,11 @@ public class ParserUnitTests
     [Fact]
     void test_array2d_opt()
     {
-        var mzn ="[|<>, 5,|5, 5,||]";
+        var mzn = "[|<>, 5,|5, 5,||]";
         var arr = ParseExpr<Array2dSyntax>(mzn);
         arr.I.Should().Be(2);
         arr.J.Should().Be(2);
         arr.Elements.Count.Should().Be(4);
-        
-        
     }
 
     [Fact]
@@ -156,35 +188,31 @@ public class ParserUnitTests
         arr.ColIndexed.Should().BeFalse();
         arr.Elements.Should().HaveCount(24);
     }
-    
+
     [Fact]
     void test_array2d_call()
     {
         var mzn = """
-            [| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-             | 0, _, _, _, _, _, _, _, _, _, _, 0
-             | 0, _, _, _, _, _, _, _, _, _, _, 0
-             | 0, _, _, _, _, _, _, _, _, _, _, 0
-             | 0, _, _, _, _, _, _, _, _, _, _, 0
-             | 0, _, _, _, _, _, _, _, _, _, _, 0
-             | 0, _, _, _, _, _, _, _, _, _, _, 0
-             | 0, _, _, _, _, _, _, _, _, _, _, 0
-             | 0, _, _, _, _, _, _, _, 0, _, 0, 0
-             | 0, _, _, _, _, _, _, _, _, 0, _, 0
-             | 0, _, _, _, _, _, _, _, _, _, _, 0
-             | 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-             |]
-        )
-        """;
+                [| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                 | 0, _, _, _, _, _, _, _, _, _, _, 0
+                 | 0, _, _, _, _, _, _, _, _, _, _, 0
+                 | 0, _, _, _, _, _, _, _, _, _, _, 0
+                 | 0, _, _, _, _, _, _, _, _, _, _, 0
+                 | 0, _, _, _, _, _, _, _, _, _, _, 0
+                 | 0, _, _, _, _, _, _, _, _, _, _, 0
+                 | 0, _, _, _, _, _, _, _, _, _, _, 0
+                 | 0, _, _, _, _, _, _, _, 0, _, 0, 0
+                 | 0, _, _, _, _, _, _, _, _, 0, _, 0
+                 | 0, _, _, _, _, _, _, _, _, _, _, 0
+                 | 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                 |]
+            )
+            """;
         var arr = ParseExpr<Array2dSyntax>(mzn);
         arr.I.Should().Be(12);
         arr.J.Should().Be(12);
         arr.Elements.Count.Should().Be(144);
-        
     }
-    
-    
-    
 
     [Fact]
     void test_expr_type_inst()
@@ -342,6 +370,15 @@ public class ParserUnitTests
         var node = (RangeLiteralSyntax)expr;
         node.Lower.Should().BeOfType<FloatLiteralSyntax>();
         node.Upper.Should().BeOfType<FloatLiteralSyntax>();
+    }
+
+    [Fact]
+    void test_parse_operator_same_precedence()
+    {
+        var mzn = "a diff (b union c)";
+        var expr = ParseExpr<BinaryOperatorSyntax>(mzn);
+        var ozn = expr.Write();
+        ozn.Should().Be("a diff (b union c)");
     }
 
     SyntaxTree ParseString(string mzn)

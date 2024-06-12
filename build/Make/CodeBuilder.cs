@@ -58,6 +58,16 @@ public class CodeBuilder
         Newline();
     }
 
+    public void Call(string name, params string[] args)
+    {
+        Write(name);
+        Append('(');
+        Append(string.Join(", ", args));
+        Append(')');
+        Append(';');
+        Newline();
+    }
+
     public void Var(string name, string s)
     {
         Write("var ");
@@ -69,6 +79,8 @@ public class CodeBuilder
     }
 
     public IDisposable If(string expr) => Block($"if ({expr})");
+
+    public IDisposable ForEach(string expr) => Block($"foreach ({expr})");
 
     public void WriteLt(string s)
     {
@@ -142,6 +154,15 @@ public class CodeBuilder
     {
         var ctx = _context.Peek();
         ctx.Dispose();
+    }
+
+    public IDisposable Function(string name, params string[] args)
+    {
+        Write(name);
+        Append('(');
+        Append(string.Join(", ", args));
+        Append(')');
+        return Block();
     }
 
     /// <summary>
