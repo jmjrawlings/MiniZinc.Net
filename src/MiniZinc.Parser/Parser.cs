@@ -1089,7 +1089,6 @@ public sealed class Parser
                     Where = where,
                     Names = new() { id }
                 };
-                exprs.Add(id);
                 exprs.Add(expr);
                 break;
 
@@ -1152,8 +1151,9 @@ public sealed class Parser
                     break;
                 // Already created generators get added
                 case GeneratorSyntax g:
-                    // g.Names.AddRange(idents!);
-                    // idents = null;
+                    if (idents is not null)
+                        g.Names.InsertRange(0, idents);
+                    idents = null;
                     generators.Add(g);
                     break;
                 // Binops are now known to be generators

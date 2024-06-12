@@ -479,7 +479,7 @@ internal sealed class Writer
     private void WriteBinOp(BinaryOperatorSyntax e, int precedence = int.MaxValue)
     {
         int prec = Parser.Precedence(e.Infix.Kind);
-        bool bracketed = prec > precedence;
+        bool bracketed = prec >= precedence;
 
         if (bracketed)
             Write(OPEN_PAREN);
@@ -699,7 +699,13 @@ internal sealed class Writer
     {
         Write(LET);
         Write(OPEN_BRACE);
-        WriteSep(e.Locals?.Cast<SyntaxNode>());
+        if (e.Locals is { } locals)
+            foreach (var local in locals)
+            {
+                var node = (SyntaxNode)local;
+                Write(node);
+            }
+
         Write(CLOSE_BRACE);
         Spaced(IN);
         Write(e.Body);

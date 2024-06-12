@@ -19,18 +19,34 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
         );
 
         Block("public class ClientIntegrationTests : IClassFixture<ClientFixture>");
-        WriteLn("const int DEFAULT_TIMEOUT_MS = 10000;");
-        WriteLn("static TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(DEFAULT_TIMEOUT_MS);");
+        WriteLn("static TimeSpan DefaultTimeout = TimeSpan.FromMinutes(5);");
         WriteLn("private readonly MiniZincClient MiniZinc;");
         WriteLn("private readonly ITestOutputHelper _output;");
 
         using (
-            Block("public ClientIntegrationTests(ClientFixture fixture, ITestOutputHelper output)")
+            Function(
+                "public ClientIntegrationTests",
+                "ClientFixture fixture",
+                "ITestOutputHelper output"
+            )
         )
         {
             WriteLn("MiniZinc = fixture.Client;");
             WriteLn("_output = output;");
         }
+
+        using (Function("private void Write", "string msg"))
+            WriteLn("_output.WriteLine(msg);");
+
+        using (Function("private void WriteWarning", "string msg"))
+            WriteLn("Write($\"WARNING - {msg}\");");
+
+        using (Function("private void WriteError", "string msg"))
+            WriteLn("Write($\"ERROR - {msg}\");");
+
+        using (Function("private void WriteSection"))
+            WriteLn("Write(new string('-',80));");
+
         var files = spec.TestCases.GroupBy(c => c.Path);
         foreach (var group in files)
         {
@@ -88,10 +104,20 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
                 if (!key.StartsWith('-'))
                     key = $"--{key}";
 
+                string arg;
                 if (kind is JsonValueKind.True)
-                    extraArgs.Add($"{key}");
+                {
+                    arg = key;
+                }
                 else
-                    extraArgs.Add($"{key} {val}");
+                {
+                    var value = val.ToString();
+                    if (value.Contains(' '))
+                        arg = $"{key} \\\"{value}\\\"";
+                    else
+                        arg = $"{key} {value}";
+                }
+                extraArgs.Add(arg);
             }
         }
 
@@ -101,18 +127,25 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
             Attribute($"Theory(DisplayName=\"{path}\")");
             foreach (var solver in solverIds)
                 Attribute($"InlineData(\"{solver}\")");
-            block = Block($"public async void {testName}(string solver)");
+            block = Block($"public async Task {testName}(string solver)");
         }
         else
         {
             Attribute($"Fact(DisplayName=\"{path}\")");
-            block = Block($"public async void {testName}()");
+            block = Block($"public async Task {testName}()");
             Var("solver", $"\"{solverIds[0]}\"");
         }
 
         Var("path", $"\"{path}\"");
+        Call("Write", "$\"Solving {path} with {solver}\"");
         Var("model", "Model.FromFile(path)");
-        WriteLn("_output.WriteLine(model.SourceText);");
+        Call("WriteSection");
+        Call("Write", "model.SourceText");
+        using (ForEach("var warn in model.Warnings"))
+            Call("WriteWarning", "warn");
+        using (ForEach("var err in model.Errors"))
+            Call("WriteError", "err");
+        Call("WriteSection");
         Var("options", "SolveOptions.Create(solverId:solver)");
         WriteLn("options = options.WithTimeout(DefaultTimeout);");
         foreach (var arg in extraArgs)
@@ -135,18 +168,27 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
             case TestType.AllSolutions:
                 MakeAllSolutionsTest(testName, testCase);
                 break;
+            case TestType.Error:
+                MakeErrorTest(testName, testCase);
+                break;
             case TestType.OutputModel:
                 MakeOutputTest(testName, testCase);
                 break;
             case TestType.Unsatisfiable:
                 MakeUnsatisfiableTest(testName, testCase);
                 break;
-            case TestType.Error:
-                MakeErrorTest(testName, testCase);
-                break;
         }
+
         block.Dispose();
         Newline();
+    }
+
+    private void MakeErrorTest(string testName, TestCase testCase)
+    {
+        using (Block("if (model.HasErrors)"))
+            WriteLn("return;");
+        Var("solution", "await MiniZinc.Solve(model, options)");
+        WriteLn("solution.Status.Should().Be(SolveStatus.Error);");
     }
 
     private void MakeUnsatisfiableTest(string testName, TestCase testCase)
@@ -179,9 +221,10 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
         WriteLn("solution.Status.Should().Be(SolveStatus.Optimal);");
     }
 
-    private void MakeCompileTest(string testName, TestCase testCase) { }
-
-    private void MakeErrorTest(string testName, TestCase testCase) { }
+    private void MakeCompileTest(string testName, TestCase testCase)
+    {
+        var a = 1;
+    }
 
     private void MakeOutputTest(string testName, TestCase testCase) { }
 
