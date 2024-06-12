@@ -8597,24 +8597,6 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
 
-	[Theory(DisplayName="unit/globals/nvalue/globals_nvalue.mzn")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_globals_nvalue_globals_nvalue_case_2(string solver) {
-		var path = "unit/globals/nvalue/globals_nvalue.mzn";
-		Write($"Solving {path} with {solver}");
-		WriteSection();
-		var model = Model.FromFile(path);
-		Write(model.SourceText);
-		foreach (var warn in model.Warnings) {
-			WriteWarning(warn);
-		}
-		WriteSection();
-		var options = SolveOptions.Create(solverId:solver);
-		var solution = await MiniZinc.Solve(model,options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
-	}
-
 	[Fact(DisplayName="unit/globals/nvalue/nvalue_total.mzn")]
 	public async Task test_solve_unit_globals_nvalue_nvalue_total() {
 		var solver = "gecode";
@@ -9067,23 +9049,6 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		solution.Status.Should().Be(SolveStatus.Optimal);
 	}
 
-	[Fact(DisplayName="examples/radiation.mzn")]
-	public async Task test_solve_examples_radiation_case_2() {
-		var solver = "coin-bc";
-		var path = "examples/radiation.mzn";
-		Write($"Solving {path} with {solver}");
-		WriteSection();
-		var model = Model.FromFile(path);
-		Write(model.SourceText);
-		foreach (var warn in model.Warnings) {
-			WriteWarning(warn);
-		}
-		WriteSection();
-		var options = SolveOptions.Create(solverId:solver);
-		var solution = await MiniZinc.Solve(model,options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
-	}
-
 	[Theory(DisplayName="examples/template_design.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
@@ -9100,23 +9065,6 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		var options = SolveOptions.Create(solverId:solver);
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
-	}
-
-	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
-	public async Task test_solve_examples_wolf_goat_cabbage() {
-		var solver = "coin-bc";
-		var path = "examples/wolf_goat_cabbage.mzn";
-		Write($"Solving {path} with {solver}");
-		WriteSection();
-		var model = Model.FromFile(path);
-		Write(model.SourceText);
-		foreach (var warn in model.Warnings) {
-			WriteWarning(warn);
-		}
-		WriteSection();
-		var options = SolveOptions.Create(solverId:solver);
-		var solution = await MiniZinc.Solve(model,options);
-		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
 
 	[Theory(DisplayName="examples/wolf_goat_cabbage.mzn")]
