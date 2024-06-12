@@ -479,7 +479,7 @@ internal sealed class Writer
     private void WriteBinOp(BinaryOperatorSyntax e, int? precedence = null)
     {
         int prec = Parser.Precedence(e.Infix.Kind);
-        bool bracketed = prec > precedence;
+        bool bracketed = prec >= precedence;
 
         if (bracketed)
             Write(OPEN_PAREN);
@@ -658,7 +658,7 @@ internal sealed class Writer
                 break;
 
             case SetTypeSyntax e:
-                WriteSpace(SET);
+                Write(SET);
                 Spaced(OF);
                 Write(e.Items);
                 break;
