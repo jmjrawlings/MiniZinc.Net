@@ -286,7 +286,7 @@ internal sealed class Writer
                     WriteOutput(e);
                 break;
 
-            case WildCardExpr e:
+            case WildCardSyntax e:
                 Write(UNDERSCORE);
                 break;
 
@@ -838,7 +838,23 @@ internal sealed class Writer
         _indent--;
     }
 
-    void Write(IdentifierSyntax id) => _sb.Append(id);
+    void Write(IdentifierSyntax id)
+    {
+        switch (id.Kind)
+        {
+            case TokenKind.IDENTIFIER:
+                _sb.Append(id);
+                break;
+            case TokenKind.GENERIC:
+                _sb.Append(id);
+                break;
+            case TokenKind.GENERIC_SEQUENCE:
+                _sb.Append(id);
+                break;
+            default:
+                throw new Exception();
+        }
+    }
 
     void Space()
     {

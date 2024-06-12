@@ -145,7 +145,7 @@ public sealed partial class MiniZincClient
         var data = new Dictionary<string, SyntaxNode>();
         var warnings = new List<string>();
         var status = SolveStatus.Started;
-        var text = "";
+        var output = "";
         int objective = 0;
         int processId = 0;
         await foreach (var msg in command.Watch().WithCancellation(token))
@@ -204,8 +204,8 @@ public sealed partial class MiniZincClient
                 case SolutionOutput m:
                     iteration++;
                     status = SolveStatus.Satisfied;
-                    text = m.Output["dzn"].ToString()!;
-                    var parsed = Parser.ParseString(text);
+                    output = m.Output["dzn"].ToString()!;
+                    var parsed = Parser.ParseString(output);
                     foreach (var node in parsed.SyntaxNode.Nodes)
                     {
                         if (node is not AssignmentSyntax assign)
@@ -228,7 +228,7 @@ public sealed partial class MiniZincClient
                     break;
                 case ErrorOutput m:
                     status = SolveStatus.Error;
-                    text = m.Message;
+                    output = $"{m.Message}";
                     _logger.LogError("{Kind} - {Message}", m.Kind, m.Message);
                     break;
                 case StatOutput m:
@@ -254,7 +254,7 @@ public sealed partial class MiniZincClient
                 RelativeGap = null,
                 AbsoluteDelta = null,
                 RelativeDelta = null,
-                Text = text,
+                Output = output,
                 Data = data,
                 Outputs = null,
                 Statistics = null,
