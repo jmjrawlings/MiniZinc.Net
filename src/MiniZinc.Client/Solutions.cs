@@ -12,7 +12,7 @@ public record Solution
     public required Command Command { get; init; }
 
     /// <summary>
-    /// The associated process id from the solver
+    /// The associated process id from the solver if it started
     /// </summary>
     public required int ProcessId { get; init; }
 
@@ -73,7 +73,7 @@ public record Solution
     /// <summary>
     /// Raw minizinc text
     /// </summary>
-    public required string Text { get; init; }
+    public required string Output { get; init; }
 
     /// <summary>
     /// The assigned values to each variable in the model

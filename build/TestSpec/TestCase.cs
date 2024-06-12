@@ -33,8 +33,10 @@ public sealed record TestCase
     /// Any expected output files produced by the solver (eg flatzinc)
     public List<string>? OutputFiles { get; set; }
 
+    /// If present, the error message should match this string
     public string? ErrorMessage { get; set; }
 
+    /// If present, the error message should match this regex
     public string? ErrorRegex { get; set; }
 
     public override string ToString() => $"<{Path}>";

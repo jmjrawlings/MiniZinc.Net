@@ -748,7 +748,7 @@ public sealed class Parser
 
             case TokenKind.UNDERSCORE:
                 Step();
-                expr = new WildCardExpr(token);
+                expr = new WildCardSyntax(token);
                 break;
 
             case TokenKind.OPEN_PAREN:
@@ -1993,20 +1993,20 @@ public sealed class Parser
                 break;
 
             case TokenKind.RECORD:
-                if (!ParseRecordType(out var rec))
+                if (!ParseRecordType(out var record))
                     return false;
-                type = rec;
+                type = record;
                 break;
 
             case TokenKind.TUPLE:
-                if (!ParseTupleType(out var tup))
+                if (!ParseTupleType(out var tuple))
                     return false;
-                type = tup;
+                type = tuple;
                 break;
 
             case TokenKind.GENERIC:
                 Step();
-                type = new NameTypeSyntax(start, new IdentifierSyntax(_token))
+                type = new NameTypeSyntax(start, new IdentifierSyntax(start))
                 {
                     Kind = TypeKind.Generic
                 };
@@ -2014,7 +2014,7 @@ public sealed class Parser
 
             case TokenKind.GENERIC_SEQUENCE:
                 Step();
-                type = new NameTypeSyntax(start, new IdentifierSyntax(_token))
+                type = new NameTypeSyntax(start, new IdentifierSyntax(start))
                 {
                     Kind = TypeKind.GenericSeq
                 };
