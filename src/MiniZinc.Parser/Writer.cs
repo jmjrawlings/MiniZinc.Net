@@ -270,7 +270,7 @@ internal sealed class Writer
             case UnaryOperatorSyntax e:
                 Write(e.Operator);
                 Write(SPACE);
-                Write(e.Expr, prec: 0);
+                Write(e.Expr, Assoc.Left, prec: 0);
                 break;
 
             case DeclarationSyntax e:
@@ -471,7 +471,7 @@ internal sealed class Writer
         if (e.Cases.Count > 0)
         {
             Spaced(EQUAL);
-            WriteSep(e.Cases, sep: "++");
+            WriteSep(e.Cases, sep: " ++ ");
         }
         EndStatement();
     }
@@ -621,9 +621,11 @@ internal sealed class Writer
         Write(COLON);
         Space();
         Write(dec.Name);
+        WriteAnnotations(dec);
         if (dec.Body is { } body)
         {
-            Spaced(EQUAL);
+            Write(EQUAL);
+            Space();
             Write(body);
         }
         EndStatement();
@@ -651,7 +653,7 @@ internal sealed class Writer
                 break;
 
             case CompositeTypeSyntax e:
-                WriteSep(e.Types, Write, sep: "++");
+                WriteSep(e.Types, Write, sep: " ++ ");
                 break;
 
             case ExprType e:
@@ -1071,7 +1073,9 @@ internal sealed class Writer
     void WriteAnnotations(SyntaxNode node)
     {
         if (node.Annotations is not { Count: > 0 } anns)
+        {
             return;
+        }
 
         foreach (var ann in anns)
         {
