@@ -421,6 +421,15 @@ public class ParserUnitTests
         oz.Should().Be(mzn);
     }
 
+    [Fact]
+    void test_parse_right_assoc()
+    {
+        var mzn = "var MyTuple ++ var MyTuple: tuptup ::output = tup ++ tup;";
+        var binop = ParseNode<DeclarationSyntax>(mzn);
+        var oz = binop.Write();
+        oz.Should().BeEquivalentTo(mzn);
+    }
+
     SyntaxTree ParseString(string mzn)
     {
         var result = Parser.ParseString(mzn);

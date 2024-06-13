@@ -497,13 +497,16 @@ public sealed class Parser
         if (!ParseIdent(out var name))
             return false;
 
+        if (!ParseAnnotations(out var anns))
+            return false;
+
         if (!Expect(TokenKind.EQUAL))
             return false;
 
         if (!ParseType(out var type))
             return false;
 
-        alias = new TypeAliasSyntax(start, name, type);
+        alias = new TypeAliasSyntax(start, name, type) { Annotations = anns };
         return true;
     }
 
@@ -858,7 +861,8 @@ public sealed class Parser
     internal bool ParseExpr(
         out SyntaxNode expr,
         Assoc associativity = 0,
-        ushort precedence = ushort.MaxValue
+        ushort precedence = ushort.MaxValue,
+        bool typeInst = false
     )
     {
         if (!ParseExprAtom(out expr))
@@ -894,6 +898,10 @@ public sealed class Parser
                     return false;
                 else
                     expr = new RangeLiteralSyntax(expr.Start, expr);
+            }
+            else if (op is Operator.Concat && typeInst)
+            {
+                return true;
             }
             else
             {
@@ -1968,7 +1976,7 @@ public sealed class Parser
                 break;
 
             default:
-                if (!ParseExpr(out var expr))
+                if (!ParseExpr(out var expr, typeInst: true))
                     return false;
                 type = new ExprType(start, expr) { Kind = TypeKind.Expr };
                 break;
