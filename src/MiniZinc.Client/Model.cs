@@ -442,7 +442,6 @@ public sealed class Model
     {
         var result = Parser.ParseString(mzn);
         result.EnsureOk();
-        _sourceText.AppendLine(result.SourceText);
         AddNode(result.SyntaxNode);
     }
 

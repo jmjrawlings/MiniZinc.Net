@@ -19,7 +19,7 @@ public sealed record WriteOptions
     /// <summary>
     /// Spaces to use for a Tab
     /// </summary>
-    public int TabSize { get; init; } = 4;
+    public int TabSize { get; init; } = 2;
 
     /// <summary>
     /// Spaces to use for a Tab

@@ -45,7 +45,7 @@ public sealed class WriterTests
     [InlineData("""2 * i""", """2 * i""")]
     void test_write_precedence(string input, string expected)
     {
-        var expr = Parser.ParseExpr<BinaryOperatorSyntax>(input)!;
+        var expr = Parser.ParseExprAs<BinaryOperatorSyntax>(input)!;
         var output = expr.Write();
         output.Should().Be(expected);
     }

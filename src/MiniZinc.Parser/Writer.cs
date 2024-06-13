@@ -112,7 +112,7 @@ internal sealed class Writer
         _tabSize = options.TabSize;
     }
 
-    private void Write(SyntaxNode? node, int? precedence = null)
+    private void Write(SyntaxNode? node, Assoc assoc = 0, int? prec = null)
     {
         if (node is null)
             return;
@@ -160,7 +160,7 @@ internal sealed class Writer
                 break;
 
             case BinaryOperatorSyntax e:
-                WriteBinOp(e, precedence);
+                WriteBinOp(e, assoc, prec);
                 break;
 
             case IntLiteralSyntax e:
@@ -270,7 +270,7 @@ internal sealed class Writer
             case UnaryOperatorSyntax e:
                 Write(e.Operator);
                 Write(SPACE);
-                Write(e.Expr, precedence: 0);
+                Write(e.Expr, prec: 0);
                 break;
 
             case DeclarationSyntax e:
@@ -476,30 +476,46 @@ internal sealed class Writer
         EndStatement();
     }
 
-    private void WriteBinOp(BinaryOperatorSyntax e, int? precedence = null)
+    private void WriteBinOp(BinaryOperatorSyntax e, Assoc associativity = 0, int? precedence = null)
     {
-        int prec = Parser.Precedence(e.Infix.Kind);
-        bool bracketed = prec >= precedence;
+        var (op, assoc, prec) = Parser.Precedence(e.Infix.Kind);
+
+        var bracketed = associativity switch
+        {
+            Assoc.None when (assoc is Assoc.None) && prec == precedence => true,
+
+            // We are on the right hand side of the tree
+            Assoc.Left when prec >= precedence
+                => true,
+            Assoc.None when prec >= precedence => true,
+
+            // We are on the left hand side of the tree
+            Assoc.None when prec > precedence
+                => true,
+            Assoc.Right when prec > precedence => true,
+
+            _ => false
+        };
 
         if (bracketed)
             Write(OPEN_PAREN);
 
-        Write(e.Left, prec);
+        // Write the left hand side of the tree
+        Write(e.Left, assoc is Assoc.None ? Assoc.None : Assoc.Right, prec);
         Space();
 
-        if (e.Operator is { } op)
-        {
-            Write(op);
-        }
-        else
+        if (op is Operator.Identifier)
         {
             Write(BACKTICK);
             Write(e.Infix.StringValue);
             Write(BACKTICK);
         }
-
+        else
+        {
+            Write(op);
+        }
         Space();
-        Write(e.Right, prec);
+        Write(e.Right, assoc is Assoc.None ? Assoc.None : Assoc.Left, prec);
 
         if (bracketed)
             Write(CLOSE_PAREN);
@@ -724,7 +740,7 @@ internal sealed class Writer
         Write(CLOSE_PAREN);
     }
 
-    void WriteParameter(ParameterSyntax x, int? precedence = null)
+    void WriteParameter(ParameterSyntax x, Assoc assoc, int? precedence = null)
     {
         Write(x.Type);
         if (x.Name is { } name)
@@ -788,7 +804,7 @@ internal sealed class Writer
         Write(CLOSE_BRACKET);
     }
 
-    void WriteGenerator(GeneratorSyntax gen, int? precedence = null)
+    void WriteGenerator(GeneratorSyntax gen, Assoc assoc = Assoc.None, int? precedence = null)
     {
         WriteSep(gen.Names, Write);
         Spaced(IN);
@@ -881,8 +897,9 @@ internal sealed class Writer
 
     void WriteSep<T>(
         IEnumerable<T>? nodes,
-        Action<T, int?>? write = null,
-        int precedence = 0,
+        Action<T, Assoc, int?>? write = null,
+        Assoc assoc = Assoc.None,
+        int prec = 0,
         string sep = ","
     )
         where T : SyntaxNode
@@ -896,11 +913,11 @@ internal sealed class Writer
             return;
 
         write ??= Write;
-        write(enumerator.Current, precedence);
+        write(enumerator.Current, assoc, prec);
         while (enumerator.MoveNext())
         {
             Write(sep);
-            write(enumerator.Current, precedence);
+            write(enumerator.Current, assoc, prec);
         }
     }
 
@@ -958,6 +975,7 @@ internal sealed class Writer
                 Write(EQUAL);
                 break;
             case Operator.Equal:
+                Write(EQUAL);
                 Write(EQUAL);
                 break;
             case Operator.NotEqual:
