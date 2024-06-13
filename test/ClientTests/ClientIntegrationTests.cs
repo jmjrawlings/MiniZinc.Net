@@ -566,7 +566,8 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 
 	[Theory(DisplayName="unit/division/test_div_mod_bounds.mzn")]
 	[InlineData("gecode")]
-	[InlineData("scip")]
+	[InlineData("gurobi", Skip="Solver not supported")]
+	[InlineData("scip", Skip="Solver not supported")]
 	public async Task test_solve_unit_division_test_div_mod_bounds(string solver) {
 		var path = "unit/division/test_div_mod_bounds.mzn";
 		Write($"Solving {path} with {solver}");
@@ -582,9 +583,10 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
-	[Fact(DisplayName="unit/division/test_fldiv_01.mzn")]
-	public async Task test_solve_unit_division_test_fldiv_01() {
-		var solver = "scip";
+	[Theory(DisplayName="unit/division/test_fldiv_01.mzn")]
+	[InlineData("gurobi", Skip="Solver not supported")]
+	[InlineData("scip", Skip="Solver not supported")]
+	public async Task test_solve_unit_division_test_fldiv_01(string solver) {
 		var path = "unit/division/test_fldiv_01.mzn";
 		Write($"Solving {path} with {solver}");
 		WriteSection();
@@ -599,9 +601,10 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
-	[Fact(DisplayName="unit/division/test_fldiv_02.mzn")]
-	public async Task test_solve_unit_division_test_fldiv_02() {
-		var solver = "scip";
+	[Theory(DisplayName="unit/division/test_fldiv_02.mzn")]
+	[InlineData("gurobi", Skip="Solver not supported")]
+	[InlineData("scip", Skip="Solver not supported")]
+	public async Task test_solve_unit_division_test_fldiv_02(string solver) {
 		var path = "unit/division/test_fldiv_02.mzn";
 		Write($"Solving {path} with {solver}");
 		WriteSection();
@@ -743,6 +746,23 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 	public async Task test_solve_unit_general_array_union_intersect_enum() {
 		var solver = "gecode";
 		var path = "unit/general/array_union_intersect_enum.mzn";
+		Write($"Solving {path} with {solver}");
+		WriteSection();
+		var model = Model.FromFile(path);
+		Write(model.SourceText);
+		foreach (var warn in model.Warnings) {
+			WriteWarning(warn);
+		}
+		WriteSection();
+		var options = SolveOptions.Create(solverId:solver);
+		var solution = await MiniZinc.Solve(model, options);
+		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
+	}
+
+	[Fact(DisplayName="unit/general/bin_pack_multiobj.mzn", Skip="Solver not supported")]
+	public async Task test_solve_unit_general_bin_pack_multiobj() {
+		var solver = "gurobi";
+		var path = "unit/general/bin_pack_multiobj.mzn";
 		Write($"Solving {path} with {solver}");
 		WriteSection();
 		var model = Model.FromFile(path);
@@ -1013,6 +1033,8 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/general/json_ignore.mzc.mzn\"");
+		options = options.AddArgs("--data \"unit/general/json_ignore.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -1970,9 +1992,10 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
 
-	[Fact(DisplayName="unit/general/test_times_int_float_eq.mzn")]
-	public async Task test_solve_unit_general_test_times_int_float_eq() {
-		var solver = "scip";
+	[Theory(DisplayName="unit/general/test_times_int_float_eq.mzn")]
+	[InlineData("gurobi", Skip="Solver not supported")]
+	[InlineData("scip", Skip="Solver not supported")]
+	public async Task test_solve_unit_general_test_times_int_float_eq(string solver) {
 		var path = "unit/general/test_times_int_float_eq.mzn";
 		Write($"Solving {path} with {solver}");
 		WriteSection();
@@ -1988,9 +2011,10 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		solution.Status.Should().Be(SolveStatus.Optimal);
 	}
 
-	[Fact(DisplayName="unit/general/test_times_int_float_eq__defaultopt.mzn")]
-	public async Task test_solve_unit_general_test_times_int_float_eq__defaultopt() {
-		var solver = "scip";
+	[Theory(DisplayName="unit/general/test_times_int_float_eq__defaultopt.mzn")]
+	[InlineData("gurobi", Skip="Solver not supported")]
+	[InlineData("scip", Skip="Solver not supported")]
+	public async Task test_solve_unit_general_test_times_int_float_eq__defaultopt(string solver) {
 		var path = "unit/general/test_times_int_float_eq__defaultopt.mzn";
 		Write($"Solving {path} with {solver}");
 		WriteSection();
@@ -2125,6 +2149,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/anon_enum_json.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2142,6 +2167,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/anon_enum_json_err.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().Be(SolveStatus.Error);
 		solution.Output.Should().MatchRegex(".*invalid enum object.*");
@@ -2160,6 +2186,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/coerce_enum_str.json\"");
 		var solution = await MiniZinc.Solve(model,options);
 		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
@@ -2177,6 +2204,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/coerce_enum_str_err.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().Be(SolveStatus.Error);
 		solution.Output.Should().MatchRegex(".*has invalid type-inst.*");
@@ -2195,6 +2223,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/coerce_indices.json\"");
 		var solution = await MiniZinc.Solve(model,options);
 		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
@@ -2212,6 +2241,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/coerce_set.json\"");
 		var solution = await MiniZinc.Solve(model,options);
 		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
@@ -2229,6 +2259,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/enum_constructor_basic.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2246,6 +2277,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/enum_constructor_basic_2.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2263,6 +2295,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/enum_constructor_int.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2280,6 +2313,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/enum_constructor_nested.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2314,6 +2348,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/float_json_exponent.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2331,6 +2366,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/json_array2d_set.json\"");
 		var solution = await MiniZinc.Solve(model,options);
 		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
@@ -2348,6 +2384,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/json_enum_def.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2365,6 +2402,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/json_input_1.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2382,6 +2420,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/json_unicode_escapes.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2399,6 +2438,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/mult_dim_enum.json\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -2416,6 +2456,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/record_json_input.json\"");
 		var solution = await MiniZinc.Solve(model,options);
 		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
@@ -2433,6 +2474,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/json/tuple_json_input.json\"");
 		var solution = await MiniZinc.Solve(model,options);
 		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
@@ -3538,6 +3580,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/param_file/param_file_blacklist_1.mpc\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().Be(SolveStatus.Error);
 		solution.Output.Should().MatchRegex(".*not allowed in configuration file.*");
@@ -3556,6 +3599,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/param_file/param_file_blacklist_2.mpc\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().Be(SolveStatus.Error);
 		solution.Output.Should().MatchRegex(".*not allowed in configuration file.*");
@@ -3574,6 +3618,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/param_file/param_file_nested_object.mpc\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().Be(SolveStatus.Satisfied);
 	}
@@ -3591,6 +3636,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/param_file/param_file_recursive.mpc\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().Be(SolveStatus.Error);
 		solution.Output.Should().MatchRegex(".*Cyclic parameter configuration file.*");
@@ -3609,6 +3655,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/param_file/param_file_resolution.mpc\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -4301,6 +4348,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/regression/checker_mzn_check_var.mzc.mzn\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -4318,6 +4366,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/regression/checker_opt.mzc.mzn\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -4335,6 +4384,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/regression/checker_params.mzc.mzn\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -4352,6 +4402,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/regression/checker_same_var.mzc.mzn\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -4369,6 +4420,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/regression/checker_var_bug.mzc.mzn\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -5562,6 +5614,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/regression/github_776.dzn\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -5904,6 +5957,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 		}
 		WriteSection();
 		var options = SolveOptions.Create(solverId:solver);
+		options = options.AddArgs("--data \"unit/regression/parse_assignments.mzc.mzn\"");
 		var solution = await MiniZinc.Solve(model, options);
 		solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);
 	}
@@ -8491,7 +8545,7 @@ public class ClientIntegrationTests : IClassFixture<ClientFixture> {
 	[Theory(DisplayName="unit/globals/lex_chain/globals_lex_chain__orbitope.mzn")]
 	[InlineData("gecode")]
 	[InlineData("coin-bc")]
-	[InlineData("scip")]
+	[InlineData("scip", Skip="Solver not supported")]
 	public async Task test_solve_unit_globals_lex_chain_globals_lex_chain__orbitope(string solver) {
 		var path = "unit/globals/lex_chain/globals_lex_chain__orbitope.mzn";
 		Write($"Solving {path} with {solver}");
