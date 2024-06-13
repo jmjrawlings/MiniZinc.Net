@@ -1,4 +1,6 @@
-﻿namespace Make;
+﻿using System.Text;
+
+namespace Make;
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -73,25 +75,23 @@ public sealed class MakeClientTests : CodeBuilder
             testName = $"{testName}_case_{testCase.Sequence}";
 
         var path = testCase.Path;
-        if (testCase.Solvers is not { } solvers)
+        var dir = Path.GetDirectoryName(path);
+        if (testCase.Solvers is null)
             return;
 
-        var solverIds = new List<string>();
-        foreach (var solver in solvers)
+        var solvers = new List<(string, bool)>();
+        foreach (var solver in testCase.Solvers)
         {
-            var solverId = solver switch
-            {
-                "cbc" => "coin-bc",
-                "gurobi" => null,
-                _ => solver
-            };
-
-            if (solverId is not null)
-                solverIds.Add(solverId);
+            solvers.Add(
+                solver switch
+                {
+                    "cbc" => ("coin-bc", true),
+                    "scip" => ("scip", false),
+                    "gurobi" => ("gurobi", false),
+                    _ => (solver, true)
+                }
+            );
         }
-
-        if (solverIds.Count == 0)
-            return;
 
         List<string> extraArgs = new List<string>();
         if (testCase.Options is JsonObject opts)
@@ -125,19 +125,38 @@ public sealed class MakeClientTests : CodeBuilder
             // TODO
             return;
 
+        if (testCase.InputFiles is { } extraFiles)
+        {
+            foreach (var extraFile in extraFiles)
+            {
+                var extraPath = Path.Combine(dir!, extraFile);
+                extraPath = extraPath.Replace('\\', '/');
+                extraArgs.Add($"--data \\\"{extraPath}\\\"");
+            }
+        }
+
         IDisposable block;
-        if (solverIds.Count > 1)
+        if (solvers.Count > 1)
         {
             Attribute($"Theory(DisplayName=\"{path}\")");
-            foreach (var solver in solverIds)
-                Attribute($"InlineData(\"{solver}\")");
+            foreach (var (solver, enabled) in solvers)
+            {
+                if (enabled)
+                    Attribute($"InlineData(\"{solver}\")");
+                else
+                    Attribute($"InlineData(\"{solver}\", Skip=\"Solver not supported\")");
+            }
             block = Block($"public async Task {testName}(string solver)");
         }
         else
         {
-            Attribute($"Fact(DisplayName=\"{path}\")");
+            var (solver, enabled) = solvers[0];
+            if (enabled)
+                Attribute($"Fact(DisplayName=\"{path}\")");
+            else
+                Attribute($"Fact(DisplayName=\"{path}\", Skip=\"Solver not supported\")");
             block = Block($"public async Task {testName}()");
-            Var("solver", $"\"{solverIds[0]}\"");
+            Var("solver", $"\"{solver}\"");
         }
 
         Var("path", $"\"{path}\"");
