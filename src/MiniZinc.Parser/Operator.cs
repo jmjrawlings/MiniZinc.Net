@@ -3,9 +3,9 @@
 /// <summary>
 /// Built in binary and unary operators
 /// </summary>
-public enum Operator
+public enum Operator : byte
 {
-    Equivalent,
+    Equivalent = 1,
     Implies,
     ImpliedBy,
     Or,
@@ -33,6 +33,7 @@ public enum Operator
     Intersect,
     Exponent,
     Default,
+    Identifier,
     Concat,
     Positive,
     Negative,

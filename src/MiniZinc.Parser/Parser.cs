@@ -12,7 +12,9 @@ public sealed class Parser
     private string _sourceText;
     private Token _token;
     private TokenKind _kind;
-    private ushort _precedence;
+
+    // private ushort _precedence;
+    // private Assoc _assoc;
     private int _i;
     private string? _errorMessage;
     private string? _errorTrace;
@@ -646,7 +648,7 @@ public sealed class Parser
             if (needs_value)
                 return Expected("=");
 
-            declare = new DeclarationSyntax(start, type!, name)
+            declare = new DeclarationSyntax(start, type, name)
             {
                 Parameters = pars,
                 Annotations = anns
@@ -853,152 +855,97 @@ public sealed class Parser
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
-    internal bool ParseExpr(out SyntaxNode expr, ushort minPrecedence = ushort.MaxValue)
+    internal bool ParseExpr(
+        out SyntaxNode expr,
+        Assoc associativity = 0,
+        ushort precedence = ushort.MaxValue
+    )
     {
         if (!ParseExprAtom(out expr))
             return false;
 
         while (true)
         {
-            _precedence = Precedence(_kind);
-            if (_precedence is 0)
-                break;
+            var infix = _token;
+            var (op, assoc, prec) = Precedence(infix.Kind);
+            if (op is 0)
+                return true;
 
-            if (_precedence > minPrecedence)
-                break;
+            switch (assoc)
+            {
+                case Assoc.None when associativity is Assoc.None && prec == precedence:
+                    return Error($"Invalid application of operator {op} due to precedence rules");
 
-            if (!ParseInfixExpr(ref expr))
-                return false;
+                case Assoc.Left when prec >= precedence:
+                case Assoc.None when prec >= precedence:
+                    return true;
+
+                case Assoc.None when prec > precedence:
+                case Assoc.Right when prec > precedence:
+                    return true;
+            }
+
+            if (op is Operator.Range)
+            {
+                Step();
+                if (ParseExpr(out var right, assoc, prec))
+                    expr = new RangeLiteralSyntax(expr.Start, expr, right);
+                else if (_errorMessage is not null)
+                    return false;
+                else
+                    expr = new RangeLiteralSyntax(expr.Start, expr);
+            }
+            else
+            {
+                Step();
+                if (!ParseExpr(out var right, assoc, prec))
+                    return false;
+                expr = new BinaryOperatorSyntax(expr, infix, op, right);
+            }
         }
-
-        return true;
     }
 
-    internal bool ParseInfixExpr(ref SyntaxNode left)
-    {
-        switch (_kind)
-        {
-            case TokenKind.DOT_DOT:
-                return ParseRangeInfixExpr(ref left);
-            case TokenKind.INFIX_IDENTIFIER:
-                return ParseNamedInfixExpr(ref left);
-            default:
-                return ParseBuiltinBinopExpr(ref left);
-        }
-    }
-
-    internal bool ParseBuiltinBinopExpr(ref SyntaxNode left)
-    {
-        Operator? op = _kind switch
-        {
-            TokenKind.DOUBLE_ARROW => Operator.Equivalent,
-            TokenKind.RIGHT_ARROW => Operator.Implies,
-            TokenKind.LEFT_ARROW => Operator.ImpliedBy,
-            TokenKind.DOWN_WEDGE => Operator.Or,
-            TokenKind.XOR => Operator.Xor,
-            TokenKind.UP_WEDGE => Operator.And,
-            TokenKind.LESS_THAN => Operator.LessThan,
-            TokenKind.GREATER_THAN => Operator.GreaterThan,
-            TokenKind.LESS_THAN_EQUAL => Operator.LessThanEqual,
-            TokenKind.GREATER_THAN_EQUAL => Operator.GreaterThanEqual,
-            TokenKind.EQUAL => Operator.Equal,
-            TokenKind.NOT_EQUAL => Operator.NotEqual,
-            TokenKind.IN => Operator.In,
-            TokenKind.SUBSET => Operator.Subset,
-            TokenKind.SUPERSET => Operator.Superset,
-            TokenKind.UNION => Operator.Union,
-            TokenKind.DIFF => Operator.Diff,
-            TokenKind.SYMDIFF => Operator.SymDiff,
-            TokenKind.PLUS => Operator.Add,
-            TokenKind.MINUS => Operator.Subtract,
-            TokenKind.STAR => Operator.Multiply,
-            TokenKind.DIV => Operator.Div,
-            TokenKind.MOD => Operator.Mod,
-            TokenKind.FWDSLASH => Operator.Divide,
-            TokenKind.INTERSECT => Operator.Intersect,
-            TokenKind.EXP => Operator.Exponent,
-            TokenKind.PLUS_PLUS => Operator.Concat,
-            TokenKind.DEFAULT => Operator.Default,
-            TokenKind.TILDE_PLUS => Operator.TildeAdd,
-            TokenKind.TILDE_MINUS => Operator.TildeSubtract,
-            TokenKind.TILDE_STAR => Operator.TildeMultiply,
-            TokenKind.TILDE_EQUALS => Operator.TildeEqual,
-            _ => null
-        };
-        if (op is null)
-            return Expected("builtin binary operator");
-
-        var infix = _token;
-        Step();
-        if (!ParseExpr(out var right, _precedence))
-            return false;
-
-        left = new BinaryOperatorSyntax(left, infix, op, right);
-        return true;
-    }
-
-    private bool ParseNamedInfixExpr(ref SyntaxNode left)
-    {
-        var infix = _token;
-        Step();
-
-        if (!ParseExpr(out var right, _precedence))
-            return false;
-
-        left = new BinaryOperatorSyntax(left, infix, null, right);
-        return true;
-    }
-
-    private bool ParseRangeInfixExpr(ref SyntaxNode left)
-    {
-        Step();
-        if (ParseExpr(out var right, _precedence))
-            left = new RangeLiteralSyntax(left.Start, left, right);
-        else if (_errorMessage is not null)
-            return false;
-        else
-            left = new RangeLiteralSyntax(left.Start, left);
-        return true;
-    }
-
-    internal static ushort Precedence(in TokenKind kind) =>
+    /// <summary>
+    /// https://docs.minizinc.dev/en/stable/spec.html#operators
+    /// </summary>
+    internal static (Operator, Assoc, ushort) Precedence(in TokenKind kind) =>
         kind switch
         {
-            TokenKind.DOUBLE_ARROW => 1200,
-            TokenKind.RIGHT_ARROW => 1100,
-            TokenKind.LEFT_ARROW => 1100,
-            TokenKind.DOWN_WEDGE => 1000,
-            TokenKind.XOR => 1000,
-            TokenKind.UP_WEDGE => 900,
-            TokenKind.LESS_THAN => 800,
-            TokenKind.GREATER_THAN => 800,
-            TokenKind.LESS_THAN_EQUAL => 800,
-            TokenKind.GREATER_THAN_EQUAL => 800,
-            TokenKind.EQUAL => 800,
-            TokenKind.NOT_EQUAL => 800,
-            TokenKind.IN => 700,
-            TokenKind.SUBSET => 700,
-            TokenKind.SUPERSET => 700,
-            TokenKind.UNION => 700,
-            TokenKind.DIFF => 700,
-            TokenKind.SYMDIFF => 700,
-            TokenKind.DOT_DOT => 500,
-            TokenKind.PLUS => 400,
-            TokenKind.MINUS => 400,
-            TokenKind.STAR => 300,
-            TokenKind.DIV => 300,
-            TokenKind.MOD => 300,
-            TokenKind.FWDSLASH => 300,
-            TokenKind.INTERSECT => 300,
-            TokenKind.EXP => 200,
-            TokenKind.PLUS_PLUS => 100,
-            TokenKind.DEFAULT => 70,
-            TokenKind.INFIX_IDENTIFIER => 50,
-            TokenKind.TILDE_PLUS => 10,
-            TokenKind.TILDE_MINUS => 10,
-            TokenKind.TILDE_STAR => 10,
-            TokenKind.TILDE_EQUALS => 10,
-            _ => 0
+            TokenKind.DOUBLE_ARROW => (Operator.Equivalent, Assoc.Left, 1200),
+            TokenKind.RIGHT_ARROW => (Operator.Implies, Assoc.Left, 1100),
+            TokenKind.LEFT_ARROW => (Operator.ImpliedBy, Assoc.Left, 1100),
+            TokenKind.DOWN_WEDGE => (Operator.Or, Assoc.Left, 1000),
+            TokenKind.XOR => (Operator.Xor, Assoc.Left, 1000),
+            TokenKind.UP_WEDGE => (Operator.And, Assoc.Left, 900),
+            TokenKind.LESS_THAN => (Operator.LessThan, Assoc.None, 800),
+            TokenKind.GREATER_THAN => (Operator.GreaterThan, Assoc.None, 800),
+            TokenKind.LESS_THAN_EQUAL => (Operator.LessThanEqual, Assoc.None, 800),
+            TokenKind.GREATER_THAN_EQUAL => (Operator.GreaterThanEqual, Assoc.None, 800),
+            TokenKind.EQUAL => (Operator.Equal, Assoc.None, 800),
+            TokenKind.NOT_EQUAL => (Operator.NotEqual, Assoc.None, 800),
+            TokenKind.IN => (Operator.In, Assoc.None, 700),
+            TokenKind.SUBSET => (Operator.Subset, Assoc.None, 700),
+            TokenKind.SUPERSET => (Operator.Superset, Assoc.None, 700),
+            TokenKind.UNION => (Operator.Union, Assoc.Left, 600),
+            TokenKind.DIFF => (Operator.Diff, Assoc.Left, 600),
+            TokenKind.SYMDIFF => (Operator.SymDiff, Assoc.Left, 600),
+            TokenKind.DOT_DOT => (Operator.Range, Assoc.None, 500),
+            TokenKind.PLUS => (Operator.Add, Assoc.Left, 400),
+            TokenKind.MINUS => (Operator.Subtract, Assoc.Left, 400),
+            TokenKind.STAR => (Operator.Multiply, Assoc.Left, 300),
+            TokenKind.DIV => (Operator.Div, Assoc.Left, 300),
+            TokenKind.MOD => (Operator.Mod, Assoc.Left, 300),
+            TokenKind.FWDSLASH => (Operator.Divide, Assoc.Left, 300),
+            TokenKind.INTERSECT => (Operator.Intersect, Assoc.Left, 300),
+            TokenKind.EXP => (Operator.Exponent, Assoc.Left, 200),
+            TokenKind.PLUS_PLUS => (Operator.Concat, Assoc.Right, 100),
+            TokenKind.DEFAULT => (Operator.Default, Assoc.Left, 70),
+            TokenKind.INFIX_IDENTIFIER => (Operator.Identifier, Assoc.Left, 50),
+            TokenKind.TILDE_PLUS => (Operator.TildeAdd, Assoc.Left, 10),
+            TokenKind.TILDE_MINUS => (Operator.TildeSubtract, Assoc.Left, 10),
+            TokenKind.TILDE_STAR => (Operator.TildeMultiply, Assoc.Left, 10),
+            TokenKind.TILDE_EQUALS => (Operator.TildeEqual, Assoc.Left, 10),
+            _ => default
         };
 
     /// <summary>
@@ -2314,37 +2261,11 @@ public sealed class Parser
         return result;
     }
 
-    /// <summary>
-    /// Parse a node from the given minizinc string
-    /// </summary>
-    /// <example>
-    /// Parser.ParseString&ltConstraintSyntax&gt("constraint a > b;")
-    /// </example>
-    public static ParseResult<T> ParseString<T>(string text)
-        where T : SyntaxNode
-    {
-        var result = ParseString(text);
-        var node = result.SyntaxNode.Nodes[0];
-        if (node is not T t)
-            throw new Exception();
-        return new ParseResult<T>
-        {
-            SyntaxNode = t,
-            SourceFile = null,
-            SourceText = text,
-            Ok = result.Ok,
-            FinalToken = result.FinalToken,
-            Elapsed = result.Elapsed,
-            ErrorMessage = result.ErrorMessage,
-            ErrorTrace = result.ErrorTrace
-        };
-    }
-
     /// <inheritdoc cref="ParseFile(string)"/>
     public static ParseResult<SyntaxTree> ParseFile(FileInfo file) => ParseFile(file.FullName);
 
-    /// Parse an expression from text
-    internal static T? ParseExpr<T>(string text)
+    /// Parse an expression of the given type from text
+    internal static T? ParseExprAs<T>(string text)
         where T : SyntaxNode
     {
         var parser = new Parser(text);
