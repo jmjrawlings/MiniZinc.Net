@@ -2,18 +2,18 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using CommunityToolkit.Diagnostics;
 using Parser;
 using Parser.Syntax;
 
 /// <summary>
-/// A MiniZinc model
+/// A MiniZinc model.  Instantiated as either an
+/// <see cref="IntModel"/> or a <see cref="FloatModel"/>
 /// </summary>
 /// <remarks>
 /// This class extracts useful semantic information
 /// from <see cref="SyntaxTree"/>
 /// </remarks>
-public sealed class Model
+public class MiniZincModel
 {
     public string Name { get; set; } = "";
 
@@ -37,7 +37,11 @@ public sealed class Model
 
     private HashSet<string>? _parsedFiles;
 
+    private bool _isFloatModel;
+
     public string SourceText => _sourceText.ToString();
+
+    public virtual bool IsFloatModel => _isFloatModel;
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
 
@@ -64,7 +68,7 @@ public sealed class Model
 
     public bool HasWarnings => _warnings is null;
 
-    public Model()
+    public MiniZincModel()
     {
         _errors = null;
         _warnings = null;
@@ -331,19 +335,24 @@ public sealed class Model
     /// <summary>
     /// Create a new model from the given filepath
     /// </summary>
-    public static Model FromFile(string path)
+    public static MiniZincModel FromFile(string path)
     {
-        var model = new Model();
+        var model = new MiniZincModel();
         model.AddFile(path);
         return model;
     }
 
     /// <summary>
+    /// Create a new model from the given file
+    /// </summary>
+    public static MiniZincModel FromFile(FileInfo file) => FromFile(file.FullName);
+
+    /// <summary>
     /// Create a new model from the given string
     /// </summary>
-    public static Model FromString(string path)
+    public static MiniZincModel FromString(string path)
     {
-        var model = new Model();
+        var model = new MiniZincModel();
         model.AddString(path);
         return model;
     }
@@ -431,7 +440,7 @@ public sealed class Model
     /// <summary>
     /// Add the given files to this model (.mzn or .dzn)
     /// </summary>
-    public Model AddFiles(params string[] paths)
+    public MiniZincModel AddFiles(params string[] paths)
     {
         foreach (var path in paths)
             AddFile(path);
@@ -445,7 +454,7 @@ public sealed class Model
         AddNode(result.SyntaxNode);
     }
 
-    public Model AddStrings(params string[] strings)
+    public MiniZincModel AddStrings(params string[] strings)
     {
         foreach (var mzn in strings)
             AddString(mzn);
@@ -465,7 +474,7 @@ public sealed class Model
     public void AddSearchDirectory(string directory) =>
         AddSearchDirectory(new DirectoryInfo(directory));
 
-    public Model Clone()
+    public MiniZincModel Clone()
     {
         var copy = FromString(SourceText);
         return copy;
