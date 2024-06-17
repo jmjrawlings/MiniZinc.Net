@@ -37,8 +37,8 @@ public sealed class MakeClientTests : CodeBuilder
             WriteLn("_output = output;");
         }
 
-        using (Function("private void Write", "string msg"))
-            WriteLn("_output.WriteLine(msg);");
+        using (Function("private void Write", "object? msg"))
+            WriteLn("_output.WriteLine(msg?.ToString() ?? string.Empty);");
 
         using (Function("private void WriteWarning", "string msg"))
             WriteLn("Write($\"WARNING - {msg}\");");
@@ -48,6 +48,51 @@ public sealed class MakeClientTests : CodeBuilder
 
         using (Function("private void WriteSection"))
             WriteLn("Write(new string('-',80));");
+
+        using (Function("Model Compile", "string path"))
+        {
+            Write(
+                """
+                Write(path);
+                WriteSection();
+                var model = Model.FromFile(path);
+                Write(model.SourceText);
+                WriteSection();
+                foreach (var warn in model.Warnings)
+                    WriteWarning(warn);
+                return model;
+                """
+            );
+        }
+
+        using (
+            Function(
+                "async Task<Update> Solve",
+                "Model model",
+                "SolveOptions options",
+                "params SolveStatus[] statuses"
+            )
+        )
+        {
+            Write(
+                """
+                var solution = await MiniZinc.Solve(model, options);
+                Write(options.SolverId);
+                Write(solution.Command);
+                Write(solution.Status);
+                WriteSection();
+                var ok = false;
+                foreach (var status in statuses){
+                    if (solution.Status == status){
+                        ok = true;
+                        break;
+                    }
+                }
+                ok.Should().BeTrue($"{solution.Status} - {solution.Text}");
+                return solution;
+                """
+            );
+        }
 
         var files = spec.TestCases.GroupBy(c => c.Path);
         foreach (var group in files)
@@ -158,15 +203,8 @@ public sealed class MakeClientTests : CodeBuilder
             block = Block($"public async Task {testName}()");
             Var("solver", $"\"{solver}\"");
         }
-
         Var("path", $"\"{path}\"");
-        Call("Write", "$\"Solving {path} with {solver}\"");
-        Call("WriteSection");
-        Var("model", "Model.FromFile(path)");
-        Call("Write", "model.SourceText");
-        using (ForEach("var warn in model.Warnings"))
-            Call("WriteWarning", "warn");
-        Call("WriteSection");
+        Var("model", "Compile(path)");
         Var("options", "SolveOptions.Create(solverId:solver)");
         foreach (var arg in extraArgs)
             WriteLn($"options = options.AddArgs(\"{arg}\");");
@@ -216,45 +254,39 @@ public sealed class MakeClientTests : CodeBuilder
             return;
         }
 
-        Var("solution", "await MiniZinc.Solve(model, options)");
-        WriteLn("solution.Status.Should().Be(SolveStatus.Error);");
+        Var("solution", "await Solve(model, options, SolveStatus.Error)");
         if (testCase.ErrorRegex is { } regex)
         {
             regex = regex.Replace("\\", "");
-            WriteLn($"solution.Output.Should().MatchRegex(\"{regex}\");");
+            WriteLn($"solution.Text.Should().MatchRegex(\"{regex}\");");
         }
         else if (testCase.ErrorMessage is { } error)
-            WriteLn($"solution.Output.Should().Be(\"{error}\");");
+            WriteLn($"solution.Text.Should().Be(\"{error}\");");
     }
 
     private void MakeUnsatisfiableTest(string testName, TestCase testCase)
     {
-        Var("solution", "await MiniZinc.Solve(model, options)");
-        WriteLn("solution.Status.Should().Be(SolveStatus.Unsatisfiable);");
+        Var("solution", "await Solve(model, options, SolveStatus.Unsatisfiable)");
     }
 
     private void MakeAllSolutionsTest(string testName, TestCase testCase)
     {
-        Var("solution", "await MiniZinc.Solve(model, options)");
-        WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
+        Var("solution", "await Solve(model, options, SolveStatus.Satisfied)");
     }
 
     private void MakeAnySolutionTest(string testName, TestCase testCase)
     {
-        Var("solution", "await MiniZinc.Solve(model, options)");
-        WriteLn("solution.Status.Should().BeOneOf(SolveStatus.Satisfied, SolveStatus.Optimal);");
+        Var("solution", "await Solve(model, options, SolveStatus.Satisfied, SolveStatus.Optimal)");
     }
 
     private void MakeSatisfyTest(string testName, TestCase testCase)
     {
-        Var("solution", "await MiniZinc.Solve(model,options)");
-        WriteLn("solution.Status.Should().Be(SolveStatus.Satisfied);");
+        Var("solution", "await Solve(model,options, SolveStatus.Satisfied)");
     }
 
     private void MakeOptimiseTest(string testName, TestCase testCase)
     {
-        Var("solution", "await MiniZinc.Solve(model,options)");
-        WriteLn("solution.Status.Should().Be(SolveStatus.Optimal);");
+        Var("solution", "await Solve(model,options,SolveStatus.Optimal)");
     }
 
     private void MakeCompileTest(string testName, TestCase testCase)

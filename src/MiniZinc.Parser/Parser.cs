@@ -731,7 +731,12 @@ public sealed class Parser
                 Step();
                 if (!ParseExprAtom(out expr))
                     return false;
-                expr = new UnaryOperatorSyntax(token, Operator.Negative, expr);
+                if (expr is IntLiteralSyntax i)
+                    expr = new IntLiteralSyntax(token, -i.Value);
+                else if (expr is FloatLiteralSyntax f)
+                    expr = new FloatLiteralSyntax(token, -f.Value);
+                else
+                    expr = new UnaryOperatorSyntax(token, Operator.Negative, expr);
                 break;
 
             case TokenKind.NOT:

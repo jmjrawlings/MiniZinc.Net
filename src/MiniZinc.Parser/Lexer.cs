@@ -597,7 +597,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             while (IsDigit(_char) || _char is 'e');
 
             var span = ReadSpan();
-            if (decimal.TryParse(span, null, out var d))
+            if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
                 Return(TokenKind.FLOAT_LITERAL, d);
             else
                 Error($"Could not parse \"{span}\" as a float");

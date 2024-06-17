@@ -2,8 +2,7 @@
 
 public enum SolveStatus : short
 {
-    Started,
-    Satisfied,
+    Satisfied = 1,
     SubOptimal,
     Optimal,
     AllSolutions,
@@ -11,5 +10,9 @@ public enum SolveStatus : short
     Unbounded,
     UnsatOrUnbounded,
     Timeout,
-    Error
+    Error,
+    SyntaxError,
+    TypeError,
+    AssertionError,
+    EvaluationError
 }

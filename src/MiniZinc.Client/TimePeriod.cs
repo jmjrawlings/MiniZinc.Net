@@ -36,6 +36,10 @@ public readonly struct TimePeriod
         Duration = duration;
     }
 
+    public TimePeriod WithStart(DateTimeOffset start) => new(start, End);
+
+    public TimePeriod WithEnd(DateTimeOffset end) => new(Start, end);
+
     public static TimePeriod Since(DateTimeOffset start) => new(start, DateTimeOffset.Now);
 }
 

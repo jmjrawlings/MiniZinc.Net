@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using CommunityToolkit.Diagnostics;
 using Make;
 
 var root = new RootCommand("MiniZinc.NET build options");
@@ -23,7 +24,6 @@ Add("--make-solver-tests", "Generate solver tests", MakeClientTests.Run);
 
 var result = await root.InvokeAsync(args);
 return result;
-
 void Add(string name, string desc, Func<Task> handler)
 {
     var command = new Command(name: name, description: desc);

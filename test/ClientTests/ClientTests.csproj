@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="$(ProjectDir)../libminizinc/**/*.mzn;$(ProjectDir)../libminizinc/**/*.dzn;$(ProjectDir)../libminizinc/**/*.model;$(ProjectDir)../libminizinc/**/*.json">
+        <Content Include="$(ProjectDir)../libminizinc/**/*.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
