@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Channels;
 
-internal sealed class CommandRunner : IDisposable
+public sealed class CommandRunner : IDisposable
 {
     /// The originating command
     private readonly Command _command;
@@ -68,7 +68,6 @@ internal sealed class CommandRunner : IDisposable
         _process.OutputDataReceived += OnOutput;
         _process.ErrorDataReceived += OnError;
         _process.Exited += OnExit;
-
         _command = command;
     }
 
