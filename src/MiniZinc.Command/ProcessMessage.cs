@@ -15,5 +15,5 @@ public readonly record struct ProcessMessage
     public required ProcessEventType EventType { get; init; }
 
     /// The string content of the message
-    public string? Content { get; init; }
+    public string Content { get; init; }
 }
