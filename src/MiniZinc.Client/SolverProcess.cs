@@ -172,6 +172,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
                     break;
             }
         }
+
         if (!_process.HasExited)
             _process.WaitForExit();
 
@@ -186,10 +187,10 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         {
             _solveStatus = SolveStatus.Error;
             _current = CreateResult(error: $"MiniZinc exited without producing a result");
-            _channel.Writer.TryWrite(_current);
-            _channel.Writer.TryComplete();
-            _completion.SetResult(_current);
         }
+        _channel.Writer.TryWrite(_current);
+        _channel.Writer.Complete();
+        _completion.SetResult(_current);
     }
 
     protected abstract T CreateResult(
@@ -197,42 +198,6 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         in IntOrFloat? objectiveBoundValue = null,
         string? error = null
     );
-
-    private void OnProcessOutput(object sender, DataReceivedEventArgs e)
-    {
-        if (e.Data is not { } payload)
-            return;
-
-        var time = DateTimeOffset.Now;
-        _totalTime = _totalTime.WithEnd(time);
-        _iterTime = _iterTime.WithEnd(time);
-        var output = JsonOutput.Deserialize(payload);
-        switch (output)
-        {
-            case StatusOutput o:
-                OnStatusOutput(o);
-                break;
-
-            case WarningOutput o:
-                OnWarningOutput(o);
-                break;
-
-            case ErrorOutput o:
-                OnErrorOutput(o);
-                break;
-
-            case SolutionOutput o:
-                OnSolutionOutput(o);
-                break;
-
-            case StatisticsOutput o:
-                OnStatisticsOutput(o);
-                break;
-
-            case CommentOutput _:
-                break;
-        }
-    }
 
     private void OnStatisticsOutput(StatisticsOutput o)
     {
@@ -321,8 +286,6 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         };
         _current = CreateResult();
         _channel.Writer.TryWrite(_current);
-        _completion.SetResult(_current);
-        _channel.Writer.TryComplete();
     }
 
     // private void OnProcessError(object sender, DataReceivedEventArgs e)
@@ -421,8 +384,8 @@ public sealed class SolverProcess : SolverProcess<SolveResult>
             Data = _data,
             Statistics = _statistics,
             Error = error,
-            Objective = objectiveValue,
-            ObjectiveBound = objectiveBoundValue,
+            Objective = objectiveValue ?? _current?.Objective,
+            ObjectiveBound = objectiveBoundValue ?? _current?.ObjectiveBound,
             AbsoluteGapToOptimality = default,
             RelativeGapToOptimality = default,
             AbsoluteIterationGap = default,
@@ -450,8 +413,8 @@ public sealed class IntProcess : SolverProcess<IntResult>
     {
         Guard.IsFalse(objectiveValue?.IsFloat ?? false);
         Guard.IsFalse(objectiveBoundValue?.IsFloat ?? false);
-        int? objective = objectiveValue?.IntValue;
-        int? objectiveBound = objectiveBoundValue?.IntValue;
+        int? objective = objectiveValue?.IntValue ?? _current?.Objective;
+        int? objectiveBound = objectiveBoundValue?.IntValue ?? _current?.ObjectiveBound;
         int? absoluteGapToOptimality = objective - objectiveBound;
         double? relativeGapToOptimality = absoluteGapToOptimality / objectiveBound;
         int? absoluteIterationGap = objective - _current?.Objective;
@@ -499,8 +462,9 @@ public sealed class FloatProcess : SolverProcess<FloatResult>
     {
         Guard.IsTrue(objectiveValue?.IsFloat ?? true);
         Guard.IsTrue(objectiveBoundValue?.IsFloat ?? true);
-        float? objective = objectiveValue?.FloatValue;
-        float? objectiveBound = objectiveBoundValue?.FloatValue;
+        float? objective = objectiveValue?.FloatValue ?? _current?.Objective;
+        float? objectiveBound = objectiveBoundValue?.FloatValue ?? _current?.ObjectiveBound;
+
         float? absoluteGapToOptimality = objective - objectiveBound;
         double? relativeGapToOptimality = absoluteGapToOptimality / objectiveBound;
         float? absoluteIterationGap = objective - _current?.Objective;
