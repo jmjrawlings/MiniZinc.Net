@@ -9,12 +9,13 @@ using Models;
 using Parser;
 using Parser.Syntax;
 
-public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T>
+public abstract class SolverProcess<T> : IAsyncEnumerable<T>
 {
     public readonly Model Model;
     public readonly SolveOptions? Options;
     public readonly Command Command;
     public readonly string CommandString;
+    public int ProcessId { get; private set; }
     private readonly CancellationToken _cancellation;
     public readonly Solver Solver;
     public readonly string SolverId;
@@ -22,12 +23,12 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
     public readonly DirectoryInfo ModelFolder;
     public readonly FileInfo ModelFile;
     public readonly string ModelPath;
-    public readonly int ProcessId;
     private readonly MiniZincClient _client;
     private readonly Process _process;
     private readonly Stopwatch _watch;
     private readonly ProcessStartInfo _startInfo;
     private readonly Channel<T> _channel;
+    private readonly Thread _thread;
     protected readonly List<string> _warnings;
     protected TimePeriod _totalTime;
     protected TimePeriod _iterTime;
@@ -38,8 +39,8 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
     private ProcessStatus _processStatus;
     private readonly TaskCompletionSource<T> _completion;
     protected Dictionary<string, object>? _statistics;
-    private readonly Mutex _mutex;
     protected T? _current;
+    private readonly IAsyncEnumerator<T> _asyncEnumerator;
 
     internal SolverProcess(
         MiniZincClient client,
@@ -54,7 +55,6 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
         _cancellation = cancellation;
         _completion = new TaskCompletionSource<T>();
         _warnings = new List<string>();
-        _mutex = new Mutex();
         _data = new Dictionary<string, SyntaxNode>();
         model.EnsureOk();
         ModelText = model.SourceText;
@@ -116,11 +116,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
             _startInfo.WorkingDirectory = path;
         }
         _process = new Process();
-        _process.EnableRaisingEvents = true;
         _process.StartInfo = _startInfo;
-        _process.OutputDataReceived += OnProcessOutput;
-        _process.ErrorDataReceived += OnProcessError;
-        _process.Exited += OnProcessExited;
         _processStatus = ProcessStatus.Idle;
         _channel = Channel.CreateUnbounded<T>(
             new UnboundedChannelOptions
@@ -130,14 +126,70 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
                 AllowSynchronousContinuations = true
             }
         );
-        if (_cancellation.IsCancellationRequested)
-            return;
+        _asyncEnumerator = _channel.Reader.ReadAllAsync(_cancellation).GetAsyncEnumerator();
+        _thread = new Thread(Run);
+        _thread.Start();
+    }
 
+    private void Run()
+    {
         _process.Start();
-        _process.BeginOutputReadLine();
-        _process.BeginErrorReadLine();
         ProcessId = _process.Id;
-        _cancellation.Register(Stop, useSynchronizationContext: false);
+
+        while (!_process.StandardOutput.EndOfStream)
+        {
+            string? msg = _process.StandardOutput.ReadLine();
+            if (msg is null)
+                break;
+
+            var time = DateTimeOffset.Now;
+            _totalTime = _totalTime.WithEnd(time);
+            _iterTime = _iterTime.WithEnd(time);
+            var output = JsonOutput.Deserialize(msg);
+            switch (output)
+            {
+                case StatusOutput o:
+                    OnStatusOutput(o);
+                    break;
+
+                case WarningOutput o:
+                    OnWarningOutput(o);
+                    break;
+
+                case ErrorOutput o:
+                    OnErrorOutput(o);
+                    break;
+
+                case SolutionOutput o:
+                    OnSolutionOutput(o);
+                    break;
+
+                case StatisticsOutput o:
+                    OnStatisticsOutput(o);
+                    break;
+
+                case CommentOutput _:
+                    break;
+            }
+        }
+        if (!_process.HasExited)
+            _process.WaitForExit();
+
+        _watch.Stop();
+        _exitCode = _process.ExitCode;
+        if (_exitCode is 0)
+            _processStatus = ProcessStatus.Ok;
+        else
+            _processStatus = ProcessStatus.Error;
+
+        if (_current is null)
+        {
+            _solveStatus = SolveStatus.Error;
+            _current = CreateResult(error: $"MiniZinc exited without producing a result");
+            _channel.Writer.TryWrite(_current);
+            _channel.Writer.TryComplete();
+            _completion.SetResult(_current);
+        }
     }
 
     protected abstract T CreateResult(
@@ -151,7 +203,6 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
         if (e.Data is not { } payload)
             return;
 
-        _mutex.WaitOne();
         var time = DateTimeOffset.Now;
         _totalTime = _totalTime.WithEnd(time);
         _iterTime = _iterTime.WithEnd(time);
@@ -181,7 +232,6 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
             case CommentOutput _:
                 break;
         }
-        _mutex.ReleaseMutex();
     }
 
     private void OnStatisticsOutput(StatisticsOutput o)
@@ -240,9 +290,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
 
     private void OnWarningOutput(WarningOutput o)
     {
-        _mutex.WaitOne();
         _warnings.Add(o.Message);
-        _mutex.ReleaseMutex();
     }
 
     private void OnErrorOutput(ErrorOutput o)
@@ -273,15 +321,17 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
         };
         _current = CreateResult();
         _channel.Writer.TryWrite(_current);
+        _completion.SetResult(_current);
+        _channel.Writer.TryComplete();
     }
 
-    private void OnProcessError(object sender, DataReceivedEventArgs e)
-    {
-        if (e.Data is not { } warning)
-            return;
-
-        _warnings.Add(warning);
-    }
+    // private void OnProcessError(object sender, DataReceivedEventArgs e)
+    // {
+    //     if (e.Data is not { } warning)
+    //         return;
+    //
+    //     _warnings.Add(warning);
+    // }
 
     void Stop()
     {
@@ -301,7 +351,6 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
 
     private void OnProcessExited(object? sender, EventArgs e)
     {
-        _mutex.WaitOne();
         _watch.Stop();
         _exitCode = _process.ExitCode;
         if (_exitCode is 0)
@@ -314,11 +363,9 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
             _solveStatus = SolveStatus.Error;
             _current = CreateResult(error: $"MiniZinc exited without producing a result");
             _channel.Writer.TryWrite(_current);
+            _channel.Writer.TryComplete();
+            _completion.SetResult(_current);
         }
-
-        _completion.SetResult(_current);
-        _channel.Writer.TryComplete();
-        _mutex.ReleaseMutex();
     }
 
     void Warn(string msg)
@@ -330,34 +377,16 @@ public abstract class SolverProcess<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T
 
     IAsyncEnumerator<T> IAsyncEnumerable<T>.GetAsyncEnumerator(
         CancellationToken cancellationToken = new CancellationToken()
-    ) => this;
-
-    private T? _asyncCurrent;
-
-    async ValueTask<bool> IAsyncEnumerator<T>.MoveNextAsync()
-    {
-        await _channel.Reader.WaitToReadAsync(_cancellation);
-        if (!_channel.Reader.TryRead(out _asyncCurrent))
-            return false;
-        return true;
-    }
-
-    T IAsyncEnumerator<T>.Current => _asyncCurrent!;
+    ) => _asyncEnumerator;
 
     public async ValueTask DisposeAsync()
     {
         Stop();
-        try
-        {
-            _mutex.Dispose();
-        }
-        catch { }
     }
 
     public void Dispose()
     {
         Stop();
-        _mutex.Dispose();
     }
 
     public override string ToString() => CommandString;
