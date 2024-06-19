@@ -4,7 +4,8 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Command;
-using FileSystem;
+using Core;
+using Models;
 
 /// <summary>
 /// Executes commands and solves models against
@@ -61,13 +62,41 @@ public sealed partial class MiniZincClient
     /// Solve the given model, returning the best
     /// solution found or an error if it occured
     /// </summary>
-    public MiniZincProcess Solve(
-        MiniZincModel miniZincModel,
+    public SolverProcess Solve(
+        Model model,
         SolveOptions? options = default,
         CancellationToken token = default
     )
     {
-        var process = new MiniZincProcess(this, miniZincModel, options, token);
+        var process = new SolverProcess(this, model, options, token);
+        return process;
+    }
+
+    /// <summary>
+    /// Solve the given model, returning the best
+    /// solution found or an error if it occured
+    /// </summary>
+    public IntProcess Solve(
+        IntModel model,
+        SolveOptions? options = default,
+        CancellationToken token = default
+    )
+    {
+        var process = new IntProcess(this, model, options, token);
+        return process;
+    }
+
+    /// <summary>
+    /// Solve the given model, returning the best
+    /// solution found or an error if it occured
+    /// </summary>
+    public FloatProcess Solve(
+        FloatModel model,
+        SolveOptions? options = default,
+        CancellationToken token = default
+    )
+    {
+        var process = new FloatProcess(this, model, options, token);
         return process;
     }
 

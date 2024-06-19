@@ -1,6 +1,7 @@
 ﻿namespace MiniZinc.Tests;
 
 using Client;
+using Models;
 
 public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
 {
@@ -30,20 +31,19 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_satisfy()
     {
-        var model = new MiniZincModel();
+        var model = new IntModel();
         model.Var("a", "10..20");
         model.Var("b", "10..20");
         var result = await Client.Solve(model);
-        var sol = (MiniZincSolution<int>)result;
-        var a = sol.GetInt("a");
-        var b = sol.GetInt("b");
-        sol.Status.Should().Be(SolveStatus.Satisfied);
+        var a = result.GetInt("a");
+        var b = result.GetInt("b");
+        result.Status.Should().Be(SolveStatus.Satisfied);
     }
 
     [Fact]
     async void test_solve_unsat()
     {
-        var model = MiniZincModel.FromString("var 10..20: a; constraint a < 0;");
+        var model = Model.FromString("var 10..20: a; constraint a < 0;");
         var solution = await Client.Solve(model);
         solution.Status.Should().Be(SolveStatus.Unsatisfiable);
     }
@@ -51,25 +51,24 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_maximize()
     {
-        var model = new MiniZincModel();
+        var model = new IntModel();
         model.Var("a", "10..20");
         model.Var("b", "10..20");
         model.Maximize("a + b");
         var result = await Client.Solve(model);
         result.Status.Should().Be(SolveStatus.Optimal);
-        var sol = (MiniZincSolution<int>)result;
-        var a = sol.GetInt("a");
-        var b = sol.GetInt("b");
+        var a = result.GetInt("a");
+        var b = result.GetInt("b");
         a.Should().Be(20);
         b.Should().Be(20);
-        sol.Objective.Should().Be(40);
+        result.Objective.Should().Be(40);
     }
 
     [Fact]
     async void test_solve_return_array()
     {
-        var model = MiniZincModel.FromString("array[1..10] of var 0..100: xd;");
+        var model = Model.FromString("array[1..10] of var 0..100: xd;");
         var result = await Client.Solve(model);
-        var arr = sol.GetArray1D<int>("xd").ToArray();
+        var arr = result.GetArray1D<int>("xd").ToArray();
     }
 }

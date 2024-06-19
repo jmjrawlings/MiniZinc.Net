@@ -15,9 +15,10 @@ public record EnumCasesSyntax(in Token Start, EnumCaseType Type, SyntaxNode? Exp
     public List<IdentifierSyntax>? Names { get; init; } = null;
 }
 
-public sealed record EnumDeclarationSyntax(in Token Start, IdentifierSyntax Name)
+public sealed record EnumDeclarationSyntax(in Token Start, IdentifierSyntax Identifier)
     : SyntaxNode(Start),
-        INamedSyntax
+        IIdentifiedSyntax
 {
+    public string Name => Identifier.Name;
     public List<EnumCasesSyntax> Cases { get; } = new();
 }

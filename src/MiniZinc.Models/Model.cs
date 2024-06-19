@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Client;
+﻿namespace MiniZinc.Models;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -13,11 +13,11 @@ using Parser.Syntax;
 /// This class extracts useful semantic information
 /// from <see cref="SyntaxTree"/>
 /// </remarks>
-public class MiniZincModel
+public class Model
 {
     public string Name { get; set; } = "";
 
-    private Dictionary<string, INamedSyntax> _namespace;
+    private Dictionary<string, IIdentifiedSyntax> _namespace;
 
     private HashSet<string>? _variables;
 
@@ -37,11 +37,13 @@ public class MiniZincModel
 
     private HashSet<string>? _parsedFiles;
 
+    private bool _allowFloats;
+
     private bool _isFloatModel;
 
     public string SourceText => _sourceText.ToString();
 
-    public virtual bool IsFloatModel => _isFloatModel;
+    public bool IsFloatModel => _isFloatModel;
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
 
@@ -68,16 +70,17 @@ public class MiniZincModel
 
     public bool HasWarnings => _warnings is null;
 
-    public MiniZincModel()
+    public Model(bool allowFloats = true)
     {
         _errors = null;
         _warnings = null;
         _outputs = null;
         _constraints = null;
         _variables = new HashSet<string>();
-        _namespace = new Dictionary<string, INamedSyntax>();
+        _namespace = new Dictionary<string, IIdentifiedSyntax>();
         _sourceText = new StringBuilder();
         _searchDirectories = new List<DirectoryInfo>();
+        _allowFloats = allowFloats;
     }
 
     /// <summary>
@@ -241,7 +244,7 @@ public class MiniZincModel
                 break;
 
             case AssignmentSyntax node:
-                var name = node.Name.ToString();
+                var name = node.Identifier.ToString();
                 var expr = node.Expr;
                 if (_namespace.TryGetValue(name, out var old))
                 {
@@ -267,7 +270,7 @@ public class MiniZincModel
                 break;
 
             case DeclarationSyntax node:
-                name = node.Name.ToString();
+                name = node.Identifier.ToString();
                 if (_namespace.TryGetValue(name, out old))
                     Error($"Variable {name} was already declared as {node.Type.SourceText}");
                 else
@@ -277,7 +280,7 @@ public class MiniZincModel
                 break;
 
             case EnumDeclarationSyntax node:
-                name = node.Name.ToString();
+                name = node.Identifier.ToString();
                 if (_namespace.TryGetValue(name, out old))
                     Error($"Variable {name} was already declared as an Enumeration");
                 else
@@ -287,7 +290,7 @@ public class MiniZincModel
                 break;
 
             case FunctionDeclarationSyntax node:
-                name = node.Name.ToString();
+                name = node.Identifier.ToString();
                 if (_namespace.TryGetValue(name, out old))
                     Error($"Variable {name} was already declared as a Function");
                 else
@@ -335,9 +338,9 @@ public class MiniZincModel
     /// <summary>
     /// Create a new model from the given filepath
     /// </summary>
-    public static MiniZincModel FromFile(string path)
+    public static Model FromFile(string path)
     {
-        var model = new MiniZincModel();
+        var model = new Model();
         model.AddFile(path);
         return model;
     }
@@ -345,14 +348,14 @@ public class MiniZincModel
     /// <summary>
     /// Create a new model from the given file
     /// </summary>
-    public static MiniZincModel FromFile(FileInfo file) => FromFile(file.FullName);
+    public static Model FromFile(FileInfo file) => FromFile(file.FullName);
 
     /// <summary>
     /// Create a new model from the given string
     /// </summary>
-    public static MiniZincModel FromString(string path)
+    public static Model FromString(string path)
     {
-        var model = new MiniZincModel();
+        var model = new Model();
         model.AddString(path);
         return model;
     }
@@ -415,7 +418,7 @@ public class MiniZincModel
 
         // Added models become a search directory
         if (file.Directory is { } dir)
-            AddSearchDirectory(dir);
+            AddSearchPath(dir);
         AddNode(result.SyntaxNode);
     }
 
@@ -440,7 +443,7 @@ public class MiniZincModel
     /// <summary>
     /// Add the given files to this model (.mzn or .dzn)
     /// </summary>
-    public MiniZincModel AddFiles(params string[] paths)
+    public Model AddFiles(params string[] paths)
     {
         foreach (var path in paths)
             AddFile(path);
@@ -454,7 +457,7 @@ public class MiniZincModel
         AddNode(result.SyntaxNode);
     }
 
-    public MiniZincModel AddStrings(params string[] strings)
+    public Model AddStrings(params string[] strings)
     {
         foreach (var mzn in strings)
             AddString(mzn);
@@ -465,19 +468,38 @@ public class MiniZincModel
     /// Add the directory as a place to search for models
     /// referenced by the minizinc `include` statement.
     /// </summary>
-    public void AddSearchDirectory(DirectoryInfo directory)
+    public void AddSearchPath(DirectoryInfo directory)
     {
         _searchDirectories.Add(directory);
     }
 
-    /// <inheritdoc cref="AddSearchDirectory(System.IO.DirectoryInfo)"/>
-    public void AddSearchDirectory(string directory) =>
-        AddSearchDirectory(new DirectoryInfo(directory));
+    /// <inheritdoc cref="AddSearchPath(System.IO.DirectoryInfo)"/>
+    public void AddSearchPath(string directory) => AddSearchPath(new DirectoryInfo(directory));
 
-    public MiniZincModel Clone()
+    public Model Clone()
     {
         var copy = FromString(SourceText);
         return copy;
+    }
+
+    /// <summary>
+    /// Return this model as a FloatModel.
+    /// </summary>
+    public FloatModel AsFloatModel()
+    {
+        var model = FloatModel.FromString(SourceText);
+        return model;
+    }
+
+    /// <summary>
+    /// Return this model as an IntModel. An exception
+    /// will be thrown if there were any floating point
+    /// variables in the model.
+    /// </summary>
+    public IntModel AsIntModel()
+    {
+        var model = IntModel.FromString(SourceText);
+        return model;
     }
 
     public void EnsureOk()

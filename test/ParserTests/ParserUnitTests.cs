@@ -272,7 +272,7 @@ public class ParserUnitTests
     {
         var mzn = "set of var int: xd";
         var node = ParseNode<DeclarationSyntax>(mzn);
-        node.Name.ToString().Should().Be("xd");
+        node.Identifier.ToString().Should().Be("xd");
     }
 
     [Fact]
@@ -280,7 +280,7 @@ public class ParserUnitTests
     {
         var mzn = "var 0..: xd";
         var node = ParseNode<DeclarationSyntax>(mzn);
-        node.Name.ToString().Should().Be("xd");
+        node.Identifier.ToString().Should().Be("xd");
         var type = (ExprType)node.Type;
         type.Var.Should().BeTrue();
         var range = (RangeLiteralSyntax)type.Expr;

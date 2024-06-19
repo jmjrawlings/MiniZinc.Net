@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.FileSystem;
+﻿namespace MiniZinc.Core;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;

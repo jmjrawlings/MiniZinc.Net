@@ -1590,14 +1590,14 @@ public sealed class Parser
         if (!Expect(TokenKind.OPEN_BRACE))
             return false;
 
-        List<ILetLocal>? locals = null;
+        List<ILetLocalSyntax>? locals = null;
 
         while (_kind is not TokenKind.CLOSE_BRACE)
         {
             if (!ParseLetLocal(out var local))
                 return false;
 
-            locals ??= new List<ILetLocal>();
+            locals ??= new List<ILetLocalSyntax>();
             locals.Add(local);
 
             if (Skip(TokenKind.EOL) || Skip(TokenKind.COMMA))
@@ -1618,7 +1618,7 @@ public sealed class Parser
         return true;
     }
 
-    private bool ParseLetLocal(out ILetLocal result)
+    private bool ParseLetLocal(out ILetLocalSyntax result)
     {
         result = null!;
         if (_kind is TokenKind.CONSTRAINT)
