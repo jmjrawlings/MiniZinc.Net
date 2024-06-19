@@ -228,28 +228,43 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     {
         _iteration++;
         _solveStatus = SolveStatus.Satisfied;
-        // TODO - is this always the case?
-        var dzn = o.Output["dzn"].ToString();
-        var parsed = Parser.ParseString(dzn!);
-        _data = new Dictionary<string, SyntaxNode>();
-        parsed.EnsureOk();
-        foreach (var node in parsed.SyntaxNode.Nodes)
+        if (o.Sections is not { } sections)
+            return;
+        string? dzn = null;
+        foreach (var section in sections)
         {
-            if (node is not AssignmentSyntax assign)
-                throw new Exception();
-            var name = assign.Identifier.ToString();
-            var value = assign.Expr;
-            _data[name] = value;
+            if (section is "dzn")
+                dzn = o.Output[section].ToString();
         }
-        _data.TryGetValue("_objective", out var objectiveNode);
-        IntOrFloat? objective = objectiveNode switch
+
+        if (dzn is not null)
         {
-            null => null,
-            IntLiteralSyntax i => IntOrFloat.Int(i),
-            FloatLiteralSyntax f => IntOrFloat.Float((float)f.Value),
-            var other => throw new Exception(other.GetType().FullName)
-        };
-        _current = CreateResult(objectiveValue: objective);
+            var parsed = Parser.ParseString(dzn!);
+            _data = new Dictionary<string, SyntaxNode>();
+            parsed.EnsureOk();
+            foreach (var node in parsed.SyntaxNode.Nodes)
+            {
+                if (node is not AssignmentSyntax assign)
+                    throw new Exception();
+                var name = assign.Identifier.ToString();
+                var value = assign.Expr;
+                _data[name] = value;
+            }
+
+            _data.TryGetValue("_objective", out var objectiveNode);
+            IntOrFloat? objective = objectiveNode switch
+            {
+                null => null,
+                IntLiteralSyntax i => IntOrFloat.Int(i),
+                FloatLiteralSyntax f => IntOrFloat.Float((float)f.Value),
+                var other => throw new Exception(other.GetType().FullName)
+            };
+            _current = CreateResult(objectiveValue: objective);
+        }
+        else
+        {
+            _current = CreateResult();
+        }
         _channel.Writer.TryWrite(_current);
     }
 
@@ -260,6 +275,14 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
 
     private void OnErrorOutput(ErrorOutput o)
     {
+        _solveStatus = o.Kind switch
+        {
+            "SyntaxError" => SolveStatus.SyntaxError,
+            "TypeError" => SolveStatus.TypeError,
+            "AssertionError" => SolveStatus.AssertionError,
+            "EvaluationError" => SolveStatus.EvaluationError,
+            _ => SolveStatus.Error
+        };
         _current = CreateResult(error: o.Message);
         _channel.Writer.TryWrite(_current);
     }

@@ -1,4 +1,5 @@
-﻿using MiniZinc.Parser.Syntax;
+﻿using System.Globalization;
+using MiniZinc.Parser.Syntax;
 
 public class ParserUnitTests
 {
@@ -428,6 +429,15 @@ public class ParserUnitTests
         var binop = ParseNode<DeclarationSyntax>(mzn);
         var oz = binop.Write();
         oz.Should().BeEquivalentTo(mzn);
+    }
+
+    [Fact]
+    void test_parse_float()
+    {
+        var mzn = "-2.8421709430404e-14";
+        var ok = decimal.TryParse(mzn, NumberStyles.Float, null, out var d);
+        var node = ParseNode<FloatLiteralSyntax>(mzn);
+        var a = 2;
     }
 
     SyntaxTree ParseString(string mzn)

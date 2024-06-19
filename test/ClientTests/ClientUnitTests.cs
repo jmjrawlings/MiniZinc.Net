@@ -29,7 +29,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     }
 
     [Fact]
-    async void test_solve_satisfy()
+    async void test_solve_satisfy_result()
     {
         var model = new IntModel();
         model.Var("a", "10..20");
@@ -41,7 +41,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     }
 
     [Fact]
-    async void test_solve_unsat()
+    async void test_solve_unsat_result()
     {
         var model = Model.FromString("var 10..20: a; constraint a < 0;");
         var solution = await Client.Solve(model);
@@ -49,7 +49,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     }
 
     [Fact]
-    async void test_solve_maximize()
+    async void test_solve_maximize_result()
     {
         var model = new IntModel();
         model.Var("a", "10..20");
@@ -70,5 +70,42 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
         var model = Model.FromString("array[1..10] of var 0..100: xd;");
         var result = await Client.Solve(model);
         var arr = result.GetArray1D<int>("xd").ToArray();
+    }
+
+    [Fact]
+    async void test_solve_satisfy_foreach()
+    {
+        var model = new IntModel();
+        model.Var("a", "10..20");
+        model.Var("b", "10..20");
+        await foreach (var result in Client.Solve(model))
+        {
+            var a = result.GetInt("a");
+            var b = result.GetInt("b");
+            result.Status.Should().Be(SolveStatus.Satisfied);
+        }
+    }
+
+    [Fact]
+    async void test_solve_unsat_foreach()
+    {
+        var model = Model.FromString("var 10..20: a; constraint a < 0;");
+        await foreach (var result in Client.Solve(model))
+        {
+            result.Status.Should().Be(SolveStatus.Unsatisfiable);
+        }
+    }
+
+    [Fact]
+    async void test_solve_maximize_foreach()
+    {
+        var model = new IntModel();
+        model.Var("a", "10..20");
+        model.Var("b", "10..20");
+        model.Maximize("a + b");
+        await foreach (var result in Client.Solve(model))
+        {
+            result.Status.Should().BeOneOf(SolveStatus.Optimal, SolveStatus.Satisfied);
+        }
     }
 }

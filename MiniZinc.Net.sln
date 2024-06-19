@@ -40,7 +40,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Toolkit", "src\Min
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Core", "src\MiniZinc.Core\MiniZinc.Core.csproj", "{31818B09-AFB2-4F57-8951-B8F450824427}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Models", "src\MiniZinc.Models\MiniZinc.Models.csproj", "{A27BCE82-317A-4A05-A343-6F0609BC0EDD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniZinc.Compiler", "src\MiniZinc.Compiler\MiniZinc.Compiler.csproj", "{A27BCE82-317A-4A05-A343-6F0609BC0EDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
