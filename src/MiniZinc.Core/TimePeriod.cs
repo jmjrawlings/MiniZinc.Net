@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Client;
+﻿namespace MiniZinc.Core;
 
 public readonly struct TimePeriod
 {

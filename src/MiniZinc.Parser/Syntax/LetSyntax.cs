@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public interface ILetLocal { }
+public interface ILetLocalSyntax { }
 
-public sealed record LetSyntax(in Token Start, List<ILetLocal>? Locals, SyntaxNode Body)
+public sealed record LetSyntax(in Token Start, List<ILetLocalSyntax>? Locals, SyntaxNode Body)
     : SyntaxNode(Start) { }

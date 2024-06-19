@@ -1,13 +1,17 @@
 ﻿namespace MiniZinc.Client;
 
 using System.Text.Json.Nodes;
+using Core;
+using Models;
 using Parser.Syntax;
 
 /// <summary>
 /// An intermediate or final result from using MiniZinc
 /// to solve a Model
 /// </summary>
-public record MiniZincResult
+/// <typeparam name="T">The type of objective eg int, float</typeparam>
+public abstract record SolveResult<T>
+    where T : struct
 {
     /// <summary>
     /// The full command passed to minizinc
@@ -41,11 +45,6 @@ public record MiniZincResult
     public string Text { get; init; } = string.Empty;
 
     /// <summary>
-    /// Objective value
-    /// </summary>
-    public object? Objective { get; init; } = null;
-
-    /// <summary>
     /// Time period from the last iteration to this one
     /// </summary>
     public required TimePeriod IterationTime { get; init; }
@@ -61,20 +60,61 @@ public record MiniZincResult
     /// </summary>
     public required IReadOnlyDictionary<string, SyntaxNode>? Data { get; init; }
 
-    /// <summary>
-    /// Items from the output section
-    /// </summary>
-    public IReadOnlyDictionary<string, string>? Outputs { get; init; }
+    // /// <summary>
+    // /// Items from the output section
+    // /// </summary>
+    // public required IReadOnlyDictionary<string, string>? Outputs { get; init; }
 
     /// <summary>
     /// Statistics returned by the solver if requested
     /// </summary>
-    public IReadOnlyDictionary<string, JsonValue>? Statistics { get; init; }
+    public required IReadOnlyDictionary<string, object>? Statistics { get; init; }
 
     /// <summary>
     /// Any warnings returned by the solver
     /// </summary>
     public required IReadOnlyList<string>? Warnings { get; init; }
+
+    /// <summary>
+    /// A warning if its an error status
+    /// </summary>
+    public required string? Error { get; init; }
+
+    /// <summary>
+    /// Text content of the message
+    /// </summary>
+    public required T? Objective { get; init; }
+
+    /// <summary>
+    /// Upper or lower bound (solver-dependent)
+    /// </summary>
+    public required T? ObjectiveBound { get; init; }
+
+    /// <summary>
+    /// Absolute Gap to optimality
+    /// `abs(objective - bound)`
+    /// </summary>
+    public required T? AbsoluteGapToOptimality { get; init; }
+
+    /// <summary>
+    /// Relative Gap to optimality
+    /// `abs(objective - bound) / bound`
+    /// </summary>
+    public required double? RelativeGapToOptimality { get; init; }
+
+    /// <summary>
+    /// Absolute difference between this iteration and
+    /// the previous iteration
+    /// `objective[i] - objective[i-1]`
+    /// </summary>
+    public required T? AbsoluteIterationGap { get; init; }
+
+    /// <summary>
+    /// Relative difference between this iteration and
+    /// the previous iteration
+    /// `(objective[i] - objectivep[i-1]) / objective[i-1]`
+    /// </summary>
+    public required double? RelativeIterationGap { get; init; }
 
     /// <summary>
     /// Get the solution assigned to the given variable
@@ -85,7 +125,7 @@ public record MiniZincResult
         where U : SyntaxNode
     {
         if (TryGet<U>(id) is not { } value)
-            throw new ArgumentException(id);
+            throw new KeyNotFoundException($"Result did not contain a solution for \"{id}\"");
 
         return value;
     }
@@ -140,49 +180,8 @@ public record MiniZincResult
     }
 }
 
-/// <summary>
-/// An intermediate or final result from using MiniZinc
-/// to solve a Model
-/// </summary>
-public abstract record MiniZincResult<T> : MiniZincResult
-{
-    /// <summary>
-    /// Text content of the message
-    /// </summary>
-    public new T? Objective { get; init; } = default;
+public sealed record SolveResult : SolveResult<IntOrFloat> { }
 
-    /// <summary>
-    /// Upper or lower bound (solver-dependent)
-    /// </summary>
-    public T? ObjectiveBound { get; init; } = default;
+public sealed record IntResult : SolveResult<int> { }
 
-    /// <summary>
-    /// Absolute Gap to optimality
-    /// `abs(objective - bound)`
-    /// </summary>
-    public T? AbsoluteGapToOptimality { get; init; } = default;
-
-    /// <summary>
-    /// Relative Gap to optimality
-    /// `abs(objective - bound) / bound`
-    /// </summary>
-    public double? RelativeGapToOptimality { get; init; } = default;
-
-    /// <summary>
-    /// Absolute difference between this iteration and
-    /// the previous iteration
-    /// `objective[i] - objective[i-1]`
-    /// </summary>
-    public T? AbsoluteIterationGap { get; init; } = default;
-
-    /// <summary>
-    /// Relative difference between this iteration and
-    /// the previous iteration
-    /// `(objective[i] - objectivep[i-1]) / objective[i-1]`
-    /// </summary>
-    public double? RelativeIterationGap { get; init; } = default;
-}
-
-public sealed record IntResult : MiniZincResult<int> { }
-
-public sealed record FloatResult : MiniZincResult<float> { }
+public sealed record FloatResult : SolveResult<float> { }

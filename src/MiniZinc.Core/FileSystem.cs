@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.FileSystem;
+﻿namespace MiniZinc.Core;
 
 public static class FileSystemExtensions
 {

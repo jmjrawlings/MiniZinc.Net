@@ -5,11 +5,12 @@
 /// </summary>
 public sealed record FunctionDeclarationSyntax(
     in Token Start,
-    IdentifierSyntax Name,
+    IdentifierSyntax Identifier,
     TypeSyntax Type,
     List<ParameterSyntax>? Parameters,
     SyntaxNode? Body
-) : SyntaxNode(Start), INamedSyntax
+) : SyntaxNode(Start), IIdentifiedSyntax
 {
+    public string Name => Identifier.Name;
     public IdentifierSyntax? Ann { get; set; }
 }

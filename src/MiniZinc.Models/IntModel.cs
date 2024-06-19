@@ -1,14 +1,13 @@
-﻿namespace MiniZinc.Client;
+﻿namespace MiniZinc.Models;
 
 /// <summary>
-/// A <see cref="MiniZincModel"/> that contains
-/// only integer variables.  For models containing
-/// floating point variables use the <see cref="FloatModel"/>
-/// class.
+/// A <see cref="Model"/> that contains only integer variables.
+/// For models with floating point variables use <see cref="FloatModel"/>.
 /// </summary>
-public sealed class IntModel : MiniZincModel
+public sealed class IntModel : Model
 {
-    public override bool IsFloatModel => false;
+    public IntModel()
+        : base(allowFloats: false) { }
 
     /// <summary>
     /// Create a new model from the given filepath

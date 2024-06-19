@@ -1,7 +1,6 @@
-﻿using System.Text;
+﻿namespace Make;
 
-namespace Make;
-
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using LibMiniZinc.Tests;
@@ -67,7 +66,7 @@ public sealed class MakeClientTests : CodeBuilder
 
         using (
             Function(
-                "async Task<Update> Solve",
+                "async Task<SolveResult> Solve",
                 "Model model",
                 "SolveOptions options",
                 "params SolveStatus[] statuses"

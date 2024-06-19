@@ -321,7 +321,7 @@ internal sealed class Writer
 
     private void WriteAssignment(AssignmentSyntax e)
     {
-        Write(e.Name);
+        Write(e.Identifier);
         Spaced(EQUAL);
         Write(e.Expr);
         EndStatement();
@@ -445,7 +445,7 @@ internal sealed class Writer
         Write(e.Type);
         Write(COLON);
         Space();
-        Write(e.Name);
+        Write(e.Identifier);
         WriteParameters(e.Parameters);
         if (e.Body is { } body)
         {
@@ -466,7 +466,7 @@ internal sealed class Writer
     {
         Write(ENUM);
         Space();
-        Write(e.Name);
+        Write(e.Identifier);
         WriteAnnotations(e);
         if (e.Cases.Count > 0)
         {
@@ -620,7 +620,7 @@ internal sealed class Writer
         WriteType(dec.Type);
         Write(COLON);
         Space();
-        Write(dec.Name);
+        Write(dec.Identifier);
         WriteAnnotations(dec);
         if (dec.Body is { } body)
         {

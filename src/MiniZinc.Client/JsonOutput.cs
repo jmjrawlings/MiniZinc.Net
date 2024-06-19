@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(SolutionOutput), typeDiscriminator: "solution")]
-[JsonDerivedType(typeof(StatOutput), typeDiscriminator: "statistics")]
+[JsonDerivedType(typeof(StatisticsOutput), typeDiscriminator: "statistics")]
 [JsonDerivedType(typeof(CommentOutput), typeDiscriminator: "comment")]
 [JsonDerivedType(typeof(TraceOutput), typeDiscriminator: "trace")]
 [JsonDerivedType(typeof(ErrorOutput), typeDiscriminator: "error")]
@@ -37,7 +37,7 @@ internal record JsonOutput
 
 internal sealed record WarningOutput : ErrorOutput { }
 
-internal sealed record StatOutput : JsonOutput
+internal sealed record StatisticsOutput : JsonOutput
 {
     public required JsonObject Statistics { get; init; }
 }

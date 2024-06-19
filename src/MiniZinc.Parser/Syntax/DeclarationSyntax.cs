@@ -5,11 +5,13 @@
 /// </summary>
 /// <mzn>int: a = 10</mzn>
 /// <mzn>var int: a = 10</mzn>
-public sealed record DeclarationSyntax(in Token Start, TypeSyntax Type, IdentifierSyntax Name)
+public sealed record DeclarationSyntax(in Token Start, TypeSyntax Type, IdentifierSyntax Identifier)
     : SyntaxNode(Start),
-        ILetLocal,
-        INamedSyntax
+        ILetLocalSyntax,
+        IIdentifiedSyntax
 {
+    public string Name => Identifier.Name;
+
     public SyntaxNode? Body { get; set; }
 
     public List<ParameterSyntax>? Parameters { get; set; }
