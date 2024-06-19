@@ -590,11 +590,20 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
         } while (IsAsciiLetterOrDigit(_char));
 
+        // Peek needed because of range literals eg: `1..T`
         if (_char is DOT && IsDigit(Peek))
         {
             Step();
-            do Step();
-            while (IsDigit(_char) || _char is 'e');
+            Step();
+            while (true)
+            {
+                if (Skip('e'))
+                    Skip('-');
+                else if (IsDigit(_char))
+                    Step();
+                else
+                    break;
+            }
 
             var span = ReadSpan();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
