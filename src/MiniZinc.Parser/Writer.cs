@@ -305,7 +305,7 @@ internal sealed class Writer
     {
         Write(TYPE);
         Space();
-        Write(e.Name);
+        Write(e.Identifier);
         Spaced(EQUAL);
         Write(e.Type);
         EndStatement();

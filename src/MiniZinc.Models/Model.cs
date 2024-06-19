@@ -290,9 +290,18 @@ public class Model
                 break;
 
             case FunctionDeclarationSyntax node:
-                name = node.Identifier.ToString();
+                name = node.Name;
                 if (_namespace.TryGetValue(name, out old))
-                    Error($"Variable {name} was already declared as a Function");
+                    Error($"Function {name} was already declared as {old}");
+                else
+                    _namespace[name] = node;
+                AddSourceText(node);
+                break;
+
+            case TypeAliasSyntax node:
+                name = node.Name;
+                if (_namespace.TryGetValue(name, out old))
+                    Error($"TypeAlias {name} was already declared as {old}");
                 else
                     _namespace[name] = node;
                 AddSourceText(node);
