@@ -37,14 +37,14 @@ Write(options.SolverId);
 Write(solution.Command);
 Write(solution.Status);
 WriteSection();
-var ok = false;
+var ok = statuses.Length == 0;
 foreach (var status in statuses){
     if (solution.Status == status){
         ok = true;
         break;
     }
 }
-ok.Should().BeTrue($"{solution.Status} - {solution.Text}");
+ok.Should().BeTrue($"{solution.Status} - {solution.Error}");
 return solution;	}
 	[Fact(DisplayName="unit/compilation/aggregation.mzn")]
 	public async Task test_solve_unit_compilation_aggregation() {
@@ -78,7 +78,8 @@ return solution;	}
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.AddArgs("--debug");
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/compilation/assert_dbg_ignore.mzn")]
@@ -295,8 +296,9 @@ return solution;	}
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.AddArgs("--time-limit 1");
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().Be("time limit reached");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().Be("time limit reached");
 	}
 
 	[Theory(DisplayName="unit/division/test_div10.mzn")]
@@ -387,8 +389,9 @@ return solution;	}
 		var path = "unit/general/array_access_out_of_bounds_1.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*array access out of bounds, array `x' has index set A..B, but given index is C.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*array access out of bounds, array `x' has index set A..B, but given index is C.*");
 	}
 
 	[Fact(DisplayName="unit/general/array_access_out_of_bounds_2.mzn")]
@@ -397,8 +400,9 @@ return solution;	}
 		var path = "unit/general/array_access_out_of_bounds_2.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*array access out of bounds, array `x' is empty.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*array access out of bounds, array `x' is empty.*");
 	}
 
 	[Fact(DisplayName="unit/general/array_access_record_out_of_bounds.mzn")]
@@ -407,8 +411,9 @@ return solution;	}
 		var path = "unit/general/array_access_record_out_of_bounds.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*array access out of bounds.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*array access out of bounds.*");
 	}
 
 	[Fact(DisplayName="unit/general/array_access_tuple_out_of_bounds.mzn")]
@@ -417,8 +422,9 @@ return solution;	}
 		var path = "unit/general/array_access_tuple_out_of_bounds.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*array access out of bounds.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*array access out of bounds.*");
 	}
 
 	[Fact(DisplayName="unit/general/array_intersect_context.mzn")]
@@ -518,8 +524,9 @@ return solution;	}
 		var path = "unit/general/enum_out_of_range_1.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*declared domain of `x' is {A}, but assigned value is B.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*declared domain of `x' is {A}, but assigned value is B.*");
 	}
 
 	[Fact(DisplayName="unit/general/enum_out_of_range_2.mzn")]
@@ -528,8 +535,9 @@ return solution;	}
 		var path = "unit/general/enum_out_of_range_2.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*declared domain of `x' is {A}, but assigned value is {B}.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*declared domain of `x' is {A}, but assigned value is {B}.*");
 	}
 
 	[Fact(DisplayName="unit/general/eval_par_opt_set.mzn")]
@@ -556,8 +564,9 @@ return solution;	}
 		var path = "unit/general/function_param_out_of_range.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*declared domain of `'<unnamed argument>'' is 1..1, but assigned value is 2.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*declared domain of `'<unnamed argument>'' is 1..1, but assigned value is 2.*");
 	}
 
 	[Fact(DisplayName="unit/general/function_return_out_of_range.mzn")]
@@ -566,8 +575,9 @@ return solution;	}
 		var path = "unit/general/function_return_out_of_range.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*result of function `foo' is B, which violates function type-inst {A}.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*result of function `foo' is B, which violates function type-inst {A}.*");
 	}
 
 	[Fact(DisplayName="unit/general/function_return_out_of_range_opt.mzn")]
@@ -576,8 +586,9 @@ return solution;	}
 		var path = "unit/general/function_return_out_of_range_opt.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*function result violates function type-inst, array contains value B which is not contained in {A}.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*function result violates function type-inst, array contains value B which is not contained in {A}.*");
 	}
 
 	[Fact(DisplayName="unit/general/infinite_domain_bind.mzn")]
@@ -749,8 +760,9 @@ return solution;	}
 		var path = "unit/general/param_out_of_range_float.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*declared domain of `x' is -infinity..-1.0 union 1.0..infinity, but assigned value is 0.0.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*declared domain of `x' is -infinity..-1.0 union 1.0..infinity, but assigned value is 0.0.*");
 	}
 
 	[Fact(DisplayName="unit/general/param_out_of_range_int.mzn")]
@@ -759,8 +771,9 @@ return solution;	}
 		var path = "unit/general/param_out_of_range_int.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*declared domain of `x' is -infinity..-1 union 1..infinity, but assigned value is 0.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*declared domain of `x' is -infinity..-1 union 1..infinity, but assigned value is 0.*");
 	}
 
 	[Fact(DisplayName="unit/general/pow_1.mzn")]
@@ -971,8 +984,9 @@ return solution;	}
 		var path = "unit/general/stack_overflow.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*stack overflow.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*stack overflow.*");
 	}
 
 	[Theory(DisplayName="unit/general/test-search1.mzn")]
@@ -1219,8 +1233,9 @@ return solution;	}
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.AddArgs("--data \"unit/json/anon_enum_json_err.json\"");
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*invalid enum object.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*invalid enum object.*");
 	}
 
 	[Fact(DisplayName="unit/json/coerce_enum_str.mzn")]
@@ -1240,8 +1255,9 @@ return solution;	}
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.AddArgs("--data \"unit/json/coerce_enum_str_err.json\"");
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*has invalid type-inst.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*has invalid type-inst.*");
 	}
 
 	[Fact(DisplayName="unit/json/coerce_indices.mzn")]
@@ -1997,8 +2013,9 @@ return solution;	}
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.AddArgs("--data \"unit/param_file/param_file_blacklist_1.mpc\"");
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*not allowed in configuration file.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*not allowed in configuration file.*");
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_blacklist.mzn")]
@@ -2008,8 +2025,9 @@ return solution;	}
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.AddArgs("--data \"unit/param_file/param_file_blacklist_2.mpc\"");
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*not allowed in configuration file.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*not allowed in configuration file.*");
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_nested_object.mzn")]
@@ -2029,8 +2047,9 @@ return solution;	}
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
 		options = options.AddArgs("--data \"unit/param_file/param_file_recursive.mpc\"");
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*Cyclic parameter configuration file.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*Cyclic parameter configuration file.*");
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_resolution.mzn")]
@@ -2499,7 +2518,8 @@ return solution;	}
 		var path = "unit/regression/cyclic_include.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/regression/enigma_1568.mzn")]
@@ -2644,8 +2664,9 @@ return solution;	}
 		var path = "unit/regression/github_648_par_array_decl.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*declared domain of `x[1]' is 1..3, but assigned value is 0.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*declared domain of `x[1]' is 1..3, but assigned value is 0.*");
 	}
 
 	[Fact(DisplayName="unit/regression/github_648_par_decl.mzn")]
@@ -2654,8 +2675,9 @@ return solution;	}
 		var path = "unit/regression/github_648_par_decl.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*declared domain of `x' is 1..3, but assigned value is 0.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*declared domain of `x' is 1..3, but assigned value is 0.*");
 	}
 
 	[Fact(DisplayName="unit/regression/github_656.mzn")]
@@ -2664,8 +2686,9 @@ return solution;	}
 		var path = "unit/regression/github_656.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*cannot coerce set into 2-dimensional array.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*cannot coerce set into 2-dimensional array.*");
 	}
 
 	[Fact(DisplayName="unit/regression/github_661_part1.mzn")]
@@ -2797,7 +2820,8 @@ return solution;	}
 		var path = "unit/regression/github_680.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/regression/github_681.mzn")]
@@ -3122,7 +3146,8 @@ return solution;	}
 		var path = "unit/regression/github_779.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/regression/github_783.mzn")]
@@ -3196,7 +3221,8 @@ return solution;	}
 		var path = "unit/regression/non-set-array-ti-location.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/regression/non_pos_pow.mzn")]
@@ -3269,7 +3295,8 @@ return solution;	}
 		var path = "unit/regression/output_only_no_rhs.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/regression/parser_location.mzn")]
@@ -3278,7 +3305,8 @@ return solution;	}
 		var path = "unit/regression/parser_location.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/regression/parse_assignments.mzn")]
@@ -3534,7 +3562,8 @@ return solution;	}
 		var path = "unit/regression/test_parout.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/regression/ti_error_location.mzn")]
@@ -3543,8 +3572,9 @@ return solution;	}
 		var path = "unit/regression/ti_error_location.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex("^(?!unknown file:0.0).*$");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex("^(?!unknown file:0.0).*$");
 	}
 
 	[Fact(DisplayName="unit/regression/ts_bug.mzn")]
@@ -3766,7 +3796,8 @@ return solution;	}
 		var path = "unit/types/alias_set_of_array.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/array_var_opt_set_comprehension.mzn")]
@@ -3775,7 +3806,8 @@ return solution;	}
 		var path = "unit/types/array_var_opt_set_comprehension.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/comprehension_of_absent_any_1.mzn")]
@@ -3784,7 +3816,8 @@ return solution;	}
 		var path = "unit/types/comprehension_of_absent_any_1.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/comprehension_type.mzn")]
@@ -3838,8 +3871,9 @@ return solution;	}
 		var path = "unit/types/nested_type_inst_id.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*type-inst variable $X used in both array and non-array position.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*type-inst variable $X used in both array and non-array position.*");
 	}
 
 	[Fact(DisplayName="unit/types/nonbool_constraint.mzn")]
@@ -3848,7 +3882,8 @@ return solution;	}
 		var path = "unit/types/nonbool_constraint.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/nonbool_constraint_let.mzn")]
@@ -3857,7 +3892,8 @@ return solution;	}
 		var path = "unit/types/nonbool_constraint_let.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/non_contig_enum.mzn")]
@@ -3902,7 +3938,8 @@ return solution;	}
 		var path = "unit/types/record_access_error.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/record_access_success.mzn")]
@@ -3920,7 +3957,8 @@ return solution;	}
 		var path = "unit/types/record_array_access_error.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/record_binop_par.mzn")]
@@ -3956,7 +3994,8 @@ return solution;	}
 		var path = "unit/types/record_decl_error.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/record_ite_error.mzn")]
@@ -3965,7 +4004,8 @@ return solution;	}
 		var path = "unit/types/record_ite_error.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/record_lit_dup.mzn")]
@@ -3974,7 +4014,8 @@ return solution;	}
 		var path = "unit/types/record_lit_dup.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/record_nested.mzn")]
@@ -4118,8 +4159,9 @@ return solution;	}
 		var path = "unit/types/struct_index_sets_1.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*");
 	}
 
 	[Fact(DisplayName="unit/types/struct_index_sets_2.mzn")]
@@ -4128,8 +4170,9 @@ return solution;	}
 		var path = "unit/types/struct_index_sets_2.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*");
 	}
 
 	[Fact(DisplayName="unit/types/struct_par_function_version.mzn")]
@@ -4165,8 +4208,9 @@ return solution;	}
 		var path = "unit/types/struct_return_ti_3.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
-		solution.Text.Should().MatchRegex(".*function result violates function type-inst.*");
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
+		solution.Error.Should().MatchRegex(".*function result violates function type-inst.*");
 	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_4.mzn")]
@@ -4211,7 +4255,8 @@ return solution;	}
 		var path = "unit/types/tuple_access_error1.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/tuple_access_error2.mzn")]
@@ -4220,7 +4265,8 @@ return solution;	}
 		var path = "unit/types/tuple_access_error2.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/tuple_access_success.mzn")]
@@ -4238,7 +4284,8 @@ return solution;	}
 		var path = "unit/types/tuple_array_access_error.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/tuple_binop_par.mzn")]
@@ -4283,7 +4330,8 @@ return solution;	}
 		var path = "unit/types/tuple_ite_error.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/tuple_lit.mzn")]
@@ -4346,7 +4394,8 @@ return solution;	}
 		var path = "unit/types/var_ann_a.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_ann_b.mzn")]
@@ -4355,7 +4404,8 @@ return solution;	}
 		var path = "unit/types/var_ann_b.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_ann_comprehension.mzn")]
@@ -4364,7 +4414,8 @@ return solution;	}
 		var path = "unit/types/var_ann_comprehension.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_opt_set_if_then_else.mzn")]
@@ -4373,7 +4424,8 @@ return solution;	}
 		var path = "unit/types/var_opt_set_if_then_else.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_set_bool.mzn")]
@@ -4382,7 +4434,8 @@ return solution;	}
 		var path = "unit/types/var_set_bool.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_set_float.mzn")]
@@ -4391,7 +4444,8 @@ return solution;	}
 		var path = "unit/types/var_set_float.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_set_float_comprehension.mzn")]
@@ -4400,7 +4454,8 @@ return solution;	}
 		var path = "unit/types/var_set_float_comprehension.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_string_a.mzn")]
@@ -4409,7 +4464,8 @@ return solution;	}
 		var path = "unit/types/var_string_a.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_string_b.mzn")]
@@ -4418,7 +4474,8 @@ return solution;	}
 		var path = "unit/types/var_string_b.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/types/var_string_comprehension.mzn")]
@@ -4427,7 +4484,8 @@ return solution;	}
 		var path = "unit/types/var_string_comprehension.mzn";
 		var model = Compile(path);
 		var options = SolveOptions.Create(solverId:solver);
-		var solution = await Solve(model, options, SolveStatus.Error);
+		var solution = await Solve(model, options);
+		solution.IsError.Should().BeTrue();
 	}
 
 	[Theory(DisplayName="unit/globals/alldifferent_except_0/test_alldiff_except0b.mzn")]

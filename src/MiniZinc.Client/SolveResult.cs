@@ -40,11 +40,6 @@ public abstract record SolveResult<T>
     public required SolveStatus Status { get; init; }
 
     /// <summary>
-    /// Text content of the message
-    /// </summary>
-    public string Text { get; init; } = string.Empty;
-
-    /// <summary>
     /// Time period from the last iteration to this one
     /// </summary>
     public required TimePeriod IterationTime { get; init; }
@@ -115,6 +110,19 @@ public abstract record SolveResult<T>
     /// `(objective[i] - objectivep[i-1]) / objective[i-1]`
     /// </summary>
     public required double? RelativeIterationGap { get; init; }
+
+    public bool IsSuccess => !IsError;
+
+    public bool IsError =>
+        Status switch
+        {
+            SolveStatus.Error => true,
+            SolveStatus.AssertionError => true,
+            SolveStatus.EvaluationError => true,
+            SolveStatus.SyntaxError => true,
+            SolveStatus.TypeError => true,
+            _ => false
+        };
 
     /// <summary>
     /// Get the solution assigned to the given variable

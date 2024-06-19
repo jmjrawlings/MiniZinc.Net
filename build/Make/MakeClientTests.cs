@@ -80,14 +80,14 @@ public sealed class MakeClientTests : CodeBuilder
                 Write(solution.Command);
                 Write(solution.Status);
                 WriteSection();
-                var ok = false;
+                var ok = statuses.Length == 0;
                 foreach (var status in statuses){
                     if (solution.Status == status){
                         ok = true;
                         break;
                     }
                 }
-                ok.Should().BeTrue($"{solution.Status} - {solution.Text}");
+                ok.Should().BeTrue($"{solution.Status} - {solution.Error}");
                 return solution;
                 """
             );
@@ -253,14 +253,15 @@ public sealed class MakeClientTests : CodeBuilder
             return;
         }
 
-        Var("solution", "await Solve(model, options, SolveStatus.Error)");
+        Var("solution", "await Solve(model, options)");
+        WriteLn("solution.IsError.Should().BeTrue();");
         if (testCase.ErrorRegex is { } regex)
         {
             regex = regex.Replace("\\", "");
-            WriteLn($"solution.Text.Should().MatchRegex(\"{regex}\");");
+            WriteLn($"solution.Error.Should().MatchRegex(\"{regex}\");");
         }
         else if (testCase.ErrorMessage is { } error)
-            WriteLn($"solution.Text.Should().Be(\"{error}\");");
+            WriteLn($"solution.Error.Should().Be(\"{error}\");");
     }
 
     private void MakeUnsatisfiableTest(string testName, TestCase testCase)
