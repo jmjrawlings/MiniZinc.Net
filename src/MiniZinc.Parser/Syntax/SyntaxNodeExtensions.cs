@@ -7,7 +7,7 @@ public static class SyntaxNodeExtensions
     /// </summary>
     public static string Write(this SyntaxNode node, WriteOptions? options = null)
     {
-        var s = Writer.WriteNode(node, options);
+        var s = Writer.Write(node, options);
         return s;
     }
 
@@ -17,7 +17,7 @@ public static class SyntaxNodeExtensions
     public static T Clone<T>(this T node)
         where T : SyntaxNode
     {
-        var mzn = Writer.WriteNode(node, WriteOptions.Minimal);
+        var mzn = Writer.Write(node, WriteOptions.Minimal);
         var parser = new Parser(mzn);
         // TODO - optimised function for parsing a single node to avoid list allocation?
         if (!parser.ParseTree(out var tree))

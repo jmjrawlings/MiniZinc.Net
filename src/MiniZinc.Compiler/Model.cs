@@ -289,15 +289,6 @@ public class Model
                 AddSourceText(node);
                 break;
 
-            case FunctionDeclarationSyntax node:
-                name = node.Name;
-                if (_namespace.TryGetValue(name, out old))
-                    Error($"Function {name} was already declared as {old}");
-                else
-                    _namespace[name] = node;
-                AddSourceText(node);
-                break;
-
             case TypeAliasSyntax node:
                 name = node.Name;
                 if (_namespace.TryGetValue(name, out old))
