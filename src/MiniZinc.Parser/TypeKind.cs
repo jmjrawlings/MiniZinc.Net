@@ -8,6 +8,7 @@ public enum TypeKind
     String,
     Float,
     Name,
+    Ann,
     Annotation,
     Generic,
     GenericSeq,

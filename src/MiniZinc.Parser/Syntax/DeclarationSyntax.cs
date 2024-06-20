@@ -15,4 +15,10 @@ public sealed record DeclarationSyntax(in Token Start, TypeSyntax Type, Identifi
     public SyntaxNode? Body { get; set; }
 
     public List<ParameterSyntax>? Parameters { get; set; }
+
+    public IdentifierSyntax? Ann { get; init; }
+
+    public required bool IsFunction { get; init; }
+
+    public bool IsAnnotation => Type.Kind is TypeKind.Annotation;
 }

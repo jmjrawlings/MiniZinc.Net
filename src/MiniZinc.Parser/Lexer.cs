@@ -588,7 +588,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         do
         {
             Step();
-        } while (IsAsciiLetterOrDigit(_char));
+        } while (IsDigit(_char));
 
         // Peek needed because of range literals eg: `1..T`
         if (_char is DOT && IsDigit(Peek))
@@ -605,6 +605,19 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
             }
 
+            var span = ReadSpan();
+            if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
+                Return(TokenKind.FLOAT_LITERAL, d);
+            else
+                Error($"Could not parse \"{span}\" as a float");
+        }
+        else if (Skip('e'))
+        {
+            Skip('-');
+            do
+            {
+                Step();
+            } while (IsDigit(_char));
             var span = ReadSpan();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
                 Return(TokenKind.FLOAT_LITERAL, d);

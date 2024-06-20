@@ -320,7 +320,7 @@ public class ParserUnitTests
     [InlineData("annotation something(int: x)")]
     void test_annotation_declaration(string mzn)
     {
-        var ann = ParseNode<FunctionDeclarationSyntax>(mzn);
+        var ann = ParseNode<DeclarationSyntax>(mzn);
         ann.Type.Kind.Should().Be(TypeKind.Annotation);
     }
 
@@ -431,13 +431,23 @@ public class ParserUnitTests
         oz.Should().BeEquivalentTo(mzn);
     }
 
-    [Fact]
-    void test_parse_float()
+    [Theory]
+    [InlineData("-2.8421709430404e-14")]
+    [InlineData("2e10")]
+    void test_parse_float(string f)
     {
-        var mzn = "-2.8421709430404e-14";
-        var ok = decimal.TryParse(mzn, NumberStyles.Float, null, out var d);
-        var node = ParseNode<FloatLiteralSyntax>(mzn);
+        var mzn = f;
+        var node = ParseExprAs<FloatLiteralSyntax>(mzn);
         var a = 2;
+    }
+
+    [Fact]
+    void test_parse_generic_func()
+    {
+        var mzn = "$T: foo(tuple($T): x) = x.1;";
+        var parser = new Parser(mzn);
+        var ok = parser.ParseDeclareOrAssign(out var node);
+        ok.Should().BeTrue();
     }
 
     SyntaxTree ParseString(string mzn)
