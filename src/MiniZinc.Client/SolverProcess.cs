@@ -28,7 +28,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     private readonly Stopwatch _watch;
     private readonly ProcessStartInfo _startInfo;
     private readonly Channel<T> _channel;
-    private readonly Thread _thread;
+    private readonly Task _task;
     protected readonly List<string> _warnings;
     protected TimePeriod _totalTime;
     protected TimePeriod _iterTime;
@@ -127,8 +127,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
             }
         );
         _asyncEnumerator = _channel.Reader.ReadAllAsync(_cancellation).GetAsyncEnumerator();
-        _thread = new Thread(Run);
-        _thread.Start();
+        _task = Task.Factory.StartNew(Run);
     }
 
     private void Run()
@@ -186,7 +185,11 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         if (_current is null)
         {
             _solveStatus = SolveStatus.Error;
-            _current = CreateResult(error: $"MiniZinc exited without producing a result");
+            var error = _process.StandardError.ReadToEnd();
+            if (string.IsNullOrEmpty(error))
+                _current = CreateResult(error: $"MiniZinc exited without producing a result");
+            else
+                _current = CreateResult(error: error);
         }
         _channel.Writer.TryWrite(_current);
         _channel.Writer.Complete();
@@ -310,14 +313,6 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         _current = CreateResult();
         _channel.Writer.TryWrite(_current);
     }
-
-    // private void OnProcessError(object sender, DataReceivedEventArgs e)
-    // {
-    //     if (e.Data is not { } warning)
-    //         return;
-    //
-    //     _warnings.Add(warning);
-    // }
 
     void Stop()
     {
