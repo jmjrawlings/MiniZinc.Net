@@ -132,7 +132,7 @@ internal sealed class Writer
                 break;
 
             case DeclarationSyntax e:
-                if (e.IsFunction)
+                if (e is { IsFunction: true, IsAnnotation: false })
                     WriteSpace(FUNCTION);
 
                 WriteType(e.Type);
@@ -300,15 +300,16 @@ internal sealed class Writer
                 break;
 
             case IntLiteralSyntax e:
-                WriteInt(e.Value);
+                _sb.Append(e.Value);
                 break;
 
             case BoolLiteralSyntax e:
-                WriteBool(e.Value);
+                Write(e.Value ? TRUE : FALSE);
+                WriteAnnotations(e);
                 break;
 
             case FloatLiteralSyntax e:
-                WriteFloat(e.Value);
+                _sb.Append(e.Value);
                 break;
 
             case StringLiteralSyntax e:
@@ -476,7 +477,7 @@ internal sealed class Writer
             case TupleAccessSyntax e:
                 WriteNode(e.Expr);
                 Write(DOT);
-                WriteInt(e.Index);
+                _sb.Append(e.Index);
                 WriteAnnotations(e);
                 break;
 
@@ -507,24 +508,6 @@ internal sealed class Writer
             default:
                 throw new Exception(node.GetType().ToString());
         }
-    }
-
-    private void WriteFloat(decimal f)
-    {
-        _sb.Append(f);
-    }
-
-    private void WriteBool(bool b)
-    {
-        if (b)
-            Write(TRUE);
-        else
-            Write(FALSE);
-    }
-
-    private void WriteInt(int i)
-    {
-        _sb.Append(i);
     }
 
     private void WriteAlias(TypeAliasSyntax e)
