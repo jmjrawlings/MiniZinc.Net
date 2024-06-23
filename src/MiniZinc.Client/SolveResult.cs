@@ -121,6 +121,7 @@ public abstract record SolveResult<T>
             SolveStatus.EvaluationError => true,
             SolveStatus.SyntaxError => true,
             SolveStatus.TypeError => true,
+            SolveStatus.Timeout => true,
             _ => false
         };
 
@@ -181,7 +182,7 @@ public abstract record SolveResult<T>
         var array = Get<Array1DSyntax>(id);
         foreach (var node in array.Elements)
         {
-            if (node is not SyntaxNode<U> literal)
+            if (node is not ExpressionSyntax<U> literal)
                 throw new Exception();
             yield return literal.Value;
         }

@@ -1,6 +1,7 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record BoolLiteralSyntax(in Token Start) : SyntaxNode<bool>(Start, Start.BoolValue)
+public sealed record BoolLiteralSyntax(in Token Start)
+    : ExpressionSyntax<bool>(Start, Start.BoolValue)
 {
     public static implicit operator bool(in BoolLiteralSyntax literalSyntax) => literalSyntax.Value;
 
