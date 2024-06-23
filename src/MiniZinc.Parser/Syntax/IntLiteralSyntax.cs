@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record IntLiteralSyntax : SyntaxNode<int>
+public sealed record IntLiteralSyntax : ExpressionSyntax<int>
 {
     public IntLiteralSyntax(in Token Start)
         : base(Start, Start.IntValue) { }

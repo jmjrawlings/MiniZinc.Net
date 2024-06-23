@@ -1,11 +1,9 @@
-﻿namespace MiniZinc.Parser;
+﻿using MiniZinc.Parser.Syntax;
 
-using Syntax;
+namespace MiniZinc.Parser;
 
-public sealed record ParseResult<T>
-    where T : SyntaxNode
+public record ParseResult
 {
-    public required T SyntaxNode { get; init; }
     public required string? SourceFile { get; init; }
     public required string SourceText { get; init; }
     public required bool Ok { get; init; }
@@ -23,4 +21,14 @@ public sealed record ParseResult<T>
         else
             throw new ParseException("Could not parse");
     }
+}
+
+public sealed record ModelParseResult : ParseResult
+{
+    public required ModelSyntax Model { get; init; }
+}
+
+public sealed record DataParseResult : ParseResult
+{
+    public required DataSyntax Data { get; init; }
 }

@@ -4,10 +4,10 @@ public sealed class ParserIntegrationTests
 {
     private void Test(string path)
     {
-        var result = Parser.ParseFile(path);
+        var result = Parser.ParseModelFile(path);
         result.ErrorTrace.Should().BeNull();
-        var output = result.SyntaxNode.Write();
-        var roundtrip = Parser.ParseString(output);
+        var output = result.Model.Write();
+        var roundtrip = Parser.ParseModelString(output);
         roundtrip.ErrorTrace.Should().BeNull();
     }
 

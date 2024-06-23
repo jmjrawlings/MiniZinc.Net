@@ -6,7 +6,7 @@
 /// <mzn>var set of int</mzn>
 /// <mzn>bool</mzn>
 /// <mzn>array[X] of opt var float</mzn>
-public record TypeSyntax(in Token Start) : SyntaxNode(Start)
+public record TypeSyntax(in Token Start) : StatementSyntax(Start)
 {
     public TypeKind Kind { get; set; } = TypeKind.Any;
 

@@ -102,27 +102,23 @@ internal sealed class Writer
     private int _indent;
     private int _tabSize;
 
-    public Writer(WriteOptions options)
+    public Writer(WriteOptions? options = null)
     {
         _sb = new StringBuilder();
-        _options = options;
+        _options = options ?? WriteOptions.Default;
         _minify = _options.Minify;
-        _prettify = options.Prettify;
+        _prettify = _options.Prettify;
         _indent = 0;
-        _tabSize = options.TabSize;
+        _tabSize = _options.TabSize;
     }
 
-    private void WriteNode(SyntaxNode? node, Assoc assoc = 0, int? prec = null)
+    public void WriteNode(SyntaxNode? node, Assoc assoc = 0, int? prec = null)
     {
         if (node is null)
             return;
 
         switch (node)
         {
-            case SyntaxTree e:
-                WriteTree(e);
-                break;
-
             case IncludeSyntax e:
                 WriteSpace(INCLUDE);
                 Write(DOUBLE_QUOTE);
@@ -203,7 +199,10 @@ internal sealed class Writer
                 break;
 
             case AssignmentSyntax e:
-                WriteAssignment(e);
+                Write(e.Identifier);
+                Spaced(EQUAL);
+                WriteNode(e.Expr);
+                EndStatement();
                 break;
 
             case OutputSyntax e when _options.SkipOutput:
@@ -217,7 +216,12 @@ internal sealed class Writer
                 break;
 
             case TypeAliasSyntax e:
-                WriteAlias(e);
+                Write(TYPE);
+                Space();
+                Write(e.Identifier);
+                Spaced(EQUAL);
+                WriteNode(e.Type);
+                EndStatement();
                 break;
 
             case EnumDeclarationSyntax e:
@@ -244,48 +248,11 @@ internal sealed class Writer
                 break;
 
             case Array2dSyntax expr:
-                Write(OPEN_BRACKET);
-                Write(PIPE);
-                int x = 0;
-                for (int i = 0; i < expr.I; i++)
-                {
-                    for (int j = 0; j < expr.J; j++)
-                    {
-                        var v = expr.Elements[x++];
-                        WriteNode(v);
-                        if (j < expr.J - 1)
-                            Write(COMMA);
-                    }
-                    Write(PIPE);
-                    // if (i < expr.I - 1)
-                    //     Write(COMMA);
-                }
-                Write(CLOSE_BRACKET);
+                WriteArray2d(expr);
                 break;
 
             case Array3dSyntax e:
-                Write("[|");
-                var arr = e.Elements.ToArray();
-                var index = -1;
-                for (int i = 0; i < e.I; i++)
-                {
-                    Write(PIPE);
-                    for (int j = 0; j < e.J; j++)
-                    {
-                        for (int k = 0; k < e.K; k++)
-                        {
-                            var v = arr[index++];
-                            WriteNode(v);
-                            if (k + 1 < e.K)
-                                Write(COMMA);
-                        }
-                        Write(PIPE);
-                    }
-
-                    if (i + 1 < e.I)
-                        Write(COMMA);
-                }
-                Write("|]");
+                WriteArray3d(e);
                 break;
 
             case ArrayAccessSyntax e:
@@ -510,36 +477,55 @@ internal sealed class Writer
         }
     }
 
-    private void WriteAlias(TypeAliasSyntax e)
+    private void WriteArray3d(Array3dSyntax arr)
     {
-        Write(TYPE);
-        Space();
-        Write(e.Identifier);
-        Spaced(EQUAL);
-        WriteNode(e.Type);
-        EndStatement();
+        Write("[|");
+        var array = arr.Elements;
+        var index = -1;
+        for (int i = 0; i < arr.I; i++)
+        {
+            Write(PIPE);
+            for (int j = 0; j < arr.J; j++)
+            {
+                for (int k = 0; k < arr.K; k++)
+                {
+                    var v = array[index++];
+                    WriteNode(v);
+                    if (k + 1 < arr.K)
+                        Write(COMMA);
+                }
+                Write(PIPE);
+            }
+
+            if (i + 1 < arr.I)
+                Write(COMMA);
+        }
+        Write("|]");
     }
 
-    private void WriteAssignment(AssignmentSyntax e)
+    public void WriteModel(ModelSyntax e)
     {
-        Write(e.Identifier);
-        Spaced(EQUAL);
-        WriteNode(e.Expr);
-        EndStatement();
-    }
-
-    private void WriteTree(SyntaxTree e)
-    {
-        var nodes = e.Nodes;
+        IEnumerable<StatementSyntax> statements;
         if (_prettify)
         {
-            nodes = new List<SyntaxNode>(e.Nodes);
-            nodes.Sort(_prettyPrintComparer);
+            var sorted = new List<StatementSyntax>(e.Statements);
+            sorted.Sort(_prettyPrintComparer);
+            statements = sorted;
         }
+        else
+        {
+            statements = e.Statements;
+        }
+        foreach (var statement in statements)
+            WriteNode(statement);
 
-        foreach (var node in nodes)
-            WriteNode(node);
         return;
+    }
+
+    public void WriteData(DataSyntax data)
+    {
+        foreach (var assign in data.Assignments)
+            WriteNode(assign);
     }
 
     static PrettyPrintNodeComparer _prettyPrintComparer = new();
@@ -547,7 +533,7 @@ internal sealed class Writer
     /// <summary>
     /// Used for ordering nodes for pretty printing
     /// </summary>
-    class PrettyPrintNodeComparer : IComparer<SyntaxNode>
+    class PrettyPrintNodeComparer : IComparer<StatementSyntax>
     {
         static int Order(SyntaxNode? node) =>
             node switch
@@ -561,7 +547,7 @@ internal sealed class Writer
                 _ => 10
             };
 
-        public int Compare(SyntaxNode? x, SyntaxNode? y)
+        public int Compare(StatementSyntax? x, StatementSyntax? y)
         {
             int i = Order(x);
             int j = Order(y);
@@ -773,6 +759,31 @@ internal sealed class Writer
     void Dedent()
     {
         _indent--;
+    }
+
+    void WriteArray2d(Array2dSyntax arr)
+    {
+        Write(OPEN_BRACKET);
+        Write(PIPE);
+        switch (arr.RowIndexed, arr.ColIndexed)
+        {
+            case (false, false):
+                int x = 0;
+                for (int i = 0; i < arr.I; i++)
+                {
+                    for (int j = 0; j < arr.J; j++)
+                    {
+                        var v = arr.Elements[x++];
+                        WriteNode(v);
+                        if (j < arr.J - 1)
+                            Write(COMMA);
+                    }
+                    Write(PIPE);
+                }
+
+                break;
+        }
+        Write(CLOSE_BRACKET);
     }
 
     void Write(IdentifierSyntax id)
@@ -997,21 +1008,65 @@ internal sealed class Writer
         return true;
     }
 
-    /// <summary>
-    /// Write the given node to a string
-    /// </summary>
-    public static string Write(SyntaxNode node, WriteOptions? options = null)
+    public override string ToString()
     {
-        var writer = new Writer(options ?? WriteOptions.Default);
-        writer.WriteNode(node);
-
-        // Trim trailing whitespace
-        var sb = writer._sb;
-        var n = sb.Length;
-        while (char.IsWhiteSpace(sb[--n])) { }
-        sb.Length = n + 1;
-
-        var text = writer._sb.ToString();
-        return text;
+        var mzn = _sb.ToString();
+        return mzn;
     }
+
+    // /// <summary>
+    // /// Write the given node to a string
+    // /// </summary>
+    // public static string Write(SyntaxNode node, WriteOptions? options = null)
+    // {
+    //     var writer = new Writer(options);
+    //     writer.WriteNode(node);
+    //
+    //     // Trim trailing whitespace
+    //     var sb = writer._sb;
+    //     var n = sb.Length;
+    //     while (char.IsWhiteSpace(sb[--n])) { }
+    //     sb.Length = n + 1;
+    //
+    //     var text = writer._sb.ToString();
+    //     return text;
+    // }
+    //
+    // /// <summary>
+    // /// Write the given Model to a string
+    // /// </summary>
+    // public static string Write(ModelSyntax model, WriteOptions? options = null)
+    // {
+    //     var writer = new Writer(options);
+    //     foreach (var statement in model.Nodes)
+    //         writer.WriteNode(statement);
+    //
+    //     // Trim trailing whitespace
+    //     var sb = writer._sb;
+    //     var n = sb.Length;
+    //     while (char.IsWhiteSpace(sb[--n])) { }
+    //     sb.Length = n + 1;
+    //
+    //     var text = writer._sb.ToString();
+    //     return text;
+    // }
+    //
+    // /// <summary>
+    // /// Write the given Data a string
+    // /// </summary>
+    // public static string Write(DataSyntax data, WriteOptions? options = null)
+    // {
+    //     var writer = new Writer(options);
+    //     foreach (var assign in data.Assignments)
+    //         writer.WriteNode(assign);
+    //
+    //     // Trim trailing whitespace
+    //     var sb = writer._sb;
+    //     var n = sb.Length;
+    //     while (char.IsWhiteSpace(sb[--n])) { }
+    //     sb.Length = n + 1;
+    //
+    //     var text = writer._sb.ToString();
+    //     return text;
+    // }
 }

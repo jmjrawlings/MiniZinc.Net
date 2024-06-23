@@ -11,7 +11,7 @@ using Parser.Syntax;
 /// </summary>
 /// <remarks>
 /// This class extracts useful semantic information
-/// from <see cref="SyntaxTree"/>
+/// from <see cref="ModelSyntax"/>
 /// </remarks>
 public class Model
 {
@@ -321,16 +321,11 @@ public class Model
                     else
                     {
                         _parsedFiles.Add(file.FullName);
-                        var result = Parser.ParseFile(file);
+                        var result = Parser.ParseModelFile(file);
                         result.EnsureOk();
-                        AddNode(result.SyntaxNode);
+                        AddModel(result.Model);
                     }
                 }
-                break;
-
-            case SyntaxTree tree:
-                foreach (var node in tree.Nodes)
-                    AddNode(node);
                 break;
         }
     }
@@ -413,13 +408,19 @@ public class Model
             var message = CreateFileNotFoundMessage(path);
             throw new FileNotFoundException(message, path);
         }
-        var result = Parser.ParseFile(file);
+        var result = Parser.ParseModelFile(file);
         result.EnsureOk();
 
         // Added models become a search directory
         if (file.Directory is { } dir)
             AddSearchPath(dir);
-        AddNode(result.SyntaxNode);
+        AddModel(result.Model);
+    }
+
+    private void AddModel(ModelSyntax model)
+    {
+        foreach (var statement in model.Statements)
+            AddNode(statement);
     }
 
     /// <summary>
@@ -452,9 +453,9 @@ public class Model
 
     public void AddString(string mzn)
     {
-        var result = Parser.ParseString(mzn);
+        var result = Parser.ParseModelString(mzn);
         result.EnsureOk();
-        AddNode(result.SyntaxNode);
+        AddModel(result.Model);
     }
 
     public Model AddStrings(params string[] strings)

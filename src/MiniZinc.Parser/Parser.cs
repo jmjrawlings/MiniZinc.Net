@@ -1,8 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser;
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Syntax;
 
 /// <summary>
@@ -140,100 +139,131 @@ public sealed class Parser
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    internal bool ParseTree(out SyntaxTree tree)
+    internal bool ParseModel(out ModelSyntax model)
     {
-        tree = new SyntaxTree(_token);
-
+        var statements = new List<StatementSyntax>();
         while (true)
         {
-            SyntaxNode? node = null;
-            switch (_kind)
-            {
-                case TokenKind.INCLUDE:
-                    if (!ParseIncludeStatement(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
+            if (!ParseStatement(out var statement))
+                break;
 
-                case TokenKind.CONSTRAINT:
-                    if (!ParseConstraintItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.SOLVE:
-                    if (!ParseSolveItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.OUTPUT:
-                    if (!ParseOutputItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.ENUM:
-                    if (!ParseEnumItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.TYPE:
-                    if (!ParseAliasItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.FUNCTION:
-                    if (!ParseFunctionItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.PREDICATE:
-                    if (!ParsePredicateItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.TEST:
-                    if (!ParseTestItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.ANNOTATION:
-                    if (!ParseAnnotationItem(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-
-                case TokenKind.EOF:
-                    return true;
-
-                default:
-                    if (!ParseDeclareOrAssign(out node))
-                        return false;
-                    tree.Nodes.Add(node);
-                    break;
-            }
+            statements.Add(statement);
 
             if (Skip(TokenKind.EOL))
                 continue;
 
-            if (!Skip(TokenKind.EOF))
-                return Error("Expected ; or end of file");
+            if (!Expect(TokenKind.EOF))
+                break;
 
-            return true;
+            break;
         }
+
+        model = new ModelSyntax(statements);
+        return true;
+    }
+
+    internal bool ParseStatement([NotNullWhen(true)] out StatementSyntax? statement)
+    {
+        statement = null;
+        switch (_kind)
+        {
+            case TokenKind.INCLUDE:
+                if (!ParseIncludeStatement(out statement))
+                    return false;
+                break;
+
+            case TokenKind.CONSTRAINT:
+                if (!ParseConstraintItem(out statement))
+                    return false;
+                break;
+
+            case TokenKind.SOLVE:
+                if (!ParseSolveItem(out statement))
+                    return false;
+                break;
+
+            case TokenKind.OUTPUT:
+                if (!ParseOutputItem(out statement))
+                    return false;
+                break;
+
+            case TokenKind.ENUM:
+                if (!ParseEnumItem(out statement))
+                    return false;
+                break;
+
+            case TokenKind.TYPE:
+                if (!ParseAliasItem(out statement))
+                    return false;
+                break;
+
+            case TokenKind.FUNCTION:
+                if (!ParseFunctionItem(out statement))
+                    return false;
+                break;
+
+            case TokenKind.PREDICATE:
+                if (!ParsePredicateItem(out statement))
+                    return false;
+                break;
+
+            case TokenKind.TEST:
+                if (!ParseTestItem(out statement))
+                    return false;
+                break;
+
+            case TokenKind.ANNOTATION:
+                if (!ParseAnnotationItem(out statement))
+                    return false;
+                break;
+
+            default:
+                if (!ParseDeclareOrAssign(out statement))
+                    return false;
+                break;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Parse data (.dzn).
+    /// For data each item is expected to be an assignment
+    /// from name to value.
+    /// </summary>
+    /// <mzn>a = 1;b = 2; c= true;</mzn>
+    internal bool ParseData(out DataSyntax data)
+    {
+        var assignments = new List<AssignmentSyntax>();
+
+        while (_kind is not TokenKind.EOF)
+        {
+            if (!ParseIdent(out var ident))
+                break;
+
+            if (!Expect(TokenKind.EQUAL))
+                break;
+
+            if (!ParseExpr(out var expr))
+                break;
+
+            var assign = new AssignmentSyntax(ident, expr);
+            assignments.Add(assign);
+
+            if (!Skip(TokenKind.EOL))
+                if (!Expect(TokenKind.EOF))
+                    break;
+        }
+
+        data = new DataSyntax(assignments);
+        return true;
     }
 
     /// <summary>
     /// Parse a predicate declaration
     /// </summary>
     /// <mzn>predicate ok(int: x) = x > 0;</mzn>
-    private bool ParsePredicateItem([NotNullWhen(true)] out SyntaxNode? node)
+    private bool ParsePredicateItem([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
         if (!Expect(TokenKind.PREDICATE, out var start))
@@ -255,7 +285,7 @@ public sealed class Parser
     /// Parse a test declaration
     /// </summary>
     /// <mzn>predicate ok(int: x) = x > 0;</mzn>
-    private bool ParseTestItem([NotNullWhen(true)] out SyntaxNode? node)
+    private bool ParseTestItem([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
         if (!Expect(TokenKind.TEST, out var start))
@@ -277,7 +307,7 @@ public sealed class Parser
     /// Parse a function declaration
     /// </summary>
     /// <mzn>function bool: opposite(bool: x) = not x;</mzn>
-    private bool ParseFunctionItem([NotNullWhen(true)] out SyntaxNode? node)
+    private bool ParseFunctionItem([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
         if (!Expect(TokenKind.FUNCTION, out var start))
@@ -357,7 +387,7 @@ public sealed class Parser
     /// </summary>
     /// <mzn>annotation custom;</mzn>
     /// <mzn>annotation custom(int: x);</mzn>
-    private bool ParseAnnotationItem([NotNullWhen(true)] out SyntaxNode? ann)
+    private bool ParseAnnotationItem([NotNullWhen(true)] out StatementSyntax? ann)
     {
         ann = null;
         if (!Expect(TokenKind.ANNOTATION, out var start))
@@ -381,7 +411,7 @@ public sealed class Parser
     /// <mzn>enum Dir = {N,S,E,W};</mzn>
     /// <mzn>enum Z = anon_enum(10);</mzn>
     /// <mzn>enum X = Q({1,2});</mzn>
-    internal bool ParseEnumItem([NotNullWhen(true)] out SyntaxNode? result)
+    internal bool ParseEnumItem([NotNullWhen(true)] out StatementSyntax? result)
     {
         result = null;
         if (!Expect(TokenKind.ENUM, out var start))
@@ -496,7 +526,7 @@ public sealed class Parser
     /// Parse an Output Item
     /// </summary>
     /// <mzn>output ["The result is \(result)"];</mzn>
-    internal bool ParseOutputItem([NotNullWhen(true)] out SyntaxNode? node)
+    internal bool ParseOutputItem([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
 
@@ -517,7 +547,7 @@ public sealed class Parser
     /// Parse a type alias
     /// </summary>
     /// <mzn>type X = 1 .. 10;</mzn>
-    internal bool ParseAliasItem([NotNullWhen(true)] out SyntaxNode? alias)
+    internal bool ParseAliasItem([NotNullWhen(true)] out StatementSyntax? alias)
     {
         alias = null;
 
@@ -544,7 +574,7 @@ public sealed class Parser
     /// Parse an include item
     /// </summary>
     /// <mzn>include "utils.mzn"</mzn>
-    internal bool ParseIncludeStatement([NotNullWhen(true)] out SyntaxNode? node)
+    internal bool ParseIncludeStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
 
@@ -563,7 +593,7 @@ public sealed class Parser
     /// </summary>
     /// <mzn>solve satisfy;</mzn>
     /// <mzn>solve maximize a;</mzn>
-    internal bool ParseSolveItem([NotNullWhen(true)] out SyntaxNode? node)
+    internal bool ParseSolveItem([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
 
@@ -608,7 +638,7 @@ public sealed class Parser
     /// Parse a constraint
     /// </summary>
     /// <mzn>constraint a > b;</mzn>
-    internal bool ParseConstraintItem([NotNullWhen(true)] out SyntaxNode? constraint)
+    internal bool ParseConstraintItem([NotNullWhen(true)] out StatementSyntax? constraint)
     {
         constraint = null;
 
@@ -631,7 +661,7 @@ public sealed class Parser
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
     /// <mzn>$T: identity($T: x) = x;</mzn>
-    internal bool ParseDeclareOrAssign([NotNullWhen(true)] out SyntaxNode? node)
+    internal bool ParseDeclareOrAssign([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
         var start = _token;
@@ -642,7 +672,7 @@ public sealed class Parser
         {
             if (_kind is TokenKind.EQUAL)
             {
-                ident = new IdentifierSyntax(_token);
+                ident = new IdentifierSyntax(start);
                 goto tail;
             }
             else
@@ -2222,16 +2252,16 @@ public sealed class Parser
     /// </summary>
     /// <example>Parser.ParseFile("model.mzn")</example>
     /// <example>Parser.ParseFile("data.dzn")</example>
-    public static ParseResult<SyntaxTree> ParseFile(string path)
+    public static ModelParseResult ParseModelFile(string path)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
         var parser = new Parser(mzn);
-        var ok = parser.ParseTree(out var tree);
+        var ok = parser.ParseModel(out var model);
         var elapsed = watch.Elapsed;
-        var result = new ParseResult<SyntaxTree>
+        var result = new ModelParseResult
         {
-            SyntaxNode = tree,
+            Model = model,
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
@@ -2253,15 +2283,15 @@ public sealed class Parser
     ///     constraint a /\ b;
     ///     """);
     /// </example>
-    public static ParseResult<SyntaxTree> ParseString(string text)
+    public static ModelParseResult ParseModelString(string text)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
-        var ok = parser.ParseTree(out var tree);
+        var ok = parser.ParseModel(out var model);
         var elapsed = watch.Elapsed;
-        var result = new ParseResult<SyntaxTree>
+        var result = new ModelParseResult
         {
-            SyntaxNode = tree,
+            Model = model,
             SourceFile = null,
             SourceText = text,
             Ok = ok,
@@ -2273,8 +2303,64 @@ public sealed class Parser
         return result;
     }
 
-    /// <inheritdoc cref="ParseFile(string)"/>
-    public static ParseResult<SyntaxTree> ParseFile(FileInfo file) => ParseFile(file.FullName);
+    /// <inheritdoc cref="ParseModelFile(string)"/>
+    public static ModelParseResult ParseModelFile(FileInfo file) => ParseModelFile(file.FullName);
+
+    /// <summary>
+    /// Parse the given minizinc data file.
+    /// Data files only allow assignments eg: `a = 10;`
+    /// </summary>
+    /// <example>Parser.ParseDataFile("data.dzn")</example>
+    public static DataParseResult ParseDataFile(string path)
+    {
+        var watch = Stopwatch.StartNew();
+        var mzn = File.ReadAllText(path);
+        var parser = new Parser(mzn);
+        var ok = parser.ParseData(out var data);
+        var elapsed = watch.Elapsed;
+        var result = new DataParseResult
+        {
+            Data = data,
+            SourceFile = path,
+            SourceText = mzn,
+            Ok = ok,
+            FinalToken = parser._token,
+            Elapsed = elapsed,
+            ErrorMessage = parser._errorMessage,
+            ErrorTrace = parser._errorTrace
+        };
+        return result;
+    }
+
+    /// <summary>
+    /// Parse the given minizinc data string.
+    /// Data strings only allow assignments eg: `a = 10;`
+    /// </summary>
+    /// <example>
+    /// Parser.ParseDataString("a = 10; b=true;");
+    /// </example>
+    public static DataParseResult ParseDataString(string text)
+    {
+        var watch = Stopwatch.StartNew();
+        var parser = new Parser(text);
+        var ok = parser.ParseData(out var data);
+        var elapsed = watch.Elapsed;
+        var result = new DataParseResult
+        {
+            Data = data,
+            SourceFile = null,
+            SourceText = text,
+            Ok = ok,
+            FinalToken = parser._token,
+            Elapsed = elapsed,
+            ErrorMessage = parser._errorMessage,
+            ErrorTrace = parser._errorTrace
+        };
+        return result;
+    }
+
+    /// <inheritdoc cref="ParseDataFile(string)"/>
+    public static DataParseResult ParseDataFile(FileInfo file) => ParseDataFile(file.FullName);
 
     /// Parse an expression of the given type from text
     internal static T? ParseExprAs<T>(string text)

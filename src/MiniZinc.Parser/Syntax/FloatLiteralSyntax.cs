@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record FloatLiteralSyntax : SyntaxNode<decimal>
+public sealed record FloatLiteralSyntax : ExpressionSyntax<decimal>
 {
     public FloatLiteralSyntax(in Token Start)
         : base(Start, Start.DecimalValue) { }

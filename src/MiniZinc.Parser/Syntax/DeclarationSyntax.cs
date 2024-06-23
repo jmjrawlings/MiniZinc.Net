@@ -6,7 +6,7 @@
 /// <mzn>int: a = 10</mzn>
 /// <mzn>var int: a = 10</mzn>
 public sealed record DeclarationSyntax(in Token Start, TypeSyntax Type, IdentifierSyntax Identifier)
-    : SyntaxNode(Start),
+    : StatementSyntax(Start),
         ILetLocalSyntax,
         IIdentifiedSyntax
 {

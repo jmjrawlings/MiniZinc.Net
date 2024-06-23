@@ -77,14 +77,14 @@ class Program
     static void Minify(InvocationContext context, FileInfo file)
     {
         var console = context.Console;
-        var result = Parser.ParseFile(file);
+        var result = Parser.ParseModelFile(file);
         if (!result.Ok)
         {
             console.Error.WriteLine(result.ErrorMessage!);
             return;
         }
 
-        var model = result.SyntaxNode;
+        var model = result.Model;
         var minified = model.Write(WriteOptions.Minimal);
         File.WriteAllText(file.FullName, minified);
         console.WriteLine(file.FullName);
@@ -106,14 +106,14 @@ class Program
     static void Format(InvocationContext context, FileInfo file)
     {
         var console = context.Console;
-        var result = Parser.ParseFile(file);
+        var result = Parser.ParseModelFile(file);
         if (!result.Ok)
         {
             console.Error.WriteLine(result.ErrorMessage!);
             context.ExitCode = 100;
             return;
         }
-        var model = result.SyntaxNode;
+        var model = result.Model;
         var output = model.Write(WriteOptions.Pretty);
         File.WriteAllText(file.FullName, output);
         console.WriteLine(file.FullName);

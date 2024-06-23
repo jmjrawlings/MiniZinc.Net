@@ -431,6 +431,16 @@ public class ParserUnitTests
         oz.Should().BeEquivalentTo(mzn);
     }
 
+    [Fact]
+    void test_parse_union_type_arg()
+    {
+        var mzn = "var ..-1 union {1,3}";
+        var parser = new Parser(mzn);
+        var ok = parser.ParseType(out var type);
+        ok.Should().BeTrue();
+        var a = 2;
+    }
+
     [Theory]
     [InlineData("-2.8421709430404e-14")]
     [InlineData("2e10")]
@@ -450,11 +460,11 @@ public class ParserUnitTests
         ok.Should().BeTrue();
     }
 
-    SyntaxTree ParseString(string mzn)
+    ModelSyntax ParseString(string mzn)
     {
-        var result = Parser.ParseString(mzn);
+        var result = Parser.ParseModelString(mzn);
         result.ErrorTrace.Should().BeNull();
-        return result.SyntaxNode;
+        return result.Model;
     }
 
     T ParseExprAs<T>(string mzn)
@@ -463,7 +473,7 @@ public class ParserUnitTests
     T ParseNode<T>(string mzn)
     {
         var tree = ParseString(mzn);
-        var nodes = tree.Nodes;
+        var nodes = tree.Statements;
         var node = nodes[0];
         if (node is not T t)
         {

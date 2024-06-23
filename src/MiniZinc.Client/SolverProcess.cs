@@ -242,13 +242,11 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
 
         if (dzn is not null)
         {
-            var parsed = Parser.ParseString(dzn!);
+            var parsed = Parser.ParseDataString(dzn);
             _data = new Dictionary<string, SyntaxNode>();
             parsed.EnsureOk();
-            foreach (var node in parsed.SyntaxNode.Nodes)
+            foreach (var assign in parsed.Data.Assignments)
             {
-                if (node is not AssignmentSyntax assign)
-                    throw new Exception();
                 var name = assign.Identifier.ToString();
                 var value = assign.Expr;
                 _data[name] = value;
@@ -292,7 +290,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
 
     private void OnStatusOutput(StatusOutput o)
     {
-        _solveStatus = o.Status switch
+        SolveStatus? solveStatus = o.Status switch
         {
             "ALL_SOLUTIONS" => SolveStatus.AllSolutions,
 
@@ -304,13 +302,23 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
 
             "UNSAT_OR_UNBOUNDED" => SolveStatus.UnsatOrUnbounded,
 
-            "UNKNOWN" => SolveStatus.Error,
-
             "ERROR" => SolveStatus.Error,
 
-            var s => throw new Exception($"Unexpected status {s}")
+            _ => null
         };
-        _current = CreateResult();
+
+        if (solveStatus is { } status)
+        {
+            _solveStatus = status;
+            _current = CreateResult();
+        }
+        else
+        {
+            // TODO - confirm
+            _solveStatus = SolveStatus.Timeout;
+            _current = CreateResult(error: "time limit reached");
+        }
+
         _channel.Writer.TryWrite(_current);
     }
 

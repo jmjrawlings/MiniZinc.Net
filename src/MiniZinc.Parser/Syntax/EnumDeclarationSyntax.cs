@@ -16,7 +16,7 @@ public record EnumCasesSyntax(in Token Start, EnumCaseType Type, SyntaxNode? Exp
 }
 
 public sealed record EnumDeclarationSyntax(in Token Start, IdentifierSyntax Identifier)
-    : SyntaxNode(Start),
+    : StatementSyntax(Start),
         IIdentifiedSyntax
 {
     public string Name => Identifier.Name;
