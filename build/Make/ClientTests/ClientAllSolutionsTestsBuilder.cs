@@ -4,22 +4,24 @@ namespace Make;
 
 public sealed class ClientAllSolutionsTestsBuilder : ClientTestsBuilder
 {
-    public ClientAllSolutionsTestsBuilder(string name, IEnumerable<TestCase> testCases) : base(name, testCases)
+    public ClientAllSolutionsTestsBuilder(TestSpec spec)
+        : base("ClientAllSolutionsTests", spec)
     {
-        foreach (var testCase in testCases)
+        foreach (var testCase in spec.TestCases)
         {
             if (testCase.Type is not TestType.AllSolutions)
                 continue;
-            
-            if (testCase.Solvers is not { } solvers)
+
+            if (GetTestInfo(testCase) is not { } info)
                 continue;
-            
-            MakeTest(testCase, solvers);
+
+            MakeTest(info);
         }
     }
-    
-    void MakeTest(TestCase testCase, IReadOnlyList<string> solvers)
+
+    void MakeTest(TestCaseInfo info)
     {
+        using var _ = WriteTestHeader(info);
         Var("solution", "await Solve(model, options, SolveStatus.Satisfied)");
     }
 }

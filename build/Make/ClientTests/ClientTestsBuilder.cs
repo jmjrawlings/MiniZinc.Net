@@ -23,17 +23,11 @@ public abstract class ClientTestsBuilder : CodeBuilder
             """
         );
 
-        Block($"public class Client{className}Tests : IClassFixture<ClientFixture>");
+        Block($"public class {className} : IClassFixture<ClientFixture>");
         WriteLn("private readonly MiniZincClient MiniZinc;");
         WriteLn("private readonly ITestOutputHelper _output;");
 
-        using (
-            Function(
-                "public ClientIntegrationTests",
-                "ClientFixture fixture",
-                "ITestOutputHelper output"
-            )
-        )
+        using (Function($"public {className}", "ClientFixture fixture", "ITestOutputHelper output"))
         {
             WriteLn("MiniZinc = fixture.Client;");
             WriteLn("_output = output;");

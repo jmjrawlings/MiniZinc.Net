@@ -1,27 +1,30 @@
-﻿using LibMiniZinc.Tests;
+﻿namespace Make;
+
+using LibMiniZinc.Tests;
 using MiniZinc.Parser;
 
-namespace Make;
-
-public sealed class ClientAnySolutionTestsBuilder : ClientTestsBuilder
+public sealed class ClientOptimiseTestsBuilder : ClientTestsBuilder
 {
-    public ClientAnySolutionTestsBuilder(string name, IEnumerable<TestCase> testCases) : base(name, testCases)
+    public ClientOptimiseTestsBuilder(TestSpec spec)
+        : base("ClientOptimiseTests", spec)
     {
-        foreach (var testCase in testCases)
+        foreach (var testCase in spec.TestCases)
         {
-            if (testCase.Type is not TestType.AnySolution)
+            if (testCase.Type is not TestType.Optimise)
                 continue;
-            _testCases.Add(testCase);
+
+            if (GetTestInfo(testCase) is not { } info)
+                continue;
+
+            MakeTest(info);
         }
-        
-        foreach (var testCase in _testCases)
-            MakeTest(testCase);
     }
-    
-    void MakeTest(TestCase testCase)
+
+    void MakeTest(TestCaseInfo info)
     {
+        using var _ = WriteTestHeader(info);
         Var("solution", "await Solve(model, options, SolveStatus.Satisfied, SolveStatus.Optimal)");
-        var dzns = testCase
+        var dzns = info
             .Solutions?.Select(sol => sol.Dzn)
             .Where(dzn => dzn is not null)
             .Select(dzn => dzn!);
