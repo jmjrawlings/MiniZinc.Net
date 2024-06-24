@@ -1,6 +1,5 @@
 ﻿namespace MiniZinc.Client;
 
-using System.Text.Json.Nodes;
 using Core;
 using Models;
 using Parser.Syntax;
@@ -51,9 +50,15 @@ public abstract record SolveResult<T>
     public required int Iteration { get; init; }
 
     /// <summary>
-    /// The assigned values to each variable in the model
+    /// The variables and their assigned values from the solution
     /// </summary>
-    public required IReadOnlyDictionary<string, SyntaxNode>? Data { get; init; }
+    public required IReadOnlyDictionary<string, ExpressionSyntax>? Data { get; init; }
+
+    /// <summary>
+    /// The solution as dzn data text
+    /// </summary>
+    /// <example>a=10;b=true;c=[1,2,3];</example>
+    public required string? DataString { get; init; }
 
     // /// <summary>
     // /// Items from the output section
