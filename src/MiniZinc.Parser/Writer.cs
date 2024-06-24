@@ -200,7 +200,11 @@ internal sealed class Writer
 
             case AssignmentSyntax e:
                 Write(e.Identifier);
-                Spaced(EQUAL);
+                if (_minify)
+                    Space();
+                Write(EQUAL);
+                if (_minify)
+                    Space();
                 WriteNode(e.Expr);
                 EndStatement();
                 break;
