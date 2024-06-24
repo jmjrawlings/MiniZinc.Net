@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MiniZinc.Command\MiniZinc.Command.csproj" />
+    <ProjectReference Include="..\..\src\MiniZinc.Parser\MiniZinc.Parser.csproj" />
     <ProjectReference Include="..\TestSpecParser\TestSpecParser.csproj" />
     <ProjectReference Include="..\TestSpec\TestSpec.csproj" />
     <ProjectReference Include="..\Repo\Repo.csproj" />
