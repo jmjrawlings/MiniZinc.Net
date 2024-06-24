@@ -4,4 +4,4 @@ public sealed record GeneratorCallSyntax(
     IdentifierSyntax Name,
     SyntaxNode Expr,
     List<GeneratorSyntax> Generators
-) : SyntaxNode(Name.Start) { }
+) : ExpressionSyntax(Name.Start) { }

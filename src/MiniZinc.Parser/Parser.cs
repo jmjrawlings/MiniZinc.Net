@@ -366,7 +366,7 @@ public sealed class Parser
         if (!ParseAnnotations(out var anns))
             return false;
 
-        SyntaxNode? body = null;
+        ExpressionSyntax? body = null;
         if (Skip(TokenKind.EQUAL))
             if (!ParseExpr(out body))
                 return false;
@@ -603,7 +603,7 @@ public sealed class Parser
         if (!ParseAnnotations(out var anns))
             return false;
 
-        SyntaxNode? objective = null;
+        ExpressionSyntax? objective = null;
         SolveMethod method = SolveMethod.Satisfy;
         switch (_kind)
         {
@@ -726,9 +726,9 @@ public sealed class Parser
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1]</mzn>
     /// <mzn>record.field</mzn>
-    internal bool ParseExprAtom(out SyntaxNode expr)
+    internal bool ParseExprAtom([NotNullWhen(true)] out ExpressionSyntax? expr)
     {
-        expr = null!;
+        expr = null;
         var token = _token;
 
         switch (_kind)
@@ -854,7 +854,7 @@ public sealed class Parser
     /// Parse the tail of an expression atom
     /// </summary>
     /// <returns>True if no errors were encountered</returns>
-    internal bool ParseExprAtomTail(ref SyntaxNode expr)
+    internal bool ParseExprAtomTail(ref ExpressionSyntax expr)
     {
         while (true)
         {
@@ -902,7 +902,7 @@ public sealed class Parser
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
     internal bool ParseExpr(
-        out SyntaxNode expr,
+        [NotNullWhen(true)] out ExpressionSyntax? expr,
         Assoc associativity = 0,
         ushort precedence = ushort.MaxValue,
         bool typeInst = false
@@ -1012,9 +1012,9 @@ public sealed class Parser
     ///<mzn>forall(i in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i,j in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i in 1..3, j in 1..3 where i > j)(xd[i]);</mzn>
-    internal bool ParseIdentExpr(out SyntaxNode result)
+    internal bool ParseIdentExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
-        result = null!;
+        result = null;
         var name = new IdentifierSyntax(_token);
         if (_kind is not TokenKind.IDENTIFIER)
             return Expected("Identifier");
@@ -1223,9 +1223,9 @@ public sealed class Parser
     /// </summary>
     /// <mzn>[1,2,3]</mzn>
     /// <mzn>[ x | x in [a,b,c]]</mzn>
-    internal bool ParseBracketExpr(out SyntaxNode result)
+    internal bool ParseBracketExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
-        result = null!;
+        result = null;
 
         if (!Expect(TokenKind.OPEN_BRACKET, out var start))
             return false;
@@ -1271,11 +1271,11 @@ public sealed class Parser
      * Or a composite form like
      * `[0: A, B, C, D]`
      */
-    bool Parse1dArrayLiteral(in Token start, out SyntaxNode result)
+    bool Parse1dArrayLiteral(in Token start, [NotNullWhen(true)] out ExpressionSyntax? result)
     {
-        result = default!;
-        SyntaxNode index;
-        SyntaxNode element;
+        result = default;
+        ExpressionSyntax index;
+        ExpressionSyntax element;
 
         // Parse the first element
         if (!ParseExpr(out var value))
@@ -1324,7 +1324,7 @@ public sealed class Parser
 
             if (indexed)
             {
-                if (!ParseExpr(out index))
+                if (!ParseExpr(out index!))
                     return false;
                 if (!Skip(TokenKind.COLON))
                 {
@@ -1568,9 +1568,9 @@ public sealed class Parser
     /// </summary>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>{ x | x in [1,2,3]}</mzn>
-    private bool ParseBraceExpr(out SyntaxNode result)
+    private bool ParseBraceExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
-        result = null!;
+        result = null;
 
         if (!Expect(TokenKind.OPEN_BRACE, out var start))
             return false;
@@ -1618,9 +1618,9 @@ public sealed class Parser
         return Expect(TokenKind.CLOSE_BRACE);
     }
 
-    internal bool ParseLetExpr(out LetSyntax let)
+    internal bool ParseLetExpr([NotNullWhen(true)] out ExpressionSyntax? let)
     {
-        let = null!;
+        let = null;
 
         if (!Expect(TokenKind.LET, out var start))
             return false;
@@ -1676,20 +1676,25 @@ public sealed class Parser
         return true;
     }
 
-    private bool ParseIfThenCase(out SyntaxNode @if, out SyntaxNode @then, TokenKind ifKeyword)
+    private bool ParseIfThenCase(
+        [NotNullWhen(true)] out ExpressionSyntax? ifCase,
+        out ExpressionSyntax? thenCase,
+        TokenKind ifKeyword
+    )
     {
-        @if = default!;
-        @then = default!;
+        ifCase = null;
+        thenCase = null;
+
         if (!Skip(ifKeyword))
             return false;
 
-        if (!ParseExpr(out @if))
+        if (!ParseExpr(out ifCase))
             return false;
 
         if (!Skip(TokenKind.THEN))
             return false;
 
-        if (!ParseExpr(out @then))
+        if (!ParseExpr(out thenCase))
             return false;
 
         return true;
@@ -1700,21 +1705,21 @@ public sealed class Parser
     /// </summary>
     /// <mzn>if x > 0 then y > 0 else true endif</mzn>
     /// <mzn>if z then 100 else 200 endif</mzn>
-    private bool ParseIfElseExpr(out SyntaxNode node)
+    private bool ParseIfElseExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
-        node = null!;
+        result = null;
         var start = _token;
 
         if (!ParseIfThenCase(out var ifCase, out var thenCase, TokenKind.IF))
             return false;
 
-        var ite = new IfElseSyntax(start, ifCase, thenCase);
-        node = ite;
+        var ite = new IfThenSyntax(start, ifCase, thenCase);
+        result = ite;
 
         while (ParseIfThenCase(out ifCase, out thenCase, TokenKind.ELSEIF))
         {
-            ite.ElseIfs ??= new List<(SyntaxNode elseif, SyntaxNode then)>();
-            ite.ElseIfs.Add((ifCase, thenCase));
+            ite.ElseIfs ??= new List<(ExpressionSyntax elseif, ExpressionSyntax then)>();
+            ite.ElseIfs.Add((ifCase, thenCase!));
         }
 
         if (Skip(TokenKind.ELSE))
@@ -1738,9 +1743,9 @@ public sealed class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private bool ParseParenExpr(out SyntaxNode result)
+    private bool ParseParenExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
-        result = null!;
+        result = null;
 
         if (!Expect(TokenKind.OPEN_PAREN, out var start))
             return false;
@@ -1817,7 +1822,7 @@ public sealed class Parser
         annotations = null;
         while (Skip(TokenKind.COLON_COLON))
         {
-            SyntaxNode? ann;
+            ExpressionSyntax? ann;
 
             // Edge case where 'output' keyword can be used
             // in a non-keyword context, eg:

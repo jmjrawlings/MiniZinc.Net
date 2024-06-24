@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record IdentifierSyntax(in Token Token) : SyntaxNode(Token)
+public sealed record IdentifierSyntax(in Token Token) : ExpressionSyntax(Token)
 {
     public TokenKind Kind => Token.Kind;
 
