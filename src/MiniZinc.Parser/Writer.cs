@@ -361,7 +361,7 @@ internal sealed class Writer
                 WriteAnnotations(e);
                 break;
 
-            case IfElseSyntax e:
+            case IfThenSyntax e:
                 Write(IF);
                 Space();
                 WriteNode(e.If);

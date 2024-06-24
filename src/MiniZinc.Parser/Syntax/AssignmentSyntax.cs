@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record AssignmentSyntax(IdentifierSyntax Identifier, SyntaxNode Expr)
+public sealed record AssignmentSyntax(IdentifierSyntax Identifier, ExpressionSyntax Expr)
     : StatementSyntax(Identifier.Start),
         ILetLocalSyntax,
         IIdentifiedSyntax
