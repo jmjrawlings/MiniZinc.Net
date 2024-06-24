@@ -4,12 +4,29 @@ using System.Diagnostics;
 using System.Text;
 
 /// <summary>
-/// Wraps a StringBuilder for use in code generation
+/// Helper class akin to a StringBuilder for generating
+/// C# code.  Blocks are constructed using scopes that
+/// correctly indent and dedent on use/disposal.
+///
+/// For non-trivial uses this should be subclassed make
+/// it easier to read.
 /// </summary>
+/// <example>
+/// var code = new CodeBuilder();
+/// using (code.Function("int Sum", "int a", "int b"))
+///     code.Return("a+b");
+/// code.Newline();
+/// code.Var("a", "100");
+/// code.Var("b", "200");
+/// code.Var("c", "Sum(a,b)");
+/// using (code.If("a > b"))
+///     using(code.If("b > c"))
+///         code.Throw("Exception", "\"Invalid math\"");
+/// </example>
 public class CodeBuilder
 {
     protected readonly StringBuilder _sb;
-    protected int _indent = 0;
+    protected int _indent;
     private readonly Stack<IDisposable> _context;
 
     readonly struct Disposable : IDisposable
@@ -27,8 +44,13 @@ public class CodeBuilder
         }
     }
 
-    public CodeBuilder()
+    /// <summary>
+    /// Create a new CodeBuilder
+    /// </summary>
+    /// <param name="indent">The initial indentation level</param>
+    public CodeBuilder(int indent = 0)
     {
+        _indent = indent;
         _sb = new();
         _context = new Stack<IDisposable>();
     }
@@ -52,6 +74,23 @@ public class CodeBuilder
         Newline();
     }
 
+    public void Namespace(string name) => Block($"namespace {name}");
+
+    public void Class(string name) => Block($"class {name}");
+
+    public void Record(string name) => Block($"record {name}");
+
+    public void Throw(string exn, params string[] args) =>
+        WriteLn($"throw new {exn}({string.Join(", ", args)});");
+
+    public void Return(string? s = null)
+    {
+        if (s is null)
+            WriteLn("return;");
+        else
+            WriteLn($"return {s}");
+    }
+
     protected void Attribute(string s)
     {
         Write($"[{s}]");
@@ -68,17 +107,32 @@ public class CodeBuilder
         Newline();
     }
 
-    public void Var(string name, string s)
+    public void Var(string name, string? s)
     {
         Write("var ");
         Append(name);
         Append(" = ");
-        Append(s);
+        Append(s ?? "null");
+        Append(';');
+        Newline();
+    }
+
+    public void Declare(string type, string name, string? value)
+    {
+        Write(type);
+        Spaces();
+        Append(name);
+        Append(" = ");
+        Append(value ?? "null");
         Append(';');
         Newline();
     }
 
     public IDisposable If(string expr) => Block($"if ({expr})");
+
+    public IDisposable ElseIf(string expr) => Block($"else if ({expr})");
+
+    public IDisposable Else(string expr) => Block($"else");
 
     public IDisposable ForEach(string expr) => Block($"foreach ({expr})");
 
