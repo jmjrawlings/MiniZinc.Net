@@ -1,6 +1,6 @@
-﻿using MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-namespace MiniZinc.Parser;
+using Syntax;
 
 public record ParseResult
 {
@@ -16,10 +16,8 @@ public record ParseResult
     {
         if (Ok)
             return;
-        if (ErrorMessage is not null)
-            throw new ParseException(ErrorMessage, ErrorTrace);
-        else
-            throw new ParseException("Could not parse");
+
+        throw new MiniZincParseException(ErrorMessage ?? "", ErrorTrace ?? "", FinalToken);
     }
 }
 
