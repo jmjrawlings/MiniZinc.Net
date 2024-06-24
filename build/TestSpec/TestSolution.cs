@@ -1,10 +1,14 @@
 ﻿namespace LibMiniZinc.Tests;
 
-using System.Text.Json.Nodes;
-
 public sealed record TestSolution
 {
-    public required string Dzn { get; set; }
+    /// <summary>
+    /// Dzn data string to be tested against eg: `a = 10;`
+    /// </summary>
+    public string? Dzn { get; set; }
 
+    /// <summary>
+    /// Expected output string eg: `ok`
+    /// </summary>
     public string? Output { get; set; }
 }
