@@ -34,7 +34,8 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     protected TimePeriod _iterTime;
     protected int _iteration;
     protected SolveStatus _solveStatus;
-    protected Dictionary<string, SyntaxNode> _data;
+    protected Dictionary<string, ExpressionSyntax> _data;
+    protected string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
     private readonly TaskCompletionSource<T> _completion;
@@ -55,7 +56,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         _cancellation = cancellation;
         _completion = new TaskCompletionSource<T>();
         _warnings = new List<string>();
-        _data = new Dictionary<string, SyntaxNode>();
+        _data = new Dictionary<string, ExpressionSyntax>();
         model.EnsureOk();
         ModelText = model.SourceText;
         SolverId = options?.SolverId ?? Solver.Gecode;
@@ -233,17 +234,17 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         _solveStatus = SolveStatus.Satisfied;
         if (o.Sections is not { } sections)
             return;
-        string? dzn = null;
+        _dataString = null;
         foreach (var section in sections)
         {
             if (section is "dzn")
-                dzn = o.Output[section].ToString();
+                _dataString = o.Output[section].ToString();
         }
 
-        if (dzn is not null)
+        if (_dataString is not null)
         {
-            var parsed = Parser.ParseDataString(dzn);
-            _data = new Dictionary<string, SyntaxNode>();
+            var parsed = Parser.ParseDataString(_dataString);
+            _data = new Dictionary<string, ExpressionSyntax>();
             parsed.EnsureOk();
             foreach (var assign in parsed.Data.Assignments)
             {
@@ -407,6 +408,7 @@ public sealed class SolverProcess : SolverProcess<SolveResult>
             Iteration = _iteration,
             Warnings = _warnings,
             IterationTime = _iterTime,
+            DataString = _dataString,
             Data = _data,
             Statistics = _statistics,
             Error = error,
@@ -456,6 +458,7 @@ public sealed class IntProcess : SolverProcess<IntResult>
             Iteration = _iteration,
             Warnings = _warnings,
             IterationTime = _iterTime,
+            DataString = _dataString,
             Data = _data,
             Statistics = _statistics,
             Error = error,
@@ -506,6 +509,7 @@ public sealed class FloatProcess : SolverProcess<FloatResult>
             Iteration = _iteration,
             Warnings = _warnings,
             IterationTime = _iterTime,
+            DataString = _dataString,
             Data = _data,
             Statistics = _statistics,
             Error = error,
