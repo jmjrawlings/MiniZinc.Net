@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Text.Json.Nodes;
 
 [DebuggerDisplay("{Path}")]
-public sealed record TestCase
+public record TestCase
 {
     /// Path of the test case relative to the test spec dir
     public required string Path { get; init; }

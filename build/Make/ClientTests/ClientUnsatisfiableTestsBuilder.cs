@@ -1,48 +1,46 @@
-﻿using LibMiniZinc.Tests;
+﻿namespace Make;
 
-namespace Make;
+using LibMiniZinc.Tests;
 
 public sealed class ClientUnsatisfiableTestsBuilder : ClientTestsBuilder
 {
-    public ClientUnsatisfiableTestsBuilder(string name, IEnumerable<TestCase> testCases) : base(name, testCases)
+    public ClientUnsatisfiableTestsBuilder(TestSpec spec)
+        : base("ClientUnsatisfiableTests", spec)
     {
-        using (Function("async Task Test", "string path", "string solverId", "params string args"))
+        using (Function("async Task Test", "string path", "string solver", "string[]? args"))
         {
-            Write(
-                """
-                Write(path);
-                WriteSection();
-                var model = Model.FromFile(path);
-                Write(model.SourceText);
-                WriteSection();
-                foreach (var warn in model.Warnings)
-                    WriteWarning(warn);
-                var options = SolveOptions.Create(solverId:solver);
-                options = options.AddArgs(args);
-                var solution = await _client.Solve(model, options);
-                solution.Status.Should.Be(SolveStatus.Unsatisfiable);
-                """
-            );
+            WriteMessage("path");
+            WriteSection();
+            Var("model", "Model.FromFile(path)");
+            WriteMessage("model.SourceText");
+            WriteSection();
+            using (ForEach("var warn in model.Warnings"))
+            {
+                WriteMessage("warn");
+            }
+            Var("options", "SolveOptions.Create(solverId:solver)");
+            using (If("args is not null"))
+                WriteLn("options = options.AddArgs(args);");
+            Var("result", "await MiniZinc.Solve(model, options)");
+            WriteLn("result.IsSuccess.Should().BeFalse();");
+            WriteLn("result.Status.Should().Be(SolveStatus.Unsatisfiable);");
         }
-        
-        foreach (var testCase in testCases)
+
+        foreach (var testCase in spec.TestCases)
         {
             if (testCase.Type is not TestType.Unsatisfiable)
                 continue;
-            
-            if (testCase.Sequence > 1)
-                var testName = 
-                
-            
-            
-                    MakeTest(testCase);
+
+            if (GetTestInfo(testCase) is not { } info)
+                continue;
+
+            WriteTest(info);
         }
     }
-    
-    void MakeTest(TestCase testCase)
+
+    void WriteTest(TestCaseInfo info)
     {
-        using (Function($"async Task {testCase.} "))
-        
-            WriteLn("Test(path, solver);");
+        using var _ = WriteTestHeader(info);
+        WriteLn("Test(path, solver);");
     }
 }
