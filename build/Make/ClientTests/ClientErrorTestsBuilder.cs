@@ -1,25 +1,78 @@
-﻿using LibMiniZinc.Tests;
+﻿namespace Make;
 
-namespace Make;
+using LibMiniZinc.Tests;
 
-public sealed class ClientAllSolutionsTestsBuilder : ClientTestsBuilder
+public sealed class ClientErrorTestsBuilder : ClientTestsBuilder
 {
-    public ClientAllSolutionsTestsBuilder(string name, IEnumerable<TestCase> testCases) : base(name, testCases)
+    public ClientErrorTestsBuilder(TestSpec spec)
+        : base("ClientErrorTests", spec)
     {
-        foreach (var testCase in testCases)
+        using (
+            Function(
+                "async Task Test",
+                "string path",
+                "string solver",
+                "string? errorMessage",
+                "string? errorRegex",
+                "params string[] args"
+            )
+        )
         {
-            if (testCase.Type is not TestType.AllSolutions)
+            WriteMessage("path");
+            WriteSection();
+            Var("model", "Model.FromFile(path)");
+            WriteMessage("model.SourceText");
+            WriteSection();
+            using (ForEach("var warn in model.Warnings"))
+            {
+                WriteMessage("warn");
+            }
+            Var("options", "SolveOptions.Create(solverId:solver)");
+            WriteLn("options = options.AddArgs(args);");
+            Var("result", "await MiniZinc.Solve(model, options)");
+            WriteLn("result.IsSuccess.Should().BeFalse();");
+            using (If("errorRegex is not null"))
+                WriteLn("result.Error.Should().MatchRegex(errorRegex);");
+            using (ElseIf("errorMessage is not null"))
+                WriteLn("result.Error.Should().Be(errorMessage);");
+        }
+
+        foreach (var testCase in spec.TestCases)
+        {
+            var err = testCase.Type switch
+            {
+                TestType.Error => true,
+                TestType.AssertionError => true,
+                TestType.EvaluationError => true,
+                TestType.SyntaxError => true,
+                TestType.TypeError => true,
+                TestType.MiniZincError => true,
+                _ => false
+            };
+
+            if (!err)
                 continue;
-            
-            if (testCase.Solvers is not { } solvers)
+
+            if (GetTestInfo(testCase) is not { } info)
                 continue;
-            
-            MakeTest(testCase, solvers);
+
+            MakeTest(info);
         }
     }
-    
-    void MakeTest(TestCase testCase, IReadOnlyList<string> solvers)
+
+    void MakeTest(TestCaseInfo info)
     {
-        Var("solution", "await Solve(model, options, SolveStatus.Satisfied)");
+        using var _ = WriteTestHeader(info);
+        if (info.ErrorMessage is { } err)
+            Declare("string?", "errorMessage", $"\"{err}\"");
+        else
+            Declare("string?", "errorMessage", null);
+
+        if (info.ErrorRegex is { } regex)
+            Declare("string?", "errorRegex", $"\"{regex.Replace("\\", "")}\"");
+        else
+            Declare("string?", "errorRegex", null);
+
+        WriteLn("await Test(path, solver, errorMessage, errorRegex);");
     }
 }
