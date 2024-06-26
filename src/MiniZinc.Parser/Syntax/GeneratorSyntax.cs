@@ -1,7 +1,10 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record GeneratorSyntax(in Token Start) : ExpressionSyntax(Start)
+public sealed class GeneratorSyntax : ExpressionSyntax
 {
+    public GeneratorSyntax(in Token start)
+        : base(start) { }
+
     public required List<IdentifierSyntax> Names { get; set; }
 
     public required ExpressionSyntax From { get; set; }

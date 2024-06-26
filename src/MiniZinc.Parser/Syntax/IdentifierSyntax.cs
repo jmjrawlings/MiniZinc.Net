@@ -1,10 +1,13 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record IdentifierSyntax(in Token Token) : ExpressionSyntax(Token)
+public sealed class IdentifierSyntax : ExpressionSyntax
 {
-    public TokenKind Kind => Token.Kind;
+    public IdentifierSyntax(in Token token)
+        : base(token) { }
 
-    public string Name => Token.StringValue;
+    public TokenKind Kind => Start.Kind;
 
-    public override string ToString() => Token.ToString();
+    public string Name => Start.StringValue;
+
+    public override string ToString() => Start.ToString();
 }

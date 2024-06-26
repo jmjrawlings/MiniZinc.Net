@@ -1,4 +1,14 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record ArrayAccessSyntax(SyntaxNode Array, List<SyntaxNode> Access)
-    : ExpressionSyntax(Array.Start) { }
+public sealed class ArrayAccessSyntax : ExpressionSyntax
+{
+    public readonly ExpressionSyntax Array;
+    public readonly List<ExpressionSyntax> Access;
+
+    public ArrayAccessSyntax(ExpressionSyntax array, List<ExpressionSyntax> access)
+        : base(array.Start)
+    {
+        Array = array;
+        Access = access;
+    }
+}

@@ -1,12 +1,12 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record IntLiteralSyntax : ExpressionSyntax<int>
+public sealed class IntLiteralSyntax : ExpressionSyntax<int>
 {
-    public IntLiteralSyntax(in Token Start)
-        : base(Start, Start.IntValue) { }
+    public IntLiteralSyntax(in Token token)
+        : base(token, token.IntValue) { }
 
-    public IntLiteralSyntax(in Token Start, int Value)
-        : base(Start, Value) { }
+    public IntLiteralSyntax(in Token token, int value)
+        : base(token, value) { }
 
     public static implicit operator int(IntLiteralSyntax expr) => expr.Value;
 

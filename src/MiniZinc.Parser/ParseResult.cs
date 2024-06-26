@@ -17,7 +17,7 @@ public record ParseResult
         if (Ok)
             return;
 
-        throw new MiniZincParseException(ErrorMessage ?? "", ErrorTrace ?? "", FinalToken);
+        throw new MiniZincParseException(ErrorMessage ?? "", FinalToken, ErrorTrace);
     }
 }
 

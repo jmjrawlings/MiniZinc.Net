@@ -1,6 +1,9 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record WildCardSyntax(in Token Start) : ExpressionSyntax(Start)
+public sealed class WildCardSyntax : ExpressionSyntax
 {
+    public WildCardSyntax(in Token start)
+        : base(start) { }
+
     public override string ToString() => "_";
 }
