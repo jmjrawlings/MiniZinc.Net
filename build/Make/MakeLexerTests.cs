@@ -35,8 +35,8 @@ public sealed class MakeLexerTests : CodeBuilder
             testName = testName.Replace("/", "_");
             testName = testName.Replace("-", "_");
             testName = $"test_lex_{testName}";
-            Newline();
-            WriteLn($"[Fact(DisplayName = \"{path}\")]");
+            NewLine();
+            Attribute("Fact", "DisplayName = \"{path}\"");
             using (Block($"public void {testName}()"))
             {
                 Var("path", $"\"{path}\"");

@@ -8,14 +8,12 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="YamlDotNet" Version="15.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MiniZinc.Command\MiniZinc.Command.csproj" />
     <ProjectReference Include="..\..\src\MiniZinc.Parser\MiniZinc.Parser.csproj" />
-    <ProjectReference Include="..\TestSpecParser\TestSpecParser.csproj" />
-    <ProjectReference Include="..\TestSpec\TestSpec.csproj" />
-    <ProjectReference Include="..\Repo\Repo.csproj" />
   </ItemGroup>
 
 </Project>

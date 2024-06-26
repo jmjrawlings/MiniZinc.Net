@@ -1,7 +1,7 @@
-﻿using LibMiniZinc.Tests;
-using MiniZinc.Build;
+﻿namespace Make;
 
-namespace Make;
+using LibMiniZinc.Tests;
+using MiniZinc.Build;
 
 public static class MakeClientTests
 {
