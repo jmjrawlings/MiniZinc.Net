@@ -34,7 +34,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     protected TimePeriod _iterTime;
     protected int _iteration;
     protected SolveStatus _solveStatus;
-    protected Dictionary<string, ExpressionSyntax> _data;
+    protected IReadOnlyDictionary<string, ExpressionSyntax> _data;
     protected string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
@@ -244,15 +244,8 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         if (_dataString is not null)
         {
             var parsed = Parser.ParseDataString(_dataString);
-            _data = new Dictionary<string, ExpressionSyntax>();
             parsed.EnsureOk();
-            foreach (var assign in parsed.Data.Assignments)
-            {
-                var name = assign.Identifier.ToString();
-                var value = assign.Expr;
-                _data[name] = value;
-            }
-
+            _data = parsed.Data.Variables;
             _data.TryGetValue("_objective", out var objectiveNode);
             IntOrFloat? objective = objectiveNode switch
             {
@@ -441,12 +434,14 @@ public sealed class IntProcess : SolverProcess<IntResult>
     {
         Guard.IsFalse(objectiveValue?.IsFloat ?? false);
         Guard.IsFalse(objectiveBoundValue?.IsFloat ?? false);
+        int? objectivePrev = _current?.Objective;
         int? objective = objectiveValue?.IntValue ?? _current?.Objective;
+        int? objectiveBoundPrev = _current?.ObjectiveBound;
         int? objectiveBound = objectiveBoundValue?.IntValue ?? _current?.ObjectiveBound;
         int? absoluteGapToOptimality = objective - objectiveBound;
-        double? relativeGapToOptimality = absoluteGapToOptimality / objectiveBound;
-        int? absoluteIterationGap = objective - _current?.Objective;
-        double? relativeIterationGap = absoluteIterationGap / _current?.Objective;
+        int? absoluteIterationGap = objective - objectivePrev;
+        double? relativeGapToOptimality = null;
+        double? relativeIterationGap = null;
 
         var result = new IntResult
         {
@@ -491,14 +486,14 @@ public sealed class FloatProcess : SolverProcess<FloatResult>
     {
         Guard.IsTrue(objectiveValue?.IsFloat ?? true);
         Guard.IsTrue(objectiveBoundValue?.IsFloat ?? true);
-        float? objective = objectiveValue?.FloatValue ?? _current?.Objective;
-        float? objectiveBound = objectiveBoundValue?.FloatValue ?? _current?.ObjectiveBound;
-
+        float? objectivePrev = _current?.Objective;
+        float? objective = objectiveValue?.FloatValue ?? objectivePrev;
+        float? objectiveBoundPrev = _current?.ObjectiveBound;
+        float? objectiveBound = objectiveBoundValue?.FloatValue ?? objectiveBoundPrev;
         float? absoluteGapToOptimality = objective - objectiveBound;
-        double? relativeGapToOptimality = absoluteGapToOptimality / objectiveBound;
         float? absoluteIterationGap = objective - _current?.Objective;
-        double? relativeIterationGap = absoluteIterationGap / _current?.Objective;
-
+        double? relativeGapToOptimality = null; //absoluteGapToOptimality / objectiveBound;
+        double? relativeIterationGap = null; // absoluteIterationGap / _current?.Objective;
         var result = new FloatResult
         {
             Command = CommandString,
