@@ -12,32 +12,18 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
         {
             WriteMessage("path");
             WriteSection();
+            NewLine();
             Var("model", "Model.FromFile(path)");
+            Call("model.Satisfy");
             WriteMessage("model.SourceText");
             WriteSection();
-            using (ForEach("var warn in model.Warnings"))
-            {
-                WriteMessage("warn");
-            }
+            NewLine();
             Var("options", "SolveOptions.Create(solverId:solver)");
             using (If("args is not null"))
                 WriteLn("options = options.AddArgs(args);");
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeTrue();");
             WriteLn("result.Status.Should().Be(SolveStatus.Satisfied);");
-
-            // WriteLn("string expected;");
-            // foreach (var dzn in dzns)
-            // {
-            //     var result = Parser.ParseDataString(dzn);
-            //     if (!result.Ok)
-            //         continue;
-            //     var expected = result.Data.Write(WriteOptions.Minimal);
-            //     WriteLn($"expected = \"{expected}\";");
-            //     using (If($"solution.DataString!.Equals(expected)"))
-            //         Return();
-            // }
-            // Call("Assert.Fail", "\"Solution did not match any of the expected results\"");
         }
 
         foreach (var testCase in spec.TestCases)
