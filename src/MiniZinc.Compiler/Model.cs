@@ -6,12 +6,12 @@ using Parser;
 using Parser.Syntax;
 
 /// <summary>
-/// A MiniZinc model.  Instantiated as either an
-/// <see cref="IntModel"/> or a <see cref="FloatModel"/>
+/// A MiniZinc model.
+/// Instantiated as either an <see cref="IntModel"/> or a <see cref="FloatModel"/>
 /// </summary>
 /// <remarks>
 /// This class extracts useful semantic information
-/// from <see cref="ModelSyntax"/>
+/// from <see cref="ModelSyntax"/> and <see cref="DataSyntax"/>
 /// </remarks>
 public class Model
 {
@@ -123,7 +123,8 @@ public class Model
     /// <returns>
     /// The name of the declared parameter
     /// </returns>
-    public string Par(string name, string type, string? value = null) => Declare(name, type, value);
+    public Variable Par(string name, string type, string? value = null) =>
+        Declare(name, type, value);
 
     /// <summary>
     /// Declare a variable
@@ -131,7 +132,7 @@ public class Model
     /// <returns>
     /// The name of the declared parameter
     /// </returns>
-    public string Var(string name, string type, string? value = null) =>
+    public Variable Var(string name, string type, string? value = null) =>
         Declare(name, $"var {type}", value);
 
     /// <summary>
@@ -140,7 +141,7 @@ public class Model
     /// <returns>
     /// The name of the declared variable
     /// </returns>
-    public string IntVar(string name, string? value = null) => Declare(name, $"var int", value);
+    public Variable IntVar(string name, string? value = null) => Declare(name, $"var int", value);
 
     /// <summary>
     /// Declare boolean variable
@@ -148,7 +149,8 @@ public class Model
     /// <returns>
     /// The name of the declared variable
     /// </returns>
-    public string BoolVar(string name, bool value) => Declare(name, $"var bool", value.ToString());
+    public Variable BoolVar(string name, bool value) =>
+        Declare(name, $"var bool", value.ToString());
 
     /// <summary>
     /// Declare boolean variable
@@ -156,7 +158,7 @@ public class Model
     /// <returns>
     /// The name of the declared variable
     /// </returns>
-    public string BoolVar(string name, string? value = null) => Declare(name, $"var bool", value);
+    public Variable BoolVar(string name, string? value = null) => Declare(name, $"var bool", value);
 
     /// <summary>
     /// Declare float variable
@@ -164,7 +166,8 @@ public class Model
     /// <returns>
     /// The name of the declared variable
     /// </returns>
-    public string FloatVar(string name, string? value = null) => Declare(name, $"var float", value);
+    public Variable FloatVar(string name, string? value = null) =>
+        Declare(name, $"var float", value);
 
     /// <summary>
     /// Declare an integer variable with the given bounds
@@ -175,7 +178,7 @@ public class Model
     /// <returns>
     /// The name of the declared variable
     /// </returns>
-    public string IntVar(string name, int lowerBound, int upperBound, string? value = null)
+    public Variable IntVar(string name, int lowerBound, int upperBound, string? value = null)
     {
         if (lowerBound > upperBound)
             throw new ArgumentException();
@@ -187,14 +190,14 @@ public class Model
     /// Declare a parameter, variable, or type alias
     /// </summary>
     /// <returns>The name of the declared variable</returns>
-    public string Declare(string name, string type, string? value = null)
+    public Variable Declare(string name, string type, string? value = null)
     {
         if (value != null)
             AddString($"{type}: {name} = {value};");
         else
             AddString($"{type}: {name};");
 
-        return name;
+        return new Variable(name);
     }
 
     /// <summary>
@@ -212,7 +215,29 @@ public class Model
     /// The constraint name if one was provided
     /// </returns>
     [return: NotNullIfNotNull(nameof(name))]
-    public string? Constraint(string expr, string? name = null)
+    public string? AddConstraint(ExpressionSyntax expr, string? name = null)
+    {
+        var con = new ConstraintSyntax(default, expr);
+        if (name is not null)
+        {
+            con.Annotations ??= new List<SyntaxNode>();
+            con.Annotations.Add(new ExpressionSyntax<string>(name));
+            AddNode(con);
+            return name;
+        }
+        else
+        {
+            return name;
+        }
+    }
+
+    /// <summary>
+    /// Add a constraint with an optional name
+    /// </summary>
+    /// <returns>
+    /// The constraint name if one was provided
+    /// </returns>
+    public string? AddConstraint(string expr, string? name = null)
     {
         if (name is null)
         {
