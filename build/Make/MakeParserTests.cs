@@ -46,8 +46,8 @@ public sealed class MakeParserTests : CodeBuilder
             testName = testName.Replace("/", "_");
             testName = testName.Replace("-", "_");
             testName = $"test_parse_{testName}";
-            Newline();
-            WriteLn($"[Fact(DisplayName=\"{path}\")]");
+            NewLine();
+            Attribute("Fact", $"DisplayName=\"{path}\"");
             using (Block($"public void {testName}()"))
             {
                 Var("path", $"\"{path}\"");
