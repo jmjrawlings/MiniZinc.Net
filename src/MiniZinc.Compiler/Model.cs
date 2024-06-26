@@ -41,7 +41,16 @@ public class Model
 
     private bool _isFloatModel;
 
-    public string SourceText => _sourceText.ToString();
+    public string SourceText
+    {
+        get
+        {
+            var model = _sourceText.ToString();
+            if (_solve is not null)
+                model += $"{Environment.NewLine}{_solve.Write()}";
+            return model;
+        }
+    }
 
     public bool IsFloatModel => _isFloatModel;
 
@@ -126,6 +135,31 @@ public class Model
         Declare(name, $"var {type}", value);
 
     /// <summary>
+    /// Declare an integer variable
+    /// </summary>
+    /// <returns>
+    /// The name of the declared variable
+    /// </returns>
+    public string IntVar(string name, string? value = null) => Declare(name, $"var int", value);
+
+    /// <summary>
+    /// Declare an integer variable with the given bounds
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Bounds out of order
+    /// </exception>
+    /// <returns>
+    /// The name of the declared variable
+    /// </returns>
+    public string IntVar(string name, int lowerBound, int upperBound, string? value = null)
+    {
+        if (lowerBound > upperBound)
+            throw new ArgumentException();
+
+        return Declare(name, $"var {lowerBound}..{upperBound}", value);
+    }
+
+    /// <summary>
     /// Declare a parameter, variable, or type alias
     /// </summary>
     /// <returns>The name of the declared variable</returns>
@@ -176,9 +210,11 @@ public class Model
     /// </summary>
     /// <example>model.Minimize("a+b")</example>
     /// <example>model.Minimize("makespan", "int_search(q, first_fail, indomain_min)")</example>
-    public void Minimize(string expr, params string[] annotations)
+    public void Minimize(string objective, params string[] annotations)
     {
-        AddString($"solve minimize {expr}{Annotations(annotations)};");
+        var mzn = $"solve minimize {objective}{Annotations(annotations)};";
+        var stm = Parser.ParseStatement<SolveSyntax>(mzn);
+        SetObjective(stm);
     }
 
     /// <summary>
@@ -186,9 +222,11 @@ public class Model
     /// </summary>
     /// <example>model.Maximize("a+b")</example>
     /// <example>model.Maximize("makespan", "int_search(q, first_fail, indomain_min)")</example>
-    public void Maximize(string expr, params string[] annotations)
+    public void Maximize(string objective, params string[] annotations)
     {
-        AddString($"solve maximize {expr}{Annotations(annotations)};");
+        var mzn = $"solve maximize {objective}{Annotations(annotations)};";
+        var stm = Parser.ParseStatement<SolveSyntax>(mzn);
+        SetObjective(stm);
     }
 
     /// <summary>
@@ -198,7 +236,21 @@ public class Model
     /// <example>model.Satisfy("int_search(q, first_fail, indomain_min)")</example>
     public void Satisfy(params string[] annotations)
     {
-        AddString($"solve satisfy{Annotations(annotations)};");
+        var mzn = $"solve satisfy{Annotations(annotations)};";
+        var stm = Parser.ParseStatement<SolveSyntax>(mzn);
+        SetObjective(stm);
+    }
+
+    /// <summary>
+    /// Set the objective of the model to solve with the given
+    /// syntax.  This will override any existing solve statement.
+    /// <seealso cref="Maximize"/>
+    /// <seealso cref="Minimize"/>
+    /// <seealso cref="Satisfy"/>
+    /// </summary>
+    public void SetObjective(SolveSyntax solve)
+    {
+        _solve = solve;
     }
 
     void AddSourceText(string text)
@@ -223,7 +275,6 @@ public class Model
                 if (_solve is null)
                 {
                     _solve = node;
-                    AddSourceText(node);
                 }
                 else
                 {
@@ -234,7 +285,6 @@ public class Model
             case OutputSyntax node:
                 _outputs ??= new List<OutputSyntax>();
                 _outputs.Add(node);
-                // AddSourceText(node);
                 break;
 
             case ConstraintSyntax node:
