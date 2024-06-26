@@ -1,9 +1,19 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record IfThenSyntax(in Token Start, ExpressionSyntax If, ExpressionSyntax? Then)
-    : ExpressionSyntax(Start)
+public sealed class IfThenSyntax : ExpressionSyntax
 {
-    public List<(ExpressionSyntax elseif, ExpressionSyntax then)>? ElseIfs { get; set; } = new();
+    public ExpressionSyntax If { get; private set; }
+
+    public ExpressionSyntax? Then { get; private set; }
 
     public ExpressionSyntax? Else { get; set; }
+
+    public List<(ExpressionSyntax elseif, ExpressionSyntax then)>? ElseIfs { get; set; }
+
+    public IfThenSyntax(in Token start, ExpressionSyntax ifCase, ExpressionSyntax? thenCase)
+        : base(start)
+    {
+        If = ifCase;
+        Then = thenCase;
+    }
 }

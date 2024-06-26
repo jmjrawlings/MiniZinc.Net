@@ -1,7 +1,14 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public abstract record SyntaxNode(in Token Start)
+public abstract class SyntaxNode
 {
+    public readonly Token Start;
+
+    protected SyntaxNode(in Token start)
+    {
+        Start = start;
+    }
+
     public List<SyntaxNode>? Annotations { get; set; } = null;
 
     public string SourceText => Write(WriteOptions.Minimal);

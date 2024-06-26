@@ -1,9 +1,15 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record AssignmentSyntax(IdentifierSyntax Identifier, ExpressionSyntax Expr)
-    : StatementSyntax(Identifier.Start),
-        ILetLocalSyntax,
-        IIdentifiedSyntax
+public sealed class AssignmentSyntax : StatementSyntax, ILetLocalSyntax, IIdentifiedSyntax
 {
+    public IdentifierSyntax Identifier { get; }
+    public ExpressionSyntax Expr { get; }
     public string Name => Identifier.Name;
+
+    public AssignmentSyntax(IdentifierSyntax identifier, ExpressionSyntax expr)
+        : base(identifier.Start)
+    {
+        Identifier = identifier;
+        Expr = expr;
+    }
 }

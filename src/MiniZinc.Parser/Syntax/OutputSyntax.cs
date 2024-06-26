@@ -1,3 +1,12 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record OutputSyntax(in Token Start, SyntaxNode Expr) : StatementSyntax(Start) { }
+public sealed class OutputSyntax : StatementSyntax
+{
+    public readonly ExpressionSyntax Expr;
+
+    public OutputSyntax(in Token start, ExpressionSyntax expr)
+        : base(start)
+    {
+        Expr = expr;
+    }
+}

@@ -234,7 +234,8 @@ public sealed class Parser
     /// <mzn>a = 1;b = 2; c= true;</mzn>
     internal bool ParseData(out DataSyntax data)
     {
-        var assignments = new List<AssignmentSyntax>();
+        List<AssignmentSyntax> assignments = new();
+        Dictionary<string, ExpressionSyntax> variables = new();
 
         while (_kind is not TokenKind.EOF)
         {
@@ -250,12 +251,18 @@ public sealed class Parser
             var assign = new AssignmentSyntax(ident, expr);
             assignments.Add(assign);
 
+            if (!variables.TryAdd(ident.Name, expr))
+            {
+                Error($"Variable \"{ident}\" was assigned to multiple times");
+                break;
+            }
+
             if (!Skip(TokenKind.EOL))
                 if (!Expect(TokenKind.EOF))
                     break;
         }
 
-        data = new DataSyntax(assignments);
+        data = new DataSyntax(assignments, variables);
         return true;
     }
 
@@ -677,7 +684,7 @@ public sealed class Parser
             }
             else
             {
-                type = new NameTypeSyntax(start, new IdentifierSyntax(start))
+                type = new IdentifierTypeSyntax(start, new IdentifierSyntax(start))
                 {
                     Kind = TypeKind.Name
                 };
@@ -787,7 +794,7 @@ public sealed class Parser
             case TokenKind.DOT_DOT:
                 Step();
                 if (ParseExpr(out var right))
-                    expr = new RangeLiteralSyntax(token, Upper: expr);
+                    expr = new RangeLiteralSyntax(token, upper: expr);
                 else if (_errorMessage is not null)
                     return false;
                 else
@@ -861,7 +868,7 @@ public sealed class Parser
             if (Skip(TokenKind.OPEN_BRACKET))
             {
                 // Array access eg: `a[1,2]`
-                var access = new List<SyntaxNode>();
+                var access = new List<ExpressionSyntax>();
                 while (_kind is not TokenKind.CLOSE_BRACKET)
                 {
                     if (!ParseExpr(out var index))
@@ -1048,7 +1055,7 @@ public sealed class Parser
          * Backtracking would make this trivial but I think that's
          * more trouble than it's worth.
          */
-        var exprs = new List<SyntaxNode>();
+        var exprs = new List<ExpressionSyntax>();
         bool maybeGen = true;
         bool isGen = false;
         int i;
@@ -1115,14 +1122,14 @@ public sealed class Parser
         // For sure it's just a call
         if (!maybeGen)
         {
-            result = new CallSyntax(name) { Args = exprs };
+            result = new CallSyntax(name, exprs);
             return true;
         }
 
         // Could be a gencall if followed by (
         if (!isGen && _kind is not TokenKind.OPEN_PAREN)
         {
-            result = new CallSyntax(name) { Args = exprs };
+            result = new CallSyntax(name, exprs);
             return true;
         }
 
@@ -1873,7 +1880,7 @@ public sealed class Parser
             if (!ParseGeneric(out var ident))
                 return false;
 
-            type = new NameTypeSyntax(start, ident)
+            type = new IdentifierTypeSyntax(start, ident)
             {
                 Kind =
                     ident.Kind is TokenKind.GENERIC_SEQUENCE
@@ -2004,7 +2011,7 @@ public sealed class Parser
 
             case TokenKind.GENERIC:
                 Step();
-                type = new NameTypeSyntax(start, new IdentifierSyntax(start))
+                type = new IdentifierTypeSyntax(start, new IdentifierSyntax(start))
                 {
                     Kind = TypeKind.Generic
                 };
@@ -2012,7 +2019,7 @@ public sealed class Parser
 
             case TokenKind.GENERIC_SEQUENCE:
                 Step();
-                type = new NameTypeSyntax(start, new IdentifierSyntax(start))
+                type = new IdentifierTypeSyntax(start, new IdentifierSyntax(start))
                 {
                     Kind = TypeKind.GenericSeq
                 };
@@ -2368,16 +2375,46 @@ public sealed class Parser
     public static DataParseResult ParseDataFile(FileInfo file) => ParseDataFile(file.FullName);
 
     /// Parse an expression of the given type from text
-    internal static T? ParseExprAs<T>(string text)
-        where T : SyntaxNode
+    public static T ParseExpression<T>(string text)
+        where T : ExpressionSyntax
     {
         var parser = new Parser(text);
-        if (!parser.ParseExpr(out var node))
-            return null;
+        if (!parser.ParseStatement(out var expr))
+            throw new MiniZincParseException(
+                parser._errorMessage ?? "",
+                parser._token,
+                parser._errorTrace
+            );
 
-        if (node is not T t)
-            return null;
+        if (expr is not T result)
+        {
+            throw new MiniZincParseException(
+                $"The parsed expression is of type {expr.GetType()} but expected {typeof(T)}",
+                parser._token
+            );
+        }
+        return result;
+    }
 
-        return t;
+    /// Parse a statement of the given type from text
+    public static T ParseStatement<T>(string text)
+        where T : StatementSyntax
+    {
+        var parser = new Parser(text);
+        if (!parser.ParseStatement(out var statement))
+            throw new MiniZincParseException(
+                parser._errorMessage ?? "",
+                parser._token,
+                parser._errorTrace
+            );
+
+        if (statement is not T result)
+        {
+            throw new MiniZincParseException(
+                $"The parsed statement is of type {statement.GetType()} but expected a {typeof(T)}",
+                parser._token
+            );
+        }
+        return result;
     }
 }

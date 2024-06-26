@@ -1,3 +1,12 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record IncludeSyntax(in Token Start, Token Path) : StatementSyntax(Start) { }
+public sealed class IncludeSyntax : StatementSyntax
+{
+    public Token Path { get; }
+
+    public IncludeSyntax(in Token start, Token path)
+        : base(start)
+    {
+        Path = path;
+    }
+}

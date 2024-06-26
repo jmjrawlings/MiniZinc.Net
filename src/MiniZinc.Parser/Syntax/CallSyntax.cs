@@ -1,6 +1,19 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿using System.Data.SqlTypes;
 
-public sealed record CallSyntax(IdentifierSyntax Name) : ExpressionSyntax(Name.Start)
+namespace MiniZinc.Parser.Syntax;
+
+public sealed class CallSyntax : ExpressionSyntax, IIdentifiedSyntax
 {
-    public List<SyntaxNode>? Args { get; init; }
+    public IdentifierSyntax Identifier { get; }
+
+    public readonly IReadOnlyList<ExpressionSyntax>? Args;
+
+    public string Name => Identifier.Name;
+
+    public CallSyntax(IdentifierSyntax identifier, IReadOnlyList<ExpressionSyntax>? args = null)
+        : base(identifier.Start)
+    {
+        Args = args;
+        Identifier = identifier;
+    }
 }

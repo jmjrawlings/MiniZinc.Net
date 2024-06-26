@@ -6,8 +6,17 @@
 /// <mzn>var set of int</mzn>
 /// <mzn>bool</mzn>
 /// <mzn>array[X] of opt var float</mzn>
-public record TypeSyntax(in Token Start) : StatementSyntax(Start)
+public class TypeSyntax : StatementSyntax
 {
+    /// <summary>
+    /// A simple or complex type
+    /// </summary>
+    /// <mzn>var set of int</mzn>
+    /// <mzn>bool</mzn>
+    /// <mzn>array[X] of opt var float</mzn>
+    public TypeSyntax(in Token start)
+        : base(start) { }
+
     public TypeKind Kind { get; set; } = TypeKind.Any;
 
     /// True if the type is a variable (ie not a parameter)
@@ -20,26 +29,51 @@ public record TypeSyntax(in Token Start) : StatementSyntax(Start)
 /// <summary>
 /// A concatenation of other types
 /// </summary>
-/// <mzn>record(a:int) ++ record(b: bool)</mzn>
-public sealed record CompositeTypeSyntax(in Token Start) : TypeSyntax(Start)
+/// <mzn>class(a:int) ++ class(b: bool)</mzn>
+public sealed class CompositeTypeSyntax : TypeSyntax
 {
+    /// <summary>
+    /// A concatenation of other types
+    /// </summary>
+    /// <mzn>class(a:int) ++ class(b: bool)</mzn>
+    public CompositeTypeSyntax(in Token Start)
+        : base(Start) { }
+
     public List<TypeSyntax> Types { get; set; } = new();
 }
 
-public sealed record RecordTypeSyntax(in Token Start) : TypeSyntax(Start)
+public sealed class RecordTypeSyntax : TypeSyntax
 {
+    public RecordTypeSyntax(in Token Start)
+        : base(Start) { }
+
     public List<ParameterSyntax> Fields { get; set; } = new();
 }
 
-public sealed record TupleTypeSyntax(in Token Start) : TypeSyntax(Start)
+public sealed class TupleTypeSyntax : TypeSyntax
 {
+    public TupleTypeSyntax(in Token Start)
+        : base(Start) { }
+
     public List<TypeSyntax> Items { get; set; } = new();
 }
 
-public sealed record ExprType(in Token Start, SyntaxNode Expr) : TypeSyntax(Start) { }
-
-public sealed record ArrayTypeSyntax(in Token Start) : TypeSyntax(Start)
+public sealed class ExprType : TypeSyntax
 {
+    public ExprType(in Token Start, SyntaxNode Expr)
+        : base(Start)
+    {
+        this.Expr = Expr;
+    }
+
+    public SyntaxNode Expr { get; init; }
+}
+
+public sealed class ArrayTypeSyntax : TypeSyntax
+{
+    public ArrayTypeSyntax(in Token Start)
+        : base(Start) { }
+
     public required TypeSyntax Items { get; set; }
 
     public required List<SyntaxNode> Dimensions { get; set; }
@@ -51,14 +85,25 @@ public sealed record ArrayTypeSyntax(in Token Start) : TypeSyntax(Start)
 ///
 /// </summary>
 /// <mzn>list of var int</mzn>
-public sealed record ListTypeSyntax(in Token Start) : TypeSyntax(Start)
+public sealed class ListTypeSyntax : TypeSyntax
 {
+    /// <summary>
+    ///
+    /// </summary>
+    /// <mzn>list of var int</mzn>
+    public ListTypeSyntax(in Token Start)
+        : base(Start) { }
+
     public required TypeSyntax Items { get; set; }
 }
 
 /// <mzn>set of  var int</mzn>
-public sealed record SetTypeSyntax(in Token Start) : TypeSyntax(Start)
+public sealed class SetTypeSyntax : TypeSyntax
 {
+    /// <mzn>set of  var int</mzn>
+    public SetTypeSyntax(in Token Start)
+        : base(Start) { }
+
     public required TypeSyntax Items { get; init; }
 }
 
@@ -66,4 +111,18 @@ public sealed record SetTypeSyntax(in Token Start) : TypeSyntax(Start)
 /// An identifier used as a type
 /// </summary>
 /// <mzn>type X = 1..3; var X: x;</mzn>
-public sealed record NameTypeSyntax(in Token Start, IdentifierSyntax Name) : TypeSyntax(Start) { }
+public sealed class IdentifierTypeSyntax : TypeSyntax
+{
+    /// <summary>
+    /// An identifier used as a type
+    /// </summary>
+    /// <mzn>type X = 1..3; var X: x;</mzn>
+    public IdentifierTypeSyntax(in Token start, IdentifierSyntax identifier)
+        : base(start)
+    {
+        Identifier = identifier;
+    }
+
+    public readonly IdentifierSyntax Identifier;
+    public string Name => Identifier.Name;
+}

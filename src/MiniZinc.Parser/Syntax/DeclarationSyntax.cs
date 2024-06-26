@@ -5,10 +5,7 @@
 /// </summary>
 /// <mzn>int: a = 10</mzn>
 /// <mzn>var int: a = 10</mzn>
-public sealed record DeclarationSyntax(in Token Start, TypeSyntax Type, IdentifierSyntax Identifier)
-    : StatementSyntax(Start),
-        ILetLocalSyntax,
-        IIdentifiedSyntax
+public sealed class DeclarationSyntax : StatementSyntax, ILetLocalSyntax, IIdentifiedSyntax
 {
     public string Name => Identifier.Name;
 
@@ -21,4 +18,20 @@ public sealed record DeclarationSyntax(in Token Start, TypeSyntax Type, Identifi
     public required bool IsFunction { get; init; }
 
     public bool IsAnnotation => Type.Kind is TypeKind.Annotation;
+
+    public TypeSyntax Type { get; }
+
+    public IdentifierSyntax Identifier { get; }
+
+    /// <summary>
+    /// A variable
+    /// </summary>
+    /// <mzn>int: a = 10</mzn>
+    /// <mzn>var int: a = 10</mzn>
+    public DeclarationSyntax(in Token start, TypeSyntax type, IdentifierSyntax identifier)
+        : base(start)
+    {
+        Type = type;
+        Identifier = identifier;
+    }
 }

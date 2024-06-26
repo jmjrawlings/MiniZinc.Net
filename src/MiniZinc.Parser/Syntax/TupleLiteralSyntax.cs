@@ -1,6 +1,12 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record TupleLiteralSyntax(in Token Start) : ExpressionSyntax(Start)
+public sealed class TupleLiteralSyntax : ExpressionSyntax
 {
-    public List<SyntaxNode> Fields { get; set; } = new();
+    public readonly List<SyntaxNode> Fields;
+
+    public TupleLiteralSyntax(in Token start)
+        : base(start)
+    {
+        Fields = new List<SyntaxNode>();
+    }
 }

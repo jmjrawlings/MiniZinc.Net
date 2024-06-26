@@ -6,10 +6,15 @@
 public sealed class DataSyntax
 {
     public readonly IReadOnlyList<AssignmentSyntax> Assignments;
+    public readonly IReadOnlyDictionary<string, ExpressionSyntax> Variables;
 
-    public DataSyntax(IReadOnlyList<AssignmentSyntax> assignments)
+    public DataSyntax(
+        IReadOnlyList<AssignmentSyntax> assignments,
+        IReadOnlyDictionary<string, ExpressionSyntax> variables
+    )
     {
         Assignments = assignments;
+        Variables = variables;
     }
 
     public string Write(WriteOptions? options = null)

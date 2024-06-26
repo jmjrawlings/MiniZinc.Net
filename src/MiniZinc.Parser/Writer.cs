@@ -120,7 +120,7 @@ internal sealed class Writer
         switch (node)
         {
             case IncludeSyntax e:
-                WriteSpace(INCLUDE);
+                Keyword(INCLUDE);
                 Write(DOUBLE_QUOTE);
                 Write(e.Path.StringValue);
                 Write(DOUBLE_QUOTE);
@@ -129,7 +129,7 @@ internal sealed class Writer
 
             case DeclarationSyntax e:
                 if (e is { IsFunction: true, IsAnnotation: false })
-                    WriteSpace(FUNCTION);
+                    Keyword(FUNCTION);
 
                 WriteType(e.Type);
                 if (!e.IsAnnotation)
@@ -155,6 +155,7 @@ internal sealed class Writer
 
                 if (e.Body is { } body)
                 {
+                    Space();
                     Write(EQUAL);
                     Space();
                     WriteNode(body);
@@ -163,7 +164,7 @@ internal sealed class Writer
                 break;
 
             case ConstraintSyntax e:
-                WriteSpace(CONSTRAINT);
+                Keyword(CONSTRAINT);
                 Indent();
                 Newline();
                 WriteNode(e.Expr);
@@ -173,22 +174,23 @@ internal sealed class Writer
                 break;
 
             case SolveSyntax e:
-                WriteSpace(SOLVE);
+                Keyword(SOLVE);
                 WriteAnnotations(e);
+                Space();
                 switch (e.Method)
                 {
                     case SolveMethod.Satisfy:
                         Write(SATISFY);
                         break;
                     case SolveMethod.Maximize:
-                        WriteSpace(MAXIMIZE);
+                        Keyword(MAXIMIZE);
                         Indent();
                         Newline();
                         WriteNode(e.Objective);
                         Dedent();
                         break;
                     case SolveMethod.Minimize:
-                        WriteSpace(MINIMIZE);
+                        Keyword(MINIMIZE);
                         Indent();
                         Newline();
                         WriteNode(e.Objective);
@@ -607,10 +609,10 @@ internal sealed class Writer
     void WriteType(TypeSyntax type)
     {
         if (type.Var)
-            WriteSpace(VAR);
+            Keyword(VAR);
 
         if (type.Opt)
-            WriteSpace(OPT);
+            Keyword(OPT);
 
         switch (type)
         {
@@ -634,13 +636,13 @@ internal sealed class Writer
                 break;
 
             case ListTypeSyntax e:
-                WriteSpace(LIST);
-                WriteSpace(OF);
+                Keyword(LIST);
+                Keyword(OF);
                 WriteNode(e.Items);
                 break;
 
-            case NameTypeSyntax e:
-                Write(e.Name);
+            case IdentifierTypeSyntax e:
+                Write(e.Identifier);
                 break;
 
             case RecordTypeSyntax e:
@@ -704,7 +706,7 @@ internal sealed class Writer
     void WriteParameter(ParameterSyntax x, Assoc assoc, int? precedence = null)
     {
         WriteNode(x.Type);
-        if (x.Name is { } name)
+        if (x.Identifier is { } name)
         {
             Write(COLON);
             Write(name);
@@ -810,7 +812,10 @@ internal sealed class Writer
 
     void Space()
     {
-        _sb.Append(SPACE);
+        if (_sb.Length is 0)
+            _sb.Append(SPACE);
+        else if (_sb[^1] is not SPACE)
+            _sb.Append(SPACE);
     }
 
     void Write(string s)
@@ -821,11 +826,9 @@ internal sealed class Writer
     void EndStatement()
     {
         Write(EOL);
-        if (!_minify)
-            Newline();
     }
 
-    void WriteSpace(string s)
+    void Keyword(string s)
     {
         _sb.Append(s);
         _sb.Append(SPACE);

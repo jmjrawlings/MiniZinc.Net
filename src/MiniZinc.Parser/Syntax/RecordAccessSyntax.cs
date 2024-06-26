@@ -1,4 +1,14 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record RecordAccessSyntax(SyntaxNode Expr, Token Field)
-    : ExpressionSyntax(Expr.Start) { }
+public sealed class RecordAccessSyntax : ExpressionSyntax
+{
+    public readonly ExpressionSyntax Expr;
+    public readonly Token Field;
+
+    public RecordAccessSyntax(ExpressionSyntax expr, Token field)
+        : base(expr.Start)
+    {
+        Expr = expr;
+        Field = field;
+    }
+}

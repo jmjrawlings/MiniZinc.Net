@@ -1,3 +1,14 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed record ParameterSyntax(TypeSyntax Type, IdentifierSyntax? Name) : SyntaxNode(Type) { }
+public sealed class ParameterSyntax : SyntaxNode
+{
+    public readonly TypeSyntax Type;
+    public readonly IdentifierSyntax? Identifier;
+
+    public ParameterSyntax(TypeSyntax type, IdentifierSyntax? identifier)
+        : base(type.Start)
+    {
+        Type = type;
+        Identifier = identifier;
+    }
+}
