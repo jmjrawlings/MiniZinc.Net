@@ -171,6 +171,8 @@ public class CodeBuilder
 
     public string Quote(string s) => $"\"{s}\"";
 
+    public string TripleQuote(string s) => $"\"\"\"{s}\"\"\"";
+
     public void Var(string? name, string? value)
     {
         Write("var ");
@@ -223,6 +225,11 @@ public class CodeBuilder
     public void Append(string? s)
     {
         _sb.Append(s);
+    }
+
+    public void AppendLn(string? s)
+    {
+        _sb.AppendLine(s);
     }
 
     public void AppendJoin(string join, IEnumerable<string> strings)
