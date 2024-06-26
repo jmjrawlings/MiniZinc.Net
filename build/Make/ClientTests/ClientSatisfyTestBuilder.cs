@@ -1,7 +1,6 @@
 ﻿namespace Make;
 
 using LibMiniZinc.Tests;
-using MiniZinc.Parser;
 
 public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
 {

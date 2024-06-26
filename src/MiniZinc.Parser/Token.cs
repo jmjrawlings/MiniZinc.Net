@@ -1,6 +1,6 @@
-﻿using System.Globalization;
+﻿namespace MiniZinc.Parser;
 
-namespace MiniZinc.Parser;
+using System.Globalization;
 
 public readonly struct Token
 {

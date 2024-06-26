@@ -143,6 +143,30 @@ public class Model
     public string IntVar(string name, string? value = null) => Declare(name, $"var int", value);
 
     /// <summary>
+    /// Declare boolean variable
+    /// </summary>
+    /// <returns>
+    /// The name of the declared variable
+    /// </returns>
+    public string BoolVar(string name, bool value) => Declare(name, $"var bool", value.ToString());
+
+    /// <summary>
+    /// Declare boolean variable
+    /// </summary>
+    /// <returns>
+    /// The name of the declared variable
+    /// </returns>
+    public string BoolVar(string name, string? value = null) => Declare(name, $"var bool", value);
+
+    /// <summary>
+    /// Declare float variable
+    /// </summary>
+    /// <returns>
+    /// The name of the declared variable
+    /// </returns>
+    public string FloatVar(string name, string? value = null) => Declare(name, $"var float", value);
+
+    /// <summary>
     /// Declare an integer variable with the given bounds
     /// </summary>
     /// <exception cref="ArgumentException">

@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-public class MiniZincParseException : Exception
+public sealed class MiniZincParseException : Exception
 {
     /// <summary>
     /// A more detailed error string
@@ -10,12 +10,12 @@ public class MiniZincParseException : Exception
     /// <summary>
     /// The token at which the error occured
     /// </summary>
-    public readonly Token Token;
+    public readonly Token Location;
 
-    public MiniZincParseException(string message, Token token, string? trace = null)
+    public MiniZincParseException(string message, Token location, string? trace = null)
         : base(message)
     {
         Trace = trace;
-        Token = token;
+        Location = location;
     }
 }
