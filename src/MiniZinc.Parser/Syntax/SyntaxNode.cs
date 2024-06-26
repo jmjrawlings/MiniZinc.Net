@@ -13,8 +13,6 @@ public abstract class SyntaxNode
 
     public string SourceText => Write(WriteOptions.Minimal);
 
-    public override string ToString() => SourceText;
-
     public string Write(WriteOptions? options = null)
     {
         var writer = new Writer(options);
@@ -22,4 +20,6 @@ public abstract class SyntaxNode
         var mzn = writer.ToString();
         return mzn;
     }
+
+    public override string ToString() => SourceText;
 }

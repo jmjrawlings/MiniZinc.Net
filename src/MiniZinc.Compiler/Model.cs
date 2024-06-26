@@ -222,13 +222,9 @@ public class Model
         {
             con.Annotations ??= new List<SyntaxNode>();
             con.Annotations.Add(new ExpressionSyntax<string>(name));
-            AddNode(con);
-            return name;
         }
-        else
-        {
-            return name;
-        }
+        AddNode(con);
+        return name;
     }
 
     /// <summary>

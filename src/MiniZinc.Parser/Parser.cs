@@ -2379,7 +2379,7 @@ public sealed class Parser
         where T : ExpressionSyntax
     {
         var parser = new Parser(text);
-        if (!parser.ParseStatement(out var expr))
+        if (!parser.ParseExpr(out var expr))
             throw new MiniZincParseException(
                 parser._errorMessage ?? "",
                 parser._token,
