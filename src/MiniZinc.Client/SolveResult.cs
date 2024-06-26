@@ -127,6 +127,7 @@ public abstract record SolveResult<T>
             SolveStatus.SyntaxError => true,
             SolveStatus.TypeError => true,
             SolveStatus.Timeout => true,
+            SolveStatus.Unsatisfiable => true,
             _ => false
         };
 
