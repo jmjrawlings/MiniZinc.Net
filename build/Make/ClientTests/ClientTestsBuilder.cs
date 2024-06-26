@@ -30,7 +30,7 @@ public abstract class ClientTestsBuilder : CodeBuilder
 
         using (Function($"public {className}", "ClientFixture fixture", "ITestOutputHelper output"))
         {
-            Assign("MiniZinc", "fixture.Client");
+            Assign("MiniZinc", "fixture.MiniZinc");
             Assign("_output", "output");
         }
     }
@@ -159,23 +159,28 @@ public abstract class ClientTestsBuilder : CodeBuilder
         {
             foreach (var sol in testCase.Solutions)
             {
-                if (sol.Dzn is { } dzn)
-                    sol.Dzn = Sanitize(dzn);
-                if (sol.Output is { } ozn)
-                    sol.Output = Sanitize(ozn);
+                if (string.IsNullOrEmpty(sol.Dzn))
+                    sol.Dzn = null;
+                else
+                    sol.Dzn = Sanitize(sol.Dzn);
+
+                if (string.IsNullOrEmpty(sol.Ozn))
+                    sol.Ozn = null;
+                else
+                    sol.Ozn = Sanitize(sol.Ozn);
             }
         }
         return info;
     }
 
-    string Sanitize(string s)
+    protected string Sanitize(string s)
     {
         var lines = s.Split(
             '\n',
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
         );
         var mzn = string.Join("\\n", lines);
-        mzn = mzn.Replace("\"", "\\\"");
+        mzn = TripleQuote(mzn);
         return mzn;
     }
 
@@ -184,5 +189,14 @@ public abstract class ClientTestsBuilder : CodeBuilder
         var file = directory.JoinFile($"{ClassName}.cs");
         var source = ToString();
         File.WriteAllText(file.FullName, source);
+    }
+
+    protected void AppendArgs(List<string> args)
+    {
+        foreach (var arg in args)
+        {
+            Append(',');
+            Append(Quote(arg));
+        }
     }
 }

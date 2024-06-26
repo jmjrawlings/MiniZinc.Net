@@ -29,10 +29,13 @@ public sealed class ClientErrorTestsBuilder : ClientTestsBuilder
             }
             Var("options", "SolveOptions.Create(solverId:solver)");
             WriteLn("options = options.AddArgs(args);");
+            NewLine();
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeFalse();");
+            NewLine();
             using (If("errorRegex is not null"))
                 WriteLn("result.Error.Should().MatchRegex(errorRegex);");
+            NewLine();
             using (ElseIf("errorMessage is not null"))
                 WriteLn("result.Error.Should().Be(errorMessage);");
         }
@@ -73,6 +76,8 @@ public sealed class ClientErrorTestsBuilder : ClientTestsBuilder
         else
             Declare("string?", "errorRegex", null);
 
-        WriteLn("await Test(path, solver, errorMessage, errorRegex);");
+        Write("await Test(path, solver, errorMessage, errorRegex");
+        AppendArgs(info.ExtraArgs);
+        AppendLn(");");
     }
 }

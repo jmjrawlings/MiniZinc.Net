@@ -8,18 +8,29 @@ public sealed class ClientOptimiseTestsBuilder : ClientTestsBuilder
     public ClientOptimiseTestsBuilder(TestSpec spec)
         : base("ClientOptimiseTests", spec)
     {
-        using (Function("async Task Test", "string path", "string solver", "string expected"))
+        using (
+            Function(
+                "async Task Test",
+                "string path",
+                "string solver",
+                "string expected",
+                "params string[] args"
+            )
+        )
         {
             WriteMessage("path");
             WriteSection();
             Var("model", "Model.FromFile(path)");
             WriteMessage("model.SourceText");
             WriteSection();
-            Var("options", "SolveOptions.Create(solverId:solver)");
+            NewLine();
+            Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args)");
+            NewLine();
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeTrue();");
             WriteLn("result.Status.Should().Be(SolveStatus.Optimal);");
             WriteLn("result.DataString.Should().Be(expected);");
+            NewLine();
         }
         foreach (var testCase in spec.TestCases)
         {
@@ -45,7 +56,8 @@ public sealed class ClientOptimiseTestsBuilder : ClientTestsBuilder
             return;
 
         Var("expected", Quote(dzn));
-        Write("await Test(path, solver, expected);");
-        NewLine();
+        Write("await Test(path, solver, expected");
+        AppendArgs(info.ExtraArgs);
+        AppendLn(");");
     }
 }

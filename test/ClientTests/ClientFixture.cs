@@ -4,11 +4,11 @@ using Client;
 
 public class ClientFixture : IDisposable
 {
-    public readonly MiniZincClient Client;
+    public readonly MiniZincClient MiniZinc;
 
     public ClientFixture()
     {
-        Client = MiniZincClient.Create();
+        MiniZinc = MiniZincClient.Create();
     }
 
     public void Dispose() { }

@@ -1,7 +1,6 @@
 ﻿namespace Make;
 
 using LibMiniZinc.Tests;
-using MiniZinc.Parser;
 
 public sealed class ClientAnySolutionTestsBuilder : ClientTestsBuilder
 {
@@ -13,7 +12,9 @@ public sealed class ClientAnySolutionTestsBuilder : ClientTestsBuilder
                 "async Task Test",
                 "string path",
                 "string solver",
-                "List<string> validSolutions"
+                "List<string> anySolutions",
+                "bool output",
+                "params string[] args"
             )
         )
         {
@@ -25,13 +26,16 @@ public sealed class ClientAnySolutionTestsBuilder : ClientTestsBuilder
             WriteSection();
             NewLine();
             Var("options", "SolveOptions.Create(solverId:solver)");
+            Assign("options", "options.AddArgs(args)");
+            NewLine();
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeTrue();");
             WriteLn("result.DataString.Should().NotBeNull();");
             WriteLn("result.Data.Should().NotBeNull();");
+            NewLine();
             Var("solution", "result.Data!");
 
-            using (ForEach("var dzn in validSolutions"))
+            using (ForEach("var dzn in anySolutions"))
             {
                 Var("expectedSolution", "Parser.ParseDataString(dzn);");
                 WriteLn("expectedSolution.Ok.Should().BeTrue();");
@@ -77,21 +81,32 @@ public sealed class ClientAnySolutionTestsBuilder : ClientTestsBuilder
     void WriteTest(TestCaseInfo info, List<TestSolution> validSolutions)
     {
         using var _ = WriteTestHeader(info);
-        WriteLn("var validSolutions = new List<string> {");
-
+        WriteLn("var solutions = new List<string> {");
+        var output = false;
         using (Indent())
         {
             foreach (var sol in validSolutions)
             {
-                if (sol.Dzn is not { } dzn)
-                    continue;
-                Write(Quote(dzn));
-                Append(',');
-                NewLine();
+                if (sol.Dzn is { } dzn)
+                {
+                    Write(sol.Dzn);
+                    Append(',');
+                    NewLine();
+                }
+                else if (sol.Ozn is { } ozn)
+                {
+                    Write(sol.Dzn);
+                    Append(',');
+                    NewLine();
+                    output = true;
+                }
             }
         }
         WriteLn("};");
         NewLine();
-        WriteLn("await Test(path, solver, validSolutions);");
+        Write("await Test(path, solver, solutions, ");
+        Append(output ? "true" : "false");
+        AppendArgs(info.ExtraArgs);
+        AppendLn(");");
     }
 }
