@@ -10,5 +10,5 @@ public sealed record TestSolution
     /// <summary>
     /// Expected output string eg: `ok`
     /// </summary>
-    public string? Output { get; set; }
+    public string? Ozn { get; set; }
 }

@@ -119,7 +119,7 @@ public static class Spec
 
                     var output = sol.Pop("_output_item")?.ToString();
                     var dzn = ParseSolutionVariables(sol);
-                    var solution = new TestSolution { Output = output, Dzn = dzn };
+                    var solution = new TestSolution { Ozn = output, Dzn = dzn };
 
                     if (status is Yaml.OPTIMAL)
                         testCase.Type = TestType.Optimise;

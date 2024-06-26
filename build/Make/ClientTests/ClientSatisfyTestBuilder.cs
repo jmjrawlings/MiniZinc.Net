@@ -18,8 +18,8 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
             WriteSection();
             NewLine();
             Var("options", "SolveOptions.Create(solverId:solver)");
-            using (If("args is not null"))
-                WriteLn("options = options.AddArgs(args);");
+            WriteLn("options = options.AddArgs(args);");
+            NewLine();
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeTrue();");
             WriteLn("result.Status.Should().Be(SolveStatus.Satisfied);");
@@ -44,10 +44,8 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
             .Solutions?.Select(sol => sol.Dzn)
             .Where(dzn => dzn is not null)
             .Select(dzn => dzn!);
-        var test = "await Test(path, solver";
-        if (dzns is not null)
-            test += string.Join(",", dzns);
-        test += ");";
-        WriteLn(test);
+        Write("await Test(path, solver");
+        AppendArgs(info.ExtraArgs);
+        AppendLn(");");
     }
 }

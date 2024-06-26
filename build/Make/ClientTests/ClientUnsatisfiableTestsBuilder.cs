@@ -7,14 +7,18 @@ public sealed class ClientUnsatisfiableTestsBuilder : ClientTestsBuilder
     public ClientUnsatisfiableTestsBuilder(TestSpec spec)
         : base("ClientUnsatisfiableTests", spec)
     {
-        using (Function("async Task Test", "string path", "string solver"))
+        using (Function("async Task Test", "string path", "string solver", "params string[] args"))
         {
             WriteMessage("path");
             WriteSection();
+            NewLine();
             Var("model", "Model.FromFile(path)");
             WriteMessage("model.SourceText");
             WriteSection();
+            NewLine();
             Var("options", "SolveOptions.Create(solverId:solver)");
+            Assign("options", "options.AddArgs(args)");
+            NewLine();
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeFalse();");
             WriteLn("result.Status.Should().Be(SolveStatus.Unsatisfiable);");
@@ -35,6 +39,8 @@ public sealed class ClientUnsatisfiableTestsBuilder : ClientTestsBuilder
     void WriteTest(TestCaseInfo info)
     {
         using var _ = WriteTestHeader(info);
-        WriteLn("await Test(path, solver);");
+        Write("await Test(path, solver");
+        AppendArgs(info.ExtraArgs);
+        AppendLn(");");
     }
 }
