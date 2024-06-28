@@ -247,13 +247,11 @@ public sealed class Parser
 
             var assign = new AssignmentSyntax(ident, expr);
             assignments.Add(assign);
-
-            if (!variables.ContainsKey(ident.Name))
+            if (variables.ContainsKey(ident.Name))
             {
                 Error($"Variable \"{ident}\" was assigned to multiple times");
                 break;
             }
-
             variables.Add(ident.Name, expr);
 
             if (!Skip(TokenKind.EOL))
@@ -1823,7 +1821,7 @@ public sealed class Parser
     /// Parse annotations
     /// </summary>
     /// <returns>True if no error was encountered</returns>
-    internal bool ParseAnnotations(out List<SyntaxNode>? annotations)
+    internal bool ParseAnnotations(out List<ExpressionSyntax>? annotations)
     {
         annotations = null;
         while (Skip(TokenKind.COLON_COLON))
@@ -1843,7 +1841,7 @@ public sealed class Parser
                 return Expected("Annotation");
             }
 
-            annotations ??= new List<SyntaxNode>();
+            annotations ??= new List<ExpressionSyntax>();
             annotations.Add(ann);
         }
         return true;
@@ -1855,14 +1853,14 @@ public sealed class Parser
     /// <mzn>constraint a > 2 :: "xd"</mzn>
     /// <mzn>output ["xd"] :: "dx"</mzn>
     /// <returns>True if no error was encountered</returns>
-    internal bool ParseStringAnnotations(out List<SyntaxNode>? annotations)
+    internal bool ParseStringAnnotations(out List<ExpressionSyntax>? annotations)
     {
         annotations = null;
         while (Skip(TokenKind.COLON_COLON))
         {
             if (!ParseString(out var ann))
                 return false;
-            annotations ??= new List<SyntaxNode>();
+            annotations ??= new List<ExpressionSyntax>();
             annotations.Add(new StringLiteralSyntax(ann));
         }
 

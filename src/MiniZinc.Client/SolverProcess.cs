@@ -34,7 +34,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     protected TimePeriod _iterTime;
     protected int _iteration;
     protected SolveStatus _solveStatus;
-    protected IReadOnlyDictionary<string, ExpressionSyntax> _data;
+    protected DataSyntax _data;
     protected string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
@@ -56,7 +56,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         _cancellation = cancellation;
         _completion = new TaskCompletionSource<T>();
         _warnings = new List<string>();
-        _data = new Dictionary<string, ExpressionSyntax>();
+
         model.EnsureOk();
         ModelText = model.SourceText;
         SolverId = options?.SolverId ?? Solver.Gecode;
@@ -245,8 +245,8 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         {
             var parsed = Parser.ParseDataString(_dataString);
             parsed.EnsureOk();
-            _data = parsed.Data.Variables;
-            _data.TryGetValue("_objective", out var objectiveNode);
+            _data = parsed.Data;
+            _data.Variables.TryGetValue("_objective", out var objectiveNode);
             IntOrFloat? objective = objectiveNode switch
             {
                 null => null,

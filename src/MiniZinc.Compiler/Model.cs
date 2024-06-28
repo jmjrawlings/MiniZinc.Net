@@ -220,7 +220,7 @@ public class Model
         var con = new ConstraintSyntax(default, expr);
         if (name is not null)
         {
-            con.Annotations ??= new List<SyntaxNode>();
+            con.Annotations ??= new List<ExpressionSyntax>();
             con.Annotations.Add(new ExpressionSyntax<string>(name));
         }
         AddNode(con);

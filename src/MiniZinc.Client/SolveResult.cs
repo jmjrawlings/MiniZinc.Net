@@ -52,7 +52,7 @@ public abstract record SolveResult<T>
     /// <summary>
     /// The variables and their assigned values from the solution
     /// </summary>
-    public required IReadOnlyDictionary<string, ExpressionSyntax>? Data { get; init; }
+    public required DataSyntax? Data { get; init; }
 
     /// <summary>
     /// The solution as dzn data text
@@ -150,7 +150,7 @@ public abstract record SolveResult<T>
         if (Data is null)
             return null;
 
-        if (Data.TryGetValue(id, out var value))
+        if (Data.Variables.TryGetValue(id, out var value))
             return value;
 
         return null;
