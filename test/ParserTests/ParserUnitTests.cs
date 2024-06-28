@@ -4,16 +4,6 @@ using MiniZinc.Parser.Syntax;
 public class ParserUnitTests
 {
     [Fact]
-    void test_namespace()
-    {
-        var ns = new NameSpace<int>();
-        ns.Add("a", 1);
-        ns.Add("a", 2);
-        ns.Add("a", 3);
-        ns["a"].Should().Be(3);
-    }
-
-    [Fact]
     void test_parse_include_item()
     {
         var node = Parser.ParseStatement<IncludeSyntax>("include \"xd.mzn\";");

@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Tests;
 
 using Client;
-using Models;
+using Compiler;
 
 public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
 {

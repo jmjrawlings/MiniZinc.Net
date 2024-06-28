@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Models;
+﻿namespace MiniZinc.Compiler;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text;

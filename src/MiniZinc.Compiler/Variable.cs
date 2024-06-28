@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Models;
+﻿namespace MiniZinc.Compiler;
 
 using Parser;
 using Parser.Syntax;

@@ -13,9 +13,6 @@ public sealed class Parser
     private string _sourceText;
     private Token _token;
     private TokenKind _kind;
-
-    // private ushort _precedence;
-    // private Assoc _assoc;
     private int _i;
     private string? _errorMessage;
     private string? _errorTrace;
@@ -251,11 +248,13 @@ public sealed class Parser
             var assign = new AssignmentSyntax(ident, expr);
             assignments.Add(assign);
 
-            if (!variables.TryAdd(ident.Name, expr))
+            if (!variables.ContainsKey(ident.Name))
             {
                 Error($"Variable \"{ident}\" was assigned to multiple times");
                 break;
             }
+
+            variables.Add(ident.Name, expr);
 
             if (!Skip(TokenKind.EOL))
                 if (!Expect(TokenKind.EOF))
