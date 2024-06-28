@@ -12,8 +12,7 @@ public sealed class ClientAllSolutionsTestsBuilder : ClientTestsBuilder
                 "async Task Test",
                 "string path",
                 "string solver",
-                "List<string> allSolutions",
-                "bool output",
+                "List<(string,bool)> solutions",
                 "params string[] args"
             )
         )
@@ -33,29 +32,12 @@ public sealed class ClientAllSolutionsTestsBuilder : ClientTestsBuilder
             WriteLn("result.DataString.Should().NotBeNull();");
             WriteLn("result.Data.Should().NotBeNull();");
             NewLine();
-            Var("solution", "result.Data!");
 
-            using (ForEach("var dzn in allSolutions"))
+            using (ForEach("var (dzn,output) in solutions"))
             {
-                Var("expectedSolution", "Parser.ParseDataString(dzn);");
-                WriteLn("expectedSolution.Ok.Should().BeTrue();");
-                Var("ok", "true");
-                using (ForEach("var assign in expectedSolution.Data.Assignments"))
-                {
-                    Var("name", "assign.Name");
-                    Var("actual", "solution[name]");
-                    Var("expected", "assign.Expr");
-                    Var("actualDzn", "actual.ToString()");
-                    Var("expectedDzn", "expected.ToString()");
-                    using (If("!expectedDzn.Equals(actualDzn)"))
-                    {
-                        Assign("ok", "false");
-                        Break();
-                    }
-                }
-
-                using (If("!ok"))
-                    Call("Assert.Fail", "$\"\"");
+                Var("expected", "Parser.ParseDataString(dzn);");
+                WriteLn("expected.Ok.Should().BeTrue();");
+                WriteLn("result.Data.Should().Be(expected.Data);");
             }
         }
 
@@ -67,44 +49,14 @@ public sealed class ClientAllSolutionsTestsBuilder : ClientTestsBuilder
             if (GetTestInfo(testCase) is not { } info)
                 continue;
 
-            if (info.Solutions is not { } validSolutions)
-                continue;
-
-            if (validSolutions.Count is 0)
-                continue;
-
-            WriteTest(info, validSolutions);
+            WriteTest(info);
         }
     }
 
-    void WriteTest(TestCaseInfo info, List<TestSolution> validSolutions)
+    void WriteTest(TestCaseInfo info)
     {
         using var _ = WriteTestHeader(info);
-        WriteLn("var solutions = new List<string> {");
-        var output = false;
-        using (Indent())
-        {
-            foreach (var sol in validSolutions)
-            {
-                if (sol.Dzn is { } dzn)
-                {
-                    Write(sol.Dzn);
-                    Append(',');
-                    NewLine();
-                }
-                else if (sol.Ozn is { } ozn)
-                {
-                    Write(sol.Dzn);
-                    Append(',');
-                    NewLine();
-                    output = true;
-                }
-            }
-        }
-        WriteLn("};");
-        NewLine();
-        Write($"await Test(path, solver, solutions, ");
-        Append(output ? "true" : "false");
+        Write("await Test(path, solver, solutions");
         AppendArgs(info.ExtraArgs);
         AppendLn(");");
     }

@@ -67,12 +67,12 @@ public sealed class ClientErrorTestsBuilder : ClientTestsBuilder
     {
         using var _ = WriteTestHeader(info);
         if (info.ErrorMessage is { } err)
-            Declare("string?", "errorMessage", $"\"{err}\"");
+            Declare("string", "errorMessage", $"\"{err}\"");
         else
             Declare("string?", "errorMessage", null);
 
         if (info.ErrorRegex is { } regex)
-            Declare("string?", "errorRegex", $"\"{regex.Replace("\\", "")}\"");
+            Declare("string", "errorRegex", $"\"{regex.Replace("\\", "")}\"");
         else
             Declare("string?", "errorRegex", null);
 
