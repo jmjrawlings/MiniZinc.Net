@@ -44,6 +44,7 @@ public abstract class ClientTestsBuilder : CodeBuilder
 
     protected IDisposable WriteTestHeader(TestCaseInfo info)
     {
+        IDisposable block;
         if (info.Solvers.Count > 1)
         {
             Attribute("Theory", $"DisplayName=\"{info.Path}\"");
@@ -55,9 +56,8 @@ public abstract class ClientTestsBuilder : CodeBuilder
                     Attribute($"InlineData", $"\"{solver}\", Skip=\"Solver not supported\"");
             }
 
-            var block = Function($"public async Task {info.Name}", "string solver");
+            block = Function($"public async Task {info.Name}", "string solver");
             Var("path", $"\"{info.Path}\"");
-            return block;
         }
         else
         {
@@ -67,11 +67,56 @@ public abstract class ClientTestsBuilder : CodeBuilder
             else
                 Attribute("Fact", $"DisplayName=\"{info.Path}\"", "Skip=\"Solver not supported\"");
 
-            var block = Function($"public async Task {info.Name}");
+            block = Function($"public async Task {info.Name}");
             Var("path", $"\"{info.Path}\"");
             Var("solver", Quote(solver));
+        }
+
+        if (info.Solutions is not { Count: > 0 } solutions)
+        {
+            WriteLn("List<(string,bool)>? solutions = null;");
             return block;
         }
+
+        WriteLn("var solutions = new List<(string, bool)> {");
+
+        using (Indent())
+        {
+            foreach (var sol in solutions)
+            {
+                if (sol.Dzn is { } dzn)
+                {
+                    Write('(');
+                    Append(FormatDzn(dzn));
+                    Append(',');
+                    Append("false");
+                    Append(')');
+                    Append(',');
+                    NewLine();
+                }
+                else if (sol.Ozn is { } ozn)
+                {
+                    Write('(');
+                    Append(FormatDzn(ozn));
+                    Append(',');
+                    Append("true");
+                    Append(')');
+                    Append(',');
+                    NewLine();
+                }
+            }
+        }
+        WriteLn("};");
+        NewLine();
+        return block;
+    }
+
+    private string FormatDzn(string s)
+    {
+        var z = s.Replace("\n", "\\n");
+        z = z.Replace("\"", "\\\"");
+        z = $"\"{z}\"";
+        return z;
     }
 
     protected TestCaseInfo? GetTestInfo(TestCase testCase)
@@ -79,6 +124,7 @@ public abstract class ClientTestsBuilder : CodeBuilder
         var testName = testCase.Path.Replace(".mzn", "");
         testName = testName.Replace("/", "_");
         testName = testName.Replace("-", "_");
+        testName = testName.Replace(".", "_");
         testName = $"test_solve_{testName}";
         if (testCase.Sequence > 1)
             testName = $"{testName}_{testCase.Sequence}";
@@ -162,26 +208,15 @@ public abstract class ClientTestsBuilder : CodeBuilder
                 if (string.IsNullOrEmpty(sol.Dzn))
                     sol.Dzn = null;
                 else
-                    sol.Dzn = Sanitize(sol.Dzn);
+                    sol.Dzn = sol.Dzn;
 
                 if (string.IsNullOrEmpty(sol.Ozn))
                     sol.Ozn = null;
                 else
-                    sol.Ozn = Sanitize(sol.Ozn);
+                    sol.Ozn = sol.Ozn;
             }
         }
         return info;
-    }
-
-    protected string Sanitize(string s)
-    {
-        var lines = s.Split(
-            '\n',
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
-        );
-        var mzn = string.Join("\\n", lines);
-        mzn = TripleQuote(mzn);
-        return mzn;
     }
 
     public void WriteTo(DirectoryInfo directory)
