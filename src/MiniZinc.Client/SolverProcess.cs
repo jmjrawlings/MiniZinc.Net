@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Command;
+using Compiler;
 using Core;
-using Models;
 using Parser;
 using Parser.Syntax;
 

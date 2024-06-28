@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Models;
+﻿namespace MiniZinc.Compiler;
 
 /// <summary>
 /// A <see cref="Model"/> that contains only integer variables.

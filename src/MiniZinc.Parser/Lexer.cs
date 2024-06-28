@@ -287,7 +287,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
         } while (IsDigit(_char));
 
-        var span = ReadSpan();
+        var span = ReadChars();
         int item = int.Parse(span);
         Return(TokenKind.TUPLE_ACCESS, item);
     }
@@ -312,7 +312,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         BeginString();
-        while (IsAsciiLetterOrDigit(_char))
+        while (IsLetterOrDigit(_char))
             Step();
 
         var ident = ReadString();
@@ -529,9 +529,9 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         do
         {
             Step();
-        } while (IsAsciiLetterOrDigit(_char));
+        } while (IsLetterOrDigit(_char));
 
-        var hex = ReadSpan();
+        var hex = ReadChars();
         if (int.TryParse(hex, NumberStyles.AllowHexSpecifier, null, out var i))
             Return(TokenKind.INT_LITERAL, i);
         else
@@ -605,7 +605,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
             }
 
-            var span = ReadSpan();
+            var span = ReadChars();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
                 Return(TokenKind.FLOAT_LITERAL, d);
             else
@@ -618,7 +618,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             {
                 Step();
             } while (IsDigit(_char));
-            var span = ReadSpan();
+            var span = ReadChars();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
                 Return(TokenKind.FLOAT_LITERAL, d);
             else
@@ -626,7 +626,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
         else
         {
-            var span = ReadSpan();
+            var span = ReadChars();
             if (int.TryParse(span, NumberStyles.None, null, out var i))
                 Return(TokenKind.INT_LITERAL, i);
             else
@@ -699,7 +699,11 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     string ReadString() => _sourceText.Substring(_startString, _index - _startString);
 
-    ReadOnlySpan<char> ReadSpan() => _sourceText.AsSpan(_startString, _index - _startString);
+#if NETSTANDARD2_0
+    string ReadChars() => ReadString();
+#else
+    ReadOnlySpan<char> ReadChars() => _sourceText.AsSpan(_startString, _index - _startString);
+#endif
 
     /// <summary>
     /// Lex the given string

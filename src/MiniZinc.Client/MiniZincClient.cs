@@ -4,8 +4,8 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Command;
+using Compiler;
 using Core;
-using Models;
 
 /// <summary>
 /// Executes commands and solves models against

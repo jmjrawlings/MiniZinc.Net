@@ -1,7 +1,7 @@
 ﻿namespace MiniZinc.Client;
 
+using Compiler;
 using Core;
-using Models;
 using Parser.Syntax;
 
 /// <summary>

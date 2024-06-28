@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Models;
+﻿namespace MiniZinc.Compiler;
 
 /// <summary>
 /// Union type that could be an int or float
