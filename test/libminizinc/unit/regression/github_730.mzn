@@ -12,7 +12,7 @@ function string: show_array2d_bool(array[int,int] of var bool: x) ::output_only;
 function string: show_array2d_bool(array[int,int] of bool: x) =
 	if length(x) != 0 then
 		let {
-			int: one_digits!9Mã™da checkered board. */
+			int: one_digits!9Mã™a checkered board. */
 function string: show_array2d_bool(array[int,int] of var bool: x) ::output_only;
 function string: show_array2d_bool(array[intt(q in 1..one_digits)(" ") ++ " "
 			++ concat(j in index_set_2of2(x))(

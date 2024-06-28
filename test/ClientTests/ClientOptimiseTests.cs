@@ -39,7 +39,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/division/test_div12.mzn";
 		var solver = "gecode";
-		var expected = """"aCostSupport=0;mdl8_Z=0;"""";
+		var solutions = new List<(string, bool)> {
+			("aCostSupport=0;mdl8_Z=0;",false),
+		};
+
+		var expected = "aCostSupport=0;mdl8_Z=0;";
 		await Test(path, solver, expected);
 	}
 
@@ -48,7 +52,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/infinite_domain_bind.mzn";
 		var solver = "gecode";
-		var expected = """"x=10;"""";
+		var solutions = new List<(string, bool)> {
+			("x=10;",false),
+		};
+
+		var expected = "x=10;";
 		await Test(path, solver, expected);
 	}
 
@@ -59,7 +67,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_test_search1(string solver)
 	{
 		var path = "unit/general/test-search1.mzn";
-		var expected = """"x=3;y=8;"""";
+		var solutions = new List<(string, bool)> {
+			("x=3;y=8;",false),
+		};
+
+		var expected = "x=3;y=8;";
 		await Test(path, solver, expected);
 	}
 
@@ -69,7 +81,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_test_times_int_float_eq(string solver)
 	{
 		var path = "unit/general/test_times_int_float_eq.mzn";
-		var expected = """"objective=-5;x=5;y=6;z=30;xf=5;yf=6;"""";
+		var solutions = new List<(string, bool)> {
+			("objective=-5;x=5;y=6;z=30;xf=5;yf=6;",false),
+		};
+
+		var expected = "objective=-5;x=5;y=6;z=30;xf=5;yf=6;";
 		await Test(path, solver, expected,"-D QuadrFloat=true;QuadrIntCard=0");
 	}
 
@@ -79,7 +95,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_test_times_int_float_eq__defaultopt(string solver)
 	{
 		var path = "unit/general/test_times_int_float_eq__defaultopt.mzn";
-		var expected = """"objective=-5;x=5;y=6;z=30;xf=5;yf=6;"""";
+		var solutions = new List<(string, bool)> {
+			("objective=-5;x=5;y=6;z=30;xf=5;yf=6;",false),
+		};
+
+		var expected = "objective=-5;x=5;y=6;z=30;xf=5;yf=6;";
 		await Test(path, solver, expected);
 	}
 
@@ -89,7 +109,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_on_restart_complete(string solver)
 	{
 		var path = "unit/on_restart/complete.mzn";
-		var expected = """"x=3;"""";
+		var solutions = new List<(string, bool)> {
+			("x=3;",false),
+		};
+
+		var expected = "x=3;";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -99,7 +123,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_on_restart_last_val_bool(string solver)
 	{
 		var path = "unit/on_restart/last_val_bool.mzn";
-		var expected = """"x=4;y=true;"""";
+		var solutions = new List<(string, bool)> {
+			("x=4;y=true;",false),
+		};
+
+		var expected = "x=4;y=true;";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -108,7 +136,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/last_val_float.mzn";
 		var solver = "gecode";
-		var expected = """"x=4;y=0.85;"""";
+		var solutions = new List<(string, bool)> {
+			("x=4;y=0.85;",false),
+		};
+
+		var expected = "x=4;y=0.85;";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -118,7 +150,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_on_restart_last_val_int(string solver)
 	{
 		var path = "unit/on_restart/last_val_int.mzn";
-		var expected = """"x=4;y=3;"""";
+		var solutions = new List<(string, bool)> {
+			("x=4;y=3;",false),
+		};
+
+		var expected = "x=4;y=3;";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -128,7 +164,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_on_restart_last_val_set(string solver)
 	{
 		var path = "unit/on_restart/last_val_set.mzn";
-		var expected = """"x=4;y={1,2,4,8};"""";
+		var solutions = new List<(string, bool)> {
+			("x=4;y={1,2,4,8};",false),
+		};
+
+		var expected = "x=4;y={1,2,4,8};";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -138,7 +178,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_on_restart_sol_bool(string solver)
 	{
 		var path = "unit/on_restart/sol_bool.mzn";
-		var expected = """"x=3;is_even=false;y=true;"""";
+		var solutions = new List<(string, bool)> {
+			("x=3;is_even=false;y=true;",false),
+		};
+
+		var expected = "x=3;is_even=false;y=true;";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -147,7 +191,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/sol_float.mzn";
 		var solver = "gecode";
-		var expected = """"x=3;y=2;"""";
+		var solutions = new List<(string, bool)> {
+			("x=3;y=2;",false),
+		};
+
+		var expected = "x=3;y=2;";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -157,7 +205,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_on_restart_sol_int(string solver)
 	{
 		var path = "unit/on_restart/sol_int.mzn";
-		var expected = """"x=3;y=2;"""";
+		var solutions = new List<(string, bool)> {
+			("x=3;y=2;",false),
+		};
+
+		var expected = "x=3;y=2;";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -167,7 +219,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_on_restart_sol_set(string solver)
 	{
 		var path = "unit/on_restart/sol_set.mzn";
-		var expected = """"x={};y={1};"""";
+		var solutions = new List<(string, bool)> {
+			("x={};y={1};",false),
+		};
+
+		var expected = "x={};y={1};";
 		await Test(path, solver, expected,"--restart constant","--restart-base 100");
 	}
 
@@ -176,7 +232,14 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/ts_bug.mzn";
 		var solver = "gecode";
-		var expected = """"cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},{1,2,3,4},{1,2,3,4},{1,2,3,4}];aft=[{1,2,3,4},{1,2,3,4},{1,3,4},{1,3,4},{1,3},{}];a=[{1,2},{2,3},{3,4},{2,4},{1,3},{1,4}];"""";
+		var solutions = new List<(string, bool)> {
+			("cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},{1,2,3,4},{1,2,3,4},{1,2,3,4}];aft=[{1,2,3,4},{1,2,3,4},{1,3,4},{1,3,4},{1,3},{}];a=[{1,2},{2,3},{3,4},{2,4},{1,3},{1,4}];",false),
+			("cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,3},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];",false),
+			("cost=48;s=[5,3,2,1,4,6];dur=[{1,3},{1,3,4},{1,2,4},{1,2,4},{1,4},{1,4}];bef=[{},{1,3},{1,3,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,2,4},{1,2,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];",false),
+			("cost=48;s=[4,1,2,3,5,6];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,4},{1,4}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];",false),
+		};
+
+		var expected = "cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},{1,2,3,4},{1,2,3,4},{1,2,3,4}];aft=[{1,2,3,4},{1,2,3,4},{1,3,4},{1,3,4},{1,3},{}];a=[{1,2},{2,3},{3,4},{2,4},{1,3},{1,4}];";
 		await Test(path, solver, expected);
 	}
 
@@ -185,7 +248,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_var_element.mzn";
 		var solver = "gecode";
-		var expected = """"idx=iE;selected=(a: 6, b: (c: 3, d: 3));"""";
+		var solutions = new List<(string, bool)> {
+			("idx=iE;selected=(a: 6, b: (c: 3, d: 3));",false),
+		};
+
+		var expected = "idx=iE;selected=(a: 6, b: (c: 3, d: 3));";
 		await Test(path, solver, expected);
 	}
 
@@ -194,7 +261,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_var_element.mzn";
 		var solver = "gecode";
-		var expected = """"idx=iE;selected=[6,[3,3]];"""";
+		var solutions = new List<(string, bool)> {
+			("idx=iE;selected=[6,[3,3]];",false),
+		};
+
+		var expected = "idx=iE;selected=[6,[3,3]];";
 		await Test(path, solver, expected);
 	}
 
@@ -204,7 +275,11 @@ public class ClientOptimiseTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_radiation(string solver)
 	{
 		var path = "examples/radiation.mzn";
-		var expected = """"Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[[[0,1,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,0,0,0,0,0,0,0,0,0],[0,0,1,0,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,1,0,0,0,0,0,0,0,0,0]],[[1,0,1,1,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,0,1,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,1,0,0,0,0,0,0,0,0,0,0],[2,0,1,1,0,0,0,0,0,0,0,0,0,0],[0,0,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,1,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0]]];objective=175;"""";
+		var solutions = new List<(string, bool)> {
+			("Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[[[0,1,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,0,0,0,0,0,0,0,0,0],[0,0,1,0,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,1,0,0,0,0,0,0,0,0,0]],[[1,0,1,1,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,0,1,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,1,0,0,0,0,0,0,0,0,0,0],[2,0,1,1,0,0,0,0,0,0,0,0,0,0],[0,0,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,1,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0]]];objective=175;",false),
+		};
+
+		var expected = "Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[[[0,1,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,0,0,0,0,0,0,0,0,0],[0,0,1,0,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,1,0,0,0,0,0,0,0,0,0]],[[1,0,1,1,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,0,1,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,1,0,0,0,0,0,0,0,0,0,0],[2,0,1,1,0,0,0,0,0,0,0,0,0,0],[0,0,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,1,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0]]];objective=175;";
 		await Test(path, solver, expected);
 	}
 
