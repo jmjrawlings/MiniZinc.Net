@@ -34,11 +34,21 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 		result.Status.Should().Be(SolveStatus.Unsatisfiable);
 	}
 
+	[Fact(DisplayName="unit/general/bind_par_opt.mzn")]
+	public async Task test_solve_unit_general_bind_par_opt()
+	{
+		var path = "unit/general/bind_par_opt.mzn";
+		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
+		await Test(path, solver);
+	}
+
 	[Fact(DisplayName="unit/regression/bind-defines-var.mzn")]
 	public async Task test_solve_unit_regression_bind_defines_var()
 	{
 		var path = "unit/regression/bind-defines-var.mzn";
 		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
 		await Test(path, solver,"-G std");
 	}
 
@@ -47,6 +57,7 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_661_part1.mzn";
 		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
 		await Test(path, solver);
 	}
 
@@ -55,6 +66,7 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_666.mzn";
 		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
 		await Test(path, solver,"-G std");
 	}
 
@@ -63,6 +75,7 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_765.mzn";
 		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
 		await Test(path, solver);
 	}
 
@@ -71,7 +84,17 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_785.mzn";
 		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
 		await Test(path, solver,"-G std");
+	}
+
+	[Fact(DisplayName="unit/regression/github_798.mzn")]
+	public async Task test_solve_unit_regression_github_798()
+	{
+		var path = "unit/regression/github_798.mzn";
+		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
+		await Test(path, solver,"-G gecode_presolver");
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_5.mzn")]
@@ -79,6 +102,7 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_domain_5.mzn";
 		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
 		await Test(path, solver);
 	}
 
@@ -87,6 +111,7 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_domain_6.mzn";
 		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
 		await Test(path, solver);
 	}
 
@@ -95,6 +120,7 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_return_ti_4.mzn";
 		var solver = "gecode";
+		List<(string,bool)>? solutions = null;
 		await Test(path, solver);
 	}
 
