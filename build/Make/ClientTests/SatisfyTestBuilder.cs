@@ -5,9 +5,17 @@ using LibMiniZinc.Tests;
 public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
 {
     public ClientSatisfyTestsBuilder(TestSpec spec)
-        : base("ClientSatisfyTests", spec)
+        : base("SatisfyTests", spec)
     {
-        using (Function("async Task Test", "string path", "string solver", "params string[]? args"))
+        using (
+            Function(
+                "async Task TestSatisfy",
+                "string path",
+                "string solver",
+                "List<(string, bool)> solutions",
+                "List<string> args"
+            )
+        )
         {
             WriteMessage("path");
             WriteSection();
@@ -23,6 +31,13 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeTrue();");
             WriteLn("result.Status.Should().Be(SolveStatus.Satisfied);");
+            using (ForEach("var (dzn,output) in solutions"))
+            {
+                Var("expected", "Parser.ParseDataString(dzn, out var data);");
+                WriteLn("expected.Ok.Should().BeTrue();");
+                using (If("!result.Data.Equals(data)"))
+                    WriteLn("Assert.Fail(\"\");");
+            }
         }
 
         foreach (var testCase in spec.TestCases)
@@ -40,12 +55,6 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
     void WriteTest(TestCaseInfo info)
     {
         using var _ = WriteTestHeader(info);
-        var dzns = info
-            .Solutions?.Select(sol => sol.Dzn)
-            .Where(dzn => dzn is not null)
-            .Select(dzn => dzn!);
-        Write("await Test(path, solver");
-        AppendArgs(info.ExtraArgs);
-        AppendLn(");");
+        WriteLn("await TestSatisfy(path, solver, solutions, args);");
     }
 }

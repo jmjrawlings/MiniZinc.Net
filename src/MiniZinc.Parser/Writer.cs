@@ -528,12 +528,6 @@ internal sealed class Writer
         return;
     }
 
-    public void WriteData(DataSyntax data)
-    {
-        foreach (var assign in data.Assignments)
-            WriteNode(assign);
-    }
-
     static PrettyPrintNodeComparer _prettyPrintComparer = new();
 
     /// <summary>

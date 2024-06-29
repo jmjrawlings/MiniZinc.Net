@@ -229,9 +229,8 @@ public sealed class Parser
     /// from name to value.
     /// </summary>
     /// <mzn>a = 1;b = 2; c= true;</mzn>
-    internal bool ParseData(out DataSyntax data)
+    internal bool ParseData(out Data data)
     {
-        List<AssignmentSyntax> assignments = new();
         Dictionary<string, ExpressionSyntax> variables = new();
 
         while (_kind is not TokenKind.EOF)
@@ -245,8 +244,6 @@ public sealed class Parser
             if (!ParseExpr(out var expr))
                 break;
 
-            var assign = new AssignmentSyntax(ident, expr);
-            assignments.Add(assign);
             if (variables.ContainsKey(ident.Name))
             {
                 Error($"Variable \"{ident}\" was assigned to multiple times");
@@ -259,7 +256,7 @@ public sealed class Parser
                     break;
         }
 
-        data = new DataSyntax(assignments, variables);
+        data = new Data(variables);
         return true;
     }
 
@@ -2261,16 +2258,15 @@ public sealed class Parser
     /// </summary>
     /// <example>Parser.ParseFile("model.mzn")</example>
     /// <example>Parser.ParseFile("data.dzn")</example>
-    public static ModelParseResult ParseModelFile(string path)
+    public static ParseResult ParseModelFile(string path, out ModelSyntax model)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
         var parser = new Parser(mzn);
-        var ok = parser.ParseModel(out var model);
+        var ok = parser.ParseModel(out model);
         var elapsed = watch.Elapsed;
-        var result = new ModelParseResult
+        var result = new ParseResult
         {
-            Model = model,
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
@@ -2292,15 +2288,14 @@ public sealed class Parser
     ///     constraint a /\ b;
     ///     """);
     /// </example>
-    public static ModelParseResult ParseModelString(string text)
+    public static ParseResult ParseModelString(string text, out ModelSyntax model)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
-        var ok = parser.ParseModel(out var model);
+        var ok = parser.ParseModel(out model);
         var elapsed = watch.Elapsed;
-        var result = new ModelParseResult
+        var result = new ParseResult
         {
-            Model = model,
             SourceFile = null,
             SourceText = text,
             Ok = ok,
@@ -2313,23 +2308,23 @@ public sealed class Parser
     }
 
     /// <inheritdoc cref="ParseModelFile(string)"/>
-    public static ModelParseResult ParseModelFile(FileInfo file) => ParseModelFile(file.FullName);
+    public static ParseResult ParseModelFile(FileInfo file, out ModelSyntax model) =>
+        ParseModelFile(file.FullName, out model);
 
     /// <summary>
     /// Parse the given minizinc data file.
     /// Data files only allow assignments eg: `a = 10;`
     /// </summary>
     /// <example>Parser.ParseDataFile("data.dzn")</example>
-    public static DataParseResult ParseDataFile(string path)
+    public static ParseResult ParseDataFile(string path, out Data data)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
         var parser = new Parser(mzn);
-        var ok = parser.ParseData(out var data);
+        var ok = parser.ParseData(out data);
         var elapsed = watch.Elapsed;
-        var result = new DataParseResult
+        var result = new ParseResult
         {
-            Data = data,
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
@@ -2348,15 +2343,14 @@ public sealed class Parser
     /// <example>
     /// Parser.ParseDataString("a = 10; b=true;");
     /// </example>
-    public static DataParseResult ParseDataString(string text)
+    public static ParseResult ParseDataString(string text, out Data data)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
-        var ok = parser.ParseData(out var data);
+        var ok = parser.ParseData(out data);
         var elapsed = watch.Elapsed;
-        var result = new DataParseResult
+        var result = new ParseResult
         {
-            Data = data,
             SourceFile = null,
             SourceText = text,
             Ok = ok,
@@ -2368,8 +2362,9 @@ public sealed class Parser
         return result;
     }
 
-    /// <inheritdoc cref="ParseDataFile(string)"/>
-    public static DataParseResult ParseDataFile(FileInfo file) => ParseDataFile(file.FullName);
+    /// <inheritdoc cref="ParseDataFile(string,out MiniZinc.Parser.Data)"/>
+    public static ParseResult ParseDataFile(FileInfo file, out Data data) =>
+        ParseDataFile(file.FullName, out data);
 
     /// Parse an expression of the given type from text
     public static T ParseExpression<T>(string text)

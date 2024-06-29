@@ -3,18 +3,18 @@
 using LibMiniZinc.Tests;
 using MiniZinc.Parser;
 
-public sealed class ClientOptimiseTestsBuilder : ClientTestsBuilder
+public sealed class OptimiseTestsBuilder : ClientTestsBuilder
 {
-    public ClientOptimiseTestsBuilder(TestSpec spec)
-        : base("ClientOptimiseTests", spec)
+    public OptimiseTestsBuilder(TestSpec spec)
+        : base("OptimiseTests", spec)
     {
         using (
             Function(
-                "async Task Test",
+                "async Task TestOptimise",
                 "string path",
                 "string solver",
-                "string expected",
-                "params string[] args"
+                "List<(string, bool)> solutions",
+                "List<string> args"
             )
         )
         {
@@ -25,11 +25,18 @@ public sealed class ClientOptimiseTestsBuilder : ClientTestsBuilder
             WriteSection();
             NewLine();
             Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args)");
+            WriteLn("options = options.AddArgs(args);");
             NewLine();
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeTrue();");
             WriteLn("result.Status.Should().Be(SolveStatus.Optimal);");
-            WriteLn("result.DataString.Should().Be(expected);");
+            using (ForEach("var (dzn, isOutput) in solutions"))
+            {
+                Var("expected", "Parser.ParseDataString(dzn, out var data);");
+                WriteLn("expected.Ok.Should().BeTrue();");
+                using (If("!result.Data.Equals(data)"))
+                    WriteLn("Assert.Fail(\"\");");
+            }
             NewLine();
         }
         foreach (var testCase in spec.TestCases)
@@ -47,17 +54,6 @@ public sealed class ClientOptimiseTestsBuilder : ClientTestsBuilder
     void WriteTest(TestCaseInfo info)
     {
         using var _ = WriteTestHeader(info);
-        var dzn = info
-            .Solutions.Select(sol => sol.Dzn)
-            .Where(dzn => dzn is not null)
-            .FirstOrDefault();
-
-        if (dzn is null)
-            return;
-
-        Var("expected", Quote(dzn));
-        Write("await Test(path, solver, expected");
-        AppendArgs(info.ExtraArgs);
-        AppendLn(");");
+        WriteLn("await TestOptimise(path, solver, solutions, args);");
     }
 }

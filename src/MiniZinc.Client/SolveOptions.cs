@@ -93,4 +93,11 @@ public readonly struct SolveOptions
         var opts = new SolveOptions(SolverId, args_, OutputFolder, Timeout);
         return opts;
     }
+
+    /// <summary>
+    /// Return a new SolveOptions with the given arguments added
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public SolveOptions AddArgs(IEnumerable<string> args) => AddArgs(args.ToArray());
 }
