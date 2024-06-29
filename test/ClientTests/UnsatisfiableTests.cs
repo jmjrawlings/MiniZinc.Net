@@ -6,18 +6,18 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
 */
 #nullable enable
 
-public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
+public class UnsatisfiableTests : IClassFixture<ClientFixture>
 {
 	private readonly MiniZincClient MiniZinc;
 	private readonly ITestOutputHelper _output;
 
-	public ClientUnsatisfiableTests(ClientFixture fixture, ITestOutputHelper output)
+	public UnsatisfiableTests(ClientFixture fixture, ITestOutputHelper output)
 	{
 		MiniZinc = fixture.MiniZinc;
 		_output = output;
 	}
 
-	async Task Test(string path, string solver, params string[] args)
+	async Task TestUnsatisfiable(string path, string solver, List<string>? args)
 	{
 		_output.WriteLine(path);
 		_output.WriteLine(new string('-',80));
@@ -39,90 +39,98 @@ public class ClientUnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/bind_par_opt.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/regression/bind-defines-var.mzn")]
 	public async Task test_solve_unit_regression_bind_defines_var()
 	{
 		var path = "unit/regression/bind-defines-var.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"-G std");
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"-G std",
+		};
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/regression/github_661_part1.mzn")]
 	public async Task test_solve_unit_regression_github_661_part1()
 	{
 		var path = "unit/regression/github_661_part1.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/regression/github_666.mzn")]
 	public async Task test_solve_unit_regression_github_666()
 	{
 		var path = "unit/regression/github_666.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"-G std");
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"-G std",
+		};
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/regression/github_765.mzn")]
 	public async Task test_solve_unit_regression_github_765()
 	{
 		var path = "unit/regression/github_765.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/regression/github_785.mzn")]
 	public async Task test_solve_unit_regression_github_785()
 	{
 		var path = "unit/regression/github_785.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"-G std");
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"-G std",
+		};
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/regression/github_798.mzn")]
 	public async Task test_solve_unit_regression_github_798()
 	{
 		var path = "unit/regression/github_798.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"-G gecode_presolver");
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"-G gecode_presolver",
+		};
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/types/struct_domain_5.mzn")]
 	public async Task test_solve_unit_types_struct_domain_5()
 	{
 		var path = "unit/types/struct_domain_5.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/types/struct_domain_6.mzn")]
 	public async Task test_solve_unit_types_struct_domain_6()
 	{
 		var path = "unit/types/struct_domain_6.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestUnsatisfiable(path, solver, args);	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_4.mzn")]
 	public async Task test_solve_unit_types_struct_return_ti_4()
 	{
 		var path = "unit/types/struct_return_ti_4.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
-	}
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestUnsatisfiable(path, solver, args);	}
 
 }
 

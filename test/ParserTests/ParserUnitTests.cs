@@ -448,8 +448,8 @@ public class ParserUnitTests
 
     ModelSyntax ParseString(string mzn)
     {
-        var result = Parser.ParseModelString(mzn);
+        var result = Parser.ParseModelString(mzn, out var model);
         result.ErrorTrace.Should().BeNull();
-        return result.Model;
+        return model;
     }
 }

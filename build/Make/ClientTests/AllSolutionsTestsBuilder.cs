@@ -2,18 +2,18 @@
 
 using LibMiniZinc.Tests;
 
-public sealed class ClientAnySolutionTestsBuilder : ClientTestsBuilder
+public sealed class AllSolutionsTestsBuilder : ClientTestsBuilder
 {
-    public ClientAnySolutionTestsBuilder(TestSpec spec)
-        : base("ClientAnySolutionTests", spec)
+    public AllSolutionsTestsBuilder(TestSpec spec)
+        : base("AllSolutionsTests", spec)
     {
         using (
             Function(
-                "async Task Test",
+                "async Task TestAllSolutions",
                 "string path",
                 "string solver",
                 "List<(string,bool)> solutions",
-                "params string[] args"
+                "List<string> args"
             )
         )
         {
@@ -25,22 +25,19 @@ public sealed class ClientAnySolutionTestsBuilder : ClientTestsBuilder
             WriteSection();
             NewLine();
             Var("options", "SolveOptions.Create(solverId:solver)");
-            Assign("options", "options.AddArgs(args)");
+            WriteLn("options = options.AddArgs(args);");
             NewLine();
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeTrue();");
-            WriteLn("result.DataString.Should().NotBeNull();");
-            WriteLn("result.Data.Should().NotBeNull();");
             NewLine();
 
             using (ForEach("var (dzn,output) in solutions"))
             {
-                Var("expected", "Parser.ParseDataString(dzn);");
+                Var("expected", "Parser.ParseDataString(dzn, out var data);");
                 WriteLn("expected.Ok.Should().BeTrue();");
-                using (If("result.Data.Equals(expected.Data)"))
-                    Return();
+                using (If("!result.Data.Equals(data)"))
+                    WriteLn("Assert.Fail(\"\");");
             }
-            Call("Assert.Fail", Quote("xd"));
         }
 
         foreach (var testCase in spec.TestCases)
@@ -58,8 +55,6 @@ public sealed class ClientAnySolutionTestsBuilder : ClientTestsBuilder
     void WriteTest(TestCaseInfo info)
     {
         using var _ = WriteTestHeader(info);
-        Write("await Test(path, solver, solutions");
-        AppendArgs(info.ExtraArgs);
-        AppendLn(");");
+        WriteLn("await TestAllSolutions(path, solver, solutions, args);");
     }
 }

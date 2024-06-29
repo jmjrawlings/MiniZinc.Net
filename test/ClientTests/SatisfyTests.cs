@@ -6,18 +6,18 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
 */
 #nullable enable
 
-public class ClientSatisfyTests : IClassFixture<ClientFixture>
+public class SatisfyTests : IClassFixture<ClientFixture>
 {
 	private readonly MiniZincClient MiniZinc;
 	private readonly ITestOutputHelper _output;
 
-	public ClientSatisfyTests(ClientFixture fixture, ITestOutputHelper output)
+	public SatisfyTests(ClientFixture fixture, ITestOutputHelper output)
 	{
 		MiniZinc = fixture.MiniZinc;
 		_output = output;
 	}
 
-	async Task Test(string path, string solver, params string[]? args)
+	async Task TestSatisfy(string path, string solver, List<(string, bool)> solutions, List<string> args)
 	{
 		_output.WriteLine(path);
 		_output.WriteLine(new string('-',80));
@@ -33,6 +33,17 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 		var result = await MiniZinc.Solve(model, options);
 		result.IsSuccess.Should().BeTrue();
 		result.Status.Should().Be(SolveStatus.Satisfied);
+		foreach (var (dzn,output) in solutions)
+		{
+			var expected = Parser.ParseDataString(dzn, out var data);;
+			expected.Ok.Should().BeTrue();
+			if (!result.Data.Equals(data))
+			{
+				Assert.Fail("");
+			}
+
+		}
+
 	}
 
 	[Fact(DisplayName="unit/compilation/par_arg_out_of_bounds.mzn")]
@@ -40,8 +51,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/par_arg_out_of_bounds.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/compilation/poly_overload.mzn")]
@@ -49,8 +61,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/poly_overload.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/general/comprehension_var_ub.mzn")]
@@ -58,8 +71,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/comprehension_var_ub.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/general/enum_order.mzn")]
@@ -67,8 +81,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/enum_order.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/general/pow_1.mzn")]
@@ -76,8 +91,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/pow_1.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/general/pow_4.mzn")]
@@ -85,8 +101,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/pow_4.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/general/pow_bounds.mzn")]
@@ -94,8 +111,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/pow_bounds.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/general/string_length.mzn")]
@@ -103,8 +121,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/string_length.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/general/string_split.mzn")]
@@ -112,8 +131,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/string_split.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/general/unicode_file_name_μ.mzn")]
@@ -121,8 +141,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/unicode_file_name_μ.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Theory(DisplayName="unit/globals/typecheck_globals.mzn")]
@@ -133,8 +154,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_globals_typecheck_globals(string solver)
 	{
 		var path = "unit/globals/typecheck_globals.mzn";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/json/coerce_enum_str.mzn")]
@@ -142,8 +164,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/coerce_enum_str.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"--data \"unit/json/coerce_enum_str.json\"");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/json/coerce_enum_str.json\"",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/json/coerce_indices.mzn")]
@@ -151,8 +176,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/coerce_indices.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"--data \"unit/json/coerce_indices.json\"");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/json/coerce_indices.json\"",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/json/coerce_set.mzn")]
@@ -160,8 +188,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/coerce_set.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"--data \"unit/json/coerce_set.json\"");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/json/coerce_set.json\"",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/json/json_array2d_set.mzn")]
@@ -169,8 +200,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/json_array2d_set.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"--data \"unit/json/json_array2d_set.json\"");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/json/json_array2d_set.json\"",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/json/record_json_input.mzn")]
@@ -178,8 +212,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/record_json_input.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"--data \"unit/json/record_json_input.json\"");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/json/record_json_input.json\"",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/json/tuple_json_input.mzn")]
@@ -187,8 +224,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/tuple_json_input.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"--data \"unit/json/tuple_json_input.json\"");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/json/tuple_json_input.json\"",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/optional/conj_absent_1.mzn")]
@@ -196,8 +236,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/conj_absent_1.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/optional/conj_absent_2.mzn")]
@@ -205,8 +246,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/conj_absent_2.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/optional/opt_array_access.mzn")]
@@ -214,8 +256,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/opt_array_access.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/optional/opt_math_abs.mzn")]
@@ -223,8 +266,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/opt_math_abs.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/optional/opt_math_neg.mzn")]
@@ -232,8 +276,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/opt_math_neg.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/binop_mult_gclock.mzn")]
@@ -241,8 +286,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/binop_mult_gclock.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Theory(DisplayName="unit/regression/bug212.mzn")]
@@ -251,8 +297,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bug212(string solver)
 	{
 		var path = "unit/regression/bug212.mzn";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/bug635.mzn")]
@@ -260,8 +307,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug635.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"-O2");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"-O2",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/dim_1_struct_merge.mzn")]
@@ -269,8 +319,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/dim_1_struct_merge.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_639_part2.mzn")]
@@ -278,8 +329,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_639_part2.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_670.mzn")]
@@ -287,8 +339,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_670.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_675b.mzn")]
@@ -296,8 +349,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_675b.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"--keep-paths");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--keep-paths",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_726.mzn")]
@@ -305,8 +361,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_726.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_752.mzn")]
@@ -314,8 +371,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_752.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_761.mzn")]
@@ -323,8 +381,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_761.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_778.mzn")]
@@ -332,8 +391,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_778.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_783.mzn")]
@@ -341,8 +401,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_783.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"-O2");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"-O2",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_805.mzn")]
@@ -350,8 +413,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_805.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_806.mzn")]
@@ -359,8 +423,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_806.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/let_domain_from_generator.mzn")]
@@ -368,8 +433,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/let_domain_from_generator.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/multi_goal_hierarchy_error.mzn")]
@@ -377,8 +443,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/multi_goal_hierarchy_error.mzn";
 		var solver = "coin-bc";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/output_2d_array_enum.mzn")]
@@ -386,8 +453,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/output_2d_array_enum.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/par_opt_dom.mzn")]
@@ -395,8 +463,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/par_opt_dom.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_637.mzn")]
@@ -404,8 +473,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_637.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/types/enum_decl.mzn")]
@@ -413,8 +483,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/enum_decl.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/types/overload_inst_tuple_return.mzn")]
@@ -422,8 +493,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/overload_inst_tuple_return.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/types/par_struct_tiid.mzn")]
@@ -431,8 +503,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/par_struct_tiid.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/types/record_nested.mzn")]
@@ -440,8 +513,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_nested.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/types/struct_opt_supertype.mzn")]
@@ -449,8 +523,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_opt_supertype.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/types/type_specialise_param_arrays.mzn")]
@@ -458,8 +533,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/type_specialise_param_arrays.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="unit/globals/cumulative/github_589.mzn")]
@@ -467,8 +543,11 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/globals/cumulative/github_589.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver,"-G std");
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"-G std",
+		};
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Theory(DisplayName="unit/globals/nvalue/globals_nvalue.mzn")]
@@ -477,8 +556,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_globals_nvalue_globals_nvalue_2(string solver)
 	{
 		var path = "unit/globals/nvalue/globals_nvalue.mzn";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="examples/radiation.mzn")]
@@ -486,8 +566,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "examples/radiation.mzn";
 		var solver = "coin-bc";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
@@ -495,8 +576,9 @@ public class ClientSatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "examples/wolf_goat_cabbage.mzn";
 		var solver = "coin-bc";
-		List<(string,bool)>? solutions = null;
-		await Test(path, solver);
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
+		await TestSatisfy(path, solver, solutions, args);
 	}
 
 }

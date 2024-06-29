@@ -1,6 +1,6 @@
 ﻿using MiniZinc.Parser.Syntax;
 
-public sealed class WriterTests
+public sealed class WriterUnitTests
 {
     [Theory]
     [InlineData("var int: a = 2;")]
@@ -8,11 +8,10 @@ public sealed class WriterTests
     [InlineData("solve satisfy   ;")]
     void test_write_minified(string input)
     {
-        var result = Parser.ParseModelString(input);
+        var result = Parser.ParseModelString(input, out var model);
         result.Ok.Should().BeTrue("Text should parse");
-        var tree = result.Model;
         var options = new WriteOptions { Minify = true };
-        var output = tree.Write(options);
+        var output = model.Write(options);
         var a = 2;
     }
 
@@ -30,11 +29,10 @@ public sealed class WriterTests
         var expected =
             """include "b.mzn";include "a.mzn";var int: a;solve maximize a;output ["\(a)"];""";
 
-        var result = Parser.ParseModelString(input);
+        var result = Parser.ParseModelString(input, out var model);
         result.Ok.Should().BeTrue("Text should parse");
-        var tree = result.Model;
         var opts = new WriteOptions { Prettify = true, Minify = true };
-        var output = tree.Write(opts);
+        var output = model.Write(opts);
         output.Should().Be(expected);
     }
 

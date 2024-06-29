@@ -2,19 +2,19 @@
 
 using LibMiniZinc.Tests;
 
-public sealed class ClientErrorTestsBuilder : ClientTestsBuilder
+public sealed class ErrorTestsBuilder : ClientTestsBuilder
 {
-    public ClientErrorTestsBuilder(TestSpec spec)
-        : base("ClientErrorTests", spec)
+    public ErrorTestsBuilder(TestSpec spec)
+        : base("ErrorTests", spec)
     {
         using (
             Function(
-                "async Task Test",
+                "async Task TestError",
                 "string path",
                 "string solver",
                 "string? errorMessage",
                 "string? errorRegex",
-                "params string[] args"
+                "List<string> args"
             )
         )
         {
@@ -24,9 +24,7 @@ public sealed class ClientErrorTestsBuilder : ClientTestsBuilder
             WriteMessage("model.SourceText");
             WriteSection();
             using (ForEach("var warn in model.Warnings"))
-            {
                 WriteMessage("warn");
-            }
             Var("options", "SolveOptions.Create(solverId:solver)");
             WriteLn("options = options.AddArgs(args);");
             NewLine();
@@ -76,8 +74,6 @@ public sealed class ClientErrorTestsBuilder : ClientTestsBuilder
         else
             Declare("string?", "errorRegex", null);
 
-        Write("await Test(path, solver, errorMessage, errorRegex");
-        AppendArgs(info.ExtraArgs);
-        AppendLn(");");
+        WriteLn("await TestError(path, solver, errorMessage, errorRegex, args);");
     }
 }

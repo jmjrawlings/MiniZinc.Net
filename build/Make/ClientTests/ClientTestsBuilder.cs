@@ -74,40 +74,58 @@ public abstract class ClientTestsBuilder : CodeBuilder
 
         if (info.Solutions is not { Count: > 0 } solutions)
         {
-            WriteLn("List<(string,bool)>? solutions = null;");
-            return block;
+            WriteLn("var solutions = new List<(string,bool)>();");
         }
-
-        WriteLn("var solutions = new List<(string, bool)> {");
-
-        using (Indent())
+        else
         {
-            foreach (var sol in solutions)
+            WriteLn("var solutions = new List<(string,bool)> {");
+            using (Indent())
             {
-                if (sol.Dzn is { } dzn)
+                foreach (var sol in solutions)
                 {
-                    Write('(');
-                    Append(FormatDzn(dzn));
-                    Append(',');
-                    Append("false");
-                    Append(')');
-                    Append(',');
-                    NewLine();
+                    if (sol.Dzn is { } dzn)
+                    {
+                        Write('(');
+                        Append(FormatDzn(dzn));
+                        Append(',');
+                        Append("false");
+                        Append(')');
+                        Append(',');
+                        NewLine();
+                    }
+                    else if (sol.Ozn is { } ozn)
+                    {
+                        Write('(');
+                        Append(FormatDzn(ozn));
+                        Append(',');
+                        Append("true");
+                        Append(')');
+                        Append(',');
+                        NewLine();
+                    }
                 }
-                else if (sol.Ozn is { } ozn)
+
+                WriteLn("};");
+            }
+        }
+        if (info.ExtraArgs is not { Count: > 0 } args)
+        {
+            WriteLn("var args = new List<string>();");
+        }
+        else
+        {
+            WriteLn("var args = new List<string>{");
+            using (Indent())
+            {
+                foreach (var arg in args)
                 {
-                    Write('(');
-                    Append(FormatDzn(ozn));
-                    Append(',');
-                    Append("true");
-                    Append(')');
+                    Write(FormatArg(arg));
                     Append(',');
                     NewLine();
                 }
             }
+            WriteLn("};");
         }
-        WriteLn("};");
-        NewLine();
         return block;
     }
 
@@ -119,12 +137,18 @@ public abstract class ClientTestsBuilder : CodeBuilder
         return z;
     }
 
+    private string FormatArg(string s)
+    {
+        var z = Quote(s);
+        return z;
+    }
+
     protected TestCaseInfo? GetTestInfo(TestCase testCase)
     {
         var testName = testCase.Path.Replace(".mzn", "");
         testName = testName.Replace("/", "_");
         testName = testName.Replace("-", "_");
-        testName = testName.Replace(".", "_");
+        testName = testName.Replace(".", "");
         testName = $"test_solve_{testName}";
         if (testCase.Sequence > 1)
             testName = $"{testName}_{testCase.Sequence}";
@@ -224,14 +248,5 @@ public abstract class ClientTestsBuilder : CodeBuilder
         var file = directory.JoinFile($"{ClassName}.cs");
         var source = ToString();
         File.WriteAllText(file.FullName, source);
-    }
-
-    protected void AppendArgs(List<string> args)
-    {
-        foreach (var arg in args)
-        {
-            Append(',');
-            Append(Quote(arg));
-        }
     }
 }

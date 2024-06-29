@@ -34,7 +34,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     protected TimePeriod _iterTime;
     protected int _iteration;
     protected SolveStatus _solveStatus;
-    protected DataSyntax _data;
+    protected Data _data;
     protected string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
@@ -243,10 +243,11 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
 
         if (_dataString is not null)
         {
-            var parsed = Parser.ParseDataString(_dataString);
+            var parsed = Parser.ParseDataString(_dataString, out _data);
             parsed.EnsureOk();
-            _data = parsed.Data;
-            _data.Variables.TryGetValue("_objective", out var objectiveNode);
+            if (_data.TryGetValue("_objective", out var objectiveNode))
+                _data.Remove("_objective");
+
             IntOrFloat? objective = objectiveNode switch
             {
                 null => null,
@@ -401,7 +402,7 @@ public sealed class SolverProcess : SolverProcess<SolveResult>
             Iteration = _iteration,
             Warnings = _warnings,
             IterationTime = _iterTime,
-            DataString = _dataString,
+            // DataString = _dataString,
             Data = _data,
             Statistics = _statistics,
             Error = error,
@@ -453,7 +454,7 @@ public sealed class IntProcess : SolverProcess<IntResult>
             Iteration = _iteration,
             Warnings = _warnings,
             IterationTime = _iterTime,
-            DataString = _dataString,
+            // DataString = _dataString,
             Data = _data,
             Statistics = _statistics,
             Error = error,
@@ -504,7 +505,7 @@ public sealed class FloatProcess : SolverProcess<FloatResult>
             Iteration = _iteration,
             Warnings = _warnings,
             IterationTime = _iterTime,
-            DataString = _dataString,
+            // DataString = _dataString,
             Data = _data,
             Statistics = _statistics,
             Error = error,

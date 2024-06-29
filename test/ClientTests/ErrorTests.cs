@@ -6,18 +6,18 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
 */
 #nullable enable
 
-public class ClientErrorTests : IClassFixture<ClientFixture>
+public class ErrorTests : IClassFixture<ClientFixture>
 {
 	private readonly MiniZincClient MiniZinc;
 	private readonly ITestOutputHelper _output;
 
-	public ClientErrorTests(ClientFixture fixture, ITestOutputHelper output)
+	public ErrorTests(ClientFixture fixture, ITestOutputHelper output)
 	{
 		MiniZinc = fixture.MiniZinc;
 		_output = output;
 	}
 
-	async Task Test(string path, string solver, string? errorMessage, string? errorRegex, params string[] args)
+	async Task TestError(string path, string solver, string? errorMessage, string? errorRegex, List<string> args)
 	{
 		_output.WriteLine(path);
 		_output.WriteLine(new string('-',80));
@@ -53,10 +53,13 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/assert_dbg_flag.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--debug",
+		};
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex,"--debug");
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/compilation/time_limit.mzn")]
@@ -64,10 +67,13 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/time_limit.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--time-limit 1",
+		};
 		string errorMessage = "time limit reached";
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex,"--time-limit 1");
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/array_access_out_of_bounds_1.mzn")]
@@ -75,10 +81,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_access_out_of_bounds_1.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*array access out of bounds, array `x' has index set A..B, but given index is C.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/array_access_out_of_bounds_2.mzn")]
@@ -86,10 +93,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_access_out_of_bounds_2.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*array access out of bounds, array `x' is empty.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/array_access_record_out_of_bounds.mzn")]
@@ -97,10 +105,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_access_record_out_of_bounds.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*array access out of bounds.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/array_access_tuple_out_of_bounds.mzn")]
@@ -108,10 +117,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_access_tuple_out_of_bounds.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*array access out of bounds.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/enum_out_of_range_1.mzn")]
@@ -119,10 +129,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/enum_out_of_range_1.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is {A}, but assigned value is B.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/enum_out_of_range_2.mzn")]
@@ -130,10 +141,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/enum_out_of_range_2.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is {A}, but assigned value is {B}.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/function_param_out_of_range.mzn")]
@@ -141,10 +153,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/function_param_out_of_range.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `'<unnamed argument>'' is 1..1, but assigned value is 2.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/function_return_out_of_range.mzn")]
@@ -152,10 +165,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/function_return_out_of_range.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*result of function `foo' is B, which violates function type-inst {A}.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/function_return_out_of_range_opt.mzn")]
@@ -163,10 +177,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/function_return_out_of_range_opt.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*function result violates function type-inst, array contains value B which is not contained in {A}.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/param_out_of_range_float.mzn")]
@@ -174,10 +189,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/param_out_of_range_float.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is -infinity..-1.0 union 1.0..infinity, but assigned value is 0.0.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/param_out_of_range_int.mzn")]
@@ -185,10 +201,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/param_out_of_range_int.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is -infinity..-1 union 1..infinity, but assigned value is 0.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/general/stack_overflow.mzn")]
@@ -196,10 +213,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/stack_overflow.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*stack overflow.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/json/anon_enum_json.mzn")]
@@ -207,10 +225,13 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/anon_enum_json.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/json/anon_enum_json_err.json\"",
+		};
 		string? errorMessage = null;
 		string errorRegex = ".*invalid enum object.*";
-		await Test(path, solver, errorMessage, errorRegex,"--data \"unit/json/anon_enum_json_err.json\"");
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/json/coerce_enum_str_err.mzn")]
@@ -218,10 +239,13 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/coerce_enum_str_err.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/json/coerce_enum_str_err.json\"",
+		};
 		string? errorMessage = null;
 		string errorRegex = ".*has invalid type-inst.*";
-		await Test(path, solver, errorMessage, errorRegex,"--data \"unit/json/coerce_enum_str_err.json\"");
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_blacklist.mzn")]
@@ -229,10 +253,13 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/param_file/param_file_blacklist.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/param_file/param_file_blacklist_1.mpc\"",
+		};
 		string? errorMessage = null;
 		string errorRegex = ".*not allowed in configuration file.*";
-		await Test(path, solver, errorMessage, errorRegex,"--data \"unit/param_file/param_file_blacklist_1.mpc\"");
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_blacklist.mzn")]
@@ -240,10 +267,13 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/param_file/param_file_blacklist.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/param_file/param_file_blacklist_2.mpc\"",
+		};
 		string? errorMessage = null;
 		string errorRegex = ".*not allowed in configuration file.*";
-		await Test(path, solver, errorMessage, errorRegex,"--data \"unit/param_file/param_file_blacklist_2.mpc\"");
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_recursive.mzn")]
@@ -251,10 +281,13 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/param_file/param_file_recursive.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>{
+			"--data \"unit/param_file/param_file_recursive.mpc\"",
+		};
 		string? errorMessage = null;
 		string errorRegex = ".*Cyclic parameter configuration file.*";
-		await Test(path, solver, errorMessage, errorRegex,"--data \"unit/param_file/param_file_recursive.mpc\"");
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/cyclic_include.mzn")]
@@ -262,10 +295,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/cyclic_include.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_648_par_array_decl.mzn")]
@@ -273,10 +307,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_648_par_array_decl.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x[1]' is 1..3, but assigned value is 0.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_648_par_decl.mzn")]
@@ -284,10 +319,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_648_par_decl.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is 1..3, but assigned value is 0.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_656.mzn")]
@@ -295,10 +331,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_656.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*cannot coerce set into 2-dimensional array.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_680.mzn")]
@@ -306,10 +343,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_680.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_725.mzn")]
@@ -317,10 +355,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_725.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_730.mzn")]
@@ -328,10 +367,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_730.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/github_779.mzn")]
@@ -339,10 +379,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_779.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/non-set-array-ti-location.mzn")]
@@ -350,10 +391,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/non-set-array-ti-location.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/output_only_no_rhs.mzn")]
@@ -361,10 +403,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/output_only_no_rhs.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/parser_location.mzn")]
@@ -372,10 +415,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/parser_location.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/test_parout.mzn")]
@@ -383,10 +427,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_parout.mzn";
 		var solver = "coin-bc";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/regression/ti_error_location.mzn")]
@@ -394,10 +439,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/ti_error_location.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = "^(?!unknown file:0.0).*$";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/alias_set_of_array.mzn")]
@@ -405,10 +451,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/alias_set_of_array.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/array_var_opt_set_comprehension.mzn")]
@@ -416,10 +463,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/array_var_opt_set_comprehension.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/common_record.mzn")]
@@ -427,10 +475,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/common_record.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/comprehension_of_absent_any_1.mzn")]
@@ -438,10 +487,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/comprehension_of_absent_any_1.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/nested_type_inst_id.mzn")]
@@ -449,10 +499,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/nested_type_inst_id.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*type-inst variable $X used in both array and non-array position.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/nonbool_constraint.mzn")]
@@ -460,10 +511,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/nonbool_constraint.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/nonbool_constraint_let.mzn")]
@@ -471,32 +523,35 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/nonbool_constraint_let.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/opt_alias._record.mzn")]
-	public async Task test_solve_unit_types_opt_alias__record()
+	public async Task test_solve_unit_types_opt_alias_record()
 	{
 		var path = "unit/types/opt_alias._record.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/opt_alias._tuple.mzn")]
-	public async Task test_solve_unit_types_opt_alias__tuple()
+	public async Task test_solve_unit_types_opt_alias_tuple()
 	{
 		var path = "unit/types/opt_alias._tuple.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/record_access_error.mzn")]
@@ -504,10 +559,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_access_error.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/record_array_access_error.mzn")]
@@ -515,10 +571,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_array_access_error.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/record_decl_error.mzn")]
@@ -526,10 +583,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_decl_error.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/record_ite_error.mzn")]
@@ -537,10 +595,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_ite_error.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/record_lit_dup.mzn")]
@@ -548,10 +607,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_lit_dup.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/struct_index_sets_1.mzn")]
@@ -559,10 +619,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_index_sets_1.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/struct_index_sets_2.mzn")]
@@ -570,10 +631,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_index_sets_2.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_3.mzn")]
@@ -581,10 +643,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_return_ti_3.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*function result violates function type-inst.*";
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_access_error1.mzn")]
@@ -592,10 +655,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_access_error1.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_access_error2.mzn")]
@@ -603,10 +667,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_access_error2.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_array_access_error.mzn")]
@@ -614,10 +679,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_array_access_error.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_ite_error.mzn")]
@@ -625,10 +691,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_ite_error.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_ann_a.mzn")]
@@ -636,10 +703,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_ann_a.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_ann_b.mzn")]
@@ -647,10 +715,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_ann_b.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_ann_comprehension.mzn")]
@@ -658,10 +727,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_ann_comprehension.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_opt_set_if_then_else.mzn")]
@@ -669,10 +739,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_opt_set_if_then_else.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_set_bool.mzn")]
@@ -680,10 +751,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_set_bool.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_set_float.mzn")]
@@ -691,10 +763,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_set_float.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_set_float_comprehension.mzn")]
@@ -702,10 +775,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_set_float_comprehension.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_string_a.mzn")]
@@ -713,10 +787,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_string_a.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_string_b.mzn")]
@@ -724,10 +799,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_string_b.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 	[Fact(DisplayName="unit/types/var_string_comprehension.mzn")]
@@ -735,10 +811,11 @@ public class ClientErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_string_comprehension.mzn";
 		var solver = "gecode";
-		List<(string,bool)>? solutions = null;
+		var solutions = new List<(string,bool)>();
+		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
-		await Test(path, solver, errorMessage, errorRegex);
+		await TestError(path, solver, errorMessage, errorRegex, args);
 	}
 
 }

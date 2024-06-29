@@ -35,6 +35,8 @@ public class Model
 
     private List<DirectoryInfo> _searchDirectories;
 
+    private List<FileInfo>? _addedFiles;
+
     private HashSet<string>? _parsedFiles;
 
     private bool _allowFloats;
@@ -62,6 +64,8 @@ public class Model
         _constraints ?? Enumerable.Empty<ConstraintSyntax>();
 
     public IEnumerable<OutputSyntax> Outputs => _outputs ?? Enumerable.Empty<OutputSyntax>();
+
+    public IReadOnlyDictionary<string, IIdentifiedSyntax> NameSpace => _namespace;
 
     public SolveSyntax? Solve => _solve;
 
@@ -416,9 +420,9 @@ public class Model
                     else
                     {
                         _parsedFiles.Add(file.FullName);
-                        var result = Parser.ParseModelFile(file);
+                        var result = Parser.ParseModelFile(file, out var model);
                         result.EnsureOk();
-                        AddModel(result.Model);
+                        AddModel(model);
                     }
                 }
                 break;
@@ -496,20 +500,21 @@ public class Model
     /// <inheritdoc cref="AddFile(System.IO.FileInfo)"/>
     public void AddFile(string path)
     {
-        // TODO - use sets for search paths?
         var file = FindFile(path);
         if (file is null)
         {
             var message = CreateFileNotFoundMessage(path);
             throw new FileNotFoundException(message, path);
         }
-        var result = Parser.ParseModelFile(file);
+        var result = Parser.ParseModelFile(file, out var model);
         result.EnsureOk();
 
         // Added models become a search directory
         if (file.Directory is { } dir)
             AddSearchPath(dir);
-        AddModel(result.Model);
+        _addedFiles ??= new List<FileInfo>();
+        _addedFiles.Add(file);
+        AddModel(model);
     }
 
     private void AddModel(ModelSyntax model)
@@ -548,9 +553,9 @@ public class Model
 
     public void AddString(string mzn)
     {
-        var result = Parser.ParseModelString(mzn);
+        var result = Parser.ParseModelString(mzn, out var model);
         result.EnsureOk();
-        AddModel(result.Model);
+        AddModel(model);
     }
 
     public Model AddStrings(params string[] strings)

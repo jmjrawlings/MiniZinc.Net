@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Client;
+﻿using MiniZinc.Parser;
+
+namespace MiniZinc.Client;
 
 using Compiler;
 using Core;
@@ -52,13 +54,7 @@ public abstract record SolveResult<T>
     /// <summary>
     /// The variables and their assigned values from the solution
     /// </summary>
-    public required DataSyntax? Data { get; init; }
-
-    /// <summary>
-    /// The solution as dzn data text
-    /// </summary>
-    /// <example>a=10;b=true;c=[1,2,3];</example>
-    public required string? DataString { get; init; }
+    public required Data Data { get; init; }
 
     // /// <summary>
     // /// Items from the output section
@@ -137,7 +133,7 @@ public abstract record SolveResult<T>
     /// <param name="id">Name of the model variable</param>
     /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
     public U Get<U>(string id)
-        where U : SyntaxNode
+        where U : ExpressionSyntax
     {
         if (TryGet<U>(id) is not { } value)
             throw new KeyNotFoundException($"Result did not contain a solution for \"{id}\"");
@@ -145,12 +141,12 @@ public abstract record SolveResult<T>
         return value;
     }
 
-    public SyntaxNode? TryGet(string id)
+    public ExpressionSyntax? TryGet(string id)
     {
         if (Data is null)
             return null;
 
-        if (Data.Variables.TryGetValue(id, out var value))
+        if (Data.TryGetValue(id, out var value))
             return value;
 
         return null;
@@ -161,7 +157,7 @@ public abstract record SolveResult<T>
     /// </summary>
     /// <param name="id">Name of the model variable</param>
     public U? TryGet<U>(string id)
-        where U : SyntaxNode
+        where U : ExpressionSyntax
     {
         var value = TryGet(id);
         if (value is null)
