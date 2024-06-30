@@ -12,7 +12,7 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
                 "async Task TestSatisfy",
                 "string path",
                 "string solver",
-                "List<(string, bool)> solutions",
+                "List<string> solutions",
                 "List<string> args"
             )
         )
@@ -25,19 +25,11 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
             WriteMessage("model.SourceText");
             WriteSection();
             NewLine();
-            Var("options", "SolveOptions.Create(solverId:solver)");
-            WriteLn("options = options.AddArgs(args);");
+            Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args);");
             NewLine();
-            Var("result", "await MiniZinc.Solve(model, options)");
-            WriteLn("result.IsSuccess.Should().BeTrue();");
+            WriteSolutionCheck();
             WriteLn("result.Status.Should().Be(SolveStatus.Satisfied);");
-            using (ForEach("var (dzn,output) in solutions"))
-            {
-                Var("expected", "Parser.ParseDataString(dzn, out var data);");
-                WriteLn("expected.Ok.Should().BeTrue();");
-                using (If("!result.Data.Equals(data)"))
-                    WriteLn("Assert.Fail(\"\");");
-            }
+            WriteLn("anySolution.Should().BeTrue();");
         }
 
         foreach (var testCase in spec.TestCases)

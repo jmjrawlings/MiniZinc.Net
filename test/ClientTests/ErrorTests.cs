@@ -53,7 +53,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/assert_dbg_flag.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--debug",
 		};
@@ -67,7 +67,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/time_limit.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--time-limit 1",
 		};
@@ -81,7 +81,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_access_out_of_bounds_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*array access out of bounds, array `x' has index set A..B, but given index is C.*";
@@ -93,7 +93,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_access_out_of_bounds_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*array access out of bounds, array `x' is empty.*";
@@ -105,7 +105,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_access_record_out_of_bounds.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*array access out of bounds.*";
@@ -117,7 +117,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_access_tuple_out_of_bounds.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*array access out of bounds.*";
@@ -129,7 +129,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/enum_out_of_range_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is {A}, but assigned value is B.*";
@@ -141,7 +141,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/enum_out_of_range_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is {A}, but assigned value is {B}.*";
@@ -153,7 +153,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/function_param_out_of_range.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `'<unnamed argument>'' is 1..1, but assigned value is 2.*";
@@ -165,7 +165,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/function_return_out_of_range.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*result of function `foo' is B, which violates function type-inst {A}.*";
@@ -177,7 +177,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/function_return_out_of_range_opt.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*function result violates function type-inst, array contains value B which is not contained in {A}.*";
@@ -189,7 +189,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/param_out_of_range_float.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is -infinity..-1.0 union 1.0..infinity, but assigned value is 0.0.*";
@@ -201,7 +201,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/param_out_of_range_int.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is -infinity..-1 union 1..infinity, but assigned value is 0.*";
@@ -213,7 +213,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/stack_overflow.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*stack overflow.*";
@@ -225,7 +225,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/anon_enum_json.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/json/anon_enum_json_err.json\"",
 		};
@@ -239,7 +239,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/coerce_enum_str_err.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/json/coerce_enum_str_err.json\"",
 		};
@@ -253,7 +253,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/param_file/param_file_blacklist.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/param_file/param_file_blacklist_1.mpc\"",
 		};
@@ -267,7 +267,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/param_file/param_file_blacklist.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/param_file/param_file_blacklist_2.mpc\"",
 		};
@@ -281,7 +281,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/param_file/param_file_recursive.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/param_file/param_file_recursive.mpc\"",
 		};
@@ -295,7 +295,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/cyclic_include.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -307,7 +307,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_648_par_array_decl.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x[1]' is 1..3, but assigned value is 0.*";
@@ -319,7 +319,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_648_par_decl.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*declared domain of `x' is 1..3, but assigned value is 0.*";
@@ -331,7 +331,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_656.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*cannot coerce set into 2-dimensional array.*";
@@ -343,7 +343,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_680.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -355,7 +355,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_725.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -367,7 +367,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_730.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -379,7 +379,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_779.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -391,7 +391,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/non-set-array-ti-location.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -403,7 +403,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/output_only_no_rhs.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -415,7 +415,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/parser_location.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -427,7 +427,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_parout.mzn";
 		var solver = "coin-bc";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -439,7 +439,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/ti_error_location.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = "^(?!unknown file:0.0).*$";
@@ -451,7 +451,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/alias_set_of_array.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -463,7 +463,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/array_var_opt_set_comprehension.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -475,7 +475,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/common_record.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -487,7 +487,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/comprehension_of_absent_any_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -499,7 +499,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/nested_type_inst_id.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*type-inst variable $X used in both array and non-array position.*";
@@ -511,7 +511,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/nonbool_constraint.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -523,7 +523,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/nonbool_constraint_let.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -535,7 +535,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/opt_alias._record.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -547,7 +547,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/opt_alias._tuple.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -559,7 +559,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_access_error.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -571,7 +571,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_array_access_error.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -583,7 +583,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_decl_error.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -595,7 +595,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_ite_error.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -607,7 +607,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_lit_dup.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -619,7 +619,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_index_sets_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*";
@@ -631,7 +631,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_index_sets_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*";
@@ -643,7 +643,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_return_ti_3.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string errorRegex = ".*function result violates function type-inst.*";
@@ -655,7 +655,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_access_error1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -667,7 +667,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_access_error2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -679,7 +679,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_array_access_error.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -691,7 +691,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_ite_error.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -703,7 +703,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_ann_a.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -715,7 +715,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_ann_b.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -727,7 +727,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_ann_comprehension.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -739,7 +739,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_opt_set_if_then_else.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -751,7 +751,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_set_bool.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -763,7 +763,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_set_float.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -775,7 +775,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_set_float_comprehension.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -787,7 +787,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_string_a.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -799,7 +799,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_string_b.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;
@@ -811,7 +811,7 @@ public class ErrorTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/var_string_comprehension.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		string? errorMessage = null;
 		string? errorRegex = null;

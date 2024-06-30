@@ -13,7 +13,7 @@ public sealed class OptimiseTestsBuilder : ClientTestsBuilder
                 "async Task TestOptimise",
                 "string path",
                 "string solver",
-                "List<(string, bool)> solutions",
+                "List<string> solutions",
                 "List<string> args"
             )
         )
@@ -25,19 +25,10 @@ public sealed class OptimiseTestsBuilder : ClientTestsBuilder
             WriteSection();
             NewLine();
             Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args)");
-            WriteLn("options = options.AddArgs(args);");
             NewLine();
-            Var("result", "await MiniZinc.Solve(model, options)");
-            WriteLn("result.IsSuccess.Should().BeTrue();");
+            WriteSolutionCheck();
             WriteLn("result.Status.Should().Be(SolveStatus.Optimal);");
-            using (ForEach("var (dzn, isOutput) in solutions"))
-            {
-                Var("expected", "Parser.ParseDataString(dzn, out var data);");
-                WriteLn("expected.Ok.Should().BeTrue();");
-                using (If("!result.Data.Equals(data)"))
-                    WriteLn("Assert.Fail(\"\");");
-            }
-            NewLine();
+            WriteLn("allSolutions.Should().BeTrue();");
         }
         foreach (var testCase in spec.TestCases)
         {

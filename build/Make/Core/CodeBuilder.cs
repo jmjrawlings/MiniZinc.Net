@@ -211,7 +211,7 @@ public class CodeBuilder
 
     public IDisposable ElseIf(string expr) => Block($"else if ({expr})");
 
-    public IDisposable Else(string expr) => Block($"else");
+    public IDisposable Else() => Block($"else");
 
     public IDisposable ForEach(string expr) => Block($"foreach ({expr})");
 

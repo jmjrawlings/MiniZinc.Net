@@ -26,8 +26,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 		_output.WriteLine(model.SourceText);
 		_output.WriteLine(new string('-',80));
 
-		var options = SolveOptions.Create(solverId:solver);
-		options = options.AddArgs(args);
+		var options = SolveOptions.Create(solverId:solver).AddArgs(args);;
 
 		var result = await MiniZinc.Solve(model, options);
 		result.IsSuccess.Should().BeFalse();
@@ -39,7 +38,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/bind_par_opt.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestUnsatisfiable(path, solver, args);	}
 
@@ -48,7 +47,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bind-defines-var.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"-G std",
 		};
@@ -59,7 +58,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_661_part1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestUnsatisfiable(path, solver, args);	}
 
@@ -68,7 +67,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_666.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"-G std",
 		};
@@ -79,7 +78,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_765.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestUnsatisfiable(path, solver, args);	}
 
@@ -88,7 +87,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_785.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"-G std",
 		};
@@ -99,7 +98,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_798.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"-G gecode_presolver",
 		};
@@ -110,7 +109,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_domain_5.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestUnsatisfiable(path, solver, args);	}
 
@@ -119,7 +118,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_domain_6.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestUnsatisfiable(path, solver, args);	}
 
@@ -128,7 +127,7 @@ public class UnsatisfiableTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_return_ti_4.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestUnsatisfiable(path, solver, args);	}
 

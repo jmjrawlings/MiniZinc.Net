@@ -17,7 +17,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		_output = output;
 	}
 
-	async Task TestAllSolutions(string path, string solver, List<(string,bool)> solutions, List<string> args)
+	async Task TestAllSolutions(string path, string solver, List<string> solutions, List<string> args)
 	{
 		_output.WriteLine(path);
 		_output.WriteLine(new string('-',80));
@@ -26,23 +26,30 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		_output.WriteLine(model.SourceText);
 		_output.WriteLine(new string('-',80));
 
-		var options = SolveOptions.Create(solverId:solver);
-		options = options.AddArgs(args);
+		var options = SolveOptions.Create(solverId:solver).AddArgs(args);;
 
 		var result = await MiniZinc.Solve(model, options);
 		result.IsSuccess.Should().BeTrue();
 
-		foreach (var (dzn,output) in solutions)
+		var anySolution = false;
+		var allSolutions = true;
+		foreach (var dzn in solutions)
 		{
 			var expected = Parser.ParseDataString(dzn, out var data);;
 			expected.Ok.Should().BeTrue();
-			if (!result.Data.Equals(data))
+			if (result.Data.Equals(data))
 			{
-				Assert.Fail("");
+				anySolution = true;
+			}
+
+			else
+			{
+				allSolutions = false;
 			}
 
 		}
 
+		allSolutions.Should().BeTrue();
 	}
 
 	[Theory(DisplayName="unit/test-globals-float.mzn")]
@@ -52,9 +59,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_test_globals_float(string solver)
 	{
 		var path = "unit/test-globals-float.mzn";
-		var solutions = new List<(string,bool)> {
-			("inc_avf=[1,2,2];min_vf1=0;min_vf2=0;max_vf1=9.9;max_vf2=0;",false),
-			("inc_avf=[1,2,2];min_vf1=0;min_vf2=0;max_vf1=9.9;max_vf2=9.9;",false),
+		var solutions = new List<string> {
+			"inc_avf=[1.0,2.0,2.0];min_vf1=0.0;min_vf2=0.0;max_vf1=9.9;max_vf2=0.0;",
+			"inc_avf=[1.0,2.0,2.0];min_vf1=0.0;min_vf2=0.0;max_vf1=9.9;max_vf2=9.9;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -65,8 +72,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/annotate_bool_literal.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -77,8 +84,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/assert_dbg_ignore.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -89,8 +96,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/debug_mode_false.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=false;",false),
+		var solutions = new List<string> {
+			"b=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -101,8 +108,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/debug_mode_true.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=true;",false),
+		var solutions = new List<string> {
+			"b=true;",
 			};
 		var args = new List<string>{
 			"--debug",
@@ -115,8 +122,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/has_ann.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=true;",false),
+		var solutions = new List<string> {
+			"b=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -127,8 +134,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/if_then_no_else.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=true;s=;x=[];y=[];",false),
+		var solutions = new List<string> {
+			"b=true;s=;x=[];y=[];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -140,8 +147,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_compilation_set2iter(string solver)
 	{
 		var path = "unit/compilation/set2iter.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=2..3;y=4..5;",false),
+		var solutions = new List<string> {
+			"x=2..3;y=4..5;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -154,8 +161,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_division_test_div10(string solver)
 	{
 		var path = "unit/division/test_div10.mzn";
-		var solutions = new List<(string,bool)> {
-			("y=1;",false),
+		var solutions = new List<string> {
+			"y=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -168,9 +175,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_division_test_div11(string solver)
 	{
 		var path = "unit/division/test_div11.mzn";
-		var solutions = new List<(string,bool)> {
-			("y=0;",false),
-			("y=1;",false),
+		var solutions = new List<string> {
+			"y=0;",
+			"y=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -183,9 +190,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_division_test_div8(string solver)
 	{
 		var path = "unit/division/test_div8.mzn";
-		var solutions = new List<(string,bool)> {
-			("y=0;",false),
-			("y=1;",false),
+		var solutions = new List<string> {
+			"y=0;",
+			"y=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -198,8 +205,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_division_test_div_mod_bounds(string solver)
 	{
 		var path = "unit/division/test_div_mod_bounds.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=20;y=-3;z=-6;zbnd=[-20,20];zfbnd=[0.15,1.333333333333333];zif=-6.666666666666667;tf=1;tfbnd=[0.1125,8.88888888888889];zmbnd=[0,6];zm2lb=0;",false),
+		var solutions = new List<string> {
+			"x=20;y=-3;z=-6;zbnd=[-20,20];zfbnd=[0.15,1.333333333333333];zif=-6.666666666666667;tf=1.0;tfbnd=[0.1125,8.888888888888889];zmbnd=[0,6];zm2lb=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -211,8 +218,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_division_test_fldiv_01(string solver)
 	{
 		var path = "unit/division/test_fldiv_01.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=0.3;y=2;",false),
+		var solutions = new List<string> {
+			"x=0.3;y=2.0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -224,8 +231,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_division_test_fldiv_02(string solver)
 	{
 		var path = "unit/division/test_fldiv_02.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=2;y=1.5;z=1.5;",false),
+		var solutions = new List<string> {
+			"x=2.0;y=1.5;z=1.5;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -236,7 +243,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/fznjson/fznjson-basic.mzn";
 		var solver = "fznjson.msc";
-		var solutions = new List<(string,bool)>();
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
 	}
@@ -246,8 +253,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/annotated_expression_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=3;",false),
+		var solutions = new List<string> {
+			"x=3;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -258,8 +265,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_param_non_array_return.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[1];",false),
+		var solutions = new List<string> {
+			"x=[1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -270,8 +277,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/array_union_intersect_enum.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[{A},{B},{C}];",false),
+		var solutions = new List<string> {
+			"x=[{A},{B},{C}];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -282,8 +289,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/bin_pack_multiobj.mzn";
 		var solver = "gurobi";
-		var solutions = new List<(string,bool)> {
-			("load=[3,8,10];",false),
+		var solutions = new List<string> {
+			"load=[3,8,10];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -294,8 +301,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/builtins_arg_max.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output=TWO;",false),
+		var solutions = new List<string> {
+			"bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output=TWO;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -306,8 +313,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/builtins_debug.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream=trace_logstream_par_int\ntrace_logstream_var_int\ntrace_logstream_par_opt_int\ntrace_logstream_var_opt_int\ntrace_logstream_array_of_par_int\ntrace_logstream_array_of_var_int\ntrace_logstream_array_of_par_opt_int\ntrace_logstream_array_of_var_opt_int\n;",false),
+		var solutions = new List<string> {
+			"assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream=trace_logstream_par_int\ntrace_logstream_var_int\ntrace_logstream_par_opt_int\ntrace_logstream_var_opt_int\ntrace_logstream_array_of_par_int\ntrace_logstream_array_of_var_int\ntrace_logstream_array_of_par_opt_int\ntrace_logstream_array_of_var_opt_int\n;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -318,8 +325,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/comprehension_cv_struct.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;z=[<>];",false),
+		var solutions = new List<string> {
+			"x=1;z=[<>];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -330,8 +337,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/enum_constructor_quoting.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("'Q~'('F!'('\"'))",true),
+		var solutions = new List<string> {
+			"_output_item='Q~'('F!'('\"'));",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -342,8 +349,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/eval_par_opt_set.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=<>;",false),
+		var solutions = new List<string> {
+			"x=<>;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -354,8 +361,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/fix_struct.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(a: [[[1]]], b: 1);y=(a: [[[1]]], b: 1);",false),
+		var solutions = new List<string> {
+			"x=(a: [[[1]]], b: 1);y=(a: [[[1]]], b: 1);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -366,8 +373,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/fn_par_array_undefined.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[2];",false),
+		var solutions = new List<string> {
+			"x=[2];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -378,8 +385,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/json_ignore.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("_checker=data_2 = 2;\n;data_1=1;",false),
+		var solutions = new List<string> {
+			"_checker=data_2 = 2;\n;data_1=1;",
 			};
 		var args = new List<string>{
 			"--data \"unit/general/json_ignore.mzc.mzn\"",
@@ -393,8 +400,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/md_exists.mzn";
 		var solver = "coin-bc";
-		var solutions = new List<(string,bool)> {
-			("b=true;bs=[[[true,true],[false,false]],[[false,false],[false,false]]];",false),
+		var solutions = new List<string> {
+			"b=true;bs=[[[true,true],[false,false]],[[false,false],[false,false]]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -406,8 +413,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_md_forall_2(string solver)
 	{
 		var path = "unit/general/md_forall.mzn";
-		var solutions = new List<(string,bool)> {
-			("b=true;bs=[[[true,true],[true,true]],[[true,true],[true,true]]];",false),
+		var solutions = new List<string> {
+			"b=true;bs=[[[true,true],[true,true]],[[true,true],[true,true]]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -418,8 +425,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/md_iffall.mzn";
 		var solver = "coin-bc";
-		var solutions = new List<(string,bool)> {
-			("b=false;bs=[[[false,false],[false,false]],[[false,false],[false,false]]];",false),
+		var solutions = new List<string> {
+			"b=false;bs=[[[false,false],[false,false]],[[false,false],[false,false]]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -430,8 +437,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/md_sum_float.mzn";
 		var solver = "chuffed";
-		var solutions = new List<(string,bool)> {
-			("a=55;",false),
+		var solutions = new List<string> {
+			"a=55.0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -442,8 +449,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/missing_ozn_decl.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("I1=7;B2=true;B3=true;",false),
+		var solutions = new List<string> {
+			"I1=7;B2=true;B3=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -456,8 +463,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_mortgage(string solver)
 	{
 		var path = "unit/general/mortgage.mzn";
-		var solutions = new List<(string,bool)> {
-			("P=373.0277986476333;mortgage=[260.3305785123967,136.3636363636363,0];",false),
+		var solutions = new List<string> {
+			"P=373.0277986476333;mortgage=[260.3305785123967,136.3636363636363,0.0];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -469,8 +476,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_nosets_empty(string solver)
 	{
 		var path = "unit/general/nosets_empty.mzn";
-		var solutions = new List<(string,bool)> {
-			("x={};",false),
+		var solutions = new List<string> {
+			"x={};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -481,8 +488,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/overload_bottom.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x={};",false),
+		var solutions = new List<string> {
+			"x={};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -493,8 +500,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/quoted_id_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("hello!=1;",false),
+		var solutions = new List<string> {
+			"hello!=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -505,8 +512,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/quoted_id_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -517,8 +524,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/quoted_id_3.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("A?",true),
+		var solutions = new List<string> {
+			"_output_item=A?;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -529,8 +536,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/quoted_id_4.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("Foo~(A?)",true),
+		var solutions = new List<string> {
+			"_output_item=Foo~(A?);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -541,8 +548,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/range_var_enum.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x_to_y={A,B,C};",false),
+		var solutions = new List<string> {
+			"x_to_y={A,B,C};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -553,8 +560,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/struct_flat_cv_path.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=2;b=1;c=[[1,2],[3,4]];",false),
+		var solutions = new List<string> {
+			"a=2;b=1;c=[[1,2],[3,4]];",
 			};
 		var args = new List<string>{
 			"--keep-paths",
@@ -567,8 +574,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/test_mod_bounds.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=0..2;c=-2..2;d=-2..0;",false),
+		var solutions = new List<string> {
+			"b=0..2;c=-2..2;d=-2..0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -580,9 +587,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_test_queens(string solver)
 	{
 		var path = "unit/general/test_queens.mzn";
-		var solutions = new List<(string,bool)> {
-			("q=[9,13,2,8,11,20,10,6,19,15,18,12,7,16,4,17,14,5,3,1];",false),
-			("q=[9,7,10,14,11,15,4,12,5,13,1,3,6,8,2,17,19,16,18,20];",false),
+		var solutions = new List<string> {
+			"q=[9,13,2,8,11,20,10,6,19,15,18,12,7,16,4,17,14,5,3,1];",
+			"q=[9,7,10,14,11,15,4,12,5,13,1,3,6,8,2,17,19,16,18,20];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -595,8 +602,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_test_same(string solver)
 	{
 		var path = "unit/general/test_same.mzn";
-		var solutions = new List<(string,bool)> {
-			("if5_5=1;if5f_5=0;if5_4=0;if5f_5f=1;if2_set2_4=0;ifTwoVars=0;ifTwoOptVars=0;ifEqualInitVars=1;ifEqualChainInitVars=1;ifOneVar=1;ifOneOptVar=1;",false),
+		var solutions = new List<string> {
+			"if5_5=1;if5f_5=0;if5_4=0;if5f_5f=1;if2_set2_4=0;ifTwoVars=0;ifTwoOptVars=0;ifEqualInitVars=1;ifEqualChainInitVars=1;ifOneVar=1;ifOneOptVar=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -607,8 +614,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/test_set_lt_2.mzn";
 		var solver = "coin-bc";
-		var solutions = new List<(string,bool)> {
-			("sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];",false),
+		var solutions = new List<string> {
+			"sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -621,8 +628,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_test_set_lt_3(string solver)
 	{
 		var path = "unit/general/test_set_lt_3.mzn";
-		var solutions = new List<(string,bool)> {
-			("y={1,4};",false),
+		var solutions = new List<string> {
+			"y={1,4};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -633,8 +640,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/test_to_enum.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("par_int=b;var_int=c;array_of_int=[a,b,c];array_of_var_int=[a,b,c];array_of_set_of_int=[{a},{a,b},{a,b,c}];array_of_var_set_of_int=[{a},{a,b},{a,b,c}];set_of_int={a,b,c};var_set_of_int={a,b,c};",false),
+		var solutions = new List<string> {
+			"par_int=b;var_int=c;array_of_int=[a,b,c];array_of_var_int=[a,b,c];array_of_set_of_int=[{a},{a,b},{a,b,c}];array_of_var_set_of_int=[{a},{a,b},{a,b,c}];set_of_int={a,b,c};var_set_of_int={a,b,c};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -646,13 +653,13 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_test_var_prod(string solver)
 	{
 		var path = "unit/general/test_var_prod.mzn";
-		var solutions = new List<(string,bool)> {
-			("p=1;xs=[1,1,1,1];",false),
-			("p=140;xs=[2,7,10,1];",false),
-			("p=700;xs=[10,10,7,1];",false),
-			("p=1000;xs=[1,10,10,10];",false),
-			("p=1000;xs=[10,10,1,10];",false),
-			("p=1000;xs=[10,10,10,1];",false),
+		var solutions = new List<string> {
+			"p=1;xs=[1,1,1,1];",
+			"p=140;xs=[2,7,10,1];",
+			"p=700;xs=[10,10,7,1];",
+			"p=1000;xs=[1,10,10,10];",
+			"p=1000;xs=[10,10,1,10];",
+			"p=1000;xs=[10,10,10,1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -665,9 +672,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_general_test_var_set_element(string solver)
 	{
 		var path = "unit/general/test_var_set_element.mzn";
-		var solutions = new List<(string,bool)> {
-			("a=[{},{},{}];s={};x=3;",false),
-			("a=[1..5,1..5,1..5];s=1..5;x=2;",false),
+		var solutions = new List<string> {
+			"a=[{},{},{}];s={};x=3;",
+			"a=[1..5,1..5,1..5];s=1..5;x=2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -678,8 +685,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/anon_enum_json.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(enumName: Foo, value: 1);y=(enumName: Foo, value: 2);",false),
+		var solutions = new List<string> {
+			"x=(enumName: Foo, value: 1);y=(enumName: Foo, value: 2);",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/anon_enum_json.json\"",
@@ -692,8 +699,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/enum_constructor_basic.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(constructor: F, argument: A);",false),
+		var solutions = new List<string> {
+			"x=(constructor: F, argument: A);",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/enum_constructor_basic.json\"",
@@ -706,8 +713,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/enum_constructor_basic_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(constructor: F, argument: A);",false),
+		var solutions = new List<string> {
+			"x=(constructor: F, argument: A);",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/enum_constructor_basic_2.json\"",
@@ -720,8 +727,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/enum_constructor_int.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(constructor: Foo, argument: 2);",false),
+		var solutions = new List<string> {
+			"x=(constructor: Foo, argument: 2);",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/enum_constructor_int.json\"",
@@ -734,8 +741,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/enum_constructor_nested.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(constructor: G, argument: (constructor: F, argument: A));",false),
+		var solutions = new List<string> {
+			"x=(constructor: G, argument: (constructor: F, argument: A));",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/enum_constructor_nested.json\"",
@@ -748,8 +755,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/enum_escaping.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=\";",false),
+		var solutions = new List<string> {
+			"x=\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -760,8 +767,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/float_json_exponent.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=2E-05;y=1500;",false),
+		var solutions = new List<string> {
+			"x=2.0e-05;y=1500.0;",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/float_json_exponent.json\"",
@@ -774,8 +781,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/json_enum_def.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("w=A;x=D;y=G;z=J;",false),
+		var solutions = new List<string> {
+			"w=A;x=D;y=G;z=J;",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_enum_def.json\"",
@@ -788,8 +795,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/json_input_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("int_set={1,2,4,5,7,9};float_set={1,2};array_1d_float=[1,2,3];array_2d_bool=[[true]];array_3d_int=[[[1,2],[3,4]],[[5,6],[7,8]]];array_opt_float=[1.5,<>];x=1;y=2;z=true;o=<>;",false),
+		var solutions = new List<string> {
+			"int_set={1,2,4,5,7,9};float_set={1.0,2.0};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[[true]];array_3d_int=[[[1,2],[3,4]],[[5,6],[7,8]]];array_opt_float=[1.5,<>];x=1;y=2.0;z=true;o=<>;",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_input_1.json\"",
@@ -802,8 +809,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/json_unicode_escapes.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=A;mu=μ;arrow=↑;clef=𝄞;",false),
+		var solutions = new List<string> {
+			"a=A;mu=μ;arrow=↑;clef=𝄞;",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_unicode_escapes.json\"",
@@ -816,8 +823,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/mult_dim_enum.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("use_e=[[A,B],[B,C]];",false),
+		var solutions = new List<string> {
+			"use_e=[[A,B],[B,C]];",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/mult_dim_enum.json\"",
@@ -830,8 +837,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/fn_return_array_absent.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[<>];",false),
+		var solutions = new List<string> {
+			"x=[<>];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -844,9 +851,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_optional_test_opt_float_1(string solver)
 	{
 		var path = "unit/optional/test-opt-float-1.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=[1,<>];",false),
-			("x=[<>,1];",false),
+		var solutions = new List<string> {
+			"x=[1.0,<>];",
+			"x=[<>,1.0];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -857,8 +864,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/test_count_set.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("i=0;x=6..10;",false),
+		var solutions = new List<string> {
+			"i=0;x=6..10;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -869,8 +876,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/test_deopt_absent.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=true;",false),
+		var solutions = new List<string> {
+			"b=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -881,8 +888,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/test_opt_comprehension.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("z=[false,false,false];",false),
+		var solutions = new List<string> {
+			"z=[false,false,false];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -893,8 +900,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/arg-reif-output.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("WORKED",true),
+		var solutions = new List<string> {
+			"_output_item=WORKED;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -905,8 +912,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/ctx_ann.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("c=5;",false),
+		var solutions = new List<string> {
+			"c=5;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -917,8 +924,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/format_justified_enums.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			(">      [Hello, World]<",true),
+		var solutions = new List<string> {
+			"_output_item=>      [Hello, World]<;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -929,8 +936,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/json_ann.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=promise_total;y=expression_name(\"test\");",false),
+		var solutions = new List<string> {
+			"x=promise_total;y=expression_name(\"test\");",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -941,8 +948,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/json_multidim.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("[[{\"e\":\"A\"}, {\"e\":\"B\"}], [{\"e\":\"C\"}, {\"e\":\"D\"}]] [[{\"e\":\"A\"}, {\"e\":\"B\"}], [{\"e\":\"C\"}, {\"e\":\"D\"}]]",true),
+		var solutions = new List<string> {
+			"_output_item=[[{\"e\":\"A\"}, {\"e\":\"B\"}], [{\"e\":\"C\"}, {\"e\":\"D\"}]] [[{\"e\":\"A\"}, {\"e\":\"B\"}], [{\"e\":\"C\"}, {\"e\":\"D\"}]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -953,8 +960,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/local_output.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=[[[1]]];x@14.5-28|a@13.6=[[[1]]];",false),
+		var solutions = new List<string> {
+			"a=[[[1]]];x@14.5-28|a@13.6=[[[1]]];_output_item=predicate: [1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -965,8 +972,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/no_output_reverse_mapped_var.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("y=0;",false),
+		var solutions = new List<string> {
+			"y=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -977,8 +984,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_annotations_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=4;y=1;z=1;",false),
+		var solutions = new List<string> {
+			"b=4;y=1;z=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -989,8 +996,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_annotations_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x@10.3-24=1;",false),
+		var solutions = new List<string> {
+			"x@10.3-24=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1001,8 +1008,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_annotations_3.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("objective=6;x@15.3-23|i=1@14.23|sum@14.18-16.7|=@14.12-16.7=1;x@15.3-23|i=2@14.23|sum@14.18-16.7|=@14.12-16.7=2;x@15.3-23|i=3@14.23|sum@14.18-16.7|=@14.12-16.7=3;",false),
+		var solutions = new List<string> {
+			"objective=6;x@15.3-23|i=1@14.23|sum@14.18-16.7|=@14.12-16.7=1;x@15.3-23|i=2@14.23|sum@14.18-16.7|=@14.12-16.7=2;x@15.3-23|i=3@14.23|sum@14.18-16.7|=@14.12-16.7=3;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1013,8 +1020,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_annotations_4.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=9;y@11.3-24|foo@15.12-17=10;",false),
+		var solutions = new List<string> {
+			"a=9;y@11.3-24|foo@15.12-17=10;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1025,8 +1032,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("aebdc",true),
+		var solutions = new List<string> {
+			"_output_item=aebdc;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1037,8 +1044,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("bdc",true),
+		var solutions = new List<string> {
+			"_output_item=bdc;",
 			};
 		var args = new List<string>{
 			"--only-sections foo,bar",
@@ -1051,8 +1058,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("ae",true),
+		var solutions = new List<string> {
+			"_output_item=ae;",
 			};
 		var args = new List<string>{
 			"--not-sections foo,bar",
@@ -1065,8 +1072,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("aebdc",true),
+		var solutions = new List<string> {
+			"_output_item=aebdc;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1077,8 +1084,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("bdc",true),
+		var solutions = new List<string> {
+			"_output_item=bdc;",
 			};
 		var args = new List<string>{
 			"--only-sections foo,bar",
@@ -1091,8 +1098,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("ae",true),
+		var solutions = new List<string> {
+			"_output_item=ae;",
 			};
 		var args = new List<string>{
 			"--not-sections foo,bar",
@@ -1105,8 +1112,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_3.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("objective=9;",false),
+		var solutions = new List<string> {
+			"objective=9;_output_item=x = 10;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1117,8 +1124,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_4.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x = 10",true),
+		var solutions = new List<string> {
+			"_output_item=x = 10;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1129,8 +1136,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_5.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x = 10\ny = 1\n",true),
+		var solutions = new List<string> {
+			"_output_item=x = 10\ny = 1\n;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1141,8 +1148,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_6.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("output_to_section: 10\noutput_item: 10\n",true),
+		var solutions = new List<string> {
+			"_output_item=output_to_section: 10\noutput_item: 10\n;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1153,8 +1160,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/output_sections_7.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("[1]\n",true),
+		var solutions = new List<string> {
+			"_output_item=[1]\n;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1165,8 +1172,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/output/var_enum.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("[\"X_INTRODUCED_16_\", \"X_INTRODUCED_17_\", \"X_INTRODUCED_18_\"] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch]",true),
+		var solutions = new List<string> {
+			"_output_item=[\"X_INTRODUCED_16_\", \"X_INTRODUCED_17_\", \"X_INTRODUCED_18_\"] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1177,8 +1184,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/param_file/param_file_array.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=true;y=false;",false),
+		var solutions = new List<string> {
+			"x=true;y=false;",
 			};
 		var args = new List<string>{
 			"--param-file ./spec/unit/param_file/param_file_array.json",
@@ -1191,8 +1198,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/param_file/param_file_resolution.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;y=2;",false),
+		var solutions = new List<string> {
+			"x=1;y=2;",
 			};
 		var args = new List<string>{
 			"--data \"unit/param_file/param_file_resolution.mpc\"",
@@ -1207,9 +1214,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_array_set_element_nosets(string solver)
 	{
 		var path = "unit/regression/array_set_element_nosets.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=1;y=[{1},{2},{3}];z={1};",false),
-			("x=3;y=[{1},{2},{3}];z={3};",false),
+		var solutions = new List<string> {
+			"x=1;y=[{1},{2},{3}];z={1};",
+			"x=3;y=[{1},{2},{3}];z={3};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1222,8 +1229,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_array_var_set_element_nosets(string solver)
 	{
 		var path = "unit/regression/array_var_set_element_nosets.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=1;y=[1..3,{},{1}];z=1..3;",false),
+		var solutions = new List<string> {
+			"x=1;y=[1..3,{},{1}];z=1..3;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1234,8 +1241,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/assign_reverse_map.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=2;",false),
+		var solutions = new List<string> {
+			"x=2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1249,8 +1256,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bounds_for_linear_01_max_0(string solver)
 	{
 		var path = "unit/regression/bounds_for_linear_01_max_0.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1264,8 +1271,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bounds_for_linear_01_max_1(string solver)
 	{
 		var path = "unit/regression/bounds_for_linear_01_max_1.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1279,8 +1286,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bounds_for_linear_01_min_0(string solver)
 	{
 		var path = "unit/regression/bounds_for_linear_01_min_0.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=0;",false),
+		var solutions = new List<string> {
+			"x=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1294,8 +1301,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bounds_for_linear_01_min_1(string solver)
 	{
 		var path = "unit/regression/bounds_for_linear_01_min_1.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=0;",false),
+		var solutions = new List<string> {
+			"x=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1307,9 +1314,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bug110(string solver)
 	{
 		var path = "unit/regression/bug110.mzn";
-		var solutions = new List<(string,bool)> {
-			("board=[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];",false),
-			("board=[[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2]];",false),
+		var solutions = new List<string> {
+			"board=[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];",
+			"board=[[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1321,8 +1328,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bug222(string solver)
 	{
 		var path = "unit/regression/bug222.mzn";
-		var solutions = new List<(string,bool)> {
-			("K=11;",false),
+		var solutions = new List<string> {
+			"K=11;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1333,11 +1340,11 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug269.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("queens=[4,6,1,5,2,8,3,7];",false),
-			("queens=[4,6,8,3,1,7,5,2];",false),
-			("queens=[8,4,1,3,6,2,7,5];",false),
-			("queens=[2,5,7,4,1,8,6,3];",false),
+		var solutions = new List<string> {
+			"queens=[4,6,1,5,2,8,3,7];",
+			"queens=[4,6,8,3,1,7,5,2];",
+			"queens=[8,4,1,3,6,2,7,5];",
+			"queens=[2,5,7,4,1,8,6,3];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1348,9 +1355,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug284.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("ignore_me=true;",false),
-			("A=1;B=1;",false),
+		var solutions = new List<string> {
+			"ignore_me=true;",
+			"A=1;B=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1362,9 +1369,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bug318_orig(string solver)
 	{
 		var path = "unit/regression/bug318_orig.mzn";
-		var solutions = new List<(string,bool)> {
-			("objective=-2147483646;var1=1;var2=-2147483646;var3=-2147483646;",false),
-			("objective=-500000000;var1=1;var2=-500000000;var3=-500000000;",false),
+		var solutions = new List<string> {
+			"objective=-2147483646;var1=1;var2=-2147483646;var3=-2147483646;",
+			"objective=-500000000;var1=1;var2=-500000000;var3=-500000000;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1375,8 +1382,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug335.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("sokPosns=[14,13,8,7,8,9,4,5,10,1,1,1];stime=9;",false),
+		var solutions = new List<string> {
+			"sokPosns=[14,13,8,7,8,9,4,5,10,1,1,1];stime=9;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1388,8 +1395,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bug380(string solver)
 	{
 		var path = "unit/regression/bug380.mzn";
-		var solutions = new List<(string,bool)> {
-			("a=[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]];d=[3,3,3,3];",false),
+		var solutions = new List<string> {
+			"a=[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]];d=[3,3,3,3];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1400,8 +1407,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug532.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("y=0;",false),
+		var solutions = new List<string> {
+			"y=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1412,8 +1419,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug534.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[[],[]];",false),
+		var solutions = new List<string> {
+			"x=[[],[]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1424,8 +1431,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug536.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[1];",false),
+		var solutions = new List<string> {
+			"x=[1];",
 			};
 		var args = new List<string>{
 			"-O2",
@@ -1438,8 +1445,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug552.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[2];",false),
+		var solutions = new List<string> {
+			"x=[2.0];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1450,8 +1457,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug565.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=true;",false),
+		var solutions = new List<string> {
+			"x=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1463,9 +1470,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bug67(string solver)
 	{
 		var path = "unit/regression/bug67.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=-2147483646;y=-2147483646;z=-2147483646;",false),
-			("x=-500000000;y=-500000000;z=-500000000;",false),
+		var solutions = new List<string> {
+			"x=-2147483646;y=-2147483646;z=-2147483646;",
+			"x=-500000000;y=-500000000;z=-500000000;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1477,10 +1484,10 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bug82(string solver)
 	{
 		var path = "unit/regression/bug82.mzn";
-		var solutions = new List<(string,bool)> {
-			("pos=[[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1]];",false),
-			("pos=[[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[2,1,1],[3,1,1],[4,1,1],[5,1,1],[4,1,1],[3,1,1],[2,1,1],[1,1,1]];",false),
-			("pos=[[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6]];",false),
+		var solutions = new List<string> {
+			"pos=[[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1]];",
+			"pos=[[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[2,1,1],[3,1,1],[4,1,1],[5,1,1],[4,1,1],[3,1,1],[2,1,1],[1,1,1]];",
+			"pos=[[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1491,8 +1498,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug_empty_enum_extension.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("as=[(argument: z2, constructor: z),(argument: z1, constructor: z),(argument: x2, constructor: x),(argument: x1, constructor: x)];",false),
+		var solutions = new List<string> {
+			"as=[(argument: z2, constructor: z),(argument: z1, constructor: z),(argument: x2, constructor: x),(argument: x1, constructor: x)];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1503,8 +1510,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/bug_opt_polymorphic.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1515,8 +1522,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/checker_mzn_check_var.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("_checker=(trim: Ok);",false),
+		var solutions = new List<string> {
+			"_checker=(trim: Ok);",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_mzn_check_var.mzc.mzn\"",
@@ -1529,8 +1536,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/checker_opt.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("_checker=(trim: y = 20;);",false),
+		var solutions = new List<string> {
+			"_checker=(trim: y = 20;);",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_opt.mzc.mzn\"",
@@ -1543,8 +1550,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/checker_params.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("_checker=(trim: yay!);",false),
+		var solutions = new List<string> {
+			"_checker=(trim: yay!);",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_params.mzc.mzn\"",
@@ -1557,8 +1564,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/checker_same_var.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("_checker=(trim: x = 10;);objective=5;",false),
+		var solutions = new List<string> {
+			"_checker=(trim: x = 10;);objective=5;",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_same_var.mzc.mzn\"",
@@ -1571,9 +1578,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/checker_var_bug.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("_checker=x = 1;\n;",false),
-			("_checker=x = 2;\n;",false),
+		var solutions = new List<string> {
+			"_checker=x = 1;\n;",
+			"_checker=x = 2;\n;",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_var_bug.mzc.mzn\"",
@@ -1586,8 +1593,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/coercion_par.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[1,<>];y=[1,<>];z=[0,<>];",false),
+		var solutions = new List<string> {
+			"x=[1,<>];y=[1.0,<>];z=[0.0,<>];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1598,8 +1605,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/constructor_of_set.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("y=(constructor: C, argument: 2);",false),
+		var solutions = new List<string> {
+			"y=(constructor: C, argument: 2);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1611,8 +1618,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_decision_tree_binary(string solver)
 	{
 		var path = "unit/regression/decision_tree_binary.mzn";
-		var solutions = new List<(string,bool)> {
-			("node_used=[3,4,6,9,11,13,15,8,9,10,11,12,13,14,15];x=[6,2,6,2,4,6,8,1,2,3,4,5,6,7,8];",false),
+		var solutions = new List<string> {
+			"node_used=[3,4,6,9,11,13,15,8,9,10,11,12,13,14,15];x=[6,2,6,2,4,6,8,1,2,3,4,5,6,7,8];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1623,8 +1630,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/enigma_1568.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("D=6;E=5;L=3;O=9;ODD=966;P=1;PUZZLE=102235;U=0;Z=2;num1=161;num2=635;num3=805;num4=483;x=[9,6,1,0,2,3,5];",false),
+		var solutions = new List<string> {
+			"D=6;E=5;L=3;O=9;ODD=966;P=1;PUZZLE=102235;U=0;Z=2;num1=161;num2=635;num3=805;num4=483;x=[9,6,1,0,2,3,5];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1635,8 +1642,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/flatten_comp_in.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[true];",false),
+		var solutions = new List<string> {
+			"x=[true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1647,8 +1654,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_644_a.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("arr=[<>,<>];",false),
+		var solutions = new List<string> {
+			"arr=[<>,<>];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1659,8 +1666,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_644_b.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=[<>];b=[1];",false),
+		var solutions = new List<string> {
+			"a=[<>];b=[1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1671,8 +1678,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_644_c.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("arr=[1];x=1;",false),
+		var solutions = new List<string> {
+			"arr=[1];x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1683,8 +1690,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_644_d.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("value=<>;",false),
+		var solutions = new List<string> {
+			"value=<>;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1695,8 +1702,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_644_e.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=<>;y=<>;z=<>;p=3;q=1;r=4;",false),
+		var solutions = new List<string> {
+			"x=<>;y=<>;z=<>;p=3;q=1;r=4;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1707,8 +1714,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_646.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1719,8 +1726,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_661_part2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;y=2;",false),
+		var solutions = new List<string> {
+			"x=1;y=2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1731,8 +1738,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_664.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(1: );",false),
+		var solutions = new List<string> {
+			"x=(1: );",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1745,8 +1752,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_github_667(string solver)
 	{
 		var path = "unit/regression/github_667.mzn";
-		var solutions = new List<(string,bool)> {
-			("arr=[false];",false),
+		var solutions = new List<string> {
+			"arr=[false];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1757,11 +1764,11 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_668.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=<>;arr=[false];",false),
-			("x=<>;arr=[true];",false),
-			("x=1;arr=[false];",false),
-			("x=1;arr=[true];",false),
+		var solutions = new List<string> {
+			"x=<>;arr=[false];",
+			"x=<>;arr=[true];",
+			"x=1;arr=[false];",
+			"x=1;arr=[true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1772,9 +1779,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_669.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("v=<>;",false),
-			("v=1;",false),
+		var solutions = new List<string> {
+			"v=<>;",
+			"v=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1785,8 +1792,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_671.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("arr=[true];",false),
+		var solutions = new List<string> {
+			"arr=[true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1797,8 +1804,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_673.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("[X, <>]",true),
+		var solutions = new List<string> {
+			"_output_item=[X, <>];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1811,8 +1818,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_github_674(string solver)
 	{
 		var path = "unit/regression/github_674.mzn";
-		var solutions = new List<(string,bool)> {
-			("arr=[true,false];ns=[false,false,false,false,false,false,false,false,false,true,false];es=[false,false,false,false,false,false,false,false,false,false,false];",false),
+		var solutions = new List<string> {
+			"arr=[true,false];ns=[false,false,false,false,false,false,false,false,false,true,false];es=[false,false,false,false,false,false,false,false,false,false,false];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1823,8 +1830,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_675a.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("t=[false];",false),
+		var solutions = new List<string> {
+			"t=[false];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1835,8 +1842,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_681.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("arr=[true];",false),
+		var solutions = new List<string> {
+			"arr=[true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1847,9 +1854,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_683.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("vars=[2,1];c=1;",false),
-			("vars=[1,2];c=1;",false),
+		var solutions = new List<string> {
+			"vars=[2,1];c=1;",
+			"vars=[1,2];c=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1860,9 +1867,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_685.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[false,true];y=[true,false];",false),
-			("x=[true,false];y=[false,true];",false),
+		var solutions = new List<string> {
+			"x=[false,true];y=[true,false];",
+			"x=[true,false];y=[false,true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1873,8 +1880,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_687.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("r=(x: 0);",false),
+		var solutions = new List<string> {
+			"r=(x: 0);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1885,10 +1892,10 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_691.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=-1;c=-2;",false),
-			("a=0;c=0;",false),
-			("a=1;c=2;",false),
+		var solutions = new List<string> {
+			"a=-1;c=-2;",
+			"a=0;c=0;",
+			"a=1;c=2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1899,8 +1906,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_693_part1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("c=true;",false),
+		var solutions = new List<string> {
+			"c=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1911,8 +1918,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_693_part2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[{},{2},{1},1..2];",false),
+		var solutions = new List<string> {
+			"x=[{},{2},{1},1..2];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1923,8 +1930,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_700.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("c={1};d=1..2;",false),
+		var solutions = new List<string> {
+			"c={1};d=1..2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1935,9 +1942,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_728.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("wanted={1};",false),
-			("wanted={4};",false),
+		var solutions = new List<string> {
+			"wanted={1};",
+			"wanted={4};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1948,8 +1955,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_732.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("sts=[(x: 0),(x: 1)];",false),
+		var solutions = new List<string> {
+			"sts=[(x: 0),(x: 1)];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1960,8 +1967,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_747.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[<>,<>];",false),
+		var solutions = new List<string> {
+			"x=[<>,<>];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1972,21 +1979,21 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_749.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[true,false,false];y=false;c=2;",false),
-			("x=[false,false,false];y=false;c=3;",false),
-			("x=[true,true,false];y=false;c=1;",false),
-			("x=[false,true,false];y=false;c=2;",false),
-			("x=[true,false,true];y=false;c=1;",false),
-			("x=[false,true,true];y=false;c=1;",false),
-			("x=[false,false,true];y=false;c=2;",false),
-			("x=[true,false,false];y=true;c=1;",false),
-			("x=[false,true,false];y=true;c=1;",false),
-			("x=[true,true,false];y=true;c=2;",false),
-			("x=[false,false,true];y=true;c=1;",false),
-			("x=[true,false,true];y=true;c=2;",false),
-			("x=[false,true,true];y=true;c=2;",false),
-			("x=[true,true,true];y=true;c=3;",false),
+		var solutions = new List<string> {
+			"x=[true,false,false];y=false;c=2;",
+			"x=[false,false,false];y=false;c=3;",
+			"x=[true,true,false];y=false;c=1;",
+			"x=[false,true,false];y=false;c=2;",
+			"x=[true,false,true];y=false;c=1;",
+			"x=[false,true,true];y=false;c=1;",
+			"x=[false,false,true];y=false;c=2;",
+			"x=[true,false,false];y=true;c=1;",
+			"x=[false,true,false];y=true;c=1;",
+			"x=[true,true,false];y=true;c=2;",
+			"x=[false,false,true];y=true;c=1;",
+			"x=[true,false,true];y=true;c=2;",
+			"x=[false,true,true];y=true;c=2;",
+			"x=[true,true,true];y=true;c=3;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1997,8 +2004,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_758.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[true];",false),
+		var solutions = new List<string> {
+			"x=[true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2009,8 +2016,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_758.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[true];",false),
+		var solutions = new List<string> {
+			"x=[true];",
 			};
 		var args = new List<string>{
 			"-O0",
@@ -2023,9 +2030,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_760.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
-			("x=2;",false),
+		var solutions = new List<string> {
+			"x=1;",
+			"x=2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2036,9 +2043,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_762.mzn";
 		var solver = "chuffed";
-		var solutions = new List<(string,bool)> {
-			("x=[true];",false),
-			("x=[false];",false),
+		var solutions = new List<string> {
+			"x=[true];",
+			"x=[false];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2049,8 +2056,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_771.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("0",true),
+		var solutions = new List<string> {
+			"_output_item=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2061,8 +2068,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_776.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(enumName: A, value: 1);",false),
+		var solutions = new List<string> {
+			"x=(enumName: A, value: 1);",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/github_776.dzn\"",
@@ -2075,9 +2082,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_792.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("y=true;",false),
-			("y=false;",false),
+		var solutions = new List<string> {
+			"y=true;",
+			"y=false;",
 			};
 		var args = new List<string>{
 			"-G std",
@@ -2090,8 +2097,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_793.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("[{\"e\":\"A\"}] {\"v\": [{\"e\":\"A\"}]}",true),
+		var solutions = new List<string> {
+			"_output_item=[{\"e\":\"A\"}] {\"v\": [{\"e\":\"A\"}]};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2102,8 +2109,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_803.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("BV0=false;IV0=0;",false),
+		var solutions = new List<string> {
+			"BV0=false;IV0=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2114,8 +2121,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_807.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("bar=[1];",false),
+		var solutions = new List<string> {
+			"bar=[1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2126,8 +2133,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_809.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("bar=<>;biz={B};",false),
+		var solutions = new List<string> {
+			"bar=<>;biz={B};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2138,8 +2145,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_813.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=true;b=false;",false),
+		var solutions = new List<string> {
+			"a=true;b=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2150,9 +2157,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/if_then_else_absent.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[<>];b=true;",false),
-			("x=[1];b=false;",false),
+		var solutions = new List<string> {
+			"x=[<>];b=true;",
+			"x=[1];b=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2163,8 +2170,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/in_array_eval_error.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[1];y=true;",false),
+		var solutions = new List<string> {
+			"x=[1];y=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2175,8 +2182,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/makepar_output.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("1..1",true),
+		var solutions = new List<string> {
+			"_output_item=1..1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2187,8 +2194,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/non_pos_pow.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=2;",false),
+		var solutions = new List<string> {
+			"a=2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2200,8 +2207,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_nosets_set_search(string solver)
 	{
 		var path = "unit/regression/nosets_set_search.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=1..3;",false),
+		var solutions = new List<string> {
+			"x=1..3;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2212,8 +2219,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/opt_minmax.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("xmax=10;xmin=1;ymax=10;ymin=1;",false),
+		var solutions = new List<string> {
+			"xmax=10;xmin=1;ymax=10.0;ymin=1.0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2224,9 +2231,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/output_fn_toplevel_var.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("[1][true]",true),
-			("[2][false]",true),
+		var solutions = new List<string> {
+			"_output_item=[1][true];",
+			"_output_item=[2][false];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2237,8 +2244,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/parse_assignments.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("_checker=Ok;",false),
+		var solutions = new List<string> {
+			"_checker=Ok;",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/parse_assignments.mzc.mzn\"",
@@ -2251,8 +2258,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/polymorphic_var_and_par.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("1",true),
+		var solutions = new List<string> {
+			"_output_item=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2264,8 +2271,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_pred_param_r7550(string solver)
 	{
 		var path = "unit/regression/pred_param_r7550.mzn";
-		var solutions = new List<(string,bool)> {
-			("end=53;objective=53;s=[0,0,0,4,7,7,6,8,12,8,6,4,14,19,12,12,13,18,8,11,14,18,19,4,16,10,20,9,14,6,24,26,21,16,9,21,24,28,31,22,24,11,25,16,30,26,38,25,25,30,33,36,39,34,33,47,25,44,50,38];",false),
+		var solutions = new List<string> {
+			"end=53;objective=53;s=[0,0,0,4,7,7,6,8,12,8,6,4,14,19,12,12,13,18,8,11,14,18,19,4,16,10,20,9,14,6,24,26,21,16,9,21,24,28,31,22,24,11,25,16,30,26,38,25,25,30,33,36,39,34,33,47,25,44,50,38];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2276,8 +2283,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/slice_enum_indexset.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("ok",true),
+		var solutions = new List<string> {
+			"_output_item=ok;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2289,10 +2296,10 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_subsets_100(string solver)
 	{
 		var path = "unit/regression/subsets_100.mzn";
-		var solutions = new List<(string,bool)> {
-			("s=1..9;t={45};s_total=45;t_total=45;",false),
-			("s={100};t={49,51};s_total=100;t_total=100;",false),
-			("s={1,2,40,56,94};t={3,93,97};s_total=193;t_total=193;",false),
+		var solutions = new List<string> {
+			"s=1..9;t={45};s_total=45;t_total=45;",
+			"s={100};t={49,51};s_total=100;t_total=100;",
+			"s={1,2,40,56,94};t={3,93,97};s_total=193;t_total=193;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2303,8 +2310,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug54.mzn";
 		var solver = "chuffed";
-		var solutions = new List<(string,bool)> {
-			("x=7;y=1;z=7;",false),
+		var solutions = new List<string> {
+			"x=7;y=1;z=7;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2315,8 +2322,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug72.mzn";
 		var solver = "chuffed";
-		var solutions = new List<(string,bool)> {
-			("x={1};b=true;",false),
+		var solutions = new List<string> {
+			"x={1};b=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2327,8 +2334,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_476.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=1;c=true;",false),
+		var solutions = new List<string> {
+			"b=1;c=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2339,8 +2346,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_493.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("{}",true),
+		var solutions = new List<string> {
+			"_output_item={};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2351,8 +2358,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_494.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x1=1;x2=[[0]];",false),
+		var solutions = new List<string> {
+			"x1=1;x2=[[0]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2363,8 +2370,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_520.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("{a}\"b\"",true),
+		var solutions = new List<string> {
+			"_output_item={a}\"b\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2375,8 +2382,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_521.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=0;",false),
+		var solutions = new List<string> {
+			"x=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2387,8 +2394,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_527.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2399,8 +2406,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_529.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("ok",true),
+		var solutions = new List<string> {
+			"_output_item=ok;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2411,8 +2418,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_588.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=2;y=1;z=1;",false),
+		var solutions = new List<string> {
+			"x=2;y=1;z=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2423,8 +2430,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_array_sum_bounds.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("C=[0,0,0];y=0;",false),
+		var solutions = new List<string> {
+			"C=[0,0,0];y=0;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2435,8 +2442,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_ite_array_eq.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=true;x=[false,false,false];",false),
+		var solutions = new List<string> {
+			"b=true;x=[false,false,false];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2448,9 +2455,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_test_parout(string solver)
 	{
 		var path = "unit/regression/test_parout.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=10;y=-2147483646;",false),
-			("x=10;y=11;",false),
+		var solutions = new List<string> {
+			"x=10;y=-2147483646;",
+			"x=10;y=11;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2461,8 +2468,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/var_bool_comp.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[2,1];",false),
+		var solutions = new List<string> {
+			"x=[2,1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2475,10 +2482,10 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_var_self_assign_bug(string solver)
 	{
 		var path = "unit/regression/var_self_assign_bug.mzn";
-		var solutions = new List<(string,bool)> {
-			("partitions=[{1,2,3},{1,2,3},{1,2,3}];",false),
-			("partitions=[1..3,1..3,1..3];",false),
-			("partitions=[{},{},{}];",false),
+		var solutions = new List<string> {
+			"partitions=[{1,2,3},{1,2,3},{1,2,3}];",
+			"partitions=[1..3,1..3,1..3];",
+			"partitions=[{},{},{}];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2490,8 +2497,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_int_choice_1(string solver)
 	{
 		var path = "unit/search/int_choice_1.mzn";
-		var solutions = new List<(string,bool)> {
-			("q=[1,5,8,6,3,7,2,4];",false),
+		var solutions = new List<string> {
+			"q=[1,5,8,6,3,7,2,4];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2503,8 +2510,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_int_choice_2(string solver)
 	{
 		var path = "unit/search/int_choice_2.mzn";
-		var solutions = new List<(string,bool)> {
-			("q=[8,4,1,3,6,2,7,5];",false),
+		var solutions = new List<string> {
+			"q=[8,4,1,3,6,2,7,5];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2516,8 +2523,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_int_choice_6(string solver)
 	{
 		var path = "unit/search/int_choice_6.mzn";
-		var solutions = new List<(string,bool)> {
-			("q=[1,5,8,6,3,7,2,4];",false),
+		var solutions = new List<string> {
+			"q=[1,5,8,6,3,7,2,4];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2529,8 +2536,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_int_var_select_1(string solver)
 	{
 		var path = "unit/search/int_var_select_1.mzn";
-		var solutions = new List<(string,bool)> {
-			("q=[1,5,8,6,3,7,2,4];",false),
+		var solutions = new List<string> {
+			"q=[1,5,8,6,3,7,2,4];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2542,8 +2549,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_int_var_select_2(string solver)
 	{
 		var path = "unit/search/int_var_select_2.mzn";
-		var solutions = new List<(string,bool)> {
-			("q=[1,5,8,6,3,7,2,4];",false),
+		var solutions = new List<string> {
+			"q=[1,5,8,6,3,7,2,4];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2554,9 +2561,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/search/int_var_select_3.mzn";
 		var solver = "chuffed";
-		var solutions = new List<(string,bool)> {
-			("q=[1,7,4,6,8,2,5,3];",false),
-			("q=[1,7,5,8,2,4,6,3];",false),
+		var solutions = new List<string> {
+			"q=[1,7,4,6,8,2,5,3];",
+			"q=[1,7,5,8,2,4,6,3];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2568,9 +2575,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_int_var_select_4(string solver)
 	{
 		var path = "unit/search/int_var_select_4.mzn";
-		var solutions = new List<(string,bool)> {
-			("q=[1,7,4,6,8,2,5,3];",false),
-			("q=[1,7,5,8,2,4,6,3];",false),
+		var solutions = new List<string> {
+			"q=[1,7,4,6,8,2,5,3];",
+			"q=[1,7,5,8,2,4,6,3];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2582,8 +2589,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_int_var_select_6(string solver)
 	{
 		var path = "unit/search/int_var_select_6.mzn";
-		var solutions = new List<(string,bool)> {
-			("q=[1,5,8,6,3,7,2,4];",false),
+		var solutions = new List<string> {
+			"q=[1,5,8,6,3,7,2,4];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2595,8 +2602,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_test_ff1(string solver)
 	{
 		var path = "unit/search/test-ff1.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=3;y=8;",false),
+		var solutions = new List<string> {
+			"x=3;y=8;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2608,8 +2615,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_test_ff2(string solver)
 	{
 		var path = "unit/search/test-ff2.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=5;y=1;",false),
+		var solutions = new List<string> {
+			"x=5;y=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2621,8 +2628,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_test_ff3(string solver)
 	{
 		var path = "unit/search/test-ff3.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=5;y=1;z=1;w=3;",false),
+		var solutions = new List<string> {
+			"x=5;y=1;z=1;w=3;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2633,8 +2640,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/search/test-large1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=5;y=8;",false),
+		var solutions = new List<string> {
+			"x=5;y=8;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2645,8 +2652,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/search/test-large1.mzn";
 		var solver = "chuffed";
-		var solutions = new List<(string,bool)> {
-			("x=6;y=7;",false),
+		var solutions = new List<string> {
+			"x=6;y=7;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2658,8 +2665,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_test_med1(string solver)
 	{
 		var path = "unit/search/test-med1.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=5;y=6;",false),
+		var solutions = new List<string> {
+			"x=5;y=6;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2671,8 +2678,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_search_test_small1(string solver)
 	{
 		var path = "unit/search/test-small1.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=9;y=2;",false),
+		var solutions = new List<string> {
+			"x=9;y=2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2683,8 +2690,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/alias.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=3;y=[<>,1];tup=[2,true];tuptup=[2,true,2,true];",false),
+		var solutions = new List<string> {
+			"x=3;y=[<>,1];tup=[2,true];tuptup=[2,true,2,true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2695,8 +2702,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/alias_call.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2707,8 +2714,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/common_struct_bottom.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[[[[1]]],[[]]];y=[(a: [(a: 1)]),(a: [])];",false),
+		var solutions = new List<string> {
+			"x=[[[[1]]],[[]]];y=[(a: [(a: 1)]),(a: [])];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2719,8 +2726,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/comprehension_type.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[[A,A],[A,A]];",false),
+		var solutions = new List<string> {
+			"x=[[A,A],[A,A]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2731,8 +2738,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/cv_comprehension.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;",false),
+		var solutions = new List<string> {
+			"x=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2743,8 +2750,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/enum_refl.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x={};ubx={a,b,c};y=a;lby=a;uby=c;domy={a,b,c};",false),
+		var solutions = new List<string> {
+			"x={};ubx={a,b,c};y=a;lby=a;uby=c;domy={a,b,c};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2755,8 +2762,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/github_647.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("b=1;",false),
+		var solutions = new List<string> {
+			"b=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2767,8 +2774,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/if_then_else_struct.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("t=[<>,<>];b=false;u=[0,0];",false),
+		var solutions = new List<string> {
+			"t=[<>,<>];b=false;u=[0,0];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2779,8 +2786,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/non_contig_enum.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=(argument: 6, constructor: S);",false),
+		var solutions = new List<string> {
+			"x=(argument: 6, constructor: S);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2791,8 +2798,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/opt_alias._int.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=<>;",false),
+		var solutions = new List<string> {
+			"x=<>;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2803,8 +2810,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/polymorphic_overloading.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("Ok",true),
+		var solutions = new List<string> {
+			"_output_item=Ok;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2815,8 +2822,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_access_success.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("onetwo",true),
+		var solutions = new List<string> {
+			"_output_item=onetwo;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2827,8 +2834,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_binop_par.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;merge1=(x: 1, y: 2, z: true);",false),
+		var solutions = new List<string> {
+			"eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;merge1=(x: 1, y: 2.0, z: true);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2839,8 +2846,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_binop_var.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("eqA=(a: 2, b: true);nq=(a: 3, b: true);leA=(x: 2, y: 4);lqA=(x: 2, y: 4);arrin=(a: 3, b: 5);merge1=(a: 2, b: true, x: 2, y: 4);",false),
+		var solutions = new List<string> {
+			"eqA=(a: 2, b: true);nq=(a: 3, b: true);leA=(x: 2, y: 4);lqA=(x: 2, y: 4);arrin=(a: 3, b: 5.0);merge1=(a: 2, b: true, x: 2, y: 4);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2851,8 +2858,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_comprehensions.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("simple=[(x: 2, y: true),(x: 1, y: false),(x: 0, y: true),(x: 1, y: false),(x: 2, y: true)];indexed=[(a: 4, b: true),(a: 6, b: true),(a: 8, b: true),(a: 9, b: false),(a: 11, b: false)];",false),
+		var solutions = new List<string> {
+			"simple=[(x: 2, y: true),(x: 1, y: false),(x: 0, y: true),(x: 1, y: false),(x: 2, y: true)];indexed=[(a: 4, b: true),(a: 6, b: true),(a: 8, b: true),(a: 9, b: false),(a: 11, b: false)];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2863,8 +2870,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_in_checker.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("_checker={\"x\": 1};",false),
+		var solutions = new List<string> {
+			"_checker={\"x\": 1};",
 			};
 		var args = new List<string>{
 			"--data \"unit/types/record_in_checker.mzc.mzn\"",
@@ -2877,8 +2884,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_output.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("full var: (a: 0, b: true, c: 1.5)\nvar array: [(a: 2, b: false), (a: 1, b: true)]\nnested: (inner: (left: 3, right: 4), outer: false)\nelement: 3\npartial: (x: 10, y: true)\ndata: (e: -3.2, f: false)\n",true),
+		var solutions = new List<string> {
+			"_output_item=full var: (a: 0, b: true, c: 1.5)\nvar array: [(a: 2, b: false), (a: 1, b: true)]\nnested: (inner: (left: 3, right: 4), outer: false)\nelement: 3\npartial: (x: 10, y: true)\ndata: (e: -3.2, f: false)\n;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2889,8 +2896,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_subtyping.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("single=(a: 1);double=(a: 1, b: [1,2,3]);tupId=(x: 1, y: 0);tupExpr=(a: -5, b: 0);arr1=[(a: 5, b: 1),(a: 1, b: -1)];arr2=[(a: 0, b: 1),(a: 0, b: 1)];arrId=[(a: 0, b: 1),(a: 0, b: 1)];arrExpr=[(a: 1, b: 0),(a: 2, b: 1),(a: 3, b: 0)];",false),
+		var solutions = new List<string> {
+			"single=(a: 1);double=(a: 1.0, b: [1,2,3]);tupId=(x: 1, y: 0.0);tupExpr=(a: -5.0, b: 0);arr1=[(a: 5, b: 1.0),(a: 1, b: -1.0)];arr2=[(a: 0, b: 1),(a: 0, b: 1)];arrId=[(a: 0.0, b: 1.0),(a: 0.0, b: 1.0)];arrExpr=[(a: 1.0, b: 0.0),(a: 2.0, b: 1.0),(a: 3.0, b: 0.0)];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2901,8 +2908,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/record_var_ite.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("tups=[(x: 12, y: false),(x: 10, y: true),(x: 11, y: false)];",false),
+		var solutions = new List<string> {
+			"tups=[(x: 12, y: false),(x: 10, y: true),(x: 11, y: false)];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2913,8 +2920,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/specialise_large_struct.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("t=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];u=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];",false),
+		var solutions = new List<string> {
+			"t=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];u=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2925,8 +2932,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_array_coercion.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("mzn_enum_X=[[A,[]],[B,[]],[G,[[0,1..3]]]];",false),
+		var solutions = new List<string> {
+			"mzn_enum_X=[[A,[]],[B,[]],[G,[[0,1..3]]]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2937,8 +2944,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_domain_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=false;",false),
+		var solutions = new List<string> {
+			"a=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2949,8 +2956,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_domain_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=false;",false),
+		var solutions = new List<string> {
+			"a=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2961,8 +2968,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_domain_3.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=false;",false),
+		var solutions = new List<string> {
+			"a=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2973,8 +2980,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_domain_4.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=false;",false),
+		var solutions = new List<string> {
+			"a=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2985,8 +2992,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_member_paths.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("a=[(o: 1, s: <>)];",false),
+		var solutions = new List<string> {
+			"a=[(o: 1, s: <>)];",
 			};
 		var args = new List<string>{
 			"--keep-paths",
@@ -2999,8 +3006,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_par_function_version.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("p=true;a=false;b=true;c=false;",false),
+		var solutions = new List<string> {
+			"p=true;a=false;b=true;c=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3011,8 +3018,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_return_ti_1.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=false;",false),
+		var solutions = new List<string> {
+			"x=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3023,8 +3030,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_return_ti_2.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=false;",false),
+		var solutions = new List<string> {
+			"x=false;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3035,8 +3042,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_specialise.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("foo_int=1;foo_str=test;foo_enum=B;bar_int=2;bar_str=pred;bar_enum=C;baz_tup=[3,func];baz_rec=(x: B);",false),
+		var solutions = new List<string> {
+			"foo_int=1;foo_str=test;foo_enum=B;bar_int=2;bar_str=pred;bar_enum=C;baz_tup=[3,func];baz_rec=(x: B);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3047,8 +3054,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/struct_specialise_return.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("{C}, [(A,)]",true),
+		var solutions = new List<string> {
+			"_output_item={C}, [(A,)];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3059,8 +3066,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_access_success.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("onetwo",true),
+		var solutions = new List<string> {
+			"_output_item=onetwo;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3071,8 +3078,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_binop_par.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;con1=[1,2,true];",false),
+		var solutions = new List<string> {
+			"eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;con1=[1,2.0,true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3083,8 +3090,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_binop_var.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("eqA=[2,true];nq=[3,true];leA=[2,4];lqA=[2,4];arrin=[3,5];con1=[2,true,3,true];",false),
+		var solutions = new List<string> {
+			"eqA=[2,true];nq=[3,true];leA=[2,4];lqA=[2,4];arrin=[3,5.0];con1=[2,true,3,true];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3095,8 +3102,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_comprehensions.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("simple=[[2,true],[1,false],[0,true],[1,false],[2,true]];indexed=[[4,true],[6,true],[8,true],[9,false],[11,false]];",false),
+		var solutions = new List<string> {
+			"simple=[[2,true],[1,false],[0,true],[1,false],[2,true]];indexed=[[4,true],[6,true],[8,true],[9,false],[11,false]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3107,8 +3114,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_int_set_of_int_specialisation.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("f=true;",false),
+		var solutions = new List<string> {
+			"f=true;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3119,8 +3126,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_lit.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("single=[1];double=[false,-1];triple=[1,false,200];square=[[1,one],[-2,two]];",false),
+		var solutions = new List<string> {
+			"single=[1];double=[false,-1];triple=[1,false,200.0];square=[[1,one],[-2,two]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3131,8 +3138,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_mkpar.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=1;y=3;",false),
+		var solutions = new List<string> {
+			"x=1;y=3;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3143,8 +3150,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_output.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("full var: (0, true, 1.5)\nvar array: [(2, false), (1, true)]\nnested: (false, (3, 4))\nelement: 3\npartial: (10, true)\ndata: (-3.2, false)\nenumtup: ((x: a a, y: c), c)\n",true),
+		var solutions = new List<string> {
+			"_output_item=full var: (0, true, 1.5)\nvar array: [(2, false), (1, true)]\nnested: (false, (3, 4))\nelement: 3\npartial: (10, true)\ndata: (-3.2, false)\nenumtup: ((x: a a, y: c), c)\n;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3155,8 +3162,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_subtyping.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("single=[1];double=[1,[1,2,3]];tupId=[1,0];tupExpr=[-5,0];arr1=[[5,1],[1,-1]];arr2=[[1,0],[1,0]];arrId=[[1,0],[1,0]];arrExpr=[[1,0],[2,1],[3,0]];",false),
+		var solutions = new List<string> {
+			"single=[1];double=[1.0,[1,2,3]];tupId=[1,0.0];tupExpr=[-5.0,0];arr1=[[5,1.0],[1,-1.0]];arr2=[[1,0],[1,0]];arrId=[[1.0,0.0],[1.0,0.0]];arrExpr=[[1.0,0.0],[2.0,1.0],[3.0,0.0]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3167,8 +3174,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/tuple_var_ite.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("tups=[[12,false],[10,true],[11,false]];",false),
+		var solutions = new List<string> {
+			"tups=[[12,false],[10,true],[11,false]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3179,8 +3186,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/type_specialise_struct_domain.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("x=[(a: [A]),(a: [B]),(a: [C])];",false),
+		var solutions = new List<string> {
+			"x=[(a: [A]),(a: [B]),(a: [C])];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3191,8 +3198,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/globals/cumulatives/globals_cumulatives.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("makespan=11;",false),
+		var solutions = new List<string> {
+			"makespan=11;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3204,8 +3211,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_globals_cumulatives_globals_cumulatives_2(string solver)
 	{
 		var path = "unit/globals/cumulatives/globals_cumulatives.mzn";
-		var solutions = new List<(string,bool)> {
-			("makespan=11;",false),
+		var solutions = new List<string> {
+			"makespan=11;",
 			};
 		var args = new List<string>{
 			"-G std",
@@ -3220,11 +3227,11 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_globals_int_set_channel_test_int_set_channel2(string solver)
 	{
 		var path = "unit/globals/int_set_channel/test_int_set_channel2.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=[1,1,1,1,1,1,1,1,1];y=[1..9,{},{},{},{}];",false),
-			("x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{2},{},{1}];",false),
-			("x=[2,2,2,2,2,2,2,2,2];y=[{},1..9,{},{},{}];",false),
-			("x=[5,5,5,5,5,5,5,5,5];y=[{},{},{},{},1..9];",false),
+		var solutions = new List<string> {
+			"x=[1,1,1,1,1,1,1,1,1];y=[1..9,{},{},{},{}];",
+			"x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{2},{},{1}];",
+			"x=[2,2,2,2,2,2,2,2,2];y=[{},1..9,{},{},{}];",
+			"x=[5,5,5,5,5,5,5,5,5];y=[{},{},{},{},1..9];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3235,14 +3242,14 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/globals/lex2/globals_lex2.mzn";
 		var solver = "coin-bc";
-		var solutions = new List<(string,bool)> {
-			("y=[[1,1],[1,1]];",false),
-			("y=[[1,2],[2,1]];",false),
-			("y=[[1,1],[1,2]];",false),
-			("y=[[1,2],[1,2]];",false),
-			("y=[[1,1],[2,2]];",false),
-			("y=[[1,2],[2,2]];",false),
-			("y=[[2,2],[2,2]];",false),
+		var solutions = new List<string> {
+			"y=[[1,1],[1,1]];",
+			"y=[[1,2],[2,1]];",
+			"y=[[1,1],[1,2]];",
+			"y=[[1,2],[1,2]];",
+			"y=[[1,1],[2,2]];",
+			"y=[[1,2],[2,2]];",
+			"y=[[2,2],[2,2]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3255,8 +3262,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_globals_lex_chain_globals_lex_chain__orbitope(string solver)
 	{
 		var path = "unit/globals/lex_chain/globals_lex_chain__orbitope.mzn";
-		var solutions = new List<(string,bool)> {
-			("lex_members_int=[1,0,1];lex_members_bool=[false,false];",false),
+		var solutions = new List<string> {
+			"lex_members_int=[1,0,1];lex_members_bool=[false,false];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3267,8 +3274,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/globals/nvalue/nvalue_total.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("l1=1;",false),
+		var solutions = new List<string> {
+			"l1=1;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3279,8 +3286,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/globals/regular/globals_regular.mzn";
 		var solver = "gecode";
-		var solutions = new List<(string,bool)> {
-			("reg_input=[1,2,3,3,3,2,1];reg_input2=[1,2,3,3,3,3,3,3,3,2,1];",false),
+		var solutions = new List<string> {
+			"reg_input=[1,2,3,3,3,2,1];reg_input2=[1,2,3,3,3,3,3,3,3,2,1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3293,13 +3300,13 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_battleships_4(string solver)
 	{
 		var path = "examples/battleships_4.mzn";
-		var solutions = new List<(string,bool)> {
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,1,0,1,0,0],[0,0,0,0,0,2,0,2,0,0,0,0],[0,0,0,0,0,3,0,3,0,0,1,0],[0,1,2,0,0,4,0,0,0,0,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,1,0,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,1,2,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,1,2,3,4,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1,0,2,0,0],[0,0,0,0,0,1,0,0,0,3,0,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,1,0,0,1,0],[0,0,0,0,0,2,0,2,0,0,0,0],[0,1,0,0,0,3,0,3,0,0,0,0],[0,2,0,0,0,4,0,0,0,1,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,0,1,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,2,3,0,0,0],[0,1,0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,1,2,3,0,0,0,0],[0,1,2,0,0,0,0,0,0,1,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0,0,0],[0,0,0,0,0,2,0,0,0,1,0,0],[0,0,0,0,0,3,0,0,0,2,0,0],[0,0,0,0,0,4,0,1,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,1,2,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,2,0,0,1,0],[0,1,2,0,0,4,0,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,1,0,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,2,0],[0,1,2,0,0,1,0,0,0,0,0,0],[0,0,0,0,0,0,0,1,2,3,4,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,1,0,0,0,2,0,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",false),
+		var solutions = new List<string> {
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,1,0,1,0,0],[0,0,0,0,0,2,0,2,0,0,0,0],[0,0,0,0,0,3,0,3,0,0,1,0],[0,1,2,0,0,4,0,0,0,0,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,1,0,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,1,2,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,1,2,3,4,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1,0,2,0,0],[0,0,0,0,0,1,0,0,0,3,0,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,1,0,0,1,0],[0,0,0,0,0,2,0,2,0,0,0,0],[0,1,0,0,0,3,0,3,0,0,0,0],[0,2,0,0,0,4,0,0,0,1,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,0,1,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,2,3,0,0,0],[0,1,0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,1,2,3,0,0,0,0],[0,1,2,0,0,0,0,0,0,1,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0,0,0],[0,0,0,0,0,2,0,0,0,1,0,0],[0,0,0,0,0,3,0,0,0,2,0,0],[0,0,0,0,0,4,0,1,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,1,2,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,2,0,0,1,0],[0,1,2,0,0,4,0,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,1,0,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,2,0],[0,1,2,0,0,1,0,0,0,0,0,0],[0,0,0,0,0,0,0,1,2,3,4,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,1,0,0,0,2,0,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3312,15 +3319,15 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_battleships_7(string solver)
 	{
 		var path = "examples/battleships_7.mzn";
-		var solutions = new List<(string,bool)> {
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,1,2,3,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,0,0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,1,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,1,2,0,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,1,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,1,0,1,0,0,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,1,2,0,0],[0,0,1,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,0,1,2,3,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,1,0,1,0,0,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,1,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,1,0,4,0,0,1,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,2,3,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,2,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,1,2,3,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,1,0,0,1,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,2,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",false),
-			("a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,0,1,2,3,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,0,0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,0,0,2,0,1,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",false),
+		var solutions = new List<string> {
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,1,2,3,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,0,0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,1,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,1,2,0,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,1,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,1,0,1,0,0,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,1,2,0,0],[0,0,1,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,0,1,2,3,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,1,0,1,0,0,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,1,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,1,0,4,0,0,1,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,2,3,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,2,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,1,2,3,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,1,0,0,1,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,2,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",
+			"a=[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,0,1,2,3,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,0,0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,0,0,2,0,1,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3333,8 +3340,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_factory_planning_instance(string solver)
 	{
 		var path = "examples/factory_planning_instance.mzn";
-		var solutions = new List<(string,bool)> {
-			("last_step=5;",false),
+		var solutions = new List<string> {
+			"last_step=5;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3346,8 +3353,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_knights(string solver)
 	{
 		var path = "examples/knights.mzn";
-		var solutions = new List<(string,bool)> {
-			("p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];",false),
+		var solutions = new List<string> {
+			"p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3359,13 +3366,13 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_magicsq_4(string solver)
 	{
 		var path = "examples/magicsq_4.mzn";
-		var solutions = new List<(string,bool)> {
-			("a=[[16,1,15,2],[5,8,10,11],[4,13,3,14],[9,12,6,7]];",false),
-			("a=[[12,1,14,7],[15,4,9,6],[2,13,8,11],[5,16,3,10]];",false),
-			("a=[[10,5,11,8],[6,9,7,12],[3,4,14,13],[15,16,2,1]];",false),
-			("a=[[10,11,5,8],[6,7,9,12],[3,2,16,13],[15,14,4,1]];",false),
-			("a=[[16,2,9,7],[3,13,6,12],[5,11,4,14],[10,8,15,1]];",false),
-			("a=[[8,11,6,9],[13,7,10,4],[12,14,3,5],[1,2,15,16]];",false),
+		var solutions = new List<string> {
+			"a=[[16,1,15,2],[5,8,10,11],[4,13,3,14],[9,12,6,7]];",
+			"a=[[12,1,14,7],[15,4,9,6],[2,13,8,11],[5,16,3,10]];",
+			"a=[[10,5,11,8],[6,9,7,12],[3,4,14,13],[15,16,2,1]];",
+			"a=[[10,11,5,8],[6,7,9,12],[3,2,16,13],[15,14,4,1]];",
+			"a=[[16,2,9,7],[3,13,6,12],[5,11,4,14],[10,8,15,1]];",
+			"a=[[8,11,6,9],[13,7,10,4],[12,14,3,5],[1,2,15,16]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3377,13 +3384,13 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_magicsq_5(string solver)
 	{
 		var path = "examples/magicsq_5.mzn";
-		var solutions = new List<(string,bool)> {
-			("a=[[20,7,3,24,11],[4,19,14,10,18],[6,9,17,21,12],[13,5,16,8,23],[22,25,15,2,1]];",false),
-			("a=[[16,5,4,17,23],[9,18,8,6,24],[12,7,11,21,14],[13,10,20,19,3],[15,25,22,2,1]];",false),
-			("a=[[7,5,9,21,23],[19,14,22,6,4],[25,24,11,3,2],[1,12,15,17,20],[13,10,8,18,16]];",false),
-			("a=[[23,5,13,17,7],[3,21,9,14,18],[6,4,12,24,19],[11,10,16,8,20],[22,25,15,2,1]];",false),
-			("a=[[25,5,9,3,23],[4,24,15,14,8],[20,7,1,16,21],[6,17,18,13,11],[10,12,22,19,2]];",false),
-			("a=[[11,21,17,10,6],[22,8,12,19,4],[16,15,18,9,7],[14,20,5,3,23],[2,1,13,24,25]];",false),
+		var solutions = new List<string> {
+			"a=[[20,7,3,24,11],[4,19,14,10,18],[6,9,17,21,12],[13,5,16,8,23],[22,25,15,2,1]];",
+			"a=[[16,5,4,17,23],[9,18,8,6,24],[12,7,11,21,14],[13,10,20,19,3],[15,25,22,2,1]];",
+			"a=[[7,5,9,21,23],[19,14,22,6,4],[25,24,11,3,2],[1,12,15,17,20],[13,10,8,18,16]];",
+			"a=[[23,5,13,17,7],[3,21,9,14,18],[6,4,12,24,19],[11,10,16,8,20],[22,25,15,2,1]];",
+			"a=[[25,5,9,3,23],[4,24,15,14,8],[20,7,1,16,21],[6,17,18,13,11],[10,12,22,19,2]];",
+			"a=[[11,21,17,10,6],[22,8,12,19,4],[16,15,18,9,7],[14,20,5,3,23],[2,1,13,24,25]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3396,14 +3403,14 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_oss(string solver)
 	{
 		var path = "examples/oss.mzn";
-		var solutions = new List<(string,bool)> {
-			("makespan=1168;objective=1168;start=[[507,0,6],[0,168,663],[168,663,339]];",false),
-			("makespan=1168;objective=1168;start=[[333,1162,0],[1000,0,657],[0,657,333]];",false),
-			("makespan=1168;objective=1168;start=[[339,0,6],[0,168,663],[168,663,339]];",false),
-			("makespan=1168;objective=1168;start=[[0,1162,829],[1000,505,0],[829,0,505]];",false),
-			("makespan=1168;objective=1168;start=[[339,1162,0],[1000,168,657],[161,657,333]];",false),
-			("makespan=1168;objective=1168;start=[[503,0,6],[0,169,820],[168,663,339]];",false),
-			("makespan=1168;objective=1168;start=[[507,0,6],[0,174,825],[168,663,339]];",false),
+		var solutions = new List<string> {
+			"makespan=1168;objective=1168;start=[[507,0,6],[0,168,663],[168,663,339]];",
+			"makespan=1168;objective=1168;start=[[333,1162,0],[1000,0,657],[0,657,333]];",
+			"makespan=1168;objective=1168;start=[[339,0,6],[0,168,663],[168,663,339]];",
+			"makespan=1168;objective=1168;start=[[0,1162,829],[1000,505,0],[829,0,505]];",
+			"makespan=1168;objective=1168;start=[[339,1162,0],[1000,168,657],[161,657,333]];",
+			"makespan=1168;objective=1168;start=[[503,0,6],[0,169,820],[168,663,339]];",
+			"makespan=1168;objective=1168;start=[[507,0,6],[0,174,825],[168,663,339]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3415,8 +3422,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_packing(string solver)
 	{
 		var path = "examples/packing.mzn";
-		var solutions = new List<(string,bool)> {
-			("x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];",false),
+		var solutions = new List<string> {
+			"x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3428,8 +3435,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_template_design(string solver)
 	{
 		var path = "examples/template_design.mzn";
-		var solutions = new List<(string,bool)> {
-			("Production=442;R=[167,275];Surplus=313;objective=442;p=[[0,1],[2,0],[1,1],[3,0],[3,0],[0,3],[0,4]];",false),
+		var solutions = new List<string> {
+			"Production=442;R=[167,275];Surplus=313;objective=442;p=[[0,1],[2,0],[1,1],[3,0],[3,0],[0,3],[0,4]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3441,17 +3448,17 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	public async Task test_solve_examples_wolf_goat_cabbage_2(string solver)
 	{
 		var path = "examples/wolf_goat_cabbage.mzn";
-		var solutions = new List<(string,bool)> {
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[false,true,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[false,true,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
-			("cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",false),
+		var solutions = new List<string> {
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[false,true,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[false,true,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
+			"cabbage=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];farmer=[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]];goat=[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]];wolf=[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
