@@ -207,6 +207,7 @@ public abstract class ClientTestsBuilder : CodeBuilder
                     "cbc" => ("coin-bc", true),
                     "scip" => ("scip", false),
                     "gurobi" => ("gurobi", false),
+                    "gecode_presolver" => ("gecode_presolver", false),
                     _ => (solver, true)
                 }
             );
