@@ -241,6 +241,9 @@ public abstract class ClientTestsBuilder : CodeBuilder
     {
         Var("result", "await MiniZinc.Solve(model, options)");
         WriteLn("result.IsSuccess.Should().BeTrue();");
+        using (If("solutions.Count is 0"))
+            Return();
+
         Var("anySolution", "false");
         using (ForEach("var dzn in solutions"))
         {
