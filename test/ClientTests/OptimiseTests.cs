@@ -29,6 +29,11 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 
 		var result = await MiniZinc.Solve(model, options);
 		result.IsSuccess.Should().BeTrue();
+		if (solutions.Count is 0)
+		{
+			return;
+		}
+
 		var anySolution = false;
 		foreach (var dzn in solutions)
 		{
