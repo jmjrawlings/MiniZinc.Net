@@ -112,6 +112,20 @@ internal sealed class Writer
         _tabSize = _options.TabSize;
     }
 
+    public void WriteData(IReadOnlyDictionary<string, ExpressionSyntax> data)
+    {
+        foreach (var kv in data)
+        {
+            var name = kv.Key;
+            var expr = kv.Value;
+            Write(name);
+            Spaced('=');
+            WriteNode(expr);
+            EndStatement();
+            Newline();
+        }
+    }
+
     public void WriteNode(SyntaxNode? node, Assoc assoc = 0, int? prec = null)
     {
         if (node is null)
@@ -1052,22 +1066,4 @@ internal sealed class Writer
     //     return text;
     // }
     //
-    // /// <summary>
-    // /// Write the given Data a string
-    // /// </summary>
-    // public static string Write(DataSyntax data, WriteOptions? options = null)
-    // {
-    //     var writer = new Writer(options);
-    //     foreach (var assign in data.Assignments)
-    //         writer.WriteNode(assign);
-    //
-    //     // Trim trailing whitespace
-    //     var sb = writer._sb;
-    //     var n = sb.Length;
-    //     while (char.IsWhiteSpace(sb[--n])) { }
-    //     sb.Length = n + 1;
-    //
-    //     var text = writer._sb.ToString();
-    //     return text;
-    // }
 }
