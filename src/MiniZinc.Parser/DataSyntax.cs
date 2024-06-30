@@ -1,23 +1,28 @@
 ﻿namespace MiniZinc.Parser;
 
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using Syntax;
 
 /// <summary>
-/// Result of parsing a minizinc data from a file (.dzn) or string
+/// Result of parsing a minizinc data from a file (.dzn) or string.
 /// </summary>
-public sealed class Data
+/// <remarks>
+/// Data is different from a <see cref="ModelSyntax"/> in that it can only
+/// contain assignments of the form `$name = $expr;`
+/// </remarks>
+public sealed class DataSyntax
     : IReadOnlyDictionary<string, ExpressionSyntax>,
         IEquatable<IReadOnlyDictionary<string, ExpressionSyntax>>
 {
     private readonly Dictionary<string, ExpressionSyntax> _variables;
 
-    public Data()
+    public DataSyntax()
     {
         _variables = new Dictionary<string, ExpressionSyntax>();
     }
 
-    public Data(IReadOnlyDictionary<string, ExpressionSyntax> variables)
+    public DataSyntax(IReadOnlyDictionary<string, ExpressionSyntax> variables)
     {
         _variables = new Dictionary<string, ExpressionSyntax>(variables);
     }
@@ -53,7 +58,7 @@ public sealed class Data
         return _variables.ContainsKey(key);
     }
 
-    public bool TryGetValue(string key, out ExpressionSyntax value)
+    public bool TryGetValue(string key, [NotNullWhen(true)] out ExpressionSyntax? value)
     {
         return _variables.TryGetValue(key, out value);
     }

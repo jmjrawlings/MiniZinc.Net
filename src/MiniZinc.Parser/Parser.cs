@@ -229,7 +229,7 @@ public sealed class Parser
     /// from name to value.
     /// </summary>
     /// <mzn>a = 1;b = 2; c= true;</mzn>
-    internal bool ParseData(out Data data)
+    internal bool ParseData(out DataSyntax data)
     {
         Dictionary<string, ExpressionSyntax> variables = new();
 
@@ -256,7 +256,7 @@ public sealed class Parser
                     break;
         }
 
-        data = new Data(variables);
+        data = new DataSyntax(variables);
         return true;
     }
 
@@ -2316,7 +2316,7 @@ public sealed class Parser
     /// Data files only allow assignments eg: `a = 10;`
     /// </summary>
     /// <example>Parser.ParseDataFile("data.dzn")</example>
-    public static ParseResult ParseDataFile(string path, out Data data)
+    public static ParseResult ParseDataFile(string path, out DataSyntax data)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
@@ -2343,7 +2343,7 @@ public sealed class Parser
     /// <example>
     /// Parser.ParseDataString("a = 10; b=true;");
     /// </example>
-    public static ParseResult ParseDataString(string text, out Data data)
+    public static ParseResult ParseDataString(string text, out DataSyntax data)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
@@ -2362,8 +2362,8 @@ public sealed class Parser
         return result;
     }
 
-    /// <inheritdoc cref="ParseDataFile(string,out MiniZinc.Parser.Data)"/>
-    public static ParseResult ParseDataFile(FileInfo file, out Data data) =>
+    /// <inheritdoc cref="ParseDataFile(string,out DataSyntax)"/>
+    public static ParseResult ParseDataFile(FileInfo file, out DataSyntax data) =>
         ParseDataFile(file.FullName, out data);
 
     /// Parse an expression of the given type from text
