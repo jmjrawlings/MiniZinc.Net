@@ -74,35 +74,18 @@ public abstract class ClientTestsBuilder : CodeBuilder
 
         if (info.Solutions is not { Count: > 0 } solutions)
         {
-            WriteLn("var solutions = new List<(string,bool)>();");
+            WriteLn("var solutions = new List<string>();");
         }
         else
         {
-            WriteLn("var solutions = new List<(string,bool)> {");
+            WriteLn("var solutions = new List<string> {");
             using (Indent())
             {
                 foreach (var sol in solutions)
                 {
-                    if (sol.Dzn is { } dzn)
-                    {
-                        Write('(');
-                        Append(FormatDzn(dzn));
-                        Append(',');
-                        Append("false");
-                        Append(')');
-                        Append(',');
-                        NewLine();
-                    }
-                    else if (sol.Ozn is { } ozn)
-                    {
-                        Write('(');
-                        Append(FormatDzn(ozn));
-                        Append(',');
-                        Append("true");
-                        Append(')');
-                        Append(',');
-                        NewLine();
-                    }
+                    Write(FormatDzn(sol));
+                    Append(',');
+                    NewLine();
                 }
 
                 WriteLn("};");
@@ -225,22 +208,26 @@ public abstract class ClientTestsBuilder : CodeBuilder
             );
         }
 
-        if (testCase.Solutions is not null)
-        {
-            foreach (var sol in testCase.Solutions)
-            {
-                if (string.IsNullOrEmpty(sol.Dzn))
-                    sol.Dzn = null;
-                else
-                    sol.Dzn = sol.Dzn;
-
-                if (string.IsNullOrEmpty(sol.Ozn))
-                    sol.Ozn = null;
-                else
-                    sol.Ozn = sol.Ozn;
-            }
-        }
         return info;
+    }
+
+    protected void WriteSolutionCheck()
+    {
+        Var("result", "await MiniZinc.Solve(model, options)");
+        WriteLn("result.IsSuccess.Should().BeTrue();");
+        NewLine();
+        Var("anySolution", "false");
+        Var("allSolutions", "true");
+
+        using (ForEach("var dzn in solutions"))
+        {
+            Var("expected", "Parser.ParseDataString(dzn, out var data);");
+            WriteLn("expected.Ok.Should().BeTrue();");
+            using (If("result.Data.Equals(data)"))
+                Assign("anySolution", "true");
+            using (Else())
+                Assign("allSolutions", "false");
+        }
     }
 
     public void WriteTo(DirectoryInfo directory)

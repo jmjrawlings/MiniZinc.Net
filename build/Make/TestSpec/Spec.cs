@@ -116,15 +116,11 @@ public static class Spec
                         testCase.Type = TestType.Satisfy;
                         break;
                     }
-
-                    var output = sol.Pop("_output_item")?.ToString();
-                    var dzn = ParseSolutionVariables(sol);
-                    var solution = new TestSolution { Ozn = output, Dzn = dzn };
-
+                    var solution = ParseSolutionVariables(sol);
                     if (status is Yaml.OPTIMAL)
                         testCase.Type = TestType.Optimise;
 
-                    testCase.Solutions ??= new List<TestSolution>();
+                    testCase.Solutions ??= new List<string>();
                     testCase.Solutions.Add(solution);
                 }
             }
@@ -241,16 +237,6 @@ public static class Spec
 
                     dzn = '(' + string.Join(", ", items) + ')';
                 }
-                // else if (x is JsonArray tuple)
-                // {
-                //     items = new List<string>();
-                //     foreach (var node in tuple)
-                //     {
-                //         var item = ParseSolutionValue(node);
-                //         items.Add(item);
-                //     }
-                //     dzn = '(' + string.Join(", ", items) + ')';
-                // }
                 break;
 
             case JsonValue x:
@@ -271,8 +257,6 @@ public static class Spec
         var sb = new StringBuilder();
         using var stream = file.OpenRead();
         using var reader = new StreamReader(stream);
-
-        // const char EOF = '\uffff';
         char c;
 
         if (!Skip('/'))

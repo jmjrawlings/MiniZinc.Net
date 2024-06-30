@@ -23,8 +23,7 @@ public sealed class UnsatisfiableTestsBuilder : ClientTestsBuilder
             WriteMessage("model.SourceText");
             WriteSection();
             NewLine();
-            Var("options", "SolveOptions.Create(solverId:solver)");
-            WriteLn("options = options.AddArgs(args);");
+            Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args);");
             NewLine();
             Var("result", "await MiniZinc.Solve(model, options)");
             WriteLn("result.IsSuccess.Should().BeFalse();");

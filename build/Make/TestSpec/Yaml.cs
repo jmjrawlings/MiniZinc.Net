@@ -106,7 +106,7 @@ public static class Yaml
                 return JsonValue.Create(true);
             if (str is FALSE)
                 return JsonValue.Create(false);
-            if (double.TryParse(str, out var d))
+            if (decimal.TryParse(str, out var d))
                 return JsonValue.Create(d);
             if (int.TryParse(str, out var i))
                 return JsonValue.Create(i);
