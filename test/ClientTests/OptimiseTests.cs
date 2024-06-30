@@ -29,27 +29,28 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 
 		var result = await MiniZinc.Solve(model, options);
 		result.IsSuccess.Should().BeTrue();
-
 		var anySolution = false;
-		var allSolutions = true;
 		foreach (var dzn in solutions)
 		{
-			var expected = Parser.ParseDataString(dzn, out var data);;
-			expected.Ok.Should().BeTrue();
+			var parsed = Parser.ParseDataString(dzn, out var data);;
+			parsed.Ok.Should().BeTrue();
 			if (result.Data.Equals(data))
 			{
 				anySolution = true;
+				break;
 			}
 
-			else
-			{
-				allSolutions = false;
-			}
-
+			_output.WriteLine("The result was not expected:");
+			_output.WriteLine("");
+			_output.WriteLine(result.Data.Write());
+			_output.WriteLine("");
+			_output.WriteLine(data.Write());
+			_output.WriteLine("");
+			_output.WriteLine(new string('-',80));
 		}
 
+		anySolution.Should().BeTrue();
 		result.Status.Should().Be(SolveStatus.Optimal);
-		allSolutions.Should().BeTrue();
 	}
 
 	[Fact(DisplayName="unit/division/test_div12.mzn")]

@@ -30,26 +30,24 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 
 		var result = await MiniZinc.Solve(model, options);
 		result.IsSuccess.Should().BeTrue();
-
-		var anySolution = false;
-		var allSolutions = true;
 		foreach (var dzn in solutions)
 		{
-			var expected = Parser.ParseDataString(dzn, out var data);;
-			expected.Ok.Should().BeTrue();
-			if (result.Data.Equals(data))
+			var parsed = Parser.ParseDataString(dzn, out var data);;
+			parsed.Ok.Should().BeTrue();
+			if (!result.Data.Equals(data))
 			{
-				anySolution = true;
-			}
-
-			else
-			{
-				allSolutions = false;
+				_output.WriteLine("The result was not expected:");
+				_output.WriteLine("");
+				_output.WriteLine(result.Data.Write());
+				_output.WriteLine("");
+				_output.WriteLine(data.Write());
+				_output.WriteLine("");
+				_output.WriteLine(new string('-',80));
+				Assert.Fail("The result was not expected");
 			}
 
 		}
 
-		allSolutions.Should().BeTrue();
 	}
 
 	[Theory(DisplayName="unit/test-globals-float.mzn")]

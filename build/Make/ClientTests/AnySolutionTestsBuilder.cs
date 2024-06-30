@@ -26,8 +26,7 @@ public sealed class AnySolutionTestsBuilder : ClientTestsBuilder
             NewLine();
             Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args);");
             NewLine();
-            WriteSolutionCheck();
-            WriteLn("anySolution.Should().BeTrue();");
+            WriteAnySolutionCheck();
         }
 
         foreach (var testCase in spec.TestCases)

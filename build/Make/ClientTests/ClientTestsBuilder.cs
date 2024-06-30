@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using LibMiniZinc.Tests;
 using Make;
 using MiniZinc.Build;
+using MiniZinc.Parser.Syntax;
 
 public abstract class ClientTestsBuilder : CodeBuilder
 {
@@ -35,9 +36,12 @@ public abstract class ClientTestsBuilder : CodeBuilder
         }
     }
 
-    protected void WriteMessage(object? msg)
+    protected void WriteMessage(object? msg = null)
     {
-        Call("_output.WriteLine", $"{msg?.ToString() ?? string.Empty}");
+        if (msg is null)
+            Call("_output.WriteLine", "\"\"");
+        else
+            Call("_output.WriteLine", msg.ToString()!);
     }
 
     protected void WriteSection() => WriteMessage("new string('-',80)");
@@ -163,7 +167,7 @@ public abstract class ClientTestsBuilder : CodeBuilder
             foreach (var kv in opts)
             {
                 var key = kv.Key;
-                var val = kv.Value;
+                var val = kv.Value!;
                 var kind = val.GetValueKind();
                 if (!key.StartsWith('-'))
                     key = $"--{key}";
@@ -189,7 +193,7 @@ public abstract class ClientTestsBuilder : CodeBuilder
         {
             foreach (var extraFile in extraFiles)
             {
-                var extraPath = Path.Combine(testDir!, extraFile);
+                var extraPath = Path.Combine(testDir, extraFile);
                 extraPath = extraPath.Replace('\\', '/');
                 info.ExtraArgs.Add($"--data \\\"{extraPath}\\\"");
             }
@@ -211,23 +215,51 @@ public abstract class ClientTestsBuilder : CodeBuilder
         return info;
     }
 
-    protected void WriteSolutionCheck()
+    protected void WriteAllSolutionCheck()
     {
         Var("result", "await MiniZinc.Solve(model, options)");
         WriteLn("result.IsSuccess.Should().BeTrue();");
-        NewLine();
-        Var("anySolution", "false");
-        Var("allSolutions", "true");
-
         using (ForEach("var dzn in solutions"))
         {
-            Var("expected", "Parser.ParseDataString(dzn, out var data);");
-            WriteLn("expected.Ok.Should().BeTrue();");
-            using (If("result.Data.Equals(data)"))
-                Assign("anySolution", "true");
-            using (Else())
-                Assign("allSolutions", "false");
+            Var("parsed", "Parser.ParseDataString(dzn, out var data);");
+            WriteLn("parsed.Ok.Should().BeTrue();");
+            using (If("!result.Data.Equals(data)"))
+            {
+                WriteMessage(Quote("The result was not expected:"));
+                WriteMessage();
+                WriteMessage("result.Data.Write()");
+                WriteMessage();
+                WriteMessage("data.Write()");
+                WriteMessage();
+                WriteSection();
+                Call("Assert.Fail", Quote("The result was not expected"));
+            }
         }
+    }
+
+    protected void WriteAnySolutionCheck()
+    {
+        Var("result", "await MiniZinc.Solve(model, options)");
+        WriteLn("result.IsSuccess.Should().BeTrue();");
+        Var("anySolution", "false");
+        using (ForEach("var dzn in solutions"))
+        {
+            Var("parsed", "Parser.ParseDataString(dzn, out var data);");
+            WriteLn("parsed.Ok.Should().BeTrue();");
+            using (If("result.Data.Equals(data)"))
+            {
+                Assign("anySolution", "true");
+                Break();
+            }
+            WriteMessage(Quote("The result was not expected:"));
+            WriteMessage();
+            WriteMessage("result.Data.Write()");
+            WriteMessage();
+            WriteMessage("data.Write()");
+            WriteMessage();
+            WriteSection();
+        }
+        WriteLn("anySolution.Should().BeTrue();");
     }
 
     public void WriteTo(DirectoryInfo directory)

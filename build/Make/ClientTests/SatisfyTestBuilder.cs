@@ -27,9 +27,8 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
             NewLine();
             Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args);");
             NewLine();
-            WriteSolutionCheck();
+            WriteAnySolutionCheck();
             WriteLn("result.Status.Should().Be(SolveStatus.Satisfied);");
-            WriteLn("anySolution.Should().BeTrue();");
         }
 
         foreach (var testCase in spec.TestCases)
