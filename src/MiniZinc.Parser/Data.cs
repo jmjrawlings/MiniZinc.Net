@@ -25,8 +25,7 @@ public sealed class Data
     public string Write(WriteOptions? options = null)
     {
         var writer = new Writer(options);
-        foreach (var expr in _variables.Values)
-            writer.WriteNode(expr);
+        writer.WriteData(this);
         var mzn = writer.ToString();
         return mzn;
     }
