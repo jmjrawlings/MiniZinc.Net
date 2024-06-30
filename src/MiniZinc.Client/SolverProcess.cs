@@ -34,7 +34,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     protected TimePeriod _iterTime;
     protected int _iteration;
     protected SolveStatus _solveStatus;
-    protected Data _data;
+    protected DataSyntax _data;
     protected string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
