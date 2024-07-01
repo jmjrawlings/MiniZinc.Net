@@ -163,13 +163,14 @@ public static class Spec
     private static string ParseSolutionVariables(JsonObject sol)
     {
         var sb = new StringBuilder();
+
         foreach (var kv in sol)
         {
             var name = kv.Key;
+            var val = kv.Value;
             sb.Append(name);
             sb.Append('=');
-            var value = ParseSolutionValue(kv.Value!);
-            sb.Append(value);
+            ParseSolutionValue(val!, sb);
             sb.Append(';');
         }
 
@@ -177,76 +178,44 @@ public static class Spec
         return dzn;
     }
 
-    private static string ParseSolutionValue(JsonNode n)
+    private static void ParseSolutionValue(JsonNode n, StringBuilder sb)
     {
-        string dzn = "";
         switch (n)
         {
             case null:
-                dzn = "<>";
+                sb.Append("<>");
+                break;
+
+            case JsonArray { Count: 0 }:
+                sb.Append("[]");
+                break;
+
+            case JsonArray x when x[0] is JsonArray:
                 break;
 
             case JsonArray x:
-                var items = new List<string>();
-                foreach (var node in x)
-                {
-                    var item = ParseSolutionValue(node);
-                    items.Add(item);
-                }
-
-                dzn = string.Join(',', items);
-                dzn = '[' + dzn + ']';
                 break;
 
             case JsonObject x:
-                if (x.Pop("range") is JsonArray rng)
+                sb.Append('(');
+                int i = 0;
+                foreach (var kv in x)
                 {
-                    var lo = rng[0];
-                    var hi = rng[1];
-                    var dznLo = ParseSolutionValue(lo);
-                    var dznHi = ParseSolutionValue(hi);
-                    dzn = $"{dznLo}..{dznHi}";
+                    var field = kv.Key;
+                    var val = kv.Value!;
+                    if (i++ > 1)
+                        sb.Append(',');
+                    sb.Append(field);
+                    sb.Append(':');
+                    ParseSolutionValue(val, sb);
                 }
-                else if (x.Pop("approx") is JsonValue v)
-                {
-                    dzn = ParseSolutionValue(v);
-                    break;
-                }
-                else if (x.Pop("set") is JsonArray set)
-                {
-                    items = new List<string>();
-                    foreach (var node in set)
-                    {
-                        var item = ParseSolutionValue(node);
-                        items.Add(item);
-                    }
-
-                    dzn = string.Join(',', items);
-                    dzn = '{' + dzn + '}';
-                    break;
-                }
-                else
-                {
-                    items = new List<string>();
-                    foreach (var kv in x)
-                    {
-                        var field = kv.Key;
-                        var value = ParseSolutionValue(kv.Value);
-                        items.Add($"{field}: {value}");
-                    }
-
-                    dzn = '(' + string.Join(", ", items) + ')';
-                }
+                sb.Append(')');
                 break;
 
             case JsonValue x:
-                dzn = x.ToString();
-                break;
-            default:
+                sb.Append(x);
                 break;
         }
-
-        return dzn;
     }
 
     /// <summary>

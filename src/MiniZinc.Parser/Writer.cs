@@ -425,8 +425,12 @@ internal sealed class Writer
             case RangeLiteralSyntax e:
                 if (e.Lower is { } lower)
                     WriteNode(lower);
+                if (!e.LowerIncusive)
+                    Write(OPEN_CHEVRON);
                 Write(DOT);
                 Write(DOT);
+                if (!e.UpperInclusive)
+                    Write(OPEN_CHEVRON);
                 if (e.Upper is { } upper)
                     WriteNode(upper);
                 WriteAnnotations(e);
@@ -938,10 +942,6 @@ internal sealed class Writer
                 break;
             case Operator.SymDiff:
                 Write(SYMDIFF);
-                break;
-            case Operator.Range:
-                Write(DOT);
-                Write(DOT);
                 break;
             case Operator.Add:
                 Write(PLUS);

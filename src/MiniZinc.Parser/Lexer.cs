@@ -144,7 +144,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case DOT:
                 Step();
-                if (SkipReturn(DOT, TokenKind.DOT_DOT)) { }
+                if (SkipReturn(DOT, TokenKind.RANGE_INCLUSIVE)) { }
                 else if (IsDigit(_char))
                     LexTupleAccess();
                 else
