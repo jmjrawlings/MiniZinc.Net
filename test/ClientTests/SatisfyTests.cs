@@ -30,6 +30,7 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 		var options = SolveOptions.Create(solverId:solver).AddArgs(args);;
 
 		var result = await MiniZinc.Solve(model, options);
+		_output.WriteLine(result.Command);
 		result.IsSuccess.Should().BeTrue();
 		if (solutions.Count is 0)
 		{
@@ -47,12 +48,11 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 				break;
 			}
 
-			_output.WriteLine("The result was not expected:");
-			_output.WriteLine("");
-			_output.WriteLine(result.Data.Write());
-			_output.WriteLine("");
+			_output.WriteLine("EXPECTED:");
 			_output.WriteLine(data.Write());
 			_output.WriteLine("");
+			_output.WriteLine("ACTUAL:");
+			_output.WriteLine(result.Data.Write());
 			_output.WriteLine(new string('-',80));
 		}
 
@@ -163,7 +163,7 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	[Theory(DisplayName="unit/globals/typecheck_globals.mzn")]
 	[InlineData("chuffed")]
 	[InlineData("gecode")]
-	[InlineData("gecode_presolver")]
+	[InlineData("gecode_presolver", Skip="Solver not supported")]
 	[InlineData("highs")]
 	public async Task test_solve_unit_globals_typecheck_globals(string solver)
 	{

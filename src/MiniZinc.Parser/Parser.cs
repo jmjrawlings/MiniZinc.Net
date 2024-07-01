@@ -139,24 +139,22 @@ public sealed class Parser
     internal bool ParseModel(out ModelSyntax model)
     {
         var statements = new List<StatementSyntax>();
-        while (true)
+        while (ParseStatement(out var statement))
         {
-            if (!ParseStatement(out var statement))
-                break;
-
             statements.Add(statement);
 
-            if (Skip(TokenKind.EOL))
+            if (Skip(TokenKind.EOL) && !Skip(TokenKind.EOF))
                 continue;
-
-            if (!Expect(TokenKind.EOF))
-                break;
-
+            else
+                Expect(TokenKind.EOF);
             break;
         }
 
         model = new ModelSyntax(statements);
-        return true;
+        if (_errorMessage is null)
+            return true;
+        else
+            return false;
     }
 
     internal bool ParseStatement([NotNullWhen(true)] out StatementSyntax? statement)
@@ -233,11 +231,8 @@ public sealed class Parser
     {
         Dictionary<string, ExpressionSyntax> variables = new();
 
-        while (_kind is not TokenKind.EOF)
+        while (ParseIdent(out var ident))
         {
-            if (!ParseIdent(out var ident))
-                break;
-
             if (!Expect(TokenKind.EQUAL))
                 break;
 
@@ -251,13 +246,18 @@ public sealed class Parser
             }
             variables.Add(ident.Name, expr);
 
-            if (!Skip(TokenKind.EOL))
-                if (!Expect(TokenKind.EOF))
-                    break;
+            if (Skip(TokenKind.EOL) && !Skip(TokenKind.EOF))
+                continue;
+            else
+                Expect(TokenKind.EOF);
+            break;
         }
 
         data = new DataSyntax(variables);
-        return true;
+        if (_errorMessage is null)
+            return true;
+        else
+            return false;
     }
 
     /// <summary>
@@ -785,14 +785,12 @@ public sealed class Parser
                 expr = new UnaryOperatorSyntax(token, Operator.Not, expr);
                 break;
 
-            case TokenKind.DOT_DOT:
+            case TokenKind.RANGE_INCLUSIVE:
+            case TokenKind.RANGE_LEFT_INCLUSIVE:
                 Step();
-                if (ParseExpr(out var right))
-                    expr = new RangeLiteralSyntax(token, upper: expr);
-                else if (_errorMessage is not null)
+                if (!ParseExpr(out var right))
                     return false;
-                else
-                    expr = new RangeLiteralSyntax(token);
+                expr = new RangeLiteralSyntax(token, upper: expr, upperInclusive: false);
                 break;
 
             case TokenKind.UNDERSCORE:
@@ -828,7 +826,7 @@ public sealed class Parser
                 break;
 
             case TokenKind.IDENTIFIER:
-                if (!ParseIdentExpr(out expr))
+                if (!ParseIdentifierExpr(out expr))
                     return false;
                 break;
 
@@ -933,11 +931,27 @@ public sealed class Parser
                     return true;
             }
 
-            if (op is Operator.Range)
+            if (
+                op
+                is Operator.RangeInclusive
+                    or Operator.RangeExclusive
+                    or Operator.RangeLeftInclusive
+                    or Operator.RangeRightInclusive
+            )
             {
                 Step();
                 if (ParseExpr(out var right, assoc, prec))
-                    expr = new RangeLiteralSyntax(expr.Start, expr, right);
+                    expr = new RangeLiteralSyntax(
+                        expr.Start,
+                        lower: expr,
+                        lowerInclusive: op
+                            is Operator.RangeInclusive
+                                or Operator.RangeLeftInclusive,
+                        upper: right,
+                        upperInclusive: op
+                            is Operator.RangeInclusive
+                                or Operator.RangeRightInclusive
+                    );
                 else if (_errorMessage is not null)
                     return false;
                 else
@@ -981,7 +995,10 @@ public sealed class Parser
             TokenKind.UNION => (Operator.Union, Assoc.Left, 600),
             TokenKind.DIFF => (Operator.Diff, Assoc.Left, 600),
             TokenKind.SYMDIFF => (Operator.SymDiff, Assoc.Left, 600),
-            TokenKind.DOT_DOT => (Operator.Range, Assoc.None, 500),
+            TokenKind.RANGE_INCLUSIVE => (Operator.RangeInclusive, Assoc.None, 500),
+            TokenKind.RANGE_EXCLUSIVE => (Operator.RangeExclusive, Assoc.None, 500),
+            TokenKind.RANGE_LEFT_INCLUSIVE => (Operator.RangeLeftInclusive, Assoc.None, 500),
+            TokenKind.RANGE_RIGHT_INCLUSIVE => (Operator.RangeRightInclusive, Assoc.None, 500),
             TokenKind.PLUS => (Operator.Add, Assoc.Left, 400),
             TokenKind.MINUS => (Operator.Subtract, Assoc.Left, 400),
             TokenKind.STAR => (Operator.Multiply, Assoc.Left, 300),
@@ -1013,7 +1030,7 @@ public sealed class Parser
     ///<mzn>forall(i in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i,j in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i in 1..3, j in 1..3 where i > j)(xd[i]);</mzn>
-    internal bool ParseIdentExpr([NotNullWhen(true)] out ExpressionSyntax? result)
+    internal bool ParseIdentifierExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
         result = null;
         var name = new IdentifierSyntax(_token);

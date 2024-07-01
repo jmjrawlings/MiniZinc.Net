@@ -50,15 +50,26 @@ public static class Yaml
      */
     private sealed class Converter : IYamlTypeConverter
     {
+        private IParser _parser = null!;
+
+        // Are we in a !Solution section?
+        private bool _inSolution = false;
+
+        // Are we in a solution variable?
+        private bool _inSolutionVariable = false;
+
         public bool Accepts(Type type) => true;
 
         public object? ReadYaml(IParser parser, Type type)
         {
-            if (parser.Current is null)
+            _parser = parser;
+            if (Current is null)
                 return null;
-            var result = ParseNode(parser);
-            return result;
+            var node = ParseNode();
+            return node;
         }
+
+        private ParsingEvent? Current => _parser.Current;
 
         public void WriteYaml(IEmitter emitter, object? value, Type type) { }
 
@@ -76,10 +87,9 @@ public static class Yaml
             return s;
         }
 
-        private JsonNode ParseNode(IParser parser)
+        private JsonNode ParseNode()
         {
-            var curr = parser.Current;
-            var tag = curr switch
+            var tag = Current switch
             {
                 MappingStart x => GetTag(x),
                 SequenceStart x => GetTag(x),
@@ -87,53 +97,51 @@ public static class Yaml
                 _ => null
             };
 
-            var node = curr switch
+            if (tag is TAG_SOLUTION)
+                _inSolution = true;
+
+            var node = Current switch
             {
-                MappingStart x => ParseMapping(parser, tag),
-                SequenceStart x => ParseSequence(parser, tag),
-                Scalar x => ParseScalar(parser, tag),
-                _ => throw new Exception($"Unexpected event {curr}")
+                MappingStart start => ParseMapping(start, tag),
+                SequenceStart start => ParseSequence(start, tag),
+                Scalar scalar => ParseScalar(scalar, tag),
+                var x => throw new Exception($"Unexpected event {x}")
             };
-            parser.MoveNext();
+            _parser.MoveNext();
+            _inSolution = false;
             return node;
         }
 
-        private static JsonValue? ParseValue(string str)
+        private JsonValue? ParseValue(Scalar scalar)
         {
-            if (str is NULL)
+            var value = scalar.Value;
+            var style = scalar.Style;
+            if (value is NULL)
                 return null;
-            if (str is TRUE)
+            if (value is TRUE)
                 return JsonValue.Create(true);
-            if (str is FALSE)
+            if (value is FALSE)
                 return JsonValue.Create(false);
-            if (decimal.TryParse(str, out var d))
+            if (decimal.TryParse(value, out var d))
                 return JsonValue.Create(d);
-            if (int.TryParse(str, out var i))
+            if (int.TryParse(value, out var i))
                 return JsonValue.Create(i);
-            return JsonValue.Create(str);
+            if (style is ScalarStyle.DoubleQuoted or ScalarStyle.SingleQuoted)
+                if (_inSolution)
+                    return JsonValue.Create($"\"{value}\"");
+
+            return JsonValue.Create(value);
         }
 
-        private static JsonNode ParseScalar(IParser parser, string? tag)
+        private JsonNode ParseScalar(Scalar scalar, string? tag)
         {
-            var str = (parser.Current as Scalar)!.Value;
-            JsonNode? node = ParseValue(str);
-
-            if (tag is null)
+            JsonNode? node = ParseValue(scalar);
+            if (tag is null or TAG_APPROX)
                 return node!;
 
             var type = GetTypeNameFromTag(tag);
-            if (tag is TAG_RANGE)
-            {
-                var tokens = str.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                var lower = ParseValue(tokens[0]);
-                var upper = ParseValue(tokens[1]);
-                var arr = new JsonArray(lower, upper);
-                var obj = new JsonObject { { RANGE, arr } };
-                return obj;
-            }
-
             // Empty string with a tag should just be an object
-            if (string.IsNullOrEmpty(str))
+            if (string.IsNullOrEmpty(scalar.Value))
                 node = new JsonObject { { TAG, tag } };
             else
                 node = new JsonObject { { type, node } };
@@ -141,57 +149,51 @@ public static class Yaml
             return node;
         }
 
-        private static JsonObject ParseSet(IParser parser)
+        private JsonValue ParseSet()
         {
-            JsonArray arr = new();
-            parser.MoveNext();
-            loop:
-            var curr = parser.Current;
-            switch (curr)
+            var sb = new StringBuilder();
+            sb.Append('{');
+            _parser.MoveNext();
+            int i = 0;
+            while (Current is Scalar scalar)
             {
-                case null:
-                case MappingEnd:
-                    break;
-                default:
-                    var key = (parser.Current as Scalar)!.Value;
-                    var value = ParseValue(key);
-                    arr.Add(value);
-                    parser.MoveNext();
-                    parser.MoveNext();
-                    goto loop;
-            }
+                if (i++ > 1)
+                    sb.Append(',');
 
-            var obj = new JsonObject { { SET, arr } };
-            return obj;
+                var value = ParseValue(scalar);
+                sb.Append(value);
+                _parser.MoveNext();
+                _parser.MoveNext();
+            }
+            sb.Append('}');
+            var dzn = sb.ToString();
+            var set = JsonValue.Create(dzn);
+            return set;
         }
 
-        private JsonNode ParseMapping(IParser parser, string? tag)
+        private JsonNode ParseMapping(MappingStart start, string? tag)
         {
             if (tag is TAG_SET)
             {
-                var set = ParseSet(parser);
+                var set = ParseSet();
                 return set;
             }
 
             JsonObject map = new();
-            parser.MoveNext();
-            loop:
-            var curr = parser.Current;
-            switch (curr)
+            _parser.MoveNext();
+            while (Current is Scalar s)
             {
-                case null:
-                case MappingEnd:
-                    break;
-                default:
-                    // Keys are always scalars
-                    var key = (parser.Current as Scalar)!.Value;
-                    parser.MoveNext();
-                    var value = ParseNode(parser);
-                    if (map.ContainsKey(key))
-                        WriteLine($"Duplicate Yaml map key \"{key}\"");
-                    else
-                        map.Add(key, value);
-                    goto loop;
+                var key = s.Value;
+                _parser.MoveNext();
+                if (_inSolution && !_inSolutionVariable)
+                    _inSolutionVariable = true;
+
+                var value = ParseNode();
+                if (map.ContainsKey(key))
+                    WriteLine($"Duplicate Yaml map key \"{key}\"");
+                else
+                    map.Add(key, value);
+                _inSolutionVariable = false;
             }
 
             if (tag is not null)
@@ -200,21 +202,20 @@ public static class Yaml
             return map;
         }
 
-        private JsonNode ParseSequence(IParser parser, string? _tag)
+        private JsonNode ParseSequence(SequenceStart start, string? _tag)
         {
-            parser.MoveNext();
+            _parser.MoveNext();
             var node = new JsonArray();
 
             loop:
-            var curr = parser.Current;
-            switch (curr)
+            switch (Current)
             {
                 case null:
                     break;
                 case SequenceEnd:
                     break;
                 default:
-                    var item = ParseNode(parser);
+                    var item = ParseNode();
                     node.Add(item);
                     goto loop;
             }

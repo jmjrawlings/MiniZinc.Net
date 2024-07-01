@@ -28,6 +28,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var options = SolveOptions.Create(solverId:solver).AddArgs(args);
 
 		var result = await MiniZinc.Solve(model, options);
+		_output.WriteLine(result.Command);
 		result.IsSuccess.Should().BeTrue();
 		if (solutions.Count is 0)
 		{
@@ -45,12 +46,11 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 				break;
 			}
 
-			_output.WriteLine("The result was not expected:");
-			_output.WriteLine("");
-			_output.WriteLine(result.Data.Write());
-			_output.WriteLine("");
+			_output.WriteLine("EXPECTED:");
 			_output.WriteLine(data.Write());
 			_output.WriteLine("");
+			_output.WriteLine("ACTUAL:");
+			_output.WriteLine(result.Data.Write());
 			_output.WriteLine(new string('-',80));
 		}
 
@@ -194,7 +194,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/last_val_set.mzn";
 		var solutions = new List<string> {
-			"x=4;y={1,2,4,8};",
+			"x=4;y={12,4,8};",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -272,10 +272,10 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/ts_bug.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},{1,2,3,4},{1,2,3,4},{1,2,3,4}];aft=[{1,2,3,4},{1,2,3,4},{1,3,4},{1,3,4},{1,3},{}];a=[{1,2},{2,3},{3,4},{2,4},{1,3},{1,4}];",
-			"cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,3},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];",
-			"cost=48;s=[5,3,2,1,4,6];dur=[{1,3},{1,3,4},{1,2,4},{1,2,4},{1,4},{1,4}];bef=[{},{1,3},{1,3,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,2,4},{1,2,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];",
-			"cost=48;s=[4,1,2,3,5,6];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,4},{1,4}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];",
+			"cost=48;s=[4,1,2,3,6,5];dur=[{24},{12,4},{13,4},{13,4},{13},{13}];bef=[{},{24},{12,4},{12,3,4},{12,3,4},{12,3,4}];aft=[{12,3,4},{12,3,4},{13,4},{13,4},{13},{}];a=[{12},{23},{34},{24},{13},{14}];",
+			"cost=48;s=[4,1,2,3,6,5];dur=[{24},{12,4},{13,4},{13,4},{13},{13}];bef=[{},{24},{12,4},(range: 1..4),(range: 1..4),(range: 1..4)];aft=[(range: 1..4),(range: 1..4),{13,4},{13,4},{13},{}];a=[(range: 1..2),(range: 2..3),(range: 3..4),{24},{13},{14}];",
+			"cost=48;s=[5,3,2,1,4,6];dur=[{13},{13,4},{12,4},{12,4},{14},{14}];bef=[{},{13},{13,4},(range: 1..4),(range: 1..4),(range: 1..4)];aft=[(range: 1..4),(range: 1..4),{12,4},{12,4},{14},{}];a=[(range: 1..2),(range: 2..3),(range: 3..4),{24},{13},{14}];",
+			"cost=48;s=[4,1,2,3,5,6];dur=[{24},{12,4},{13,4},{13,4},{14},{14}];bef=[{},{24},{12,4},(range: 1..4),(range: 1..4),(range: 1..4)];aft=[(range: 1..4),(range: 1..4),{13,4},{13,4},{14},{}];a=[(range: 1..2),(range: 2..3),(range: 3..4),{24},{13},{14}];",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);

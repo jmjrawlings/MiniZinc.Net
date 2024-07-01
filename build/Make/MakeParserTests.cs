@@ -3,14 +3,15 @@
 using LibMiniZinc.Tests;
 using MiniZinc.Build;
 
-public sealed class MakeParserTests : CodeBuilder
+public sealed class MakeParserTests : TestBuilder
 {
     private MakeParserTests(TestSpec spec)
+        : base("ParserIntegrationTests", spec)
     {
         var files = new HashSet<string>();
         foreach (var @case in spec.TestCases)
         {
-            if (@case.Type is TestType.Error)
+            if (@case.Type is TestType.Error or TestType.SyntaxError)
                 continue;
 
             files.Add(@case.Path);
@@ -29,7 +30,7 @@ public sealed class MakeParserTests : CodeBuilder
             Write("</auto-generated>");
         }
 
-        Block("public sealed class ParserIntegrationTests");
+        Block($"public sealed class {ClassName}");
         using (Block("private void TestParse(string path)"))
         {
             Var("result", "Parser.ParseModelFile(path, out var model)");
@@ -56,8 +57,8 @@ public sealed class MakeParserTests : CodeBuilder
     public static async Task Run()
     {
         var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-        var source = new MakeParserTests(spec).ToString();
-        var file = Projects.ParserTests.Dir.JoinFile("ParserIntegrationTests.cs");
-        await File.WriteAllTextAsync(file.FullName, source);
+        var builder = new MakeParserTests(spec);
+        builder.WriteTo(Projects.ParserTests.Dir);
+        await Task.CompletedTask;
     }
 }

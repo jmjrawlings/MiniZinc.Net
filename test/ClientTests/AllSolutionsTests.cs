@@ -29,6 +29,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var options = SolveOptions.Create(solverId:solver).AddArgs(args);;
 
 		var result = await MiniZinc.Solve(model, options);
+		_output.WriteLine(result.Command);
 		result.IsSuccess.Should().BeTrue();
 		foreach (var dzn in solutions)
 		{
@@ -36,12 +37,11 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 			parsed.Ok.Should().BeTrue();
 			if (!result.Data.Equals(data))
 			{
-				_output.WriteLine("The result was not expected:");
-				_output.WriteLine("");
-				_output.WriteLine(result.Data.Write());
-				_output.WriteLine("");
+				_output.WriteLine("EXPECTED:");
 				_output.WriteLine(data.Write());
 				_output.WriteLine("");
+				_output.WriteLine("ACTUAL");
+				_output.WriteLine(result.Data.Write());
 				_output.WriteLine(new string('-',80));
 				Assert.Fail("The result was not expected");
 			}
@@ -146,7 +146,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/set2iter.mzn";
 		var solutions = new List<string> {
-			"x=2..3;y=4..5;",
+			"x=(range: 2..3);y=(range: 4..5);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -336,7 +336,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/enum_constructor_quoting.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item='Q~'('F!'('\"'));",
+			"_output_item=\"'Q~'('F!'('\"'))\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -384,7 +384,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/json_ignore.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_checker=data_2 = 2;\n;data_1=1;",
+			"_checker=\"data_2 = 2;\n\";data_1=1;",
 			};
 		var args = new List<string>{
 			"--data \"unit/general/json_ignore.mzc.mzn\"",
@@ -523,7 +523,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/quoted_id_3.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=A?;",
+			"_output_item=\"A?\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -535,7 +535,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/quoted_id_4.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=Foo~(A?);",
+			"_output_item=\"Foo~(A?)\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -547,7 +547,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/range_var_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"x_to_y={A,B,C};",
+			"x_to_y={AB,C};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -573,7 +573,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/test_mod_bounds.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"b=0..2;c=-2..2;d=-2..0;",
+			"b=(range: 0..2);c=(range: -2..2);d=(range: -2..0);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -613,7 +613,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/test_set_lt_2.mzn";
 		var solver = "coin-bc";
 		var solutions = new List<string> {
-			"sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];",
+			"sets=[{},{1},(range: 1..2),(range: 1..3),{13},{2},(range: 2..3),{3}];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -627,7 +627,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/test_set_lt_3.mzn";
 		var solutions = new List<string> {
-			"y={1,4};",
+			"y={14};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -639,7 +639,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/test_to_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"par_int=b;var_int=c;array_of_int=[a,b,c];array_of_var_int=[a,b,c];array_of_set_of_int=[{a},{a,b},{a,b,c}];array_of_var_set_of_int=[{a},{a,b},{a,b,c}];set_of_int={a,b,c};var_set_of_int={a,b,c};",
+			"par_int=b;var_int=c;array_of_int=[a,b,c];array_of_var_int=[a,b,c];array_of_set_of_int=[{a},{ab},{ab,c}];array_of_var_set_of_int=[{a},{ab},{ab,c}];set_of_int={ab,c};var_set_of_int={ab,c};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -672,7 +672,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/general/test_var_set_element.mzn";
 		var solutions = new List<string> {
 			"a=[{},{},{}];s={};x=3;",
-			"a=[1..5,1..5,1..5];s=1..5;x=2;",
+			"a=[(range: 1..5),(range: 1..5),(range: 1..5)];s=(range: 1..5);x=2;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -754,7 +754,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/json/enum_escaping.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"x=\";",
+			"x=\"\"\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -794,7 +794,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/json/json_input_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"int_set={1,2,4,5,7,9};float_set={1.0,2.0};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[[true]];array_3d_int=[[[1,2],[3,4]],[[5,6],[7,8]]];array_opt_float=[1.5,<>];x=1;y=2.0;z=true;o=<>;",
+			"int_set={12,4,5,7,9};float_set={1.02.0};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[[true]];array_3d_int=[[[1,2],[3,4]],[[5,6],[7,8]]];array_opt_float=[1.5,<>];x=1;y=2.0;z=true;o=<>;",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_input_1.json\"",
@@ -808,7 +808,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/json/json_unicode_escapes.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"a=A;mu=μ;arrow=↑;clef=𝄞;",
+			"a=\"A\";mu=μ;arrow=↑;clef=𝄞;",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_unicode_escapes.json\"",
@@ -863,7 +863,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/optional/test_count_set.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"i=0;x=6..10;",
+			"i=0;x=(range: 6..10);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -923,7 +923,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/format_justified_enums.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=>      [Hello, World]<;",
+			"_output_item=\">      [Hello, World]<\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -935,7 +935,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/json_ann.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"x=promise_total;y=expression_name(\"test\");",
+			"x=\"promise_total\";y=expression_name(\"test\");",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -947,7 +947,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/json_multidim.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=[[{\"e\":\"A\"}, {\"e\":\"B\"}], [{\"e\":\"C\"}, {\"e\":\"D\"}]] [[{\"e\":\"A\"}, {\"e\":\"B\"}], [{\"e\":\"C\"}, {\"e\":\"D\"}]];",
+			"_output_item=\"[[{\"e\":\"A\"}, {\"e\":\"B\"}], [{\"e\":\"C\"}, {\"e\":\"D\"}]] [[{\"e\":\"A\"}, {\"e\":\"B\"}], [{\"e\":\"C\"}, {\"e\":\"D\"}]]\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1031,7 +1031,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=aebdc;",
+			"_output_item=\"aebdc\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1043,7 +1043,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=bdc;",
+			"_output_item=\"bdc\";",
 			};
 		var args = new List<string>{
 			"--only-sections foo,bar",
@@ -1057,7 +1057,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=ae;",
+			"_output_item=\"ae\";",
 			};
 		var args = new List<string>{
 			"--not-sections foo,bar",
@@ -1071,7 +1071,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=aebdc;",
+			"_output_item=\"aebdc\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1083,7 +1083,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=bdc;",
+			"_output_item=\"bdc\";",
 			};
 		var args = new List<string>{
 			"--only-sections foo,bar",
@@ -1097,7 +1097,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=ae;",
+			"_output_item=\"ae\";",
 			};
 		var args = new List<string>{
 			"--not-sections foo,bar",
@@ -1123,7 +1123,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_4.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=x = 10;",
+			"_output_item=\"x = 10\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1135,7 +1135,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_5.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=x = 10\ny = 1\n;",
+			"_output_item=\"x = 10\ny = 1\n\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1147,7 +1147,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_6.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=output_to_section: 10\noutput_item: 10\n;",
+			"_output_item=\"output_to_section: 10\noutput_item: 10\n\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1159,7 +1159,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/output_sections_7.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=[1]\n;",
+			"_output_item=\"[1]\n\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1171,7 +1171,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/output/var_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=[\"X_INTRODUCED_16_\", \"X_INTRODUCED_17_\", \"X_INTRODUCED_18_\"] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch];",
+			"_output_item=\"[\"X_INTRODUCED_16_\", \"X_INTRODUCED_17_\", \"X_INTRODUCED_18_\"] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch]\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1228,7 +1228,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/array_var_set_element_nosets.mzn";
 		var solutions = new List<string> {
-			"x=1;y=[1..3,{},{1}];z=1..3;",
+			"x=1;y=[(range: 1..3),{},{1}];z=(range: 1..3);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1521,7 +1521,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/checker_mzn_check_var.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_checker=(trim: Ok);",
+			"_checker=(trim: \"Ok\");",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_mzn_check_var.mzc.mzn\"",
@@ -1535,7 +1535,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/checker_opt.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_checker=(trim: y = 20;);",
+			"_checker=(trim: \"y = 20;\");",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_opt.mzc.mzn\"",
@@ -1549,7 +1549,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/checker_params.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_checker=(trim: yay!);",
+			"_checker=(trim: \"yay!\");",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_params.mzc.mzn\"",
@@ -1563,7 +1563,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/checker_same_var.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_checker=(trim: x = 10;);objective=5;",
+			"_checker=(trim: \"x = 10;\");objective=5;",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_same_var.mzc.mzn\"",
@@ -1577,8 +1577,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/checker_var_bug.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_checker=x = 1;\n;",
-			"_checker=x = 2;\n;",
+			"_checker=\"x = 1;\n\";",
+			"_checker=\"x = 2;\n\";",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_var_bug.mzc.mzn\"",
@@ -1803,7 +1803,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/github_673.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=[X, <>];",
+			"_output_item=\"[X, <>]\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1917,7 +1917,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/github_693_part2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"x=[{},{2},{1},1..2];",
+			"x=[{},{2},{1},(range: 1..2)];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1929,7 +1929,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/github_700.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"c={1};d=1..2;",
+			"c={1};d=(range: 1..2);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2096,7 +2096,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/github_793.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=[{\"e\":\"A\"}] {\"v\": [{\"e\":\"A\"}]};",
+			"_output_item=\"[{\"e\":\"A\"}] {\"v\": [{\"e\":\"A\"}]}\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2181,7 +2181,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/makepar_output.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=1..1;",
+			"_output_item=\"1..1\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2206,7 +2206,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/nosets_set_search.mzn";
 		var solutions = new List<string> {
-			"x=1..3;",
+			"x=(range: 1..3);",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2230,8 +2230,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/output_fn_toplevel_var.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=[1][true];",
-			"_output_item=[2][false];",
+			"_output_item=\"[1][true]\";",
+			"_output_item=\"[2][false]\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2282,7 +2282,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/slice_enum_indexset.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=ok;",
+			"_output_item=\"ok\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2295,9 +2295,9 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/subsets_100.mzn";
 		var solutions = new List<string> {
-			"s=1..9;t={45};s_total=45;t_total=45;",
-			"s={100};t={49,51};s_total=100;t_total=100;",
-			"s={1,2,40,56,94};t={3,93,97};s_total=193;t_total=193;",
+			"s=(range: 1..9);t={45};s_total=45;t_total=45;",
+			"s={100};t={4951};s_total=100;t_total=100;",
+			"s={12,40,56,94};t={393,97};s_total=193;t_total=193;",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2345,7 +2345,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/test_bug_493.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item={};",
+			"_output_item=\"{}\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2369,7 +2369,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/test_bug_520.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item={a}\"b\";",
+			"_output_item=\"{a}\"b\"\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2405,7 +2405,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/test_bug_529.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=ok;",
+			"_output_item=\"ok\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2481,8 +2481,8 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/var_self_assign_bug.mzn";
 		var solutions = new List<string> {
-			"partitions=[{1,2,3},{1,2,3},{1,2,3}];",
-			"partitions=[1..3,1..3,1..3];",
+			"partitions=[{12,3},{12,3},{12,3}];",
+			"partitions=[(range: 1..3),(range: 1..3),(range: 1..3)];",
 			"partitions=[{},{},{}];",
 			};
 		var args = new List<string>();
@@ -2749,7 +2749,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/types/enum_refl.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"x={};ubx={a,b,c};y=a;lby=a;uby=c;domy={a,b,c};",
+			"x={};ubx={ab,c};y=a;lby=a;uby=c;domy={ab,c};",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2821,7 +2821,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/types/record_access_success.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=onetwo;",
+			"_output_item=\"onetwo\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2883,7 +2883,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/types/record_output.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=full var: (a: 0, b: true, c: 1.5)\nvar array: [(a: 2, b: false), (a: 1, b: true)]\nnested: (inner: (left: 3, right: 4), outer: false)\nelement: 3\npartial: (x: 10, y: true)\ndata: (e: -3.2, f: false)\n;",
+			"_output_item=\"full var: (a: 0, b: true, c: 1.5)\nvar array: [(a: 2, b: false), (a: 1, b: true)]\nnested: (inner: (left: 3, right: 4), outer: false)\nelement: 3\npartial: (x: 10, y: true)\ndata: (e: -3.2, f: false)\n\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2931,7 +2931,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/types/struct_array_coercion.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"mzn_enum_X=[[A,[]],[B,[]],[G,[[0,1..3]]]];",
+			"mzn_enum_X=[[\"A\",[]],[B,[]],[G,[[0,(range: 1..3)]]]];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3053,7 +3053,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/types/struct_specialise_return.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item={C}, [(A,)];",
+			"_output_item=\"{C}, [(A,)]\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3065,7 +3065,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/types/tuple_access_success.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=onetwo;",
+			"_output_item=\"onetwo\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3149,7 +3149,7 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 		var path = "unit/types/tuple_output.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"_output_item=full var: (0, true, 1.5)\nvar array: [(2, false), (1, true)]\nnested: (false, (3, 4))\nelement: 3\npartial: (10, true)\ndata: (-3.2, false)\nenumtup: ((x: a a, y: c), c)\n;",
+			"_output_item=\"full var: (0, true, 1.5)\nvar array: [(2, false), (1, true)]\nnested: (false, (3, 4))\nelement: 3\npartial: (10, true)\ndata: (-3.2, false)\nenumtup: ((x: a a, y: c), c)\n\";",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3226,10 +3226,10 @@ public class AllSolutionsTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/globals/int_set_channel/test_int_set_channel2.mzn";
 		var solutions = new List<string> {
-			"x=[1,1,1,1,1,1,1,1,1];y=[1..9,{},{},{},{}];",
-			"x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{2},{},{1}];",
-			"x=[2,2,2,2,2,2,2,2,2];y=[{},1..9,{},{},{}];",
-			"x=[5,5,5,5,5,5,5,5,5];y=[{},{},{},{},1..9];",
+			"x=[1,1,1,1,1,1,1,1,1];y=[(range: 1..9),{},{},{},{}];",
+			"x=[5,3,1,1,1,1,1,1,1];y=[(range: 3..9),{},{2},{},{1}];",
+			"x=[2,2,2,2,2,2,2,2,2];y=[{},(range: 1..9),{},{},{}];",
+			"x=[5,5,5,5,5,5,5,5,5];y=[{},{},{},{},(range: 1..9)];",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);

@@ -69,7 +69,7 @@
     [InlineData("1..10")]
     void test_range_ti(string mzn)
     {
-        TestTokens(mzn, TokenKind.INT_LITERAL, TokenKind.DOT_DOT, TokenKind.INT_LITERAL);
+        TestTokens(mzn, TokenKind.INT_LITERAL, TokenKind.RANGE_INCLUSIVE, TokenKind.INT_LITERAL);
     }
 
     [Theory]
@@ -79,7 +79,7 @@
         TestTokens(
             mzn,
             TokenKind.FLOAT_LITERAL,
-            TokenKind.DOT_DOT,
+            TokenKind.RANGE_INCLUSIVE,
             TokenKind.FLOAT_LITERAL,
             TokenKind.TUPLE_ACCESS
         );

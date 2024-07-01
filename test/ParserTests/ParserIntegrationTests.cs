@@ -3509,14 +3509,6 @@ public sealed class ParserIntegrationTests
 	}
 
 
-	[Fact(DisplayName="unit/regression/github_725.mzn")]
-	public void test_parse_unit_regression_github_725()
-	{
-		var path = "unit/regression/github_725.mzn";
-		TestParse(path);
-	}
-
-
 	[Fact(DisplayName="unit/regression/github_726.mzn")]
 	public void test_parse_unit_regression_github_726()
 	{
@@ -3529,14 +3521,6 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_regression_github_728()
 	{
 		var path = "unit/regression/github_728.mzn";
-		TestParse(path);
-	}
-
-
-	[Fact(DisplayName="unit/regression/github_730.mzn")]
-	public void test_parse_unit_regression_github_730()
-	{
-		var path = "unit/regression/github_730.mzn";
 		TestParse(path);
 	}
 
