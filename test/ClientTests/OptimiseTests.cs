@@ -149,7 +149,7 @@ public class OptimiseTests : ClientTest
 	{
 		var path = "unit/on_restart/last_val_set.mzn";
 		var solutions = new List<string> {
-			"""{"x":4,"y":"{12,4,8}"}""",
+			"""{"x":4,"y":{"__tag__":"Set","dzn":"{1,2,4,8}"}}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -212,7 +212,7 @@ public class OptimiseTests : ClientTest
 	{
 		var path = "unit/on_restart/sol_set.mzn";
 		var solutions = new List<string> {
-			"""{"x":"{}","y":"{1}"}""",
+			"""{"x":{"__tag__":"Set","dzn":"{}"},"y":{"__tag__":"Set","dzn":"{1}"}}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -227,7 +227,10 @@ public class OptimiseTests : ClientTest
 		var path = "unit/regression/ts_bug.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"cost":48,"s":[4,1,2,3,5,6],"dur":["{24}","{12,4}","{13,4}","{13,4}","{14}","{14}"],"bef":["{}","{24}","{12,4}",{"range":"1..4"},{"range":"1..4"},{"range":"1..4"}],"aft":[{"range":"1..4"},{"range":"1..4"},"{13,4}","{13,4}","{14}","{}"],"a":[{"range":"1..2"},{"range":"2..3"},{"range":"3..4"},"{24}","{13}","{14}"]}""",
+			"""{"cost":48,"s":[4,1,2,3,6,5],"dur":[{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{1,3}"}],"bef":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Set","dzn":"{1,2,3,4}"},{"__tag__":"Set","dzn":"{1,2,3,4}"},{"__tag__":"Set","dzn":"{1,2,3,4}"}],"aft":[{"__tag__":"Set","dzn":"{1,2,3,4}"},{"__tag__":"Set","dzn":"{1,2,3,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{}"}],"a":[{"__tag__":"Set","dzn":"{1,2}"},{"__tag__":"Set","dzn":"{2,3}"},{"__tag__":"Set","dzn":"{3,4}"},{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{1,4}"}]}""",
+			"""{"cost":48,"s":[4,1,2,3,6,5],"dur":[{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{1,3}"}],"bef":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"}],"aft":[{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{}"}],"a":[{"__tag__":"Range","dzn":"1..2"},{"__tag__":"Range","dzn":"2..3"},{"__tag__":"Range","dzn":"3..4"},{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{1,4}"}]}""",
+			"""{"cost":48,"s":[5,3,2,1,4,6],"dur":[{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Set","dzn":"{1,4}"},{"__tag__":"Set","dzn":"{1,4}"}],"bef":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"}],"aft":[{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Set","dzn":"{1,4}"},{"__tag__":"Set","dzn":"{}"}],"a":[{"__tag__":"Range","dzn":"1..2"},{"__tag__":"Range","dzn":"2..3"},{"__tag__":"Range","dzn":"3..4"},{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{1,4}"}]}""",
+			"""{"cost":48,"s":[4,1,2,3,5,6],"dur":[{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,4}"},{"__tag__":"Set","dzn":"{1,4}"}],"bef":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,2,4}"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"}],"aft":[{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Range","dzn":"1..4"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,3,4}"},{"__tag__":"Set","dzn":"{1,4}"},{"__tag__":"Set","dzn":"{}"}],"a":[{"__tag__":"Range","dzn":"1..2"},{"__tag__":"Range","dzn":"2..3"},{"__tag__":"Range","dzn":"3..4"},{"__tag__":"Set","dzn":"{2,4}"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{1,4}"}]}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);
@@ -265,6 +268,18 @@ public class OptimiseTests : ClientTest
 		var path = "examples/radiation.mzn";
 		var solutions = new List<string> {
 			"""{"Beamtime":21,"K":7,"N":[2,1,1,1,2,0,0,0,0,0,0,0,0,0],"Q":[[[0,1,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,0,0,0,0,0,0,0,0,0],[0,0,1,0,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,1,0,0,0,0,0,0,0,0,0]],[[1,0,1,1,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,0,1,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,1,0,0,0,0,0,0,0,0,0,0],[2,0,1,1,0,0,0,0,0,0,0,0,0,0],[0,0,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,1,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0]]],"objective":175}""",
+			};
+		var args = new List<string>();
+		await TestOptimise(path, solver, solutions, args);
+	}
+
+	[Fact(DisplayName="examples/radiation.mzn")]
+	public async Task test_solve_examples_radiation_2()
+	{
+		var path = "examples/radiation.mzn";
+		var solver = "coin-bc";
+		var solutions = new List<string> {
+			"""{}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);

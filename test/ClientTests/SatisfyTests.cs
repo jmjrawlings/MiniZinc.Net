@@ -13,26 +13,12 @@ public class SatisfyTests : ClientTest
 	{
 	}
 
-	[Fact(DisplayName="unit/compilation/par_arg_out_of_bounds.mzn")]
-	public async Task test_solve_unit_compilation_par_arg_out_of_bounds()
-	{
-		var path = "unit/compilation/par_arg_out_of_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
 	[Fact(DisplayName="unit/compilation/poly_overload.mzn")]
 	public async Task test_solve_unit_compilation_poly_overload()
 	{
 		var path = "unit/compilation/poly_overload.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -42,9 +28,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/general/comprehension_var_ub.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -109,16 +93,6 @@ public class SatisfyTests : ClientTest
 		await TestSatisfy(path, solver, solutions, args);
 	}
 
-	[Fact(DisplayName="unit/general/unicode_file_name_μ.mzn")]
-	public async Task test_solve_unit_general_unicode_file_name_μ()
-	{
-		var path = "unit/general/unicode_file_name_μ.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
 	[Theory(DisplayName="unit/globals/typecheck_globals.mzn")]
 	[InlineData("chuffed")]
 	[InlineData("gecode")]
@@ -127,9 +101,7 @@ public class SatisfyTests : ClientTest
 	public async Task test_solve_unit_globals_typecheck_globals(string solver)
 	{
 		var path = "unit/globals/typecheck_globals.mzn";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -139,9 +111,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/json/coerce_enum_str.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/json/coerce_enum_str.json\"",
 		};
@@ -153,9 +123,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/json/coerce_indices.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/json/coerce_indices.json\"",
 		};
@@ -167,9 +135,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/json/coerce_set.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/json/coerce_set.json\"",
 		};
@@ -181,9 +147,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/json/json_array2d_set.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/json/json_array2d_set.json\"",
 		};
@@ -195,9 +159,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/json/record_json_input.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/json/record_json_input.json\"",
 		};
@@ -209,9 +171,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/json/tuple_json_input.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"--data \"unit/json/tuple_json_input.json\"",
 		};
@@ -243,33 +203,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/optional/opt_array_access.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/optional/opt_math_abs.mzn")]
-	public async Task test_solve_unit_optional_opt_math_abs()
-	{
-		var path = "unit/optional/opt_math_abs.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/optional/opt_math_neg.mzn")]
-	public async Task test_solve_unit_optional_opt_math_neg()
-	{
-		var path = "unit/optional/opt_math_neg.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -279,22 +213,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/binop_mult_gclock.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bug212.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_bug212(string solver)
-	{
-		var path = "unit/regression/bug212.mzn";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -326,9 +245,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/github_639_part2.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -355,26 +272,12 @@ public class SatisfyTests : ClientTest
 		await TestSatisfy(path, solver, solutions, args);
 	}
 
-	[Fact(DisplayName="unit/regression/github_726.mzn")]
-	public async Task test_solve_unit_regression_github_726()
-	{
-		var path = "unit/regression/github_726.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
 	[Fact(DisplayName="unit/regression/github_752.mzn")]
 	public async Task test_solve_unit_regression_github_752()
 	{
 		var path = "unit/regression/github_752.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -384,9 +287,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/github_761.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -396,9 +297,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/github_778.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -408,9 +307,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/github_783.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>{
 			"-O2",
 		};
@@ -432,21 +329,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/github_806.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/let_domain_from_generator.mzn")]
-	public async Task test_solve_unit_regression_let_domain_from_generator()
-	{
-		var path = "unit/regression/let_domain_from_generator.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -456,9 +339,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/multi_goal_hierarchy_error.mzn";
 		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -468,9 +349,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/output_2d_array_enum.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -480,21 +359,17 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/regression/par_opt_dom.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
 
-	[Fact(DisplayName="unit/regression/test_bug_637.mzn")]
-	public async Task test_solve_unit_regression_test_bug_637()
+	[Fact(DisplayName="unit/regression/test_parout.mzn")]
+	public async Task test_solve_unit_regression_test_parout_2()
 	{
-		var path = "unit/regression/test_bug_637.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var path = "unit/regression/test_parout.mzn";
+		var solver = "coin-bc";
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -504,9 +379,7 @@ public class SatisfyTests : ClientTest
 	{
 		var path = "unit/types/enum_decl.mzn";
 		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
+		var solutions = new List<string>();
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -557,45 +430,6 @@ public class SatisfyTests : ClientTest
 		var path = "unit/types/type_specialise_param_arrays.mzn";
 		var solver = "gecode";
 		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/globals/cumulative/github_589.mzn")]
-	public async Task test_solve_unit_globals_cumulative_github_589()
-	{
-		var path = "unit/globals/cumulative/github_589.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>{
-			"-G std",
-		};
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/globals/nvalue/globals_nvalue.mzn")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_globals_nvalue_globals_nvalue_2(string solver)
-	{
-		var path = "unit/globals/nvalue/globals_nvalue.mzn";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestSatisfy(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="examples/radiation.mzn")]
-	public async Task test_solve_examples_radiation_2()
-	{
-		var path = "examples/radiation.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""{}""",
-			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
