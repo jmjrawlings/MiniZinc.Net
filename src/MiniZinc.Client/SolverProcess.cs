@@ -57,7 +57,6 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         _completion = new TaskCompletionSource<T>();
         _warnings = new List<string>();
 
-        model.EnsureOk();
         ModelText = model.SourceText;
         SolverId = options?.SolverId ?? Solver.Gecode;
         Solver = _client.GetSolver(SolverId);
