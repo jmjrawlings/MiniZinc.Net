@@ -29,8 +29,6 @@ public class Model
 
     private List<string>? _warnings;
 
-    private List<string>? _errors;
-
     private StringBuilder _sourceText;
 
     private List<DirectoryInfo> _searchDirectories;
@@ -58,8 +56,6 @@ public class Model
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
 
-    public IEnumerable<string> Errors => _errors ?? Enumerable.Empty<string>();
-
     public IEnumerable<ConstraintSyntax> Constraints =>
         _constraints ?? Enumerable.Empty<ConstraintSyntax>();
 
@@ -77,15 +73,10 @@ public class Model
 
     public int WarningCount => _warnings?.Count ?? 0;
 
-    public int ErrorCount => _errors?.Count ?? 0;
-
-    public bool HasErrors => _errors is null;
-
     public bool HasWarnings => _warnings is null;
 
     public Model(bool allowFloats = true)
     {
-        _errors = null;
         _warnings = null;
         _outputs = null;
         _constraints = null;
@@ -523,13 +514,10 @@ public class Model
             AddNode(statement);
     }
 
-    /// <summary>
-    /// Add the given error to this model
-    /// </summary>
+    [DoesNotReturn]
     void Error(string msg)
     {
-        _errors ??= new List<string>();
-        _errors.Add(msg);
+        throw new Exception(msg);
     }
 
     /// <summary>
@@ -601,21 +589,6 @@ public class Model
     {
         var model = IntModel.FromString(SourceText);
         return model;
-    }
-
-    public void EnsureOk()
-    {
-        if (_errors is null)
-            return;
-
-        var msg = new StringBuilder();
-        msg.AppendLine($"The mode has {_errors.Count} errors:");
-        foreach (var err in _errors)
-        {
-            msg.AppendLine("-------------------------------------");
-            msg.AppendLine(err);
-            msg.AppendLine();
-        }
     }
 
     public override string ToString()

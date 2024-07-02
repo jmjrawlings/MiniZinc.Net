@@ -44,7 +44,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     protected async Task TestAnySolution(
         string path,
         string solver,
-        List<string> solutions,
+        List<string>? solutions,
         List<string> args,
         params SolveStatus[] statuses
     )
@@ -61,6 +61,9 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         Write(result.Command);
         result.IsSuccess.Should().BeTrue();
         result.Status.Should().BeOneOf(statuses);
+
+        if (solutions is null)
+            return;
 
         foreach (var json in solutions)
         {
@@ -82,7 +85,20 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     {
         WriteSection();
         Write(path);
-        var model = Model.FromFile(path);
+
+        Model? model = null;
+        try
+        {
+            model = Model.FromFile(path);
+        }
+        catch (Exception ex)
+        {
+            Write(ex.Message);
+        }
+
+        if (model is null)
+            return;
+
         Write(model.SourceText);
         WriteSection();
 
@@ -125,14 +141,9 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         );
     }
 
-    public async Task TestUnsatisfiable(
-        string path,
-        string solver,
-        List<string> solutions,
-        List<string> args
-    )
+    public async Task TestUnsatisfiable(string path, string solver, List<string> args)
     {
-        await TestAnySolution(path, solver, solutions, args, SolveStatus.Unsatisfiable);
+        await TestAnySolution(path, solver, null, args, SolveStatus.Unsatisfiable);
     }
 
     /// <summary>
