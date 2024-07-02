@@ -17,16 +17,14 @@ public abstract class ClientTestsBuilder : TestBuilder
 
         WriteLn("#nullable enable");
         NewLine();
-        Block($"public class {className} : IClassFixture<ClientFixture>");
-        WriteLn("private readonly MiniZincClient MiniZinc;");
-        WriteLn("private readonly ITestOutputHelper _output;");
+        Block($"public class {className} : ClientTest");
         NewLine();
 
-        using (Function($"public {className}", "ClientFixture fixture", "ITestOutputHelper output"))
-        {
-            Assign("MiniZinc", "fixture.MiniZinc");
-            Assign("_output", "output");
-        }
+        using (
+            Block(
+                $"public {className}(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)"
+            )
+        ) { }
     }
 
     protected void WriteMessage(object? msg = null)
@@ -80,11 +78,10 @@ public abstract class ClientTestsBuilder : TestBuilder
             {
                 foreach (var sol in solutions)
                 {
-                    Write(FormatDzn(sol));
+                    Write(TripleQuote(sol.ToJsonString()));
                     Append(',');
                     NewLine();
                 }
-
                 WriteLn("};");
             }
         }
@@ -158,7 +155,7 @@ public abstract class ClientTestsBuilder : TestBuilder
             Return();
 
         Var("anySolution", "false");
-        using (ForEach("var dzn in solutions"))
+        using (ForEach("var expected in solutions"))
         {
             Var("parsed", "Parser.ParseDataString(dzn, out var data);");
             WriteLn("parsed.Ok.Should().BeTrue();");

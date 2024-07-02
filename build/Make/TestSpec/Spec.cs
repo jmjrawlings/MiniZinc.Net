@@ -116,13 +116,10 @@ public static class Spec
                         testCase.Type = TestType.Satisfy;
                         break;
                     }
-                    var solution = ParseSolutionVariables(sol);
                     if (status is Yaml.OPTIMAL)
                         testCase.Type = TestType.Optimise;
-
-                    testCase.Solutions ??= new List<string>();
-                    testCase.Solutions.Add(solution);
                 }
+                testCase.Solutions = sols;
             }
             else if (result.TryGetValue<string>(Yaml.FLATZINC) is { } fzn)
             {
@@ -155,67 +152,6 @@ public static class Spec
 
         var nsols = testCase.Solutions?.Count ?? 0;
         return testCase;
-    }
-
-    /// <summary>
-    /// Parse solution variables as a dzn string
-    /// </summary>
-    private static string ParseSolutionVariables(JsonObject sol)
-    {
-        var sb = new StringBuilder();
-
-        foreach (var kv in sol)
-        {
-            var name = kv.Key;
-            var val = kv.Value;
-            sb.Append(name);
-            sb.Append('=');
-            ParseSolutionValue(val!, sb);
-            sb.Append(';');
-        }
-
-        var dzn = sb.ToString();
-        return dzn;
-    }
-
-    private static void ParseSolutionValue(JsonNode n, StringBuilder sb)
-    {
-        switch (n)
-        {
-            case null:
-                sb.Append("<>");
-                break;
-
-            case JsonArray { Count: 0 }:
-                sb.Append("[]");
-                break;
-
-            case JsonArray x when x[0] is JsonArray:
-                break;
-
-            case JsonArray x:
-                break;
-
-            case JsonObject x:
-                sb.Append('(');
-                int i = 0;
-                foreach (var kv in x)
-                {
-                    var field = kv.Key;
-                    var val = kv.Value!;
-                    if (i++ > 1)
-                        sb.Append(',');
-                    sb.Append(field);
-                    sb.Append(':');
-                    ParseSolutionValue(val, sb);
-                }
-                sb.Append(')');
-                break;
-
-            case JsonValue x:
-                sb.Append(x);
-                break;
-        }
     }
 
     /// <summary>

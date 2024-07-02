@@ -6,31 +6,11 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
 */
 #nullable enable
 
-public class UnsatisfiableTests : IClassFixture<ClientFixture>
+public class UnsatisfiableTests : ClientTest
 {
-	private readonly MiniZincClient MiniZinc;
-	private readonly ITestOutputHelper _output;
 
-	public UnsatisfiableTests(ClientFixture fixture, ITestOutputHelper output)
+	public UnsatisfiableTests(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)
 	{
-		MiniZinc = fixture.MiniZinc;
-		_output = output;
-	}
-
-	async Task TestUnsatisfiable(string path, string solver, List<string>? args)
-	{
-		_output.WriteLine(path);
-		_output.WriteLine(new string('-',80));
-
-		var model = Model.FromFile(path);
-		_output.WriteLine(model.SourceText);
-		_output.WriteLine(new string('-',80));
-
-		var options = SolveOptions.Create(solverId:solver).AddArgs(args);;
-
-		var result = await MiniZinc.Solve(model, options);
-		result.IsSuccess.Should().BeFalse();
-		result.Status.Should().Be(SolveStatus.Unsatisfiable);
 	}
 
 	[Fact(DisplayName="unit/general/bind_par_opt.mzn")]

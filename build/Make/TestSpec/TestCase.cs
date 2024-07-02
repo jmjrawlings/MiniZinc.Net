@@ -28,7 +28,7 @@ public record TestCase
     public TestType Type { get; set; }
 
     /// All solutions, present if Type == AllSolutions or AnySolution
-    public List<string>? Solutions { get; set; }
+    public List<JsonObject>? Solutions { get; set; }
 
     /// Any expected output files produced by the solver (eg flatzinc)
     public List<string>? OutputFiles { get; set; }

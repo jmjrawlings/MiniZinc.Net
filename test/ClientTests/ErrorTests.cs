@@ -6,46 +6,11 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
 */
 #nullable enable
 
-public class ErrorTests : IClassFixture<ClientFixture>
+public class ErrorTests : ClientTest
 {
-	private readonly MiniZincClient MiniZinc;
-	private readonly ITestOutputHelper _output;
 
-	public ErrorTests(ClientFixture fixture, ITestOutputHelper output)
+	public ErrorTests(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)
 	{
-		MiniZinc = fixture.MiniZinc;
-		_output = output;
-	}
-
-	async Task TestError(string path, string solver, string? errorMessage, string? errorRegex, List<string> args)
-	{
-		_output.WriteLine(path);
-		_output.WriteLine(new string('-',80));
-		var model = Model.FromFile(path);
-		_output.WriteLine(model.SourceText);
-		_output.WriteLine(new string('-',80));
-		foreach (var warn in model.Warnings)
-		{
-			_output.WriteLine(warn);
-		}
-
-		var options = SolveOptions.Create(solverId:solver);
-		options = options.AddArgs(args);
-
-		var result = await MiniZinc.Solve(model, options);
-		result.IsSuccess.Should().BeFalse();
-
-		if (errorRegex is not null)
-		{
-			result.Error.Should().MatchRegex(errorRegex);
-		}
-
-
-		else if (errorMessage is not null)
-		{
-			result.Error.Should().Be(errorMessage);
-		}
-
 	}
 
 	[Fact(DisplayName="unit/compilation/assert_dbg_flag.mzn")]
