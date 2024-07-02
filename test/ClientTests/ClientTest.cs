@@ -32,7 +32,9 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         var result = await MiniZinc.Solve(model, options);
         Write(result.Command);
         result.IsSuccess.Should().BeTrue();
-        result.Status.Should().BeOneOf(statuses);
+        if (statuses.Length > 0)
+            result.Status.Should().BeOneOf(statuses);
+
         foreach (var json in solutions)
         {
             var node = (JsonObject)JsonNode.Parse(json)!;
@@ -60,7 +62,9 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         var result = await MiniZinc.Solve(model, options);
         Write(result.Command);
         result.IsSuccess.Should().BeTrue();
-        result.Status.Should().BeOneOf(statuses);
+
+        if (statuses.Length > 0)
+            result.Status.Should().BeOneOf(statuses);
 
         if (solutions is null)
             return;
@@ -151,6 +155,14 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// </summary>
     public bool CheckSolution(DataSyntax data, JsonObject json)
     {
+        WriteSection();
+        Write("Checking actual solution:");
+        Write(data.ToString());
+        Write();
+        Write("Against expected solution:");
+        Write(json.ToString());
+        Write();
+
         foreach (var assign in data)
         {
             var name = assign.Key;

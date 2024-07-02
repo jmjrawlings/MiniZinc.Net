@@ -90,8 +90,7 @@ public static class Spec
         {
             var status = result.TryGetValue<string>("status");
             string? tag = GetTag(result);
-
-            if (tag is Yaml.TAG_ERROR)
+            if (tag is "test")
             {
                 testCase.ErrorRegex = result.TryGetValue<string>("regex");
                 testCase.ErrorMessage = result.TryGetValue<string>("message");
@@ -107,38 +106,50 @@ public static class Spec
             }
             else if (result.Pop("solution") is { } x)
             {
-                var sols = x.AsListOf<JsonObject>();
-                foreach (var sol in sols)
+                if (allSolutions)
                 {
-                    StripTags(sol);
-                    if (sol.Count == 0)
+                    foreach (var solutionNode in x.AsListOf<JsonObject>())
+                    {
+                        var sol = ParseSolution(solutionNode);
+                        testCase.Solutions ??= new List<JsonObject>();
+                        testCase.Solutions.Add(sol);
+                    }
+                }
+                else
+                {
+                    var solutionNode = x.AsObject();
+                    if (solutionNode.Count > 0)
+                    {
+                        var sol = ParseSolution(solutionNode);
+                        if (status is "OPTIMAL_SOLUTION")
+                            testCase.Type = TestType.Optimise;
+                        testCase.Solutions ??= new List<JsonObject>();
+                        testCase.Solutions.Add(sol);
+                    }
+                    else
                     {
                         testCase.Type = TestType.Satisfy;
-                        break;
                     }
-                    if (status is Yaml.OPTIMAL)
-                        testCase.Type = TestType.Optimise;
                 }
-                testCase.Solutions = sols;
             }
-            else if (result.TryGetValue<string>(Yaml.FLATZINC) is { } fzn)
+            else if (result.TryGetValue<string>("flatzinc") is { } fzn)
             {
                 testCase.Type = TestType.Compile;
                 testCase.OutputFiles ??= new List<string>();
                 testCase.OutputFiles.Add(fzn);
             }
-            else if (result.TryGetValue<string>(Yaml.OUTPUT_MODEL) is { } ozn)
+            else if (result.TryGetValue<string>("outputmodel") is { } ozn)
             {
                 testCase.Type = TestType.OutputModel;
                 testCase.OutputFiles ??= new List<string>();
                 testCase.OutputFiles.Add(ozn);
             }
-            else if (status is Yaml.UNSATISFIABLE)
+            else if (status is "UNSATISFIABLE")
             {
                 testCase.Type = TestType.Unsatisfiable;
                 break;
             }
-            else if (status is Yaml.SATISFIED)
+            else if (status is "SATISFIED")
             {
                 testCase.Type = TestType.Satisfy;
                 break;
@@ -152,6 +163,12 @@ public static class Spec
 
         var nsols = testCase.Solutions?.Count ?? 0;
         return testCase;
+    }
+
+    private static JsonObject ParseSolution(JsonObject node)
+    {
+        var tag = GetTag(node);
+        return node;
     }
 
     /// <summary>
@@ -231,11 +248,11 @@ public static class Spec
         return tag;
     }
 
-    private static void StripTags(JsonNode? node)
-    {
-        node.Walk(o =>
-        {
-            o.Pop(Yaml.TAG);
-        });
-    }
+    // private static void StripTags(JsonNode? node)
+    // {
+    //     node.Walk(o =>
+    //     {
+    //         o.Pop(Yaml.TAG);
+    //     });
+    // }
 }

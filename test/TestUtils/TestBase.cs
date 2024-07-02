@@ -11,9 +11,12 @@ public abstract class TestBase
         _output = output;
     }
 
-    protected void Write(string message)
+    protected void Write(string? message = null)
     {
-        _output.WriteLine(message);
+        if (message is null)
+            _output.WriteLine("");
+        else
+            _output.WriteLine(message);
     }
 
     protected void Write(string template, params object?[] args)
