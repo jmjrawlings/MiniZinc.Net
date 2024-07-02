@@ -225,7 +225,6 @@ public static class Yaml
         {
             _parser.MoveNext();
             var map = new JsonObject();
-            map[TAG] = Tag.Set.ToString();
             var sb = new StringBuilder();
             sb.Append('{');
             int i = 0;
@@ -240,18 +239,29 @@ public static class Yaml
 
             sb.Append('}');
             var dzn = sb.ToString();
-            map["dzn"] = dzn;
-            WriteLine(dzn);
+            map["_set_"] = dzn;
             return map;
         }
 
         private JsonObject ParseRange(Scalar scalar)
         {
-            var map = new JsonObject();
-            map[TAG] = Tag.Range.ToString();
-            map["dzn"] = scalar.Value;
-            WriteLine(map["dzn"]);
-            return map;
+            var tokens = scalar.Value.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            var lower = int.Parse(tokens[0]);
+            var upper = int.Parse(tokens[1]);
+            var sb = new StringBuilder();
+            sb.Append('{');
+
+            for (int item = lower; item <= upper; item++)
+            {
+                if (item > lower)
+                    sb.Append(',');
+                sb.Append(item);
+            }
+
+            sb.Append('}');
+            var set = new JsonObject();
+            set["_set_"] = sb.ToString();
+            return set;
         }
 
         private JsonNode ParseSequence(SequenceStart start, Tag? tag, bool inSolution = false)
