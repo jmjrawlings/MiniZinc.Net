@@ -321,7 +321,7 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/compilation/set2iter.mzn";
 		var solutions = new List<string> {
-			"""{"x":{"__tag__":"Range","dzn":"2..3"},"y":{"__tag__":"Range","dzn":"4..5"}}""",
+			"""{"x":{"_set_":"{2,3}"},"y":{"_set_":"{4,5}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -503,7 +503,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/general/array_union_intersect_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":[{"__tag__":"Set","dzn":"{A}"},{"__tag__":"Set","dzn":"{B}"},{"__tag__":"Set","dzn":"{C}"}]}""",
+			"""{"x":[{"_set_":"{A}"},{"_set_":"{B}"},{"_set_":"{C}"}]}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -752,7 +752,7 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/general/nosets_empty.mzn";
 		var solutions = new List<string> {
-			"""{"x":{"__tag__":"Set","dzn":"{}"}}""",
+			"""{"x":{"_set_":"{}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -764,7 +764,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/general/overload_bottom.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":{"__tag__":"Set","dzn":"{}"}}""",
+			"""{"x":{"_set_":"{}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -844,7 +844,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/general/range_var_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x_to_y":{"__tag__":"Set","dzn":"{A,B,C}"}}""",
+			"""{"x_to_y":{"_set_":"{A,B,C}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -880,7 +880,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/general/test_mod_bounds.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"b":{"__tag__":"Range","dzn":"0..2"},"c":{"__tag__":"Range","dzn":"-2..2"},"d":{"__tag__":"Range","dzn":"-2..0"}}""",
+			"""{"b":{"_set_":"{0,1,2}"},"c":{"_set_":"{-2,-1,0,1,2}"},"d":{"_set_":"{-2,-1,0}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -920,7 +920,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/general/test_set_lt_2.mzn";
 		var solver = "coin-bc";
 		var solutions = new List<string> {
-			"""{"sets":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{1}"},{"__tag__":"Range","dzn":"1..2"},{"__tag__":"Range","dzn":"1..3"},{"__tag__":"Set","dzn":"{1,3}"},{"__tag__":"Set","dzn":"{2}"},{"__tag__":"Range","dzn":"2..3"},{"__tag__":"Set","dzn":"{3}"}]}""",
+			"""{"sets":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{1,2}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -934,7 +934,7 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/general/test_set_lt_3.mzn";
 		var solutions = new List<string> {
-			"""{"y":{"__tag__":"Set","dzn":"{1,4}"}}""",
+			"""{"y":{"_set_":"{1,4}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -946,7 +946,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/general/test_to_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"par_int":"b","var_int":"c","array_of_int":["a","b","c"],"array_of_var_int":["a","b","c"],"array_of_set_of_int":[{"__tag__":"Set","dzn":"{a}"},{"__tag__":"Set","dzn":"{a,b}"},{"__tag__":"Set","dzn":"{a,b,c}"}],"array_of_var_set_of_int":[{"__tag__":"Set","dzn":"{a}"},{"__tag__":"Set","dzn":"{a,b}"},{"__tag__":"Set","dzn":"{a,b,c}"}],"set_of_int":{"__tag__":"Set","dzn":"{a,b,c}"},"var_set_of_int":{"__tag__":"Set","dzn":"{a,b,c}"}}""",
+			"""{"par_int":"b","var_int":"c","array_of_int":["a","b","c"],"array_of_var_int":["a","b","c"],"array_of_set_of_int":[{"_set_":"{a}"},{"_set_":"{a,b}"},{"_set_":"{a,b,c}"}],"array_of_var_set_of_int":[{"_set_":"{a}"},{"_set_":"{a,b}"},{"_set_":"{a,b,c}"}],"set_of_int":{"_set_":"{a,b,c}"},"var_set_of_int":{"_set_":"{a,b,c}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -990,8 +990,8 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/general/test_var_set_element.mzn";
 		var solutions = new List<string> {
-			"""{"a":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"}],"s":{"__tag__":"Set","dzn":"{}"},"x":3}""",
-			"""{"a":[{"__tag__":"Range","dzn":"1..5"},{"__tag__":"Range","dzn":"1..5"},{"__tag__":"Range","dzn":"1..5"}],"s":{"__tag__":"Range","dzn":"1..5"},"x":2}""",
+			"""{"a":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}],"s":{"_set_":"{}"},"x":3}""",
+			"""{"a":[{"_set_":"{1,2,3,4,5}"},{"_set_":"{1,2,3,4,5}"},{"_set_":"{1,2,3,4,5}"}],"s":{"_set_":"{1,2,3,4,5}"},"x":2}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1147,7 +1147,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/json/json_input_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"int_set":{"__tag__":"Set","dzn":"{1,2,4,5,7,9}"},"float_set":{"__tag__":"Set","dzn":"{1.0,2.0}"},"array_1d_float":[1.0,2.0,3.0],"array_2d_bool":[[true]],"array_3d_int":[[[1,2],[3,4]],[[5,6],[7,8]]],"array_opt_float":[1.5,null],"x":1,"y":2.0,"z":true,"o":null}""",
+			"""{"int_set":{"_set_":"{1,2,4,5,7,9}"},"float_set":{"_set_":"{1.0,2.0}"},"array_1d_float":[1.0,2.0,3.0],"array_2d_bool":[[true]],"array_3d_int":[[[1,2],[3,4]],[[5,6],[7,8]]],"array_opt_float":[1.5,null],"x":1,"y":2.0,"z":true,"o":null}""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_input_1.json\"",
@@ -1226,7 +1226,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/optional/test_count_set.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"i":0,"x":{"__tag__":"Range","dzn":"6..10"}}""",
+			"""{"i":0,"x":{"_set_":"{6,7,8,9,10}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1652,8 +1652,8 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/regression/array_set_element_nosets.mzn";
 		var solutions = new List<string> {
-			"""{"x":1,"y":[{"__tag__":"Set","dzn":"{1}"},{"__tag__":"Set","dzn":"{2}"},{"__tag__":"Set","dzn":"{3}"}],"z":{"__tag__":"Set","dzn":"{1}"}}""",
-			"""{"x":3,"y":[{"__tag__":"Set","dzn":"{1}"},{"__tag__":"Set","dzn":"{2}"},{"__tag__":"Set","dzn":"{3}"}],"z":{"__tag__":"Set","dzn":"{3}"}}""",
+			"""{"x":1,"y":[{"_set_":"{1}"},{"_set_":"{2}"},{"_set_":"{3}"}],"z":{"_set_":"{1}"}}""",
+			"""{"x":3,"y":[{"_set_":"{1}"},{"_set_":"{2}"},{"_set_":"{3}"}],"z":{"_set_":"{3}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -1667,7 +1667,7 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/regression/array_var_set_element_nosets.mzn";
 		var solutions = new List<string> {
-			"""{"x":1,"y":[{"__tag__":"Range","dzn":"1..3"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{1}"}],"z":{"__tag__":"Range","dzn":"1..3"}}""",
+			"""{"x":1,"y":[{"_set_":"{1,2,3}"},{"_set_":"{}"},{"_set_":"{1}"}],"z":{"_set_":"{1,2,3}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2273,7 +2273,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/regression/github_664.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":{"__tag__":"Set","dzn":"{1}"}}""",
+			"""{"x":{"_set_":"{1}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2463,7 +2463,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/regression/github_693_part2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{2}"},{"__tag__":"Set","dzn":"{1}"},{"__tag__":"Range","dzn":"1..2"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2}"},{"_set_":"{1}"},{"_set_":"{1,2}"}]}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2475,7 +2475,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/regression/github_700.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"c":{"__tag__":"Set","dzn":"{1}"},"d":{"__tag__":"Range","dzn":"1..2"}}""",
+			"""{"c":{"_set_":"{1}"},"d":{"_set_":"{1,2}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2509,8 +2509,8 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/regression/github_728.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"wanted":{"__tag__":"Set","dzn":"{1}"}}""",
-			"""{"wanted":{"__tag__":"Set","dzn":"{4}"}}""",
+			"""{"wanted":{"_set_":"{1}"}}""",
+			"""{"wanted":{"_set_":"{4}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2750,7 +2750,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/regression/github_809.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"bar":null,"biz":{"__tag__":"Set","dzn":"{B}"}}""",
+			"""{"bar":null,"biz":{"_set_":"{B}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2846,7 +2846,7 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/regression/nosets_set_search.mzn";
 		var solutions = new List<string> {
-			"""{"x":{"__tag__":"Range","dzn":"1..3"}}""",
+			"""{"x":{"_set_":"{1,2,3}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2965,9 +2965,9 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/regression/subsets_100.mzn";
 		var solutions = new List<string> {
-			"""{"s":{"__tag__":"Range","dzn":"1..9"},"t":{"__tag__":"Set","dzn":"{45}"},"s_total":45,"t_total":45}""",
-			"""{"s":{"__tag__":"Set","dzn":"{100}"},"t":{"__tag__":"Set","dzn":"{49,51}"},"s_total":100,"t_total":100}""",
-			"""{"s":{"__tag__":"Set","dzn":"{1,2,40,56,94}"},"t":{"__tag__":"Set","dzn":"{3,93,97}"},"s_total":193,"t_total":193}""",
+			"""{"s":{"_set_":"{1,2,3,4,5,6,7,8,9}"},"t":{"_set_":"{45}"},"s_total":45,"t_total":45}""",
+			"""{"s":{"_set_":"{100}"},"t":{"_set_":"{49,51}"},"s_total":100,"t_total":100}""",
+			"""{"s":{"_set_":"{1,2,40,56,94}"},"t":{"_set_":"{3,93,97}"},"s_total":193,"t_total":193}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -2991,7 +2991,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/regression/test_bug72.mzn";
 		var solver = "chuffed";
 		var solutions = new List<string> {
-			"""{"x":{"__tag__":"Set","dzn":"{1}"},"b":true}""",
+			"""{"x":{"_set_":"{1}"},"b":true}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3183,9 +3183,9 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/regression/var_self_assign_bug.mzn";
 		var solutions = new List<string> {
-			"""{"partitions":[{"__tag__":"Set","dzn":"{1,2,3}"},{"__tag__":"Set","dzn":"{1,2,3}"},{"__tag__":"Set","dzn":"{1,2,3}"}]}""",
-			"""{"partitions":[{"__tag__":"Range","dzn":"1..3"},{"__tag__":"Range","dzn":"1..3"},{"__tag__":"Range","dzn":"1..3"}]}""",
-			"""{"partitions":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"}]}""",
+			"""{"partitions":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"partitions":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"partitions":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3491,7 +3491,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/types/enum_refl.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":{"__tag__":"Set","dzn":"{}"},"ubx":{"__tag__":"Set","dzn":"{a,b,c}"},"y":"a","lby":"a","uby":"c","domy":{"__tag__":"Set","dzn":"{a,b,c}"}}""",
+			"""{"x":{"_set_":"{}"},"ubx":{"_set_":"{a,b,c}"},"y":"a","lby":"a","uby":"c","domy":{"_set_":"{a,b,c}"}}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -3773,7 +3773,7 @@ public class AllSolutionsTests : ClientTest
 		var path = "unit/types/struct_array_coercion.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"mzn_enum_X":[["A",[]],["B",[]],["G",[[0,{"__tag__":"Range","dzn":"1..3"}]]]]}""",
+			"""{"mzn_enum_X":[["A",[]],["B",[]],["G",[[0,{"_set_":"{1,2,3}"}]]]]}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);
@@ -4238,10 +4238,10 @@ public class AllSolutionsTests : ClientTest
 	{
 		var path = "unit/globals/int_set_channel/test_int_set_channel2.mzn";
 		var solutions = new List<string> {
-			"""{"x":[1,1,1,1,1,1,1,1,1],"y":[{"__tag__":"Range","dzn":"1..9"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"}]}""",
-			"""{"x":[5,3,1,1,1,1,1,1,1],"y":[{"__tag__":"Range","dzn":"3..9"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{2}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{1}"}]}""",
-			"""{"x":[2,2,2,2,2,2,2,2,2],"y":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Range","dzn":"1..9"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"}]}""",
-			"""{"x":[5,5,5,5,5,5,5,5,5],"y":[{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Set","dzn":"{}"},{"__tag__":"Range","dzn":"1..9"}]}""",
+			"""{"x":[1,1,1,1,1,1,1,1,1],"y":[{"_set_":"{1,2,3,4,5,6,7,8,9}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
+			"""{"x":[5,3,1,1,1,1,1,1,1],"y":[{"_set_":"{3,4,5,6,7,8,9}"},{"_set_":"{}"},{"_set_":"{2}"},{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[2,2,2,2,2,2,2,2,2],"y":[{"_set_":"{}"},{"_set_":"{1,2,3,4,5,6,7,8,9}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
+			"""{"x":[5,5,5,5,5,5,5,5,5],"y":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{1,2,3,4,5,6,7,8,9}"}]}""",
 			};
 		var args = new List<string>();
 		await TestAllSolutions(path, solver, solutions, args);

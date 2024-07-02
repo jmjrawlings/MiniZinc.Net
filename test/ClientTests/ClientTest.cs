@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Tests;
+﻿using System.Text;
+
+namespace MiniZinc.Tests;
 
 using System.Text.Json.Nodes;
 using Parser.Syntax;
@@ -184,10 +186,11 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// </summary>
     public bool CheckSolution(ExpressionSyntax expr, JsonNode node)
     {
+        int i = 0;
         switch (node, expr)
         {
             case (JsonValue val, IntLiteralSyntax iexpr):
-                if (!val.TryGetValue(out int i))
+                if (!val.TryGetValue(out i))
                     return Error(val, iexpr);
                 if (i != iexpr.Value)
                     return Error(i, iexpr);
@@ -218,6 +221,34 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
                     var a = 2;
                 }
                 return false;
+
+            case (JsonObject sobj, _) when sobj.ContainsKey("_set_"):
+                var expectedDzn = sobj["_set_"]!.ToString();
+                string actualDzn = "";
+                var sb = new StringBuilder();
+                switch (expr)
+                {
+                    case RangeLiteralSyntax rng:
+                        sb.Append('{');
+                        int lower = rng.Lower.Start.IntValue;
+                        int upper = rng.Upper.Start.IntValue;
+                        for (int j = lower; j <= upper; j++)
+                        {
+                            if (++i < 1)
+                                sb.Append(',');
+                            sb.Append(j);
+                        }
+
+                        sb.Append('}');
+                        actualDzn = sb.ToString();
+                        break;
+                    default:
+                        actualDzn = expr.ToString();
+                        break;
+                }
+                if (expectedDzn != actualDzn)
+                    return Error(expectedDzn, actualDzn);
+                break;
 
             case (JsonObject obj, RecordLiteralSyntax rec):
                 foreach (var (id, fieldExpr) in rec.Fields)

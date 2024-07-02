@@ -361,10 +361,12 @@ public class Model
 
             case DeclarationSyntax node:
                 name = node.Identifier.ToString();
-                if (_namespace.TryGetValue(name, out old))
-                    Error($"Variable {name} was already declared as {node.Type.SourceText}");
-                else
+                if (!_namespace.TryGetValue(name, out old))
                     _namespace[name] = node;
+                else if (old is AssignmentSyntax && node.Body is null)
+                    _namespace[name] = node;
+                else
+                    Error($"Variable {name} was already declared as {node.Type.SourceText}");
 
                 AddSourceText(node);
                 break;
