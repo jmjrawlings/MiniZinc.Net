@@ -7,28 +7,6 @@ public sealed class AllSolutionsTestsBuilder : ClientTestsBuilder
     public AllSolutionsTestsBuilder(TestSpec spec)
         : base("AllSolutionsTests", spec)
     {
-        using (
-            Function(
-                "async Task TestAllSolutions",
-                "string path",
-                "string solver",
-                "List<string> solutions",
-                "List<string> args"
-            )
-        )
-        {
-            WriteMessage("path");
-            WriteSection();
-            NewLine();
-            Var("model", "Model.FromFile(path)");
-            WriteMessage("model.SourceText");
-            WriteSection();
-            NewLine();
-            Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args);");
-            NewLine();
-            WriteAllSolutionCheck();
-        }
-
         foreach (var testCase in spec.TestCases)
         {
             if (testCase.Type is not TestType.AnySolution)
@@ -37,13 +15,8 @@ public sealed class AllSolutionsTestsBuilder : ClientTestsBuilder
             if (GetTestInfo(testCase) is not { } info)
                 continue;
 
-            WriteTest(info);
+            using var _ = WriteTestHeader(info);
+            WriteLn("await TestAllSolutions(path, solver, solutions, args);");
         }
-    }
-
-    void WriteTest(TestCaseInfo info)
-    {
-        using var _ = WriteTestHeader(info);
-        WriteLn("await TestAllSolutions(path, solver, solutions, args);");
     }
 }

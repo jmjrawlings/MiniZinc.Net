@@ -6,56 +6,11 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
 */
 #nullable enable
 
-public class OptimiseTests : IClassFixture<ClientFixture>
+public class OptimiseTests : ClientTest
 {
-	private readonly MiniZincClient MiniZinc;
-	private readonly ITestOutputHelper _output;
 
-	public OptimiseTests(ClientFixture fixture, ITestOutputHelper output)
+	public OptimiseTests(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)
 	{
-		MiniZinc = fixture.MiniZinc;
-		_output = output;
-	}
-
-	async Task TestOptimise(string path, string solver, List<string> solutions, List<string> args)
-	{
-		_output.WriteLine(path);
-		_output.WriteLine(new string('-',80));
-		var model = Model.FromFile(path);
-		_output.WriteLine(model.SourceText);
-		_output.WriteLine(new string('-',80));
-
-		var options = SolveOptions.Create(solverId:solver).AddArgs(args);
-
-		var result = await MiniZinc.Solve(model, options);
-		_output.WriteLine(result.Command);
-		result.IsSuccess.Should().BeTrue();
-		if (solutions.Count is 0)
-		{
-			return;
-		}
-
-		var anySolution = false;
-		foreach (var dzn in solutions)
-		{
-			var parsed = Parser.ParseDataString(dzn, out var data);;
-			parsed.Ok.Should().BeTrue();
-			if (result.Data.Equals(data))
-			{
-				anySolution = true;
-				break;
-			}
-
-			_output.WriteLine("EXPECTED:");
-			_output.WriteLine(data.Write());
-			_output.WriteLine("");
-			_output.WriteLine("ACTUAL:");
-			_output.WriteLine(result.Data.Write());
-			_output.WriteLine(new string('-',80));
-		}
-
-		anySolution.Should().BeTrue();
-		result.Status.Should().Be(SolveStatus.Optimal);
 	}
 
 	[Fact(DisplayName="unit/division/test_div12.mzn")]
@@ -64,7 +19,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var path = "unit/division/test_div12.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"aCostSupport=0;mdl8_Z=0;",
+			"""{"aCostSupport":0,"mdl8_Z":0}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);
@@ -76,7 +31,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var path = "unit/general/infinite_domain_bind.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"x=10;",
+			"""{"x":10}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);
@@ -90,7 +45,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/test-search1.mzn";
 		var solutions = new List<string> {
-			"x=3;y=8;",
+			"""{"x":3,"y":8}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);
@@ -103,7 +58,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/test_times_int_float_eq.mzn";
 		var solutions = new List<string> {
-			"objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;",
+			"""{"objective":-5,"x":5,"y":6,"z":30,"xf":5.0,"yf":6.0}""",
 			};
 		var args = new List<string>{
 			"-D QuadrFloat=true;QuadrIntCard=0",
@@ -118,7 +73,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/test_times_int_float_eq__defaultopt.mzn";
 		var solutions = new List<string> {
-			"objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;",
+			"""{"objective":-5,"x":5,"y":6,"z":30,"xf":5.0,"yf":6.0}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);
@@ -131,7 +86,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/complete.mzn";
 		var solutions = new List<string> {
-			"x=3;",
+			"""{"x":3}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -147,7 +102,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/last_val_bool.mzn";
 		var solutions = new List<string> {
-			"x=4;y=true;",
+			"""{"x":4,"y":true}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -162,7 +117,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var path = "unit/on_restart/last_val_float.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"x=4;y=0.85;",
+			"""{"x":4,"y":0.85}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -178,7 +133,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/last_val_int.mzn";
 		var solutions = new List<string> {
-			"x=4;y=3;",
+			"""{"x":4,"y":3}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -194,7 +149,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/last_val_set.mzn";
 		var solutions = new List<string> {
-			"x=4;y={12,4,8};",
+			"""{"x":4,"y":"{12,4,8}"}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -210,7 +165,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/sol_bool.mzn";
 		var solutions = new List<string> {
-			"x=3;is_even=false;y=true;",
+			"""{"x":3,"is_even":false,"y":true}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -225,7 +180,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var path = "unit/on_restart/sol_float.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"x=3;y=2.0;",
+			"""{"x":3,"y":2.0}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -241,7 +196,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/sol_int.mzn";
 		var solutions = new List<string> {
-			"x=3;y=2;",
+			"""{"x":3,"y":2}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -257,7 +212,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/on_restart/sol_set.mzn";
 		var solutions = new List<string> {
-			"x={};y={1};",
+			"""{"x":"{}","y":"{1}"}""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -272,10 +227,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var path = "unit/regression/ts_bug.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"cost=48;s=[4,1,2,3,6,5];dur=[{24},{12,4},{13,4},{13,4},{13},{13}];bef=[{},{24},{12,4},{12,3,4},{12,3,4},{12,3,4}];aft=[{12,3,4},{12,3,4},{13,4},{13,4},{13},{}];a=[{12},{23},{34},{24},{13},{14}];",
-			"cost=48;s=[4,1,2,3,6,5];dur=[{24},{12,4},{13,4},{13,4},{13},{13}];bef=[{},{24},{12,4},(range: 1..4),(range: 1..4),(range: 1..4)];aft=[(range: 1..4),(range: 1..4),{13,4},{13,4},{13},{}];a=[(range: 1..2),(range: 2..3),(range: 3..4),{24},{13},{14}];",
-			"cost=48;s=[5,3,2,1,4,6];dur=[{13},{13,4},{12,4},{12,4},{14},{14}];bef=[{},{13},{13,4},(range: 1..4),(range: 1..4),(range: 1..4)];aft=[(range: 1..4),(range: 1..4),{12,4},{12,4},{14},{}];a=[(range: 1..2),(range: 2..3),(range: 3..4),{24},{13},{14}];",
-			"cost=48;s=[4,1,2,3,5,6];dur=[{24},{12,4},{13,4},{13,4},{14},{14}];bef=[{},{24},{12,4},(range: 1..4),(range: 1..4),(range: 1..4)];aft=[(range: 1..4),(range: 1..4),{13,4},{13,4},{14},{}];a=[(range: 1..2),(range: 2..3),(range: 3..4),{24},{13},{14}];",
+			"""{"cost":48,"s":[4,1,2,3,5,6],"dur":["{24}","{12,4}","{13,4}","{13,4}","{14}","{14}"],"bef":["{}","{24}","{12,4}",{"range":"1..4"},{"range":"1..4"},{"range":"1..4"}],"aft":[{"range":"1..4"},{"range":"1..4"},"{13,4}","{13,4}","{14}","{}"],"a":[{"range":"1..2"},{"range":"2..3"},{"range":"3..4"},"{24}","{13}","{14}"]}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);
@@ -287,7 +239,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var path = "unit/types/record_var_element.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"idx=iE;selected=(a: 6, b: (c: 3, d: 3));",
+			"""{"idx":"iE","selected":{"a":6,"b":{"c":3,"d":3}}}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);
@@ -299,7 +251,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 		var path = "unit/types/tuple_var_element.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"idx=iE;selected=[6,[3,3]];",
+			"""{"idx":"iE","selected":[6,[3,3]]}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);
@@ -312,7 +264,7 @@ public class OptimiseTests : IClassFixture<ClientFixture>
 	{
 		var path = "examples/radiation.mzn";
 		var solutions = new List<string> {
-			"Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[[[0,1,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,0,0,0,0,0,0,0,0,0],[0,0,1,0,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,1,0,0,0,0,0,0,0,0,0]],[[1,0,1,1,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,0,1,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,1,0,0,0,0,0,0,0,0,0,0],[2,0,1,1,0,0,0,0,0,0,0,0,0,0],[0,0,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,1,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0]]];objective=175;",
+			"""{"Beamtime":21,"K":7,"N":[2,1,1,1,2,0,0,0,0,0,0,0,0,0],"Q":[[[0,1,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,0,0,0,0,0,0,0,0,0],[0,0,1,0,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,1,0,0,0,0,0,0,0,0,0]],[[1,0,1,1,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,0,1,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,1,0,0,0,0,0,0,0,0,0,0],[2,0,1,1,0,0,0,0,0,0,0,0,0,0],[0,0,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,1,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0]]],"objective":175}""",
 			};
 		var args = new List<string>();
 		await TestOptimise(path, solver, solutions, args);

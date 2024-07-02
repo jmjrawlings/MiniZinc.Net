@@ -6,58 +6,11 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
 */
 #nullable enable
 
-public class SatisfyTests : IClassFixture<ClientFixture>
+public class SatisfyTests : ClientTest
 {
-	private readonly MiniZincClient MiniZinc;
-	private readonly ITestOutputHelper _output;
 
-	public SatisfyTests(ClientFixture fixture, ITestOutputHelper output)
+	public SatisfyTests(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)
 	{
-		MiniZinc = fixture.MiniZinc;
-		_output = output;
-	}
-
-	async Task TestSatisfy(string path, string solver, List<string> solutions, List<string> args)
-	{
-		_output.WriteLine(path);
-		_output.WriteLine(new string('-',80));
-
-		var model = Model.FromFile(path);
-		model.Satisfy();
-		_output.WriteLine(model.SourceText);
-		_output.WriteLine(new string('-',80));
-
-		var options = SolveOptions.Create(solverId:solver).AddArgs(args);;
-
-		var result = await MiniZinc.Solve(model, options);
-		_output.WriteLine(result.Command);
-		result.IsSuccess.Should().BeTrue();
-		if (solutions.Count is 0)
-		{
-			return;
-		}
-
-		var anySolution = false;
-		foreach (var dzn in solutions)
-		{
-			var parsed = Parser.ParseDataString(dzn, out var data);;
-			parsed.Ok.Should().BeTrue();
-			if (result.Data.Equals(data))
-			{
-				anySolution = true;
-				break;
-			}
-
-			_output.WriteLine("EXPECTED:");
-			_output.WriteLine(data.Write());
-			_output.WriteLine("");
-			_output.WriteLine("ACTUAL:");
-			_output.WriteLine(result.Data.Write());
-			_output.WriteLine(new string('-',80));
-		}
-
-		anySolution.Should().BeTrue();
-		result.Status.Should().Be(SolveStatus.Satisfied);
 	}
 
 	[Fact(DisplayName="unit/compilation/par_arg_out_of_bounds.mzn")]
@@ -65,7 +18,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/par_arg_out_of_bounds.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -75,7 +30,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/compilation/poly_overload.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -85,7 +42,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/general/comprehension_var_ub.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -168,7 +127,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_globals_typecheck_globals(string solver)
 	{
 		var path = "unit/globals/typecheck_globals.mzn";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -178,7 +139,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/coerce_enum_str.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>{
 			"--data \"unit/json/coerce_enum_str.json\"",
 		};
@@ -190,7 +153,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/coerce_indices.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>{
 			"--data \"unit/json/coerce_indices.json\"",
 		};
@@ -202,7 +167,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/coerce_set.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>{
 			"--data \"unit/json/coerce_set.json\"",
 		};
@@ -214,7 +181,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/json_array2d_set.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>{
 			"--data \"unit/json/json_array2d_set.json\"",
 		};
@@ -226,7 +195,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/record_json_input.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>{
 			"--data \"unit/json/record_json_input.json\"",
 		};
@@ -238,7 +209,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/json/tuple_json_input.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>{
 			"--data \"unit/json/tuple_json_input.json\"",
 		};
@@ -270,7 +243,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/opt_array_access.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -280,7 +255,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/opt_math_abs.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -290,7 +267,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/optional/opt_math_neg.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -300,7 +279,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/binop_mult_gclock.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -311,7 +292,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_regression_bug212(string solver)
 	{
 		var path = "unit/regression/bug212.mzn";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -343,7 +326,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_639_part2.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -375,7 +360,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_726.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -385,7 +372,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_752.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -395,7 +384,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_761.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -405,7 +396,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_778.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -415,7 +408,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_783.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>{
 			"-O2",
 		};
@@ -437,7 +432,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/github_806.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -447,7 +444,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/let_domain_from_generator.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -457,7 +456,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/multi_goal_hierarchy_error.mzn";
 		var solver = "coin-bc";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -467,7 +468,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/output_2d_array_enum.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -477,7 +480,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/par_opt_dom.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -487,7 +492,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/regression/test_bug_637.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -497,7 +504,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/types/enum_decl.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -557,7 +566,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "unit/globals/cumulative/github_589.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>{
 			"-G std",
 		};
@@ -570,7 +581,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	public async Task test_solve_unit_globals_nvalue_globals_nvalue_2(string solver)
 	{
 		var path = "unit/globals/nvalue/globals_nvalue.mzn";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}
@@ -580,7 +593,9 @@ public class SatisfyTests : IClassFixture<ClientFixture>
 	{
 		var path = "examples/radiation.mzn";
 		var solver = "coin-bc";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{}""",
+			};
 		var args = new List<string>();
 		await TestSatisfy(path, solver, solutions, args);
 	}

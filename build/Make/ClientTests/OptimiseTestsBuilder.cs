@@ -1,34 +1,12 @@
 ﻿namespace Make;
 
 using LibMiniZinc.Tests;
-using MiniZinc.Parser;
 
 public sealed class OptimiseTestsBuilder : ClientTestsBuilder
 {
     public OptimiseTestsBuilder(TestSpec spec)
         : base("OptimiseTests", spec)
     {
-        using (
-            Function(
-                "async Task TestOptimise",
-                "string path",
-                "string solver",
-                "List<string> solutions",
-                "List<string> args"
-            )
-        )
-        {
-            WriteMessage("path");
-            WriteSection();
-            Var("model", "Model.FromFile(path)");
-            WriteMessage("model.SourceText");
-            WriteSection();
-            NewLine();
-            Var("options", "SolveOptions.Create(solverId:solver).AddArgs(args)");
-            NewLine();
-            WriteAnySolutionCheck();
-            WriteLn("result.Status.Should().Be(SolveStatus.Optimal);");
-        }
         foreach (var testCase in spec.TestCases)
         {
             if (testCase.Type is not TestType.Optimise)
@@ -37,13 +15,8 @@ public sealed class OptimiseTestsBuilder : ClientTestsBuilder
             if (GetTestInfo(testCase) is not { } info)
                 continue;
 
-            WriteTest(info);
+            using var _ = WriteTestHeader(info);
+            WriteLn("await TestOptimise(path, solver, solutions, args);");
         }
-    }
-
-    void WriteTest(TestCaseInfo info)
-    {
-        using var _ = WriteTestHeader(info);
-        WriteLn("await TestOptimise(path, solver, solutions, args);");
     }
 }

@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 
 public abstract class TestBase
 {
-    private readonly ITestOutputHelper _output;
+    protected readonly ITestOutputHelper _output;
 
     protected TestBase(ITestOutputHelper output)
     {
@@ -19,5 +19,10 @@ public abstract class TestBase
     protected void Write(string template, params object?[] args)
     {
         _output.WriteLine(template, args);
+    }
+
+    protected void WriteSection()
+    {
+        _output.WriteLine(new string('-', 120));
     }
 }
