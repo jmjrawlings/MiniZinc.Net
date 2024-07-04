@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-public enum TypeKind
+public enum TypeKind : byte
 {
     Any,
     Int,
@@ -18,5 +18,17 @@ public enum TypeKind
     Array,
     List,
     Composite,
-    Set
+    Set,
+    Enum
+}
+
+public enum DeclareKind : byte
+{
+    Value,
+    Function,
+    Test,
+    Predicate,
+    Annotation,
+    Enum,
+    TypeAlias
 }

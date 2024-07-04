@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed class Array1DSyntax : ArraySyntax
+public sealed class Array1dSyntax : ArraySyntax
 {
-    public Array1DSyntax(in Token start)
+    public Array1dSyntax(in Token start)
         : base(start) { }
 
     public bool Indexed { get; set; }
