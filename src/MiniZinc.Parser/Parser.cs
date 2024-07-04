@@ -887,7 +887,7 @@ public sealed class Parser
     internal bool ParseExpr(
         [NotNullWhen(true)] out ExpressionSyntax? expr,
         Assoc associativity = 0,
-        ushort precedence = ushort.MaxValue,
+        ushort precedence = 0,
         bool typeInst = false
     )
     {
@@ -906,12 +906,12 @@ public sealed class Parser
                 case Assoc.None when associativity is Assoc.None && prec == precedence:
                     return Error($"Invalid application of operator {op} due to precedence rules");
 
-                case Assoc.Left when prec >= precedence:
-                case Assoc.None when prec >= precedence:
+                case Assoc.Left when prec <= precedence:
+                case Assoc.None when prec <= precedence:
                     return true;
 
-                case Assoc.None when prec > precedence:
-                case Assoc.Right when prec > precedence:
+                case Assoc.None when prec < precedence:
+                case Assoc.Right when prec < precedence:
                     return true;
             }
 
@@ -1001,9 +1001,9 @@ public sealed class Parser
             TokenKind.TILDE_EQUALS => (Operator.TildeEqual, Assoc.Left, 10),
             _ => default
         };
-        // TODO
-        ushort uprec = (ushort)(2000 - prec);
-        return (op, assoc, uprec);
+        // We invert the ordering of the above so that high number == higher binding
+        // because it doesn't make sense to me otherwise
+        return (op, assoc, (ushort)(2000 - prec));
     }
 
     /// <summary>
