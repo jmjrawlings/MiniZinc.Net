@@ -230,6 +230,10 @@ public sealed class Parser
     internal bool ParseData(out DataSyntax data)
     {
         Dictionary<string, ExpressionSyntax> variables = new();
+        data = new DataSyntax(variables);
+
+        if (_kind is TokenKind.EOF)
+            return true;
 
         while (ParseIdent(out var ident))
         {
@@ -253,7 +257,6 @@ public sealed class Parser
             break;
         }
 
-        data = new DataSyntax(variables);
         if (_errorMessage is null)
             return true;
         else
@@ -275,7 +278,7 @@ public sealed class Parser
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, out var dec))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.Predicate, out var dec))
             return false;
 
         node = dec;
@@ -297,7 +300,7 @@ public sealed class Parser
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, out var decl))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.Test, out var decl))
             return false;
 
         node = decl;
@@ -323,7 +326,7 @@ public sealed class Parser
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, out var decl))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.Function, out var decl))
             return false;
 
         node = decl;
@@ -339,17 +342,16 @@ public sealed class Parser
         in Token start,
         in IdentifierSyntax identifier,
         in TypeSyntax type,
+        in DeclareKind kind,
         out DeclarationSyntax node
     )
     {
         node = null!;
-        bool isFunction = false;
         IdentifierSyntax? ann = null;
         List<ParameterSyntax>? parameters = null;
 
         if (_kind is TokenKind.OPEN_PAREN)
         {
-            isFunction = true;
             if (!ParseParameters(out parameters))
                 return false;
 
@@ -372,13 +374,12 @@ public sealed class Parser
             if (!ParseExpr(out body))
                 return false;
 
-        node = new DeclarationSyntax(start, type, identifier)
+        node = new DeclarationSyntax(start, kind, type, identifier)
         {
             Annotations = anns,
             Ann = ann,
             Parameters = parameters,
-            Body = body,
-            IsFunction = isFunction
+            Body = body
         };
         return true;
     }
@@ -399,7 +400,7 @@ public sealed class Parser
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, out var decl))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.Annotation, out var decl))
             return false;
 
         ann = decl;
@@ -425,101 +426,85 @@ public sealed class Parser
             return false;
 
         // Enum without assignments are valid
-        if (_kind is TokenKind.EOL)
+        if (!Skip(TokenKind.EQUAL))
         {
-            result = new EnumDeclarationSyntax(start, name);
+            result = new DeclarationSyntax(start, DeclareKind.Enum, null, name)
+            {
+                Annotations = anns
+            };
             return true;
         }
 
-        if (!Expect(TokenKind.EQUAL))
+        if (!ParseEnumCases(out var cases))
             return false;
 
-        var @enum = new EnumDeclarationSyntax(start, name);
-        @enum.Annotations = anns;
-
-        cases:
-        EnumCasesSyntax @case;
-        var caseStart = _token;
-
-        // Named cases: 'enum Dir = {N,S,E,W};`
-        if (Skip(TokenKind.OPEN_BRACE))
+        result = new DeclarationSyntax(start, DeclareKind.Enum, null, name)
         {
-            var names = new List<IdentifierSyntax>();
-            while (_kind is not TokenKind.CLOSE_BRACE)
+            Annotations = anns,
+            Body = cases
+        };
+        return true;
+    }
+
+    private bool ValidateEnumCases(ExpressionSyntax expr)
+    {
+        switch (expr)
+        {
+            // Named cases: 'enum Dir = {N,S,E,W};`
+            case SetLiteralSyntax set:
+                foreach (var item in set.Elements)
+                {
+                    if (item is not IdentifierSyntax name)
+                        return Expected($"Enum case name, got {item}");
+                }
+                break;
+
+            // Underscore enum `enum A = _(1..10);`
+            case CallSyntax { Identifier.Kind: TokenKind.UNDERSCORE } call:
+                if (call.Args is not { Count: 1 })
+                    return Expected($"Single argument call to _, got {call.Args}");
+                var arg = call.Args[0];
+                break;
+
+            // Anonymous enum: `anon_enum(10);`
+            case CallSyntax { Name: "anon_enum" } call:
+                if (call.Args is not { Count: 1 })
+                    return Expected($"Single argument call to _, got {call.Args}");
+                var anonArg = call.Args[0];
+                break;
+
+            // Complex enum: `C(1..10)`
+            case CallSyntax call:
+                break;
+
+            // ++
+            case BinaryOperatorSyntax
             {
-                if (!ParseIdent(out name))
+                Left: var left,
+                Operator: Operator.Concat,
+                Right: var right
+            }:
+                if (!ValidateEnumCases(left))
                     return false;
-                names.Add(name);
+                if (!ValidateEnumCases(right))
+                    return false;
+                break;
 
-                if (!Skip(TokenKind.COMMA))
-                    break;
-            }
-
-            if (!Expect(TokenKind.CLOSE_BRACE))
-                return false;
-            @case = new EnumCasesSyntax(caseStart, EnumCaseType.Names) { Names = names };
-            goto end;
+            default:
+                return Expected("Enum case");
         }
 
-        // Underscore enum `enum A = _(1..10);`
-        if (Skip(TokenKind.UNDERSCORE))
-        {
-            if (!Expect(TokenKind.OPEN_PAREN))
-                return false;
+        return true;
+    }
 
-            if (!ParseExpr(out var expr))
-                return false;
+    internal bool ParseEnumCases([NotNullWhen(true)] out ExpressionSyntax? expr)
+    {
+        if (!ParseExpr(out expr))
+            return false;
 
-            if (!Expect(TokenKind.CLOSE_PAREN))
-                return false;
+        if (!ValidateEnumCases(expr))
+            return false;
 
-            @case = new EnumCasesSyntax(caseStart, EnumCaseType.Underscore, expr);
-            goto end;
-        }
-
-        // Anonymous enum: `anon_enum(10);`
-        if (Skip(TokenKind.ANONENUM))
-        {
-            if (!Expect(TokenKind.OPEN_PAREN))
-                return false;
-
-            if (!ParseExpr(out var expr))
-                return false;
-
-            if (!Expect(TokenKind.CLOSE_PAREN))
-                return false;
-
-            @case = new EnumCasesSyntax(caseStart, EnumCaseType.Anon, expr);
-            goto end;
-        }
-
-        // Complex enum: `C(1..10)`
-        if (ParseIdent(out name))
-        {
-            if (!Expect(TokenKind.OPEN_PAREN))
-                return false;
-
-            if (!ParseExpr(out var expr))
-                return false;
-
-            if (!Expect(TokenKind.CLOSE_PAREN))
-                return false;
-
-            @case = new EnumCasesSyntax(caseStart, EnumCaseType.Complex, expr)
-            {
-                Constructor = name
-            };
-            goto end;
-        }
-
-        return Error("Expected an enum definition");
-
-        end:
-        @enum.Cases.Add(@case);
-
-        if (Skip(TokenKind.PLUS_PLUS))
-            goto cases;
-        result = @enum;
         return true;
     }
 
@@ -567,7 +552,10 @@ public sealed class Parser
         if (!ParseType(out var type))
             return false;
 
-        alias = new TypeAliasSyntax(start, name, type) { Annotations = anns };
+        alias = new DeclarationSyntax(start, DeclareKind.TypeAlias, type, name)
+        {
+            Annotations = anns
+        };
         return true;
     }
 
@@ -710,7 +698,7 @@ public sealed class Parser
             node = new AssignmentSyntax(ident, value) { Annotations = anns };
             return true;
         }
-        if (!ParseDeclareTail(start, ident, type, out var dec))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.Value, out var dec))
             return false;
 
         if (dec.Body is null && dec.Type.Kind is TypeKind.Any)
@@ -793,11 +781,6 @@ public sealed class Parser
                 expr = new RangeLiteralSyntax(token, upper: expr, upperInclusive: false);
                 break;
 
-            case TokenKind.UNDERSCORE:
-                Step();
-                expr = new WildCardSyntax(token);
-                break;
-
             case TokenKind.OPEN_PAREN:
                 if (!ParseParenExpr(out expr))
                     return false;
@@ -825,6 +808,7 @@ public sealed class Parser
                 expr = let;
                 break;
 
+            case TokenKind.UNDERSCORE:
             case TokenKind.IDENTIFIER:
                 if (!ParseIdentifierExpr(out expr))
                     return false;
@@ -974,8 +958,9 @@ public sealed class Parser
     /// <summary>
     /// https://docs.minizinc.dev/en/stable/spec.html#operators
     /// </summary>
-    internal static (Operator, Assoc, ushort) Precedence(in TokenKind kind) =>
-        kind switch
+    internal static (Operator, Assoc, ushort) Precedence(in TokenKind kind)
+    {
+        var (op, assoc, prec) = kind switch
         {
             TokenKind.DOUBLE_ARROW => (Operator.Equivalent, Assoc.Left, 1200),
             TokenKind.RIGHT_ARROW => (Operator.Implies, Assoc.Left, 1100),
@@ -1016,6 +1001,10 @@ public sealed class Parser
             TokenKind.TILDE_EQUALS => (Operator.TildeEqual, Assoc.Left, 10),
             _ => default
         };
+        // TODO
+        ushort uprec = (ushort)(2000 - prec);
+        return (op, assoc, uprec);
+    }
 
     /// <summary>
     /// Parses an expression that begins with an identifier.
@@ -1034,9 +1023,6 @@ public sealed class Parser
     {
         result = null;
         var name = new IdentifierSyntax(_token);
-        if (_kind is not TokenKind.IDENTIFIER)
-            return Expected("Identifier");
-
         Step();
 
         // Simple identifier
@@ -1250,7 +1236,7 @@ public sealed class Parser
 
         if (_kind is TokenKind.CLOSE_BRACKET)
         {
-            result = new Array1DSyntax(start);
+            result = new Array1dSyntax(start);
             return Expect(TokenKind.CLOSE_BRACKET);
         }
 
@@ -1328,7 +1314,7 @@ public sealed class Parser
         }
 
         // 1D Array literal
-        var arr1d = new Array1DSyntax(start);
+        var arr1d = new Array1dSyntax(start);
         result = arr1d;
         arr1d.Elements.Add(element);
 
@@ -1690,6 +1676,7 @@ public sealed class Parser
 
         if (!ParseDeclareOrAssign(out var node))
             return false;
+
         result = (ILetLocalSyntax)node;
         return true;
     }
@@ -1881,9 +1868,9 @@ public sealed class Parser
         return true;
     }
 
-    internal bool ParseBaseType(out TypeSyntax type)
+    internal bool ParseBaseType([NotNullWhen(true)] out TypeSyntax? type)
     {
-        type = default!;
+        type = default;
         var start = _token;
 
         if (Skip(TokenKind.ANY))
@@ -1939,9 +1926,9 @@ public sealed class Parser
     /// Parse an array type
     /// </summary>
     /// <mzn>array[X, 1..2] of var int</mzn>
-    internal bool ParseArrayType(out ArrayTypeSyntax arr)
+    internal bool ParseArrayType([NotNullWhen(true)] out ArrayTypeSyntax? arr)
     {
-        arr = default!;
+        arr = default;
         var dims = new List<SyntaxNode>();
 
         if (!Expect(TokenKind.ARRAY, out var start))
@@ -1977,9 +1964,9 @@ public sealed class Parser
         return true;
     }
 
-    private bool ParseBaseTypeTail(out TypeSyntax type)
+    private bool ParseBaseTypeTail([NotNullWhen(true)] out TypeSyntax? type)
     {
-        type = default!;
+        type = default;
         var start = _token;
         switch (_kind)
         {
@@ -2052,9 +2039,9 @@ public sealed class Parser
     /// <mzn>int: a</mzn>
     /// <mzn>bool: ABC</mzn>
     /// <mzn>any $$T</mzn>
-    internal bool ParseTypeAndName(out ParameterSyntax param)
+    internal bool ParseTypeAndName([NotNullWhen(true)] out ParameterSyntax? param)
     {
-        param = null!;
+        param = null;
         if (!ParseType(out var type))
             return false;
 
@@ -2081,9 +2068,9 @@ public sealed class Parser
     /// Parse a tuple type constructor
     /// </summary>
     /// <mzn>tuple(int, bool, tuple(int))</mzn>
-    private bool ParseTupleType(out TupleTypeSyntax tuple)
+    private bool ParseTupleType([NotNullWhen(true)] out TupleTypeSyntax? tuple)
     {
-        tuple = null!;
+        tuple = null;
         if (!Expect(TokenKind.TUPLE, out var start))
             return false;
 
@@ -2108,18 +2095,16 @@ public sealed class Parser
     /// Parse a record type constructor
     /// </summary>
     /// <mzn>record(int: a, bool: b)</mzn>
-    private bool ParseRecordType(out RecordTypeSyntax record)
+    private bool ParseRecordType([NotNullWhen(true)] out RecordTypeSyntax? record)
     {
-        record = default!;
+        record = default;
         if (!Expect(TokenKind.RECORD, out var start))
             return false;
-
-        record = new RecordTypeSyntax(start) { Kind = TypeKind.Record };
 
         if (!ParseParameters(out var fields))
             return false;
 
-        record.Fields = fields!;
+        record = new RecordTypeSyntax(start, fields) { Kind = TypeKind.Record };
         return true;
     }
 
@@ -2128,58 +2113,29 @@ public sealed class Parser
     /// and names between parentheses
     /// </summary>
     /// <mzn>(int: a, bool: b)</mzn>
-    private bool ParseParameters(out List<ParameterSyntax>? parameters)
+    private bool ParseParameters([NotNullWhen(true)] out List<ParameterSyntax>? parameters)
     {
         parameters = default;
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
-        if (_kind is TokenKind.CLOSE_PAREN)
-            goto end;
-
-        next:
-        if (!ParseTypeAndName(out var param))
-            return false;
-
-        parameters ??= new List<ParameterSyntax>();
-        parameters.Add(param);
-        if (Skip(TokenKind.COMMA))
-            goto next;
-
-        end:
-        return Expect(TokenKind.CLOSE_PAREN);
-    }
-
-    /// <summary>
-    /// Parse a comma separated list of expressions
-    /// between parentheses
-    /// </summary>
-    /// <mzn>(1, 2, false)</mzn>
-    private bool ParseExprs(out List<SyntaxNode>? exprs, TokenKind open, TokenKind close)
-    {
-        exprs = null;
-        if (!Skip(open))
-            return false;
-
-        exprs = new List<SyntaxNode>();
-        while (_kind != close)
+        parameters = new List<ParameterSyntax>();
+        while (_kind is not TokenKind.CLOSE_PAREN)
         {
-            if (!ParseExpr(out var expr))
+            if (!ParseTypeAndName(out var param))
                 return false;
-            exprs.Add(expr);
+
+            parameters.Add(param);
             if (!Skip(TokenKind.COMMA))
                 break;
         }
 
-        if (!Expect(close))
-            return false;
-
-        return true;
+        return Expect(TokenKind.CLOSE_PAREN);
     }
 
-    internal bool ParseType(out TypeSyntax result)
+    internal bool ParseType([NotNullWhen(true)] out TypeSyntax? result)
     {
-        result = default!;
+        result = default;
         var start = _token;
         if (_kind is TokenKind.ARRAY)
         {
@@ -2324,7 +2280,7 @@ public sealed class Parser
         return result;
     }
 
-    /// <inheritdoc cref="ParseModelFile(string)"/>
+    /// <inheritdoc cref="ParseModelFile(string,out MiniZinc.Parser.Syntax.ModelSyntax)"/>
     public static ParseResult ParseModelFile(FileInfo file, out ModelSyntax model) =>
         ParseModelFile(file.FullName, out model);
 
@@ -2425,5 +2381,20 @@ public sealed class Parser
             );
         }
         return result;
+    }
+
+    /// Try to parse a statement of the given type from text
+    public static bool TryParseStatement<T>(string text, [NotNullWhen(true)] out T? result)
+        where T : StatementSyntax
+    {
+        result = null;
+        var parser = new Parser(text);
+        if (!parser.ParseStatement(out var statement))
+            return false;
+
+        if (statement is not T t)
+            return false;
+        result = t;
+        return true;
     }
 }

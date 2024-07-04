@@ -22,7 +22,7 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
     public string Write(WriteOptions? options = null)
     {
         var writer = new Writer(options);
-        writer.WriteNode(this);
+        writer.WriteSyntax(this);
         var mzn = writer.ToString();
         return mzn;
     }
@@ -52,8 +52,6 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
                 return a.Value == b.Value;
             case (StringLiteralSyntax a, StringLiteralSyntax b):
                 return a.Value == b.Value;
-            case (WildCardSyntax, WildCardSyntax):
-                return true;
             case (EmptyLiteralSyntax, EmptyLiteralSyntax):
                 return true;
             case (ConstraintSyntax a, ConstraintSyntax b):
@@ -78,12 +76,6 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
                 if (a.Method != b.Method)
                     return false;
                 if (!object.Equals(a.Objective, b.Objective))
-                    return false;
-                return true;
-            case (TypeAliasSyntax a, TypeAliasSyntax b):
-                if (!a.Identifier.Equals(b.Identifier))
-                    return false;
-                if (!a.Type.Equals(b.Type))
                     return false;
                 return true;
             default:

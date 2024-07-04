@@ -44,10 +44,13 @@ public sealed class CompositeTypeSyntax : TypeSyntax
 
 public sealed class RecordTypeSyntax : TypeSyntax
 {
-    public RecordTypeSyntax(in Token Start)
-        : base(Start) { }
+    public RecordTypeSyntax(in Token start, IReadOnlyList<ParameterSyntax> fields)
+        : base(start)
+    {
+        Fields = fields;
+    }
 
-    public List<ParameterSyntax> Fields { get; set; } = new();
+    public IReadOnlyList<ParameterSyntax> Fields { get; }
 }
 
 public sealed class TupleTypeSyntax : TypeSyntax

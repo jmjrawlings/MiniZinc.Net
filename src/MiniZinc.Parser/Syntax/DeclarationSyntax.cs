@@ -7,31 +7,37 @@
 /// <mzn>var int: a = 10</mzn>
 public sealed class DeclarationSyntax : StatementSyntax, ILetLocalSyntax, IIdentifiedSyntax
 {
-    public string Name => Identifier.Name;
+    public IdentifierSyntax Identifier { get; }
 
-    public SyntaxNode? Body { get; set; }
+    public TypeSyntax? Type { get; }
+
+    public DeclareKind Kind { get; }
+
+    public ExpressionSyntax? Body { get; set; }
 
     public List<ParameterSyntax>? Parameters { get; set; }
 
     public IdentifierSyntax? Ann { get; init; }
 
-    public required bool IsFunction { get; init; }
+    public string Name => Identifier.Name;
 
     public bool IsAnnotation => Type.Kind is TypeKind.Annotation;
-
-    public TypeSyntax Type { get; }
-
-    public IdentifierSyntax Identifier { get; }
 
     /// <summary>
     /// A variable
     /// </summary>
     /// <mzn>int: a = 10</mzn>
     /// <mzn>var int: a = 10</mzn>
-    public DeclarationSyntax(in Token start, TypeSyntax type, IdentifierSyntax identifier)
+    public DeclarationSyntax(
+        in Token start,
+        DeclareKind kind,
+        TypeSyntax? type,
+        IdentifierSyntax identifier
+    )
         : base(start)
     {
         Type = type;
+        Kind = kind;
         Identifier = identifier;
     }
 }

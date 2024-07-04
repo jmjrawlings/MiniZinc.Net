@@ -118,15 +118,15 @@ internal sealed class Writer
         {
             var name = kv.Key;
             var expr = kv.Value;
-            Write(name);
+            WriteString(name);
             Spaced('=');
-            WriteNode(expr);
+            WriteSyntax(expr);
             EndStatement();
             Newline();
         }
     }
 
-    public void WriteNode(SyntaxNode? node, Assoc assoc = 0, int? prec = null)
+    public void WriteSyntax(SyntaxNode? node, int? prec = null)
     {
         if (node is null)
             return;
@@ -135,44 +135,61 @@ internal sealed class Writer
         {
             case IncludeSyntax e:
                 Keyword(INCLUDE);
-                Write(DOUBLE_QUOTE);
-                Write(e.Path.StringValue);
-                Write(DOUBLE_QUOTE);
+                WriteChar(DOUBLE_QUOTE);
+                WriteString(e.Path.StringValue);
+                WriteChar(DOUBLE_QUOTE);
                 EndStatement();
                 break;
 
             case DeclarationSyntax e:
-                if (e is { IsFunction: true, IsAnnotation: false })
-                    Keyword(FUNCTION);
-
-                WriteType(e.Type);
-                if (!e.IsAnnotation)
-                    Write(COLON);
-
-                Space();
-                Write(e.Identifier);
-                if (e.IsFunction)
+                switch (e.Kind)
                 {
+                    case DeclareKind.Function:
+                        Keyword(FUNCTION);
+                        WriteType(e.Type!);
+                        WriteChar(COLON);
+                        break;
+                    case DeclareKind.Annotation:
+                        Keyword(ANNOTATION);
+                        break;
+                    case DeclareKind.Test:
+                        Keyword(TEST);
+                        break;
+                    case DeclareKind.Predicate:
+                        Keyword(PREDICATE);
+                        break;
+                    case DeclareKind.Enum:
+                        Keyword(ENUM);
+                        break;
+                    default:
+                        WriteType(e.Type);
+                        WriteChar(COLON);
+                        break;
+                }
+
+                WriteSpace();
+                WriteIdent(e.Identifier);
+                if (e.Parameters is { } parameters)
                     WriteParameters(e.Parameters);
-                    if (e.Ann is { } ann)
-                    {
-                        Space();
-                        Write(ANN);
-                        Write(':');
-                        Space();
-                        Write(ann);
-                        Space();
-                    }
+
+                if (e.Ann is { } ann)
+                {
+                    WriteSpace();
+                    WriteString(ANN);
+                    WriteChar(':');
+                    WriteSpace();
+                    WriteIdent(ann);
+                    WriteSpace();
                 }
 
                 WriteAnnotations(e);
 
                 if (e.Body is { } body)
                 {
-                    Space();
-                    Write(EQUAL);
-                    Space();
-                    WriteNode(body);
+                    WriteSpace();
+                    WriteChar(EQUAL);
+                    WriteSpace();
+                    WriteSyntax(body);
                 }
                 EndStatement();
                 break;
@@ -181,7 +198,7 @@ internal sealed class Writer
                 Keyword(CONSTRAINT);
                 Indent();
                 Newline();
-                WriteNode(e.Expr);
+                WriteSyntax(e.Expr);
                 WriteAnnotations(e);
                 Dedent();
                 EndStatement();
@@ -190,24 +207,24 @@ internal sealed class Writer
             case SolveSyntax e:
                 Keyword(SOLVE);
                 WriteAnnotations(e);
-                Space();
+                WriteSpace();
                 switch (e.Method)
                 {
                     case SolveMethod.Satisfy:
-                        Write(SATISFY);
+                        WriteString(SATISFY);
                         break;
                     case SolveMethod.Maximize:
                         Keyword(MAXIMIZE);
                         Indent();
                         Newline();
-                        WriteNode(e.Objective);
+                        WriteSyntax(e.Objective);
                         Dedent();
                         break;
                     case SolveMethod.Minimize:
                         Keyword(MINIMIZE);
                         Indent();
                         Newline();
-                        WriteNode(e.Objective);
+                        WriteSyntax(e.Objective);
                         Dedent();
                         break;
                 }
@@ -215,13 +232,11 @@ internal sealed class Writer
                 break;
 
             case AssignmentSyntax e:
-                Write(e.Identifier);
-                if (_minify)
-                    Space();
-                Write(EQUAL);
-                if (_minify)
-                    Space();
-                WriteNode(e.Expr);
+                WriteIdent(e.Identifier);
+                WriteSpace();
+                WriteChar(EQUAL);
+                WriteSpace();
+                WriteSyntax(e.Expr);
                 EndStatement();
                 break;
 
@@ -229,31 +244,9 @@ internal sealed class Writer
                 break;
 
             case OutputSyntax e:
-                Write(OUTPUT);
-                Space();
-                WriteNode(e.Expr);
-                EndStatement();
-                break;
-
-            case TypeAliasSyntax e:
-                Write(TYPE);
-                Space();
-                Write(e.Identifier);
-                Spaced(EQUAL);
-                WriteNode(e.Type);
-                EndStatement();
-                break;
-
-            case EnumDeclarationSyntax e:
-                Write(ENUM);
-                Space();
-                Write(e.Identifier);
-                WriteAnnotations(e);
-                if (e.Cases.Count > 0)
-                {
-                    Spaced(EQUAL);
-                    WriteSep(e.Cases, sep: " ++ ");
-                }
+                WriteString(OUTPUT);
+                WriteSpace();
+                WriteSyntax(e.Expr);
                 EndStatement();
                 break;
 
@@ -261,10 +254,10 @@ internal sealed class Writer
                 WriteType(e);
                 break;
 
-            case Array1DSyntax e:
-                Write(OPEN_BRACKET);
+            case Array1dSyntax e:
+                WriteChar(OPEN_BRACKET);
                 WriteSep(e.Elements);
-                Write(CLOSE_BRACKET);
+                WriteChar(CLOSE_BRACKET);
                 break;
 
             case Array2dSyntax expr:
@@ -276,14 +269,14 @@ internal sealed class Writer
                 break;
 
             case ArrayAccessSyntax e:
-                WriteNode(e.Array);
-                Write(OPEN_BRACKET);
+                WriteSyntax(e.Array);
+                WriteChar(OPEN_BRACKET);
                 WriteSep(e.Access);
-                Write(CLOSE_BRACKET);
+                WriteChar(CLOSE_BRACKET);
                 break;
 
             case BinaryOperatorSyntax e:
-                WriteBinOp(e, assoc, prec);
+                WriteBinOp(e, prec);
                 break;
 
             case IntLiteralSyntax e:
@@ -291,7 +284,7 @@ internal sealed class Writer
                 break;
 
             case BoolLiteralSyntax e:
-                Write(e.Value ? TRUE : FALSE);
+                WriteString(e.Value ? TRUE : FALSE);
                 WriteAnnotations(e);
                 break;
 
@@ -300,74 +293,42 @@ internal sealed class Writer
                 break;
 
             case StringLiteralSyntax e:
-                Write(DOUBLE_QUOTE);
-                Write(e.Value);
-                Write(DOUBLE_QUOTE);
+                WriteChar(DOUBLE_QUOTE);
+                WriteString(e.Value);
+                WriteChar(DOUBLE_QUOTE);
                 break;
 
             case CallSyntax e:
-                Write(e.Name);
-                Write(OPEN_PAREN);
+                WriteString(e.Name);
+                WriteChar(OPEN_PAREN);
                 WriteSep(e.Args);
-                Write(CLOSE_PAREN);
+                WriteChar(CLOSE_PAREN);
                 WriteAnnotations(e);
                 break;
 
             case ComprehensionSyntax e:
-                Write(e.IsSet ? OPEN_BRACE : OPEN_BRACKET);
-                WriteNode(e.Expr);
-                Write(PIPE);
+                WriteChar(e.IsSet ? OPEN_BRACE : OPEN_BRACKET);
+                WriteSyntax(e.Expr);
+                WriteChar(PIPE);
                 WriteSep(e.Generators);
-                Write(e.IsSet ? CLOSE_BRACE : CLOSE_BRACKET);
+                WriteChar(e.IsSet ? CLOSE_BRACE : CLOSE_BRACKET);
                 WriteAnnotations(e);
                 break;
 
             case EmptyLiteralSyntax e:
-                Write(OPEN_CHEVRON);
-                Write(CLOSE_CHEVRON);
+                WriteChar(OPEN_CHEVRON);
+                WriteChar(CLOSE_CHEVRON);
                 WriteAnnotations(e);
                 break;
 
-            case EnumCasesSyntax e:
-                switch (e.Type)
-                {
-                    case EnumCaseType.Anon:
-                        Write(ANON_ENUM);
-                        Write(OPEN_PAREN);
-                        WriteNode(e.Expr);
-                        Write(CLOSE_PAREN);
-                        break;
-
-                    case EnumCaseType.Underscore:
-                        Write(UNDERSCORE);
-                        Write(OPEN_PAREN);
-                        WriteNode(e.Expr);
-                        Write(CLOSE_PAREN);
-                        break;
-
-                    case EnumCaseType.Names:
-                        Write(OPEN_BRACE);
-                        WriteSep(e.Names);
-                        Write(CLOSE_BRACE);
-                        break;
-
-                    case EnumCaseType.Complex:
-                        Write(e.Constructor!);
-                        Write(OPEN_PAREN);
-                        WriteNode(e.Expr);
-                        Write(CLOSE_PAREN);
-                        break;
-                }
-                break;
-
             case GeneratorCallSyntax e:
-                Write(e.Name);
-                Write(OPEN_PAREN);
+                WriteString(e.Name);
+                WriteChar(OPEN_PAREN);
                 WriteSep(e.Generators, WriteGenerator);
-                Write(CLOSE_PAREN);
-                Write(OPEN_PAREN);
-                WriteNode(e.Expr);
-                Write(CLOSE_PAREN);
+                WriteChar(CLOSE_PAREN);
+                WriteChar(OPEN_PAREN);
+                WriteSyntax(e.Expr);
+                WriteChar(CLOSE_PAREN);
                 WriteAnnotations(e);
                 break;
 
@@ -377,123 +338,119 @@ internal sealed class Writer
 
             case IdentifierSyntax e:
                 // Could be (Quoted / Normal / Keyword)
-                Write(e.ToString());
+                WriteString(e.ToString());
                 WriteAnnotations(e);
                 break;
 
             case IfThenSyntax e:
-                Write(IF);
-                Space();
-                WriteNode(e.If);
+                WriteString(IF);
+                WriteSpace();
+                WriteSyntax(e.If);
                 Spaced(THEN);
-                WriteNode(e.Then);
+                WriteSyntax(e.Then);
                 if (e.ElseIfs is { } cases)
                 {
                     foreach (var (elseif, then) in cases)
                     {
                         Spaced(ELSEIF);
-                        WriteNode(elseif);
+                        WriteSyntax(elseif);
                         Spaced(THEN);
-                        WriteNode(then);
+                        WriteSyntax(then);
                     }
                 }
 
                 if (e.Else is { } @else)
                 {
-                    Space();
-                    Write(ELSE);
-                    Space();
-                    WriteNode(@else);
+                    WriteSpace();
+                    WriteString(ELSE);
+                    WriteSpace();
+                    WriteSyntax(@else);
                 }
 
-                Space();
-                Write(ENDIF);
+                WriteSpace();
+                WriteString(ENDIF);
                 break;
 
             case LetSyntax e:
-                Write(LET);
-                Write(OPEN_BRACE);
+                WriteString(LET);
+                WriteChar(OPEN_BRACE);
                 if (e.Locals is { } locals)
                     foreach (var local in locals)
-                        WriteNode((SyntaxNode)local);
+                        WriteSyntax((SyntaxNode)local);
 
-                Write(CLOSE_BRACE);
+                WriteChar(CLOSE_BRACE);
                 Spaced(IN);
-                WriteNode(e.Body);
+                WriteSyntax(e.Body);
                 break;
 
             case RangeLiteralSyntax e:
                 if (e.Lower is { } lower)
-                    WriteNode(lower);
+                    WriteSyntax(lower);
                 if (!e.LowerIncusive)
-                    Write(OPEN_CHEVRON);
-                Write(DOT);
-                Write(DOT);
+                    WriteChar(OPEN_CHEVRON);
+                WriteChar(DOT);
+                WriteChar(DOT);
                 if (!e.UpperInclusive)
-                    Write(OPEN_CHEVRON);
+                    WriteChar(OPEN_CHEVRON);
                 if (e.Upper is { } upper)
-                    WriteNode(upper);
+                    WriteSyntax(upper);
                 WriteAnnotations(e);
                 break;
 
             case RecordAccessSyntax e:
-                WriteNode(e.Expr);
-                Write(DOT);
-                Write(e.Field.StringValue);
+                WriteSyntax(e.Expr);
+                WriteChar(DOT);
+                WriteString(e.Field.StringValue);
                 WriteAnnotations(e);
                 break;
 
             case RecordLiteralSyntax e:
-                Write(OPEN_PAREN);
+                WriteChar(OPEN_PAREN);
                 for (int i = 0; i < e.Fields.Count; i++)
                 {
                     var (name, expr) = e.Fields[i];
-                    Write(name);
-                    Write(COLON);
-                    WriteNode(expr);
+                    WriteIdent(name);
+                    WriteChar(COLON);
+                    WriteSyntax(expr);
                     if (i < e.Fields.Count - 1)
-                        Write(COMMA);
+                        WriteChar(COMMA);
                 }
 
-                Write(CLOSE_PAREN);
+                WriteChar(CLOSE_PAREN);
                 break;
 
             case SetLiteralSyntax e:
-                Write(OPEN_BRACE);
+                WriteChar(OPEN_BRACE);
                 WriteSep(e.Elements);
-                Write(CLOSE_BRACE);
+                WriteChar(CLOSE_BRACE);
                 WriteAnnotations(e);
                 break;
 
             case TupleAccessSyntax e:
-                WriteNode(e.Expr);
-                Write(DOT);
+                WriteSyntax(e.Expr);
+                WriteChar(DOT);
                 _sb.Append(e.Index);
                 WriteAnnotations(e);
                 break;
 
             case TupleLiteralSyntax e:
-                Write(OPEN_PAREN);
+                WriteChar(OPEN_PAREN);
                 WriteSep(e.Fields);
-                Write(COMMA);
-                Write(CLOSE_PAREN);
+                WriteChar(COMMA);
+                WriteChar(CLOSE_PAREN);
                 WriteAnnotations(e);
                 break;
 
             case UnaryOperatorSyntax e:
                 WriteOperator(e.Operator);
-                Write(SPACE);
-                WriteNode(e.Expr, Assoc.Left, prec: 0);
-                break;
-
-            case WildCardSyntax e:
-                Write(UNDERSCORE);
+                WriteChar(SPACE);
+                WriteSyntax(e.Expr, prec: 0);
                 break;
 
             case IndexAndNode e:
-                WriteNode(e.Index);
-                Write(COLON);
-                WriteNode(e.Value);
+                WriteSyntax(e.Index);
+                WriteChar(COLON);
+                WriteSyntax(e.Value);
                 break;
 
             default:
@@ -503,28 +460,28 @@ internal sealed class Writer
 
     private void WriteArray3d(Array3dSyntax arr)
     {
-        Write("[|");
+        WriteString("[|");
         var array = arr.Elements;
         var index = -1;
         for (int i = 0; i < arr.I; i++)
         {
-            Write(PIPE);
+            WriteChar(PIPE);
             for (int j = 0; j < arr.J; j++)
             {
                 for (int k = 0; k < arr.K; k++)
                 {
                     var v = array[index++];
-                    WriteNode(v);
+                    WriteSyntax(v);
                     if (k + 1 < arr.K)
-                        Write(COMMA);
+                        WriteChar(COMMA);
                 }
-                Write(PIPE);
+                WriteChar(PIPE);
             }
 
             if (i + 1 < arr.I)
-                Write(COMMA);
+                WriteChar(COMMA);
         }
-        Write("|]");
+        WriteString("|]");
     }
 
     public void WriteModel(ModelSyntax e)
@@ -541,7 +498,7 @@ internal sealed class Writer
             statements = e.Statements;
         }
         foreach (var statement in statements)
-            WriteNode(statement);
+            WriteSyntax(statement);
 
         return;
     }
@@ -573,49 +530,30 @@ internal sealed class Writer
         }
     }
 
-    private void WriteBinOp(BinaryOperatorSyntax e, Assoc associativity = 0, int? precedence = null)
+    private void WriteBinOp(BinaryOperatorSyntax e, int? precedence = null)
     {
         var (op, assoc, prec) = Parser.Precedence(e.Infix.Kind);
-
-        var bracketed = associativity switch
-        {
-            Assoc.None when (assoc is Assoc.None) && prec == precedence => true,
-
-            // We are on the right hand side of the tree
-            Assoc.Left when prec >= precedence
-                => true,
-            Assoc.None when prec >= precedence => true,
-
-            // We are on the left hand side of the tree
-            Assoc.None when prec > precedence
-                => true,
-            Assoc.Right when prec > precedence => true,
-
-            _ => false
-        };
-
+        var bracketed = prec < precedence;
         if (bracketed)
-            Write(OPEN_PAREN);
+            WriteChar(OPEN_PAREN);
 
-        // Write the left hand side of the tree
-        WriteNode(e.Left, assoc is Assoc.None ? Assoc.None : Assoc.Right, prec);
-        Space();
+        WriteSyntax(e.Left, assoc == Assoc.Left ? prec : prec + 1);
+        WriteSpace();
 
         if (op is Operator.Identifier)
         {
-            Write(BACKTICK);
-            Write(e.Infix.StringValue);
-            Write(BACKTICK);
+            WriteChar(BACKTICK);
+            WriteString(e.Infix.StringValue);
+            WriteChar(BACKTICK);
         }
         else
         {
             WriteOperator(op);
         }
-        Space();
-        WriteNode(e.Right, assoc is Assoc.None ? Assoc.None : Assoc.Left, prec);
-
+        WriteSpace();
+        WriteSyntax(e.Right, assoc == Assoc.Right ? prec : prec + 1);
         if (bracketed)
-            Write(CLOSE_PAREN);
+            WriteChar(CLOSE_PAREN);
     }
 
     void WriteType(TypeSyntax type)
@@ -629,78 +567,78 @@ internal sealed class Writer
         switch (type)
         {
             case ArrayTypeSyntax e:
-                Write(ARRAY);
-                Write(OPEN_BRACKET);
-                WriteSep(e.Dimensions, WriteNode);
-                Write(CLOSE_BRACKET);
-                Space();
-                Write(OF);
-                Space();
+                WriteString(ARRAY);
+                WriteChar(OPEN_BRACKET);
+                WriteSep(e.Dimensions, WriteSyntax);
+                WriteChar(CLOSE_BRACKET);
+                WriteSpace();
+                WriteString(OF);
+                WriteSpace();
                 WriteType(e.Items);
                 break;
 
             case CompositeTypeSyntax e:
-                WriteSep(e.Types, WriteNode, sep: " ++ ");
+                WriteSep(e.Types, WriteSyntax, sep: " ++ ");
                 break;
 
             case ExprType e:
-                WriteNode(e.Expr);
+                WriteSyntax(e.Expr);
                 break;
 
             case ListTypeSyntax e:
                 Keyword(LIST);
                 Keyword(OF);
-                WriteNode(e.Items);
+                WriteSyntax(e.Items);
                 break;
 
             case IdentifierTypeSyntax e:
-                Write(e.Identifier);
+                WriteIdent(e.Identifier);
                 break;
 
             case RecordTypeSyntax e:
-                Write(RECORD);
+                WriteString(RECORD);
                 WriteParameters(e.Fields);
                 break;
 
             case SetTypeSyntax e:
-                Write(SET);
+                WriteString(SET);
                 Spaced(OF);
-                WriteNode(e.Items);
+                WriteSyntax(e.Items);
                 break;
 
             case TupleTypeSyntax e:
-                Write(TUPLE);
-                Write(OPEN_PAREN);
+                WriteString(TUPLE);
+                WriteChar(OPEN_PAREN);
                 WriteSep(e.Items);
-                Write(CLOSE_PAREN);
+                WriteChar(CLOSE_PAREN);
                 break;
 
             case { Kind: TypeKind.Bool }:
-                Write(BOOL);
+                WriteString(BOOL);
                 break;
 
             case { Kind: TypeKind.Float }:
-                Write(FLOAT);
+                WriteString(FLOAT);
                 break;
 
             case { Kind: TypeKind.Int }:
-                Write(INT);
+                WriteString(INT);
                 break;
 
             case { Kind: TypeKind.String }:
-                Write(STRING);
+                WriteString(STRING);
                 break;
 
             case { Kind: TypeKind.Annotation }:
-                Write(ANNOTATION);
+                WriteString(ANNOTATION);
                 break;
 
             case { Kind: TypeKind.Ann }:
-                Write(ANN);
+                WriteString(ANN);
                 break;
 
             case { Kind: TypeKind.Any }:
-                Write(ANY);
+                WriteString(ANY);
                 break;
 
             default:
@@ -708,54 +646,54 @@ internal sealed class Writer
         }
     }
 
-    void WriteParameters(List<ParameterSyntax>? parameters)
+    void WriteParameters(IReadOnlyList<ParameterSyntax>? parameters)
     {
-        Write(OPEN_PAREN);
+        WriteChar(OPEN_PAREN);
         WriteSep(parameters, WriteParameter);
-        Write(CLOSE_PAREN);
+        WriteChar(CLOSE_PAREN);
     }
 
-    void WriteParameter(ParameterSyntax x, Assoc assoc, int? precedence = null)
+    void WriteParameter(ParameterSyntax x, int? precedence = null)
     {
-        WriteNode(x.Type);
+        WriteSyntax(x.Type);
         if (x.Identifier is { } name)
         {
-            Write(COLON);
-            Write(name);
+            WriteChar(COLON);
+            WriteIdent(name);
         }
         WriteAnnotations(x);
     }
 
     void WriteArrayAccess(ArrayAccessSyntax e) { }
 
-    void WriteGenerator(GeneratorSyntax gen, Assoc assoc = Assoc.None, int? precedence = null)
+    void WriteGenerator(GeneratorSyntax gen, int? precedence = null)
     {
-        WriteSep(gen.Names, WriteNode);
+        WriteSep(gen.Names, WriteSyntax);
         Spaced(IN);
-        WriteNode(gen.From);
+        WriteSyntax(gen.From);
         if (gen.Where is { } cond)
         {
             Spaced(WHERE);
-            WriteNode(cond);
+            WriteSyntax(cond);
         }
         WriteAnnotations(gen);
     }
 
     void Spaced(char c)
     {
-        Space();
-        Write(c);
-        Space();
+        WriteSpace();
+        WriteChar(c);
+        WriteSpace();
     }
 
     void Spaced(string c)
     {
-        Space();
-        Write(c);
-        Space();
+        WriteSpace();
+        WriteString(c);
+        WriteSpace();
     }
 
-    void Write(char c)
+    void WriteChar(char c)
     {
         _sb.Append(c);
     }
@@ -781,8 +719,8 @@ internal sealed class Writer
 
     void WriteArray2d(Array2dSyntax arr)
     {
-        Write(OPEN_BRACKET);
-        Write(PIPE);
+        WriteChar(OPEN_BRACKET);
+        WriteChar(PIPE);
         switch (arr.RowIndexed, arr.ColIndexed)
         {
             case (false, false):
@@ -792,19 +730,19 @@ internal sealed class Writer
                     for (int j = 0; j < arr.J; j++)
                     {
                         var v = arr.Elements[x++];
-                        WriteNode(v);
+                        WriteSyntax(v);
                         if (j < arr.J - 1)
-                            Write(COMMA);
+                            WriteChar(COMMA);
                     }
-                    Write(PIPE);
+                    WriteChar(PIPE);
                 }
 
                 break;
         }
-        Write(CLOSE_BRACKET);
+        WriteChar(CLOSE_BRACKET);
     }
 
-    void Write(IdentifierSyntax id)
+    void WriteIdent(IdentifierSyntax id)
     {
         switch (id.Kind)
         {
@@ -822,22 +760,31 @@ internal sealed class Writer
         }
     }
 
-    void Space()
+    /// <summary>
+    /// Writes (optional) whitespace.
+    /// This will be ignored when writing with
+    /// `minify` enabled.
+    /// </summary>
+    void WriteSpace()
     {
+        // We assume that 'WriteSpace' always indicates
+        // optional whitespace and therefore
         if (_sb.Length is 0)
-            _sb.Append(SPACE);
-        else if (_sb[^1] is not SPACE)
+            return;
+        if (_minify)
+            return;
+        if (_sb[^1] is not SPACE)
             _sb.Append(SPACE);
     }
 
-    void Write(string s)
+    void WriteString(string s)
     {
         _sb.Append(s);
     }
 
     void EndStatement()
     {
-        Write(EOL);
+        WriteString(EOL);
     }
 
     void Keyword(string s)
@@ -848,8 +795,7 @@ internal sealed class Writer
 
     void WriteSep<T>(
         IEnumerable<T>? nodes,
-        Action<T, Assoc, int?>? write = null,
-        Assoc assoc = Assoc.None,
+        Action<T, int?>? write = null,
         int prec = 0,
         string sep = ","
     )
@@ -863,12 +809,12 @@ internal sealed class Writer
         if (!first)
             return;
 
-        write ??= WriteNode;
-        write(enumerator.Current, assoc, prec);
+        write ??= WriteSyntax;
+        write(enumerator.Current, prec);
         while (enumerator.MoveNext())
         {
-            Write(sep);
-            write(enumerator.Current, assoc, prec);
+            WriteString(sep);
+            write(enumerator.Current, prec);
         }
     }
 
@@ -880,147 +826,147 @@ internal sealed class Writer
                 break;
 
             case Operator.Equivalent:
-                Write(OPEN_CHEVRON);
-                Write(DASH);
-                Write(CLOSE_CHEVRON);
+                WriteChar(OPEN_CHEVRON);
+                WriteChar(DASH);
+                WriteChar(CLOSE_CHEVRON);
                 break;
             case Operator.Implies:
-                Write(DASH);
-                Write(CLOSE_CHEVRON);
+                WriteChar(DASH);
+                WriteChar(CLOSE_CHEVRON);
                 break;
             case Operator.ImpliedBy:
-                Write(OPEN_CHEVRON);
-                Write(DASH);
+                WriteChar(OPEN_CHEVRON);
+                WriteChar(DASH);
                 break;
             case Operator.Or:
-                Write(BACK_SLASH);
-                Write(FWD_SLASH);
+                WriteChar(BACK_SLASH);
+                WriteChar(FWD_SLASH);
                 break;
             case Operator.Xor:
-                Write(XOR);
+                WriteString(XOR);
                 break;
             case Operator.And:
-                Write(FWD_SLASH);
-                Write(BACK_SLASH);
+                WriteChar(FWD_SLASH);
+                WriteChar(BACK_SLASH);
                 break;
             case Operator.LessThan:
-                Write(OPEN_CHEVRON);
+                WriteChar(OPEN_CHEVRON);
                 break;
             case Operator.GreaterThan:
-                Write(CLOSE_CHEVRON);
+                WriteChar(CLOSE_CHEVRON);
                 break;
             case Operator.LessThanEqual:
-                Write(OPEN_CHEVRON);
-                Write(EQUAL);
+                WriteChar(OPEN_CHEVRON);
+                WriteChar(EQUAL);
                 break;
             case Operator.GreaterThanEqual:
-                Write(CLOSE_CHEVRON);
-                Write(EQUAL);
+                WriteChar(CLOSE_CHEVRON);
+                WriteChar(EQUAL);
                 break;
             case Operator.Equal:
-                Write(EQUAL);
-                Write(EQUAL);
+                WriteChar(EQUAL);
+                WriteChar(EQUAL);
                 break;
             case Operator.NotEqual:
-                Write(EXCLAMATION);
-                Write(EQUAL);
+                WriteChar(EXCLAMATION);
+                WriteChar(EQUAL);
                 break;
             case Operator.In:
-                Write(IN);
+                WriteString(IN);
                 break;
             case Operator.Subset:
-                Write(SUBSET);
+                WriteString(SUBSET);
                 break;
             case Operator.Superset:
-                Write(SUPERSET);
+                WriteString(SUPERSET);
                 break;
             case Operator.Union:
-                Write(UNION);
+                WriteString(UNION);
                 break;
             case Operator.Diff:
-                Write(DIFF);
+                WriteString(DIFF);
                 break;
             case Operator.SymDiff:
-                Write(SYMDIFF);
+                WriteString(SYMDIFF);
                 break;
             case Operator.Add:
-                Write(PLUS);
+                WriteChar(PLUS);
                 break;
             case Operator.Subtract:
-                Write(DASH);
+                WriteChar(DASH);
                 break;
             case Operator.Multiply:
-                Write(STAR);
+                WriteChar(STAR);
                 break;
             case Operator.Div:
-                Write(DIV);
+                WriteString(DIV);
                 break;
             case Operator.Mod:
-                Write(MOD);
+                WriteString(MOD);
                 break;
             case Operator.Divide:
-                Write(FWD_SLASH);
+                WriteChar(FWD_SLASH);
                 break;
             case Operator.Intersect:
-                Write(INTERSECT);
+                WriteString(INTERSECT);
                 break;
             case Operator.Exponent:
-                Write(UP_CHEVRON);
+                WriteChar(UP_CHEVRON);
                 break;
             case Operator.Default:
-                Write(DEFAULT);
+                WriteString(DEFAULT);
                 break;
             case Operator.Concat:
-                Write(PLUS);
-                Write(PLUS);
+                WriteChar(PLUS);
+                WriteChar(PLUS);
                 break;
             case Operator.Positive:
-                Write(PLUS);
+                WriteChar(PLUS);
                 break;
             case Operator.Negative:
-                Write(DASH);
+                WriteChar(DASH);
                 break;
             case Operator.Not:
-                Write(NOT);
+                WriteString(NOT);
                 break;
             case Operator.TildeNotEqual:
-                Write(TILDE);
-                Write(EXCLAMATION);
-                Write(EQUAL);
+                WriteChar(TILDE);
+                WriteChar(EXCLAMATION);
+                WriteChar(EQUAL);
                 break;
             case Operator.TildeEqual:
-                Write(TILDE);
-                Write(EQUAL);
+                WriteChar(TILDE);
+                WriteChar(EQUAL);
                 break;
             case Operator.TildeAdd:
-                Write(TILDE);
-                Write(PLUS);
+                WriteChar(TILDE);
+                WriteChar(PLUS);
                 break;
             case Operator.TildeSubtract:
-                Write(TILDE);
-                Write(DASH);
+                WriteChar(TILDE);
+                WriteChar(DASH);
                 break;
             case Operator.TildeMultiply:
-                Write(TILDE);
-                Write(STAR);
+                WriteChar(TILDE);
+                WriteChar(STAR);
                 break;
         }
     }
 
-    bool WriteAnnotations(SyntaxNode node)
+    void WriteAnnotations(SyntaxNode node)
     {
         if (node.Annotations is not { Count: > 0 } anns)
-            return false;
+            return;
 
         foreach (var ann in anns)
         {
-            Space();
-            Write(COLON);
-            Write(COLON);
-            WriteNode(ann);
+            WriteSpace();
+            WriteChar(COLON);
+            WriteChar(COLON);
+            WriteSyntax(ann);
         }
 
-        return true;
+        return;
     }
 
     public override string ToString()
@@ -1028,42 +974,4 @@ internal sealed class Writer
         var mzn = _sb.ToString();
         return mzn;
     }
-
-    // /// <summary>
-    // /// Write the given node to a string
-    // /// </summary>
-    // public static string Write(SyntaxNode node, WriteOptions? options = null)
-    // {
-    //     var writer = new Writer(options);
-    //     writer.WriteNode(node);
-    //
-    //     // Trim trailing whitespace
-    //     var sb = writer._sb;
-    //     var n = sb.Length;
-    //     while (char.IsWhiteSpace(sb[--n])) { }
-    //     sb.Length = n + 1;
-    //
-    //     var text = writer._sb.ToString();
-    //     return text;
-    // }
-    //
-    // /// <summary>
-    // /// Write the given Model to a string
-    // /// </summary>
-    // public static string Write(ModelSyntax model, WriteOptions? options = null)
-    // {
-    //     var writer = new Writer(options);
-    //     foreach (var statement in model.Nodes)
-    //         writer.WriteNode(statement);
-    //
-    //     // Trim trailing whitespace
-    //     var sb = writer._sb;
-    //     var n = sb.Length;
-    //     while (char.IsWhiteSpace(sb[--n])) { }
-    //     sb.Length = n + 1;
-    //
-    //     var text = writer._sb.ToString();
-    //     return text;
-    // }
-    //
 }
