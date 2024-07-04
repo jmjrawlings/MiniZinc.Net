@@ -23,7 +23,9 @@ public class ParserUnitTests
     [InlineData("enum Complex = C(1..10);")]
     void test_parse_enum_item(string mzn)
     {
-        var node = Parser.ParseStatement<EnumDeclarationSyntax>(mzn);
+        var node = Parser.ParseStatement<DeclarationSyntax>(mzn);
+        node.Kind.Should().Be(DeclareKind.Enum);
+        node.Body.Should().NotBeNull();
     }
 
     [Fact]
@@ -112,7 +114,7 @@ public class ParserUnitTests
     [InlineData("[ 1: 1, 2, 3, 4]")]
     void test_indexed_array_1d(string mzn)
     {
-        var expr = Parser.ParseExpression<Array1DSyntax>(mzn);
+        var expr = Parser.ParseExpression<Array1dSyntax>(mzn);
     }
 
     [Fact]

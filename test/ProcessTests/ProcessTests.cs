@@ -14,7 +14,7 @@
         var cmd = new Command("minizinc", "--version");
         await foreach (var msg in cmd.Watch())
         {
-            Write("{0}", msg.Content);
+            WriteLn("{0}", msg.Content);
         }
     }
 
@@ -41,9 +41,9 @@
         var proc = new CommandRunner(cmd);
         await foreach (var msg in proc.Watch(cts.Token))
         {
-            Write("{0}", msg.EventType);
+            WriteLn("{0}", msg.EventType);
             if (msg.Content is { } data)
-                Write(data);
+                WriteLn(data);
         }
     }
 
