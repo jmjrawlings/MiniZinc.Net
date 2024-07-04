@@ -218,7 +218,7 @@ public class Model
             con.Annotations ??= new List<ExpressionSyntax>();
             con.Annotations.Add(new ExpressionSyntax<string>(name));
         }
-        AddNode(con);
+        AddSyntax(con);
         return name;
     }
 
@@ -307,24 +307,24 @@ public class Model
     /// <summary>
     /// Add the given syntax node to the model
     /// </summary>
-    void AddNode(SyntaxNode syntaxNode)
+    void AddSyntax(SyntaxNode syntax)
     {
-        switch (syntaxNode)
+        switch (syntax)
         {
-            case SolveSyntax node:
+            case SolveSyntax solve:
                 if (_solve is null)
                 {
-                    _solve = node;
+                    _solve = solve;
                 }
                 else
                 {
-                    Error($"Can not override \"{_solve}\" with \"{syntaxNode}\"");
+                    Error($"Can not override \"{_solve}\" with \"{syntax}\"");
                 }
                 break;
 
-            case OutputSyntax node:
+            case OutputSyntax output:
                 _outputs ??= new List<OutputSyntax>();
-                _outputs.Add(node);
+                _outputs.Add(output);
                 break;
 
             case ConstraintSyntax node:
@@ -333,61 +333,71 @@ public class Model
                 AddSourceText(node);
                 break;
 
-            case AssignmentSyntax node:
-                var name = node.Identifier.ToString();
-                var expr = node.Expr;
+            case AssignmentSyntax assign:
+                var name = assign.Name;
+                var expr = assign.Expr;
                 if (_namespace.TryGetValue(name, out var old))
                 {
-                    switch (old)
+                    /* Assignment to a variable that has only been declared */
+                    if (old is DeclarationSyntax { Body: null })
                     {
-                        // Unassigned variable
-                        case DeclarationSyntax { Body: null } syntax:
-                            var copy = syntax.Clone();
-                            copy.Body = expr;
-                            _namespace[name] = copy;
-                            break;
-
-                        default:
-                            Error($"Reassigned variable {name} from {old} to {expr}");
-                            break;
+                        /* The easiest way to store the fully assigned variable
+                         * declaration here is to complete the intial declaration
+                         * using this expression by parsing the string concatentat.
+                         *
+                         * eg:
+                         * enum Dir;
+                         * Dir = {A,B,C,D};
+                         *
+                         * becomes:
+                         * enum Dir = {A, B, C, D};
+                         */
+                        var mzn = $"{old.ToString()![..^1]} = {expr};";
+                        var declare = Parser.ParseStatement<DeclarationSyntax>(mzn);
+                        _namespace[name] = declare;
+                    }
+                    else
+                    {
+                        Error($"Reassigned variable {name} from {old} to {expr}");
                     }
                 }
                 else
                 {
-                    _namespace[name] = node;
+                    _namespace[name] = assign;
                 }
-                AddSourceText(node);
+                AddSourceText(assign);
                 break;
 
-            case DeclarationSyntax node:
-                name = node.Identifier.ToString();
-                if (!_namespace.TryGetValue(name, out old))
-                    _namespace[name] = node;
-                else if (old is AssignmentSyntax && node.Body is null)
-                    _namespace[name] = node;
-                else
-                    Error($"Variable {name} was already declared as {node.Type.SourceText}");
+            case DeclarationSyntax declare:
+                name = declare.Name;
+                _namespace.TryGetValue(name, out old);
+                switch (old)
+                {
+                    case null:
+                        _namespace[name] = declare;
+                        break;
 
-                AddSourceText(node);
-                break;
+                    case AssignmentSyntax assign when declare.Body is null:
+                        declare.Body = assign.Expr;
+                        _namespace[name] = declare;
+                        break;
 
-            case EnumDeclarationSyntax node:
-                name = node.Identifier.ToString();
-                if (_namespace.TryGetValue(name, out old))
-                    Error($"Variable {name} was already declared as an Enumeration");
-                else
-                    _namespace[name] = node;
+                    case DeclarationSyntax oldDeclare:
+                        var oldType = oldDeclare.Type?.ToString();
+                        var newType = declare.Type?.ToString();
+                        if (oldType != newType)
+                            Error(
+                                $"Function {name} was already declared with an incompatible return type ({oldType} vs {newType})"
+                            );
+                        // TODO - store overloads?
+                        break;
 
-                AddSourceText(node);
-                break;
+                    default:
+                        Error($"Variable {name} was already declared as {old}");
+                        break;
+                }
 
-            case TypeAliasSyntax node:
-                name = node.Name;
-                if (_namespace.TryGetValue(name, out old))
-                    Error($"TypeAlias {name} was already declared as {old}");
-                else
-                    _namespace[name] = node;
-                AddSourceText(node);
+                AddSourceText(declare);
                 break;
 
             case IncludeSyntax node:
@@ -513,7 +523,7 @@ public class Model
     private void AddModel(ModelSyntax model)
     {
         foreach (var statement in model.Statements)
-            AddNode(statement);
+            AddSyntax(statement);
     }
 
     [DoesNotReturn]
