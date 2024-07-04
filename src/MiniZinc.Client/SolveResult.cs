@@ -181,7 +181,7 @@ public abstract record SolveResult<T>
     /// Get the array solution for the given variable
     public IEnumerable<U> GetArray1D<U>(string id)
     {
-        var array = Get<Array1DSyntax>(id);
+        var array = Get<Array1dSyntax>(id);
         foreach (var node in array.Elements)
         {
             if (node is not ExpressionSyntax<U> literal)

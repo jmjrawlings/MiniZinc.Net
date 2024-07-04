@@ -11,7 +11,7 @@ public abstract class TestBase
         _output = output;
     }
 
-    protected void Write(string? message = null)
+    protected void WriteLn(string? message = null)
     {
         if (message is null)
             _output.WriteLine("");
@@ -19,13 +19,13 @@ public abstract class TestBase
             _output.WriteLine(message);
     }
 
-    protected void Write(string template, params object?[] args)
+    protected void WriteLn(string template, params object?[] args)
     {
         _output.WriteLine(template, args);
     }
 
     protected void WriteSection()
     {
-        _output.WriteLine(new string('-', 120));
+        _output.WriteLine(new string('-', 80));
     }
 }
