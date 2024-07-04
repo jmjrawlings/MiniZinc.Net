@@ -311,15 +311,12 @@ public class Model
     {
         switch (syntax)
         {
+            case SolveSyntax solve when _solve is null:
+                _solve = solve;
+                break;
+
             case SolveSyntax solve:
-                if (_solve is null)
-                {
-                    _solve = solve;
-                }
-                else
-                {
-                    Error($"Can not override \"{_solve}\" with \"{syntax}\"");
-                }
+                Error($"Can not override \"{_solve}\" with \"{syntax}\"");
                 break;
 
             case OutputSyntax output:
@@ -336,11 +333,16 @@ public class Model
             case AssignmentSyntax assign:
                 var name = assign.Name;
                 var expr = assign.Expr;
-                if (_namespace.TryGetValue(name, out var old))
+                _namespace.TryGetValue(name, out var old);
+                switch (old)
                 {
-                    /* Assignment to a variable that has only been declared */
-                    if (old is DeclarationSyntax { Body: null })
-                    {
+                    // Undeclared variable
+                    case null:
+                        _namespace[name] = assign;
+                        break;
+
+                    // Assignment to a variable that has only been declared
+                    case DeclarationSyntax { Body: null } declare:
                         /* The easiest way to store the fully assigned variable
                          * declaration here is to complete the intial declaration
                          * using this expression by parsing the string concatentat.
@@ -352,18 +354,14 @@ public class Model
                          * becomes:
                          * enum Dir = {A, B, C, D};
                          */
-                        var mzn = $"{old.ToString()![..^1]} = {expr};";
-                        var declare = Parser.ParseStatement<DeclarationSyntax>(mzn);
+                        var mzn = $"{declare.ToString()[..^1]} = {expr};";
+                        declare = Parser.ParseStatement<DeclarationSyntax>(mzn);
                         _namespace[name] = declare;
-                    }
-                    else
-                    {
+                        break;
+
+                    default:
                         Error($"Reassigned variable {name} from {old} to {expr}");
-                    }
-                }
-                else
-                {
-                    _namespace[name] = assign;
+                        break;
                 }
                 AddSourceText(assign);
                 break;
@@ -400,8 +398,8 @@ public class Model
                 AddSourceText(declare);
                 break;
 
-            case IncludeSyntax node:
-                var path = node.Path.StringValue;
+            case IncludeSyntax include:
+                var path = include.Path.StringValue;
                 var file = FindFile(path);
 
                 /* If we couldn't find the included file then for now
@@ -411,7 +409,7 @@ public class Model
                 {
                     var msg = CreateFileNotFoundMessage(path);
                     Warning(msg);
-                    AddSourceText(node);
+                    AddSourceText(include);
                 }
                 else
                 {
