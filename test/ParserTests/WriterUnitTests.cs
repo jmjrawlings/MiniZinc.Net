@@ -39,9 +39,18 @@ public sealed class WriterUnitTests
     [Theory]
     [InlineData("""a <-> (b \/ c)""", """a <-> b \/ c""")]
     [InlineData("""(a <-> b) \/ c""", """(a <-> b) \/ c""")]
-    [InlineData("""a <-> b \/ c""", """a <-> b \/ c""")]
+    [InlineData("""a <-> b \/ c""", """(a <-> b) \/ c""")]
     [InlineData("""2 * i""", """2 * i""")]
     void test_write_precedence(string input, string expected)
+    {
+        var expr = Parser.ParseExpression<BinaryOperatorSyntax>(input)!;
+        var output = expr.Write();
+        output.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("""{A} ++ {B} ++ {C}""", """{A} ++ {B} ++ {C}""")]
+    void test_write_precedence_right_assoc(string input, string expected)
     {
         var expr = Parser.ParseExpression<BinaryOperatorSyntax>(input)!;
         var output = expr.Write();
