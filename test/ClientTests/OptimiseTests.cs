@@ -22,7 +22,12 @@ public class OptimiseTests : ClientTest
 			"""{"aCostSupport":0,"mdl8_Z":0}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Fact(DisplayName="unit/general/infinite_domain_bind.mzn")]
@@ -34,7 +39,12 @@ public class OptimiseTests : ClientTest
 			"""{"x":10}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/general/test-search1.mzn")]
@@ -48,7 +58,12 @@ public class OptimiseTests : ClientTest
 			"""{"x":3,"y":8}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/general/test_times_int_float_eq.mzn")]
@@ -63,7 +78,12 @@ public class OptimiseTests : ClientTest
 		var args = new List<string>{
 			"-D QuadrFloat=true;QuadrIntCard=0",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/general/test_times_int_float_eq__defaultopt.mzn")]
@@ -76,7 +96,12 @@ public class OptimiseTests : ClientTest
 			"""{"objective":-5,"x":5,"y":6,"z":30,"xf":5.0,"yf":6.0}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/on_restart/complete.mzn")]
@@ -92,7 +117,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/on_restart/last_val_bool.mzn")]
@@ -108,7 +138,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Fact(DisplayName="unit/on_restart/last_val_float.mzn")]
@@ -123,7 +158,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/on_restart/last_val_int.mzn")]
@@ -139,7 +179,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/on_restart/last_val_set.mzn")]
@@ -155,7 +200,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/on_restart/sol_bool.mzn")]
@@ -171,7 +221,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Fact(DisplayName="unit/on_restart/sol_float.mzn")]
@@ -186,7 +241,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/on_restart/sol_int.mzn")]
@@ -202,7 +262,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/on_restart/sol_set.mzn")]
@@ -218,7 +283,12 @@ public class OptimiseTests : ClientTest
 			"--restart constant",
 			"--restart-base 100",
 		};
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Fact(DisplayName="unit/regression/ts_bug.mzn")]
@@ -233,7 +303,12 @@ public class OptimiseTests : ClientTest
 			"""{"cost":48,"s":[4,1,2,3,5,6],"dur":[{"_set_":"{2,4}"},{"_set_":"{1,2,4}"},{"_set_":"{1,3,4}"},{"_set_":"{1,3,4}"},{"_set_":"{1,4}"},{"_set_":"{1,4}"}],"bef":[{"_set_":"{}"},{"_set_":"{2,4}"},{"_set_":"{1,2,4}"},{"_set_":"{1,2,3,4}"},{"_set_":"{1,2,3,4}"},{"_set_":"{1,2,3,4}"}],"aft":[{"_set_":"{1,2,3,4}"},{"_set_":"{1,2,3,4}"},{"_set_":"{1,3,4}"},{"_set_":"{1,3,4}"},{"_set_":"{1,4}"},{"_set_":"{}"}],"a":[{"_set_":"{1,2}"},{"_set_":"{2,3}"},{"_set_":"{3,4}"},{"_set_":"{2,4}"},{"_set_":"{1,3}"},{"_set_":"{1,4}"}]}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Fact(DisplayName="unit/types/record_var_element.mzn")]
@@ -245,7 +320,12 @@ public class OptimiseTests : ClientTest
 			"""{"idx":"iE","selected":{"a":6,"b":{"c":3,"d":3}}}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_var_element.mzn")]
@@ -257,7 +337,12 @@ public class OptimiseTests : ClientTest
 			"""{"idx":"iE","selected":[6,[3,3]]}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="examples/radiation.mzn")]
@@ -270,7 +355,12 @@ public class OptimiseTests : ClientTest
 			"""{"Beamtime":21,"K":7,"N":[2,1,1,1,2,0,0,0,0,0,0,0,0,0],"Q":[[[0,1,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,0,0,0,0,0,0,0,0,0],[0,0,1,0,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,1,0,0,0,0,0,0,0,0,0]],[[1,0,1,1,1,0,0,0,0,0,0,0,0,0],[1,0,1,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,0,1,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,1,0,0,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,1,0,0,0,0,0,0,0,0,0,0],[2,0,1,1,0,0,0,0,0,0,0,0,0,0],[0,0,1,1,0,0,0,0,0,0,0,0,0,0]],[[0,0,0,0,2,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0,0,0,0,0],[2,1,0,1,0,0,0,0,0,0,0,0,0,0],[2,1,1,1,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0]]],"objective":175}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Fact(DisplayName="examples/radiation.mzn")]
@@ -282,7 +372,12 @@ public class OptimiseTests : ClientTest
 			"""{}""",
 			};
 		var args = new List<string>();
-		await TestOptimise(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 }

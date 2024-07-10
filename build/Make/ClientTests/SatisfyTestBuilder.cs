@@ -15,8 +15,7 @@ public sealed class ClientSatisfyTestsBuilder : ClientTestsBuilder
             if (GetTestInfo(testCase) is not { } info)
                 continue;
 
-            using var _ = WriteTestHeader(info);
-            WriteLn("await TestSatisfy(path, solver, solutions, args);");
+            WriteTest(info);
         }
     }
 }

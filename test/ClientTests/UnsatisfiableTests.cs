@@ -20,7 +20,13 @@ public class UnsatisfiableTests : ClientTest
 		var solver = "gecode";
 		var solutions = new List<string>();
 		var args = new List<string>();
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/regression/bind-defines-var.mzn")]
 	public async Task test_solve_unit_regression_bind_defines_var()
@@ -31,7 +37,13 @@ public class UnsatisfiableTests : ClientTest
 		var args = new List<string>{
 			"-G std",
 		};
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/regression/github_661_part1.mzn")]
 	public async Task test_solve_unit_regression_github_661_part1()
@@ -40,7 +52,13 @@ public class UnsatisfiableTests : ClientTest
 		var solver = "gecode";
 		var solutions = new List<string>();
 		var args = new List<string>();
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/regression/github_666.mzn")]
 	public async Task test_solve_unit_regression_github_666()
@@ -51,7 +69,13 @@ public class UnsatisfiableTests : ClientTest
 		var args = new List<string>{
 			"-G std",
 		};
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/regression/github_765.mzn")]
 	public async Task test_solve_unit_regression_github_765()
@@ -60,7 +84,13 @@ public class UnsatisfiableTests : ClientTest
 		var solver = "gecode";
 		var solutions = new List<string>();
 		var args = new List<string>();
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/regression/github_785.mzn")]
 	public async Task test_solve_unit_regression_github_785()
@@ -71,7 +101,13 @@ public class UnsatisfiableTests : ClientTest
 		var args = new List<string>{
 			"-G std",
 		};
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/regression/github_798.mzn")]
 	public async Task test_solve_unit_regression_github_798()
@@ -82,7 +118,13 @@ public class UnsatisfiableTests : ClientTest
 		var args = new List<string>{
 			"-G gecode_presolver",
 		};
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/types/struct_domain_5.mzn")]
 	public async Task test_solve_unit_types_struct_domain_5()
@@ -91,7 +133,13 @@ public class UnsatisfiableTests : ClientTest
 		var solver = "gecode";
 		var solutions = new List<string>();
 		var args = new List<string>();
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/types/struct_domain_6.mzn")]
 	public async Task test_solve_unit_types_struct_domain_6()
@@ -100,7 +148,13 @@ public class UnsatisfiableTests : ClientTest
 		var solver = "gecode";
 		var solutions = new List<string>();
 		var args = new List<string>();
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_4.mzn")]
 	public async Task test_solve_unit_types_struct_return_ti_4()
@@ -109,7 +163,13 @@ public class UnsatisfiableTests : ClientTest
 		var solver = "gecode";
 		var solutions = new List<string>();
 		var args = new List<string>();
-		await TestUnsatisfiable(path, solver, args);	}
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 }
 

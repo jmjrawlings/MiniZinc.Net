@@ -14,12 +14,14 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         MiniZinc = fixture.MiniZinc;
     }
 
-    protected async Task TestAllSolutions(
+    protected async Task Test(
         string path,
         string solver,
-        List<string> solutions,
-        List<string> args,
-        params SolveStatus[] statuses
+        List<string>? solutions = null,
+        List<string>? args = null,
+        string? error = null,
+        bool allSolutions = false,
+        List<SolveStatus>? statuses = null
     )
     {
         WriteLn(path);
@@ -29,43 +31,20 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         WriteSection();
         WriteLn();
 
-        var model = Model.FromFile(path);
-        WriteLn(source);
-        WriteSection();
-
-        var options = SolveOptions.Create(solverId: solver).AddArgs(args);
-        var result = await MiniZinc.Solve(model, options);
-        WriteLn(result.Command);
-        result.IsSuccess.Should().BeTrue();
-        if (statuses.Length > 0)
-            result.Status.Should().BeOneOf(statuses);
-
-        var actual = result.Data;
-        foreach (var json in solutions)
+        Model? model;
+        try
         {
-            var expected = (JsonObject)JsonNode.Parse(json)!;
-            var equal = CheckSolution(expected, actual);
-            equal.Should().BeTrue();
+            model = Model.FromFile(path);
         }
-    }
+        catch (Exception)
+        {
+            model = null;
+            error.Should().NotBeNull();
+            return;
+        }
 
-    protected async Task TestAnySolution(
-        string path,
-        string solver,
-        List<string>? solutions,
-        List<string> args,
-        params SolveStatus[] statuses
-    )
-    {
-        WriteLn(path);
-        WriteSection();
-        var source = File.ReadAllText(path);
-        WriteLn(source);
-        WriteSection();
-        WriteLn();
-
-        var model = Model.FromFile(path);
-        WriteLn(source);
+        var mzn = model.Write();
+        WriteLn(mzn);
         WriteSection();
 
         var options = SolveOptions.Create(solverId: solver).AddArgs(args);
@@ -73,7 +52,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         WriteLn(result.Command);
         result.IsSuccess.Should().BeTrue();
 
-        if (statuses.Length > 0)
+        if (statuses is { Count: > 0 })
             result.Status.Should().BeOneOf(statuses);
 
         if (solutions is not { Count: > 0 })
@@ -83,81 +62,22 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         foreach (var json in solutions)
         {
             var expected = (JsonObject)JsonNode.Parse(json)!;
-            if (CheckSolution(expected, actual))
-                return;
-        }
-        Assert.Fail("No valid solutions found");
-    }
-
-    protected async Task TestError(
-        string path,
-        string solver,
-        string? errorMessage,
-        string? errorRegex,
-        List<string> args
-    )
-    {
-        WriteSection();
-        WriteLn(path);
-
-        Model? model = null;
-        try
-        {
-            model = Model.FromFile(path);
-        }
-        catch (Exception ex)
-        {
-            WriteLn(ex.Message);
+            var ok = CheckSolution(expected, actual);
+            switch (ok, allSolutions)
+            {
+                case (false, true):
+                    Assert.Fail("Expected all solutions but one failed");
+                    break;
+                case (true, true):
+                    break;
+                case (false, false):
+                    break;
+                case (true, false):
+                    return;
+            }
         }
 
-        if (model is null)
-            return;
-
-        WriteLn(model.SourceText);
-        WriteSection();
-
-        var options = SolveOptions.Create(solverId: solver);
-        options = options.AddArgs(args);
-
-        var result = await MiniZinc.Solve(model, options);
-        result.IsSuccess.Should().BeFalse();
-
-        if (errorRegex is not null)
-            result.Error.Should().MatchRegex(errorRegex);
-        else if (errorMessage is not null)
-            result.Error.Should().Be(errorMessage);
-    }
-
-    public async Task TestOptimise(
-        string path,
-        string solver,
-        List<string> solutions,
-        List<string> args
-    )
-    {
-        await TestAnySolution(path, solver, solutions, args, SolveStatus.Optimal);
-    }
-
-    public async Task TestSatisfy(
-        string path,
-        string solver,
-        List<string> solutions,
-        List<string> args
-    )
-    {
-        await TestAnySolution(
-            path,
-            solver,
-            solutions,
-            args,
-            SolveStatus.Satisfied,
-            SolveStatus.Optimal
-        );
-    }
-
-    public async Task TestUnsatisfiable(string path, string solver, List<string> args)
-    {
-        await TestAnySolution(path, solver, null, args, SolveStatus.Unsatisfiable);
+        Assert.Fail("No solution found");
     }
 
     /// <summary>

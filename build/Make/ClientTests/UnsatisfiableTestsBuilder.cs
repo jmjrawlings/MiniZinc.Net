@@ -15,8 +15,7 @@ public sealed class UnsatisfiableTestsBuilder : ClientTestsBuilder
             if (GetTestInfo(testCase) is not { } info)
                 continue;
 
-            using var _ = WriteTestHeader(info);
-            Write("await TestUnsatisfiable(path, solver, args);");
+            WriteTest(info);
         }
     }
 }

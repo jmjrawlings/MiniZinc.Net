@@ -9,14 +9,13 @@ public sealed class AllSolutionsTestsBuilder : ClientTestsBuilder
     {
         foreach (var testCase in spec.TestCases)
         {
-            if (testCase.Type is not TestType.AnySolution)
+            if (testCase.Type is not TestType.AllSolutions)
                 continue;
 
             if (GetTestInfo(testCase) is not { } info)
                 continue;
 
-            using var _ = WriteTestHeader(info);
-            WriteLn("await TestAllSolutions(path, solver, solutions, args);");
+            WriteTest(info);
         }
     }
 }

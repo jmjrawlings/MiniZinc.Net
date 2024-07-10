@@ -13,4245 +13,4108 @@ public class AllSolutionsTests : ClientTest
 	{
 	}
 
-	[Theory(DisplayName="unit/test-globals-float.mzn")]
-	[InlineData("gecode")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_test_globals_float(string solver)
+	[Fact(DisplayName="unit/compilation/multiple_neg.mzn")]
+	public async Task test_solve_unit_compilation_multiple_neg()
 	{
-		var path = "unit/test-globals-float.mzn";
-		var solutions = new List<string> {
-			"""{"inc_avf":[1.0,2.0,2.0],"min_vf1":0.0,"min_vf2":0.0,"max_vf1":9.9,"max_vf2":0.0}""",
-			"""{"inc_avf":[1.0,2.0,2.0],"min_vf1":0.0,"min_vf2":0.0,"max_vf1":9.9,"max_vf2":9.9}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/aggregation.mzn")]
-	public async Task test_solve_unit_compilation_aggregation()
-	{
-		var path = "unit/compilation/aggregation.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/annotate_bool_literal.mzn")]
-	public async Task test_solve_unit_compilation_annotate_bool_literal()
-	{
-		var path = "unit/compilation/annotate_bool_literal.mzn";
+		var path = "unit/compilation/multiple_neg.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":1}""",
+			"""{"A":0,"B":0,"C":0}""",
+			"""{"A":0,"B":0,"C":1}""",
+			"""{"A":1,"B":0,"C":0}""",
+			"""{"A":1,"B":0,"C":1}""",
+			"""{"A":1,"B":1,"C":0}""",
+			"""{"A":1,"B":1,"C":1}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/annotate_from_array.mzn")]
-	public async Task test_solve_unit_compilation_annotate_from_array()
-	{
-		var path = "unit/compilation/annotate_from_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/assert_dbg_flag.mzn")]
-	public async Task test_solve_unit_compilation_assert_dbg_flag()
-	{
-		var path = "unit/compilation/assert_dbg_flag.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--debug",
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
 		};
-		await TestAllSolutions(path, solver, solutions, args);
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/compilation/assert_dbg_ignore.mzn")]
-	public async Task test_solve_unit_compilation_assert_dbg_ignore()
+	[Fact(DisplayName="unit/general/array_intersect_context.mzn")]
+	public async Task test_solve_unit_general_array_intersect_context()
 	{
-		var path = "unit/compilation/assert_dbg_ignore.mzn";
+		var path = "unit/general/array_intersect_context.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":1}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2}"},{"_set_":"{3}"}],"b":true}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}],"b":false}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/call_root_ctx.mzn")]
-	public async Task test_solve_unit_compilation_call_root_ctx()
-	{
-		var path = "unit/compilation/call_root_ctx.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/chain_compr_mult_clause.mzn")]
-	public async Task test_solve_unit_compilation_chain_compr_mult_clause()
-	{
-		var path = "unit/compilation/chain_compr_mult_clause.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/clause_disable_hr.mzn")]
-	public async Task test_solve_unit_compilation_clause_disable_hr()
-	{
-		var path = "unit/compilation/clause_disable_hr.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/commutative_cse.mzn")]
-	public async Task test_solve_unit_compilation_commutative_cse()
-	{
-		var path = "unit/compilation/commutative_cse.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/comp_domain_ann.mzn")]
-	public async Task test_solve_unit_compilation_comp_domain_ann()
-	{
-		var path = "unit/compilation/comp_domain_ann.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/count_rewrite.mzn")]
-	public async Task test_solve_unit_compilation_count_rewrite()
-	{
-		var path = "unit/compilation/count_rewrite.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/debug_mode_false.mzn")]
-	public async Task test_solve_unit_compilation_debug_mode_false()
-	{
-		var path = "unit/compilation/debug_mode_false.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/debug_mode_true.mzn")]
-	public async Task test_solve_unit_compilation_debug_mode_true()
-	{
-		var path = "unit/compilation/debug_mode_true.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":true}""",
-			};
-		var args = new List<string>{
-			"--debug",
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
 		};
-		await TestAllSolutions(path, solver, solutions, args);
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/compilation/defines_var_cycle_breaking.mzn")]
-	public async Task test_solve_unit_compilation_defines_var_cycle_breaking()
+	[Fact(DisplayName="unit/general/cse_ctx.mzn")]
+	public async Task test_solve_unit_general_cse_ctx()
 	{
-		var path = "unit/compilation/defines_var_cycle_breaking.mzn";
+		var path = "unit/general/cse_ctx.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/float_inf_range_dom.mzn")]
-	public async Task test_solve_unit_compilation_float_inf_range_dom()
-	{
-		var path = "unit/compilation/float_inf_range_dom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/has_ann.mzn")]
-	public async Task test_solve_unit_compilation_has_ann()
-	{
-		var path = "unit/compilation/has_ann.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":true}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/if_then_no_else.mzn")]
-	public async Task test_solve_unit_compilation_if_then_no_else()
-	{
-		var path = "unit/compilation/if_then_no_else.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":true,"s":"\u0022\u0022","x":[],"y":[]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/implied_exists_chain.mzn")]
-	public async Task test_solve_unit_compilation_implied_exists_chain()
-	{
-		var path = "unit/compilation/implied_exists_chain.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/implied_hr.mzn")]
-	public async Task test_solve_unit_compilation_implied_hr()
-	{
-		var path = "unit/compilation/implied_hr.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/int_inf_dom.mzn")]
-	public async Task test_solve_unit_compilation_int_inf_dom()
-	{
-		var path = "unit/compilation/int_inf_dom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/optimization.mzn")]
-	public async Task test_solve_unit_compilation_optimization()
-	{
-		var path = "unit/compilation/optimization.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O0",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/optimization.mzn")]
-	public async Task test_solve_unit_compilation_optimization_2()
-	{
-		var path = "unit/compilation/optimization.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O1",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/optimization.mzn")]
-	public async Task test_solve_unit_compilation_optimization_3()
-	{
-		var path = "unit/compilation/optimization.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O2",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/optimization.mzn")]
-	public async Task test_solve_unit_compilation_optimization_4()
-	{
-		var path = "unit/compilation/optimization.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O3",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/par_arg_out_of_bounds.mzn")]
-	public async Task test_solve_unit_compilation_par_arg_out_of_bounds()
-	{
-		var path = "unit/compilation/par_arg_out_of_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/quoted_id_flatzinc.mzn")]
-	public async Task test_solve_unit_compilation_quoted_id_flatzinc()
-	{
-		var path = "unit/compilation/quoted_id_flatzinc.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/compilation/set2iter.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_compilation_set2iter(string solver)
-	{
-		var path = "unit/compilation/set2iter.mzn";
-		var solutions = new List<string> {
-			"""{"x":{"_set_":"{2,3}"},"y":{"_set_":"{4,5}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/compilation/time_limit.mzn")]
-	public async Task test_solve_unit_compilation_time_limit()
-	{
-		var path = "unit/compilation/time_limit.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--time-limit 1",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/division/test_div10.mzn")]
-	[InlineData("gecode")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_division_test_div10(string solver)
-	{
-		var path = "unit/division/test_div10.mzn";
-		var solutions = new List<string> {
-			"""{"y":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/division/test_div11.mzn")]
-	[InlineData("gecode")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_division_test_div11(string solver)
-	{
-		var path = "unit/division/test_div11.mzn";
-		var solutions = new List<string> {
-			"""{"y":0}""",
-			"""{"y":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/division/test_div8.mzn")]
-	[InlineData("gecode")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_division_test_div8(string solver)
-	{
-		var path = "unit/division/test_div8.mzn";
-		var solutions = new List<string> {
-			"""{"y":0}""",
-			"""{"y":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/division/test_div_mod_bounds.mzn")]
-	[InlineData("gecode")]
-	[InlineData("gurobi", Skip="Solver not supported")]
-	[InlineData("scip", Skip="Solver not supported")]
-	public async Task test_solve_unit_division_test_div_mod_bounds(string solver)
-	{
-		var path = "unit/division/test_div_mod_bounds.mzn";
-		var solutions = new List<string> {
-			"""{"x":20,"y":-3,"z":-6,"zbnd":[-20,20],"zfbnd":[0.15,1.333333333333333],"zif":-6.666666666666667,"tf":1.0,"tfbnd":[0.1125,8.888888888888889],"zmbnd":[0,6],"zm2lb":0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/division/test_fldiv_01.mzn")]
-	[InlineData("gurobi", Skip="Solver not supported")]
-	[InlineData("scip", Skip="Solver not supported")]
-	public async Task test_solve_unit_division_test_fldiv_01(string solver)
-	{
-		var path = "unit/division/test_fldiv_01.mzn";
-		var solutions = new List<string> {
-			"""{"x":0.3,"y":2.0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/division/test_fldiv_02.mzn")]
-	[InlineData("gurobi", Skip="Solver not supported")]
-	[InlineData("scip", Skip="Solver not supported")]
-	public async Task test_solve_unit_division_test_fldiv_02(string solver)
-	{
-		var path = "unit/division/test_fldiv_02.mzn";
-		var solutions = new List<string> {
-			"""{"x":2.0,"y":1.5,"z":1.5}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/fznjson/fznjson-basic.mzn")]
-	public async Task test_solve_unit_fznjson_fznjson_basic()
-	{
-		var path = "unit/fznjson/fznjson-basic.mzn";
-		var solver = "fznjson.msc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/annotated_expression_1.mzn")]
-	public async Task test_solve_unit_general_annotated_expression_1()
-	{
-		var path = "unit/general/annotated_expression_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":3}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/array_access_out_of_bounds_1.mzn")]
-	public async Task test_solve_unit_general_array_access_out_of_bounds_1()
-	{
-		var path = "unit/general/array_access_out_of_bounds_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/array_access_out_of_bounds_2.mzn")]
-	public async Task test_solve_unit_general_array_access_out_of_bounds_2()
-	{
-		var path = "unit/general/array_access_out_of_bounds_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/array_access_record_out_of_bounds.mzn")]
-	public async Task test_solve_unit_general_array_access_record_out_of_bounds()
-	{
-		var path = "unit/general/array_access_record_out_of_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/array_access_tuple_out_of_bounds.mzn")]
-	public async Task test_solve_unit_general_array_access_tuple_out_of_bounds()
-	{
-		var path = "unit/general/array_access_tuple_out_of_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/array_param_non_array_return.mzn")]
-	public async Task test_solve_unit_general_array_param_non_array_return()
-	{
-		var path = "unit/general/array_param_non_array_return.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[1]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/array_union_intersect_enum.mzn")]
-	public async Task test_solve_unit_general_array_union_intersect_enum()
-	{
-		var path = "unit/general/array_union_intersect_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[{"_set_":"{A}"},{"_set_":"{B}"},{"_set_":"{C}"}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/bin_pack_multiobj.mzn", Skip="Solver not supported")]
-	public async Task test_solve_unit_general_bin_pack_multiobj()
-	{
-		var path = "unit/general/bin_pack_multiobj.mzn";
-		var solver = "gurobi";
-		var solutions = new List<string> {
-			"""{"load":[3,8,10]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/builtins_arg_max.mzn")]
-	public async Task test_solve_unit_general_builtins_arg_max()
-	{
-		var path = "unit/general/builtins_arg_max.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"bool_output":3,"int_output":1,"float_output":2,"indexed_output":4,"enumed_output":"\u0022TWO\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/builtins_debug.mzn")]
-	public async Task test_solve_unit_general_builtins_debug()
-	{
-		var path = "unit/general/builtins_debug.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"assert_par_int":1,"assert_var_int":2,"assert_par_opt_int":3,"assert_var_opt_int":4,"assert_array_of_par_int":[1],"assert_array_of_var_int":[2],"assert_array_of_par_opt_int":[3],"assert_array_of_var_opt_int":[4],"trace_par_int":1,"trace_var_int":2,"trace_par_opt_int":3,"trace_var_opt_int":4,"trace_array_of_par_int":[1],"trace_array_of_var_int":[2],"trace_array_of_par_opt_int":[3],"trace_array_of_var_opt_int":[4],"logstream":"\u0022trace_logstream_par_int\ntrace_logstream_var_int\ntrace_logstream_par_opt_int\ntrace_logstream_var_opt_int\ntrace_logstream_array_of_par_int\ntrace_logstream_array_of_var_int\ntrace_logstream_array_of_par_opt_int\ntrace_logstream_array_of_var_opt_int\n\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/comprehension_cv_struct.mzn")]
-	public async Task test_solve_unit_general_comprehension_cv_struct()
-	{
-		var path = "unit/general/comprehension_cv_struct.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1,"z":[null]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/enum_constructor_quoting.mzn")]
-	public async Task test_solve_unit_general_enum_constructor_quoting()
-	{
-		var path = "unit/general/enum_constructor_quoting.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022\u0027Q~\u0027(\u0027F!\u0027(\u0027\u0022\u0027))\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/enum_out_of_range_1.mzn")]
-	public async Task test_solve_unit_general_enum_out_of_range_1()
-	{
-		var path = "unit/general/enum_out_of_range_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/enum_out_of_range_2.mzn")]
-	public async Task test_solve_unit_general_enum_out_of_range_2()
-	{
-		var path = "unit/general/enum_out_of_range_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/eval_par_opt_set.mzn")]
-	public async Task test_solve_unit_general_eval_par_opt_set()
-	{
-		var path = "unit/general/eval_par_opt_set.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":null}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/fix_struct.mzn")]
-	public async Task test_solve_unit_general_fix_struct()
-	{
-		var path = "unit/general/fix_struct.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"a":[[[1]]],"b":1},"y":{"a":[[[1]]],"b":1}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/fn_par_array_undefined.mzn")]
-	public async Task test_solve_unit_general_fn_par_array_undefined()
-	{
-		var path = "unit/general/fn_par_array_undefined.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[2]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/function_param_out_of_range.mzn")]
-	public async Task test_solve_unit_general_function_param_out_of_range()
-	{
-		var path = "unit/general/function_param_out_of_range.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/function_return_out_of_range.mzn")]
-	public async Task test_solve_unit_general_function_return_out_of_range()
-	{
-		var path = "unit/general/function_return_out_of_range.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/function_return_out_of_range_opt.mzn")]
-	public async Task test_solve_unit_general_function_return_out_of_range_opt()
-	{
-		var path = "unit/general/function_return_out_of_range_opt.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/json_ignore.mzn")]
-	public async Task test_solve_unit_general_json_ignore()
-	{
-		var path = "unit/general/json_ignore.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_checker":"\u0022data_2 = 2;\n\u0022","data_1":1}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/general/json_ignore.mzc.mzn\"",
-			"--data \"unit/general/json_ignore.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/md_exists.mzn")]
-	public async Task test_solve_unit_general_md_exists_2()
-	{
-		var path = "unit/general/md_exists.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""{"b":true,"bs":[[[true,true],[false,false]],[[false,false],[false,false]]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/general/md_forall.mzn")]
-	[InlineData("coin-bc")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_general_md_forall_2(string solver)
-	{
-		var path = "unit/general/md_forall.mzn";
-		var solutions = new List<string> {
-			"""{"b":true,"bs":[[[true,true],[true,true]],[[true,true],[true,true]]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/md_iffall.mzn")]
-	public async Task test_solve_unit_general_md_iffall_2()
-	{
-		var path = "unit/general/md_iffall.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,false],[false,false]]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/md_sum_float.mzn")]
-	public async Task test_solve_unit_general_md_sum_float_2()
-	{
-		var path = "unit/general/md_sum_float.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""{"a":55.0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/missing_ozn_decl.mzn")]
-	public async Task test_solve_unit_general_missing_ozn_decl()
-	{
-		var path = "unit/general/missing_ozn_decl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"I1":7,"B2":true,"B3":true}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/general/mortgage.mzn")]
-	[InlineData("gecode")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_general_mortgage(string solver)
-	{
-		var path = "unit/general/mortgage.mzn";
-		var solutions = new List<string> {
-			"""{"P":373.0277986476333,"mortgage":[260.3305785123967,136.3636363636363,0.0]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/general/nosets_empty.mzn")]
-	[InlineData("coin-bc")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_general_nosets_empty(string solver)
-	{
-		var path = "unit/general/nosets_empty.mzn";
-		var solutions = new List<string> {
-			"""{"x":{"_set_":"{}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/overload_bottom.mzn")]
-	public async Task test_solve_unit_general_overload_bottom()
-	{
-		var path = "unit/general/overload_bottom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"_set_":"{}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/param_out_of_range_float.mzn")]
-	public async Task test_solve_unit_general_param_out_of_range_float()
-	{
-		var path = "unit/general/param_out_of_range_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/param_out_of_range_int.mzn")]
-	public async Task test_solve_unit_general_param_out_of_range_int()
-	{
-		var path = "unit/general/param_out_of_range_int.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/quoted_id_1.mzn")]
-	public async Task test_solve_unit_general_quoted_id_1()
-	{
-		var path = "unit/general/quoted_id_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"hello!":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/quoted_id_2.mzn")]
-	public async Task test_solve_unit_general_quoted_id_2()
-	{
-		var path = "unit/general/quoted_id_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/quoted_id_3.mzn")]
-	public async Task test_solve_unit_general_quoted_id_3()
-	{
-		var path = "unit/general/quoted_id_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022A?\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/quoted_id_4.mzn")]
-	public async Task test_solve_unit_general_quoted_id_4()
-	{
-		var path = "unit/general/quoted_id_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022Foo~(A?)\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/range_var_enum.mzn")]
-	public async Task test_solve_unit_general_range_var_enum()
-	{
-		var path = "unit/general/range_var_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x_to_y":{"_set_":"{A,B,C}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/stack_overflow.mzn")]
-	public async Task test_solve_unit_general_stack_overflow()
-	{
-		var path = "unit/general/stack_overflow.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/struct_flat_cv_path.mzn")]
-	public async Task test_solve_unit_general_struct_flat_cv_path()
-	{
-		var path = "unit/general/struct_flat_cv_path.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":2,"b":1,"c":[[1,2],[3,4]]}""",
-			};
-		var args = new List<string>{
-			"--keep-paths",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/test_mod_bounds.mzn")]
-	public async Task test_solve_unit_general_test_mod_bounds()
-	{
-		var path = "unit/general/test_mod_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":{"_set_":"{0,1,2}"},"c":{"_set_":"{-2,-1,0,1,2}"},"d":{"_set_":"{-2,-1,0}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/general/test_queens.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_general_test_queens(string solver)
-	{
-		var path = "unit/general/test_queens.mzn";
-		var solutions = new List<string> {
-			"""{"q":[9,13,2,8,11,20,10,6,19,15,18,12,7,16,4,17,14,5,3,1]}""",
-			"""{"q":[9,7,10,14,11,15,4,12,5,13,1,3,6,8,2,17,19,16,18,20]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/general/test_same.mzn")]
-	[InlineData("gecode")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_general_test_same(string solver)
-	{
-		var path = "unit/general/test_same.mzn";
-		var solutions = new List<string> {
-			"""{"if5_5":1,"if5f_5":0,"if5_4":0,"if5f_5f":1,"if2_set2_4":0,"ifTwoVars":0,"ifTwoOptVars":0,"ifEqualInitVars":1,"ifEqualChainInitVars":1,"ifOneVar":1,"ifOneOptVar":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/test_set_lt_2.mzn")]
-	public async Task test_solve_unit_general_test_set_lt_2_2()
-	{
-		var path = "unit/general/test_set_lt_2.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""{"sets":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{1,2}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/general/test_set_lt_3.mzn")]
-	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_general_test_set_lt_3(string solver)
-	{
-		var path = "unit/general/test_set_lt_3.mzn";
-		var solutions = new List<string> {
-			"""{"y":{"_set_":"{1,4}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/test_to_enum.mzn")]
-	public async Task test_solve_unit_general_test_to_enum()
-	{
-		var path = "unit/general/test_to_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"par_int":"b","var_int":"c","array_of_int":["a","b","c"],"array_of_var_int":["a","b","c"],"array_of_set_of_int":[{"_set_":"{a}"},{"_set_":"{a,b}"},{"_set_":"{a,b,c}"}],"array_of_var_set_of_int":[{"_set_":"{a}"},{"_set_":"{a,b}"},{"_set_":"{a,b,c}"}],"set_of_int":{"_set_":"{a,b,c}"},"var_set_of_int":{"_set_":"{a,b,c}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/test_undefined_enum.mzn")]
-	public async Task test_solve_unit_general_test_undefined_enum()
-	{
-		var path = "unit/general/test_undefined_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--model-check-only",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/general/test_var_prod.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_general_test_var_prod(string solver)
-	{
-		var path = "unit/general/test_var_prod.mzn";
-		var solutions = new List<string> {
-			"""{"p":1,"xs":[1,1,1,1]}""",
-			"""{"p":140,"xs":[2,7,10,1]}""",
-			"""{"p":700,"xs":[10,10,7,1]}""",
-			"""{"p":1000,"xs":[1,10,10,10]}""",
-			"""{"p":1000,"xs":[10,10,1,10]}""",
-			"""{"p":1000,"xs":[10,10,10,1]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/general/test_var_set_element.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	public async Task test_solve_unit_general_test_var_set_element(string solver)
-	{
-		var path = "unit/general/test_var_set_element.mzn";
-		var solutions = new List<string> {
-			"""{"a":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}],"s":{"_set_":"{}"},"x":3}""",
-			"""{"a":[{"_set_":"{1,2,3,4,5}"},{"_set_":"{1,2,3,4,5}"},{"_set_":"{1,2,3,4,5}"}],"s":{"_set_":"{1,2,3,4,5}"},"x":2}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/general/unicode_file_name_μ.mzn")]
-	public async Task test_solve_unit_general_unicode_file_name_μ()
-	{
-		var path = "unit/general/unicode_file_name_μ.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/anon_enum_json.mzn")]
-	public async Task test_solve_unit_json_anon_enum_json()
-	{
-		var path = "unit/json/anon_enum_json.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"__tag__":"AnonEnum","enumName":"Foo","value":1},"y":{"__tag__":"AnonEnum","enumName":"Foo","value":2}}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/anon_enum_json.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/anon_enum_json.mzn")]
-	public async Task test_solve_unit_json_anon_enum_json_2()
-	{
-		var path = "unit/json/anon_enum_json.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/json/anon_enum_json_err.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/coerce_enum_str_err.mzn")]
-	public async Task test_solve_unit_json_coerce_enum_str_err()
-	{
-		var path = "unit/json/coerce_enum_str_err.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/json/coerce_enum_str_err.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/enum_constructor_basic.mzn")]
-	public async Task test_solve_unit_json_enum_constructor_basic()
-	{
-		var path = "unit/json/enum_constructor_basic.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"__tag__":"EnumConstructor","dzn":"F(A)"}}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/enum_constructor_basic.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/enum_constructor_basic_2.mzn")]
-	public async Task test_solve_unit_json_enum_constructor_basic_2()
-	{
-		var path = "unit/json/enum_constructor_basic_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"__tag__":"EnumConstructor","dzn":"F(A)"}}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/enum_constructor_basic_2.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/enum_constructor_int.mzn")]
-	public async Task test_solve_unit_json_enum_constructor_int()
-	{
-		var path = "unit/json/enum_constructor_int.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"__tag__":"EnumConstructor","dzn":"Foo(2)"}}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/enum_constructor_int.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/enum_constructor_nested.mzn")]
-	public async Task test_solve_unit_json_enum_constructor_nested()
-	{
-		var path = "unit/json/enum_constructor_nested.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"__tag__":"EnumConstructor","dzn":"G({\r\n  \u0022__tag__\u0022: \u0022EnumConstructor\u0022,\r\n  \u0022dzn\u0022: \u0022F(A)\u0022\r\n})"}}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/enum_constructor_nested.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/enum_escaping.mzn")]
-	public async Task test_solve_unit_json_enum_escaping()
-	{
-		var path = "unit/json/enum_escaping.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":"\u0022\u0022\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/float_json_exponent.mzn")]
-	public async Task test_solve_unit_json_float_json_exponent()
-	{
-		var path = "unit/json/float_json_exponent.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":"2.0e-05","y":1500.0}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/float_json_exponent.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/json_enum_def.mzn")]
-	public async Task test_solve_unit_json_json_enum_def()
-	{
-		var path = "unit/json/json_enum_def.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"w":"A","x":"D","y":"G","z":"J"}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/json_enum_def.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/json_input_1.mzn")]
-	public async Task test_solve_unit_json_json_input_1()
-	{
-		var path = "unit/json/json_input_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"int_set":{"_set_":"{1,2,4,5,7,9}"},"float_set":{"_set_":"{1.0,2.0}"},"array_1d_float":[1.0,2.0,3.0],"array_2d_bool":[[true]],"array_3d_int":[[[1,2],[3,4]],[[5,6],[7,8]]],"array_opt_float":[1.5,null],"x":1,"y":2.0,"z":true,"o":null}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/json_input_1.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/json_unicode_escapes.mzn")]
-	public async Task test_solve_unit_json_json_unicode_escapes()
-	{
-		var path = "unit/json/json_unicode_escapes.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":"\u0022A\u0022","mu":"\u0022\u03BC\u0022","arrow":"\u0022\u2191\u0022","clef":"\u0022\uD834\uDD1E\u0022"}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/json_unicode_escapes.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/json/mult_dim_enum.mzn")]
-	public async Task test_solve_unit_json_mult_dim_enum()
-	{
-		var path = "unit/json/mult_dim_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"use_e":[["A","B"],["B","C"]]}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/mult_dim_enum.json\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/optional/fn_return_array_absent.mzn")]
-	public async Task test_solve_unit_optional_fn_return_array_absent()
-	{
-		var path = "unit/optional/fn_return_array_absent.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[null]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/optional/test-opt-float-1.mzn")]
-	[InlineData("gecode")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_optional_test_opt_float_1(string solver)
-	{
-		var path = "unit/optional/test-opt-float-1.mzn";
-		var solutions = new List<string> {
-			"""{"x":[1.0,null]}""",
-			"""{"x":[null,1.0]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/optional/test_bug_456.mzn")]
-	public async Task test_solve_unit_optional_test_bug_456()
-	{
-		var path = "unit/optional/test_bug_456.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/optional/test_count_set.mzn")]
-	public async Task test_solve_unit_optional_test_count_set()
-	{
-		var path = "unit/optional/test_count_set.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"i":0,"x":{"_set_":"{6,7,8,9,10}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/optional/test_deopt_absent.mzn")]
-	public async Task test_solve_unit_optional_test_deopt_absent()
-	{
-		var path = "unit/optional/test_deopt_absent.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":true}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/optional/test_opt_comprehension.mzn")]
-	public async Task test_solve_unit_optional_test_opt_comprehension()
-	{
-		var path = "unit/optional/test_opt_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"z":[false,false,false]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/arg-reif-output.mzn")]
-	public async Task test_solve_unit_output_arg_reif_output()
-	{
-		var path = "unit/output/arg-reif-output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"WORKED"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/ctx_ann.mzn")]
-	public async Task test_solve_unit_output_ctx_ann()
-	{
-		var path = "unit/output/ctx_ann.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"c":5}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/dzn_output_array.mzn")]
-	public async Task test_solve_unit_output_dzn_output_array()
-	{
-		var path = "unit/output/dzn_output_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/enum_constructor_functions.mzn")]
-	public async Task test_solve_unit_output_enum_constructor_functions()
-	{
-		var path = "unit/output/enum_constructor_functions.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/format_justified_enums.mzn")]
-	public async Task test_solve_unit_output_format_justified_enums()
-	{
-		var path = "unit/output/format_justified_enums.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022\u003E      [Hello, World]\u003C\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/json_ann.mzn")]
-	public async Task test_solve_unit_output_json_ann()
-	{
-		var path = "unit/output/json_ann.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":"\u0022promise_total\u0022","y":"\u0022expression_name(\u0022test\u0022)\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/json_multidim.mzn")]
-	public async Task test_solve_unit_output_json_multidim()
-	{
-		var path = "unit/output/json_multidim.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022[[{\u0022e\u0022:\u0022A\u0022}, {\u0022e\u0022:\u0022B\u0022}], [{\u0022e\u0022:\u0022C\u0022}, {\u0022e\u0022:\u0022D\u0022}]] [[{\u0022e\u0022:\u0022A\u0022}, {\u0022e\u0022:\u0022B\u0022}], [{\u0022e\u0022:\u0022C\u0022}, {\u0022e\u0022:\u0022D\u0022}]]\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/local_output.mzn")]
-	public async Task test_solve_unit_output_local_output()
-	{
-		var path = "unit/output/local_output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":[[[1]]],"x@14.5-28|a@13.6":[[[1]]],"_output_item":"\u0022predicate: [1]\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/no_output_reverse_mapped_var.mzn")]
-	public async Task test_solve_unit_output_no_output_reverse_mapped_var()
-	{
-		var path = "unit/output/no_output_reverse_mapped_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"y":0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_annotations_1.mzn")]
-	public async Task test_solve_unit_output_output_annotations_1()
-	{
-		var path = "unit/output/output_annotations_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":4,"y":1,"z":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_annotations_2.mzn")]
-	public async Task test_solve_unit_output_output_annotations_2()
-	{
-		var path = "unit/output/output_annotations_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x@10.3-24":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_annotations_3.mzn")]
-	public async Task test_solve_unit_output_output_annotations_3()
-	{
-		var path = "unit/output/output_annotations_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"objective":6,"x@15.3-23|i=1@14.23|sum@14.18-16.7|=@14.12-16.7":1,"x@15.3-23|i=2@14.23|sum@14.18-16.7|=@14.12-16.7":2,"x@15.3-23|i=3@14.23|sum@14.18-16.7|=@14.12-16.7":3}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_annotations_4.mzn")]
-	public async Task test_solve_unit_output_output_annotations_4()
-	{
-		var path = "unit/output/output_annotations_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":9,"y@11.3-24|foo@15.12-17":10}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
-	public async Task test_solve_unit_output_output_sections_1()
-	{
-		var path = "unit/output/output_sections_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022aebdc\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
-	public async Task test_solve_unit_output_output_sections_1_2()
-	{
-		var path = "unit/output/output_sections_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022bdc\u0022"}""",
-			};
-		var args = new List<string>{
-			"--only-sections foo,bar",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
-	public async Task test_solve_unit_output_output_sections_1_3()
-	{
-		var path = "unit/output/output_sections_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022ae\u0022"}""",
-			};
-		var args = new List<string>{
-			"--not-sections foo,bar",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
-	public async Task test_solve_unit_output_output_sections_2()
-	{
-		var path = "unit/output/output_sections_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022aebdc\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
-	public async Task test_solve_unit_output_output_sections_2_2()
-	{
-		var path = "unit/output/output_sections_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022bdc\u0022"}""",
-			};
-		var args = new List<string>{
-			"--only-sections foo,bar",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
-	public async Task test_solve_unit_output_output_sections_2_3()
-	{
-		var path = "unit/output/output_sections_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022ae\u0022"}""",
-			};
-		var args = new List<string>{
-			"--not-sections foo,bar",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_3.mzn")]
-	public async Task test_solve_unit_output_output_sections_3()
-	{
-		var path = "unit/output/output_sections_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"objective":9,"_output_item":"\u0022x = 10\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_4.mzn")]
-	public async Task test_solve_unit_output_output_sections_4()
-	{
-		var path = "unit/output/output_sections_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022x = 10\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_5.mzn")]
-	public async Task test_solve_unit_output_output_sections_5()
-	{
-		var path = "unit/output/output_sections_5.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022x = 10\ny = 1\n\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_6.mzn")]
-	public async Task test_solve_unit_output_output_sections_6()
-	{
-		var path = "unit/output/output_sections_6.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022output_to_section: 10\noutput_item: 10\n\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/output_sections_7.mzn")]
-	public async Task test_solve_unit_output_output_sections_7()
-	{
-		var path = "unit/output/output_sections_7.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022[1]\n\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/quoted_id_ozn.mzn")]
-	public async Task test_solve_unit_output_quoted_id_ozn()
-	{
-		var path = "unit/output/quoted_id_ozn.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/record_access_printing.mzn")]
-	public async Task test_solve_unit_output_record_access_printing()
-	{
-		var path = "unit/output/record_access_printing.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/output/var_enum.mzn")]
-	public async Task test_solve_unit_output_var_enum()
-	{
-		var path = "unit/output/var_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022[\u0022X_INTRODUCED_16_\u0022, \u0022X_INTRODUCED_17_\u0022, \u0022X_INTRODUCED_18_\u0022] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch]\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/param_file/param_file_array.mzn")]
-	public async Task test_solve_unit_param_file_param_file_array()
-	{
-		var path = "unit/param_file/param_file_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":true,"y":false}""",
-			};
-		var args = new List<string>{
-			"--param-file ./spec/unit/param_file/param_file_array.json",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/param_file/param_file_blacklist.mzn")]
-	public async Task test_solve_unit_param_file_param_file_blacklist()
-	{
-		var path = "unit/param_file/param_file_blacklist.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_blacklist_1.mpc\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/param_file/param_file_blacklist.mzn")]
-	public async Task test_solve_unit_param_file_param_file_blacklist_2()
-	{
-		var path = "unit/param_file/param_file_blacklist.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_blacklist_2.mpc\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/param_file/param_file_recursive.mzn")]
-	public async Task test_solve_unit_param_file_param_file_recursive()
-	{
-		var path = "unit/param_file/param_file_recursive.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_recursive.mpc\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/param_file/param_file_resolution.mzn")]
-	public async Task test_solve_unit_param_file_param_file_resolution()
-	{
-		var path = "unit/param_file/param_file_resolution.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1,"y":2}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_resolution.mpc\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/array_set_element_nosets.mzn")]
-	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_array_set_element_nosets(string solver)
-	{
-		var path = "unit/regression/array_set_element_nosets.mzn";
-		var solutions = new List<string> {
-			"""{"x":1,"y":[{"_set_":"{1}"},{"_set_":"{2}"},{"_set_":"{3}"}],"z":{"_set_":"{1}"}}""",
-			"""{"x":3,"y":[{"_set_":"{1}"},{"_set_":"{2}"},{"_set_":"{3}"}],"z":{"_set_":"{3}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/array_var_set_element_nosets.mzn")]
-	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_array_var_set_element_nosets(string solver)
-	{
-		var path = "unit/regression/array_var_set_element_nosets.mzn";
-		var solutions = new List<string> {
-			"""{"x":1,"y":[{"_set_":"{1,2,3}"},{"_set_":"{}"},{"_set_":"{1}"}],"z":{"_set_":"{1,2,3}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/assign_reverse_map.mzn")]
-	public async Task test_solve_unit_regression_assign_reverse_map()
-	{
-		var path = "unit/regression/assign_reverse_map.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":2}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bounds_for_linear_01_max_0.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_bounds_for_linear_01_max_0(string solver)
-	{
-		var path = "unit/regression/bounds_for_linear_01_max_0.mzn";
-		var solutions = new List<string> {
-			"""{"x":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bounds_for_linear_01_max_1.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_bounds_for_linear_01_max_1(string solver)
-	{
-		var path = "unit/regression/bounds_for_linear_01_max_1.mzn";
-		var solutions = new List<string> {
-			"""{"x":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bounds_for_linear_01_min_0.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_bounds_for_linear_01_min_0(string solver)
-	{
-		var path = "unit/regression/bounds_for_linear_01_min_0.mzn";
-		var solutions = new List<string> {
-			"""{"x":0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bounds_for_linear_01_min_1.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_bounds_for_linear_01_min_1(string solver)
-	{
-		var path = "unit/regression/bounds_for_linear_01_min_1.mzn";
-		var solutions = new List<string> {
-			"""{"x":0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bug110.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_bug110(string solver)
-	{
-		var path = "unit/regression/bug110.mzn";
-		var solutions = new List<string> {
-			"""{"board":[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]}""",
-			"""{"board":[[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bug212.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_bug212(string solver)
-	{
-		var path = "unit/regression/bug212.mzn";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bug222.mzn")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_bug222(string solver)
-	{
-		var path = "unit/regression/bug222.mzn";
-		var solutions = new List<string> {
-			"""{"K":11}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug269.mzn")]
-	public async Task test_solve_unit_regression_bug269()
-	{
-		var path = "unit/regression/bug269.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"queens":[4,6,1,5,2,8,3,7]}""",
-			"""{"queens":[4,6,8,3,1,7,5,2]}""",
-			"""{"queens":[8,4,1,3,6,2,7,5]}""",
-			"""{"queens":[2,5,7,4,1,8,6,3]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug284.mzn")]
-	public async Task test_solve_unit_regression_bug284()
-	{
-		var path = "unit/regression/bug284.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"ignore_me":true}""",
-			"""{"A":1,"B":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bug318_orig.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_bug318_orig(string solver)
-	{
-		var path = "unit/regression/bug318_orig.mzn";
-		var solutions = new List<string> {
-			"""{"objective":-2147483646,"var1":1,"var2":-2147483646,"var3":-2147483646}""",
-			"""{"objective":-500000000,"var1":1,"var2":-500000000,"var3":-500000000}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug335.mzn")]
-	public async Task test_solve_unit_regression_bug335()
-	{
-		var path = "unit/regression/bug335.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"sokPosns":[14,13,8,7,8,9,4,5,10,1,1,1],"stime":9}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bug380.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_bug380(string solver)
-	{
-		var path = "unit/regression/bug380.mzn";
-		var solutions = new List<string> {
-			"""{"a":[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]],"d":[3,3,3,3]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug532.mzn")]
-	public async Task test_solve_unit_regression_bug532()
-	{
-		var path = "unit/regression/bug532.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"y":0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug534.mzn")]
-	public async Task test_solve_unit_regression_bug534()
-	{
-		var path = "unit/regression/bug534.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[[],[]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug536.mzn")]
-	public async Task test_solve_unit_regression_bug536()
-	{
-		var path = "unit/regression/bug536.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[1]}""",
-			};
-		var args = new List<string>{
-			"-O2",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug552.mzn")]
-	public async Task test_solve_unit_regression_bug552()
-	{
-		var path = "unit/regression/bug552.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[2.0]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug565.mzn")]
-	public async Task test_solve_unit_regression_bug565()
-	{
-		var path = "unit/regression/bug565.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":true}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug570.mzn")]
-	public async Task test_solve_unit_regression_bug570()
-	{
-		var path = "unit/regression/bug570.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bug67.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_bug67(string solver)
-	{
-		var path = "unit/regression/bug67.mzn";
-		var solutions = new List<string> {
-			"""{"x":-2147483646,"y":-2147483646,"z":-2147483646}""",
-			"""{"x":-500000000,"y":-500000000,"z":-500000000}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/bug82.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_bug82(string solver)
-	{
-		var path = "unit/regression/bug82.mzn";
-		var solutions = new List<string> {
-			"""{"pos":[[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1]]}""",
-			"""{"pos":[[1,1,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1],[2,1,1],[3,1,1],[4,1,1],[5,1,1],[4,1,1],[3,1,1],[2,1,1],[1,1,1]]}""",
-			"""{"pos":[[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6],[6,6,6]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug_629.mzn")]
-	public async Task test_solve_unit_regression_bug_629()
-	{
-		var path = "unit/regression/bug_629.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O1",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug_629.mzn")]
-	public async Task test_solve_unit_regression_bug_629_2()
-	{
-		var path = "unit/regression/bug_629.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O2",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug_empty_enum_extension.mzn")]
-	public async Task test_solve_unit_regression_bug_empty_enum_extension()
-	{
-		var path = "unit/regression/bug_empty_enum_extension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"as":[{"__tag__":"EnumConstructor","dzn":"z2)z("},{"__tag__":"EnumConstructor","dzn":"z1)z("},{"__tag__":"EnumConstructor","dzn":"x2)x("},{"__tag__":"EnumConstructor","dzn":"x1)x("}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/bug_opt_polymorphic.mzn")]
-	public async Task test_solve_unit_regression_bug_opt_polymorphic()
-	{
-		var path = "unit/regression/bug_opt_polymorphic.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/checker_mzn_check_var.mzn")]
-	public async Task test_solve_unit_regression_checker_mzn_check_var()
-	{
-		var path = "unit/regression/checker_mzn_check_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_checker":"\u0022Ok\u0022"}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_mzn_check_var.mzc.mzn\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/checker_opt.mzn")]
-	public async Task test_solve_unit_regression_checker_opt()
-	{
-		var path = "unit/regression/checker_opt.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_checker":"\u0022y = 20;\u0022"}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_opt.mzc.mzn\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/checker_params.mzn")]
-	public async Task test_solve_unit_regression_checker_params()
-	{
-		var path = "unit/regression/checker_params.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_checker":"\u0022yay!\u0022"}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_params.mzc.mzn\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/checker_same_var.mzn")]
-	public async Task test_solve_unit_regression_checker_same_var()
-	{
-		var path = "unit/regression/checker_same_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_checker":"\u0022x = 10;\u0022","objective":5}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_same_var.mzc.mzn\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/checker_var_bug.mzn")]
-	public async Task test_solve_unit_regression_checker_var_bug()
-	{
-		var path = "unit/regression/checker_var_bug.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_checker":"\u0022x = 1;\n\u0022"}""",
-			"""{"_checker":"\u0022x = 2;\n\u0022"}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_var_bug.mzc.mzn\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/coercion_par.mzn")]
-	public async Task test_solve_unit_regression_coercion_par()
-	{
-		var path = "unit/regression/coercion_par.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[1,null],"y":[1.0,null],"z":[0.0,null]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/constructor_of_set.mzn")]
-	public async Task test_solve_unit_regression_constructor_of_set()
-	{
-		var path = "unit/regression/constructor_of_set.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"y":{"__tag__":"EnumConstructor","dzn":"C(2)"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/cse_array_lit.mzn")]
-	public async Task test_solve_unit_regression_cse_array_lit()
-	{
-		var path = "unit/regression/cse_array_lit.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/cyclic_include.mzn")]
-	public async Task test_solve_unit_regression_cyclic_include()
-	{
-		var path = "unit/regression/cyclic_include.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/decision_tree_binary.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_decision_tree_binary(string solver)
-	{
-		var path = "unit/regression/decision_tree_binary.mzn";
-		var solutions = new List<string> {
-			"""{"node_used":[3,4,6,9,11,13,15,8,9,10,11,12,13,14,15],"x":[6,2,6,2,4,6,8,1,2,3,4,5,6,7,8]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/enigma_1568.mzn")]
-	public async Task test_solve_unit_regression_enigma_1568()
-	{
-		var path = "unit/regression/enigma_1568.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"D":6,"E":5,"L":3,"O":9,"ODD":966,"P":1,"PUZZLE":102235,"U":0,"Z":2,"num1":161,"num2":635,"num3":805,"num4":483,"x":[9,6,1,0,2,3,5]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/flatten_comp_in.mzn")]
-	public async Task test_solve_unit_regression_flatten_comp_in()
-	{
-		var path = "unit/regression/flatten_comp_in.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[true]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_644_a.mzn")]
-	public async Task test_solve_unit_regression_github_644_a()
-	{
-		var path = "unit/regression/github_644_a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"arr":[null,null]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_644_b.mzn")]
-	public async Task test_solve_unit_regression_github_644_b()
-	{
-		var path = "unit/regression/github_644_b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":[null],"b":[1]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_644_c.mzn")]
-	public async Task test_solve_unit_regression_github_644_c()
-	{
-		var path = "unit/regression/github_644_c.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"arr":[1],"x":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_644_d.mzn")]
-	public async Task test_solve_unit_regression_github_644_d()
-	{
-		var path = "unit/regression/github_644_d.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"value":null}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_644_e.mzn")]
-	public async Task test_solve_unit_regression_github_644_e()
-	{
-		var path = "unit/regression/github_644_e.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":null,"y":null,"z":null,"p":3,"q":1,"r":4}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_646.mzn")]
-	public async Task test_solve_unit_regression_github_646()
-	{
-		var path = "unit/regression/github_646.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_648_par_array_decl.mzn")]
-	public async Task test_solve_unit_regression_github_648_par_array_decl()
-	{
-		var path = "unit/regression/github_648_par_array_decl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_648_par_decl.mzn")]
-	public async Task test_solve_unit_regression_github_648_par_decl()
-	{
-		var path = "unit/regression/github_648_par_decl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_656.mzn")]
-	public async Task test_solve_unit_regression_github_656()
-	{
-		var path = "unit/regression/github_656.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_661_part2.mzn")]
-	public async Task test_solve_unit_regression_github_661_part2()
-	{
-		var path = "unit/regression/github_661_part2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1,"y":2}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_664.mzn")]
-	public async Task test_solve_unit_regression_github_664()
-	{
-		var path = "unit/regression/github_664.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"_set_":"{1}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/github_667.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_github_667(string solver)
-	{
-		var path = "unit/regression/github_667.mzn";
-		var solutions = new List<string> {
-			"""{"arr":[false]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_668.mzn")]
-	public async Task test_solve_unit_regression_github_668()
-	{
-		var path = "unit/regression/github_668.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":null,"arr":[false]}""",
-			"""{"x":null,"arr":[true]}""",
-			"""{"x":1,"arr":[false]}""",
-			"""{"x":1,"arr":[true]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_669.mzn")]
-	public async Task test_solve_unit_regression_github_669()
-	{
-		var path = "unit/regression/github_669.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"v":null}""",
-			"""{"v":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_671.mzn")]
-	public async Task test_solve_unit_regression_github_671()
-	{
-		var path = "unit/regression/github_671.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"arr":[true]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_673.mzn")]
-	public async Task test_solve_unit_regression_github_673()
-	{
-		var path = "unit/regression/github_673.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022[X, \u003C\u003E]\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/github_674.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_regression_github_674(string solver)
-	{
-		var path = "unit/regression/github_674.mzn";
-		var solutions = new List<string> {
-			"""{"arr":[true,false],"ns":[false,false,false,false,false,false,false,false,false,true,false],"es":[false,false,false,false,false,false,false,false,false,false,false]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_675a.mzn")]
-	public async Task test_solve_unit_regression_github_675a()
-	{
-		var path = "unit/regression/github_675a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"t":[false]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_680.mzn")]
-	public async Task test_solve_unit_regression_github_680()
-	{
-		var path = "unit/regression/github_680.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_681.mzn")]
-	public async Task test_solve_unit_regression_github_681()
-	{
-		var path = "unit/regression/github_681.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"arr":[true]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_683.mzn")]
-	public async Task test_solve_unit_regression_github_683()
-	{
-		var path = "unit/regression/github_683.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"vars":[2,1],"c":1}""",
-			"""{"vars":[1,2],"c":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_685.mzn")]
-	public async Task test_solve_unit_regression_github_685()
-	{
-		var path = "unit/regression/github_685.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[false,true],"y":[true,false]}""",
-			"""{"x":[true,false],"y":[false,true]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_687.mzn")]
-	public async Task test_solve_unit_regression_github_687()
-	{
-		var path = "unit/regression/github_687.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"r":{"x":0}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_691.mzn")]
-	public async Task test_solve_unit_regression_github_691()
-	{
-		var path = "unit/regression/github_691.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":-1,"c":-2}""",
-			"""{"a":0,"c":0}""",
-			"""{"a":1,"c":2}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_693_part1.mzn")]
-	public async Task test_solve_unit_regression_github_693_part1()
-	{
-		var path = "unit/regression/github_693_part1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"c":true}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_693_part2.mzn")]
-	public async Task test_solve_unit_regression_github_693_part2()
-	{
-		var path = "unit/regression/github_693_part2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[{"_set_":"{}"},{"_set_":"{2}"},{"_set_":"{1}"},{"_set_":"{1,2}"}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_700.mzn")]
-	public async Task test_solve_unit_regression_github_700()
-	{
-		var path = "unit/regression/github_700.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"c":{"_set_":"{1}"},"d":{"_set_":"{1,2}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_725.mzn")]
-	public async Task test_solve_unit_regression_github_725()
-	{
-		var path = "unit/regression/github_725.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_726.mzn")]
-	public async Task test_solve_unit_regression_github_726()
-	{
-		var path = "unit/regression/github_726.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_728.mzn")]
-	public async Task test_solve_unit_regression_github_728()
-	{
-		var path = "unit/regression/github_728.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"wanted":{"_set_":"{1}"}}""",
-			"""{"wanted":{"_set_":"{4}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_730.mzn")]
-	public async Task test_solve_unit_regression_github_730()
-	{
-		var path = "unit/regression/github_730.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_732.mzn")]
-	public async Task test_solve_unit_regression_github_732()
-	{
-		var path = "unit/regression/github_732.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"sts":[{"x":0},{"x":1}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_747.mzn")]
-	public async Task test_solve_unit_regression_github_747()
-	{
-		var path = "unit/regression/github_747.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[null,null]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_749.mzn")]
-	public async Task test_solve_unit_regression_github_749()
-	{
-		var path = "unit/regression/github_749.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[true,false,false],"y":false,"c":2}""",
-			"""{"x":[false,false,false],"y":false,"c":3}""",
-			"""{"x":[true,true,false],"y":false,"c":1}""",
-			"""{"x":[false,true,false],"y":false,"c":2}""",
-			"""{"x":[true,false,true],"y":false,"c":1}""",
-			"""{"x":[false,true,true],"y":false,"c":1}""",
-			"""{"x":[false,false,true],"y":false,"c":2}""",
-			"""{"x":[true,false,false],"y":true,"c":1}""",
-			"""{"x":[false,true,false],"y":true,"c":1}""",
-			"""{"x":[true,true,false],"y":true,"c":2}""",
-			"""{"x":[false,false,true],"y":true,"c":1}""",
-			"""{"x":[true,false,true],"y":true,"c":2}""",
-			"""{"x":[false,true,true],"y":true,"c":2}""",
-			"""{"x":[true,true,true],"y":true,"c":3}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_758.mzn")]
-	public async Task test_solve_unit_regression_github_758()
-	{
-		var path = "unit/regression/github_758.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[true]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_758.mzn")]
-	public async Task test_solve_unit_regression_github_758_2()
-	{
-		var path = "unit/regression/github_758.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[true]}""",
-			};
-		var args = new List<string>{
-			"-O0",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_760.mzn")]
-	public async Task test_solve_unit_regression_github_760()
-	{
-		var path = "unit/regression/github_760.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1}""",
-			"""{"x":2}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_762.mzn")]
-	public async Task test_solve_unit_regression_github_762()
-	{
-		var path = "unit/regression/github_762.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""{"x":[true]}""",
-			"""{"x":[false]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_768a.mzn")]
-	public async Task test_solve_unit_regression_github_768a()
-	{
-		var path = "unit/regression/github_768a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_768b.mzn")]
-	public async Task test_solve_unit_regression_github_768b()
-	{
-		var path = "unit/regression/github_768b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_771.mzn")]
-	public async Task test_solve_unit_regression_github_771()
-	{
-		var path = "unit/regression/github_771.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_773.mzn")]
-	public async Task test_solve_unit_regression_github_773()
-	{
-		var path = "unit/regression/github_773.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_776.mzn")]
-	public async Task test_solve_unit_regression_github_776()
-	{
-		var path = "unit/regression/github_776.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"__tag__":"AnonEnum","enumName":"A","value":1}}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/github_776.dzn\"",
-		};
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_779.mzn")]
-	public async Task test_solve_unit_regression_github_779()
-	{
-		var path = "unit/regression/github_779.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_792.mzn")]
-	public async Task test_solve_unit_regression_github_792()
-	{
-		var path = "unit/regression/github_792.mzn";
-		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"y":true}""",
-			"""{"y":false}""",
+			"""{"x":1,"b":true,"a":true,"c":false}""",
+			"""{"x":0,"b":false,"a":false,"c":true}""",
+			"""{"x":0,"b":false,"a":true,"c":true}""",
+			"""{"x":1,"b":true,"a":false,"c":true}""",
 			};
 		var args = new List<string>{
 			"-G std",
 		};
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/github_793.mzn")]
-	public async Task test_solve_unit_regression_github_793()
+	[Fact(DisplayName="unit/general/let_struct_domain.mzn")]
+	public async Task test_solve_unit_general_let_struct_domain()
 	{
-		var path = "unit/regression/github_793.mzn";
+		var path = "unit/general/let_struct_domain.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"_output_item":"\u0022[{\u0022e\u0022:\u0022A\u0022}] {\u0022v\u0022: [{\u0022e\u0022:\u0022A\u0022}]}\u0022"}""",
+			"""{"x":1,"y":2}""",
+			"""{"x":2,"y":2}""",
+			"""{"x":1,"y":3}""",
+			"""{"x":2,"y":3}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/github_803.mzn")]
-	public async Task test_solve_unit_regression_github_803()
-	{
-		var path = "unit/regression/github_803.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"BV0":false,"IV0":0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_807.mzn")]
-	public async Task test_solve_unit_regression_github_807()
-	{
-		var path = "unit/regression/github_807.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"bar":[1]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_809.mzn")]
-	public async Task test_solve_unit_regression_github_809()
-	{
-		var path = "unit/regression/github_809.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"bar":null,"biz":{"_set_":"{B}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/github_813.mzn")]
-	public async Task test_solve_unit_regression_github_813()
-	{
-		var path = "unit/regression/github_813.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":true,"b":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/if_then_else_absent.mzn")]
-	public async Task test_solve_unit_regression_if_then_else_absent()
-	{
-		var path = "unit/regression/if_then_else_absent.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[null],"b":true}""",
-			"""{"x":[1],"b":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/in_array_eval_error.mzn")]
-	public async Task test_solve_unit_regression_in_array_eval_error()
-	{
-		var path = "unit/regression/in_array_eval_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[1],"y":true}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/let_domain_from_generator.mzn")]
-	public async Task test_solve_unit_regression_let_domain_from_generator()
-	{
-		var path = "unit/regression/let_domain_from_generator.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/makepar_output.mzn")]
-	public async Task test_solve_unit_regression_makepar_output()
-	{
-		var path = "unit/regression/makepar_output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u00221..1\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/non-set-array-ti-location.mzn")]
-	public async Task test_solve_unit_regression_non_set_array_ti_location()
-	{
-		var path = "unit/regression/non-set-array-ti-location.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/non_pos_pow.mzn")]
-	public async Task test_solve_unit_regression_non_pos_pow()
-	{
-		var path = "unit/regression/non_pos_pow.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":2}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/nosets_set_search.mzn")]
+	[Theory(DisplayName="unit/general/md_exists.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_nosets_set_search(string solver)
+	public async Task test_solve_unit_general_md_exists(string solver)
 	{
-		var path = "unit/regression/nosets_set_search.mzn";
+		var path = "unit/general/md_exists.mzn";
 		var solutions = new List<string> {
-			"""{"x":{"_set_":"{1,2,3}"}}""",
+			"""{"b":true,"bs":[[[true,true],[false,false]],[[false,false],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[false,false]],[[false,true],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[false,false]],[[true,false],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[false,false]],[[true,true],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[false,true]],[[false,false],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[false,true]],[[false,true],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[false,true]],[[true,false],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[false,true]],[[true,true],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[true,false]],[[false,false],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[true,false]],[[false,true],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[true,false]],[[true,false],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[true,false]],[[true,true],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[true,true]],[[false,false],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[true,true]],[[false,true],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[true,true]],[[true,false],[false,false]]]}""",
+			"""{"b":true,"bs":[[[true,true],[true,true]],[[true,true],[false,false]]]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/opt_minmax.mzn")]
-	public async Task test_solve_unit_regression_opt_minmax()
+	[Fact(DisplayName="unit/general/md_forall.mzn")]
+	public async Task test_solve_unit_general_md_forall()
 	{
-		var path = "unit/regression/opt_minmax.mzn";
+		var path = "unit/general/md_forall.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"xmax":10,"xmin":1,"ymax":10.0,"ymin":1.0}""",
+			"""{"b":true,"bs":[[[true,true],[true,true]],[[true,true],[true,true]]]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/output_fn_toplevel_var.mzn")]
-	public async Task test_solve_unit_regression_output_fn_toplevel_var()
+	[Theory(DisplayName="unit/general/md_iffall.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_general_md_iffall(string solver)
 	{
-		var path = "unit/regression/output_fn_toplevel_var.mzn";
-		var solver = "gecode";
+		var path = "unit/general/md_iffall.mzn";
 		var solutions = new List<string> {
-			"""{"_output_item":"\u0022[1][true]\u0022"}""",
-			"""{"_output_item":"\u0022[2][false]\u0022"}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[true,true],[true,true]]]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/output_only_fn.mzn")]
-	public async Task test_solve_unit_regression_output_only_fn()
+	[Theory(DisplayName="unit/general/md_product_int.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_general_md_product_int(string solver)
 	{
-		var path = "unit/regression/output_only_fn.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
+		var path = "unit/general/md_product_int.mzn";
+		var solutions = new List<string> {
+			"""{"a":16,"b":1}""",
+			"""{"a":16,"b":2}""",
+			"""{"a":16,"b":4}""",
+			"""{"a":16,"b":8}""",
+			"""{"a":16,"b":16}""",
+			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/output_only_no_rhs.mzn")]
-	public async Task test_solve_unit_regression_output_only_no_rhs()
+	[Fact(DisplayName="unit/general/md_sum_float.mzn")]
+	public async Task test_solve_unit_general_md_sum_float()
 	{
-		var path = "unit/regression/output_only_no_rhs.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/parser_location.mzn")]
-	public async Task test_solve_unit_regression_parser_location()
-	{
-		var path = "unit/regression/parser_location.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/parse_assignments.mzn")]
-	public async Task test_solve_unit_regression_parse_assignments()
-	{
-		var path = "unit/regression/parse_assignments.mzn";
+		var path = "unit/general/md_sum_float.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"_checker":"Ok"}""",
+			"""{"a":55.0}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/general/md_sum_int.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_general_md_sum_int(string solver)
+	{
+		var path = "unit/general/md_sum_int.mzn";
+		var solutions = new List<string> {
+			"""{"a":55,"b":10}""",
+			"""{"a":55,"b":11}""",
+			"""{"a":55,"b":12}""",
+			"""{"a":55,"b":13}""",
+			"""{"a":55,"b":14}""",
+			"""{"a":55,"b":15}""",
+			"""{"a":55,"b":16}""",
+			"""{"a":55,"b":17}""",
+			"""{"a":55,"b":18}""",
+			"""{"a":55,"b":19}""",
+			"""{"a":55,"b":20}""",
+			"""{"a":55,"b":21}""",
+			"""{"a":55,"b":22}""",
+			"""{"a":55,"b":23}""",
+			"""{"a":55,"b":24}""",
+			"""{"a":55,"b":25}""",
+			"""{"a":55,"b":26}""",
+			"""{"a":55,"b":27}""",
+			"""{"a":55,"b":28}""",
+			"""{"a":55,"b":29}""",
+			"""{"a":55,"b":30}""",
+			"""{"a":55,"b":31}""",
+			"""{"a":55,"b":32}""",
+			"""{"a":55,"b":33}""",
+			"""{"a":55,"b":34}""",
+			"""{"a":55,"b":35}""",
+			"""{"a":55,"b":36}""",
+			"""{"a":55,"b":37}""",
+			"""{"a":55,"b":38}""",
+			"""{"a":55,"b":39}""",
+			"""{"a":55,"b":40}""",
+			"""{"a":55,"b":4}""",
+			"""{"a":55,"b":5}""",
+			"""{"a":55,"b":6}""",
+			"""{"a":55,"b":7}""",
+			"""{"a":55,"b":8}""",
+			"""{"a":55,"b":9}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/general/md_xorall.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_general_md_xorall(string solver)
+	{
+		var path = "unit/general/md_xorall.mzn";
+		var solutions = new List<string> {
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,false]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[false,true]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,false]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,false],[true,true]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,false]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[false,true]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,false]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[false,true],[true,true]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,false]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[false,true]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,false]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,false],[true,true]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,false]],[[true,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[false,true]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[false,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[false,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[false,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[false,true],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[true,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[true,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[true,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,false]],[[true,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[false,false],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[false,false],[true,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[false,true],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[false,true],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[true,false],[false,false]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[true,false],[true,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[true,true],[false,true]]]}""",
+			"""{"b":false,"bs":[[[true,true],[true,true]],[[true,true],[true,false]]]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/negated_boolean_let.mzn")]
+	public async Task test_solve_unit_general_negated_boolean_let()
+	{
+		var path = "unit/general/negated_boolean_let.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":2}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_2.mzn")]
+	public async Task test_solve_unit_general_pow_2()
+	{
+		var path = "unit/general/pow_2.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":-2,"z":1}""",
+			"""{"b":-1,"z":1}""",
+			"""{"b":0,"z":1}""",
+			"""{"b":1,"z":1}""",
+			"""{"b":2,"z":1}""",
 			};
 		var args = new List<string>{
-			"--data \"unit/regression/parse_assignments.mzc.mzn\"",
+			"-D \"x = -2..2; y = 0\"",
 		};
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/polymorphic_var_and_par.mzn")]
-	public async Task test_solve_unit_regression_polymorphic_var_and_par()
+	[Fact(DisplayName="unit/general/pow_2.mzn")]
+	public async Task test_solve_unit_general_pow_2_2()
 	{
-		var path = "unit/regression/polymorphic_var_and_par.mzn";
+		var path = "unit/general/pow_2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"_output_item":1}""",
+			"""{"b":-2,"z":-2}""",
+			"""{"b":-1,"z":-1}""",
+			"""{"b":0,"z":0}""",
+			"""{"b":1,"z":1}""",
+			"""{"b":2,"z":2}""",
 			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		var args = new List<string>{
+			"-D \"x = -2..2; y = 1\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="unit/regression/pred_param_r7550.mzn")]
+	[Fact(DisplayName="unit/general/pow_2.mzn")]
+	public async Task test_solve_unit_general_pow_2_3()
+	{
+		var path = "unit/general/pow_2.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":0,"z":0}""",
+			"""{"b":1,"z":1}""",
+			};
+		var args = new List<string>{
+			"-D \"x = 0..1; y = 2\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_2.mzn")]
+	public async Task test_solve_unit_general_pow_2_4()
+	{
+		var path = "unit/general/pow_2.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":-1,"z":-1}""",
+			"""{"b":0,"z":0}""",
+			"""{"b":1,"z":1}""",
+			};
+		var args = new List<string>{
+			"-D \"x = -1..1; y = 3\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_2.mzn")]
+	public async Task test_solve_unit_general_pow_2_5()
+	{
+		var path = "unit/general/pow_2.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":1,"z":1}""",
+			"""{"b":2,"z":0}""",
+			"""{"b":3,"z":0}""",
+			};
+		var args = new List<string>{
+			"-D \"x = 1..3; y = -1\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_2.mzn")]
+	public async Task test_solve_unit_general_pow_2_6()
+	{
+		var path = "unit/general/pow_2.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":2,"z":4}""",
+			"""{"b":3,"z":9}""",
+			};
+		var args = new List<string>{
+			"-D \"x = 2..3; y = 2\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_2.mzn")]
+	public async Task test_solve_unit_general_pow_2_7()
+	{
+		var path = "unit/general/pow_2.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":-1,"z":1}""",
+			"""{"b":1,"z":1}""",
+			"""{"b":2,"z":0}""",
+			};
+		var args = new List<string>{
+			"-D \"x = -1..2; y = -2\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_3.mzn")]
+	public async Task test_solve_unit_general_pow_3()
+	{
+		var path = "unit/general/pow_3.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":0,"e":0,"z":1}""",
+			"""{"b":0,"e":1,"z":0}""",
+			"""{"b":1,"e":0,"z":1}""",
+			"""{"b":1,"e":1,"z":1}""",
+			};
+		var args = new List<string>{
+			"-D \"x = 0..1; y = 0..1\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_3.mzn")]
+	public async Task test_solve_unit_general_pow_3_2()
+	{
+		var path = "unit/general/pow_3.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":0,"e":1,"z":0}""",
+			"""{"b":0,"e":2,"z":0}""",
+			"""{"b":1,"e":1,"z":1}""",
+			"""{"b":1,"e":2,"z":1}""",
+			};
+		var args = new List<string>{
+			"-D \"x = 0..1; y = 1..2\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_3.mzn")]
+	public async Task test_solve_unit_general_pow_3_3()
+	{
+		var path = "unit/general/pow_3.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":-1,"e":0,"z":1}""",
+			"""{"b":-1,"e":1,"z":-1}""",
+			"""{"b":-1,"e":2,"z":1}""",
+			"""{"b":0,"e":0,"z":1}""",
+			"""{"b":0,"e":1,"z":0}""",
+			"""{"b":0,"e":2,"z":0}""",
+			"""{"b":1,"e":0,"z":1}""",
+			"""{"b":1,"e":1,"z":1}""",
+			"""{"b":1,"e":2,"z":1}""",
+			"""{"b":2,"e":0,"z":1}""",
+			"""{"b":2,"e":1,"z":2}""",
+			"""{"b":2,"e":2,"z":4}""",
+			};
+		var args = new List<string>{
+			"-D \"x = -1..2; y = 0..2\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_3.mzn")]
+	public async Task test_solve_unit_general_pow_3_4()
+	{
+		var path = "unit/general/pow_3.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":-2,"e":-2,"z":0}""",
+			"""{"b":-2,"e":-1,"z":0}""",
+			"""{"b":-1,"e":-2,"z":1}""",
+			"""{"b":-1,"e":-1,"z":-1}""",
+			"""{"b":1,"e":-2,"z":1}""",
+			"""{"b":1,"e":-1,"z":1}""",
+			"""{"b":2,"e":-2,"z":0}""",
+			"""{"b":2,"e":-1,"z":0}""",
+			};
+		var args = new List<string>{
+			"-D \"x = -2..2 diff {0}; y = -2..-1\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_3.mzn")]
+	public async Task test_solve_unit_general_pow_3_5()
+	{
+		var path = "unit/general/pow_3.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":-2,"e":-1,"z":0}""",
+			"""{"b":-2,"e":0,"z":1}""",
+			"""{"b":-2,"e":1,"z":-2}""",
+			"""{"b":-2,"e":2,"z":4}""",
+			"""{"b":-1,"e":-1,"z":-1}""",
+			"""{"b":-1,"e":0,"z":1}""",
+			"""{"b":-1,"e":1,"z":-1}""",
+			"""{"b":-1,"e":2,"z":1}""",
+			"""{"b":1,"e":-1,"z":1}""",
+			"""{"b":1,"e":0,"z":1}""",
+			"""{"b":1,"e":1,"z":1}""",
+			"""{"b":1,"e":2,"z":1}""",
+			"""{"b":2,"e":-1,"z":0}""",
+			"""{"b":2,"e":0,"z":1}""",
+			"""{"b":2,"e":1,"z":2}""",
+			"""{"b":2,"e":2,"z":4}""",
+			};
+		var args = new List<string>{
+			"-D \"x = -2..2 diff {0}; y = -1..2\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/pow_3.mzn")]
+	public async Task test_solve_unit_general_pow_3_6()
+	{
+		var path = "unit/general/pow_3.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":-1,"e":-1,"z":-1}""",
+			"""{"b":-1,"e":0,"z":1}""",
+			"""{"b":-1,"e":1,"z":-1}""",
+			"""{"b":0,"e":0,"z":1}""",
+			"""{"b":0,"e":1,"z":0}""",
+			"""{"b":1,"e":-1,"z":1}""",
+			"""{"b":1,"e":0,"z":1}""",
+			"""{"b":1,"e":1,"z":1}""",
+			};
+		var args = new List<string>{
+			"-D \"x = -1..1; y = -1..1\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/reverse_map_path.mzn")]
+	public async Task test_solve_unit_general_reverse_map_path()
+	{
+		var path = "unit/general/reverse_map_path.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":[null,null]}""",
+			"""{"x":[1,null]}""",
+			"""{"x":[null,1]}""",
+			"""{"x":[1,1]}""",
+			};
+		var args = new List<string>{
+			"--keep-paths",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/general/test_negated_and.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_pred_param_r7550(string solver)
+	public async Task test_solve_unit_general_test_negated_and(string solver)
 	{
-		var path = "unit/regression/pred_param_r7550.mzn";
+		var path = "unit/general/test_negated_and.mzn";
 		var solutions = new List<string> {
-			"""{"end":53,"objective":53,"s":[0,0,0,4,7,7,6,8,12,8,6,4,14,19,12,12,13,18,8,11,14,18,19,4,16,10,20,9,14,6,24,26,21,16,9,21,24,28,31,22,24,11,25,16,30,26,38,25,25,30,33,36,39,34,33,47,25,44,50,38]}""",
+			"""{"x":false,"y":false,"z":false}""",
+			"""{"x":false,"y":false,"z":true}""",
+			"""{"x":false,"y":true,"z":false}""",
+			"""{"x":false,"y":true,"z":true}""",
+			"""{"x":true,"y":false,"z":false}""",
+			"""{"x":true,"y":false,"z":true}""",
+			"""{"x":true,"y":true,"z":false}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/slice_enum_indexset.mzn")]
-	public async Task test_solve_unit_regression_slice_enum_indexset()
-	{
-		var path = "unit/regression/slice_enum_indexset.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022ok\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/regression/subsets_100.mzn")]
+	[Theory(DisplayName="unit/general/test_negated_and_or.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_subsets_100(string solver)
+	public async Task test_solve_unit_general_test_negated_and_or(string solver)
 	{
-		var path = "unit/regression/subsets_100.mzn";
+		var path = "unit/general/test_negated_and_or.mzn";
 		var solutions = new List<string> {
-			"""{"s":{"_set_":"{1,2,3,4,5,6,7,8,9}"},"t":{"_set_":"{45}"},"s_total":45,"t_total":45}""",
-			"""{"s":{"_set_":"{100}"},"t":{"_set_":"{49,51}"},"s_total":100,"t_total":100}""",
-			"""{"s":{"_set_":"{1,2,40,56,94}"},"t":{"_set_":"{3,93,97}"},"s_total":193,"t_total":193}""",
+			"""{"x":true,"y":false,"z":false}""",
+			"""{"x":false,"y":true,"z":false}""",
+			"""{"x":false,"y":false,"z":false}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/test_bug54.mzn")]
-	public async Task test_solve_unit_regression_test_bug54_2()
+	[Theory(DisplayName="unit/general/test_negated_let_good_2.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_general_test_negated_let_good_2(string solver)
 	{
-		var path = "unit/regression/test_bug54.mzn";
+		var path = "unit/general/test_negated_let_good_2.mzn";
+		var solutions = new List<string> {
+			"""{"x":[0]}""",
+			"""{"x":[2]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/general/test_negated_or.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_general_test_negated_or(string solver)
+	{
+		var path = "unit/general/test_negated_or.mzn";
+		var solutions = new List<string> {
+			"""{"x":false,"y":false,"z":false}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/test_rounding_a.mzn")]
+	public async Task test_solve_unit_general_test_rounding_a()
+	{
+		var path = "unit/general/test_rounding_a.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"_output_item":"-2.00, -2, -2, -2 OK","x":-2.0}""",
+			"""{"_output_item":"-1.75, -1, -2, -2 OK","x":-1.75}""",
+			"""{"_output_item":"-1.50, -1, -2, -2 OK","x":-1.5}""",
+			"""{"_output_item":"-1.25, -1, -2, -1 OK","x":-1.25}""",
+			"""{"_output_item":"-1.00, -1, -1, -1 OK","x":-1.0}""",
+			"""{"_output_item":"-0.25, 0, -1, 0 OK","x":-0.25}""",
+			"""{"_output_item":"-0.00, 0, 0, 0 OK","x":0.0}""",
+			"""{"_output_item":"0.00, 0, 0, 0 OK","x":0.0}""",
+			"""{"_output_item":"0.25, 1, 0, 0 OK","x":0.25}""",
+			"""{"_output_item":"0.50, 1, 0, 1 OK","x":0.5}""",
+			"""{"_output_item":"0.75, 1, 0, 1 OK","x":0.75}""",
+			"""{"_output_item":"1.00, 1, 1, 1 OK","x":1.0}""",
+			"""{"_output_item":"1.25, 2, 1, 1 OK","x":1.25}""",
+			"""{"_output_item":"1.50, 2, 1, 2 OK","x":1.5}""",
+			"""{"_output_item":"1.75, 2, 1, 2 OK","x":1.75}""",
+			"""{"_output_item":"2.00, 2, 2, 2 OK","x":2.0}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/test_rounding_b.mzn")]
+	public async Task test_solve_unit_general_test_rounding_b()
+	{
+		var path = "unit/general/test_rounding_b.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"_output_item":"0.00, 0, 0, 0 OK","x":0.0}""",
+			"""{"_output_item":"0.25, 1, 0, 0 OK","x":0.25}""",
+			"""{"_output_item":"0.50, 1, 0, 1 OK","x":0.5}""",
+			"""{"_output_item":"0.75, 1, 0, 1 OK","x":0.75}""",
+			"""{"_output_item":"1.00, 1, 1, 1 OK","x":1.0}""",
+			"""{"_output_item":"1.25, 2, 1, 1 OK","x":1.25}""",
+			"""{"_output_item":"1.50, 2, 1, 2 OK","x":1.5}""",
+			"""{"_output_item":"1.75, 2, 1, 2 OK","x":1.75}""",
+			"""{"_output_item":"2.00, 2, 2, 2 OK","x":2.0}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/test_rounding_c.mzn")]
+	public async Task test_solve_unit_general_test_rounding_c()
+	{
+		var path = "unit/general/test_rounding_c.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"_output_item":"-2.00, -2, -2, -2 OK","x":-2.0}""",
+			"""{"_output_item":"-1.75, -1, -2, -2 OK","x":-1.75}""",
+			"""{"_output_item":"-1.50, -1, -2, -2 OK","x":-1.5}""",
+			"""{"_output_item":"-1.25, -1, -2, -1 OK","x":-1.25}""",
+			"""{"_output_item":"-1.00, -1, -1, -1 OK","x":-1.0}""",
+			"""{"_output_item":"-0.25, 0, -1, 0 OK","x":-0.25}""",
+			"""{"_output_item":"-0.00, 0, 0, 0 OK","x":0.0}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/general/test_set_lt_1.mzn")]
+	public async Task test_solve_unit_general_test_set_lt_1()
+	{
+		var path = "unit/general/test_set_lt_1.mzn";
 		var solver = "chuffed";
 		var solutions = new List<string> {
-			"""{"x":7,"y":1,"z":7}""",
+			"""{"sets":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,4}"},{"_set_":"{1,2,5}"},{"_set_":"{1,2,6}"},{"_set_":"{1,3,4}"},{"_set_":"{1,3,5}"},{"_set_":"{1,3,6}"},{"_set_":"{1,4,5}"},{"_set_":"{1,4,6}"},{"_set_":"{1,5,6}"},{"_set_":"{2,3,4}"},{"_set_":"{2,3,5}"},{"_set_":"{2,3,6}"},{"_set_":"{2,4,5}"},{"_set_":"{2,4,6}"},{"_set_":"{2,5,6}"},{"_set_":"{3,4,5}"},{"_set_":"{3,4,6}"},{"_set_":"{3,5,6}"},{"_set_":"{4,5,6}"}]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/test_bug72.mzn")]
-	public async Task test_solve_unit_regression_test_bug72_2()
+	[Fact(DisplayName="unit/general/test_set_lt_2.mzn")]
+	public async Task test_solve_unit_general_test_set_lt_2()
 	{
-		var path = "unit/regression/test_bug72.mzn";
+		var path = "unit/general/test_set_lt_2.mzn";
 		var solver = "chuffed";
 		var solutions = new List<string> {
-			"""{"x":{"_set_":"{1}"},"b":true}""",
+			"""{"sets":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{1,2}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/test_bug_476.mzn")]
-	public async Task test_solve_unit_regression_test_bug_476()
+	[Fact(DisplayName="unit/optional/opt_math_abs.mzn")]
+	public async Task test_solve_unit_optional_opt_math_abs()
 	{
-		var path = "unit/regression/test_bug_476.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":1,"c":true}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_483.mzn")]
-	public async Task test_solve_unit_regression_test_bug_483()
-	{
-		var path = "unit/regression/test_bug_483.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_493.mzn")]
-	public async Task test_solve_unit_regression_test_bug_493()
-	{
-		var path = "unit/regression/test_bug_493.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022{}\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_494.mzn")]
-	public async Task test_solve_unit_regression_test_bug_494()
-	{
-		var path = "unit/regression/test_bug_494.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x1":1,"x2":[[0]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_520.mzn")]
-	public async Task test_solve_unit_regression_test_bug_520()
-	{
-		var path = "unit/regression/test_bug_520.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022{a}\u0022b\u0022\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_521.mzn")]
-	public async Task test_solve_unit_regression_test_bug_521()
-	{
-		var path = "unit/regression/test_bug_521.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":0}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_527.mzn")]
-	public async Task test_solve_unit_regression_test_bug_527()
-	{
-		var path = "unit/regression/test_bug_527.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_529.mzn")]
-	public async Task test_solve_unit_regression_test_bug_529()
-	{
-		var path = "unit/regression/test_bug_529.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022ok\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_588.mzn")]
-	public async Task test_solve_unit_regression_test_bug_588()
-	{
-		var path = "unit/regression/test_bug_588.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":2,"y":1,"z":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/test_bug_637.mzn")]
-	public async Task test_solve_unit_regression_test_bug_637()
-	{
-		var path = "unit/regression/test_bug_637.mzn";
+		var path = "unit/optional/opt_math_abs.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
 			"""{}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/test_bug_array_sum_bounds.mzn")]
-	public async Task test_solve_unit_regression_test_bug_array_sum_bounds()
+	[Fact(DisplayName="unit/optional/opt_math_neg.mzn")]
+	public async Task test_solve_unit_optional_opt_math_neg()
 	{
-		var path = "unit/regression/test_bug_array_sum_bounds.mzn";
+		var path = "unit/optional/opt_math_neg.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"C":[0,0,0],"y":0}""",
+			"""{}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/test_bug_ite_array_eq.mzn")]
-	public async Task test_solve_unit_regression_test_bug_ite_array_eq()
+	[Theory(DisplayName="unit/optional/test-opt-bool-2.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_optional_test_opt_bool_2(string solver)
 	{
-		var path = "unit/regression/test_bug_ite_array_eq.mzn";
+		var path = "unit/optional/test-opt-bool-2.mzn";
+		var solutions = new List<string> {
+			"""{"x":true,"y":true}""",
+			"""{"x":true,"y":null}""",
+			"""{"x":null,"y":true}""",
+			"""{"x":null,"y":null}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/optional/test-opt-bool-3.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_optional_test_opt_bool_3(string solver)
+	{
+		var path = "unit/optional/test-opt-bool-3.mzn";
+		var solutions = new List<string> {
+			"""{"x":true,"y":true}""",
+			"""{"x":true,"y":null}""",
+			"""{"x":null,"y":true}""",
+			"""{"x":false,"y":true}""",
+			"""{"x":true,"y":false}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/optional/test-opt-bool-4.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_optional_test_opt_bool_4(string solver)
+	{
+		var path = "unit/optional/test-opt-bool-4.mzn";
+		var solutions = new List<string> {
+			"""{"x":true,"y":false}""",
+			"""{"x":false,"y":true}""",
+			"""{"x":null,"y":null}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/optional/test-opt-bool-5.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_optional_test_opt_bool_5(string solver)
+	{
+		var path = "unit/optional/test-opt-bool-5.mzn";
+		var solutions = new List<string> {
+			"""{"x":[null,null,null]}""",
+			"""{"x":[true,null,null]}""",
+			"""{"x":[null,true,null]}""",
+			"""{"x":[true,true,null]}""",
+			"""{"x":[null,null,true]}""",
+			"""{"x":[true,null,true]}""",
+			"""{"x":[null,true,true]}""",
+			"""{"x":[true,true,true]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/optional/test-opt-bool-6.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_optional_test_opt_bool_6(string solver)
+	{
+		var path = "unit/optional/test-opt-bool-6.mzn";
+		var solutions = new List<string> {
+			"""{"x":[true,null,null]}""",
+			"""{"x":[true,false,null]}""",
+			"""{"x":[true,null,false]}""",
+			"""{"x":[true,false,false]}""",
+			"""{"x":[null,true,null]}""",
+			"""{"x":[false,true,null]}""",
+			"""{"x":[null,true,false]}""",
+			"""{"x":[false,true,false]}""",
+			"""{"x":[true,true,null]}""",
+			"""{"x":[true,true,false]}""",
+			"""{"x":[null,null,true]}""",
+			"""{"x":[false,null,true]}""",
+			"""{"x":[null,false,true]}""",
+			"""{"x":[false,false,true]}""",
+			"""{"x":[true,null,true]}""",
+			"""{"x":[true,false,true]}""",
+			"""{"x":[null,true,true]}""",
+			"""{"x":[false,true,true]}""",
+			"""{"x":[true,true,true]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/optional/test-opt-if-then-else.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_optional_test_opt_if_then_else(string solver)
+	{
+		var path = "unit/optional/test-opt-if-then-else.mzn";
+		var solutions = new List<string> {
+			"""{"x":1,"y":null,"p":false,"a":1,"b":null,"c":null}""",
+			"""{"x":null,"y":1,"p":false,"a":1,"b":1,"c":null}""",
+			"""{"x":null,"y":1,"p":true,"a":null,"b":null,"c":null}""",
+			"""{"x":1,"y":null,"p":true,"a":null,"b":1,"c":null}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/optional/test-opt-int-2.mzn")]
+	public async Task test_solve_unit_optional_test_opt_int_2()
+	{
+		var path = "unit/optional/test-opt-int-2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"b":true,"x":[false,false,false]}""",
+			"""{"x":[2,null,null]}""",
+			"""{"x":[null,2,null]}""",
+			"""{"x":[1,1,null]}""",
+			"""{"x":[null,null,2]}""",
+			"""{"x":[1,null,1]}""",
+			"""{"x":[null,1,1]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="unit/regression/test_parout.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_regression_test_parout(string solver)
+	[Fact(DisplayName="unit/optional/test-opt-int-3.mzn")]
+	public async Task test_solve_unit_optional_test_opt_int_3()
 	{
-		var path = "unit/regression/test_parout.mzn";
-		var solutions = new List<string> {
-			"""{"x":10,"y":-2147483646}""",
-			"""{"x":10,"y":11}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/ti_error_location.mzn")]
-	public async Task test_solve_unit_regression_ti_error_location()
-	{
-		var path = "unit/regression/ti_error_location.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/regression/var_bool_comp.mzn")]
-	public async Task test_solve_unit_regression_var_bool_comp()
-	{
-		var path = "unit/regression/var_bool_comp.mzn";
+		var path = "unit/optional/test-opt-int-3.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":[2,1]}""",
+			"""{"x":[3,2,null]}""",
+			"""{"x":[2,3,null]}""",
+			"""{"x":[3,null,2]}""",
+			"""{"x":[2,null,3]}""",
+			"""{"x":[null,3,2]}""",
+			"""{"x":[null,2,3]}""",
+			"""{"x":[3,2,1]}""",
+			"""{"x":[2,3,1]}""",
+			"""{"x":[3,1,2]}""",
+			"""{"x":[1,3,2]}""",
+			"""{"x":[2,1,3]}""",
+			"""{"x":[1,2,3]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="unit/regression/var_self_assign_bug.mzn")]
+	[Theory(DisplayName="unit/optional/test_if_then_else_opt_bool.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	public async Task test_solve_unit_regression_var_self_assign_bug(string solver)
+	public async Task test_solve_unit_optional_test_if_then_else_opt_bool(string solver)
 	{
-		var path = "unit/regression/var_self_assign_bug.mzn";
+		var path = "unit/optional/test_if_then_else_opt_bool.mzn";
 		var solutions = new List<string> {
-			"""{"partitions":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
-			"""{"partitions":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
-			"""{"partitions":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
+			"""{"a":[true,false,true],"x":null}""",
+			"""{"a":[true,true,true],"x":null}""",
+			"""{"a":[false,false,true],"x":false}""",
+			"""{"a":[false,true,true],"x":true}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="unit/search/int_choice_1.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_int_choice_1(string solver)
+	[Fact(DisplayName="unit/optional/test_if_then_else_opt_float.mzn")]
+	public async Task test_solve_unit_optional_test_if_then_else_opt_float()
 	{
-		var path = "unit/search/int_choice_1.mzn";
-		var solutions = new List<string> {
-			"""{"q":[1,5,8,6,3,7,2,4]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/int_choice_2.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_int_choice_2(string solver)
-	{
-		var path = "unit/search/int_choice_2.mzn";
-		var solutions = new List<string> {
-			"""{"q":[8,4,1,3,6,2,7,5]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/int_choice_6.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_int_choice_6(string solver)
-	{
-		var path = "unit/search/int_choice_6.mzn";
-		var solutions = new List<string> {
-			"""{"q":[1,5,8,6,3,7,2,4]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/int_var_select_1.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_int_var_select_1(string solver)
-	{
-		var path = "unit/search/int_var_select_1.mzn";
-		var solutions = new List<string> {
-			"""{"q":[1,5,8,6,3,7,2,4]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/int_var_select_2.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_int_var_select_2(string solver)
-	{
-		var path = "unit/search/int_var_select_2.mzn";
-		var solutions = new List<string> {
-			"""{"q":[1,5,8,6,3,7,2,4]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/search/int_var_select_3.mzn")]
-	public async Task test_solve_unit_search_int_var_select_3()
-	{
-		var path = "unit/search/int_var_select_3.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""{"q":[1,7,4,6,8,2,5,3]}""",
-			"""{"q":[1,7,5,8,2,4,6,3]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/int_var_select_4.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_int_var_select_4(string solver)
-	{
-		var path = "unit/search/int_var_select_4.mzn";
-		var solutions = new List<string> {
-			"""{"q":[1,7,4,6,8,2,5,3]}""",
-			"""{"q":[1,7,5,8,2,4,6,3]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/int_var_select_6.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_int_var_select_6(string solver)
-	{
-		var path = "unit/search/int_var_select_6.mzn";
-		var solutions = new List<string> {
-			"""{"q":[1,5,8,6,3,7,2,4]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/test-ff1.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_test_ff1(string solver)
-	{
-		var path = "unit/search/test-ff1.mzn";
-		var solutions = new List<string> {
-			"""{"x":3,"y":8}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/test-ff2.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_test_ff2(string solver)
-	{
-		var path = "unit/search/test-ff2.mzn";
-		var solutions = new List<string> {
-			"""{"x":5,"y":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/test-ff3.mzn")]
-	[InlineData("gecode")]
-	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_test_ff3(string solver)
-	{
-		var path = "unit/search/test-ff3.mzn";
-		var solutions = new List<string> {
-			"""{"x":5,"y":1,"z":1,"w":3}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/search/test-large1.mzn")]
-	public async Task test_solve_unit_search_test_large1()
-	{
-		var path = "unit/search/test-large1.mzn";
+		var path = "unit/optional/test_if_then_else_opt_float.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":5,"y":8}""",
+			"""{"a":[true,false,true],"x":null}""",
+			"""{"a":[true,true,true],"x":null}""",
+			"""{"a":[false,false,true],"x":2.4}""",
+			"""{"a":[false,true,true],"x":1.2}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/search/test-large1.mzn")]
-	public async Task test_solve_unit_search_test_large1_2()
-	{
-		var path = "unit/search/test-large1.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""{"x":6,"y":7}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/search/test-med1.mzn")]
+	[Theory(DisplayName="unit/optional/test_if_then_else_opt_int.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_test_med1(string solver)
+	public async Task test_solve_unit_optional_test_if_then_else_opt_int(string solver)
 	{
-		var path = "unit/search/test-med1.mzn";
+		var path = "unit/optional/test_if_then_else_opt_int.mzn";
 		var solutions = new List<string> {
-			"""{"x":5,"y":6}""",
+			"""{"a":[true,false,true],"x":null}""",
+			"""{"a":[true,true,true],"x":null}""",
+			"""{"a":[false,false,true],"x":2}""",
+			"""{"a":[false,true,true],"x":1}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="unit/search/test-small1.mzn")]
+	[Theory(DisplayName="unit/optional/test_if_then_else_var_opt_bool.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_unit_search_test_small1(string solver)
+	public async Task test_solve_unit_optional_test_if_then_else_var_opt_bool(string solver)
 	{
-		var path = "unit/search/test-small1.mzn";
+		var path = "unit/optional/test_if_then_else_var_opt_bool.mzn";
 		var solutions = new List<string> {
-			"""{"x":9,"y":2}""",
+			"""{"a":[true,false,true],"x":null}""",
+			"""{"a":[true,true,true],"x":null}""",
+			"""{"a":[false,false,true],"x":false}""",
+			"""{"a":[false,true,true],"x":true}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/alias.mzn")]
-	public async Task test_solve_unit_types_alias()
+	[Fact(DisplayName="unit/optional/test_if_then_else_var_opt_float.mzn")]
+	public async Task test_solve_unit_optional_test_if_then_else_var_opt_float()
 	{
-		var path = "unit/types/alias.mzn";
+		var path = "unit/optional/test_if_then_else_var_opt_float.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"x":3,"y":[null,1],"tup":[2,true],"tuptup":[2,true,2,true]}""",
+			"""{"a":[true,false,true],"x":null}""",
+			"""{"a":[true,true,true],"x":null}""",
+			"""{"a":[false,false,true],"x":2.4}""",
+			"""{"a":[false,true,true],"x":1.2}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/alias_call.mzn")]
-	public async Task test_solve_unit_types_alias_call()
+	[Theory(DisplayName="unit/optional/test_if_then_else_var_opt_int.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_optional_test_if_then_else_var_opt_int(string solver)
 	{
-		var path = "unit/types/alias_call.mzn";
-		var solver = "gecode";
+		var path = "unit/optional/test_if_then_else_var_opt_int.mzn";
+		var solutions = new List<string> {
+			"""{"a":[true,false,true],"x":null}""",
+			"""{"a":[true,true,true],"x":null}""",
+			"""{"a":[false,false,true],"x":2}""",
+			"""{"a":[false,true,true],"x":1}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/optional/test_optional_not_absent.mzn")]
+	[InlineData("chuffed")]
+	[InlineData("gecode")]
+	public async Task test_solve_unit_optional_test_optional_not_absent(string solver)
+	{
+		var path = "unit/optional/test_optional_not_absent.mzn";
 		var solutions = new List<string> {
 			"""{"x":1}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/alias_set_of_array.mzn")]
-	public async Task test_solve_unit_types_alias_set_of_array()
+	[Fact(DisplayName="unit/optional/test_opt_dom_empty.mzn")]
+	public async Task test_solve_unit_optional_test_opt_dom_empty()
 	{
-		var path = "unit/types/alias_set_of_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/array_var_opt_set_comprehension.mzn")]
-	public async Task test_solve_unit_types_array_var_opt_set_comprehension()
-	{
-		var path = "unit/types/array_var_opt_set_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/common_record.mzn")]
-	public async Task test_solve_unit_types_common_record()
-	{
-		var path = "unit/types/common_record.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/common_struct_bottom.mzn")]
-	public async Task test_solve_unit_types_common_struct_bottom()
-	{
-		var path = "unit/types/common_struct_bottom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[[[[1]]],[[]]],"y":[{"a":[{"a":1}]},{"a":[]}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/comprehension_of_absent_any_1.mzn")]
-	public async Task test_solve_unit_types_comprehension_of_absent_any_1()
-	{
-		var path = "unit/types/comprehension_of_absent_any_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/comprehension_type.mzn")]
-	public async Task test_solve_unit_types_comprehension_type()
-	{
-		var path = "unit/types/comprehension_type.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[["A","A"],["A","A"]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/cv_comprehension.mzn")]
-	public async Task test_solve_unit_types_cv_comprehension()
-	{
-		var path = "unit/types/cv_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/enum_refl.mzn")]
-	public async Task test_solve_unit_types_enum_refl()
-	{
-		var path = "unit/types/enum_refl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"_set_":"{}"},"ubx":{"_set_":"{a,b,c}"},"y":"a","lby":"a","uby":"c","domy":{"_set_":"{a,b,c}"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/github_647.mzn")]
-	public async Task test_solve_unit_types_github_647()
-	{
-		var path = "unit/types/github_647.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"b":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/if_then_else_struct.mzn")]
-	public async Task test_solve_unit_types_if_then_else_struct()
-	{
-		var path = "unit/types/if_then_else_struct.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"t":[null,null],"b":false,"u":[0,0]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/nested_type_inst_id.mzn")]
-	public async Task test_solve_unit_types_nested_type_inst_id()
-	{
-		var path = "unit/types/nested_type_inst_id.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/nonbool_constraint.mzn")]
-	public async Task test_solve_unit_types_nonbool_constraint()
-	{
-		var path = "unit/types/nonbool_constraint.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/nonbool_constraint_let.mzn")]
-	public async Task test_solve_unit_types_nonbool_constraint_let()
-	{
-		var path = "unit/types/nonbool_constraint_let.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/non_contig_enum.mzn")]
-	public async Task test_solve_unit_types_non_contig_enum()
-	{
-		var path = "unit/types/non_contig_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":{"__tag__":"EnumConstructor","dzn":"6)S("}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/opt_alias._int.mzn")]
-	public async Task test_solve_unit_types_opt_alias_int()
-	{
-		var path = "unit/types/opt_alias._int.mzn";
+		var path = "unit/optional/test_opt_dom_empty.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
 			"""{"x":null}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/opt_alias._record.mzn")]
-	public async Task test_solve_unit_types_opt_alias_record()
+	[Fact(DisplayName="unit/optional/test_opt_dom_empty_no_absent_zero.mzn")]
+	public async Task test_solve_unit_optional_test_opt_dom_empty_no_absent_zero()
 	{
-		var path = "unit/types/opt_alias._record.mzn";
+		var path = "unit/optional/test_opt_dom_empty_no_absent_zero.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{"x":null}""",
+			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/opt_alias._tuple.mzn")]
-	public async Task test_solve_unit_types_opt_alias_tuple()
+	[Fact(DisplayName="unit/output/array_of_array.mzn")]
+	public async Task test_solve_unit_output_array_of_array()
 	{
-		var path = "unit/types/opt_alias._tuple.mzn";
+		var path = "unit/output/array_of_array.mzn";
 		var solver = "gecode";
-		var solutions = new List<string>();
+		var solutions = new List<string> {
+			"""{"x":[[[1]],[[2,2]]],"y":[[[1],1],[[2,2],2]],"z":[[-1,1],[0,2]]}""",
+			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/polymorphic_overloading.mzn")]
-	public async Task test_solve_unit_types_polymorphic_overloading()
+	[Theory(DisplayName="unit/output/test-in-output.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_output_test_in_output(string solver)
 	{
-		var path = "unit/types/polymorphic_overloading.mzn";
+		var path = "unit/output/test-in-output.mzn";
+		var solutions = new List<string> {
+			"""{"_output_item":"x = 1\ny = 2\nNO\n"}""",
+			"""{"_output_item":"x = 1\ny = 2\nYES\n"}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/param_file/param_file_nested_object.mzn")]
+	public async Task test_solve_unit_param_file_param_file_nested_object()
+	{
+		var path = "unit/param_file/param_file_nested_object.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":1}""",
+			};
+		var args = new List<string>{
+			"--data \"unit/param_file/param_file_nested_object.mpc\"",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/arg-reif-array-float.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_arg_reif_array_float(string solver)
+	{
+		var path = "unit/regression/arg-reif-array-float.mzn";
+		var solutions = new List<string> {
+			"""{"a":1}""",
+			"""{"a":2}""",
+			"""{"a":3}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/arg-reif-array-int.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_arg_reif_array_int(string solver)
+	{
+		var path = "unit/regression/arg-reif-array-int.mzn";
+		var solutions = new List<string> {
+			"""{"a":1}""",
+			"""{"a":2}""",
+			"""{"a":3}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/arg-reif-float.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_arg_reif_float(string solver)
+	{
+		var path = "unit/regression/arg-reif-float.mzn";
+		var solutions = new List<string> {
+			"""{"a":1}""",
+			"""{"a":2}""",
+			"""{"a":3}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/arg-reif-int-set.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_arg_reif_int_set(string solver)
+	{
+		var path = "unit/regression/arg-reif-int-set.mzn";
+		var solutions = new List<string> {
+			"""{"a":1}""",
+			"""{"a":2}""",
+			"""{"a":3}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/arg-reif-int.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_arg_reif_int(string solver)
+	{
+		var path = "unit/regression/arg-reif-int.mzn";
+		var solutions = new List<string> {
+			"""{"a":1}""",
+			"""{"a":2}""",
+			"""{"a":3}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/array_of_empty_sets.mzn")]
+	public async Task test_solve_unit_regression_array_of_empty_sets()
+	{
+		var path = "unit/regression/array_of_empty_sets.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"i":1}""",
+			"""{"i":2}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/bug131.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_bug131(string solver)
+	{
+		var path = "unit/regression/bug131.mzn";
+		var solutions = new List<string> {
+			"""{"b":false,"x":1,"y":1}""",
+			"""{"b":false,"x":2,"y":2}""",
+			"""{"b":false,"x":3,"y":3}""",
+			"""{"b":true,"x":2,"y":1}""",
+			"""{"b":true,"x":3,"y":1}""",
+			"""{"b":true,"x":1,"y":2}""",
+			"""{"b":true,"x":3,"y":2}""",
+			"""{"b":true,"x":1,"y":3}""",
+			"""{"b":true,"x":2,"y":3}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/bug244.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_bug244(string solver)
+	{
+		var path = "unit/regression/bug244.mzn";
+		var solutions = new List<string> {
+			"""{"b":false,"i":0}""",
+			"""{"b":true,"i":1}""",
+			"""{"b":false,"i":2}""",
+			"""{"b":false,"i":3}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/flat_set_lit.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_flat_set_lit(string solver)
+	{
+		var path = "unit/regression/flat_set_lit.mzn";
+		var solutions = new List<string> {
+			"""{"x":{"_set_":"{2}"}}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/float_ceil_floor.mzn")]
+	public async Task test_solve_unit_regression_float_ceil_floor()
+	{
+		var path = "unit/regression/float_ceil_floor.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"c":-1,"f":-1,"p":-1.0}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/float_opt_crash.mzn")]
+	public async Task test_solve_unit_regression_float_opt_crash()
+	{
+		var path = "unit/regression/float_opt_crash.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":1.0}""",
+			"""{"x":2.0}""",
+			"""{"x":null}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github537.mzn")]
+	public async Task test_solve_unit_regression_github537()
+	{
+		var path = "unit/regression/github537.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":true}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_638_reduced.mzn")]
+	public async Task test_solve_unit_regression_github_638_reduced()
+	{
+		var path = "unit/regression/github_638_reduced.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"arr":[false,true],"x":[null],"xx":1}""",
+			"""{"arr":[false,true],"x":[null],"xx":2}""",
+			"""{"arr":[true,true],"x":[2],"xx":2}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_639_part1.mzn")]
+	public async Task test_solve_unit_regression_github_639_part1()
+	{
+		var path = "unit/regression/github_639_part1.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":1,"arr":[null,null]}""",
+			"""{"x":1,"arr":[1,null]}""",
+			"""{"x":2,"arr":[null,null]}""",
+			"""{"x":2,"arr":[null,1]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_695.mzn")]
+	public async Task test_solve_unit_regression_github_695()
+	{
+		var path = "unit/regression/github_695.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":-3,"y":-3,"idx":0,"val":-3,"p":true}""",
+			"""{"x":-3,"y":-3,"idx":1,"val":-3,"p":true}""",
+			"""{"x":-3,"y":-3,"idx":2,"val":-3,"p":false}""",
+			"""{"x":-3,"y":-3,"idx":2,"val":-3,"p":true}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/github_700_bad_sol.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_github_700_bad_sol(string solver)
+	{
+		var path = "unit/regression/github_700_bad_sol.mzn";
+		var solutions = new List<string> {
+			"""{"c":{"_set_":"{1}"},"d":{"_set_":"{}"}}""",
+			"""{"c":{"_set_":"{}"},"d":{"_set_":"{1}"}}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_716.mzn")]
+	public async Task test_solve_unit_regression_github_716()
+	{
+		var path = "unit/regression/github_716.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"BV9":false,"BV8":true,"BV7":false,"BV4":true}""",
+			"""{"BV9":true,"BV8":true,"BV7":false,"BV4":true}""",
+			"""{"BV9":false,"BV8":false,"BV7":true,"BV4":true}""",
+			"""{"BV9":true,"BV8":false,"BV7":true,"BV4":true}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_719.mzn")]
+	public async Task test_solve_unit_regression_github_719()
+	{
+		var path = "unit/regression/github_719.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"foo":1}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_748.mzn")]
+	public async Task test_solve_unit_regression_github_748()
+	{
+		var path = "unit/regression/github_748.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":[true,false,false],"y":true}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_748.mzn")]
+	public async Task test_solve_unit_regression_github_748_2()
+	{
+		var path = "unit/regression/github_748.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":[true,false,false],"y":true}""",
+			};
+		var args = new List<string>{
+			"-O0",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_754.mzn")]
+	public async Task test_solve_unit_regression_github_754()
+	{
+		var path = "unit/regression/github_754.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"a":false,"b":false,"c":true,"d":true}""",
+			"""{"a":false,"b":false,"c":false,"d":true}""",
+			"""{"a":false,"b":false,"c":true,"d":false}""",
+			"""{"a":false,"b":false,"c":false,"d":false}""",
+			"""{"a":true,"b":false,"c":false,"d":false}""",
+			"""{"a":false,"b":true,"c":false,"d":false}""",
+			"""{"a":true,"b":true,"c":false,"d":false}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_766.mzn")]
+	public async Task test_solve_unit_regression_github_766()
+	{
+		var path = "unit/regression/github_766.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"a":-2,"b":-2}""",
+			"""{"a":-2,"b":2}""",
+			"""{"a":2,"b":-2}""",
+			"""{"a":2,"b":2}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_802.mzn")]
+	public async Task test_solve_unit_regression_github_802()
+	{
+		var path = "unit/regression/github_802.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"i":1,"x":5}""",
+			"""{"i":2,"x":10}""",
+			};
+		var args = new List<string>{
+			"--keep-paths",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/github_810a.mzn")]
+	public async Task test_solve_unit_regression_github_810a()
+	{
+		var path = "unit/regression/github_810a.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
 			"""{"_output_item":"Ok"}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_access_error.mzn")]
-	public async Task test_solve_unit_types_record_access_error()
-	{
-		var path = "unit/types/record_access_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_access_success.mzn")]
-	public async Task test_solve_unit_types_record_access_success()
-	{
-		var path = "unit/types/record_access_success.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022onetwo\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_array_access_error.mzn")]
-	public async Task test_solve_unit_types_record_array_access_error()
-	{
-		var path = "unit/types/record_array_access_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_binop_par.mzn")]
-	public async Task test_solve_unit_types_record_binop_par()
-	{
-		var path = "unit/types/record_binop_par.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"eq1":true,"eq0":false,"nq1":true,"nq0":false,"in1":true,"in0":false,"le1":true,"le0":false,"lq1":true,"lq0":false,"merge1":{"x":1,"y":2.0,"z":true}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_binop_var.mzn")]
-	public async Task test_solve_unit_types_record_binop_var()
-	{
-		var path = "unit/types/record_binop_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"eqA":{"a":2,"b":true},"nq":{"a":3,"b":true},"leA":{"x":2,"y":4},"lqA":{"x":2,"y":4},"arrin":{"a":3,"b":5.0},"merge1":{"a":2,"b":true,"x":2,"y":4}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_comprehensions.mzn")]
-	public async Task test_solve_unit_types_record_comprehensions()
-	{
-		var path = "unit/types/record_comprehensions.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"simple":[{"x":2,"y":true},{"x":1,"y":false},{"x":0,"y":true},{"x":1,"y":false},{"x":2,"y":true}],"indexed":[{"a":4,"b":true},{"a":6,"b":true},{"a":8,"b":true},{"a":9,"b":false},{"a":11,"b":false}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_decl_error.mzn")]
-	public async Task test_solve_unit_types_record_decl_error()
-	{
-		var path = "unit/types/record_decl_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_in_checker.mzn")]
-	public async Task test_solve_unit_types_record_in_checker()
-	{
-		var path = "unit/types/record_in_checker.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_checker":"{\u0022x\u0022: 1}"}""",
-			};
-		var args = new List<string>{
-			"--data \"unit/types/record_in_checker.mzc.mzn\"",
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
 		};
-		await TestAllSolutions(path, solver, solutions, args);
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/record_ite_error.mzn")]
-	public async Task test_solve_unit_types_record_ite_error()
+	[Fact(DisplayName="unit/regression/github_810b.mzn")]
+	public async Task test_solve_unit_regression_github_810b()
 	{
-		var path = "unit/types/record_ite_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_lit_dup.mzn")]
-	public async Task test_solve_unit_types_record_lit_dup()
-	{
-		var path = "unit/types/record_lit_dup.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_output.mzn")]
-	public async Task test_solve_unit_types_record_output()
-	{
-		var path = "unit/types/record_output.mzn";
+		var path = "unit/regression/github_810b.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"_output_item":"\u0022full var: (a: 0, b: true, c: 1.5)\nvar array: [(a: 2, b: false), (a: 1, b: true)]\nnested: (inner: (left: 3, right: 4), outer: false)\nelement: 3\npartial: (x: 10, y: true)\ndata: (e: -3.2, f: false)\n\u0022"}""",
+			"""{"_output_item":"Ok"}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_subtyping.mzn")]
-	public async Task test_solve_unit_types_record_subtyping()
-	{
-		var path = "unit/types/record_subtyping.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"single":{"a":1},"double":{"a":1.0,"b":[1,2,3]},"tupId":{"x":1,"y":0.0},"tupExpr":{"a":-5.0,"b":0},"arr1":[{"a":5,"b":1.0},{"a":1,"b":-1.0}],"arr2":[{"a":0,"b":1},{"a":0,"b":1}],"arrId":[{"a":0.0,"b":1.0},{"a":0.0,"b":1.0}],"arrExpr":[{"a":1.0,"b":0.0},{"a":2.0,"b":1.0},{"a":3.0,"b":0.0}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/record_var_ite.mzn")]
-	public async Task test_solve_unit_types_record_var_ite()
-	{
-		var path = "unit/types/record_var_ite.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"tups":[{"x":12,"y":false},{"x":10,"y":true},{"x":11,"y":false}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/specialise_large_struct.mzn")]
-	public async Task test_solve_unit_types_specialise_large_struct()
-	{
-		var path = "unit/types/specialise_large_struct.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"t":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"u":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_array_coercion.mzn")]
-	public async Task test_solve_unit_types_struct_array_coercion()
-	{
-		var path = "unit/types/struct_array_coercion.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"mzn_enum_X":[["A",[]],["B",[]],["G",[[0,{"_set_":"{1,2,3}"}]]]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_domain_1.mzn")]
-	public async Task test_solve_unit_types_struct_domain_1()
-	{
-		var path = "unit/types/struct_domain_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_domain_2.mzn")]
-	public async Task test_solve_unit_types_struct_domain_2()
-	{
-		var path = "unit/types/struct_domain_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_domain_3.mzn")]
-	public async Task test_solve_unit_types_struct_domain_3()
-	{
-		var path = "unit/types/struct_domain_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_domain_4.mzn")]
-	public async Task test_solve_unit_types_struct_domain_4()
-	{
-		var path = "unit/types/struct_domain_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_index_sets_1.mzn")]
-	public async Task test_solve_unit_types_struct_index_sets_1()
-	{
-		var path = "unit/types/struct_index_sets_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_index_sets_2.mzn")]
-	public async Task test_solve_unit_types_struct_index_sets_2()
-	{
-		var path = "unit/types/struct_index_sets_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_member_paths.mzn")]
-	public async Task test_solve_unit_types_struct_member_paths()
-	{
-		var path = "unit/types/struct_member_paths.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"a":[{"o":1,"s":null}]}""",
-			};
-		var args = new List<string>{
-			"--keep-paths",
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
 		};
-		await TestAllSolutions(path, solver, solutions, args);
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/struct_par_function_version.mzn")]
-	public async Task test_solve_unit_types_struct_par_function_version()
+	[Fact(DisplayName="unit/regression/int2float_subst.mzn")]
+	public async Task test_solve_unit_regression_int2float_subst()
 	{
-		var path = "unit/types/struct_par_function_version.mzn";
+		var path = "unit/regression/int2float_subst.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""{"p":true,"a":false,"b":true,"c":false}""",
+			"""{"x_int":1,"y_int":2}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/struct_return_ti_1.mzn")]
-	public async Task test_solve_unit_types_struct_return_ti_1()
-	{
-		var path = "unit/types/struct_return_ti_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_return_ti_2.mzn")]
-	public async Task test_solve_unit_types_struct_return_ti_2()
-	{
-		var path = "unit/types/struct_return_ti_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":false}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_return_ti_3.mzn")]
-	public async Task test_solve_unit_types_struct_return_ti_3()
-	{
-		var path = "unit/types/struct_return_ti_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_specialise.mzn")]
-	public async Task test_solve_unit_types_struct_specialise()
-	{
-		var path = "unit/types/struct_specialise.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"foo_int":1,"foo_str":"\u0022test\u0022","foo_enum":"B","bar_int":2,"bar_str":"\u0022pred\u0022","bar_enum":"C","baz_tup":[3,"func"],"baz_rec":{"x":"B"}}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/struct_specialise_return.mzn")]
-	public async Task test_solve_unit_types_struct_specialise_return()
-	{
-		var path = "unit/types/struct_specialise_return.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022{C}, [(A,)]\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_access_error1.mzn")]
-	public async Task test_solve_unit_types_tuple_access_error1()
-	{
-		var path = "unit/types/tuple_access_error1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_access_error2.mzn")]
-	public async Task test_solve_unit_types_tuple_access_error2()
-	{
-		var path = "unit/types/tuple_access_error2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_access_success.mzn")]
-	public async Task test_solve_unit_types_tuple_access_success()
-	{
-		var path = "unit/types/tuple_access_success.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022onetwo\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_array_access_error.mzn")]
-	public async Task test_solve_unit_types_tuple_array_access_error()
-	{
-		var path = "unit/types/tuple_array_access_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_binop_par.mzn")]
-	public async Task test_solve_unit_types_tuple_binop_par()
-	{
-		var path = "unit/types/tuple_binop_par.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"eq1":true,"eq0":false,"nq1":true,"nq0":false,"in1":true,"in0":false,"le1":true,"le0":false,"lq1":true,"lq0":false,"con1":[1,2.0,true]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_binop_var.mzn")]
-	public async Task test_solve_unit_types_tuple_binop_var()
-	{
-		var path = "unit/types/tuple_binop_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"eqA":[2,true],"nq":[3,true],"leA":[2,4],"lqA":[2,4],"arrin":[3,5.0],"con1":[2,true,3,true]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_comprehensions.mzn")]
-	public async Task test_solve_unit_types_tuple_comprehensions()
-	{
-		var path = "unit/types/tuple_comprehensions.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"simple":[[2,true],[1,false],[0,true],[1,false],[2,true]],"indexed":[[4,true],[6,true],[8,true],[9,false],[11,false]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_int_set_of_int_specialisation.mzn")]
-	public async Task test_solve_unit_types_tuple_int_set_of_int_specialisation()
-	{
-		var path = "unit/types/tuple_int_set_of_int_specialisation.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"f":true}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_ite_error.mzn")]
-	public async Task test_solve_unit_types_tuple_ite_error()
-	{
-		var path = "unit/types/tuple_ite_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_lit.mzn")]
-	public async Task test_solve_unit_types_tuple_lit()
-	{
-		var path = "unit/types/tuple_lit.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"single":[1],"double":[false,-1],"triple":[1,false,200.0],"square":[[1,"one"],[-2,"two"]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_mkpar.mzn")]
-	public async Task test_solve_unit_types_tuple_mkpar()
-	{
-		var path = "unit/types/tuple_mkpar.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":1,"y":3}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_output.mzn")]
-	public async Task test_solve_unit_types_tuple_output()
-	{
-		var path = "unit/types/tuple_output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"_output_item":"\u0022full var: (0, true, 1.5)\nvar array: [(2, false), (1, true)]\nnested: (false, (3, 4))\nelement: 3\npartial: (10, true)\ndata: (-3.2, false)\nenumtup: ((x: a a, y: c), c)\n\u0022"}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_subtyping.mzn")]
-	public async Task test_solve_unit_types_tuple_subtyping()
-	{
-		var path = "unit/types/tuple_subtyping.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"single":[1],"double":[1.0,[1,2,3]],"tupId":[1,0.0],"tupExpr":[-5.0,0],"arr1":[[5,1.0],[1,-1.0]],"arr2":[[1,0],[1,0]],"arrId":[[1.0,0.0],[1.0,0.0]],"arrExpr":[[1.0,0.0],[2.0,1.0],[3.0,0.0]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_var_ite.mzn")]
-	public async Task test_solve_unit_types_tuple_var_ite()
-	{
-		var path = "unit/types/tuple_var_ite.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"tups":[[12,false],[10,true],[11,false]]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/type_specialise_struct_domain.mzn")]
-	public async Task test_solve_unit_types_type_specialise_struct_domain()
-	{
-		var path = "unit/types/type_specialise_struct_domain.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"x":[{"a":["A"]},{"a":["B"]},{"a":["C"]}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_ann_a.mzn")]
-	public async Task test_solve_unit_types_var_ann_a()
-	{
-		var path = "unit/types/var_ann_a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_ann_b.mzn")]
-	public async Task test_solve_unit_types_var_ann_b()
-	{
-		var path = "unit/types/var_ann_b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_ann_comprehension.mzn")]
-	public async Task test_solve_unit_types_var_ann_comprehension()
-	{
-		var path = "unit/types/var_ann_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_opt_set_if_then_else.mzn")]
-	public async Task test_solve_unit_types_var_opt_set_if_then_else()
-	{
-		var path = "unit/types/var_opt_set_if_then_else.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_set_bool.mzn")]
-	public async Task test_solve_unit_types_var_set_bool()
-	{
-		var path = "unit/types/var_set_bool.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_set_float.mzn")]
-	public async Task test_solve_unit_types_var_set_float()
-	{
-		var path = "unit/types/var_set_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_set_float_comprehension.mzn")]
-	public async Task test_solve_unit_types_var_set_float_comprehension()
-	{
-		var path = "unit/types/var_set_float_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_string_a.mzn")]
-	public async Task test_solve_unit_types_var_string_a()
-	{
-		var path = "unit/types/var_string_a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_string_b.mzn")]
-	public async Task test_solve_unit_types_var_string_b()
-	{
-		var path = "unit/types/var_string_b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/types/var_string_comprehension.mzn")]
-	public async Task test_solve_unit_types_var_string_comprehension()
-	{
-		var path = "unit/types/var_string_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/globals/cumulatives/globals_cumulatives.mzn")]
-	public async Task test_solve_unit_globals_cumulatives_globals_cumulatives()
-	{
-		var path = "unit/globals/cumulatives/globals_cumulatives.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"makespan":11}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="unit/globals/cumulatives/globals_cumulatives.mzn")]
+	[Theory(DisplayName="unit/regression/opt_noncontiguous_domain.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_unit_globals_cumulatives_globals_cumulatives_2(string solver)
+	public async Task test_solve_unit_regression_opt_noncontiguous_domain(string solver)
 	{
-		var path = "unit/globals/cumulatives/globals_cumulatives.mzn";
+		var path = "unit/regression/opt_noncontiguous_domain.mzn";
 		var solutions = new List<string> {
-			"""{"makespan":11}""",
+			"""{"x":1}""",
+			"""{"x":3}""",
+			"""{"x":null}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/pow_undefined.mzn")]
+	public async Task test_solve_unit_regression_pow_undefined()
+	{
+		var path = "unit/regression/pow_undefined.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":-1,"y":-1,"p":-1,"q":-1}""",
+			"""{"x":-1,"y":0,"p":-1,"q":1}""",
+			"""{"x":0,"y":-1,"p":42,"q":42}""",
+			"""{"x":0,"y":0,"p":42,"q":1}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/test_annotation_on_exists.mzn")]
+	public async Task test_solve_unit_regression_test_annotation_on_exists()
+	{
+		var path = "unit/regression/test_annotation_on_exists.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":true,"c":true,"d":false}""",
+			"""{"b":true,"c":false,"d":true}""",
+			"""{"b":true,"c":true,"d":true}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/test_bug359.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_test_bug359(string solver)
+	{
+		var path = "unit/regression/test_bug359.mzn";
+		var solutions = new List<string> {
+			"""{"p1":1,"p2":1,"p3":0,"p4":0}""",
+			"""{"p1":1,"p2":1,"p3":0,"p4":1}""",
+			"""{"p1":1,"p2":1,"p3":1,"p4":1}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/test_bug54.mzn")]
+	public async Task test_solve_unit_regression_test_bug54()
+	{
+		var path = "unit/regression/test_bug54.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":7,"y":1,"z":7}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/test_bug72.mzn")]
+	public async Task test_solve_unit_regression_test_bug72()
+	{
+		var path = "unit/regression/test_bug72.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":{"_set_":"{1}"},"b":true}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/regression/test_bug_pred_arg.mzn")]
+	public async Task test_solve_unit_regression_test_bug_pred_arg()
+	{
+		var path = "unit/regression/test_bug_pred_arg.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":false,"x":1}""",
+			"""{"b":true,"x":1}""",
+			"""{"b":false,"x":2}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/regression/var_opt_unconstrained.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_regression_var_opt_unconstrained(string solver)
+	{
+		var path = "unit/regression/var_opt_unconstrained.mzn";
+		var solutions = new List<string> {
+			"""{"x":null}""",
+			"""{"x":1}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/types/alias_extern_dom.mzn")]
+	public async Task test_solve_unit_types_alias_extern_dom()
+	{
+		var path = "unit/types/alias_extern_dom.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":{"g":{"x":1}}}""",
+			"""{"x":{"g":{"x":2}}}""",
+			"""{"x":{"g":{"x":3}}}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/types/struct_bind_1.mzn")]
+	public async Task test_solve_unit_types_struct_bind_1()
+	{
+		var path = "unit/types/struct_bind_1.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"a":[1,1],"x":[1,1]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/types/struct_bind_2.mzn")]
+	public async Task test_solve_unit_types_struct_bind_2()
+	{
+		var path = "unit/types/struct_bind_2.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"a":[[1]],"x":[[1]]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/types/test_any_enum_typeinstid.mzn")]
+	public async Task test_solve_unit_types_test_any_enum_typeinstid()
+	{
+		var path = "unit/types/test_any_enum_typeinstid.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"x":[true,false]}""",
+			"""{"x":[true,true]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/types/tuple_if_then_else.mzn")]
+	public async Task test_solve_unit_types_tuple_if_then_else()
+	{
+		var path = "unit/types/tuple_if_then_else.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"b":true,"p0":[3,4]}""",
+			"""{"b":false,"p0":[3,5]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/alldifferent_except_0/test_alldiff_except0b.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_alldifferent_except_0_test_alldiff_except0b(string solver)
+	{
+		var path = "unit/globals/alldifferent_except_0/test_alldiff_except0b.mzn";
+		var solutions = new List<string> {
+			"""{"vs":[0,0,0,-1]}""",
+			"""{"vs":[1,0,0,-1]}""",
+			"""{"vs":[2,0,0,-1]}""",
+			"""{"vs":[0,1,0,-1]}""",
+			"""{"vs":[2,1,0,-1]}""",
+			"""{"vs":[0,2,0,-1]}""",
+			"""{"vs":[1,2,0,-1]}""",
+			"""{"vs":[0,0,1,-1]}""",
+			"""{"vs":[2,0,1,-1]}""",
+			"""{"vs":[0,2,1,-1]}""",
+			"""{"vs":[0,0,2,-1]}""",
+			"""{"vs":[1,0,2,-1]}""",
+			"""{"vs":[0,1,2,-1]}""",
+			"""{"vs":[0,0,-1,0]}""",
+			"""{"vs":[1,0,-1,0]}""",
+			"""{"vs":[2,0,-1,0]}""",
+			"""{"vs":[0,1,-1,0]}""",
+			"""{"vs":[2,1,-1,0]}""",
+			"""{"vs":[0,2,-1,0]}""",
+			"""{"vs":[1,2,-1,0]}""",
+			"""{"vs":[0,-1,0,0]}""",
+			"""{"vs":[1,-1,0,0]}""",
+			"""{"vs":[2,-1,0,0]}""",
+			"""{"vs":[-1,0,0,0]}""",
+			"""{"vs":[0,0,0,0]}""",
+			"""{"vs":[1,0,0,0]}""",
+			"""{"vs":[2,0,0,0]}""",
+			"""{"vs":[-1,1,0,0]}""",
+			"""{"vs":[0,1,0,0]}""",
+			"""{"vs":[2,1,0,0]}""",
+			"""{"vs":[-1,2,0,0]}""",
+			"""{"vs":[0,2,0,0]}""",
+			"""{"vs":[1,2,0,0]}""",
+			"""{"vs":[0,-1,1,0]}""",
+			"""{"vs":[2,-1,1,0]}""",
+			"""{"vs":[-1,0,1,0]}""",
+			"""{"vs":[0,0,1,0]}""",
+			"""{"vs":[2,0,1,0]}""",
+			"""{"vs":[-1,2,1,0]}""",
+			"""{"vs":[0,2,1,0]}""",
+			"""{"vs":[0,-1,2,0]}""",
+			"""{"vs":[1,-1,2,0]}""",
+			"""{"vs":[-1,0,2,0]}""",
+			"""{"vs":[0,0,2,0]}""",
+			"""{"vs":[1,0,2,0]}""",
+			"""{"vs":[-1,1,2,0]}""",
+			"""{"vs":[0,1,2,0]}""",
+			"""{"vs":[0,0,-1,1]}""",
+			"""{"vs":[2,0,-1,1]}""",
+			"""{"vs":[0,2,-1,1]}""",
+			"""{"vs":[0,-1,0,1]}""",
+			"""{"vs":[2,-1,0,1]}""",
+			"""{"vs":[-1,0,0,1]}""",
+			"""{"vs":[0,0,0,1]}""",
+			"""{"vs":[2,0,0,1]}""",
+			"""{"vs":[-1,2,0,1]}""",
+			"""{"vs":[0,2,0,1]}""",
+			"""{"vs":[0,-1,2,1]}""",
+			"""{"vs":[-1,0,2,1]}""",
+			"""{"vs":[0,0,2,1]}""",
+			"""{"vs":[0,0,-1,2]}""",
+			"""{"vs":[1,0,-1,2]}""",
+			"""{"vs":[0,1,-1,2]}""",
+			"""{"vs":[0,-1,0,2]}""",
+			"""{"vs":[1,-1,0,2]}""",
+			"""{"vs":[-1,0,0,2]}""",
+			"""{"vs":[0,0,0,2]}""",
+			"""{"vs":[1,0,0,2]}""",
+			"""{"vs":[-1,1,0,2]}""",
+			"""{"vs":[0,1,0,2]}""",
+			"""{"vs":[0,-1,1,2]}""",
+			"""{"vs":[-1,0,1,2]}""",
+			"""{"vs":[0,0,1,2]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/arg_max/globals_arg_max.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_arg_max_globals_arg_max(string solver)
+	{
+		var path = "unit/globals/arg_max/globals_arg_max.mzn";
+		var solutions = new List<string> {
+			"""{"x":[1,2],"y":5}""",
+			"""{"x":[2,1],"y":4}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/arg_max/globals_arg_max_opt.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_arg_max_globals_arg_max_opt(string solver)
+	{
+		var path = "unit/globals/arg_max/globals_arg_max_opt.mzn";
+		var solutions = new List<string> {
+			"""{"x":[3,null,2,null,1],"y":1}""",
+			"""{"x":[3,null,1,null,2],"y":1}""",
+			"""{"x":[2,null,3,null,1],"y":3}""",
+			"""{"x":[1,null,3,null,2],"y":3}""",
+			"""{"x":[1,null,2,null,3],"y":5}""",
+			"""{"x":[2,null,1,null,3],"y":5}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/arg_max/globals_arg_max_opt_weak.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_arg_max_globals_arg_max_opt_weak(string solver)
+	{
+		var path = "unit/globals/arg_max/globals_arg_max_opt_weak.mzn";
+		var solutions = new List<string> {
+			"""{"x":[null,null],"y":null}""",
+			"""{"x":[1,null],"y":1}""",
+			"""{"x":[2,null],"y":1}""",
+			"""{"x":[null,1],"y":2}""",
+			"""{"x":[null,2],"y":2}""",
+			"""{"x":[1,2],"y":2}""",
+			"""{"x":[2,1],"y":1}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/arg_min/globals_arg_max_opt.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_arg_min_globals_arg_max_opt(string solver)
+	{
+		var path = "unit/globals/arg_min/globals_arg_max_opt.mzn";
+		var solutions = new List<string> {
+			"""{"x":[1,null,2,null,3],"y":1}""",
+			"""{"x":[1,null,3,null,2],"y":1}""",
+			"""{"x":[2,null,1,null,3],"y":3}""",
+			"""{"x":[3,null,1,null,2],"y":3}""",
+			"""{"x":[2,null,3,null,1],"y":5}""",
+			"""{"x":[3,null,2,null,1],"y":5}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/arg_min/globals_arg_min.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_arg_min_globals_arg_min(string solver)
+	{
+		var path = "unit/globals/arg_min/globals_arg_min.mzn";
+		var solutions = new List<string> {
+			"""{"x":[1,2],"y":4}""",
+			"""{"x":[2,1],"y":5}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/arg_min/globals_arg_min_opt_weak.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_arg_min_globals_arg_min_opt_weak(string solver)
+	{
+		var path = "unit/globals/arg_min/globals_arg_min_opt_weak.mzn";
+		var solutions = new List<string> {
+			"""{"x":[null,null],"y":null}""",
+			"""{"x":[1,null],"y":1}""",
+			"""{"x":[2,null],"y":1}""",
+			"""{"x":[null,1],"y":2}""",
+			"""{"x":[null,2],"y":2}""",
+			"""{"x":[1,2],"y":1}""",
+			"""{"x":[2,1],"y":2}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/arg_val/arg_val_enum.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_arg_val_arg_val_enum(string solver)
+	{
+		var path = "unit/globals/arg_val/arg_val_enum.mzn";
+		var solutions = new List<string> {
+			"""{"vals":["C","D"],"i":"A"}""",
+			"""{"vals":["D","C"],"i":"B"}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/bin_packing/globals_bin_packing.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_bin_packing_globals_bin_packing(string solver)
+	{
+		var path = "unit/globals/bin_packing/globals_bin_packing.mzn";
+		var solutions = new List<string> {
+			"""{"bins":[4,4,3,3,2,1]}""",
+			"""{"bins":[5,4,3,3,2,1]}""",
+			"""{"bins":[4,5,3,3,2,1]}""",
+			"""{"bins":[5,5,3,3,2,1]}""",
+			"""{"bins":[4,3,4,3,2,1]}""",
+			"""{"bins":[5,3,4,3,2,1]}""",
+			"""{"bins":[3,4,4,3,2,1]}""",
+			"""{"bins":[4,4,4,3,2,1]}""",
+			"""{"bins":[5,4,4,3,2,1]}""",
+			"""{"bins":[3,5,4,3,2,1]}""",
+			"""{"bins":[4,5,4,3,2,1]}""",
+			"""{"bins":[5,5,4,3,2,1]}""",
+			"""{"bins":[4,3,5,3,2,1]}""",
+			"""{"bins":[5,3,5,3,2,1]}""",
+			"""{"bins":[3,4,5,3,2,1]}""",
+			"""{"bins":[4,4,5,3,2,1]}""",
+			"""{"bins":[5,4,5,3,2,1]}""",
+			"""{"bins":[3,5,5,3,2,1]}""",
+			"""{"bins":[4,5,5,3,2,1]}""",
+			"""{"bins":[5,5,5,3,2,1]}""",
+			"""{"bins":[3,3,3,4,2,1]}""",
+			"""{"bins":[4,3,3,4,2,1]}""",
+			"""{"bins":[5,3,3,4,2,1]}""",
+			"""{"bins":[3,4,3,4,2,1]}""",
+			"""{"bins":[5,4,3,4,2,1]}""",
+			"""{"bins":[3,5,3,4,2,1]}""",
+			"""{"bins":[4,5,3,4,2,1]}""",
+			"""{"bins":[5,5,3,4,2,1]}""",
+			"""{"bins":[3,3,4,4,2,1]}""",
+			"""{"bins":[5,3,4,4,2,1]}""",
+			"""{"bins":[3,5,4,4,2,1]}""",
+			"""{"bins":[5,5,4,4,2,1]}""",
+			"""{"bins":[3,3,5,4,2,1]}""",
+			"""{"bins":[4,3,5,4,2,1]}""",
+			"""{"bins":[5,3,5,4,2,1]}""",
+			"""{"bins":[3,4,5,4,2,1]}""",
+			"""{"bins":[5,4,5,4,2,1]}""",
+			"""{"bins":[3,5,5,4,2,1]}""",
+			"""{"bins":[4,5,5,4,2,1]}""",
+			"""{"bins":[5,5,5,4,2,1]}""",
+			"""{"bins":[3,3,3,5,2,1]}""",
+			"""{"bins":[4,3,3,5,2,1]}""",
+			"""{"bins":[5,3,3,5,2,1]}""",
+			"""{"bins":[3,4,3,5,2,1]}""",
+			"""{"bins":[4,4,3,5,2,1]}""",
+			"""{"bins":[5,4,3,5,2,1]}""",
+			"""{"bins":[3,5,3,5,2,1]}""",
+			"""{"bins":[4,5,3,5,2,1]}""",
+			"""{"bins":[3,3,4,5,2,1]}""",
+			"""{"bins":[4,3,4,5,2,1]}""",
+			"""{"bins":[5,3,4,5,2,1]}""",
+			"""{"bins":[3,4,4,5,2,1]}""",
+			"""{"bins":[4,4,4,5,2,1]}""",
+			"""{"bins":[5,4,4,5,2,1]}""",
+			"""{"bins":[3,5,4,5,2,1]}""",
+			"""{"bins":[4,5,4,5,2,1]}""",
+			"""{"bins":[3,3,5,5,2,1]}""",
+			"""{"bins":[4,3,5,5,2,1]}""",
+			"""{"bins":[3,4,5,5,2,1]}""",
+			"""{"bins":[4,4,5,5,2,1]}""",
+			"""{"bins":[4,4,2,2,3,1]}""",
+			"""{"bins":[5,4,2,2,3,1]}""",
+			"""{"bins":[4,5,2,2,3,1]}""",
+			"""{"bins":[5,5,2,2,3,1]}""",
+			"""{"bins":[4,2,4,2,3,1]}""",
+			"""{"bins":[5,2,4,2,3,1]}""",
+			"""{"bins":[2,4,4,2,3,1]}""",
+			"""{"bins":[4,4,4,2,3,1]}""",
+			"""{"bins":[5,4,4,2,3,1]}""",
+			"""{"bins":[2,5,4,2,3,1]}""",
+			"""{"bins":[4,5,4,2,3,1]}""",
+			"""{"bins":[5,5,4,2,3,1]}""",
+			"""{"bins":[4,2,5,2,3,1]}""",
+			"""{"bins":[5,2,5,2,3,1]}""",
+			"""{"bins":[2,4,5,2,3,1]}""",
+			"""{"bins":[4,4,5,2,3,1]}""",
+			"""{"bins":[5,4,5,2,3,1]}""",
+			"""{"bins":[2,5,5,2,3,1]}""",
+			"""{"bins":[4,5,5,2,3,1]}""",
+			"""{"bins":[5,5,5,2,3,1]}""",
+			"""{"bins":[2,2,2,4,3,1]}""",
+			"""{"bins":[4,2,2,4,3,1]}""",
+			"""{"bins":[5,2,2,4,3,1]}""",
+			"""{"bins":[2,4,2,4,3,1]}""",
+			"""{"bins":[5,4,2,4,3,1]}""",
+			"""{"bins":[2,5,2,4,3,1]}""",
+			"""{"bins":[4,5,2,4,3,1]}""",
+			"""{"bins":[5,5,2,4,3,1]}""",
+			"""{"bins":[2,2,4,4,3,1]}""",
+			"""{"bins":[5,2,4,4,3,1]}""",
+			"""{"bins":[2,5,4,4,3,1]}""",
+			"""{"bins":[5,5,4,4,3,1]}""",
+			"""{"bins":[2,2,5,4,3,1]}""",
+			"""{"bins":[4,2,5,4,3,1]}""",
+			"""{"bins":[5,2,5,4,3,1]}""",
+			"""{"bins":[2,4,5,4,3,1]}""",
+			"""{"bins":[5,4,5,4,3,1]}""",
+			"""{"bins":[2,5,5,4,3,1]}""",
+			"""{"bins":[4,5,5,4,3,1]}""",
+			"""{"bins":[5,5,5,4,3,1]}""",
+			"""{"bins":[2,2,2,5,3,1]}""",
+			"""{"bins":[4,2,2,5,3,1]}""",
+			"""{"bins":[5,2,2,5,3,1]}""",
+			"""{"bins":[2,4,2,5,3,1]}""",
+			"""{"bins":[4,4,2,5,3,1]}""",
+			"""{"bins":[5,4,2,5,3,1]}""",
+			"""{"bins":[2,5,2,5,3,1]}""",
+			"""{"bins":[4,5,2,5,3,1]}""",
+			"""{"bins":[2,2,4,5,3,1]}""",
+			"""{"bins":[4,2,4,5,3,1]}""",
+			"""{"bins":[5,2,4,5,3,1]}""",
+			"""{"bins":[2,4,4,5,3,1]}""",
+			"""{"bins":[4,4,4,5,3,1]}""",
+			"""{"bins":[5,4,4,5,3,1]}""",
+			"""{"bins":[2,5,4,5,3,1]}""",
+			"""{"bins":[4,5,4,5,3,1]}""",
+			"""{"bins":[2,2,5,5,3,1]}""",
+			"""{"bins":[4,2,5,5,3,1]}""",
+			"""{"bins":[2,4,5,5,3,1]}""",
+			"""{"bins":[4,4,5,5,3,1]}""",
+			"""{"bins":[3,3,2,2,4,1]}""",
+			"""{"bins":[5,3,2,2,4,1]}""",
+			"""{"bins":[3,5,2,2,4,1]}""",
+			"""{"bins":[5,5,2,2,4,1]}""",
+			"""{"bins":[3,2,3,2,4,1]}""",
+			"""{"bins":[5,2,3,2,4,1]}""",
+			"""{"bins":[2,3,3,2,4,1]}""",
+			"""{"bins":[3,3,3,2,4,1]}""",
+			"""{"bins":[5,3,3,2,4,1]}""",
+			"""{"bins":[2,5,3,2,4,1]}""",
+			"""{"bins":[3,5,3,2,4,1]}""",
+			"""{"bins":[5,5,3,2,4,1]}""",
+			"""{"bins":[3,2,5,2,4,1]}""",
+			"""{"bins":[5,2,5,2,4,1]}""",
+			"""{"bins":[2,3,5,2,4,1]}""",
+			"""{"bins":[3,3,5,2,4,1]}""",
+			"""{"bins":[5,3,5,2,4,1]}""",
+			"""{"bins":[2,5,5,2,4,1]}""",
+			"""{"bins":[3,5,5,2,4,1]}""",
+			"""{"bins":[5,5,5,2,4,1]}""",
+			"""{"bins":[2,2,2,3,4,1]}""",
+			"""{"bins":[3,2,2,3,4,1]}""",
+			"""{"bins":[5,2,2,3,4,1]}""",
+			"""{"bins":[2,3,2,3,4,1]}""",
+			"""{"bins":[5,3,2,3,4,1]}""",
+			"""{"bins":[2,5,2,3,4,1]}""",
+			"""{"bins":[3,5,2,3,4,1]}""",
+			"""{"bins":[5,5,2,3,4,1]}""",
+			"""{"bins":[2,2,3,3,4,1]}""",
+			"""{"bins":[5,2,3,3,4,1]}""",
+			"""{"bins":[2,5,3,3,4,1]}""",
+			"""{"bins":[5,5,3,3,4,1]}""",
+			"""{"bins":[2,2,5,3,4,1]}""",
+			"""{"bins":[3,2,5,3,4,1]}""",
+			"""{"bins":[5,2,5,3,4,1]}""",
+			"""{"bins":[2,3,5,3,4,1]}""",
+			"""{"bins":[5,3,5,3,4,1]}""",
+			"""{"bins":[2,5,5,3,4,1]}""",
+			"""{"bins":[3,5,5,3,4,1]}""",
+			"""{"bins":[5,5,5,3,4,1]}""",
+			"""{"bins":[2,2,2,5,4,1]}""",
+			"""{"bins":[3,2,2,5,4,1]}""",
+			"""{"bins":[5,2,2,5,4,1]}""",
+			"""{"bins":[2,3,2,5,4,1]}""",
+			"""{"bins":[3,3,2,5,4,1]}""",
+			"""{"bins":[5,3,2,5,4,1]}""",
+			"""{"bins":[2,5,2,5,4,1]}""",
+			"""{"bins":[3,5,2,5,4,1]}""",
+			"""{"bins":[2,2,3,5,4,1]}""",
+			"""{"bins":[3,2,3,5,4,1]}""",
+			"""{"bins":[5,2,3,5,4,1]}""",
+			"""{"bins":[2,3,3,5,4,1]}""",
+			"""{"bins":[3,3,3,5,4,1]}""",
+			"""{"bins":[5,3,3,5,4,1]}""",
+			"""{"bins":[2,5,3,5,4,1]}""",
+			"""{"bins":[3,5,3,5,4,1]}""",
+			"""{"bins":[2,2,5,5,4,1]}""",
+			"""{"bins":[3,2,5,5,4,1]}""",
+			"""{"bins":[2,3,5,5,4,1]}""",
+			"""{"bins":[3,3,5,5,4,1]}""",
+			"""{"bins":[3,3,2,2,5,1]}""",
+			"""{"bins":[4,3,2,2,5,1]}""",
+			"""{"bins":[3,4,2,2,5,1]}""",
+			"""{"bins":[4,4,2,2,5,1]}""",
+			"""{"bins":[3,2,3,2,5,1]}""",
+			"""{"bins":[4,2,3,2,5,1]}""",
+			"""{"bins":[2,3,3,2,5,1]}""",
+			"""{"bins":[3,3,3,2,5,1]}""",
+			"""{"bins":[4,3,3,2,5,1]}""",
+			"""{"bins":[2,4,3,2,5,1]}""",
+			"""{"bins":[3,4,3,2,5,1]}""",
+			"""{"bins":[4,4,3,2,5,1]}""",
+			"""{"bins":[3,2,4,2,5,1]}""",
+			"""{"bins":[4,2,4,2,5,1]}""",
+			"""{"bins":[2,3,4,2,5,1]}""",
+			"""{"bins":[3,3,4,2,5,1]}""",
+			"""{"bins":[4,3,4,2,5,1]}""",
+			"""{"bins":[2,4,4,2,5,1]}""",
+			"""{"bins":[3,4,4,2,5,1]}""",
+			"""{"bins":[4,4,4,2,5,1]}""",
+			"""{"bins":[2,2,2,3,5,1]}""",
+			"""{"bins":[3,2,2,3,5,1]}""",
+			"""{"bins":[4,2,2,3,5,1]}""",
+			"""{"bins":[2,3,2,3,5,1]}""",
+			"""{"bins":[4,3,2,3,5,1]}""",
+			"""{"bins":[2,4,2,3,5,1]}""",
+			"""{"bins":[3,4,2,3,5,1]}""",
+			"""{"bins":[4,4,2,3,5,1]}""",
+			"""{"bins":[2,2,3,3,5,1]}""",
+			"""{"bins":[4,2,3,3,5,1]}""",
+			"""{"bins":[2,4,3,3,5,1]}""",
+			"""{"bins":[4,4,3,3,5,1]}""",
+			"""{"bins":[2,2,4,3,5,1]}""",
+			"""{"bins":[3,2,4,3,5,1]}""",
+			"""{"bins":[4,2,4,3,5,1]}""",
+			"""{"bins":[2,3,4,3,5,1]}""",
+			"""{"bins":[4,3,4,3,5,1]}""",
+			"""{"bins":[2,4,4,3,5,1]}""",
+			"""{"bins":[3,4,4,3,5,1]}""",
+			"""{"bins":[4,4,4,3,5,1]}""",
+			"""{"bins":[2,2,2,4,5,1]}""",
+			"""{"bins":[3,2,2,4,5,1]}""",
+			"""{"bins":[4,2,2,4,5,1]}""",
+			"""{"bins":[2,3,2,4,5,1]}""",
+			"""{"bins":[3,3,2,4,5,1]}""",
+			"""{"bins":[4,3,2,4,5,1]}""",
+			"""{"bins":[2,4,2,4,5,1]}""",
+			"""{"bins":[3,4,2,4,5,1]}""",
+			"""{"bins":[2,2,3,4,5,1]}""",
+			"""{"bins":[3,2,3,4,5,1]}""",
+			"""{"bins":[4,2,3,4,5,1]}""",
+			"""{"bins":[2,3,3,4,5,1]}""",
+			"""{"bins":[3,3,3,4,5,1]}""",
+			"""{"bins":[4,3,3,4,5,1]}""",
+			"""{"bins":[2,4,3,4,5,1]}""",
+			"""{"bins":[3,4,3,4,5,1]}""",
+			"""{"bins":[2,2,4,4,5,1]}""",
+			"""{"bins":[3,2,4,4,5,1]}""",
+			"""{"bins":[2,3,4,4,5,1]}""",
+			"""{"bins":[3,3,4,4,5,1]}""",
+			"""{"bins":[4,4,3,3,1,2]}""",
+			"""{"bins":[5,4,3,3,1,2]}""",
+			"""{"bins":[4,5,3,3,1,2]}""",
+			"""{"bins":[5,5,3,3,1,2]}""",
+			"""{"bins":[4,3,4,3,1,2]}""",
+			"""{"bins":[5,3,4,3,1,2]}""",
+			"""{"bins":[3,4,4,3,1,2]}""",
+			"""{"bins":[4,4,4,3,1,2]}""",
+			"""{"bins":[5,4,4,3,1,2]}""",
+			"""{"bins":[3,5,4,3,1,2]}""",
+			"""{"bins":[4,5,4,3,1,2]}""",
+			"""{"bins":[5,5,4,3,1,2]}""",
+			"""{"bins":[4,3,5,3,1,2]}""",
+			"""{"bins":[5,3,5,3,1,2]}""",
+			"""{"bins":[3,4,5,3,1,2]}""",
+			"""{"bins":[4,4,5,3,1,2]}""",
+			"""{"bins":[5,4,5,3,1,2]}""",
+			"""{"bins":[3,5,5,3,1,2]}""",
+			"""{"bins":[4,5,5,3,1,2]}""",
+			"""{"bins":[5,5,5,3,1,2]}""",
+			"""{"bins":[3,3,3,4,1,2]}""",
+			"""{"bins":[4,3,3,4,1,2]}""",
+			"""{"bins":[5,3,3,4,1,2]}""",
+			"""{"bins":[3,4,3,4,1,2]}""",
+			"""{"bins":[5,4,3,4,1,2]}""",
+			"""{"bins":[3,5,3,4,1,2]}""",
+			"""{"bins":[4,5,3,4,1,2]}""",
+			"""{"bins":[5,5,3,4,1,2]}""",
+			"""{"bins":[3,3,4,4,1,2]}""",
+			"""{"bins":[5,3,4,4,1,2]}""",
+			"""{"bins":[3,5,4,4,1,2]}""",
+			"""{"bins":[5,5,4,4,1,2]}""",
+			"""{"bins":[3,3,5,4,1,2]}""",
+			"""{"bins":[4,3,5,4,1,2]}""",
+			"""{"bins":[5,3,5,4,1,2]}""",
+			"""{"bins":[3,4,5,4,1,2]}""",
+			"""{"bins":[5,4,5,4,1,2]}""",
+			"""{"bins":[3,5,5,4,1,2]}""",
+			"""{"bins":[4,5,5,4,1,2]}""",
+			"""{"bins":[5,5,5,4,1,2]}""",
+			"""{"bins":[3,3,3,5,1,2]}""",
+			"""{"bins":[4,3,3,5,1,2]}""",
+			"""{"bins":[5,3,3,5,1,2]}""",
+			"""{"bins":[3,4,3,5,1,2]}""",
+			"""{"bins":[4,4,3,5,1,2]}""",
+			"""{"bins":[5,4,3,5,1,2]}""",
+			"""{"bins":[3,5,3,5,1,2]}""",
+			"""{"bins":[4,5,3,5,1,2]}""",
+			"""{"bins":[3,3,4,5,1,2]}""",
+			"""{"bins":[4,3,4,5,1,2]}""",
+			"""{"bins":[5,3,4,5,1,2]}""",
+			"""{"bins":[3,4,4,5,1,2]}""",
+			"""{"bins":[4,4,4,5,1,2]}""",
+			"""{"bins":[5,4,4,5,1,2]}""",
+			"""{"bins":[3,5,4,5,1,2]}""",
+			"""{"bins":[4,5,4,5,1,2]}""",
+			"""{"bins":[3,3,5,5,1,2]}""",
+			"""{"bins":[4,3,5,5,1,2]}""",
+			"""{"bins":[3,4,5,5,1,2]}""",
+			"""{"bins":[4,4,5,5,1,2]}""",
+			"""{"bins":[4,4,1,1,3,2]}""",
+			"""{"bins":[5,4,1,1,3,2]}""",
+			"""{"bins":[4,5,1,1,3,2]}""",
+			"""{"bins":[5,5,1,1,3,2]}""",
+			"""{"bins":[4,1,4,1,3,2]}""",
+			"""{"bins":[5,1,4,1,3,2]}""",
+			"""{"bins":[1,4,4,1,3,2]}""",
+			"""{"bins":[4,4,4,1,3,2]}""",
+			"""{"bins":[5,4,4,1,3,2]}""",
+			"""{"bins":[1,5,4,1,3,2]}""",
+			"""{"bins":[4,5,4,1,3,2]}""",
+			"""{"bins":[5,5,4,1,3,2]}""",
+			"""{"bins":[4,1,5,1,3,2]}""",
+			"""{"bins":[5,1,5,1,3,2]}""",
+			"""{"bins":[1,4,5,1,3,2]}""",
+			"""{"bins":[4,4,5,1,3,2]}""",
+			"""{"bins":[5,4,5,1,3,2]}""",
+			"""{"bins":[1,5,5,1,3,2]}""",
+			"""{"bins":[4,5,5,1,3,2]}""",
+			"""{"bins":[5,5,5,1,3,2]}""",
+			"""{"bins":[1,1,1,4,3,2]}""",
+			"""{"bins":[4,1,1,4,3,2]}""",
+			"""{"bins":[5,1,1,4,3,2]}""",
+			"""{"bins":[1,4,1,4,3,2]}""",
+			"""{"bins":[5,4,1,4,3,2]}""",
+			"""{"bins":[1,5,1,4,3,2]}""",
+			"""{"bins":[4,5,1,4,3,2]}""",
+			"""{"bins":[5,5,1,4,3,2]}""",
+			"""{"bins":[1,1,4,4,3,2]}""",
+			"""{"bins":[5,1,4,4,3,2]}""",
+			"""{"bins":[1,5,4,4,3,2]}""",
+			"""{"bins":[5,5,4,4,3,2]}""",
+			"""{"bins":[1,1,5,4,3,2]}""",
+			"""{"bins":[4,1,5,4,3,2]}""",
+			"""{"bins":[5,1,5,4,3,2]}""",
+			"""{"bins":[1,4,5,4,3,2]}""",
+			"""{"bins":[5,4,5,4,3,2]}""",
+			"""{"bins":[1,5,5,4,3,2]}""",
+			"""{"bins":[4,5,5,4,3,2]}""",
+			"""{"bins":[5,5,5,4,3,2]}""",
+			"""{"bins":[1,1,1,5,3,2]}""",
+			"""{"bins":[4,1,1,5,3,2]}""",
+			"""{"bins":[5,1,1,5,3,2]}""",
+			"""{"bins":[1,4,1,5,3,2]}""",
+			"""{"bins":[4,4,1,5,3,2]}""",
+			"""{"bins":[5,4,1,5,3,2]}""",
+			"""{"bins":[1,5,1,5,3,2]}""",
+			"""{"bins":[4,5,1,5,3,2]}""",
+			"""{"bins":[1,1,4,5,3,2]}""",
+			"""{"bins":[4,1,4,5,3,2]}""",
+			"""{"bins":[5,1,4,5,3,2]}""",
+			"""{"bins":[1,4,4,5,3,2]}""",
+			"""{"bins":[4,4,4,5,3,2]}""",
+			"""{"bins":[5,4,4,5,3,2]}""",
+			"""{"bins":[1,5,4,5,3,2]}""",
+			"""{"bins":[4,5,4,5,3,2]}""",
+			"""{"bins":[1,1,5,5,3,2]}""",
+			"""{"bins":[4,1,5,5,3,2]}""",
+			"""{"bins":[1,4,5,5,3,2]}""",
+			"""{"bins":[4,4,5,5,3,2]}""",
+			"""{"bins":[3,3,1,1,4,2]}""",
+			"""{"bins":[5,3,1,1,4,2]}""",
+			"""{"bins":[3,5,1,1,4,2]}""",
+			"""{"bins":[5,5,1,1,4,2]}""",
+			"""{"bins":[3,1,3,1,4,2]}""",
+			"""{"bins":[5,1,3,1,4,2]}""",
+			"""{"bins":[1,3,3,1,4,2]}""",
+			"""{"bins":[3,3,3,1,4,2]}""",
+			"""{"bins":[5,3,3,1,4,2]}""",
+			"""{"bins":[1,5,3,1,4,2]}""",
+			"""{"bins":[3,5,3,1,4,2]}""",
+			"""{"bins":[5,5,3,1,4,2]}""",
+			"""{"bins":[3,1,5,1,4,2]}""",
+			"""{"bins":[5,1,5,1,4,2]}""",
+			"""{"bins":[1,3,5,1,4,2]}""",
+			"""{"bins":[3,3,5,1,4,2]}""",
+			"""{"bins":[5,3,5,1,4,2]}""",
+			"""{"bins":[1,5,5,1,4,2]}""",
+			"""{"bins":[3,5,5,1,4,2]}""",
+			"""{"bins":[5,5,5,1,4,2]}""",
+			"""{"bins":[1,1,1,3,4,2]}""",
+			"""{"bins":[3,1,1,3,4,2]}""",
+			"""{"bins":[5,1,1,3,4,2]}""",
+			"""{"bins":[1,3,1,3,4,2]}""",
+			"""{"bins":[5,3,1,3,4,2]}""",
+			"""{"bins":[1,5,1,3,4,2]}""",
+			"""{"bins":[3,5,1,3,4,2]}""",
+			"""{"bins":[5,5,1,3,4,2]}""",
+			"""{"bins":[1,1,3,3,4,2]}""",
+			"""{"bins":[5,1,3,3,4,2]}""",
+			"""{"bins":[1,5,3,3,4,2]}""",
+			"""{"bins":[5,5,3,3,4,2]}""",
+			"""{"bins":[1,1,5,3,4,2]}""",
+			"""{"bins":[3,1,5,3,4,2]}""",
+			"""{"bins":[5,1,5,3,4,2]}""",
+			"""{"bins":[1,3,5,3,4,2]}""",
+			"""{"bins":[5,3,5,3,4,2]}""",
+			"""{"bins":[1,5,5,3,4,2]}""",
+			"""{"bins":[3,5,5,3,4,2]}""",
+			"""{"bins":[5,5,5,3,4,2]}""",
+			"""{"bins":[1,1,1,5,4,2]}""",
+			"""{"bins":[3,1,1,5,4,2]}""",
+			"""{"bins":[5,1,1,5,4,2]}""",
+			"""{"bins":[1,3,1,5,4,2]}""",
+			"""{"bins":[3,3,1,5,4,2]}""",
+			"""{"bins":[5,3,1,5,4,2]}""",
+			"""{"bins":[1,5,1,5,4,2]}""",
+			"""{"bins":[3,5,1,5,4,2]}""",
+			"""{"bins":[1,1,3,5,4,2]}""",
+			"""{"bins":[3,1,3,5,4,2]}""",
+			"""{"bins":[5,1,3,5,4,2]}""",
+			"""{"bins":[1,3,3,5,4,2]}""",
+			"""{"bins":[3,3,3,5,4,2]}""",
+			"""{"bins":[5,3,3,5,4,2]}""",
+			"""{"bins":[1,5,3,5,4,2]}""",
+			"""{"bins":[3,5,3,5,4,2]}""",
+			"""{"bins":[1,1,5,5,4,2]}""",
+			"""{"bins":[3,1,5,5,4,2]}""",
+			"""{"bins":[1,3,5,5,4,2]}""",
+			"""{"bins":[3,3,5,5,4,2]}""",
+			"""{"bins":[3,3,1,1,5,2]}""",
+			"""{"bins":[4,3,1,1,5,2]}""",
+			"""{"bins":[3,4,1,1,5,2]}""",
+			"""{"bins":[4,4,1,1,5,2]}""",
+			"""{"bins":[3,1,3,1,5,2]}""",
+			"""{"bins":[4,1,3,1,5,2]}""",
+			"""{"bins":[1,3,3,1,5,2]}""",
+			"""{"bins":[3,3,3,1,5,2]}""",
+			"""{"bins":[4,3,3,1,5,2]}""",
+			"""{"bins":[1,4,3,1,5,2]}""",
+			"""{"bins":[3,4,3,1,5,2]}""",
+			"""{"bins":[4,4,3,1,5,2]}""",
+			"""{"bins":[3,1,4,1,5,2]}""",
+			"""{"bins":[4,1,4,1,5,2]}""",
+			"""{"bins":[1,3,4,1,5,2]}""",
+			"""{"bins":[3,3,4,1,5,2]}""",
+			"""{"bins":[4,3,4,1,5,2]}""",
+			"""{"bins":[1,4,4,1,5,2]}""",
+			"""{"bins":[3,4,4,1,5,2]}""",
+			"""{"bins":[4,4,4,1,5,2]}""",
+			"""{"bins":[1,1,1,3,5,2]}""",
+			"""{"bins":[3,1,1,3,5,2]}""",
+			"""{"bins":[4,1,1,3,5,2]}""",
+			"""{"bins":[1,3,1,3,5,2]}""",
+			"""{"bins":[4,3,1,3,5,2]}""",
+			"""{"bins":[1,4,1,3,5,2]}""",
+			"""{"bins":[3,4,1,3,5,2]}""",
+			"""{"bins":[4,4,1,3,5,2]}""",
+			"""{"bins":[1,1,3,3,5,2]}""",
+			"""{"bins":[4,1,3,3,5,2]}""",
+			"""{"bins":[1,4,3,3,5,2]}""",
+			"""{"bins":[4,4,3,3,5,2]}""",
+			"""{"bins":[1,1,4,3,5,2]}""",
+			"""{"bins":[3,1,4,3,5,2]}""",
+			"""{"bins":[4,1,4,3,5,2]}""",
+			"""{"bins":[1,3,4,3,5,2]}""",
+			"""{"bins":[4,3,4,3,5,2]}""",
+			"""{"bins":[1,4,4,3,5,2]}""",
+			"""{"bins":[3,4,4,3,5,2]}""",
+			"""{"bins":[4,4,4,3,5,2]}""",
+			"""{"bins":[1,1,1,4,5,2]}""",
+			"""{"bins":[3,1,1,4,5,2]}""",
+			"""{"bins":[4,1,1,4,5,2]}""",
+			"""{"bins":[1,3,1,4,5,2]}""",
+			"""{"bins":[3,3,1,4,5,2]}""",
+			"""{"bins":[4,3,1,4,5,2]}""",
+			"""{"bins":[1,4,1,4,5,2]}""",
+			"""{"bins":[3,4,1,4,5,2]}""",
+			"""{"bins":[1,1,3,4,5,2]}""",
+			"""{"bins":[3,1,3,4,5,2]}""",
+			"""{"bins":[4,1,3,4,5,2]}""",
+			"""{"bins":[1,3,3,4,5,2]}""",
+			"""{"bins":[3,3,3,4,5,2]}""",
+			"""{"bins":[4,3,3,4,5,2]}""",
+			"""{"bins":[1,4,3,4,5,2]}""",
+			"""{"bins":[3,4,3,4,5,2]}""",
+			"""{"bins":[1,1,4,4,5,2]}""",
+			"""{"bins":[3,1,4,4,5,2]}""",
+			"""{"bins":[1,3,4,4,5,2]}""",
+			"""{"bins":[3,3,4,4,5,2]}""",
+			"""{"bins":[4,4,2,2,1,3]}""",
+			"""{"bins":[5,4,2,2,1,3]}""",
+			"""{"bins":[4,5,2,2,1,3]}""",
+			"""{"bins":[5,5,2,2,1,3]}""",
+			"""{"bins":[4,2,4,2,1,3]}""",
+			"""{"bins":[5,2,4,2,1,3]}""",
+			"""{"bins":[2,4,4,2,1,3]}""",
+			"""{"bins":[4,4,4,2,1,3]}""",
+			"""{"bins":[5,4,4,2,1,3]}""",
+			"""{"bins":[2,5,4,2,1,3]}""",
+			"""{"bins":[4,5,4,2,1,3]}""",
+			"""{"bins":[5,5,4,2,1,3]}""",
+			"""{"bins":[4,2,5,2,1,3]}""",
+			"""{"bins":[5,2,5,2,1,3]}""",
+			"""{"bins":[2,4,5,2,1,3]}""",
+			"""{"bins":[4,4,5,2,1,3]}""",
+			"""{"bins":[5,4,5,2,1,3]}""",
+			"""{"bins":[2,5,5,2,1,3]}""",
+			"""{"bins":[4,5,5,2,1,3]}""",
+			"""{"bins":[5,5,5,2,1,3]}""",
+			"""{"bins":[2,2,2,4,1,3]}""",
+			"""{"bins":[4,2,2,4,1,3]}""",
+			"""{"bins":[5,2,2,4,1,3]}""",
+			"""{"bins":[2,4,2,4,1,3]}""",
+			"""{"bins":[5,4,2,4,1,3]}""",
+			"""{"bins":[2,5,2,4,1,3]}""",
+			"""{"bins":[4,5,2,4,1,3]}""",
+			"""{"bins":[5,5,2,4,1,3]}""",
+			"""{"bins":[2,2,4,4,1,3]}""",
+			"""{"bins":[5,2,4,4,1,3]}""",
+			"""{"bins":[2,5,4,4,1,3]}""",
+			"""{"bins":[5,5,4,4,1,3]}""",
+			"""{"bins":[2,2,5,4,1,3]}""",
+			"""{"bins":[4,2,5,4,1,3]}""",
+			"""{"bins":[5,2,5,4,1,3]}""",
+			"""{"bins":[2,4,5,4,1,3]}""",
+			"""{"bins":[5,4,5,4,1,3]}""",
+			"""{"bins":[2,5,5,4,1,3]}""",
+			"""{"bins":[4,5,5,4,1,3]}""",
+			"""{"bins":[5,5,5,4,1,3]}""",
+			"""{"bins":[2,2,2,5,1,3]}""",
+			"""{"bins":[4,2,2,5,1,3]}""",
+			"""{"bins":[5,2,2,5,1,3]}""",
+			"""{"bins":[2,4,2,5,1,3]}""",
+			"""{"bins":[4,4,2,5,1,3]}""",
+			"""{"bins":[5,4,2,5,1,3]}""",
+			"""{"bins":[2,5,2,5,1,3]}""",
+			"""{"bins":[4,5,2,5,1,3]}""",
+			"""{"bins":[2,2,4,5,1,3]}""",
+			"""{"bins":[4,2,4,5,1,3]}""",
+			"""{"bins":[5,2,4,5,1,3]}""",
+			"""{"bins":[2,4,4,5,1,3]}""",
+			"""{"bins":[4,4,4,5,1,3]}""",
+			"""{"bins":[5,4,4,5,1,3]}""",
+			"""{"bins":[2,5,4,5,1,3]}""",
+			"""{"bins":[4,5,4,5,1,3]}""",
+			"""{"bins":[2,2,5,5,1,3]}""",
+			"""{"bins":[4,2,5,5,1,3]}""",
+			"""{"bins":[2,4,5,5,1,3]}""",
+			"""{"bins":[4,4,5,5,1,3]}""",
+			"""{"bins":[4,4,1,1,2,3]}""",
+			"""{"bins":[5,4,1,1,2,3]}""",
+			"""{"bins":[4,5,1,1,2,3]}""",
+			"""{"bins":[5,5,1,1,2,3]}""",
+			"""{"bins":[4,1,4,1,2,3]}""",
+			"""{"bins":[5,1,4,1,2,3]}""",
+			"""{"bins":[1,4,4,1,2,3]}""",
+			"""{"bins":[4,4,4,1,2,3]}""",
+			"""{"bins":[5,4,4,1,2,3]}""",
+			"""{"bins":[1,5,4,1,2,3]}""",
+			"""{"bins":[4,5,4,1,2,3]}""",
+			"""{"bins":[5,5,4,1,2,3]}""",
+			"""{"bins":[4,1,5,1,2,3]}""",
+			"""{"bins":[5,1,5,1,2,3]}""",
+			"""{"bins":[1,4,5,1,2,3]}""",
+			"""{"bins":[4,4,5,1,2,3]}""",
+			"""{"bins":[5,4,5,1,2,3]}""",
+			"""{"bins":[1,5,5,1,2,3]}""",
+			"""{"bins":[4,5,5,1,2,3]}""",
+			"""{"bins":[5,5,5,1,2,3]}""",
+			"""{"bins":[1,1,1,4,2,3]}""",
+			"""{"bins":[4,1,1,4,2,3]}""",
+			"""{"bins":[5,1,1,4,2,3]}""",
+			"""{"bins":[1,4,1,4,2,3]}""",
+			"""{"bins":[5,4,1,4,2,3]}""",
+			"""{"bins":[1,5,1,4,2,3]}""",
+			"""{"bins":[4,5,1,4,2,3]}""",
+			"""{"bins":[5,5,1,4,2,3]}""",
+			"""{"bins":[1,1,4,4,2,3]}""",
+			"""{"bins":[5,1,4,4,2,3]}""",
+			"""{"bins":[1,5,4,4,2,3]}""",
+			"""{"bins":[5,5,4,4,2,3]}""",
+			"""{"bins":[1,1,5,4,2,3]}""",
+			"""{"bins":[4,1,5,4,2,3]}""",
+			"""{"bins":[5,1,5,4,2,3]}""",
+			"""{"bins":[1,4,5,4,2,3]}""",
+			"""{"bins":[5,4,5,4,2,3]}""",
+			"""{"bins":[1,5,5,4,2,3]}""",
+			"""{"bins":[4,5,5,4,2,3]}""",
+			"""{"bins":[5,5,5,4,2,3]}""",
+			"""{"bins":[1,1,1,5,2,3]}""",
+			"""{"bins":[4,1,1,5,2,3]}""",
+			"""{"bins":[5,1,1,5,2,3]}""",
+			"""{"bins":[1,4,1,5,2,3]}""",
+			"""{"bins":[4,4,1,5,2,3]}""",
+			"""{"bins":[5,4,1,5,2,3]}""",
+			"""{"bins":[1,5,1,5,2,3]}""",
+			"""{"bins":[4,5,1,5,2,3]}""",
+			"""{"bins":[1,1,4,5,2,3]}""",
+			"""{"bins":[4,1,4,5,2,3]}""",
+			"""{"bins":[5,1,4,5,2,3]}""",
+			"""{"bins":[1,4,4,5,2,3]}""",
+			"""{"bins":[4,4,4,5,2,3]}""",
+			"""{"bins":[5,4,4,5,2,3]}""",
+			"""{"bins":[1,5,4,5,2,3]}""",
+			"""{"bins":[4,5,4,5,2,3]}""",
+			"""{"bins":[1,1,5,5,2,3]}""",
+			"""{"bins":[4,1,5,5,2,3]}""",
+			"""{"bins":[1,4,5,5,2,3]}""",
+			"""{"bins":[4,4,5,5,2,3]}""",
+			"""{"bins":[2,2,1,1,4,3]}""",
+			"""{"bins":[5,2,1,1,4,3]}""",
+			"""{"bins":[2,5,1,1,4,3]}""",
+			"""{"bins":[5,5,1,1,4,3]}""",
+			"""{"bins":[2,1,2,1,4,3]}""",
+			"""{"bins":[5,1,2,1,4,3]}""",
+			"""{"bins":[1,2,2,1,4,3]}""",
+			"""{"bins":[2,2,2,1,4,3]}""",
+			"""{"bins":[5,2,2,1,4,3]}""",
+			"""{"bins":[1,5,2,1,4,3]}""",
+			"""{"bins":[2,5,2,1,4,3]}""",
+			"""{"bins":[5,5,2,1,4,3]}""",
+			"""{"bins":[2,1,5,1,4,3]}""",
+			"""{"bins":[5,1,5,1,4,3]}""",
+			"""{"bins":[1,2,5,1,4,3]}""",
+			"""{"bins":[2,2,5,1,4,3]}""",
+			"""{"bins":[5,2,5,1,4,3]}""",
+			"""{"bins":[1,5,5,1,4,3]}""",
+			"""{"bins":[2,5,5,1,4,3]}""",
+			"""{"bins":[5,5,5,1,4,3]}""",
+			"""{"bins":[1,1,1,2,4,3]}""",
+			"""{"bins":[2,1,1,2,4,3]}""",
+			"""{"bins":[5,1,1,2,4,3]}""",
+			"""{"bins":[1,2,1,2,4,3]}""",
+			"""{"bins":[5,2,1,2,4,3]}""",
+			"""{"bins":[1,5,1,2,4,3]}""",
+			"""{"bins":[2,5,1,2,4,3]}""",
+			"""{"bins":[5,5,1,2,4,3]}""",
+			"""{"bins":[1,1,2,2,4,3]}""",
+			"""{"bins":[5,1,2,2,4,3]}""",
+			"""{"bins":[1,5,2,2,4,3]}""",
+			"""{"bins":[5,5,2,2,4,3]}""",
+			"""{"bins":[1,1,5,2,4,3]}""",
+			"""{"bins":[2,1,5,2,4,3]}""",
+			"""{"bins":[5,1,5,2,4,3]}""",
+			"""{"bins":[1,2,5,2,4,3]}""",
+			"""{"bins":[5,2,5,2,4,3]}""",
+			"""{"bins":[1,5,5,2,4,3]}""",
+			"""{"bins":[2,5,5,2,4,3]}""",
+			"""{"bins":[5,5,5,2,4,3]}""",
+			"""{"bins":[1,1,1,5,4,3]}""",
+			"""{"bins":[2,1,1,5,4,3]}""",
+			"""{"bins":[5,1,1,5,4,3]}""",
+			"""{"bins":[1,2,1,5,4,3]}""",
+			"""{"bins":[2,2,1,5,4,3]}""",
+			"""{"bins":[5,2,1,5,4,3]}""",
+			"""{"bins":[1,5,1,5,4,3]}""",
+			"""{"bins":[2,5,1,5,4,3]}""",
+			"""{"bins":[1,1,2,5,4,3]}""",
+			"""{"bins":[2,1,2,5,4,3]}""",
+			"""{"bins":[5,1,2,5,4,3]}""",
+			"""{"bins":[1,2,2,5,4,3]}""",
+			"""{"bins":[2,2,2,5,4,3]}""",
+			"""{"bins":[5,2,2,5,4,3]}""",
+			"""{"bins":[1,5,2,5,4,3]}""",
+			"""{"bins":[2,5,2,5,4,3]}""",
+			"""{"bins":[1,1,5,5,4,3]}""",
+			"""{"bins":[2,1,5,5,4,3]}""",
+			"""{"bins":[1,2,5,5,4,3]}""",
+			"""{"bins":[2,2,5,5,4,3]}""",
+			"""{"bins":[2,2,1,1,5,3]}""",
+			"""{"bins":[4,2,1,1,5,3]}""",
+			"""{"bins":[2,4,1,1,5,3]}""",
+			"""{"bins":[4,4,1,1,5,3]}""",
+			"""{"bins":[2,1,2,1,5,3]}""",
+			"""{"bins":[4,1,2,1,5,3]}""",
+			"""{"bins":[1,2,2,1,5,3]}""",
+			"""{"bins":[2,2,2,1,5,3]}""",
+			"""{"bins":[4,2,2,1,5,3]}""",
+			"""{"bins":[1,4,2,1,5,3]}""",
+			"""{"bins":[2,4,2,1,5,3]}""",
+			"""{"bins":[4,4,2,1,5,3]}""",
+			"""{"bins":[2,1,4,1,5,3]}""",
+			"""{"bins":[4,1,4,1,5,3]}""",
+			"""{"bins":[1,2,4,1,5,3]}""",
+			"""{"bins":[2,2,4,1,5,3]}""",
+			"""{"bins":[4,2,4,1,5,3]}""",
+			"""{"bins":[1,4,4,1,5,3]}""",
+			"""{"bins":[2,4,4,1,5,3]}""",
+			"""{"bins":[4,4,4,1,5,3]}""",
+			"""{"bins":[1,1,1,2,5,3]}""",
+			"""{"bins":[2,1,1,2,5,3]}""",
+			"""{"bins":[4,1,1,2,5,3]}""",
+			"""{"bins":[1,2,1,2,5,3]}""",
+			"""{"bins":[4,2,1,2,5,3]}""",
+			"""{"bins":[1,4,1,2,5,3]}""",
+			"""{"bins":[2,4,1,2,5,3]}""",
+			"""{"bins":[4,4,1,2,5,3]}""",
+			"""{"bins":[1,1,2,2,5,3]}""",
+			"""{"bins":[4,1,2,2,5,3]}""",
+			"""{"bins":[1,4,2,2,5,3]}""",
+			"""{"bins":[4,4,2,2,5,3]}""",
+			"""{"bins":[1,1,4,2,5,3]}""",
+			"""{"bins":[2,1,4,2,5,3]}""",
+			"""{"bins":[4,1,4,2,5,3]}""",
+			"""{"bins":[1,2,4,2,5,3]}""",
+			"""{"bins":[4,2,4,2,5,3]}""",
+			"""{"bins":[1,4,4,2,5,3]}""",
+			"""{"bins":[2,4,4,2,5,3]}""",
+			"""{"bins":[4,4,4,2,5,3]}""",
+			"""{"bins":[1,1,1,4,5,3]}""",
+			"""{"bins":[2,1,1,4,5,3]}""",
+			"""{"bins":[4,1,1,4,5,3]}""",
+			"""{"bins":[1,2,1,4,5,3]}""",
+			"""{"bins":[2,2,1,4,5,3]}""",
+			"""{"bins":[4,2,1,4,5,3]}""",
+			"""{"bins":[1,4,1,4,5,3]}""",
+			"""{"bins":[2,4,1,4,5,3]}""",
+			"""{"bins":[1,1,2,4,5,3]}""",
+			"""{"bins":[2,1,2,4,5,3]}""",
+			"""{"bins":[4,1,2,4,5,3]}""",
+			"""{"bins":[1,2,2,4,5,3]}""",
+			"""{"bins":[2,2,2,4,5,3]}""",
+			"""{"bins":[4,2,2,4,5,3]}""",
+			"""{"bins":[1,4,2,4,5,3]}""",
+			"""{"bins":[2,4,2,4,5,3]}""",
+			"""{"bins":[1,1,4,4,5,3]}""",
+			"""{"bins":[2,1,4,4,5,3]}""",
+			"""{"bins":[1,2,4,4,5,3]}""",
+			"""{"bins":[2,2,4,4,5,3]}""",
+			"""{"bins":[3,3,2,2,1,4]}""",
+			"""{"bins":[5,3,2,2,1,4]}""",
+			"""{"bins":[3,5,2,2,1,4]}""",
+			"""{"bins":[5,5,2,2,1,4]}""",
+			"""{"bins":[3,2,3,2,1,4]}""",
+			"""{"bins":[5,2,3,2,1,4]}""",
+			"""{"bins":[2,3,3,2,1,4]}""",
+			"""{"bins":[3,3,3,2,1,4]}""",
+			"""{"bins":[5,3,3,2,1,4]}""",
+			"""{"bins":[2,5,3,2,1,4]}""",
+			"""{"bins":[3,5,3,2,1,4]}""",
+			"""{"bins":[5,5,3,2,1,4]}""",
+			"""{"bins":[3,2,5,2,1,4]}""",
+			"""{"bins":[5,2,5,2,1,4]}""",
+			"""{"bins":[2,3,5,2,1,4]}""",
+			"""{"bins":[3,3,5,2,1,4]}""",
+			"""{"bins":[5,3,5,2,1,4]}""",
+			"""{"bins":[2,5,5,2,1,4]}""",
+			"""{"bins":[3,5,5,2,1,4]}""",
+			"""{"bins":[5,5,5,2,1,4]}""",
+			"""{"bins":[2,2,2,3,1,4]}""",
+			"""{"bins":[3,2,2,3,1,4]}""",
+			"""{"bins":[5,2,2,3,1,4]}""",
+			"""{"bins":[2,3,2,3,1,4]}""",
+			"""{"bins":[5,3,2,3,1,4]}""",
+			"""{"bins":[2,5,2,3,1,4]}""",
+			"""{"bins":[3,5,2,3,1,4]}""",
+			"""{"bins":[5,5,2,3,1,4]}""",
+			"""{"bins":[2,2,3,3,1,4]}""",
+			"""{"bins":[5,2,3,3,1,4]}""",
+			"""{"bins":[2,5,3,3,1,4]}""",
+			"""{"bins":[5,5,3,3,1,4]}""",
+			"""{"bins":[2,2,5,3,1,4]}""",
+			"""{"bins":[3,2,5,3,1,4]}""",
+			"""{"bins":[5,2,5,3,1,4]}""",
+			"""{"bins":[2,3,5,3,1,4]}""",
+			"""{"bins":[5,3,5,3,1,4]}""",
+			"""{"bins":[2,5,5,3,1,4]}""",
+			"""{"bins":[3,5,5,3,1,4]}""",
+			"""{"bins":[5,5,5,3,1,4]}""",
+			"""{"bins":[2,2,2,5,1,4]}""",
+			"""{"bins":[3,2,2,5,1,4]}""",
+			"""{"bins":[5,2,2,5,1,4]}""",
+			"""{"bins":[2,3,2,5,1,4]}""",
+			"""{"bins":[3,3,2,5,1,4]}""",
+			"""{"bins":[5,3,2,5,1,4]}""",
+			"""{"bins":[2,5,2,5,1,4]}""",
+			"""{"bins":[3,5,2,5,1,4]}""",
+			"""{"bins":[2,2,3,5,1,4]}""",
+			"""{"bins":[3,2,3,5,1,4]}""",
+			"""{"bins":[5,2,3,5,1,4]}""",
+			"""{"bins":[2,3,3,5,1,4]}""",
+			"""{"bins":[3,3,3,5,1,4]}""",
+			"""{"bins":[5,3,3,5,1,4]}""",
+			"""{"bins":[2,5,3,5,1,4]}""",
+			"""{"bins":[3,5,3,5,1,4]}""",
+			"""{"bins":[2,2,5,5,1,4]}""",
+			"""{"bins":[3,2,5,5,1,4]}""",
+			"""{"bins":[2,3,5,5,1,4]}""",
+			"""{"bins":[3,3,5,5,1,4]}""",
+			"""{"bins":[3,3,1,1,2,4]}""",
+			"""{"bins":[5,3,1,1,2,4]}""",
+			"""{"bins":[3,5,1,1,2,4]}""",
+			"""{"bins":[5,5,1,1,2,4]}""",
+			"""{"bins":[3,1,3,1,2,4]}""",
+			"""{"bins":[5,1,3,1,2,4]}""",
+			"""{"bins":[1,3,3,1,2,4]}""",
+			"""{"bins":[3,3,3,1,2,4]}""",
+			"""{"bins":[5,3,3,1,2,4]}""",
+			"""{"bins":[1,5,3,1,2,4]}""",
+			"""{"bins":[3,5,3,1,2,4]}""",
+			"""{"bins":[5,5,3,1,2,4]}""",
+			"""{"bins":[3,1,5,1,2,4]}""",
+			"""{"bins":[5,1,5,1,2,4]}""",
+			"""{"bins":[1,3,5,1,2,4]}""",
+			"""{"bins":[3,3,5,1,2,4]}""",
+			"""{"bins":[5,3,5,1,2,4]}""",
+			"""{"bins":[1,5,5,1,2,4]}""",
+			"""{"bins":[3,5,5,1,2,4]}""",
+			"""{"bins":[5,5,5,1,2,4]}""",
+			"""{"bins":[1,1,1,3,2,4]}""",
+			"""{"bins":[3,1,1,3,2,4]}""",
+			"""{"bins":[5,1,1,3,2,4]}""",
+			"""{"bins":[1,3,1,3,2,4]}""",
+			"""{"bins":[5,3,1,3,2,4]}""",
+			"""{"bins":[1,5,1,3,2,4]}""",
+			"""{"bins":[3,5,1,3,2,4]}""",
+			"""{"bins":[5,5,1,3,2,4]}""",
+			"""{"bins":[1,1,3,3,2,4]}""",
+			"""{"bins":[5,1,3,3,2,4]}""",
+			"""{"bins":[1,5,3,3,2,4]}""",
+			"""{"bins":[5,5,3,3,2,4]}""",
+			"""{"bins":[1,1,5,3,2,4]}""",
+			"""{"bins":[3,1,5,3,2,4]}""",
+			"""{"bins":[5,1,5,3,2,4]}""",
+			"""{"bins":[1,3,5,3,2,4]}""",
+			"""{"bins":[5,3,5,3,2,4]}""",
+			"""{"bins":[1,5,5,3,2,4]}""",
+			"""{"bins":[3,5,5,3,2,4]}""",
+			"""{"bins":[5,5,5,3,2,4]}""",
+			"""{"bins":[1,1,1,5,2,4]}""",
+			"""{"bins":[3,1,1,5,2,4]}""",
+			"""{"bins":[5,1,1,5,2,4]}""",
+			"""{"bins":[1,3,1,5,2,4]}""",
+			"""{"bins":[3,3,1,5,2,4]}""",
+			"""{"bins":[5,3,1,5,2,4]}""",
+			"""{"bins":[1,5,1,5,2,4]}""",
+			"""{"bins":[3,5,1,5,2,4]}""",
+			"""{"bins":[1,1,3,5,2,4]}""",
+			"""{"bins":[3,1,3,5,2,4]}""",
+			"""{"bins":[5,1,3,5,2,4]}""",
+			"""{"bins":[1,3,3,5,2,4]}""",
+			"""{"bins":[3,3,3,5,2,4]}""",
+			"""{"bins":[5,3,3,5,2,4]}""",
+			"""{"bins":[1,5,3,5,2,4]}""",
+			"""{"bins":[3,5,3,5,2,4]}""",
+			"""{"bins":[1,1,5,5,2,4]}""",
+			"""{"bins":[3,1,5,5,2,4]}""",
+			"""{"bins":[1,3,5,5,2,4]}""",
+			"""{"bins":[3,3,5,5,2,4]}""",
+			"""{"bins":[2,2,1,1,3,4]}""",
+			"""{"bins":[5,2,1,1,3,4]}""",
+			"""{"bins":[2,5,1,1,3,4]}""",
+			"""{"bins":[5,5,1,1,3,4]}""",
+			"""{"bins":[2,1,2,1,3,4]}""",
+			"""{"bins":[5,1,2,1,3,4]}""",
+			"""{"bins":[1,2,2,1,3,4]}""",
+			"""{"bins":[2,2,2,1,3,4]}""",
+			"""{"bins":[5,2,2,1,3,4]}""",
+			"""{"bins":[1,5,2,1,3,4]}""",
+			"""{"bins":[2,5,2,1,3,4]}""",
+			"""{"bins":[5,5,2,1,3,4]}""",
+			"""{"bins":[2,1,5,1,3,4]}""",
+			"""{"bins":[5,1,5,1,3,4]}""",
+			"""{"bins":[1,2,5,1,3,4]}""",
+			"""{"bins":[2,2,5,1,3,4]}""",
+			"""{"bins":[5,2,5,1,3,4]}""",
+			"""{"bins":[1,5,5,1,3,4]}""",
+			"""{"bins":[2,5,5,1,3,4]}""",
+			"""{"bins":[5,5,5,1,3,4]}""",
+			"""{"bins":[1,1,1,2,3,4]}""",
+			"""{"bins":[2,1,1,2,3,4]}""",
+			"""{"bins":[5,1,1,2,3,4]}""",
+			"""{"bins":[1,2,1,2,3,4]}""",
+			"""{"bins":[5,2,1,2,3,4]}""",
+			"""{"bins":[1,5,1,2,3,4]}""",
+			"""{"bins":[2,5,1,2,3,4]}""",
+			"""{"bins":[5,5,1,2,3,4]}""",
+			"""{"bins":[1,1,2,2,3,4]}""",
+			"""{"bins":[5,1,2,2,3,4]}""",
+			"""{"bins":[1,5,2,2,3,4]}""",
+			"""{"bins":[5,5,2,2,3,4]}""",
+			"""{"bins":[1,1,5,2,3,4]}""",
+			"""{"bins":[2,1,5,2,3,4]}""",
+			"""{"bins":[5,1,5,2,3,4]}""",
+			"""{"bins":[1,2,5,2,3,4]}""",
+			"""{"bins":[5,2,5,2,3,4]}""",
+			"""{"bins":[1,5,5,2,3,4]}""",
+			"""{"bins":[2,5,5,2,3,4]}""",
+			"""{"bins":[5,5,5,2,3,4]}""",
+			"""{"bins":[1,1,1,5,3,4]}""",
+			"""{"bins":[2,1,1,5,3,4]}""",
+			"""{"bins":[5,1,1,5,3,4]}""",
+			"""{"bins":[1,2,1,5,3,4]}""",
+			"""{"bins":[2,2,1,5,3,4]}""",
+			"""{"bins":[5,2,1,5,3,4]}""",
+			"""{"bins":[1,5,1,5,3,4]}""",
+			"""{"bins":[2,5,1,5,3,4]}""",
+			"""{"bins":[1,1,2,5,3,4]}""",
+			"""{"bins":[2,1,2,5,3,4]}""",
+			"""{"bins":[5,1,2,5,3,4]}""",
+			"""{"bins":[1,2,2,5,3,4]}""",
+			"""{"bins":[2,2,2,5,3,4]}""",
+			"""{"bins":[5,2,2,5,3,4]}""",
+			"""{"bins":[1,5,2,5,3,4]}""",
+			"""{"bins":[2,5,2,5,3,4]}""",
+			"""{"bins":[1,1,5,5,3,4]}""",
+			"""{"bins":[2,1,5,5,3,4]}""",
+			"""{"bins":[1,2,5,5,3,4]}""",
+			"""{"bins":[2,2,5,5,3,4]}""",
+			"""{"bins":[2,2,1,1,5,4]}""",
+			"""{"bins":[3,2,1,1,5,4]}""",
+			"""{"bins":[2,3,1,1,5,4]}""",
+			"""{"bins":[3,3,1,1,5,4]}""",
+			"""{"bins":[2,1,2,1,5,4]}""",
+			"""{"bins":[3,1,2,1,5,4]}""",
+			"""{"bins":[1,2,2,1,5,4]}""",
+			"""{"bins":[2,2,2,1,5,4]}""",
+			"""{"bins":[3,2,2,1,5,4]}""",
+			"""{"bins":[1,3,2,1,5,4]}""",
+			"""{"bins":[2,3,2,1,5,4]}""",
+			"""{"bins":[3,3,2,1,5,4]}""",
+			"""{"bins":[2,1,3,1,5,4]}""",
+			"""{"bins":[3,1,3,1,5,4]}""",
+			"""{"bins":[1,2,3,1,5,4]}""",
+			"""{"bins":[2,2,3,1,5,4]}""",
+			"""{"bins":[3,2,3,1,5,4]}""",
+			"""{"bins":[1,3,3,1,5,4]}""",
+			"""{"bins":[2,3,3,1,5,4]}""",
+			"""{"bins":[3,3,3,1,5,4]}""",
+			"""{"bins":[1,1,1,2,5,4]}""",
+			"""{"bins":[2,1,1,2,5,4]}""",
+			"""{"bins":[3,1,1,2,5,4]}""",
+			"""{"bins":[1,2,1,2,5,4]}""",
+			"""{"bins":[3,2,1,2,5,4]}""",
+			"""{"bins":[1,3,1,2,5,4]}""",
+			"""{"bins":[2,3,1,2,5,4]}""",
+			"""{"bins":[3,3,1,2,5,4]}""",
+			"""{"bins":[1,1,2,2,5,4]}""",
+			"""{"bins":[3,1,2,2,5,4]}""",
+			"""{"bins":[1,3,2,2,5,4]}""",
+			"""{"bins":[3,3,2,2,5,4]}""",
+			"""{"bins":[1,1,3,2,5,4]}""",
+			"""{"bins":[2,1,3,2,5,4]}""",
+			"""{"bins":[3,1,3,2,5,4]}""",
+			"""{"bins":[1,2,3,2,5,4]}""",
+			"""{"bins":[3,2,3,2,5,4]}""",
+			"""{"bins":[1,3,3,2,5,4]}""",
+			"""{"bins":[2,3,3,2,5,4]}""",
+			"""{"bins":[3,3,3,2,5,4]}""",
+			"""{"bins":[1,1,1,3,5,4]}""",
+			"""{"bins":[2,1,1,3,5,4]}""",
+			"""{"bins":[3,1,1,3,5,4]}""",
+			"""{"bins":[1,2,1,3,5,4]}""",
+			"""{"bins":[2,2,1,3,5,4]}""",
+			"""{"bins":[3,2,1,3,5,4]}""",
+			"""{"bins":[1,3,1,3,5,4]}""",
+			"""{"bins":[2,3,1,3,5,4]}""",
+			"""{"bins":[1,1,2,3,5,4]}""",
+			"""{"bins":[2,1,2,3,5,4]}""",
+			"""{"bins":[3,1,2,3,5,4]}""",
+			"""{"bins":[1,2,2,3,5,4]}""",
+			"""{"bins":[2,2,2,3,5,4]}""",
+			"""{"bins":[3,2,2,3,5,4]}""",
+			"""{"bins":[1,3,2,3,5,4]}""",
+			"""{"bins":[2,3,2,3,5,4]}""",
+			"""{"bins":[1,1,3,3,5,4]}""",
+			"""{"bins":[2,1,3,3,5,4]}""",
+			"""{"bins":[1,2,3,3,5,4]}""",
+			"""{"bins":[2,2,3,3,5,4]}""",
+			"""{"bins":[3,3,2,2,1,5]}""",
+			"""{"bins":[4,3,2,2,1,5]}""",
+			"""{"bins":[3,4,2,2,1,5]}""",
+			"""{"bins":[4,4,2,2,1,5]}""",
+			"""{"bins":[3,2,3,2,1,5]}""",
+			"""{"bins":[4,2,3,2,1,5]}""",
+			"""{"bins":[2,3,3,2,1,5]}""",
+			"""{"bins":[3,3,3,2,1,5]}""",
+			"""{"bins":[4,3,3,2,1,5]}""",
+			"""{"bins":[2,4,3,2,1,5]}""",
+			"""{"bins":[3,4,3,2,1,5]}""",
+			"""{"bins":[4,4,3,2,1,5]}""",
+			"""{"bins":[3,2,4,2,1,5]}""",
+			"""{"bins":[4,2,4,2,1,5]}""",
+			"""{"bins":[2,3,4,2,1,5]}""",
+			"""{"bins":[3,3,4,2,1,5]}""",
+			"""{"bins":[4,3,4,2,1,5]}""",
+			"""{"bins":[2,4,4,2,1,5]}""",
+			"""{"bins":[3,4,4,2,1,5]}""",
+			"""{"bins":[4,4,4,2,1,5]}""",
+			"""{"bins":[2,2,2,3,1,5]}""",
+			"""{"bins":[3,2,2,3,1,5]}""",
+			"""{"bins":[4,2,2,3,1,5]}""",
+			"""{"bins":[2,3,2,3,1,5]}""",
+			"""{"bins":[4,3,2,3,1,5]}""",
+			"""{"bins":[2,4,2,3,1,5]}""",
+			"""{"bins":[3,4,2,3,1,5]}""",
+			"""{"bins":[4,4,2,3,1,5]}""",
+			"""{"bins":[2,2,3,3,1,5]}""",
+			"""{"bins":[4,2,3,3,1,5]}""",
+			"""{"bins":[2,4,3,3,1,5]}""",
+			"""{"bins":[4,4,3,3,1,5]}""",
+			"""{"bins":[2,2,4,3,1,5]}""",
+			"""{"bins":[3,2,4,3,1,5]}""",
+			"""{"bins":[4,2,4,3,1,5]}""",
+			"""{"bins":[2,3,4,3,1,5]}""",
+			"""{"bins":[4,3,4,3,1,5]}""",
+			"""{"bins":[2,4,4,3,1,5]}""",
+			"""{"bins":[3,4,4,3,1,5]}""",
+			"""{"bins":[4,4,4,3,1,5]}""",
+			"""{"bins":[2,2,2,4,1,5]}""",
+			"""{"bins":[3,2,2,4,1,5]}""",
+			"""{"bins":[4,2,2,4,1,5]}""",
+			"""{"bins":[2,3,2,4,1,5]}""",
+			"""{"bins":[3,3,2,4,1,5]}""",
+			"""{"bins":[4,3,2,4,1,5]}""",
+			"""{"bins":[2,4,2,4,1,5]}""",
+			"""{"bins":[3,4,2,4,1,5]}""",
+			"""{"bins":[2,2,3,4,1,5]}""",
+			"""{"bins":[3,2,3,4,1,5]}""",
+			"""{"bins":[4,2,3,4,1,5]}""",
+			"""{"bins":[2,3,3,4,1,5]}""",
+			"""{"bins":[3,3,3,4,1,5]}""",
+			"""{"bins":[4,3,3,4,1,5]}""",
+			"""{"bins":[2,4,3,4,1,5]}""",
+			"""{"bins":[3,4,3,4,1,5]}""",
+			"""{"bins":[2,2,4,4,1,5]}""",
+			"""{"bins":[3,2,4,4,1,5]}""",
+			"""{"bins":[2,3,4,4,1,5]}""",
+			"""{"bins":[3,3,4,4,1,5]}""",
+			"""{"bins":[3,3,1,1,2,5]}""",
+			"""{"bins":[4,3,1,1,2,5]}""",
+			"""{"bins":[3,4,1,1,2,5]}""",
+			"""{"bins":[4,4,1,1,2,5]}""",
+			"""{"bins":[3,1,3,1,2,5]}""",
+			"""{"bins":[4,1,3,1,2,5]}""",
+			"""{"bins":[1,3,3,1,2,5]}""",
+			"""{"bins":[3,3,3,1,2,5]}""",
+			"""{"bins":[4,3,3,1,2,5]}""",
+			"""{"bins":[1,4,3,1,2,5]}""",
+			"""{"bins":[3,4,3,1,2,5]}""",
+			"""{"bins":[4,4,3,1,2,5]}""",
+			"""{"bins":[3,1,4,1,2,5]}""",
+			"""{"bins":[4,1,4,1,2,5]}""",
+			"""{"bins":[1,3,4,1,2,5]}""",
+			"""{"bins":[3,3,4,1,2,5]}""",
+			"""{"bins":[4,3,4,1,2,5]}""",
+			"""{"bins":[1,4,4,1,2,5]}""",
+			"""{"bins":[3,4,4,1,2,5]}""",
+			"""{"bins":[4,4,4,1,2,5]}""",
+			"""{"bins":[1,1,1,3,2,5]}""",
+			"""{"bins":[3,1,1,3,2,5]}""",
+			"""{"bins":[4,1,1,3,2,5]}""",
+			"""{"bins":[1,3,1,3,2,5]}""",
+			"""{"bins":[4,3,1,3,2,5]}""",
+			"""{"bins":[1,4,1,3,2,5]}""",
+			"""{"bins":[3,4,1,3,2,5]}""",
+			"""{"bins":[4,4,1,3,2,5]}""",
+			"""{"bins":[1,1,3,3,2,5]}""",
+			"""{"bins":[4,1,3,3,2,5]}""",
+			"""{"bins":[1,4,3,3,2,5]}""",
+			"""{"bins":[4,4,3,3,2,5]}""",
+			"""{"bins":[1,1,4,3,2,5]}""",
+			"""{"bins":[3,1,4,3,2,5]}""",
+			"""{"bins":[4,1,4,3,2,5]}""",
+			"""{"bins":[1,3,4,3,2,5]}""",
+			"""{"bins":[4,3,4,3,2,5]}""",
+			"""{"bins":[1,4,4,3,2,5]}""",
+			"""{"bins":[3,4,4,3,2,5]}""",
+			"""{"bins":[4,4,4,3,2,5]}""",
+			"""{"bins":[1,1,1,4,2,5]}""",
+			"""{"bins":[3,1,1,4,2,5]}""",
+			"""{"bins":[4,1,1,4,2,5]}""",
+			"""{"bins":[1,3,1,4,2,5]}""",
+			"""{"bins":[3,3,1,4,2,5]}""",
+			"""{"bins":[4,3,1,4,2,5]}""",
+			"""{"bins":[1,4,1,4,2,5]}""",
+			"""{"bins":[3,4,1,4,2,5]}""",
+			"""{"bins":[1,1,3,4,2,5]}""",
+			"""{"bins":[3,1,3,4,2,5]}""",
+			"""{"bins":[4,1,3,4,2,5]}""",
+			"""{"bins":[1,3,3,4,2,5]}""",
+			"""{"bins":[3,3,3,4,2,5]}""",
+			"""{"bins":[4,3,3,4,2,5]}""",
+			"""{"bins":[1,4,3,4,2,5]}""",
+			"""{"bins":[3,4,3,4,2,5]}""",
+			"""{"bins":[1,1,4,4,2,5]}""",
+			"""{"bins":[3,1,4,4,2,5]}""",
+			"""{"bins":[1,3,4,4,2,5]}""",
+			"""{"bins":[3,3,4,4,2,5]}""",
+			"""{"bins":[2,2,1,1,3,5]}""",
+			"""{"bins":[4,2,1,1,3,5]}""",
+			"""{"bins":[2,4,1,1,3,5]}""",
+			"""{"bins":[4,4,1,1,3,5]}""",
+			"""{"bins":[2,1,2,1,3,5]}""",
+			"""{"bins":[4,1,2,1,3,5]}""",
+			"""{"bins":[1,2,2,1,3,5]}""",
+			"""{"bins":[2,2,2,1,3,5]}""",
+			"""{"bins":[4,2,2,1,3,5]}""",
+			"""{"bins":[1,4,2,1,3,5]}""",
+			"""{"bins":[2,4,2,1,3,5]}""",
+			"""{"bins":[4,4,2,1,3,5]}""",
+			"""{"bins":[2,1,4,1,3,5]}""",
+			"""{"bins":[4,1,4,1,3,5]}""",
+			"""{"bins":[1,2,4,1,3,5]}""",
+			"""{"bins":[2,2,4,1,3,5]}""",
+			"""{"bins":[4,2,4,1,3,5]}""",
+			"""{"bins":[1,4,4,1,3,5]}""",
+			"""{"bins":[2,4,4,1,3,5]}""",
+			"""{"bins":[4,4,4,1,3,5]}""",
+			"""{"bins":[1,1,1,2,3,5]}""",
+			"""{"bins":[2,1,1,2,3,5]}""",
+			"""{"bins":[4,1,1,2,3,5]}""",
+			"""{"bins":[1,2,1,2,3,5]}""",
+			"""{"bins":[4,2,1,2,3,5]}""",
+			"""{"bins":[1,4,1,2,3,5]}""",
+			"""{"bins":[2,4,1,2,3,5]}""",
+			"""{"bins":[4,4,1,2,3,5]}""",
+			"""{"bins":[1,1,2,2,3,5]}""",
+			"""{"bins":[4,1,2,2,3,5]}""",
+			"""{"bins":[1,4,2,2,3,5]}""",
+			"""{"bins":[4,4,2,2,3,5]}""",
+			"""{"bins":[1,1,4,2,3,5]}""",
+			"""{"bins":[2,1,4,2,3,5]}""",
+			"""{"bins":[4,1,4,2,3,5]}""",
+			"""{"bins":[1,2,4,2,3,5]}""",
+			"""{"bins":[4,2,4,2,3,5]}""",
+			"""{"bins":[1,4,4,2,3,5]}""",
+			"""{"bins":[2,4,4,2,3,5]}""",
+			"""{"bins":[4,4,4,2,3,5]}""",
+			"""{"bins":[1,1,1,4,3,5]}""",
+			"""{"bins":[2,1,1,4,3,5]}""",
+			"""{"bins":[4,1,1,4,3,5]}""",
+			"""{"bins":[1,2,1,4,3,5]}""",
+			"""{"bins":[2,2,1,4,3,5]}""",
+			"""{"bins":[4,2,1,4,3,5]}""",
+			"""{"bins":[1,4,1,4,3,5]}""",
+			"""{"bins":[2,4,1,4,3,5]}""",
+			"""{"bins":[1,1,2,4,3,5]}""",
+			"""{"bins":[2,1,2,4,3,5]}""",
+			"""{"bins":[4,1,2,4,3,5]}""",
+			"""{"bins":[1,2,2,4,3,5]}""",
+			"""{"bins":[2,2,2,4,3,5]}""",
+			"""{"bins":[4,2,2,4,3,5]}""",
+			"""{"bins":[1,4,2,4,3,5]}""",
+			"""{"bins":[2,4,2,4,3,5]}""",
+			"""{"bins":[1,1,4,4,3,5]}""",
+			"""{"bins":[2,1,4,4,3,5]}""",
+			"""{"bins":[1,2,4,4,3,5]}""",
+			"""{"bins":[2,2,4,4,3,5]}""",
+			"""{"bins":[2,2,1,1,4,5]}""",
+			"""{"bins":[3,2,1,1,4,5]}""",
+			"""{"bins":[2,3,1,1,4,5]}""",
+			"""{"bins":[3,3,1,1,4,5]}""",
+			"""{"bins":[2,1,2,1,4,5]}""",
+			"""{"bins":[3,1,2,1,4,5]}""",
+			"""{"bins":[1,2,2,1,4,5]}""",
+			"""{"bins":[2,2,2,1,4,5]}""",
+			"""{"bins":[3,2,2,1,4,5]}""",
+			"""{"bins":[1,3,2,1,4,5]}""",
+			"""{"bins":[2,3,2,1,4,5]}""",
+			"""{"bins":[3,3,2,1,4,5]}""",
+			"""{"bins":[2,1,3,1,4,5]}""",
+			"""{"bins":[3,1,3,1,4,5]}""",
+			"""{"bins":[1,2,3,1,4,5]}""",
+			"""{"bins":[2,2,3,1,4,5]}""",
+			"""{"bins":[3,2,3,1,4,5]}""",
+			"""{"bins":[1,3,3,1,4,5]}""",
+			"""{"bins":[2,3,3,1,4,5]}""",
+			"""{"bins":[3,3,3,1,4,5]}""",
+			"""{"bins":[1,1,1,2,4,5]}""",
+			"""{"bins":[2,1,1,2,4,5]}""",
+			"""{"bins":[3,1,1,2,4,5]}""",
+			"""{"bins":[1,2,1,2,4,5]}""",
+			"""{"bins":[3,2,1,2,4,5]}""",
+			"""{"bins":[1,3,1,2,4,5]}""",
+			"""{"bins":[2,3,1,2,4,5]}""",
+			"""{"bins":[3,3,1,2,4,5]}""",
+			"""{"bins":[1,1,2,2,4,5]}""",
+			"""{"bins":[3,1,2,2,4,5]}""",
+			"""{"bins":[1,3,2,2,4,5]}""",
+			"""{"bins":[3,3,2,2,4,5]}""",
+			"""{"bins":[1,1,3,2,4,5]}""",
+			"""{"bins":[2,1,3,2,4,5]}""",
+			"""{"bins":[3,1,3,2,4,5]}""",
+			"""{"bins":[1,2,3,2,4,5]}""",
+			"""{"bins":[3,2,3,2,4,5]}""",
+			"""{"bins":[1,3,3,2,4,5]}""",
+			"""{"bins":[2,3,3,2,4,5]}""",
+			"""{"bins":[3,3,3,2,4,5]}""",
+			"""{"bins":[1,1,1,3,4,5]}""",
+			"""{"bins":[2,1,1,3,4,5]}""",
+			"""{"bins":[3,1,1,3,4,5]}""",
+			"""{"bins":[1,2,1,3,4,5]}""",
+			"""{"bins":[2,2,1,3,4,5]}""",
+			"""{"bins":[3,2,1,3,4,5]}""",
+			"""{"bins":[1,3,1,3,4,5]}""",
+			"""{"bins":[2,3,1,3,4,5]}""",
+			"""{"bins":[1,1,2,3,4,5]}""",
+			"""{"bins":[2,1,2,3,4,5]}""",
+			"""{"bins":[3,1,2,3,4,5]}""",
+			"""{"bins":[1,2,2,3,4,5]}""",
+			"""{"bins":[2,2,2,3,4,5]}""",
+			"""{"bins":[3,2,2,3,4,5]}""",
+			"""{"bins":[1,3,2,3,4,5]}""",
+			"""{"bins":[2,3,2,3,4,5]}""",
+			"""{"bins":[1,1,3,3,4,5]}""",
+			"""{"bins":[2,1,3,3,4,5]}""",
+			"""{"bins":[1,2,3,3,4,5]}""",
+			"""{"bins":[2,2,3,3,4,5]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/bin_packing_capa/globals_bin_packing_capa.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_bin_packing_capa_globals_bin_packing_capa(string solver)
+	{
+		var path = "unit/globals/bin_packing_capa/globals_bin_packing_capa.mzn";
+		var solutions = new List<string> {
+			"""{"bins":[4,2,3,1]}""",
+			"""{"bins":[4,2,1,3]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/circuit/test_circuit.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_circuit_test_circuit(string solver)
+	{
+		var path = "unit/globals/circuit/test_circuit.mzn";
+		var solutions = new List<string> {
+			"""{"c1":[3,4,2,1],"c2":[4,5,3,2]}""",
+			"""{"c1":[2,3,4,1],"c2":[4,5,3,2]}""",
+			"""{"c1":[4,3,1,2],"c2":[4,5,3,2]}""",
+			"""{"c1":[3,1,4,2],"c2":[4,5,3,2]}""",
+			"""{"c1":[2,4,1,3],"c2":[4,5,3,2]}""",
+			"""{"c1":[4,1,2,3],"c2":[4,5,3,2]}""",
+			"""{"c1":[3,4,2,1],"c2":[3,4,5,2]}""",
+			"""{"c1":[2,3,4,1],"c2":[3,4,5,2]}""",
+			"""{"c1":[4,3,1,2],"c2":[3,4,5,2]}""",
+			"""{"c1":[3,1,4,2],"c2":[3,4,5,2]}""",
+			"""{"c1":[2,4,1,3],"c2":[3,4,5,2]}""",
+			"""{"c1":[4,1,2,3],"c2":[3,4,5,2]}""",
+			"""{"c1":[3,4,2,1],"c2":[5,4,2,3]}""",
+			"""{"c1":[2,3,4,1],"c2":[5,4,2,3]}""",
+			"""{"c1":[4,3,1,2],"c2":[5,4,2,3]}""",
+			"""{"c1":[3,1,4,2],"c2":[5,4,2,3]}""",
+			"""{"c1":[2,4,1,3],"c2":[5,4,2,3]}""",
+			"""{"c1":[4,1,2,3],"c2":[5,4,2,3]}""",
+			"""{"c1":[3,4,2,1],"c2":[4,2,5,3]}""",
+			"""{"c1":[2,3,4,1],"c2":[4,2,5,3]}""",
+			"""{"c1":[4,3,1,2],"c2":[4,2,5,3]}""",
+			"""{"c1":[3,1,4,2],"c2":[4,2,5,3]}""",
+			"""{"c1":[2,4,1,3],"c2":[4,2,5,3]}""",
+			"""{"c1":[4,1,2,3],"c2":[4,2,5,3]}""",
+			"""{"c1":[3,4,2,1],"c2":[3,5,2,4]}""",
+			"""{"c1":[2,3,4,1],"c2":[3,5,2,4]}""",
+			"""{"c1":[4,3,1,2],"c2":[3,5,2,4]}""",
+			"""{"c1":[3,1,4,2],"c2":[3,5,2,4]}""",
+			"""{"c1":[2,4,1,3],"c2":[3,5,2,4]}""",
+			"""{"c1":[4,1,2,3],"c2":[3,5,2,4]}""",
+			"""{"c1":[3,4,2,1],"c2":[5,2,3,4]}""",
+			"""{"c1":[2,3,4,1],"c2":[5,2,3,4]}""",
+			"""{"c1":[4,3,1,2],"c2":[5,2,3,4]}""",
+			"""{"c1":[3,1,4,2],"c2":[5,2,3,4]}""",
+			"""{"c1":[2,4,1,3],"c2":[5,2,3,4]}""",
+			"""{"c1":[4,1,2,3],"c2":[5,2,3,4]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/globals/cumulative/github_589.mzn")]
+	public async Task test_solve_unit_globals_cumulative_github_589()
+	{
+		var path = "unit/globals/cumulative/github_589.mzn";
+		var solver = "gecode";
+		var solutions = new List<string>();
+		var args = new List<string>{
+			"-G std",
+		};
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/global_cardinality/globals_global_cardinality_low_up_set.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_global_cardinality_globals_global_cardinality_low_up_set(string solver)
+	{
+		var path = "unit/globals/global_cardinality/globals_global_cardinality_low_up_set.mzn";
+		var solutions = new List<string> {
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/global_cardinality/globals_global_cardinality_opt.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_global_cardinality_globals_global_cardinality_opt(string solver)
+	{
+		var path = "unit/globals/global_cardinality/globals_global_cardinality_opt.mzn";
+		var solutions = new List<string> {
+			"""{"gcc_x":[null,6,7,8,8,6,9,null,null,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,6,8,8,9,null,null,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,8,8,null,9,6,null,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,6,8,null,9,8,null,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,null,8,8,9,6,null,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,null,8,6,9,8,null,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,8,8,null,9,null,6,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,6,8,null,9,null,8,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,null,8,8,9,null,6,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,null,8,6,9,null,8,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,null,8,null,9,8,6,6],"gcc_c":[3,1,2,1]}""",
+			"""{"gcc_x":[null,6,7,null,8,null,9,6,8,6],"gcc_c":[3,1,2,1]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/global_cardinality/globals_global_cardinality_set.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_global_cardinality_globals_global_cardinality_set(string solver)
+	{
+		var path = "unit/globals/global_cardinality/globals_global_cardinality_set.mzn";
+		var solutions = new List<string> {
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"}],"counts":[0,0],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"}],"counts":[1,0],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"}],"counts":[1,0],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"}],"counts":[2,0],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2}"}],"counts":[0,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{}"}],"counts":[0,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2}"}],"counts":[1,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{1}"}],"counts":[1,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2}"}],"counts":[1,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{}"}],"counts":[1,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2}"}],"counts":[2,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{1}"}],"counts":[2,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{2}"}],"counts":[0,2],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{1,2}"}],"counts":[1,2],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{2}"}],"counts":[1,2],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{1,2}"}],"counts":[2,2],"empty":[],"zero":[0,0,0]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/global_cardinality_closed/globals_global_cardinality_closed_opt.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_global_cardinality_closed_globals_global_cardinality_closed_opt(string solver)
+	{
+		var path = "unit/globals/global_cardinality_closed/globals_global_cardinality_closed_opt.mzn";
+		var solutions = new List<string> {
+			"""{"gcc_x":[6,7,6,8,6,9,null,8,6,null],"gcc_c":[4,1,2,1]}""",
+			"""{"gcc_x":[6,7,6,8,null,9,6,8,6,null],"gcc_c":[4,1,2,1]}""",
+			"""{"gcc_x":[6,7,null,8,6,9,6,8,6,null],"gcc_c":[4,1,2,1]}""",
+			"""{"gcc_x":[6,7,9,8,6,9,6,8,6,null],"gcc_c":[4,1,2,2]}""",
+			"""{"gcc_x":[6,7,6,8,9,9,6,8,6,null],"gcc_c":[4,1,2,2]}""",
+			"""{"gcc_x":[6,7,6,8,6,9,9,8,6,null],"gcc_c":[4,1,2,2]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/global_cardinality_closed/globals_global_cardinality_closed_set.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_global_cardinality_closed_globals_global_cardinality_closed_set(string solver)
+	{
+		var path = "unit/globals/global_cardinality_closed/globals_global_cardinality_closed_set.mzn";
+		var solutions = new List<string> {
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"}],"counts":[0,0],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"}],"counts":[1,0],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"}],"counts":[1,0],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"}],"counts":[2,0],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2}"}],"counts":[0,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{}"}],"counts":[0,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2}"}],"counts":[1,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{1}"}],"counts":[1,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2}"}],"counts":[1,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{}"}],"counts":[1,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2}"}],"counts":[2,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{1}"}],"counts":[2,1],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{2}"}],"counts":[0,2],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{1,2}"}],"counts":[1,2],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{2}"}],"counts":[1,2],"empty":[],"zero":[0,0,0]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{1,2}"}],"counts":[2,2],"empty":[],"zero":[0,0,0]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_opt.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_global_cardinality_closed_globals_global_cardinality_low_up_closed_opt(string solver)
+	{
+		var path = "unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_opt.mzn";
+		var solutions = new List<string> {
+			"""{"x":[null,6,5,3,3]}""",
+			"""{"x":[null,5,6,3,3]}""",
+			"""{"x":[null,6,3,5,3]}""",
+			"""{"x":[null,3,6,5,3]}""",
+			"""{"x":[null,5,3,6,3]}""",
+			"""{"x":[null,3,5,6,3]}""",
+			"""{"x":[null,6,3,3,5]}""",
+			"""{"x":[null,3,6,3,5]}""",
+			"""{"x":[null,3,3,6,5]}""",
+			"""{"x":[null,5,3,3,6]}""",
+			"""{"x":[null,3,5,3,6]}""",
+			"""{"x":[null,3,3,5,6]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_set.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_global_cardinality_closed_globals_global_cardinality_low_up_closed_set(string solver)
+	{
+		var path = "unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_set.mzn";
+		var solutions = new List<string> {
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,2}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Fact(DisplayName="unit/globals/inverse/inverse_opt.mzn")]
+	public async Task test_solve_unit_globals_inverse_inverse_opt()
+	{
+		var path = "unit/globals/inverse/inverse_opt.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""{"f":[null,null,null],"g":[null,null,null,null]}""",
+			"""{"f":[2,null,null],"g":[1,null,null,null]}""",
+			"""{"f":[3,null,null],"g":[null,1,null,null]}""",
+			"""{"f":[4,null,null],"g":[null,null,1,null]}""",
+			"""{"f":[5,null,null],"g":[null,null,null,1]}""",
+			"""{"f":[null,2,null],"g":[2,null,null,null]}""",
+			"""{"f":[null,3,null],"g":[null,2,null,null]}""",
+			"""{"f":[null,4,null],"g":[null,null,2,null]}""",
+			"""{"f":[null,5,null],"g":[null,null,null,2]}""",
+			"""{"f":[3,2,null],"g":[2,1,null,null]}""",
+			"""{"f":[2,3,null],"g":[1,2,null,null]}""",
+			"""{"f":[4,2,null],"g":[2,null,1,null]}""",
+			"""{"f":[2,4,null],"g":[1,null,2,null]}""",
+			"""{"f":[4,3,null],"g":[null,2,1,null]}""",
+			"""{"f":[3,4,null],"g":[null,1,2,null]}""",
+			"""{"f":[5,2,null],"g":[2,null,null,1]}""",
+			"""{"f":[2,5,null],"g":[1,null,null,2]}""",
+			"""{"f":[5,3,null],"g":[null,2,null,1]}""",
+			"""{"f":[3,5,null],"g":[null,1,null,2]}""",
+			"""{"f":[5,4,null],"g":[null,null,2,1]}""",
+			"""{"f":[4,5,null],"g":[null,null,1,2]}""",
+			"""{"f":[null,null,2],"g":[3,null,null,null]}""",
+			"""{"f":[null,null,3],"g":[null,3,null,null]}""",
+			"""{"f":[null,null,4],"g":[null,null,3,null]}""",
+			"""{"f":[null,null,5],"g":[null,null,null,3]}""",
+			"""{"f":[3,null,2],"g":[3,1,null,null]}""",
+			"""{"f":[2,null,3],"g":[1,3,null,null]}""",
+			"""{"f":[4,null,2],"g":[3,null,1,null]}""",
+			"""{"f":[2,null,4],"g":[1,null,3,null]}""",
+			"""{"f":[4,null,3],"g":[null,3,1,null]}""",
+			"""{"f":[3,null,4],"g":[null,1,3,null]}""",
+			"""{"f":[5,null,2],"g":[3,null,null,1]}""",
+			"""{"f":[2,null,5],"g":[1,null,null,3]}""",
+			"""{"f":[5,null,3],"g":[null,3,null,1]}""",
+			"""{"f":[3,null,5],"g":[null,1,null,3]}""",
+			"""{"f":[5,null,4],"g":[null,null,3,1]}""",
+			"""{"f":[4,null,5],"g":[null,null,1,3]}""",
+			"""{"f":[null,3,2],"g":[3,2,null,null]}""",
+			"""{"f":[null,2,3],"g":[2,3,null,null]}""",
+			"""{"f":[null,4,2],"g":[3,null,2,null]}""",
+			"""{"f":[null,2,4],"g":[2,null,3,null]}""",
+			"""{"f":[null,4,3],"g":[null,3,2,null]}""",
+			"""{"f":[null,3,4],"g":[null,2,3,null]}""",
+			"""{"f":[null,5,2],"g":[3,null,null,2]}""",
+			"""{"f":[null,2,5],"g":[2,null,null,3]}""",
+			"""{"f":[null,5,3],"g":[null,3,null,2]}""",
+			"""{"f":[null,3,5],"g":[null,2,null,3]}""",
+			"""{"f":[null,5,4],"g":[null,null,3,2]}""",
+			"""{"f":[null,4,5],"g":[null,null,2,3]}""",
+			"""{"f":[4,3,2],"g":[3,2,1,null]}""",
+			"""{"f":[3,4,2],"g":[3,1,2,null]}""",
+			"""{"f":[4,2,3],"g":[2,3,1,null]}""",
+			"""{"f":[2,4,3],"g":[1,3,2,null]}""",
+			"""{"f":[3,2,4],"g":[2,1,3,null]}""",
+			"""{"f":[2,3,4],"g":[1,2,3,null]}""",
+			"""{"f":[5,3,2],"g":[3,2,null,1]}""",
+			"""{"f":[3,5,2],"g":[3,1,null,2]}""",
+			"""{"f":[5,2,3],"g":[2,3,null,1]}""",
+			"""{"f":[2,5,3],"g":[1,3,null,2]}""",
+			"""{"f":[3,2,5],"g":[2,1,null,3]}""",
+			"""{"f":[2,3,5],"g":[1,2,null,3]}""",
+			"""{"f":[5,4,2],"g":[3,null,2,1]}""",
+			"""{"f":[4,5,2],"g":[3,null,1,2]}""",
+			"""{"f":[5,2,4],"g":[2,null,3,1]}""",
+			"""{"f":[2,5,4],"g":[1,null,3,2]}""",
+			"""{"f":[4,2,5],"g":[2,null,1,3]}""",
+			"""{"f":[2,4,5],"g":[1,null,2,3]}""",
+			"""{"f":[5,4,3],"g":[null,3,2,1]}""",
+			"""{"f":[4,5,3],"g":[null,3,1,2]}""",
+			"""{"f":[5,3,4],"g":[null,2,3,1]}""",
+			"""{"f":[3,5,4],"g":[null,1,3,2]}""",
+			"""{"f":[4,3,5],"g":[null,2,1,3]}""",
+			"""{"f":[3,4,5],"g":[null,1,2,3]}""",
 			};
 		var args = new List<string>{
 			"-G std",
 		};
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="unit/globals/int_set_channel/test_int_set_channel2.mzn")]
+	[Theory(DisplayName="unit/globals/lex2/globals_lex2.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	[InlineData("coin-bc")]
-	public async Task test_solve_unit_globals_int_set_channel_test_int_set_channel2(string solver)
-	{
-		var path = "unit/globals/int_set_channel/test_int_set_channel2.mzn";
-		var solutions = new List<string> {
-			"""{"x":[1,1,1,1,1,1,1,1,1],"y":[{"_set_":"{1,2,3,4,5,6,7,8,9}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
-			"""{"x":[5,3,1,1,1,1,1,1,1],"y":[{"_set_":"{3,4,5,6,7,8,9}"},{"_set_":"{}"},{"_set_":"{2}"},{"_set_":"{}"},{"_set_":"{1}"}]}""",
-			"""{"x":[2,2,2,2,2,2,2,2,2],"y":[{"_set_":"{}"},{"_set_":"{1,2,3,4,5,6,7,8,9}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
-			"""{"x":[5,5,5,5,5,5,5,5,5],"y":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{1,2,3,4,5,6,7,8,9}"}]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/globals/lex2/globals_lex2.mzn")]
-	public async Task test_solve_unit_globals_lex2_globals_lex2_2()
+	public async Task test_solve_unit_globals_lex2_globals_lex2(string solver)
 	{
 		var path = "unit/globals/lex2/globals_lex2.mzn";
-		var solver = "coin-bc";
 		var solutions = new List<string> {
 			"""{"y":[[1,1],[1,1]]}""",
 			"""{"y":[[1,2],[2,1]]}""",
@@ -4262,229 +4125,1251 @@ public class AllSolutionsTests : ClientTest
 			"""{"y":[[2,2],[2,2]]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="unit/globals/lex_chain/globals_lex_chain__orbitope.mzn")]
+	[Theory(DisplayName="unit/globals/lex_greater/globals_lex_greater.mzn")]
 	[InlineData("gecode")]
-	[InlineData("coin-bc")]
-	[InlineData("scip", Skip="Solver not supported")]
-	public async Task test_solve_unit_globals_lex_chain_globals_lex_chain__orbitope(string solver)
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_lex_greater_globals_lex_greater(string solver)
 	{
-		var path = "unit/globals/lex_chain/globals_lex_chain__orbitope.mzn";
+		var path = "unit/globals/lex_greater/globals_lex_greater.mzn";
 		var solutions = new List<string> {
-			"""{"lex_members_int":[1,0,1],"lex_members_bool":[false,false]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,1,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,2,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,3,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,4,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,5,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,6,9]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/lex_greatereq/globals_lex_greatereq.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_lex_greatereq_globals_lex_greatereq(string solver)
+	{
+		var path = "unit/globals/lex_greatereq/globals_lex_greatereq.mzn";
+		var solutions = new List<string> {
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,1,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,2,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,3,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,4,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,5,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,6,9]}""",
+			"""{"lex_avi1":[1,3,5,7,9],"lex_avi2":[1,3,5,7,9]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/lex_less/test_bool_lex_less.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_lex_less_test_bool_lex_less(string solver)
+	{
+		var path = "unit/globals/lex_less/test_bool_lex_less.mzn";
+		var solutions = new List<string> {
+			"""{"x":[false,false],"y":[true,false]}""",
+			"""{"x":[false,true],"y":[true,false]}""",
+			"""{"x":[false,false],"y":[false,true]}""",
+			"""{"x":[false,false],"y":[true,true]}""",
+			"""{"x":[true,false],"y":[true,true]}""",
+			"""{"x":[false,true],"y":[true,true]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/lex_lesseq/test_bool_lex_lesseq.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_lex_lesseq_test_bool_lex_lesseq(string solver)
+	{
+		var path = "unit/globals/lex_lesseq/test_bool_lex_lesseq.mzn";
+		var solutions = new List<string> {
+			"""{"x":[false,false],"y":[false,false]}""",
+			"""{"x":[false,false],"y":[true,false]}""",
+			"""{"x":[true,false],"y":[true,false]}""",
+			"""{"x":[false,true],"y":[true,false]}""",
+			"""{"x":[false,false],"y":[false,true]}""",
+			"""{"x":[false,true],"y":[false,true]}""",
+			"""{"x":[false,false],"y":[true,true]}""",
+			"""{"x":[true,false],"y":[true,true]}""",
+			"""{"x":[false,true],"y":[true,true]}""",
+			"""{"x":[true,true],"y":[true,true]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Theory(DisplayName="unit/globals/nvalue/globals_nvalue.mzn")]
-	[InlineData("coin-bc")]
-	[InlineData("highs")]
-	public async Task test_solve_unit_globals_nvalue_globals_nvalue_2(string solver)
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_nvalue_globals_nvalue(string solver)
 	{
 		var path = "unit/globals/nvalue/globals_nvalue.mzn";
 		var solutions = new List<string> {
-			"""{}""",
+			"""{"a":[3,2,1,1],"n":3}""",
+			"""{"a":[4,2,1,1],"n":3}""",
+			"""{"a":[5,2,1,1],"n":3}""",
+			"""{"a":[2,3,1,1],"n":3}""",
+			"""{"a":[4,3,1,1],"n":3}""",
+			"""{"a":[5,3,1,1],"n":3}""",
+			"""{"a":[2,4,1,1],"n":3}""",
+			"""{"a":[3,4,1,1],"n":3}""",
+			"""{"a":[5,4,1,1],"n":3}""",
+			"""{"a":[2,5,1,1],"n":3}""",
+			"""{"a":[3,5,1,1],"n":3}""",
+			"""{"a":[4,5,1,1],"n":3}""",
+			"""{"a":[3,1,2,1],"n":3}""",
+			"""{"a":[4,1,2,1],"n":3}""",
+			"""{"a":[5,1,2,1],"n":3}""",
+			"""{"a":[3,2,2,1],"n":3}""",
+			"""{"a":[4,2,2,1],"n":3}""",
+			"""{"a":[5,2,2,1],"n":3}""",
+			"""{"a":[1,3,2,1],"n":3}""",
+			"""{"a":[2,3,2,1],"n":3}""",
+			"""{"a":[3,3,2,1],"n":3}""",
+			"""{"a":[1,4,2,1],"n":3}""",
+			"""{"a":[2,4,2,1],"n":3}""",
+			"""{"a":[4,4,2,1],"n":3}""",
+			"""{"a":[1,5,2,1],"n":3}""",
+			"""{"a":[2,5,2,1],"n":3}""",
+			"""{"a":[5,5,2,1],"n":3}""",
+			"""{"a":[2,1,3,1],"n":3}""",
+			"""{"a":[4,1,3,1],"n":3}""",
+			"""{"a":[5,1,3,1],"n":3}""",
+			"""{"a":[1,2,3,1],"n":3}""",
+			"""{"a":[2,2,3,1],"n":3}""",
+			"""{"a":[3,2,3,1],"n":3}""",
+			"""{"a":[2,3,3,1],"n":3}""",
+			"""{"a":[4,3,3,1],"n":3}""",
+			"""{"a":[5,3,3,1],"n":3}""",
+			"""{"a":[1,4,3,1],"n":3}""",
+			"""{"a":[3,4,3,1],"n":3}""",
+			"""{"a":[4,4,3,1],"n":3}""",
+			"""{"a":[1,5,3,1],"n":3}""",
+			"""{"a":[3,5,3,1],"n":3}""",
+			"""{"a":[5,5,3,1],"n":3}""",
+			"""{"a":[2,1,4,1],"n":3}""",
+			"""{"a":[3,1,4,1],"n":3}""",
+			"""{"a":[5,1,4,1],"n":3}""",
+			"""{"a":[1,2,4,1],"n":3}""",
+			"""{"a":[2,2,4,1],"n":3}""",
+			"""{"a":[4,2,4,1],"n":3}""",
+			"""{"a":[1,3,4,1],"n":3}""",
+			"""{"a":[3,3,4,1],"n":3}""",
+			"""{"a":[4,3,4,1],"n":3}""",
+			"""{"a":[2,4,4,1],"n":3}""",
+			"""{"a":[3,4,4,1],"n":3}""",
+			"""{"a":[5,4,4,1],"n":3}""",
+			"""{"a":[1,5,4,1],"n":3}""",
+			"""{"a":[4,5,4,1],"n":3}""",
+			"""{"a":[5,5,4,1],"n":3}""",
+			"""{"a":[2,1,5,1],"n":3}""",
+			"""{"a":[3,1,5,1],"n":3}""",
+			"""{"a":[4,1,5,1],"n":3}""",
+			"""{"a":[1,2,5,1],"n":3}""",
+			"""{"a":[2,2,5,1],"n":3}""",
+			"""{"a":[5,2,5,1],"n":3}""",
+			"""{"a":[1,3,5,1],"n":3}""",
+			"""{"a":[3,3,5,1],"n":3}""",
+			"""{"a":[5,3,5,1],"n":3}""",
+			"""{"a":[1,4,5,1],"n":3}""",
+			"""{"a":[4,4,5,1],"n":3}""",
+			"""{"a":[5,4,5,1],"n":3}""",
+			"""{"a":[2,5,5,1],"n":3}""",
+			"""{"a":[3,5,5,1],"n":3}""",
+			"""{"a":[4,5,5,1],"n":3}""",
+			"""{"a":[3,1,1,2],"n":3}""",
+			"""{"a":[4,1,1,2],"n":3}""",
+			"""{"a":[5,1,1,2],"n":3}""",
+			"""{"a":[3,2,1,2],"n":3}""",
+			"""{"a":[4,2,1,2],"n":3}""",
+			"""{"a":[5,2,1,2],"n":3}""",
+			"""{"a":[1,3,1,2],"n":3}""",
+			"""{"a":[2,3,1,2],"n":3}""",
+			"""{"a":[3,3,1,2],"n":3}""",
+			"""{"a":[1,4,1,2],"n":3}""",
+			"""{"a":[2,4,1,2],"n":3}""",
+			"""{"a":[4,4,1,2],"n":3}""",
+			"""{"a":[1,5,1,2],"n":3}""",
+			"""{"a":[2,5,1,2],"n":3}""",
+			"""{"a":[5,5,1,2],"n":3}""",
+			"""{"a":[3,1,2,2],"n":3}""",
+			"""{"a":[4,1,2,2],"n":3}""",
+			"""{"a":[5,1,2,2],"n":3}""",
+			"""{"a":[1,3,2,2],"n":3}""",
+			"""{"a":[4,3,2,2],"n":3}""",
+			"""{"a":[5,3,2,2],"n":3}""",
+			"""{"a":[1,4,2,2],"n":3}""",
+			"""{"a":[3,4,2,2],"n":3}""",
+			"""{"a":[5,4,2,2],"n":3}""",
+			"""{"a":[1,5,2,2],"n":3}""",
+			"""{"a":[3,5,2,2],"n":3}""",
+			"""{"a":[4,5,2,2],"n":3}""",
+			"""{"a":[1,1,3,2],"n":3}""",
+			"""{"a":[2,1,3,2],"n":3}""",
+			"""{"a":[3,1,3,2],"n":3}""",
+			"""{"a":[1,2,3,2],"n":3}""",
+			"""{"a":[4,2,3,2],"n":3}""",
+			"""{"a":[5,2,3,2],"n":3}""",
+			"""{"a":[1,3,3,2],"n":3}""",
+			"""{"a":[4,3,3,2],"n":3}""",
+			"""{"a":[5,3,3,2],"n":3}""",
+			"""{"a":[2,4,3,2],"n":3}""",
+			"""{"a":[3,4,3,2],"n":3}""",
+			"""{"a":[4,4,3,2],"n":3}""",
+			"""{"a":[2,5,3,2],"n":3}""",
+			"""{"a":[3,5,3,2],"n":3}""",
+			"""{"a":[5,5,3,2],"n":3}""",
+			"""{"a":[1,1,4,2],"n":3}""",
+			"""{"a":[2,1,4,2],"n":3}""",
+			"""{"a":[4,1,4,2],"n":3}""",
+			"""{"a":[1,2,4,2],"n":3}""",
+			"""{"a":[3,2,4,2],"n":3}""",
+			"""{"a":[5,2,4,2],"n":3}""",
+			"""{"a":[2,3,4,2],"n":3}""",
+			"""{"a":[3,3,4,2],"n":3}""",
+			"""{"a":[4,3,4,2],"n":3}""",
+			"""{"a":[1,4,4,2],"n":3}""",
+			"""{"a":[3,4,4,2],"n":3}""",
+			"""{"a":[5,4,4,2],"n":3}""",
+			"""{"a":[2,5,4,2],"n":3}""",
+			"""{"a":[4,5,4,2],"n":3}""",
+			"""{"a":[5,5,4,2],"n":3}""",
+			"""{"a":[1,1,5,2],"n":3}""",
+			"""{"a":[2,1,5,2],"n":3}""",
+			"""{"a":[5,1,5,2],"n":3}""",
+			"""{"a":[1,2,5,2],"n":3}""",
+			"""{"a":[3,2,5,2],"n":3}""",
+			"""{"a":[4,2,5,2],"n":3}""",
+			"""{"a":[2,3,5,2],"n":3}""",
+			"""{"a":[3,3,5,2],"n":3}""",
+			"""{"a":[5,3,5,2],"n":3}""",
+			"""{"a":[2,4,5,2],"n":3}""",
+			"""{"a":[4,4,5,2],"n":3}""",
+			"""{"a":[5,4,5,2],"n":3}""",
+			"""{"a":[1,5,5,2],"n":3}""",
+			"""{"a":[3,5,5,2],"n":3}""",
+			"""{"a":[4,5,5,2],"n":3}""",
+			"""{"a":[2,1,1,3],"n":3}""",
+			"""{"a":[4,1,1,3],"n":3}""",
+			"""{"a":[5,1,1,3],"n":3}""",
+			"""{"a":[1,2,1,3],"n":3}""",
+			"""{"a":[2,2,1,3],"n":3}""",
+			"""{"a":[3,2,1,3],"n":3}""",
+			"""{"a":[2,3,1,3],"n":3}""",
+			"""{"a":[4,3,1,3],"n":3}""",
+			"""{"a":[5,3,1,3],"n":3}""",
+			"""{"a":[1,4,1,3],"n":3}""",
+			"""{"a":[3,4,1,3],"n":3}""",
+			"""{"a":[4,4,1,3],"n":3}""",
+			"""{"a":[1,5,1,3],"n":3}""",
+			"""{"a":[3,5,1,3],"n":3}""",
+			"""{"a":[5,5,1,3],"n":3}""",
+			"""{"a":[1,1,2,3],"n":3}""",
+			"""{"a":[2,1,2,3],"n":3}""",
+			"""{"a":[3,1,2,3],"n":3}""",
+			"""{"a":[1,2,2,3],"n":3}""",
+			"""{"a":[4,2,2,3],"n":3}""",
+			"""{"a":[5,2,2,3],"n":3}""",
+			"""{"a":[1,3,2,3],"n":3}""",
+			"""{"a":[4,3,2,3],"n":3}""",
+			"""{"a":[5,3,2,3],"n":3}""",
+			"""{"a":[2,4,2,3],"n":3}""",
+			"""{"a":[3,4,2,3],"n":3}""",
+			"""{"a":[4,4,2,3],"n":3}""",
+			"""{"a":[2,5,2,3],"n":3}""",
+			"""{"a":[3,5,2,3],"n":3}""",
+			"""{"a":[5,5,2,3],"n":3}""",
+			"""{"a":[2,1,3,3],"n":3}""",
+			"""{"a":[4,1,3,3],"n":3}""",
+			"""{"a":[5,1,3,3],"n":3}""",
+			"""{"a":[1,2,3,3],"n":3}""",
+			"""{"a":[4,2,3,3],"n":3}""",
+			"""{"a":[5,2,3,3],"n":3}""",
+			"""{"a":[1,4,3,3],"n":3}""",
+			"""{"a":[2,4,3,3],"n":3}""",
+			"""{"a":[5,4,3,3],"n":3}""",
+			"""{"a":[1,5,3,3],"n":3}""",
+			"""{"a":[2,5,3,3],"n":3}""",
+			"""{"a":[4,5,3,3],"n":3}""",
+			"""{"a":[1,1,4,3],"n":3}""",
+			"""{"a":[3,1,4,3],"n":3}""",
+			"""{"a":[4,1,4,3],"n":3}""",
+			"""{"a":[2,2,4,3],"n":3}""",
+			"""{"a":[3,2,4,3],"n":3}""",
+			"""{"a":[4,2,4,3],"n":3}""",
+			"""{"a":[1,3,4,3],"n":3}""",
+			"""{"a":[2,3,4,3],"n":3}""",
+			"""{"a":[5,3,4,3],"n":3}""",
+			"""{"a":[1,4,4,3],"n":3}""",
+			"""{"a":[2,4,4,3],"n":3}""",
+			"""{"a":[5,4,4,3],"n":3}""",
+			"""{"a":[3,5,4,3],"n":3}""",
+			"""{"a":[4,5,4,3],"n":3}""",
+			"""{"a":[5,5,4,3],"n":3}""",
+			"""{"a":[1,1,5,3],"n":3}""",
+			"""{"a":[3,1,5,3],"n":3}""",
+			"""{"a":[5,1,5,3],"n":3}""",
+			"""{"a":[2,2,5,3],"n":3}""",
+			"""{"a":[3,2,5,3],"n":3}""",
+			"""{"a":[5,2,5,3],"n":3}""",
+			"""{"a":[1,3,5,3],"n":3}""",
+			"""{"a":[2,3,5,3],"n":3}""",
+			"""{"a":[4,3,5,3],"n":3}""",
+			"""{"a":[3,4,5,3],"n":3}""",
+			"""{"a":[4,4,5,3],"n":3}""",
+			"""{"a":[5,4,5,3],"n":3}""",
+			"""{"a":[1,5,5,3],"n":3}""",
+			"""{"a":[2,5,5,3],"n":3}""",
+			"""{"a":[4,5,5,3],"n":3}""",
+			"""{"a":[2,1,1,4],"n":3}""",
+			"""{"a":[3,1,1,4],"n":3}""",
+			"""{"a":[5,1,1,4],"n":3}""",
+			"""{"a":[1,2,1,4],"n":3}""",
+			"""{"a":[2,2,1,4],"n":3}""",
+			"""{"a":[4,2,1,4],"n":3}""",
+			"""{"a":[1,3,1,4],"n":3}""",
+			"""{"a":[3,3,1,4],"n":3}""",
+			"""{"a":[4,3,1,4],"n":3}""",
+			"""{"a":[2,4,1,4],"n":3}""",
+			"""{"a":[3,4,1,4],"n":3}""",
+			"""{"a":[5,4,1,4],"n":3}""",
+			"""{"a":[1,5,1,4],"n":3}""",
+			"""{"a":[4,5,1,4],"n":3}""",
+			"""{"a":[5,5,1,4],"n":3}""",
+			"""{"a":[1,1,2,4],"n":3}""",
+			"""{"a":[2,1,2,4],"n":3}""",
+			"""{"a":[4,1,2,4],"n":3}""",
+			"""{"a":[1,2,2,4],"n":3}""",
+			"""{"a":[3,2,2,4],"n":3}""",
+			"""{"a":[5,2,2,4],"n":3}""",
+			"""{"a":[2,3,2,4],"n":3}""",
+			"""{"a":[3,3,2,4],"n":3}""",
+			"""{"a":[4,3,2,4],"n":3}""",
+			"""{"a":[1,4,2,4],"n":3}""",
+			"""{"a":[3,4,2,4],"n":3}""",
+			"""{"a":[5,4,2,4],"n":3}""",
+			"""{"a":[2,5,2,4],"n":3}""",
+			"""{"a":[4,5,2,4],"n":3}""",
+			"""{"a":[5,5,2,4],"n":3}""",
+			"""{"a":[1,1,3,4],"n":3}""",
+			"""{"a":[3,1,3,4],"n":3}""",
+			"""{"a":[4,1,3,4],"n":3}""",
+			"""{"a":[2,2,3,4],"n":3}""",
+			"""{"a":[3,2,3,4],"n":3}""",
+			"""{"a":[4,2,3,4],"n":3}""",
+			"""{"a":[1,3,3,4],"n":3}""",
+			"""{"a":[2,3,3,4],"n":3}""",
+			"""{"a":[5,3,3,4],"n":3}""",
+			"""{"a":[1,4,3,4],"n":3}""",
+			"""{"a":[2,4,3,4],"n":3}""",
+			"""{"a":[5,4,3,4],"n":3}""",
+			"""{"a":[3,5,3,4],"n":3}""",
+			"""{"a":[4,5,3,4],"n":3}""",
+			"""{"a":[5,5,3,4],"n":3}""",
+			"""{"a":[2,1,4,4],"n":3}""",
+			"""{"a":[3,1,4,4],"n":3}""",
+			"""{"a":[5,1,4,4],"n":3}""",
+			"""{"a":[1,2,4,4],"n":3}""",
+			"""{"a":[3,2,4,4],"n":3}""",
+			"""{"a":[5,2,4,4],"n":3}""",
+			"""{"a":[1,3,4,4],"n":3}""",
+			"""{"a":[2,3,4,4],"n":3}""",
+			"""{"a":[5,3,4,4],"n":3}""",
+			"""{"a":[1,5,4,4],"n":3}""",
+			"""{"a":[2,5,4,4],"n":3}""",
+			"""{"a":[3,5,4,4],"n":3}""",
+			"""{"a":[1,1,5,4],"n":3}""",
+			"""{"a":[4,1,5,4],"n":3}""",
+			"""{"a":[5,1,5,4],"n":3}""",
+			"""{"a":[2,2,5,4],"n":3}""",
+			"""{"a":[4,2,5,4],"n":3}""",
+			"""{"a":[5,2,5,4],"n":3}""",
+			"""{"a":[3,3,5,4],"n":3}""",
+			"""{"a":[4,3,5,4],"n":3}""",
+			"""{"a":[5,3,5,4],"n":3}""",
+			"""{"a":[1,4,5,4],"n":3}""",
+			"""{"a":[2,4,5,4],"n":3}""",
+			"""{"a":[3,4,5,4],"n":3}""",
+			"""{"a":[1,5,5,4],"n":3}""",
+			"""{"a":[2,5,5,4],"n":3}""",
+			"""{"a":[3,5,5,4],"n":3}""",
+			"""{"a":[2,1,1,5],"n":3}""",
+			"""{"a":[3,1,1,5],"n":3}""",
+			"""{"a":[4,1,1,5],"n":3}""",
+			"""{"a":[1,2,1,5],"n":3}""",
+			"""{"a":[2,2,1,5],"n":3}""",
+			"""{"a":[5,2,1,5],"n":3}""",
+			"""{"a":[1,3,1,5],"n":3}""",
+			"""{"a":[3,3,1,5],"n":3}""",
+			"""{"a":[5,3,1,5],"n":3}""",
+			"""{"a":[1,4,1,5],"n":3}""",
+			"""{"a":[4,4,1,5],"n":3}""",
+			"""{"a":[5,4,1,5],"n":3}""",
+			"""{"a":[2,5,1,5],"n":3}""",
+			"""{"a":[3,5,1,5],"n":3}""",
+			"""{"a":[4,5,1,5],"n":3}""",
+			"""{"a":[1,1,2,5],"n":3}""",
+			"""{"a":[2,1,2,5],"n":3}""",
+			"""{"a":[5,1,2,5],"n":3}""",
+			"""{"a":[1,2,2,5],"n":3}""",
+			"""{"a":[3,2,2,5],"n":3}""",
+			"""{"a":[4,2,2,5],"n":3}""",
+			"""{"a":[2,3,2,5],"n":3}""",
+			"""{"a":[3,3,2,5],"n":3}""",
+			"""{"a":[5,3,2,5],"n":3}""",
+			"""{"a":[2,4,2,5],"n":3}""",
+			"""{"a":[4,4,2,5],"n":3}""",
+			"""{"a":[5,4,2,5],"n":3}""",
+			"""{"a":[1,5,2,5],"n":3}""",
+			"""{"a":[3,5,2,5],"n":3}""",
+			"""{"a":[4,5,2,5],"n":3}""",
+			"""{"a":[1,1,3,5],"n":3}""",
+			"""{"a":[3,1,3,5],"n":3}""",
+			"""{"a":[5,1,3,5],"n":3}""",
+			"""{"a":[2,2,3,5],"n":3}""",
+			"""{"a":[3,2,3,5],"n":3}""",
+			"""{"a":[5,2,3,5],"n":3}""",
+			"""{"a":[1,3,3,5],"n":3}""",
+			"""{"a":[2,3,3,5],"n":3}""",
+			"""{"a":[4,3,3,5],"n":3}""",
+			"""{"a":[3,4,3,5],"n":3}""",
+			"""{"a":[4,4,3,5],"n":3}""",
+			"""{"a":[5,4,3,5],"n":3}""",
+			"""{"a":[1,5,3,5],"n":3}""",
+			"""{"a":[2,5,3,5],"n":3}""",
+			"""{"a":[4,5,3,5],"n":3}""",
+			"""{"a":[1,1,4,5],"n":3}""",
+			"""{"a":[4,1,4,5],"n":3}""",
+			"""{"a":[5,1,4,5],"n":3}""",
+			"""{"a":[2,2,4,5],"n":3}""",
+			"""{"a":[4,2,4,5],"n":3}""",
+			"""{"a":[5,2,4,5],"n":3}""",
+			"""{"a":[3,3,4,5],"n":3}""",
+			"""{"a":[4,3,4,5],"n":3}""",
+			"""{"a":[5,3,4,5],"n":3}""",
+			"""{"a":[1,4,4,5],"n":3}""",
+			"""{"a":[2,4,4,5],"n":3}""",
+			"""{"a":[3,4,4,5],"n":3}""",
+			"""{"a":[1,5,4,5],"n":3}""",
+			"""{"a":[2,5,4,5],"n":3}""",
+			"""{"a":[3,5,4,5],"n":3}""",
+			"""{"a":[2,1,5,5],"n":3}""",
+			"""{"a":[3,1,5,5],"n":3}""",
+			"""{"a":[4,1,5,5],"n":3}""",
+			"""{"a":[1,2,5,5],"n":3}""",
+			"""{"a":[3,2,5,5],"n":3}""",
+			"""{"a":[4,2,5,5],"n":3}""",
+			"""{"a":[1,3,5,5],"n":3}""",
+			"""{"a":[2,3,5,5],"n":3}""",
+			"""{"a":[4,3,5,5],"n":3}""",
+			"""{"a":[1,4,5,5],"n":3}""",
+			"""{"a":[2,4,5,5],"n":3}""",
+			"""{"a":[3,4,5,5],"n":3}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/globals/nvalue/nvalue_total.mzn")]
-	public async Task test_solve_unit_globals_nvalue_nvalue_total()
-	{
-		var path = "unit/globals/nvalue/nvalue_total.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"l1":1}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Fact(DisplayName="unit/globals/regular/globals_regular.mzn")]
-	public async Task test_solve_unit_globals_regular_globals_regular()
-	{
-		var path = "unit/globals/regular/globals_regular.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""{"reg_input":[1,2,3,3,3,2,1],"reg_input2":[1,2,3,3,3,3,3,3,3,2,1]}""",
-			};
-		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
-	}
-
-	[Theory(DisplayName="examples/battleships_4.mzn")]
+	[Theory(DisplayName="unit/globals/range/globals_range.mzn")]
 	[InlineData("gecode")]
-	[InlineData("coin-bc")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_battleships_4(string solver)
+	public async Task test_solve_unit_globals_range_globals_range(string solver)
 	{
-		var path = "examples/battleships_4.mzn";
+		var path = "unit/globals/range/globals_range.mzn";
 		var solutions = new List<string> {
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,1,0,1,0,0],[0,0,0,0,0,2,0,2,0,0,0,0],[0,0,0,0,0,3,0,3,0,0,1,0],[0,1,2,0,0,4,0,0,0,0,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,1,0,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[2,1,0,0,5,2,3,1,4,2],"row_sums":[3,2,3,4,0,1,2,2,2,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,1,2,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,1,2,3,4,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1,0,2,0,0],[0,0,0,0,0,1,0,0,0,3,0,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[2,1,0,0,5,2,3,1,4,2],"row_sums":[3,2,3,4,0,1,2,2,2,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,1,0,0,1,0],[0,0,0,0,0,2,0,2,0,0,0,0],[0,1,0,0,0,3,0,3,0,0,0,0],[0,2,0,0,0,4,0,0,0,1,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,0,1,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[2,1,0,0,5,2,3,1,4,2],"row_sums":[3,2,3,4,0,1,2,2,2,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,2,3,0,0,0],[0,1,0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,1,2,3,0,0,0,0],[0,1,2,0,0,0,0,0,0,1,2,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0,0,0],[0,0,0,0,0,2,0,0,0,1,0,0],[0,0,0,0,0,3,0,0,0,2,0,0],[0,0,0,0,0,4,0,1,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[2,1,0,0,5,2,3,1,4,2],"row_sums":[3,2,3,4,0,1,2,2,2,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,1,2,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,2,0,0,1,0],[0,1,2,0,0,4,0,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0,0,2,0,0],[0,1,0,0,0,0,0,0,0,3,0,0],[0,0,0,0,0,1,2,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[2,1,0,0,5,2,3,1,4,2],"row_sums":[3,2,3,4,0,1,2,2,2,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,2,0],[0,1,2,0,0,1,0,0,0,0,0,0],[0,0,0,0,0,0,0,1,2,3,4,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,1,0,0,0,2,0,0],[0,0,0,0,0,2,0,1,0,0,0,0],[0,0,0,0,0,3,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[2,1,0,0,5,2,3,1,4,2],"row_sums":[3,2,3,4,0,1,2,2,2,1]}""",
+			"""{"range_avi1":[9,8,7]}""",
+			"""{"range_avi1":[8,9,7]}""",
+			"""{"range_avi1":[9,7,8]}""",
+			"""{"range_avi1":[7,9,8]}""",
+			"""{"range_avi1":[8,7,9]}""",
+			"""{"range_avi1":[7,8,9]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/battleships_7.mzn")]
+	[Theory(DisplayName="unit/globals/regular/globals_regular_regex_3.mzn")]
 	[InlineData("gecode")]
-	[InlineData("coin-bc")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_battleships_7(string solver)
+	public async Task test_solve_unit_globals_regular_globals_regular_regex_3(string solver)
 	{
-		var path = "examples/battleships_7.mzn";
+		var path = "unit/globals/regular/globals_regular_regex_3.mzn";
 		var solutions = new List<string> {
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,1,2,3,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,0,0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,0,0,2,0,0,0,0,1,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[3,1,4,3,2,2,1,1,2,1],"row_sums":[3,2,2,1,4,0,3,1,3,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,1,2,0,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,1,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[3,1,4,3,2,2,1,1,2,1],"row_sums":[3,2,2,1,4,0,3,1,3,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,1,0,1,0,0,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,1,2,0,0],[0,0,1,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[3,1,4,3,2,2,1,1,2,1],"row_sums":[3,2,2,1,4,0,3,1,3,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,0,1,2,3,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,1,0,1,0,0,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[3,1,4,3,2,2,1,1,2,1],"row_sums":[3,2,2,1,4,0,3,1,3,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,2,0,1,0,0,0,0,0,0,0,0],[0,0,0,2,0,1,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,1,2,3,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,1,0,0,0],[0,0,0,0,2,0,0,0,0,0,0,0],[0,1,2,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[3,1,4,3,2,2,1,1,2,1],"row_sums":[3,2,2,1,4,0,3,1,3,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,1,0,4,0,0,1,0,0,1,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,2,3,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,2,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[3,1,4,3,2,2,1,1,2,1],"row_sums":[3,2,2,1,4,0,3,1,3,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,1,2,3,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,1,0,0,1,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,2,0,2,0,0,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[3,1,4,3,2,2,1,1,2,1],"row_sums":[3,2,2,1,4,0,3,1,3,1]}""",
-			"""{"a":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,1,2,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,2,0,2,0,0,0,0,0,0],[0,0,0,3,0,0,0,0,0,0,0,0],[0,0,0,4,0,0,0,1,2,3,0,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,0,0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0],[0,1,0,0,2,0,1,0,0,0,0,0],[0,0,0,0,3,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0]],"col_sums":[3,1,4,3,2,2,1,1,2,1],"row_sums":[3,2,2,1,4,0,3,1,3,1]}""",
+			"""{"x":[1,4,1,4]}""",
+			"""{"x":[1,4,2,4]}""",
+			"""{"x":[1,4,3,4]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/factory_planning_instance.mzn")]
+	[Theory(DisplayName="unit/globals/regular/globals_regular_regex_5.mzn")]
 	[InlineData("gecode")]
-	[InlineData("coin-bc")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_factory_planning_instance(string solver)
+	public async Task test_solve_unit_globals_regular_globals_regular_regex_5(string solver)
 	{
-		var path = "examples/factory_planning_instance.mzn";
+		var path = "unit/globals/regular/globals_regular_regex_5.mzn";
 		var solutions = new List<string> {
-			"""{"last_step":5}""",
+			"""{"x":[1,2]}""",
+			"""{"x":[2,2]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/knights.mzn")]
+	[Theory(DisplayName="unit/globals/roots/test_roots2.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_knights(string solver)
+	public async Task test_solve_unit_globals_roots_test_roots2(string solver)
 	{
-		var path = "examples/knights.mzn";
+		var path = "unit/globals/roots/test_roots2.mzn";
 		var solutions = new List<string> {
-			"""{"p":[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14]}""",
+			"""{"s":{"_set_":"{1,2,3,4,5}"},"t":{"_set_":"{1,2,3,4,5}"}}""",
+			"""{"s":{"_set_":"{1,2,3,4,5}"},"t":{"_set_":"{1,2,3,4}"}}""",
+			"""{"s":{"_set_":"{1,2,3,4,5}"},"t":{"_set_":"{1,2,3,5}"}}""",
+			"""{"s":{"_set_":"{1,2,3,4,5}"},"t":{"_set_":"{1,2,3}"}}""",
+			"""{"s":{"_set_":"{1,2,3,5}"},"t":{"_set_":"{1,3,4,5}"}}""",
+			"""{"s":{"_set_":"{1,2,3,5}"},"t":{"_set_":"{1,3,4}"}}""",
+			"""{"s":{"_set_":"{1,2,3,5}"},"t":{"_set_":"{1,3,5}"}}""",
+			"""{"s":{"_set_":"{1,2,3,5}"},"t":{"_set_":"{1,3}"}}""",
+			"""{"s":{"_set_":"{1,3,4}"},"t":{"_set_":"{1,2,4,5}"}}""",
+			"""{"s":{"_set_":"{1,3,4}"},"t":{"_set_":"{1,2,4}"}}""",
+			"""{"s":{"_set_":"{1,3,4}"},"t":{"_set_":"{1,2,5}"}}""",
+			"""{"s":{"_set_":"{1,3,4}"},"t":{"_set_":"{1,2}"}}""",
+			"""{"s":{"_set_":"{1,3}"},"t":{"_set_":"{1,4,5}"}}""",
+			"""{"s":{"_set_":"{1,3}"},"t":{"_set_":"{1,4}"}}""",
+			"""{"s":{"_set_":"{1,3}"},"t":{"_set_":"{1,5}"}}""",
+			"""{"s":{"_set_":"{1,3}"},"t":{"_set_":"{1}"}}""",
+			"""{"s":{"_set_":"{2,4,5}"},"t":{"_set_":"{2,3,4,5}"}}""",
+			"""{"s":{"_set_":"{2,4,5}"},"t":{"_set_":"{2,3,4}"}}""",
+			"""{"s":{"_set_":"{2,4,5}"},"t":{"_set_":"{2,3,5}"}}""",
+			"""{"s":{"_set_":"{2,4,5}"},"t":{"_set_":"{2,3}"}}""",
+			"""{"s":{"_set_":"{2,5}"},"t":{"_set_":"{3,4,5}"}}""",
+			"""{"s":{"_set_":"{2,5}"},"t":{"_set_":"{3,4}"}}""",
+			"""{"s":{"_set_":"{2,5}"},"t":{"_set_":"{3,5}"}}""",
+			"""{"s":{"_set_":"{2,5}"},"t":{"_set_":"{3}"}}""",
+			"""{"s":{"_set_":"{4}"},"t":{"_set_":"{2,4,5}"}}""",
+			"""{"s":{"_set_":"{4}"},"t":{"_set_":"{2,4}"}}""",
+			"""{"s":{"_set_":"{4}"},"t":{"_set_":"{2,5}"}}""",
+			"""{"s":{"_set_":"{4}"},"t":{"_set_":"{2}"}}""",
+			"""{"s":{"_set_":"{}"},"t":{"_set_":"{4,5}"}}""",
+			"""{"s":{"_set_":"{}"},"t":{"_set_":"{4}"}}""",
+			"""{"s":{"_set_":"{}"},"t":{"_set_":"{5}"}}""",
+			"""{"s":{"_set_":"{}"},"t":{"_set_":"{}"}}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/magicsq_4.mzn")]
+	[Theory(DisplayName="unit/globals/strict_lex2/globals_strict_lex2.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_magicsq_4(string solver)
+	public async Task test_solve_unit_globals_strict_lex2_globals_strict_lex2(string solver)
 	{
-		var path = "examples/magicsq_4.mzn";
+		var path = "unit/globals/strict_lex2/globals_strict_lex2.mzn";
 		var solutions = new List<string> {
-			"""{"a":[[16,1,15,2],[5,8,10,11],[4,13,3,14],[9,12,6,7]]}""",
-			"""{"a":[[12,1,14,7],[15,4,9,6],[2,13,8,11],[5,16,3,10]]}""",
-			"""{"a":[[10,5,11,8],[6,9,7,12],[3,4,14,13],[15,16,2,1]]}""",
-			"""{"a":[[10,11,5,8],[6,7,9,12],[3,2,16,13],[15,14,4,1]]}""",
-			"""{"a":[[16,2,9,7],[3,13,6,12],[5,11,4,14],[10,8,15,1]]}""",
-			"""{"a":[[8,11,6,9],[13,7,10,4],[12,14,3,5],[1,2,15,16]]}""",
+			"""{"y":[[1,2],[2,1]]}""",
+			"""{"y":[[1,1],[1,2]]}""",
+			"""{"y":[[1,2],[2,2]]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/magicsq_5.mzn")]
+	[Theory(DisplayName="unit/globals/subcircuit/test_subcircuit.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_magicsq_5(string solver)
+	public async Task test_solve_unit_globals_subcircuit_test_subcircuit(string solver)
 	{
-		var path = "examples/magicsq_5.mzn";
+		var path = "unit/globals/subcircuit/test_subcircuit.mzn";
 		var solutions = new List<string> {
-			"""{"a":[[20,7,3,24,11],[4,19,14,10,18],[6,9,17,21,12],[13,5,16,8,23],[22,25,15,2,1]]}""",
-			"""{"a":[[16,5,4,17,23],[9,18,8,6,24],[12,7,11,21,14],[13,10,20,19,3],[15,25,22,2,1]]}""",
-			"""{"a":[[7,5,9,21,23],[19,14,22,6,4],[25,24,11,3,2],[1,12,15,17,20],[13,10,8,18,16]]}""",
-			"""{"a":[[23,5,13,17,7],[3,21,9,14,18],[6,4,12,24,19],[11,10,16,8,20],[22,25,15,2,1]]}""",
-			"""{"a":[[25,5,9,3,23],[4,24,15,14,8],[20,7,1,16,21],[6,17,18,13,11],[10,12,22,19,2]]}""",
-			"""{"a":[[11,21,17,10,6],[22,8,12,19,4],[16,15,18,9,7],[14,20,5,3,23],[2,1,13,24,25]]}""",
+			"""{"x":[1,2,3,4]}""",
+			"""{"x":[2,1,3,4]}""",
+			"""{"x":[1,4,3,2]}""",
+			"""{"x":[4,2,3,1]}""",
+			"""{"x":[2,4,3,1]}""",
+			"""{"x":[4,1,3,2]}""",
+			"""{"x":[1,2,4,3]}""",
+			"""{"x":[1,3,2,4]}""",
+			"""{"x":[1,3,4,2]}""",
+			"""{"x":[1,4,2,3]}""",
+			"""{"x":[3,2,1,4]}""",
+			"""{"x":[4,2,1,3]}""",
+			"""{"x":[3,2,4,1]}""",
+			"""{"x":[2,3,1,4]}""",
+			"""{"x":[3,1,2,4]}""",
+			"""{"x":[4,3,1,2]}""",
+			"""{"x":[2,3,4,1]}""",
+			"""{"x":[3,4,2,1]}""",
+			"""{"x":[4,1,2,3]}""",
+			"""{"x":[2,4,1,3]}""",
+			"""{"x":[3,1,4,2]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/oss.mzn")]
+	[Theory(DisplayName="unit/globals/table/globals_table_opt.mzn")]
 	[InlineData("gecode")]
-	[InlineData("coin-bc")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_oss(string solver)
+	public async Task test_solve_unit_globals_table_globals_table_opt(string solver)
 	{
-		var path = "examples/oss.mzn";
+		var path = "unit/globals/table/globals_table_opt.mzn";
 		var solutions = new List<string> {
-			"""{"makespan":1168,"objective":1168,"start":[[507,0,6],[0,168,663],[168,663,339]]}""",
-			"""{"makespan":1168,"objective":1168,"start":[[333,1162,0],[1000,0,657],[0,657,333]]}""",
-			"""{"makespan":1168,"objective":1168,"start":[[339,0,6],[0,168,663],[168,663,339]]}""",
-			"""{"makespan":1168,"objective":1168,"start":[[0,1162,829],[1000,505,0],[829,0,505]]}""",
-			"""{"makespan":1168,"objective":1168,"start":[[339,1162,0],[1000,168,657],[161,657,333]]}""",
-			"""{"makespan":1168,"objective":1168,"start":[[503,0,6],[0,169,820],[168,663,339]]}""",
-			"""{"makespan":1168,"objective":1168,"start":[[507,0,6],[0,174,825],[168,663,339]]}""",
+			"""{"xs":[3,5]}""",
+			"""{"xs":[4,5]}""",
+			"""{"xs":[5,5]}""",
+			"""{"xs":[3,null]}""",
+			"""{"xs":[4,null]}""",
+			"""{"xs":[5,null]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/packing.mzn")]
+	[Theory(DisplayName="unit/globals/value_precede/globals_value_precede_int.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_packing(string solver)
+	public async Task test_solve_unit_globals_value_precede_globals_value_precede_int(string solver)
 	{
-		var path = "examples/packing.mzn";
+		var path = "unit/globals/value_precede/globals_value_precede_int.mzn";
 		var solutions = new List<string> {
-			"""{"x":[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50],"y":[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63]}""",
+			"""{"x":[1,1,3]}""",
+			"""{"x":[1,3,3]}""",
+			"""{"x":[1,4,3]}""",
+			"""{"x":[3,1,3]}""",
+			"""{"x":[3,3,3]}""",
+			"""{"x":[3,4,3]}""",
+			"""{"x":[4,1,3]}""",
+			"""{"x":[4,2,3]}""",
+			"""{"x":[4,3,3]}""",
+			"""{"x":[4,4,3]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/template_design.mzn")]
+	[Theory(DisplayName="unit/globals/value_precede/globals_value_precede_int_opt.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_template_design(string solver)
+	public async Task test_solve_unit_globals_value_precede_globals_value_precede_int_opt(string solver)
 	{
-		var path = "examples/template_design.mzn";
+		var path = "unit/globals/value_precede/globals_value_precede_int_opt.mzn";
 		var solutions = new List<string> {
-			"""{"Production":442,"R":[167,275],"Surplus":313,"objective":442,"p":[[0,1],[2,0],[1,1],[3,0],[3,0],[0,3],[0,4]]}""",
+			"""{"x":[null,null,null]}""",
+			"""{"x":[1,null,null]}""",
+			"""{"x":[3,null,null]}""",
+			"""{"x":[null,1,null]}""",
+			"""{"x":[null,3,null]}""",
+			"""{"x":[1,1,null]}""",
+			"""{"x":[1,2,null]}""",
+			"""{"x":[1,3,null]}""",
+			"""{"x":[3,1,null]}""",
+			"""{"x":[3,3,null]}""",
+			"""{"x":[null,null,1]}""",
+			"""{"x":[null,null,3]}""",
+			"""{"x":[1,null,1]}""",
+			"""{"x":[1,null,2]}""",
+			"""{"x":[1,null,3]}""",
+			"""{"x":[3,null,1]}""",
+			"""{"x":[3,null,3]}""",
+			"""{"x":[null,1,1]}""",
+			"""{"x":[null,1,2]}""",
+			"""{"x":[null,1,3]}""",
+			"""{"x":[null,3,1]}""",
+			"""{"x":[null,3,3]}""",
+			"""{"x":[1,1,1]}""",
+			"""{"x":[1,2,1]}""",
+			"""{"x":[1,3,1]}""",
+			"""{"x":[1,1,2]}""",
+			"""{"x":[1,2,2]}""",
+			"""{"x":[1,3,2]}""",
+			"""{"x":[1,1,3]}""",
+			"""{"x":[1,2,3]}""",
+			"""{"x":[1,3,3]}""",
+			"""{"x":[3,1,1]}""",
+			"""{"x":[3,1,2]}""",
+			"""{"x":[3,1,3]}""",
+			"""{"x":[3,3,1]}""",
+			"""{"x":[3,3,3]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Theory(DisplayName="examples/wolf_goat_cabbage.mzn")]
+	[Theory(DisplayName="unit/globals/value_precede/globals_value_precede_set.mzn")]
 	[InlineData("gecode")]
 	[InlineData("chuffed")]
-	public async Task test_solve_examples_wolf_goat_cabbage_2(string solver)
+	public async Task test_solve_unit_globals_value_precede_globals_value_precede_set(string solver)
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
+		var path = "unit/globals/value_precede/globals_value_precede_set.mzn";
 		var solutions = new List<string> {
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[false,true,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[false,true,false],[true,false,false],[false,true,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
-			"""{"cabbage":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]],"farmer":[[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]],"goat":[[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[false,true,false],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[false,true,false],[true,false,false],[true,false,false]],"wolf":[[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,false,true],[false,true,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false],[true,false,false]]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2,3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2,3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2,3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2,3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2,3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2,3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2,3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,2}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,2}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2,3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{2}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{2}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{2,3}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"},{"_set_":"{}"}]}""",
 			};
 		var args = new List<string>();
-		await TestAllSolutions(path, solver, solutions, args);
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/value_precede_chain/globals_value_precede_chain_int.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_value_precede_chain_globals_value_precede_chain_int(string solver)
+	{
+		var path = "unit/globals/value_precede_chain/globals_value_precede_chain_int.mzn";
+		var solutions = new List<string> {
+			"""{"x":[1,1,1]}""",
+			"""{"x":[4,1,1]}""",
+			"""{"x":[4,1,3]}""",
+			"""{"x":[1,1,4]}""",
+			"""{"x":[4,1,4]}""",
+			"""{"x":[4,3,1]}""",
+			"""{"x":[4,3,2]}""",
+			"""{"x":[4,3,3]}""",
+			"""{"x":[4,3,4]}""",
+			"""{"x":[1,4,1]}""",
+			"""{"x":[4,4,1]}""",
+			"""{"x":[1,4,3]}""",
+			"""{"x":[4,4,3]}""",
+			"""{"x":[1,4,4]}""",
+			"""{"x":[4,4,4]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/value_precede_chain/globals_value_precede_chain_int_opt.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_value_precede_chain_globals_value_precede_chain_int_opt(string solver)
+	{
+		var path = "unit/globals/value_precede_chain/globals_value_precede_chain_int_opt.mzn";
+		var solutions = new List<string> {
+			"""{"x":[null,null,null]}""",
+			"""{"x":[null,null,1]}""",
+			"""{"x":[null,null,4]}""",
+			"""{"x":[1,null,null]}""",
+			"""{"x":[4,null,null]}""",
+			"""{"x":[1,null,1]}""",
+			"""{"x":[1,null,4]}""",
+			"""{"x":[4,null,1]}""",
+			"""{"x":[4,null,3]}""",
+			"""{"x":[4,null,4]}""",
+			"""{"x":[null,1,null]}""",
+			"""{"x":[null,4,null]}""",
+			"""{"x":[1,1,null]}""",
+			"""{"x":[1,4,null]}""",
+			"""{"x":[4,1,null]}""",
+			"""{"x":[4,3,null]}""",
+			"""{"x":[4,4,null]}""",
+			"""{"x":[null,1,1]}""",
+			"""{"x":[null,1,4]}""",
+			"""{"x":[null,4,1]}""",
+			"""{"x":[null,4,3]}""",
+			"""{"x":[null,4,4]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/value_precede_chain/globals_value_precede_chain_set.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_value_precede_chain_globals_value_precede_chain_set(string solver)
+	{
+		var path = "unit/globals/value_precede_chain/globals_value_precede_chain_set.mzn";
+		var solutions = new List<string> {
+			"""{"x":[{"_set_":"{1,2,3,4}"},{"_set_":"{1,2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{1,2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{1,2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{2,3,4}"},{"_set_":"{1,2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{1,2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{1,2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{1,2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{1,2,4}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{1,2,4}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{1,2}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3,4}"},{"_set_":"{1,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{1,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{1,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,3,4}"}]}""",
+			"""{"x":[{"_set_":"{2,3,4}"},{"_set_":"{1,3,4}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{1,3,4}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{1,3,4}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{1,3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3,4}"},{"_set_":"{1,4}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{1,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{1,4}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1,4}"}]}""",
+			"""{"x":[{"_set_":"{2,3,4}"},{"_set_":"{1,4}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{1,4}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{1,4}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1,4}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3,4}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{2,3,4}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{1}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3,4}"},{"_set_":"{2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{2,3,4}"},{"_set_":"{2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{2,3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{2,3}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{2,4}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{2,4}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{2}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3,4}"},{"_set_":"{3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{3,4}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{3,4}"}]}""",
+			"""{"x":[{"_set_":"{2,3,4}"},{"_set_":"{3,4}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{3,4}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{3,4}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{3,4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{3}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3,4}"},{"_set_":"{4}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{4}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{4}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{4}"}]}""",
+			"""{"x":[{"_set_":"{2,3,4}"},{"_set_":"{4}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{4}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{4}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{4}"}]}""",
+			"""{"x":[{"_set_":"{1,2,3,4}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,3,4}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1,4}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{1}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{2,3,4}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{3,4}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{4}"},{"_set_":"{}"}]}""",
+			"""{"x":[{"_set_":"{}"},{"_set_":"{}"}]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
+
+	[Theory(DisplayName="unit/globals/var_sqr_sym/globals_var_sqr_sym.mzn")]
+	[InlineData("gecode")]
+	[InlineData("chuffed")]
+	public async Task test_solve_unit_globals_var_sqr_sym_globals_var_sqr_sym(string solver)
+	{
+		var path = "unit/globals/var_sqr_sym/globals_var_sqr_sym.mzn";
+		var solutions = new List<string> {
+			"""{"x":[[1,3],[4,2]]}""",
+			"""{"x":[[1,2],[4,3]]}""",
+			"""{"x":[[1,2],[3,4]]}""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = true;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 }

@@ -54,9 +54,9 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
                 return a.Value == b.Value;
             case (EmptyLiteralSyntax, EmptyLiteralSyntax):
                 return true;
-            case (ConstraintSyntax a, ConstraintSyntax b):
+            case (ConstraintStatement a, ConstraintStatement b):
                 return a.Expr.Equals(b.Expr);
-            case (IncludeSyntax a, IncludeSyntax b):
+            case (IncludeStatement a, IncludeStatement b):
                 return a.Path.Equals(b.Path);
             case (AssignmentSyntax a, AssignmentSyntax b):
                 if (!a.Identifier.Equals(b.Identifier))
@@ -64,7 +64,7 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
                 if (!a.Expr.Equals(b.Expr))
                     return false;
                 return true;
-            case (DeclarationSyntax a, DeclarationSyntax b):
+            case (DeclareStatement a, DeclareStatement b):
                 if (!a.Identifier.Equals(b.Identifier))
                     return false;
                 if (!a.Type.Equals(b.Type))
@@ -72,7 +72,7 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
                 if (!object.Equals(a.Body, b.Body))
                     return false;
                 return true;
-            case (SolveSyntax a, SolveSyntax b):
+            case (SolveStatement a, SolveStatement b):
                 if (a.Method != b.Method)
                     return false;
                 if (!object.Equals(a.Objective, b.Objective))

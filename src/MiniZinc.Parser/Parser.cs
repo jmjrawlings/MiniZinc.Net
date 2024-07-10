@@ -40,6 +40,19 @@ public sealed class Parser
             goto next;
     }
 
+    private Token Peek()
+    {
+        for (int j = _i; j < _tokens.Length; j++)
+        {
+            var token = _tokens[j];
+            if (token.Kind is TokenKind.LINE_COMMENT or TokenKind.BLOCK_COMMENT)
+                continue;
+            return token;
+        }
+
+        return default;
+    }
+
     /// Progress the parser if the current token is of the given kind
     private bool Skip(TokenKind kind)
     {
@@ -102,7 +115,7 @@ public sealed class Parser
         return false;
     }
 
-    private bool ParseIdent(out IdentifierSyntax node)
+    private bool ParseIdent([NotNullWhen(true)] out IdentifierSyntax? node)
     {
         if (_kind is TokenKind.IDENTIFIER)
         {
@@ -112,7 +125,7 @@ public sealed class Parser
         }
         else
         {
-            node = null!;
+            node = null;
             return Expected("Identifier");
         }
     }
@@ -168,53 +181,54 @@ public sealed class Parser
                 break;
 
             case TokenKind.CONSTRAINT:
-                if (!ParseConstraintItem(out statement))
+                if (!ParseConstraintStatement(out statement))
                     return false;
                 break;
 
             case TokenKind.SOLVE:
-                if (!ParseSolveItem(out statement))
+                if (!ParseSolveStatement(out statement))
                     return false;
                 break;
 
             case TokenKind.OUTPUT:
-                if (!ParseOutputItem(out statement))
+                if (!ParseOutputStatement(out statement))
                     return false;
                 break;
 
             case TokenKind.ENUM:
-                if (!ParseEnumItem(out statement))
+                if (!ParseEnumStatement(out statement))
                     return false;
                 break;
 
             case TokenKind.TYPE:
-                if (!ParseAliasItem(out statement))
+                if (!ParseTypeAliasStatement(out statement))
                     return false;
                 break;
 
             case TokenKind.FUNCTION:
-                if (!ParseFunctionItem(out statement))
+                if (!ParseFunctionStatement(out statement))
                     return false;
                 break;
 
             case TokenKind.PREDICATE:
-                if (!ParsePredicateItem(out statement))
+                if (!ParsePredicateStatement(out statement))
                     return false;
                 break;
 
             case TokenKind.TEST:
-                if (!ParseTestItem(out statement))
+                if (!ParseTestStatement(out statement))
                     return false;
                 break;
 
             case TokenKind.ANNOTATION:
-                if (!ParseAnnotationItem(out statement))
+                if (!ParseAnnotationStatement(out statement))
                     return false;
                 break;
 
             default:
-                if (!ParseDeclareOrAssign(out statement))
+                if (!ParseDeclareStatement(out statement))
                     return false;
+
                 break;
         }
 
@@ -267,7 +281,7 @@ public sealed class Parser
     /// Parse a predicate declaration
     /// </summary>
     /// <mzn>predicate ok(int: x) = x > 0;</mzn>
-    private bool ParsePredicateItem([NotNullWhen(true)] out StatementSyntax? node)
+    private bool ParsePredicateStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
         if (!Expect(TokenKind.PREDICATE, out var start))
@@ -289,7 +303,7 @@ public sealed class Parser
     /// Parse a test declaration
     /// </summary>
     /// <mzn>predicate ok(int: x) = x > 0;</mzn>
-    private bool ParseTestItem([NotNullWhen(true)] out StatementSyntax? node)
+    private bool ParseTestStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
         if (!Expect(TokenKind.TEST, out var start))
@@ -311,7 +325,7 @@ public sealed class Parser
     /// Parse a function declaration
     /// </summary>
     /// <mzn>function bool: opposite(bool: x) = not x;</mzn>
-    private bool ParseFunctionItem([NotNullWhen(true)] out StatementSyntax? node)
+    private bool ParseFunctionStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
         if (!Expect(TokenKind.FUNCTION, out var start))
@@ -343,7 +357,7 @@ public sealed class Parser
         in IdentifierSyntax identifier,
         in TypeSyntax type,
         in DeclareKind kind,
-        out DeclarationSyntax node
+        out DeclareStatement node
     )
     {
         node = null!;
@@ -374,7 +388,7 @@ public sealed class Parser
             if (!ParseExpr(out body))
                 return false;
 
-        node = new DeclarationSyntax(start, kind, type, identifier)
+        node = new DeclareStatement(start, kind, type, identifier)
         {
             Annotations = anns,
             Ann = ann,
@@ -389,7 +403,7 @@ public sealed class Parser
     /// </summary>
     /// <mzn>annotation custom;</mzn>
     /// <mzn>annotation custom(int: x);</mzn>
-    private bool ParseAnnotationItem([NotNullWhen(true)] out StatementSyntax? ann)
+    private bool ParseAnnotationStatement([NotNullWhen(true)] out StatementSyntax? ann)
     {
         ann = null;
         if (!Expect(TokenKind.ANNOTATION, out var start))
@@ -413,7 +427,7 @@ public sealed class Parser
     /// <mzn>enum Dir = {N,S,E,W};</mzn>
     /// <mzn>enum Z = anon_enum(10);</mzn>
     /// <mzn>enum X = Q({1,2});</mzn>
-    internal bool ParseEnumItem([NotNullWhen(true)] out StatementSyntax? result)
+    internal bool ParseEnumStatement([NotNullWhen(true)] out StatementSyntax? result)
     {
         result = null;
         if (!Expect(TokenKind.ENUM, out var start))
@@ -428,7 +442,7 @@ public sealed class Parser
         // Enum without assignments are valid
         if (!Skip(TokenKind.EQUAL))
         {
-            result = new DeclarationSyntax(start, DeclareKind.Enum, null, name)
+            result = new DeclareStatement(start, DeclareKind.Enum, null, name)
             {
                 Annotations = anns
             };
@@ -438,7 +452,7 @@ public sealed class Parser
         if (!ParseEnumCases(out var cases))
             return false;
 
-        result = new DeclarationSyntax(start, DeclareKind.Enum, null, name)
+        result = new DeclareStatement(start, DeclareKind.Enum, null, name)
         {
             Annotations = anns,
             Body = cases
@@ -512,7 +526,7 @@ public sealed class Parser
     /// Parse an Output Item
     /// </summary>
     /// <mzn>output ["The result is \(result)"];</mzn>
-    internal bool ParseOutputItem([NotNullWhen(true)] out StatementSyntax? node)
+    internal bool ParseOutputStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
 
@@ -525,7 +539,7 @@ public sealed class Parser
         if (!ParseExpr(out var expr))
             return false;
 
-        node = new OutputSyntax(start, expr) { Annotations = anns };
+        node = new OutputStatement(start, expr) { Annotations = anns };
         return true;
     }
 
@@ -533,7 +547,7 @@ public sealed class Parser
     /// Parse a type alias
     /// </summary>
     /// <mzn>type X = 1 .. 10;</mzn>
-    internal bool ParseAliasItem([NotNullWhen(true)] out StatementSyntax? alias)
+    internal bool ParseTypeAliasStatement([NotNullWhen(true)] out StatementSyntax? alias)
     {
         alias = null;
 
@@ -552,10 +566,7 @@ public sealed class Parser
         if (!ParseType(out var type))
             return false;
 
-        alias = new DeclarationSyntax(start, DeclareKind.TypeAlias, type, name)
-        {
-            Annotations = anns
-        };
+        alias = new TypeAliasSyntax(start, name, type) { Annotations = anns };
         return true;
     }
 
@@ -573,7 +584,7 @@ public sealed class Parser
         if (!ParseString(out var path))
             return false;
 
-        node = new IncludeSyntax(token, path);
+        node = new IncludeStatement(token, path);
         return true;
     }
 
@@ -582,7 +593,7 @@ public sealed class Parser
     /// </summary>
     /// <mzn>solve satisfy;</mzn>
     /// <mzn>solve maximize a;</mzn>
-    internal bool ParseSolveItem([NotNullWhen(true)] out StatementSyntax? node)
+    internal bool ParseSolveStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
 
@@ -619,7 +630,7 @@ public sealed class Parser
                 return Error("Expected satisfy, minimize, or maximize");
         }
 
-        node = new SolveSyntax(start, method, objective) { Annotations = anns };
+        node = new SolveStatement(start, method, objective) { Annotations = anns };
         return true;
     }
 
@@ -627,7 +638,7 @@ public sealed class Parser
     /// Parse a constraint
     /// </summary>
     /// <mzn>constraint a > b;</mzn>
-    internal bool ParseConstraintItem([NotNullWhen(true)] out StatementSyntax? constraint)
+    internal bool ParseConstraintStatement([NotNullWhen(true)] out StatementSyntax? constraint)
     {
         constraint = null;
 
@@ -640,7 +651,7 @@ public sealed class Parser
         if (!ParseExpr(out var expr))
             return false;
 
-        constraint = new ConstraintSyntax(start, expr) { Annotations = anns };
+        constraint = new ConstraintStatement(start, expr) { Annotations = anns };
         return IsOk;
     }
 
@@ -650,61 +661,44 @@ public sealed class Parser
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
     /// <mzn>$T: identity($T: x) = x;</mzn>
-    internal bool ParseDeclareOrAssign([NotNullWhen(true)] out StatementSyntax? node)
+    internal bool ParseDeclareStatement([NotNullWhen(true)] out StatementSyntax? statement)
     {
-        node = null;
+        statement = null;
         var start = _token;
-        TypeSyntax? type = null;
-        IdentifierSyntax ident;
+        TypeSyntax? type;
 
-        if (Skip(TokenKind.IDENTIFIER))
+        if (_kind is TokenKind.IDENTIFIER && Peek().Kind is TokenKind.EQUAL)
         {
-            if (_kind is TokenKind.EQUAL)
-            {
-                ident = new IdentifierSyntax(start);
-                goto tail;
-            }
-            else
-            {
-                type = new IdentifierTypeSyntax(start, new IdentifierSyntax(start))
-                {
-                    Kind = TypeKind.Name
-                };
-            }
+            ParseIdent(out var name);
+            Step();
+            if (!ParseExpr(out var expr))
+                return false;
+
+            statement = new AssignmentSyntax(name, expr);
+            return true;
         }
         else if (Skip(TokenKind.ANY))
+        {
             type = new TypeSyntax(start) { Kind = TypeKind.Any };
+        }
         else if (!ParseType(out type))
+        {
             return false;
+        }
 
         if (!Expect(TokenKind.COLON))
             return false;
 
-        if (!ParseIdent(out ident))
+        if (!ParseIdent(out var ident))
             return false;
 
-        tail:
-        if (type is null)
-        {
-            if (!ParseAnnotations(out var anns))
-                return false;
-
-            if (!Skip(TokenKind.EQUAL))
-                return Expected("=");
-
-            if (!ParseExpr(out var value))
-                return false;
-
-            node = new AssignmentSyntax(ident, value) { Annotations = anns };
-            return true;
-        }
         if (!ParseDeclareTail(start, ident, type, DeclareKind.Value, out var dec))
             return false;
 
         if (dec.Body is null && dec.Type.Kind is TypeKind.Any)
             return Expected("=");
 
-        node = dec;
+        statement = dec;
         return true;
     }
 
@@ -1665,16 +1659,16 @@ public sealed class Parser
         result = null!;
         if (_kind is TokenKind.CONSTRAINT)
         {
-            if (ParseConstraintItem(out var con))
+            if (ParseConstraintStatement(out var con))
             {
-                result = (ConstraintSyntax)con;
+                result = (ConstraintStatement)con;
                 return true;
             }
 
             return false;
         }
 
-        if (!ParseDeclareOrAssign(out var node))
+        if (!ParseDeclareStatement(out var node))
             return false;
 
         result = (ILetLocalSyntax)node;
@@ -2395,6 +2389,21 @@ public sealed class Parser
         if (statement is not T t)
             return false;
         result = t;
+        return true;
+    }
+
+    /// Parse an expression of the given type from text
+    public static bool TryParseExpression<T>(string text, [NotNullWhen(true)] out T? expression)
+        where T : ExpressionSyntax
+    {
+        expression = null;
+        var parser = new Parser(text);
+        if (!parser.ParseExpr(out var expr))
+            return false;
+
+        if (expr is not T t)
+            return false;
+        expression = t;
         return true;
     }
 }

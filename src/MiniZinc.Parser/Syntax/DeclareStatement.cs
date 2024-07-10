@@ -5,7 +5,7 @@
 /// </summary>
 /// <mzn>int: a = 10</mzn>
 /// <mzn>var int: a = 10</mzn>
-public sealed class DeclarationSyntax : StatementSyntax, ILetLocalSyntax, IIdentifiedSyntax
+public sealed class DeclareStatement : StatementSyntax, ILetLocalSyntax, IIdentifiedSyntax
 {
     public IdentifierSyntax Identifier { get; }
 
@@ -15,6 +15,9 @@ public sealed class DeclarationSyntax : StatementSyntax, ILetLocalSyntax, IIdent
 
     public ExpressionSyntax? Body { get; set; }
 
+    /// <summary>
+    /// Typed parameter list if this is a function-like declaration
+    /// </summary>
     public List<ParameterSyntax>? Parameters { get; set; }
 
     public IdentifierSyntax? Ann { get; init; }
@@ -28,7 +31,7 @@ public sealed class DeclarationSyntax : StatementSyntax, ILetLocalSyntax, IIdent
     /// </summary>
     /// <mzn>int: a = 10</mzn>
     /// <mzn>var int: a = 10</mzn>
-    public DeclarationSyntax(
+    public DeclareStatement(
         in Token start,
         DeclareKind kind,
         TypeSyntax? type,

@@ -37,7 +37,7 @@ public abstract class ClientTestsBuilder : TestBuilder
 
     protected void WriteSection() => WriteMessage("new string('-',80)");
 
-    protected IDisposable WriteTestHeader(TestCaseInfo info)
+    protected void WriteTest(TestCaseInfo info)
     {
         IDisposable block;
         if (info.Solvers.Count > 1)
@@ -103,7 +103,59 @@ public abstract class ClientTestsBuilder : TestBuilder
             }
             WriteLn("};");
         }
-        return block;
+
+        if (info.ErrorMessage is { } err)
+            Declare("string", "error", $"\"{err}\"");
+        else if (info.ErrorRegex is { } regex)
+            Declare("string", "error", $"\"{regex.Replace("\\", "")}\"");
+        else
+            Declare("string?", "error", null);
+
+        Var("allSolutions", info.Type is TestType.AllSolutions ? "true" : "false");
+
+        WriteLn("var statuses = new List<SolveStatus>{");
+        using (Indent())
+        {
+            switch (info.Type)
+            {
+                case TestType.Compile:
+                    break;
+                case TestType.Satisfy:
+                    WriteLn("SolveStatus.Satisfied,SolveStatus.Optimal");
+                    break;
+                case TestType.AnySolution:
+                    WriteLn("SolveStatus.Satisfied,SolveStatus.Optimal");
+                    break;
+                case TestType.AllSolutions:
+                    WriteLn("SolveStatus.Satisfied,SolveStatus.Optimal");
+                    break;
+                case TestType.Optimise:
+                    WriteLn("SolveStatus.Optimal");
+                    break;
+                case TestType.OutputModel:
+                    break;
+                case TestType.Unsatisfiable:
+                    WriteLn("SolveStatus.Unsatisfiable");
+                    break;
+                case TestType.Error:
+                    break;
+                case TestType.AssertionError:
+                    break;
+                case TestType.EvaluationError:
+                    break;
+                case TestType.MiniZincError:
+                    break;
+                case TestType.TypeError:
+                    break;
+                case TestType.SyntaxError:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        WriteLn("};");
+        WriteLn("await Test(path, solver, solutions, args, error, allSolutions, statuses);");
+        block.Dispose();
     }
 
     private string FormatDzn(string s)

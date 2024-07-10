@@ -32,8 +32,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     async void test_solve_satisfy_result()
     {
         var model = new IntModel();
-        var a = model.IntVar("a", 10, 20);
-        var b = model.IntVar("b", 10, 20);
+        var a = model.AddInt("a", 10, 20);
+        var b = model.AddInt("b", 10, 20);
         model.AddConstraint(a < b);
         var result = await Client.Solve(model);
         var aval = result.GetInt(a);
@@ -54,8 +54,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     async void test_solve_maximize_result()
     {
         var model = new IntModel();
-        model.Var("a", "10..20");
-        model.Var("b", "10..20");
+        model.AddVariable("a", "10..20");
+        model.AddVariable("b", "10..20");
         model.Maximize("a + b");
         var result = await Client.Solve(model);
         result.Status.Should().Be(SolveStatus.Optimal);
@@ -78,8 +78,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     async void test_solve_satisfy_foreach()
     {
         var model = new IntModel();
-        model.Var("a", "10..20");
-        model.Var("b", "10..20");
+        model.AddVariable("a", "10..20");
+        model.AddVariable("b", "10..20");
         await foreach (var result in Client.Solve(model))
         {
             var a = result.GetInt("a");
@@ -92,8 +92,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     async void test_model_replace_objective()
     {
         var model = new IntModel();
-        model.IntVar("a", 0, 10);
-        model.IntVar("b", 0, 10);
+        model.AddInt("a", 0, 10);
+        model.AddInt("b", 0, 10);
         model.Minimize("a+b");
         var minimum = await Client.Solve(model);
         minimum.Objective.Should().Be(0);
@@ -117,8 +117,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     async void test_solve_maximize_foreach()
     {
         var model = new IntModel();
-        model.Var("a", "10..20");
-        model.Var("b", "10..20");
+        model.AddVariable("a", "10..20");
+        model.AddVariable("b", "10..20");
         model.Maximize("a + b");
         await foreach (var result in Client.Solve(model))
         {

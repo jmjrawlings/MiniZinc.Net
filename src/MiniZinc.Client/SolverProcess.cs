@@ -9,9 +9,10 @@ using Core;
 using Parser;
 using Parser.Syntax;
 
-public abstract class SolverProcess<T> : IAsyncEnumerable<T>
+public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
+    where TModel : BaseModel<TModel>, new()
 {
-    public readonly Model Model;
+    public readonly TModel Model;
     public readonly SolveOptions? Options;
     public readonly Command Command;
     public readonly string CommandString;
@@ -27,7 +28,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     private readonly Process _process;
     private readonly Stopwatch _watch;
     private readonly ProcessStartInfo _startInfo;
-    private readonly Channel<T> _channel;
+    private readonly Channel<TResult> _channel;
     private readonly Task _task;
     protected readonly List<string> _warnings;
     protected TimePeriod _totalTime;
@@ -38,14 +39,14 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     protected string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
-    private readonly TaskCompletionSource<T> _completion;
+    private readonly TaskCompletionSource<TResult> _completion;
     protected Dictionary<string, object>? _statistics;
-    protected T? _current;
-    private readonly IAsyncEnumerator<T> _asyncEnumerator;
+    protected TResult? _current;
+    private readonly IAsyncEnumerator<TResult> _asyncEnumerator;
 
     internal SolverProcess(
         MiniZincClient client,
-        Model model,
+        TModel model,
         SolveOptions? options = null,
         CancellationToken cancellation = default
     )
@@ -54,10 +55,10 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         Model = model;
         Options = options;
         _cancellation = cancellation;
-        _completion = new TaskCompletionSource<T>();
+        _completion = new TaskCompletionSource<TResult>();
         _warnings = new List<string>();
 
-        ModelText = model.SourceText;
+        ModelText = model.Write();
         SolverId = options?.SolverId ?? Solver.Gecode;
         Solver = _client.GetSolver(SolverId);
         ModelFolder = new DirectoryInfo(options?.OutputFolder ?? Path.GetTempPath());
@@ -118,7 +119,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         _process = new Process();
         _process.StartInfo = _startInfo;
         _processStatus = ProcessStatus.Idle;
-        _channel = Channel.CreateUnbounded<T>(
+        _channel = Channel.CreateUnbounded<TResult>(
             new UnboundedChannelOptions
             {
                 SingleWriter = true,
@@ -196,7 +197,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         _completion.SetResult(_current);
     }
 
-    protected abstract T CreateResult(
+    protected abstract TResult CreateResult(
         in IntOrFloat? objectiveValue = null,
         in IntOrFloat? objectiveBoundValue = null,
         string? error = null
@@ -356,9 +357,9 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
         _warnings.Add(msg);
     }
 
-    public TaskAwaiter<T> GetAwaiter() => _completion.Task.GetAwaiter();
+    public TaskAwaiter<TResult> GetAwaiter() => _completion.Task.GetAwaiter();
 
-    IAsyncEnumerator<T> IAsyncEnumerable<T>.GetAsyncEnumerator(
+    IAsyncEnumerator<TResult> IAsyncEnumerable<TResult>.GetAsyncEnumerator(
         CancellationToken cancellationToken = new CancellationToken()
     ) => _asyncEnumerator;
 
@@ -375,7 +376,7 @@ public abstract class SolverProcess<T> : IAsyncEnumerable<T>
     public override string ToString() => CommandString;
 }
 
-public sealed class SolverProcess : SolverProcess<SolveResult>
+public sealed class SolverProcess : SolverProcess<Model, SolveResult>
 {
     public SolverProcess(
         MiniZincClient client,
@@ -416,11 +417,11 @@ public sealed class SolverProcess : SolverProcess<SolveResult>
     }
 }
 
-public sealed class IntProcess : SolverProcess<IntResult>
+public sealed class IntProcess : SolverProcess<IntModel, IntResult>
 {
     public IntProcess(
         MiniZincClient client,
-        Model model,
+        IntModel model,
         SolveOptions? options = null,
         CancellationToken cancellation = default
     )
@@ -468,11 +469,11 @@ public sealed class IntProcess : SolverProcess<IntResult>
     }
 }
 
-public sealed class FloatProcess : SolverProcess<FloatResult>
+public sealed class FloatProcess : SolverProcess<FloatModel, FloatResult>
 {
     public FloatProcess(
         MiniZincClient client,
-        Model model,
+        FloatModel model,
         SolveOptions? options = null,
         CancellationToken cancellation = default
     )

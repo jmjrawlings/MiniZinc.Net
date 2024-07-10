@@ -6,14 +6,14 @@ public class ParserUnitTests
     [Fact]
     void test_parse_include_item()
     {
-        var node = Parser.ParseStatement<IncludeSyntax>("include \"xd.mzn\";");
+        var node = Parser.ParseStatement<IncludeStatement>("include \"xd.mzn\";");
         node.Path.StringValue.Should().Be("xd.mzn");
     }
 
     [Fact]
     void test_parse_output_item()
     {
-        var node = Parser.ParseStatement<OutputSyntax>("output [];");
+        var node = Parser.ParseStatement<OutputStatement>("output [];");
     }
 
     [Theory]
@@ -23,7 +23,7 @@ public class ParserUnitTests
     [InlineData("enum Complex = C(1..10);")]
     void test_parse_enum_item(string mzn)
     {
-        var node = Parser.ParseStatement<DeclarationSyntax>(mzn);
+        var node = Parser.ParseStatement<DeclareStatement>(mzn);
         node.Kind.Should().Be(DeclareKind.Enum);
         node.Body.Should().NotBeNull();
     }
@@ -31,7 +31,7 @@ public class ParserUnitTests
     [Fact]
     void test_parse_constraint()
     {
-        var con = Parser.ParseStatement<ConstraintSyntax>("constraint a > 2;");
+        var con = Parser.ParseStatement<ConstraintStatement>("constraint a > 2;");
     }
 
     [Theory]
@@ -39,7 +39,7 @@ public class ParserUnitTests
     [InlineData("solve maximize abc;")]
     void test_parse_solve(string mzn)
     {
-        var node = Parser.ParseStatement<SolveSyntax>(mzn);
+        var node = Parser.ParseStatement<SolveStatement>(mzn);
     }
 
     [Theory]
@@ -211,7 +211,7 @@ public class ParserUnitTests
     void test_expr_type_inst()
     {
         var mzn = "record(1..1:x): a";
-        var node = Parser.ParseStatement<DeclarationSyntax>(mzn);
+        var node = Parser.ParseStatement<DeclareStatement>(mzn);
         var record = node.Type as RecordTypeSyntax;
         var field = record!.Fields[0];
         field.Identifier.ToString().Should().Be("x");
@@ -240,7 +240,7 @@ public class ParserUnitTests
     void test_partial_range_ti()
     {
         var mzn = "0..: xd;";
-        var node = Parser.ParseStatement<DeclarationSyntax>(mzn);
+        var node = Parser.ParseStatement<DeclareStatement>(mzn);
         var type = node.Type as ExprType;
         var expr = type!.Expr;
         expr.Should().BeOfType<RangeLiteralSyntax>();
@@ -264,7 +264,7 @@ public class ParserUnitTests
     void test_set_of_ti()
     {
         var mzn = "set of var int: xd";
-        var node = Parser.ParseStatement<DeclarationSyntax>(mzn);
+        var node = Parser.ParseStatement<DeclareStatement>(mzn);
         node.Identifier.ToString().Should().Be("xd");
     }
 
@@ -272,7 +272,7 @@ public class ParserUnitTests
     void test_postfix_range_operator()
     {
         var mzn = "var 0..: xd";
-        var node = Parser.ParseStatement<DeclarationSyntax>(mzn);
+        var node = Parser.ParseStatement<DeclareStatement>(mzn);
         node.Identifier.ToString().Should().Be("xd");
         var type = (ExprType)node.Type;
         type.Var.Should().BeTrue();
@@ -312,7 +312,7 @@ public class ParserUnitTests
     [InlineData("annotation something(int: x)")]
     void test_annotation_declaration(string mzn)
     {
-        var ann = Parser.ParseStatement<DeclarationSyntax>(mzn);
+        var ann = Parser.ParseStatement<DeclareStatement>(mzn);
         ann.Type.Kind.Should().Be(TypeKind.Annotation);
     }
 
@@ -414,7 +414,7 @@ public class ParserUnitTests
     void test_parse_right_assoc()
     {
         var mzn = "var MyTuple ++ var MyTuple: tuptup ::output = tup ++ tup;";
-        var binop = Parser.ParseStatement<DeclarationSyntax>(mzn);
+        var binop = Parser.ParseStatement<DeclareStatement>(mzn);
         var oz = binop.Write();
         oz.Should().BeEquivalentTo(mzn);
     }
@@ -444,7 +444,7 @@ public class ParserUnitTests
     {
         var mzn = "$T: foo(tuple($T): x) = x.1;";
         var parser = new Parser(mzn);
-        var ok = parser.ParseDeclareOrAssign(out var node);
+        var ok = parser.ParseDeclareStatement(out var node);
         ok.Should().BeTrue();
     }
 

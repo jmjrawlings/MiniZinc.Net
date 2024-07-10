@@ -66,7 +66,7 @@ public static class Yaml
         {
             var tag = GetTag((NodeEvent)Current!);
             if (tag is not null)
-                WriteLine($"{tag} - {Current.GetType().Name}");
+                WriteLine($"{tag} - {Current!.GetType().Name}");
 
             JsonNode? node = null;
 

@@ -7,7 +7,7 @@ using Syntax;
 /// Writes a minzinc model.
 /// Intended to be used via the SyntaxNode extension method `node.Write()`
 /// </summary>
-internal sealed class Writer
+public sealed class Writer
 {
     private const char FWD_SLASH = '/';
     private const char BACK_SLASH = '\\';
@@ -102,14 +102,20 @@ internal sealed class Writer
     private int _indent;
     private int _tabSize;
 
-    public Writer(WriteOptions? options = null)
+    public Writer(WriteOptions? options = null, StringBuilder? stringBuilder = null)
     {
-        _sb = new StringBuilder();
+        _sb = stringBuilder ?? new StringBuilder();
         _options = options ?? WriteOptions.Default;
         _minify = _options.Minify;
         _prettify = _options.Prettify;
         _indent = 0;
         _tabSize = _options.TabSize;
+    }
+
+    public void Clear()
+    {
+        _sb.Clear();
+        _indent = 0;
     }
 
     public void WriteData(IReadOnlyDictionary<string, ExpressionSyntax> data)
@@ -119,7 +125,9 @@ internal sealed class Writer
             var name = kv.Key;
             var expr = kv.Value;
             WriteString(name);
-            Spaced('=');
+            WriteSpace();
+            WriteChar('=');
+            WriteSpace();
             WriteSyntax(expr);
             EndStatement();
             Newline();
@@ -133,69 +141,30 @@ internal sealed class Writer
 
         switch (node)
         {
-            case IncludeSyntax e:
-                Keyword(INCLUDE);
+            case IncludeStatement e:
+                WriteKeyword(INCLUDE);
                 WriteChar(DOUBLE_QUOTE);
                 WriteString(e.Path.StringValue);
                 WriteChar(DOUBLE_QUOTE);
                 EndStatement();
                 break;
 
-            case DeclarationSyntax e:
-                switch (e.Kind)
-                {
-                    case DeclareKind.Function:
-                        Keyword(FUNCTION);
-                        WriteType(e.Type!);
-                        WriteChar(COLON);
-                        break;
-                    case DeclareKind.Annotation:
-                        Keyword(ANNOTATION);
-                        break;
-                    case DeclareKind.Test:
-                        Keyword(TEST);
-                        break;
-                    case DeclareKind.Predicate:
-                        Keyword(PREDICATE);
-                        break;
-                    case DeclareKind.Enum:
-                        Keyword(ENUM);
-                        break;
-                    default:
-                        WriteType(e.Type);
-                        WriteChar(COLON);
-                        break;
-                }
+            case DeclareStatement e:
+                WriteDeclare(e);
+                break;
 
-                WriteSpace();
+            case TypeAliasSyntax e:
+                WriteKeyword(TYPE);
                 WriteIdent(e.Identifier);
-                if (e.Parameters is { } parameters)
-                    WriteParameters(e.Parameters);
-
-                if (e.Ann is { } ann)
-                {
-                    WriteSpace();
-                    WriteString(ANN);
-                    WriteChar(':');
-                    WriteSpace();
-                    WriteIdent(ann);
-                    WriteSpace();
-                }
-
-                WriteAnnotations(e);
-
-                if (e.Body is { } body)
-                {
-                    WriteSpace();
-                    WriteChar(EQUAL);
-                    WriteSpace();
-                    WriteSyntax(body);
-                }
+                WriteSpace();
+                WriteChar(EQUAL);
+                WriteSpace();
+                WriteType(e.Type);
                 EndStatement();
                 break;
 
-            case ConstraintSyntax e:
-                Keyword(CONSTRAINT);
+            case ConstraintStatement e:
+                WriteKeyword(CONSTRAINT);
                 Indent();
                 Newline();
                 WriteSyntax(e.Expr);
@@ -204,8 +173,8 @@ internal sealed class Writer
                 EndStatement();
                 break;
 
-            case SolveSyntax e:
-                Keyword(SOLVE);
+            case SolveStatement e:
+                WriteKeyword(SOLVE);
                 WriteAnnotations(e);
                 WriteSpace();
                 switch (e.Method)
@@ -214,14 +183,14 @@ internal sealed class Writer
                         WriteString(SATISFY);
                         break;
                     case SolveMethod.Maximize:
-                        Keyword(MAXIMIZE);
+                        WriteKeyword(MAXIMIZE);
                         Indent();
                         Newline();
                         WriteSyntax(e.Objective);
                         Dedent();
                         break;
                     case SolveMethod.Minimize:
-                        Keyword(MINIMIZE);
+                        WriteKeyword(MINIMIZE);
                         Indent();
                         Newline();
                         WriteSyntax(e.Objective);
@@ -240,10 +209,10 @@ internal sealed class Writer
                 EndStatement();
                 break;
 
-            case OutputSyntax e when _options.SkipOutput:
+            case OutputStatement e when _options.SkipOutput:
                 break;
 
-            case OutputSyntax e:
+            case OutputStatement e:
                 WriteString(OUTPUT);
                 WriteSpace();
                 WriteSyntax(e.Expr);
@@ -346,15 +315,15 @@ internal sealed class Writer
                 WriteString(IF);
                 WriteSpace();
                 WriteSyntax(e.If);
-                Spaced(THEN);
+                WriteKeywordSpaced(THEN);
                 WriteSyntax(e.Then);
                 if (e.ElseIfs is { } cases)
                 {
                     foreach (var (elseif, then) in cases)
                     {
-                        Spaced(ELSEIF);
+                        WriteKeywordSpaced(ELSEIF);
                         WriteSyntax(elseif);
-                        Spaced(THEN);
+                        WriteKeywordSpaced(THEN);
                         WriteSyntax(then);
                     }
                 }
@@ -379,7 +348,7 @@ internal sealed class Writer
                         WriteSyntax((SyntaxNode)local);
 
                 WriteChar(CLOSE_BRACE);
-                Spaced(IN);
+                WriteKeywordSpaced(IN);
                 WriteSyntax(e.Body);
                 break;
 
@@ -458,6 +427,63 @@ internal sealed class Writer
         }
     }
 
+    private void WriteDeclare(DeclareStatement e)
+    {
+        switch (e.Kind)
+        {
+            case DeclareKind.Function:
+                WriteKeyword(FUNCTION);
+                WriteType(e.Type!);
+                WriteChar(COLON);
+                break;
+            case DeclareKind.Annotation:
+                WriteKeyword(ANNOTATION);
+                break;
+            case DeclareKind.Test:
+                WriteKeyword(TEST);
+                break;
+            case DeclareKind.Predicate:
+                WriteKeyword(PREDICATE);
+                break;
+            case DeclareKind.Enum:
+                WriteKeyword(ENUM);
+                break;
+            case DeclareKind.TypeAlias:
+                WriteKeyword(TYPE);
+                break;
+            default:
+                WriteType(e.Type);
+                WriteChar(COLON);
+                break;
+        }
+
+        WriteSpace();
+        WriteIdent(e.Identifier);
+        if (e.Parameters is { } parameters)
+            WriteParameters(e.Parameters);
+
+        if (e.Ann is { } ann)
+        {
+            WriteSpace();
+            WriteString(ANN);
+            WriteChar(':');
+            WriteSpace();
+            WriteIdent(ann);
+            WriteSpace();
+        }
+
+        WriteAnnotations(e);
+
+        if (e.Body is { } body)
+        {
+            WriteSpace();
+            WriteChar(EQUAL);
+            WriteSpace();
+            WriteSyntax(body);
+        }
+        EndStatement();
+    }
+
     private void WriteArray3d(Array3dSyntax arr)
     {
         WriteString("[|");
@@ -513,12 +539,12 @@ internal sealed class Writer
         static int Order(SyntaxNode? node) =>
             node switch
             {
-                IncludeSyntax => 0,
-                DeclarationSyntax => 1,
+                IncludeStatement => 0,
+                DeclareStatement => 1,
                 AssignmentSyntax => 1,
-                ConstraintSyntax => 2,
-                OutputSyntax => 4,
-                SolveSyntax => 3,
+                ConstraintStatement => 2,
+                OutputStatement => 4,
+                SolveStatement => 3,
                 _ => 10
             };
 
@@ -559,10 +585,10 @@ internal sealed class Writer
     void WriteType(TypeSyntax type)
     {
         if (type.Var)
-            Keyword(VAR);
+            WriteKeyword(VAR);
 
         if (type.Opt)
-            Keyword(OPT);
+            WriteKeyword(OPT);
 
         switch (type)
         {
@@ -586,8 +612,8 @@ internal sealed class Writer
                 break;
 
             case ListTypeSyntax e:
-                Keyword(LIST);
-                Keyword(OF);
+                WriteKeyword(LIST);
+                WriteKeyword(OF);
                 WriteSyntax(e.Items);
                 break;
 
@@ -602,7 +628,7 @@ internal sealed class Writer
 
             case SetTypeSyntax e:
                 WriteString(SET);
-                Spaced(OF);
+                WriteKeywordSpaced(OF);
                 WriteSyntax(e.Items);
                 break;
 
@@ -669,28 +695,21 @@ internal sealed class Writer
     void WriteGenerator(GeneratorSyntax gen, int? precedence = null)
     {
         WriteSep(gen.Names, WriteSyntax);
-        Spaced(IN);
+        WriteKeywordSpaced(IN);
         WriteSyntax(gen.From);
         if (gen.Where is { } cond)
         {
-            Spaced(WHERE);
+            WriteKeywordSpaced(WHERE);
             WriteSyntax(cond);
         }
         WriteAnnotations(gen);
     }
 
-    void Spaced(char c)
+    void WriteKeywordSpaced(string c)
     {
-        WriteSpace();
-        WriteChar(c);
-        WriteSpace();
-    }
-
-    void Spaced(string c)
-    {
-        WriteSpace();
+        _sb.Append(SPACE);
         WriteString(c);
-        WriteSpace();
+        _sb.Append(SPACE);
     }
 
     void WriteChar(char c)
@@ -787,7 +806,7 @@ internal sealed class Writer
         WriteString(EOL);
     }
 
-    void Keyword(string s)
+    void WriteKeyword(string s)
     {
         _sb.Append(s);
         _sb.Append(SPACE);

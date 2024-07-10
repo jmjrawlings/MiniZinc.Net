@@ -15,8 +15,7 @@ public sealed class OptimiseTestsBuilder : ClientTestsBuilder
             if (GetTestInfo(testCase) is not { } info)
                 continue;
 
-            using var _ = WriteTestHeader(info);
-            WriteLn("await TestOptimise(path, solver, solutions, args);");
+            WriteTest(info);
         }
     }
 }

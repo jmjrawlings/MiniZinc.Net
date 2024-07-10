@@ -6,7 +6,7 @@
 /// <mzn>var set of int</mzn>
 /// <mzn>bool</mzn>
 /// <mzn>array[X] of opt var float</mzn>
-public class TypeSyntax : StatementSyntax
+public class TypeSyntax : SyntaxNode
 {
     /// <summary>
     /// A simple or complex type
