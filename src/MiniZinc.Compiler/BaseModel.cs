@@ -594,6 +594,10 @@ public abstract class BaseModel<T>
     {
         var writer = new Writer(options);
 
+        if (_includes is { } includes)
+            foreach (var include in includes)
+                writer.WriteSyntax(include);
+
         foreach (var syntax in _namespace.Values)
             writer.WriteSyntax((SyntaxNode)syntax);
 
