@@ -245,9 +245,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         {
             var parsed = Parser.ParseDataString(_dataString, out _data);
             parsed.EnsureOk();
-            if (_data.TryGetValue("_objective", out var objectiveNode))
-                _data.Remove("_objective");
-
+            _data.TryGetValue("_objective", out var objectiveNode);
             IntOrFloat? objective = objectiveNode switch
             {
                 null => null,
