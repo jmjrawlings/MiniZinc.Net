@@ -15,16 +15,11 @@ public sealed class DataSyntax
     : IReadOnlyDictionary<string, ExpressionSyntax>,
         IEquatable<IReadOnlyDictionary<string, ExpressionSyntax>>
 {
-    private readonly Dictionary<string, ExpressionSyntax> _variables;
-
-    public DataSyntax()
-    {
-        _variables = new Dictionary<string, ExpressionSyntax>();
-    }
+    private readonly IReadOnlyDictionary<string, ExpressionSyntax> _variables;
 
     public DataSyntax(IReadOnlyDictionary<string, ExpressionSyntax> variables)
     {
-        _variables = new Dictionary<string, ExpressionSyntax>(variables);
+        _variables = variables;
     }
 
     public string Write(WriteOptions? options = null)
@@ -102,8 +97,6 @@ public sealed class DataSyntax
 
         return true;
     }
-
-    public bool Remove(string key) => _variables.Remove(key);
 
     public override bool Equals(object? obj)
     {
