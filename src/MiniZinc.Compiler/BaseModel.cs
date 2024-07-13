@@ -370,8 +370,8 @@ public abstract class BaseModel<T>
                         var oldType = oldDeclare.Type?.ToString();
                         var newType = declare.Type?.ToString();
                         if (oldType != newType)
-                            Error(
-                                $"Function {name} was already declared with an incompatible return type ({oldType} vs {newType})"
+                            Warning(
+                                $"Function {name} overloaded with a differnt return type ({oldType} vs {newType})"
                             );
 
                         _overloads ??= new Dictionary<string, List<DeclareStatement>>();
