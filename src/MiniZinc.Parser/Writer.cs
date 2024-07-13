@@ -597,12 +597,13 @@ public sealed class Writer
                 WriteChar(OPEN_BRACKET);
                 WriteSep(e.Dimensions, WriteSyntax);
                 WriteChar(CLOSE_BRACKET);
+                WriteSpace();
                 WriteKeyword(OF);
                 WriteType(e.Items);
                 break;
 
             case CompositeTypeSyntax e:
-                WriteSep(e.Types, WriteSyntax, sep: " ++ ");
+                WriteSep(e.Types, WriteSyntax, sep: "++");
                 break;
 
             case ExprType e:
@@ -831,6 +832,7 @@ public sealed class Writer
         while (enumerator.MoveNext())
         {
             WriteString(sep);
+            WriteSpace();
             write(enumerator.Current, prec);
         }
     }
