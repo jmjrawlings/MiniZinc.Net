@@ -6,6 +6,4 @@ public sealed class Array1dSyntax : ArraySyntax
         : base(start) { }
 
     public bool Indexed { get; set; }
-
-    public override string ToString() => $"<Array of {N} items>";
 }

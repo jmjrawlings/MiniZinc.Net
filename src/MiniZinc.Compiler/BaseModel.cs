@@ -341,7 +341,7 @@ public abstract class BaseModel<T>
                          * becomes:
                          * enum Dir = {A, B, C, D};
                          */
-                        var mzn = $"{declare.ToString()[..^1]} = {expr};";
+                        var mzn = $"{declare.ToString()[..^1]} = {expr.ToString()};";
                         declare = ParseStatement<DeclareStatement>(mzn);
                         _namespace[name] = declare;
                         break;
@@ -612,8 +612,8 @@ public abstract class BaseModel<T>
         if (_solve is not null)
             writer.WriteSyntax(_solve);
 
-        foreach (var output in Outputs)
-            writer.WriteSyntax(output);
+        // foreach (var output in Outputs)
+        //     writer.WriteSyntax(output);
 
         var mzn = writer.ToString();
         return mzn;

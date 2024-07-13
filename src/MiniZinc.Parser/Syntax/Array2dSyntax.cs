@@ -14,6 +14,4 @@ public sealed class Array2dSyntax : ArraySyntax
     public bool RowIndexed { get; set; }
 
     public bool ColIndexed { get; set; }
-
-    public override string ToString() => $"<{I}x{J} array of {N} items>";
 }

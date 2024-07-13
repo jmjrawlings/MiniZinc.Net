@@ -597,9 +597,7 @@ public sealed class Writer
                 WriteChar(OPEN_BRACKET);
                 WriteSep(e.Dimensions, WriteSyntax);
                 WriteChar(CLOSE_BRACKET);
-                WriteSpace();
-                WriteString(OF);
-                WriteSpace();
+                WriteKeyword(OF);
                 WriteType(e.Items);
                 break;
 

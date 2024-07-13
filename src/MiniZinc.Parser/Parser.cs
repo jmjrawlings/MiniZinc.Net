@@ -1167,9 +1167,10 @@ public sealed class Parser
         return true;
     }
 
-    private bool ParseGenerators(List<GeneratorSyntax> generators)
+    private bool ParseGenerators([NotNullWhen(true)] out List<GeneratorSyntax>? generators)
     {
         var start = _token;
+        generators = null;
 
         begin:
         var names = new List<IdentifierSyntax>();
@@ -1207,6 +1208,7 @@ public sealed class Parser
             else
                 gen.Where = @where;
 
+        generators ??= new List<GeneratorSyntax>();
         generators.Add(gen);
 
         if (Skip(TokenKind.COMMA))
@@ -1296,14 +1298,15 @@ public sealed class Parser
         // Array comprehension
         if (Skip(TokenKind.PIPE))
         {
-            var comp = new ComprehensionSyntax(start, value)
+            if (!ParseGenerators(out var generators))
+                return false;
+
+            result = new ComprehensionSyntax(start, element)
             {
                 IsSet = false,
-                Generators = new List<GeneratorSyntax>()
+                Generators = generators
             };
-            result = comp;
-            if (!ParseGenerators(comp.Generators))
-                return false;
+
             return Expect(TokenKind.CLOSE_BRACKET);
         }
 
@@ -1587,15 +1590,14 @@ public sealed class Parser
         // Set comprehension
         if (Skip(TokenKind.PIPE))
         {
-            var comp = new ComprehensionSyntax(start, element)
-            {
-                IsSet = true,
-                Generators = new List<GeneratorSyntax>()
-            };
-            if (!ParseGenerators(comp.Generators))
+            if (!ParseGenerators(out var generators))
                 return false;
 
-            result = comp;
+            result = new ComprehensionSyntax(start, element)
+            {
+                IsSet = true,
+                Generators = generators
+            };
             return Expect(TokenKind.CLOSE_BRACE);
         }
 
