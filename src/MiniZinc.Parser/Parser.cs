@@ -1925,7 +1925,7 @@ public sealed class Parser
     internal bool ParseArrayType([NotNullWhen(true)] out ArrayTypeSyntax? arr)
     {
         arr = default;
-        var dims = new List<SyntaxNode>();
+        var dims = new List<TypeSyntax>();
 
         if (!Expect(TokenKind.ARRAY, out var start))
             return false;

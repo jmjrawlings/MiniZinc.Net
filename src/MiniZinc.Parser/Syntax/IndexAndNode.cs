@@ -2,10 +2,10 @@
 
 public sealed class IndexAndNode : ExpressionSyntax
 {
-    public readonly SyntaxNode Index;
-    public readonly SyntaxNode Value;
+    public readonly ExpressionSyntax Index;
+    public readonly ExpressionSyntax Value;
 
-    public IndexAndNode(SyntaxNode index, SyntaxNode value)
+    public IndexAndNode(ExpressionSyntax index, ExpressionSyntax value)
         : base(index.Start)
     {
         Index = index;

@@ -63,13 +63,13 @@ public sealed class TupleTypeSyntax : TypeSyntax
 
 public sealed class ExprType : TypeSyntax
 {
-    public ExprType(in Token Start, SyntaxNode Expr)
+    public ExprType(in Token Start, ExpressionSyntax Expr)
         : base(Start)
     {
         this.Expr = Expr;
     }
 
-    public SyntaxNode Expr { get; init; }
+    public ExpressionSyntax Expr { get; init; }
 }
 
 public sealed class ArrayTypeSyntax : TypeSyntax
@@ -79,7 +79,7 @@ public sealed class ArrayTypeSyntax : TypeSyntax
 
     public required TypeSyntax Items { get; set; }
 
-    public required List<SyntaxNode> Dimensions { get; set; }
+    public required List<TypeSyntax> Dimensions { get; set; }
 
     public int N => Dimensions.Count;
 }

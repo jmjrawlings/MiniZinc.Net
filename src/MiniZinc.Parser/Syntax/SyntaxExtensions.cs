@@ -3,6 +3,17 @@
 public static class SyntaxExtensions
 {
     /// <summary>
+    /// Write this node as a minizinc string
+    /// </summary>
+    public static string Write(this SyntaxNode node, WriteOptions? options = null)
+    {
+        var writer = new Writer(options);
+        writer.WriteSyntax(node);
+        var mzn = writer.ToString();
+        return mzn;
+    }
+
+    /// <summary>
     /// Create a deep clone of this syntax node
     /// </summary>
     public static T Clone<T>(this T node)

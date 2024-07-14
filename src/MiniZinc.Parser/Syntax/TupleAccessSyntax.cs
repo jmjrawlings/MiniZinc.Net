@@ -2,7 +2,7 @@
 
 public sealed class TupleAccessSyntax : ExpressionSyntax
 {
-    public readonly SyntaxNode Expr;
+    public readonly ExpressionSyntax Expr;
 
     public readonly Token Field;
 

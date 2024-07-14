@@ -14,18 +14,7 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
         Start = start;
     }
 
-    public string SourceText => Write(WriteOptions.Minimal);
-
-    /// <summary>
-    /// Write this node as a minizinc string
-    /// </summary>
-    public string Write(WriteOptions? options = null)
-    {
-        var writer = new Writer(options);
-        writer.WriteSyntax(this);
-        var mzn = writer.ToString();
-        return mzn;
-    }
+    public string SourceText => this.Write(WriteOptions.Minimal);
 
     public override bool Equals(object? obj)
     {

@@ -2,7 +2,7 @@
 
 public sealed class LetSyntax : ExpressionSyntax
 {
-    public LetSyntax(in Token start, List<ILetLocalSyntax>? locals, SyntaxNode body)
+    public LetSyntax(in Token start, List<ILetLocalSyntax>? locals, ExpressionSyntax body)
         : base(start)
     {
         Locals = locals;
@@ -11,5 +11,5 @@ public sealed class LetSyntax : ExpressionSyntax
 
     public List<ILetLocalSyntax>? Locals { get; }
 
-    public SyntaxNode Body { get; }
+    public ExpressionSyntax Body { get; }
 }
