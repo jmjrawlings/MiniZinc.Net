@@ -413,7 +413,16 @@ public sealed class Writer
             case UnaryOperatorSyntax e:
                 WriteOperator(e.Operator);
                 WriteChar(SPACE);
-                WriteSyntax(e.Expr, prec: 0);
+                if (e.Expr is BinaryOperatorSyntax)
+                {
+                    WriteChar(OPEN_PAREN);
+                    WriteSyntax(e.Expr, prec: 0);
+                    WriteChar(CLOSE_PAREN);
+                }
+                else
+                {
+                    WriteSyntax(e.Expr, prec: 0);
+                }
                 break;
 
             case IndexAndNode e:
