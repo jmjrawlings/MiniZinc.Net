@@ -232,33 +232,51 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
     {
         _iteration++;
         _solveStatus = SolveStatus.Satisfied;
-        if (o.Sections is not { } sections)
-            return;
         _dataString = null;
+        if (o.Sections is not { } sections)
+        {
+            _current = CreateResult();
+            goto send;
+        }
+
         foreach (var section in sections)
         {
             if (section is "dzn")
                 _dataString = o.Output[section].ToString();
         }
 
-        if (_dataString is not null)
-        {
-            var parsed = Parser.ParseDataString(_dataString, out _data);
-            parsed.EnsureOk();
-            _data.TryGetValue("_objective", out var objectiveNode);
-            IntOrFloat? objective = objectiveNode switch
-            {
-                null => null,
-                IntLiteralSyntax i => IntOrFloat.Int(i),
-                FloatLiteralSyntax f => IntOrFloat.Float((float)f.Value),
-                var other => throw new Exception(other.GetType().FullName)
-            };
-            _current = CreateResult(objectiveValue: objective);
-        }
-        else
+        if (_dataString is null)
         {
             _current = CreateResult();
+            goto send;
         }
+
+        var parsed = Parser.ParseDataString(_dataString, out _data);
+        if (!parsed.Ok)
+        {
+            _current = CreateResult(error: parsed.ErrorTrace);
+            goto send;
+        }
+
+        _data.TryGetValue("_objective", out var objectiveNode);
+        switch (objectiveNode)
+        {
+            case null:
+                _current = CreateResult();
+                break;
+
+            case IntLiteralSyntax i:
+                _current = CreateResult(objectiveValue: i.Value);
+                break;
+            case FloatLiteralSyntax f:
+                _current = CreateResult(objectiveValue: f.Value);
+                break;
+            default:
+                _current = CreateResult(error: $"Unexpected objective value {objectiveNode}");
+                break;
+        }
+
+        send:
         _channel.Writer.TryWrite(_current);
     }
 
@@ -485,12 +503,12 @@ public sealed class FloatProcess : SolverProcess<FloatModel, FloatResult>
     {
         Guard.IsTrue(objectiveValue?.IsFloat ?? true);
         Guard.IsTrue(objectiveBoundValue?.IsFloat ?? true);
-        float? objectivePrev = _current?.Objective;
-        float? objective = objectiveValue?.FloatValue ?? objectivePrev;
-        float? objectiveBoundPrev = _current?.ObjectiveBound;
-        float? objectiveBound = objectiveBoundValue?.FloatValue ?? objectiveBoundPrev;
-        float? absoluteGapToOptimality = objective - objectiveBound;
-        float? absoluteIterationGap = objective - _current?.Objective;
+        decimal? objectivePrev = _current?.Objective;
+        decimal? objective = objectiveValue?.DecimalValue ?? objectivePrev;
+        decimal? objectiveBoundPrev = _current?.ObjectiveBound;
+        decimal? objectiveBound = objectiveBoundValue?.DecimalValue ?? objectiveBoundPrev;
+        decimal? absoluteGapToOptimality = objective - objectiveBound;
+        decimal? absoluteIterationGap = objective - _current?.Objective;
         double? relativeGapToOptimality = null; //absoluteGapToOptimality / objectiveBound;
         double? relativeIterationGap = null; // absoluteIterationGap / _current?.Objective;
         var result = new FloatResult

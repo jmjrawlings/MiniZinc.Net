@@ -7,16 +7,20 @@ public readonly struct IntOrFloat
 {
     public readonly bool IsFloat;
     public readonly int IntValue;
-    public readonly float FloatValue;
+    public readonly decimal DecimalValue;
 
-    private IntOrFloat(int i = default, float f = default, bool isFloat = false)
+    private IntOrFloat(int i = default, decimal d = default, bool isFloat = false)
     {
         IsFloat = isFloat;
-        FloatValue = f;
+        DecimalValue = d;
         IntValue = i;
     }
 
+    public static implicit operator IntOrFloat(int i) => new IntOrFloat(i: i);
+
+    public static implicit operator IntOrFloat(decimal d) => new IntOrFloat(d: d);
+
     public static IntOrFloat Int(int i) => new IntOrFloat(i: i);
 
-    public static IntOrFloat Float(float f) => new IntOrFloat(f: f, isFloat: true);
+    public static IntOrFloat Float(decimal d) => new IntOrFloat(d: d, isFloat: true);
 }

@@ -143,9 +143,6 @@ public abstract record SolveResult<T>
 
     public ExpressionSyntax? TryGet(string id)
     {
-        if (Data is null)
-            return null;
-
         if (Data.TryGetValue(id, out var value))
             return value;
 
@@ -195,4 +192,4 @@ public sealed record SolveResult : SolveResult<IntOrFloat> { }
 
 public sealed record IntResult : SolveResult<int> { }
 
-public sealed record FloatResult : SolveResult<float> { }
+public sealed record FloatResult : SolveResult<decimal> { }
