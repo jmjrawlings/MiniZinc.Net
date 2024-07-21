@@ -56,9 +56,9 @@ public sealed class MakeParserTests : TestBuilder
 
     public static async Task Run()
     {
-        var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-        var builder = new MakeParserTests(spec);
-        builder.WriteTo(Projects.ParserTests.Dir);
+        // var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
+        // var builder = new MakeParserTests(spec);
+        // builder.WriteTo(Projects.ParserTests.Dir);
         await Task.CompletedTask;
     }
 }

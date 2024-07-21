@@ -68,7 +68,6 @@ public abstract class TestBuilder : CodeBuilder
             InputFiles = testCase.InputFiles,
             ErrorMessage = testCase.ErrorMessage,
             ErrorRegex = testCase.ErrorRegex,
-            CheckAgainstSolvers = testCase.CheckAgainstSolvers,
             Type = testCase.Type,
             OutputFiles = testCase.OutputFiles
         };

@@ -78,7 +78,7 @@ public abstract class ClientTestsBuilder : TestBuilder
             {
                 foreach (var sol in solutions)
                 {
-                    Write(TripleQuote(sol.ToJsonString()));
+                    Write(TripleQuote(sol));
                     Append(',');
                     NewLine();
                 }

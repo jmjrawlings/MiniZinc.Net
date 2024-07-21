@@ -5,33 +5,14 @@ using System.Text.Json.Serialization;
 
 public sealed record TestSpec
 {
-    public required List<TestSuite> TestSuites { get; init; }
+    public List<TestSuite> TestSuites { get; } = new();
 
-    public required List<TestCase> TestCases { get; init; }
+    public List<TestCase> TestCases { get; } = new();
 
     public static string ToJsonString(TestSpec spec)
     {
         var json = JsonSerializer.Serialize(spec, SerializerOptions);
         return json;
-    }
-
-    public static void ToJsonFile(TestSpec spec, FileInfo file)
-    {
-        var json = ToJsonString(spec);
-        File.WriteAllText(file.FullName, json);
-    }
-
-    public static TestSpec FromJsonString(string s)
-    {
-        var result = JsonSerializer.Deserialize<TestSpec>(s, SerializerOptions);
-        return result!;
-    }
-
-    public static TestSpec FromJsonFile(FileInfo file)
-    {
-        var text = file.OpenText().ReadToEnd();
-        var result = FromJsonString(text);
-        return result;
     }
 
     private static JsonSerializerOptions? _seraliazerOptions;
@@ -54,5 +35,24 @@ public sealed record TestSpec
             _seraliazerOptions = options;
             return options;
         }
+    }
+
+    public static void ToJsonFile(TestSpec spec, FileInfo file)
+    {
+        var json = ToJsonString(spec);
+        File.WriteAllText(file.FullName, json);
+    }
+
+    public static TestSpec FromJsonString(string s)
+    {
+        var result = JsonSerializer.Deserialize<TestSpec>(s, SerializerOptions);
+        return result!;
+    }
+
+    public static TestSpec FromJsonFile(FileInfo file)
+    {
+        var text = file.OpenText().ReadToEnd();
+        var result = FromJsonString(text);
+        return result;
     }
 }

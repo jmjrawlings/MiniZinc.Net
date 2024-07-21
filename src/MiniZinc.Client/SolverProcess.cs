@@ -136,7 +136,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         _process.Start();
         ProcessId = _process.Id;
 
-        while (!_process.StandardOutput.EndOfStream)
+        while (true)
         {
             string? msg = _process.StandardOutput.ReadLine();
             if (msg is null)

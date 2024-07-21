@@ -81,7 +81,16 @@ public static class JsonExtensions
 
             return ret;
         }
-        throw new Exception("Node was not an array");
+        else
+        {
+            ret ??= new List<T>();
+            var val = node.GetValue<T>();
+            ret.Add(val);
+        }
+
+        if (ret is null)
+            throw new Exception("Node was not an array");
+        return ret;
     }
 
     public static T? TryGetValue<T>(this JsonNode? node)

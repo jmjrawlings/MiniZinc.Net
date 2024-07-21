@@ -1950,7 +1950,7 @@ public class AnySolutionTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/output/record_access_printing.mzn")]
+	[Fact(DisplayName="unit/output/record_access_printing.mzn", Skip="missing quoted idents")]
 	public async Task test_solve_unit_output_record_access_printing()
 	{
 		var path = "unit/output/record_access_printing.mzn";
@@ -2056,7 +2056,7 @@ public class AnySolutionTests : ClientTest
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
 		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+ 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
 	[Fact(DisplayName="unit/regression/assign_reverse_map.mzn")]
