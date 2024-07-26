@@ -171,7 +171,7 @@ public class CodeBuilder
 
     public string Quote(string s) => $"\"{s}\"";
 
-    public string TripleQuote(string s) => $"\"\"\"{s}\"\"\"";
+    public string TripleQuote(string s) => $"\"\"\"{s.Replace("\n", "")}\"\"\"";
 
     public void Var(string? name, string? value)
     {

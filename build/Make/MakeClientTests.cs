@@ -20,24 +20,7 @@ public static class MakeClientTests
         }
 
         var dir = Projects.ClientTests.Dir;
-        ClientTestsBuilder builder;
-
-        builder = new ClientSatisfyTestsBuilder(spec);
-        builder.WriteTo(dir);
-
-        builder = new AllSolutionsTestsBuilder(spec);
-        builder.WriteTo(dir);
-
-        builder = new OptimiseTestsBuilder(spec);
-        builder.WriteTo(dir);
-
-        builder = new ErrorTestsBuilder(spec);
-        builder.WriteTo(dir);
-
-        builder = new UnsatisfiableTestsBuilder(spec);
-        builder.WriteTo(dir);
-
-        builder = new AnySolutionTestsBuilder(spec);
+        var builder = new ClientTestsBuilder("ClientTests", spec);
         builder.WriteTo(dir);
     }
 }

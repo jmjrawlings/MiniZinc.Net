@@ -2,9 +2,9 @@
 
 using LibMiniZinc.Tests;
 
-public abstract class ClientTestsBuilder : TestBuilder
+public sealed class ClientTestsBuilder : TestBuilder
 {
-    protected ClientTestsBuilder(string className, TestSpec spec)
+    public ClientTestsBuilder(string className, TestSpec spec)
         : base(className, spec)
     {
         using (BlockComment())
@@ -25,6 +25,14 @@ public abstract class ClientTestsBuilder : TestBuilder
                 $"public {className}(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)"
             )
         ) { }
+
+        foreach (var testCase in spec.TestCases)
+        {
+            if (GetTestInfo(testCase) is not { } info)
+                continue;
+
+            WriteTest(info);
+        }
     }
 
     protected void WriteMessage(object? msg = null)

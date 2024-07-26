@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 
 public sealed record TestSpec
 {
-    public List<TestSuite> TestSuites { get; } = new();
+    public List<TestSuite> TestSuites { get; set; } = new();
 
-    public List<TestCase> TestCases { get; } = new();
+    public List<TestCase> TestCases { get; set; } = new();
 
     public static string ToJsonString(TestSpec spec)
     {
@@ -27,8 +27,7 @@ public sealed record TestSpec
             {
                 DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower,
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-                WriteIndented = false,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                WriteIndented = true
             };
             var converter = new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower);
             options.Converters.Add(converter);

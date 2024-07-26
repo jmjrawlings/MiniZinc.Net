@@ -1,10 +1,8 @@
-﻿using System.Text.Json;
-
-namespace Make;
+﻿namespace Make;
 
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
-using CommunityToolkit.Diagnostics;
 using LibMiniZinc.Tests;
 using MiniZinc.Build;
 using YamlDotNet.Core;
@@ -25,13 +23,13 @@ public static class ParseLibMiniZincTests
         Solution,
         SolutionSet,
         Result,
-        AnonEnum,
         EnumConstructor,
         Duration,
         Error,
         Approx,
         FlatZinc,
-        OutputModel
+        OutputModel,
+        AnonEnum
     }
 
     public static Task Run()
@@ -311,7 +309,7 @@ public static class ParseLibMiniZincTests
 
     private static void ParseExpected(TestCase testCase, JsonNode? expected)
     {
-        string dzn;
+        string? dzn = null;
         var tag = GetTag(expected);
         switch (expected, tag)
         {
@@ -325,26 +323,46 @@ public static class ParseLibMiniZincTests
                         testCase.Type = TestType.Unsatisfiable;
                         break;
 
+                    case (_, JsonArray array, "ALL_SOLUTIONS"):
+                        testCase.Type = TestType.AllSolutions;
+                        testCase.Solutions ??= new List<string>();
+                        foreach (var sol in array)
+                        {
+                            dzn = ParseSolution(sol.AsObject());
+                            testCase.Solutions ??= new List<string>();
+                            testCase.Solutions.Add(dzn);
+                        }
+                        break;
+
                     case (Tag.Solution, JsonObject sol, "OPTIMAL_SOLUTION"):
                         dzn = ParseSolution(sol);
                         testCase.Type = TestType.Optimise;
-                        testCase.Solutions ??= new List<string>();
-                        testCase.Solutions.Add(dzn);
+                        if (dzn is not null)
+                        {
+                            testCase.Solutions ??= new List<string>();
+                            testCase.Solutions.Add(dzn);
+                        }
                         break;
 
                     case (Tag.Solution, JsonObject sol, _):
                         dzn = ParseSolution(sol);
                         testCase.Type = TestType.Satisfy;
-                        testCase.Solutions ??= new List<string>();
-                        testCase.Solutions.Add(dzn);
+                        if (dzn is not null)
+                        {
+                            testCase.Solutions ??= new List<string>();
+                            testCase.Solutions.Add(dzn);
+                        }
                         break;
 
                     case (Tag.SolutionSet, JsonArray set, _):
                         foreach (var sol in set)
                         {
                             dzn = ParseSolution(sol.AsObject());
-                            testCase.Solutions ??= new List<string>();
-                            testCase.Solutions.Add(dzn);
+                            if (dzn is not null)
+                            {
+                                testCase.Solutions ??= new List<string>();
+                                testCase.Solutions.Add(dzn);
+                            }
                         }
                         break;
                 }
@@ -384,8 +402,12 @@ public static class ParseLibMiniZincTests
         }
     }
 
-    private static string ParseSolution(JsonObject solution)
+    private static string? ParseSolution(JsonObject solution)
     {
+        if (solution.Count is 0)
+            return null;
+
+        var tag = GetTag(solution);
         string dzn;
         var sb = new StringBuilder();
         foreach (var (name, node) in solution)
@@ -416,6 +438,9 @@ public static class ParseLibMiniZincTests
             case JsonObject obj when tag is Tag.EnumConstructor:
                 ParseEnumConstructor(obj, sb);
                 break;
+            case JsonObject obj when tag is Tag.AnonEnum:
+                ParseAnonEnum(obj, sb);
+                break;
             case JsonObject obj when tag is Tag.Approx:
                 sb.Append(obj[VAL]);
                 break;
@@ -427,13 +452,21 @@ public static class ParseLibMiniZincTests
                 break;
             case JsonValue val when val.GetValueKind() is JsonValueKind.String:
                 sb.Append('"');
-                sb.Append(val);
+                sb.Append(val.ToString());
                 sb.Append('"');
                 break;
             default:
                 sb.Append(node);
                 break;
         }
+    }
+
+    private static void ParseAnonEnum(JsonObject obj, StringBuilder sb)
+    {
+        var name = obj["enumName"];
+        var value = obj["value"];
+        var dzn = $"{name}({value})";
+        sb.Append(dzn);
     }
 
     private static void ParseSet(JsonObject set, StringBuilder sb)
