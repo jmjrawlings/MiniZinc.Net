@@ -258,7 +258,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
             goto send;
         }
 
-        _data.TryGetValue("_objective", out var objectiveNode);
+        _data.Values.TryGetValue("_objective", out var objectiveNode);
         switch (objectiveNode)
         {
             case null:

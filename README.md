@@ -2,8 +2,54 @@
 
 Create, parse and solve [MiniZinc](https://www.minizinc.org/) constraint models using C# and .NET
 
-
 > ** This is work in progress **
+
+## Examples
+
+Models can be created at any time but can only be solved using an instance of `MiniZincClient`.
+
+```csharp
+var minizinc = MiniZincClient.Create();
+```
+
+### Solve a model from a minizinc string
+```csharp
+var result = await minizinc.Solve("var 10..20: a; solve minimize a;");
+result.GetInt("a"); // 20
+result.Objective; // 20
+result.Status; // SolveStatus.Optimal
+```
+
+### Create and solve a minizinc model
+
+var model = new IntModel();
+var a = model.AddInt("a", 10, 20);
+var b = model.AddInt("b", 10, 20);
+model.AddConstraint(a < b);
+model.Minimize(a + b);
+var result = await minizinc.Solve(model);
+result.GetInt(a); // 10
+result.GetInt(b); // 11
+result.Objective; // 21
+result.Status; // SolveStatus.Optimal
+
+### Create and solve a minizinc model
+
+var model = new IntModel();
+var a = model.AddInt("a", 10, 20);
+var b = model.AddInt("b", 10, 20);
+model.AddConstraint(a < b);
+model.Minimize(a + b);
+var result = await minizinc.Solve(model);
+result.GetInt(a); // 10
+result.GetInt(b); // 11
+result.Objective; // 21
+result.Status; // SolveStatus.Optimal
+
+
+
+
+
 
 
 ## Developer Guide 

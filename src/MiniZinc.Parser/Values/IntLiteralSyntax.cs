@@ -1,6 +1,6 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class IntLiteralSyntax : ExpressionSyntax<int>
+public sealed class IntLiteralSyntax : ValueSyntax<int>
 {
     public IntLiteralSyntax(in Token token)
         : base(token, token.IntValue) { }

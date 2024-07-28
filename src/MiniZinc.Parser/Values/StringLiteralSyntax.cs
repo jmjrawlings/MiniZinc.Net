@@ -1,6 +1,6 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class StringLiteralSyntax : ExpressionSyntax<string>
+public sealed class StringLiteralSyntax : ValueSyntax<string>
 {
     public StringLiteralSyntax(in Token start)
         : base(start, start.StringValue) { }

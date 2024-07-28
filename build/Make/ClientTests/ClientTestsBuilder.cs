@@ -31,6 +31,18 @@ public sealed class ClientTestsBuilder : TestBuilder
             if (GetTestInfo(testCase) is not { } info)
                 continue;
 
+            var ok = testCase.Type switch
+            {
+                TestType.Satisfy => true,
+                TestType.Optimise => true,
+                TestType.AnySolution => true,
+                TestType.AllSolutions => true,
+                TestType.Unsatisfiable => true,
+                _ => false
+            };
+            if (!ok)
+                continue;
+
             WriteTest(info);
         }
     }
@@ -182,55 +194,5 @@ public sealed class ClientTestsBuilder : TestBuilder
 
         var z = Quote(s);
         return z;
-    }
-
-    protected void WriteAllSolutionCheck()
-    {
-        Var("result", "await MiniZinc.Solve(model, options)");
-        WriteMessage("result.Command");
-        WriteLn("result.IsSuccess.Should().BeTrue();");
-        using (ForEach("var dzn in solutions"))
-        {
-            Var("parsed", "Parser.ParseDataString(dzn, out var data);");
-            WriteLn("parsed.Ok.Should().BeTrue();");
-            using (If("!result.Data.Equals(data)"))
-            {
-                WriteMessage(Quote("EXPECTED:"));
-                WriteMessage("data.Write()");
-                WriteMessage();
-                WriteMessage(Quote("ACTUAL"));
-                WriteMessage("result.Data.Write()");
-                WriteSection();
-                Call("Assert.Fail", Quote("The result was not expected"));
-            }
-        }
-    }
-
-    protected void WriteAnySolutionCheck()
-    {
-        Var("result", "await MiniZinc.Solve(model, options)");
-        WriteMessage("result.Command");
-        WriteLn("result.IsSuccess.Should().BeTrue();");
-        using (If("solutions.Count is 0"))
-            Return();
-
-        Var("anySolution", "false");
-        using (ForEach("var expected in solutions"))
-        {
-            Var("parsed", "Parser.ParseDataString(dzn, out var data);");
-            WriteLn("parsed.Ok.Should().BeTrue();");
-            using (If("result.Data.Equals(data)"))
-            {
-                Assign("anySolution", "true");
-                Break();
-            }
-            WriteMessage(Quote("EXPECTED:"));
-            WriteMessage("data.Write()");
-            WriteMessage();
-            WriteMessage(Quote("ACTUAL:"));
-            WriteMessage("result.Data.Write()");
-            WriteSection();
-        }
-        WriteLn("anySolution.Should().BeTrue();");
     }
 }

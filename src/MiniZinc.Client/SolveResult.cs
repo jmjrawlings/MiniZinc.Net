@@ -141,13 +141,7 @@ public abstract record SolveResult<T>
         return value;
     }
 
-    public ExpressionSyntax? TryGet(string id)
-    {
-        if (Data.TryGetValue(id, out var value))
-            return value;
-
-        return null;
-    }
+    public ValueSyntax? TryGet(string id) => Data.Values.GetValueOrDefault(id);
 
     /// <summary>
     /// Try to get the solution assigned to the given variable
@@ -166,6 +160,8 @@ public abstract record SolveResult<T>
         return u;
     }
 
+    public ExpressionSyntax this[string name] => Get<ExpressionSyntax>(name);
+
     /// Get the int solution for the given variable
     public int GetInt(string id) => Get<IntLiteralSyntax>(id).Value;
 
@@ -181,7 +177,7 @@ public abstract record SolveResult<T>
         var array = Get<Array1dSyntax>(id);
         foreach (var node in array.Elements)
         {
-            if (node is not ExpressionSyntax<U> literal)
+            if (node is not ValueSyntax<U> literal)
                 throw new Exception();
             yield return literal.Value;
         }

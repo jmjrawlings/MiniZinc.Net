@@ -243,8 +243,8 @@ public sealed class Parser
     /// <mzn>a = 1;b = 2; c= true;</mzn>
     internal bool ParseData(out DataSyntax data)
     {
-        Dictionary<string, ExpressionSyntax> variables = new();
-        data = new DataSyntax(variables);
+        Dictionary<string, ValueSyntax> values = new();
+        data = new DataSyntax(values);
 
         if (_kind is TokenKind.EOF)
             return true;
@@ -254,15 +254,15 @@ public sealed class Parser
             if (!Expect(TokenKind.EQUAL))
                 break;
 
-            if (!ParseExpr(out var expr))
+            if (!ParseValue(out var value))
                 break;
 
-            if (variables.ContainsKey(ident.Name))
+            if (values.ContainsKey(ident.Name))
             {
                 Error($"Variable \"{ident}\" was assigned to multiple times");
                 break;
             }
-            variables.Add(ident.Name, expr);
+            values.Add(ident.Name, value);
 
             if (Skip(TokenKind.EOL) && !Skip(TokenKind.EOF))
                 continue;
@@ -674,7 +674,7 @@ public sealed class Parser
             if (!ParseExpr(out var expr))
                 return false;
 
-            statement = new AssignmentSyntax(name, expr);
+            statement = new AssignStatement(name, expr);
             return true;
         }
         else if (Skip(TokenKind.ANY))
@@ -871,6 +871,20 @@ public sealed class Parser
     }
 
     private bool IsOk => _errorMessage is null;
+
+    /// <summary>
+    /// Parse a Value.
+    /// A value is a subset of Expressions that can be found in MiniZinc data files.
+    /// </summary>
+    /// <mzn>1</mzn>
+    /// <mzn>true</mzn>
+    /// <mzn>{1,2,3}</mzn>
+    /// <mzn>1..10</mzn>
+    internal bool ParseValue([NotNullWhen(true)] out ValueSyntax? value)
+    {
+        value = null;
+        return false;
+    }
 
     /// <summary>
     /// Parse an Expression

@@ -33,20 +33,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/compilation/aggregation.mzn")]
-	public async Task test_solve_unit_compilation_aggregation()
-	{
-		var path = "unit/compilation/aggregation.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/compilation/annotate_bool_literal.mzn")]
 	public async Task test_solve_unit_compilation_annotate_bool_literal()
 	{
@@ -64,36 +50,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/compilation/annotate_from_array.mzn")]
-	public async Task test_solve_unit_compilation_annotate_from_array()
-	{
-		var path = "unit/compilation/annotate_from_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/assert_dbg_flag.mzn")]
-	public async Task test_solve_unit_compilation_assert_dbg_flag()
-	{
-		var path = "unit/compilation/assert_dbg_flag.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--debug",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/compilation/assert_dbg_ignore.mzn")]
 	public async Task test_solve_unit_compilation_assert_dbg_ignore()
 	{
@@ -107,90 +63,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/call_root_ctx.mzn")]
-	public async Task test_solve_unit_compilation_call_root_ctx()
-	{
-		var path = "unit/compilation/call_root_ctx.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/chain_compr_mult_clause.mzn")]
-	public async Task test_solve_unit_compilation_chain_compr_mult_clause()
-	{
-		var path = "unit/compilation/chain_compr_mult_clause.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/clause_disable_hr.mzn")]
-	public async Task test_solve_unit_compilation_clause_disable_hr()
-	{
-		var path = "unit/compilation/clause_disable_hr.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/commutative_cse.mzn")]
-	public async Task test_solve_unit_compilation_commutative_cse()
-	{
-		var path = "unit/compilation/commutative_cse.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/comp_domain_ann.mzn")]
-	public async Task test_solve_unit_compilation_comp_domain_ann()
-	{
-		var path = "unit/compilation/comp_domain_ann.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/count_rewrite.mzn")]
-	public async Task test_solve_unit_compilation_count_rewrite()
-	{
-		var path = "unit/compilation/count_rewrite.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -231,34 +103,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/compilation/defines_var_cycle_breaking.mzn")]
-	public async Task test_solve_unit_compilation_defines_var_cycle_breaking()
-	{
-		var path = "unit/compilation/defines_var_cycle_breaking.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/float_inf_range_dom.mzn")]
-	public async Task test_solve_unit_compilation_float_inf_range_dom()
-	{
-		var path = "unit/compilation/float_inf_range_dom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/compilation/has_ann.mzn")]
 	public async Task test_solve_unit_compilation_has_ann()
 	{
@@ -282,55 +126,13 @@ public class ClientTests : ClientTest
 		var path = "unit/compilation/if_then_no_else.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""b=true;s="";x=[];y=[];""",
+			"""b=true;s=;x=[];y=[];""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/implied_exists_chain.mzn")]
-	public async Task test_solve_unit_compilation_implied_exists_chain()
-	{
-		var path = "unit/compilation/implied_exists_chain.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/implied_hr.mzn")]
-	public async Task test_solve_unit_compilation_implied_hr()
-	{
-		var path = "unit/compilation/implied_hr.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/int_inf_dom.mzn")]
-	public async Task test_solve_unit_compilation_int_inf_dom()
-	{
-		var path = "unit/compilation/int_inf_dom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -346,70 +148,6 @@ public class ClientTests : ClientTest
 		var allSolutions = true;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/optimization.mzn")]
-	public async Task test_solve_unit_compilation_optimization()
-	{
-		var path = "unit/compilation/optimization.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O0",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/optimization.mzn")]
-	public async Task test_solve_unit_compilation_optimization_2()
-	{
-		var path = "unit/compilation/optimization.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O1",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/optimization.mzn")]
-	public async Task test_solve_unit_compilation_optimization_3()
-	{
-		var path = "unit/compilation/optimization.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O2",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/optimization.mzn")]
-	public async Task test_solve_unit_compilation_optimization_4()
-	{
-		var path = "unit/compilation/optimization.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O3",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -435,27 +173,13 @@ public class ClientTests : ClientTest
 		var path = "unit/compilation/poly_overload.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/quoted_id_flatzinc.mzn")]
-	public async Task test_solve_unit_compilation_quoted_id_flatzinc()
-	{
-		var path = "unit/compilation/quoted_id_flatzinc.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -474,22 +198,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/compilation/time_limit.mzn")]
-	public async Task test_solve_unit_compilation_time_limit()
-	{
-		var path = "unit/compilation/time_limit.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--time-limit 1",
-		};
-		string error = "time limit reached";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -625,20 +333,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/fznjson/fznjson-basic.mzn")]
-	public async Task test_solve_unit_fznjson_fznjson_basic()
-	{
-		var path = "unit/fznjson/fznjson-basic.mzn";
-		var solver = "fznjson.msc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/general/annotated_expression_1.mzn")]
 	public async Task test_solve_unit_general_annotated_expression_1()
 	{
@@ -656,70 +350,14 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/general/array_access_out_of_bounds_1.mzn")]
-	public async Task test_solve_unit_general_array_access_out_of_bounds_1()
-	{
-		var path = "unit/general/array_access_out_of_bounds_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*array access out of bounds, array `x' has index set A..B, but given index is C.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/array_access_out_of_bounds_2.mzn")]
-	public async Task test_solve_unit_general_array_access_out_of_bounds_2()
-	{
-		var path = "unit/general/array_access_out_of_bounds_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*array access out of bounds, array `x' is empty.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/array_access_record_out_of_bounds.mzn")]
-	public async Task test_solve_unit_general_array_access_record_out_of_bounds()
-	{
-		var path = "unit/general/array_access_record_out_of_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*array access out of bounds.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/array_access_tuple_out_of_bounds.mzn")]
-	public async Task test_solve_unit_general_array_access_tuple_out_of_bounds()
-	{
-		var path = "unit/general/array_access_tuple_out_of_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*array access out of bounds.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/general/array_intersect_context.mzn")]
 	public async Task test_solve_unit_general_array_intersect_context()
 	{
 		var path = "unit/general/array_intersect_context.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x=[{[1, ],},{[2, ],},{[3, ],}];b=true;""",
-			"""x=[{[1, ],[2, ],[3, ],},{[1, ],[2, ],[3, ],},{[1, ],[2, ],[3, ],}];b=false;""",
+			"""x=[{1},{2},{3}];b=true;""",
+			"""x=[{1,2,3},{1,2,3},{1,2,3}];b=false;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -753,7 +391,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/array_union_intersect_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x=[{[A, ],},{[B, ],},{[C, ],}];""",
+			"""x=[{A},{B},{C}];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -774,7 +412,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -802,7 +440,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/builtins_arg_max.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output="TWO";""",
+			"""bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output=TWO;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -819,7 +457,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/builtins_debug.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream="trace_logstream_par_inttrace_logstream_var_inttrace_logstream_par_opt_inttrace_logstream_var_opt_inttrace_logstream_array_of_par_inttrace_logstream_array_of_var_inttrace_logstream_array_of_par_opt_inttrace_logstream_array_of_var_opt_int";""",
+			"""assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream=trace_logstream_par_inttrace_logstream_var_inttrace_logstream_par_opt_inttrace_logstream_var_opt_inttrace_logstream_array_of_par_inttrace_logstream_array_of_var_inttrace_logstream_array_of_par_opt_inttrace_logstream_array_of_var_opt_int;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -853,7 +491,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/comprehension_var_ub.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -892,7 +530,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/enum_constructor_quoting.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="'Q~'('F!'('"'))";""",
+			"""_output_item='Q~'('F!'('"'));""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -914,34 +552,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/enum_out_of_range_1.mzn")]
-	public async Task test_solve_unit_general_enum_out_of_range_1()
-	{
-		var path = "unit/general/enum_out_of_range_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*declared domain of `x' is {A}, but assigned value is B.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/enum_out_of_range_2.mzn")]
-	public async Task test_solve_unit_general_enum_out_of_range_2()
-	{
-		var path = "unit/general/enum_out_of_range_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*declared domain of `x' is {A}, but assigned value is {B}.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -997,48 +607,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/general/function_param_out_of_range.mzn")]
-	public async Task test_solve_unit_general_function_param_out_of_range()
-	{
-		var path = "unit/general/function_param_out_of_range.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*declared domain of `'<unnamed argument>'' is 1..1, but assigned value is 2.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/function_return_out_of_range.mzn")]
-	public async Task test_solve_unit_general_function_return_out_of_range()
-	{
-		var path = "unit/general/function_return_out_of_range.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*result of function `foo' is B, which violates function type-inst {A}.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/function_return_out_of_range_opt.mzn")]
-	public async Task test_solve_unit_general_function_return_out_of_range_opt()
-	{
-		var path = "unit/general/function_return_out_of_range_opt.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*function result violates function type-inst, array contains value B which is not contained in {A}.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/general/infinite_domain_bind.mzn")]
 	public async Task test_solve_unit_general_infinite_domain_bind()
 	{
@@ -1062,7 +630,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/json_ignore.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_checker="data_2 = 2;";data_1=1;""",
+			"""_checker=data_2 = 2;;data_1=1;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/general/json_ignore.mzc.mzn\"",
@@ -1359,34 +927,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/param_out_of_range_float.mzn")]
-	public async Task test_solve_unit_general_param_out_of_range_float()
-	{
-		var path = "unit/general/param_out_of_range_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*declared domain of `x' is -infinity..-1.0 union 1.0..infinity, but assigned value is 0.0.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/param_out_of_range_int.mzn")]
-	public async Task test_solve_unit_general_param_out_of_range_int()
-	{
-		var path = "unit/general/param_out_of_range_int.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*declared domain of `x' is -infinity..-1 union 1..infinity, but assigned value is 0.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -1697,7 +1237,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/quoted_id_3.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="A?";""",
+			"""_output_item=A?;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -1714,7 +1254,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/quoted_id_4.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="Foo~(A?)";""",
+			"""_output_item=Foo~(A?);""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -1731,7 +1271,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/range_var_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x_to_y={[A, ],[B, ],[C, ],};""",
+			"""x_to_y={A,B,C};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -1760,20 +1300,6 @@ public class ClientTests : ClientTest
 		var allSolutions = true;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/stack_overflow.mzn")]
-	public async Task test_solve_unit_general_stack_overflow()
-	{
-		var path = "unit/general/stack_overflow.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*stack overflow.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -1969,22 +1495,22 @@ public class ClientTests : ClientTest
 		var path = "unit/general/test_rounding_a.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="-2.00, -2, -2, -2 OK";x=-2.0;""",
-			"""_output_item="-1.75, -1, -2, -2 OK";x=-1.75;""",
-			"""_output_item="-1.50, -1, -2, -2 OK";x=-1.5;""",
-			"""_output_item="-1.25, -1, -2, -1 OK";x=-1.25;""",
-			"""_output_item="-1.00, -1, -1, -1 OK";x=-1.0;""",
-			"""_output_item="-0.25, 0, -1, 0 OK";x=-0.25;""",
-			"""_output_item="-0.00, 0, 0, 0 OK";x=0.0;""",
-			"""_output_item="0.00, 0, 0, 0 OK";x=0.0;""",
-			"""_output_item="0.25, 1, 0, 0 OK";x=0.25;""",
-			"""_output_item="0.50, 1, 0, 1 OK";x=0.5;""",
-			"""_output_item="0.75, 1, 0, 1 OK";x=0.75;""",
-			"""_output_item="1.00, 1, 1, 1 OK";x=1.0;""",
-			"""_output_item="1.25, 2, 1, 1 OK";x=1.25;""",
-			"""_output_item="1.50, 2, 1, 2 OK";x=1.5;""",
-			"""_output_item="1.75, 2, 1, 2 OK";x=1.75;""",
-			"""_output_item="2.00, 2, 2, 2 OK";x=2.0;""",
+			"""_output_item=-2.00, -2, -2, -2 OK;x=-2.0;""",
+			"""_output_item=-1.75, -1, -2, -2 OK;x=-1.75;""",
+			"""_output_item=-1.50, -1, -2, -2 OK;x=-1.5;""",
+			"""_output_item=-1.25, -1, -2, -1 OK;x=-1.25;""",
+			"""_output_item=-1.00, -1, -1, -1 OK;x=-1.0;""",
+			"""_output_item=-0.25, 0, -1, 0 OK;x=-0.25;""",
+			"""_output_item=-0.00, 0, 0, 0 OK;x=0.0;""",
+			"""_output_item=0.00, 0, 0, 0 OK;x=0.0;""",
+			"""_output_item=0.25, 1, 0, 0 OK;x=0.25;""",
+			"""_output_item=0.50, 1, 0, 1 OK;x=0.5;""",
+			"""_output_item=0.75, 1, 0, 1 OK;x=0.75;""",
+			"""_output_item=1.00, 1, 1, 1 OK;x=1.0;""",
+			"""_output_item=1.25, 2, 1, 1 OK;x=1.25;""",
+			"""_output_item=1.50, 2, 1, 2 OK;x=1.5;""",
+			"""_output_item=1.75, 2, 1, 2 OK;x=1.75;""",
+			"""_output_item=2.00, 2, 2, 2 OK;x=2.0;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2001,15 +1527,15 @@ public class ClientTests : ClientTest
 		var path = "unit/general/test_rounding_b.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="0.00, 0, 0, 0 OK";x=0.0;""",
-			"""_output_item="0.25, 1, 0, 0 OK";x=0.25;""",
-			"""_output_item="0.50, 1, 0, 1 OK";x=0.5;""",
-			"""_output_item="0.75, 1, 0, 1 OK";x=0.75;""",
-			"""_output_item="1.00, 1, 1, 1 OK";x=1.0;""",
-			"""_output_item="1.25, 2, 1, 1 OK";x=1.25;""",
-			"""_output_item="1.50, 2, 1, 2 OK";x=1.5;""",
-			"""_output_item="1.75, 2, 1, 2 OK";x=1.75;""",
-			"""_output_item="2.00, 2, 2, 2 OK";x=2.0;""",
+			"""_output_item=0.00, 0, 0, 0 OK;x=0.0;""",
+			"""_output_item=0.25, 1, 0, 0 OK;x=0.25;""",
+			"""_output_item=0.50, 1, 0, 1 OK;x=0.5;""",
+			"""_output_item=0.75, 1, 0, 1 OK;x=0.75;""",
+			"""_output_item=1.00, 1, 1, 1 OK;x=1.0;""",
+			"""_output_item=1.25, 2, 1, 1 OK;x=1.25;""",
+			"""_output_item=1.50, 2, 1, 2 OK;x=1.5;""",
+			"""_output_item=1.75, 2, 1, 2 OK;x=1.75;""",
+			"""_output_item=2.00, 2, 2, 2 OK;x=2.0;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2026,13 +1552,13 @@ public class ClientTests : ClientTest
 		var path = "unit/general/test_rounding_c.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="-2.00, -2, -2, -2 OK";x=-2.0;""",
-			"""_output_item="-1.75, -1, -2, -2 OK";x=-1.75;""",
-			"""_output_item="-1.50, -1, -2, -2 OK";x=-1.5;""",
-			"""_output_item="-1.25, -1, -2, -1 OK";x=-1.25;""",
-			"""_output_item="-1.00, -1, -1, -1 OK";x=-1.0;""",
-			"""_output_item="-0.25, 0, -1, 0 OK";x=-0.25;""",
-			"""_output_item="-0.00, 0, 0, 0 OK";x=0.0;""",
+			"""_output_item=-2.00, -2, -2, -2 OK;x=-2.0;""",
+			"""_output_item=-1.75, -1, -2, -2 OK;x=-1.75;""",
+			"""_output_item=-1.50, -1, -2, -2 OK;x=-1.5;""",
+			"""_output_item=-1.25, -1, -2, -1 OK;x=-1.25;""",
+			"""_output_item=-1.00, -1, -1, -1 OK;x=-1.0;""",
+			"""_output_item=-0.25, 0, -1, 0 OK;x=-0.25;""",
+			"""_output_item=-0.00, 0, 0, 0 OK;x=0.0;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2068,7 +1594,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/test_set_lt_1.mzn";
 		var solver = "chuffed";
 		var solutions = new List<string> {
-			"""sets=[1..3,{[1, ],[2, ],[4, ],},{[1, ],[2, ],[5, ],},{[1, ],[2, ],[6, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[4, ],[5, ],},{[1, ],[4, ],[6, ],},{[1, ],[5, ],[6, ],},2..4,{[2, ],[3, ],[5, ],},{[2, ],[3, ],[6, ],},{[2, ],[4, ],[5, ],},{[2, ],[4, ],[6, ],},{[2, ],[5, ],[6, ],},3..5,{[3, ],[4, ],[6, ],},{[3, ],[5, ],[6, ],},4..6];""",
+			"""sets=[1..3,{1,2,4},{1,2,5},{1,2,6},{1,3,4},{1,3,5},{1,3,6},{1,4,5},{1,4,6},{1,5,6},2..4,{2,3,5},{2,3,6},{2,4,5},{2,4,6},{2,5,6},3..5,{3,4,6},{3,5,6},4..6];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2085,7 +1611,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/test_set_lt_2.mzn";
 		var solver = "chuffed";
 		var solutions = new List<string> {
-			"""sets=[{},{[1, ],},1..2,1..3,{[1, ],[3, ],},{[2, ],},2..3,{[3, ],}];""",
+			"""sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2102,7 +1628,7 @@ public class ClientTests : ClientTest
 		var path = "unit/general/test_set_lt_2.mzn";
 		var solver = "coin-bc";
 		var solutions = new List<string> {
-			"""sets=[{},{[1, ],},1..2,1..3,{[1, ],[3, ],},{[2, ],},2..3,{[3, ],}];""",
+			"""sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2121,7 +1647,7 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/general/test_set_lt_3.mzn";
 		var solutions = new List<string> {
-			"""y={[1, ],[4, ],};""",
+			"""y={1,4};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2176,29 +1702,13 @@ public class ClientTests : ClientTest
 		var path = "unit/general/test_to_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""par_int="b";var_int="c";array_of_int=["a","b","c"];array_of_var_int=["a","b","c"];array_of_set_of_int=[{[a, ],},{[a, ],[b, ],},{[a, ],[b, ],[c, ],}];array_of_var_set_of_int=[{[a, ],},{[a, ],[b, ],},{[a, ],[b, ],[c, ],}];set_of_int={[a, ],[b, ],[c, ],};var_set_of_int={[a, ],[b, ],[c, ],};""",
+			"""par_int=b;var_int=c;array_of_int=[a,b,c];array_of_var_int=[a,b,c];array_of_set_of_int=[{a},{a,b},{a,b,c}];array_of_var_set_of_int=[{a},{a,b},{a,b,c}];set_of_int={a,b,c};var_set_of_int={a,b,c};""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/general/test_undefined_enum.mzn")]
-	public async Task test_solve_unit_general_test_undefined_enum()
-	{
-		var path = "unit/general/test_undefined_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--model-check-only",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -2270,7 +1780,7 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/globals/typecheck_globals.mzn";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2300,29 +1810,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/json/anon_enum_json.mzn")]
-	public async Task test_solve_unit_json_anon_enum_json_2()
-	{
-		var path = "unit/json/anon_enum_json.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/json/anon_enum_json_err.json\"",
-		};
-		string error = ".*invalid enum object.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/json/coerce_enum_str.mzn")]
 	public async Task test_solve_unit_json_coerce_enum_str()
 	{
 		var path = "unit/json/coerce_enum_str.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/coerce_enum_str.json\"",
@@ -2335,29 +1829,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/json/coerce_enum_str_err.mzn")]
-	public async Task test_solve_unit_json_coerce_enum_str_err()
-	{
-		var path = "unit/json/coerce_enum_str_err.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/json/coerce_enum_str_err.json\"",
-		};
-		string error = ".*has invalid type-inst.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/json/coerce_indices.mzn")]
 	public async Task test_solve_unit_json_coerce_indices()
 	{
 		var path = "unit/json/coerce_indices.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/coerce_indices.json\"",
@@ -2376,7 +1854,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/coerce_set.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/coerce_set.json\"",
@@ -2395,7 +1873,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/enum_constructor_basic.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x=F("A");""",
+			"""x=F(A);""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/enum_constructor_basic.json\"",
@@ -2414,7 +1892,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/enum_constructor_basic_2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x=F("A");""",
+			"""x=F(A);""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/enum_constructor_basic_2.json\"",
@@ -2452,7 +1930,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/enum_constructor_nested.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x=G(F("A"));""",
+			"""x=G(F(A));""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/enum_constructor_nested.json\"",
@@ -2465,22 +1943,22 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	// [Fact(DisplayName="unit/json/enum_escaping.mzn")]
-	// public async Task test_solve_unit_json_enum_escaping()
-	// {
-	// 	var path = "unit/json/enum_escaping.mzn";
-	// 	var solver = "gecode";
-	// 	var solutions = new List<string> {
-	// 		"""x=""";""",
-	// 		};
-	// 	var args = new List<string>();
-	// 	string? error = null;
-	// 	var allSolutions = false;
-	// 	var statuses = new List<SolveStatus>{
-	// 		SolveStatus.Satisfied,SolveStatus.Optimal
-	// 	};
-	// 	await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	// }
+	[Fact(DisplayName="unit/json/enum_escaping.mzn")]
+	public async Task test_solve_unit_json_enum_escaping()
+	{
+		var path = "unit/json/enum_escaping.mzn";
+		var solver = "gecode";
+		var solutions = new List<string> {
+			"""x=";""",
+			};
+		var args = new List<string>();
+		string? error = null;
+		var allSolutions = false;
+		var statuses = new List<SolveStatus>{
+			SolveStatus.Satisfied,SolveStatus.Optimal
+		};
+		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+	}
 
 	[Fact(DisplayName="unit/json/float_json_exponent.mzn")]
 	public async Task test_solve_unit_json_float_json_exponent()
@@ -2488,7 +1966,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/float_json_exponent.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x="2.0e-05";y=1500.0;""",
+			"""x=2.0e-05;y=1500.0;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/float_json_exponent.json\"",
@@ -2507,7 +1985,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/json_array2d_set.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_array2d_set.json\"",
@@ -2526,7 +2004,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/json_enum_def.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""w="A";x="D";y="G";z="J";""",
+			"""w=A;x=D;y=G;z=J;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_enum_def.json\"",
@@ -2545,7 +2023,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/json_input_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""int_set={[1, ],[2, ],[4, ],[5, ],[7, ],[9, ],};float_set={[1.0, ],[2.0, ],};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[true];array_3d_int=[1,2,3,4,5,6,7,8];array_opt_float=[1.5,<>];x=1;y=2.0;z=true;o=<>;""",
+			"""int_set={1,2,4,5,7,9};float_set={1.0,2.0};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[true];array_3d_int=[1,2,3,4,5,6,7,8];array_opt_float=[1.5,<>];x=1;y=2.0;z=true;o=<>;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_input_1.json\"",
@@ -2564,7 +2042,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/json_unicode_escapes.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""a="A";mu="μ";arrow="↑";clef="𝄞";""",
+			"""a=A;mu=μ;arrow=↑;clef=𝄞;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/json_unicode_escapes.json\"",
@@ -2583,7 +2061,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/mult_dim_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""use_e=["A","B","B","C"];""",
+			"""use_e=[A,B,B,C];""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/mult_dim_enum.json\"",
@@ -2602,7 +2080,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/record_json_input.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/record_json_input.json\"",
@@ -2621,7 +2099,7 @@ public class ClientTests : ClientTest
 		var path = "unit/json/tuple_json_input.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/json/tuple_json_input.json\"",
@@ -2724,7 +2202,7 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/on_restart/last_val_set.mzn";
 		var solutions = new List<string> {
-			"""x=4;y={[1, ],[2, ],[4, ],[8, ],};""",
+			"""x=4;y={1,2,4,8};""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -2807,7 +2285,7 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/on_restart/sol_set.mzn";
 		var solutions = new List<string> {
-			"""x={};y={[1, ],};""",
+			"""x={};y={1};""",
 			};
 		var args = new List<string>{
 			"--restart constant",
@@ -2874,7 +2352,7 @@ public class ClientTests : ClientTest
 		var path = "unit/optional/opt_array_access.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2891,7 +2369,7 @@ public class ClientTests : ClientTest
 		var path = "unit/optional/opt_math_abs.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -2908,7 +2386,7 @@ public class ClientTests : ClientTest
 		var path = "unit/optional/opt_math_neg.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3134,20 +2612,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/optional/test_bug_456.mzn")]
-	public async Task test_solve_unit_optional_test_bug_456()
-	{
-		var path = "unit/optional/test_bug_456.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/optional/test_count_set.mzn")]
 	public async Task test_solve_unit_optional_test_count_set()
 	{
@@ -3345,7 +2809,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/arg-reif-output.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="WORKED";""",
+			"""_output_item=WORKED;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3390,41 +2854,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/output/dzn_output_array.mzn")]
-	public async Task test_solve_unit_output_dzn_output_array()
-	{
-		var path = "unit/output/dzn_output_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/output/enum_constructor_functions.mzn")]
-	public async Task test_solve_unit_output_enum_constructor_functions()
-	{
-		var path = "unit/output/enum_constructor_functions.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/output/format_justified_enums.mzn")]
 	public async Task test_solve_unit_output_format_justified_enums()
 	{
 		var path = "unit/output/format_justified_enums.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item=">      [Hello, World]<";""",
+			"""_output_item=>      [Hello, World]<;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3441,7 +2877,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/json_ann.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x="promise_total";y="expression_name("test")";""",
+			"""x=promise_total;y=expression_name("test");""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3458,7 +2894,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/json_multidim.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="[[{"e":"A"}, {"e":"B"}], [{"e":"C"}, {"e":"D"}]] [[{"e":"A"}, {"e":"B"}], [{"e":"C"}, {"e":"D"}]]";""",
+			"""_output_item=[[{"e":"A"}, {"e":"B"}], [{"e":"C"}, {"e":"D"}]] [[{"e":"A"}, {"e":"B"}], [{"e":"C"}, {"e":"D"}]];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3475,7 +2911,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/local_output.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""a=[1];x@14.5-28|a@13.6=[1];_output_item="predicate: [1]";""",
+			"""a=[1];x@14.5-28|a@13.6=[1];_output_item=predicate: [1];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3577,7 +3013,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="aebdc";""",
+			"""_output_item=aebdc;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3594,7 +3030,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="bdc";""",
+			"""_output_item=bdc;""",
 			};
 		var args = new List<string>{
 			"--only-sections foo,bar",
@@ -3613,7 +3049,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_1.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="ae";""",
+			"""_output_item=ae;""",
 			};
 		var args = new List<string>{
 			"--not-sections foo,bar",
@@ -3632,7 +3068,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="aebdc";""",
+			"""_output_item=aebdc;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3642,14 +3078,14 @@ public class ClientTests : ClientTest
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
-
+	
 	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
 	public async Task test_solve_unit_output_output_sections_2_2()
 	{
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="bdc";""",
+			"""_output_item=bdc;""",
 			};
 		var args = new List<string>{
 			"--only-sections foo,bar",
@@ -3668,7 +3104,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="ae";""",
+			"""_output_item=ae;""",
 			};
 		var args = new List<string>{
 			"--not-sections foo,bar",
@@ -3687,7 +3123,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_3.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""objective=9;_output_item="x = 10";""",
+			"""objective=9;_output_item=x = 10;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3704,7 +3140,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_4.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="x = 10";""",
+			"""_output_item=x = 10;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3721,7 +3157,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_5.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="x = 10y = 1";""",
+			"""_output_item=x = 10y = 1;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3738,7 +3174,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_6.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="output_to_section: 10output_item: 10";""",
+			"""_output_item=output_to_section: 10output_item: 10;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3755,41 +3191,13 @@ public class ClientTests : ClientTest
 		var path = "unit/output/output_sections_7.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="[1]";""",
+			"""_output_item=[1];""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/output/quoted_id_ozn.mzn")]
-	public async Task test_solve_unit_output_quoted_id_ozn()
-	{
-		var path = "unit/output/quoted_id_ozn.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/output/record_access_printing.mzn")]
-	public async Task test_solve_unit_output_record_access_printing()
-	{
-		var path = "unit/output/record_access_printing.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -3801,8 +3209,8 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/output/test-in-output.mzn";
 		var solutions = new List<string> {
-			"""_output_item="x = 1y = 2NO";""",
-			"""_output_item="x = 1y = 2YES";""",
+			"""_output_item=x = 1y = 2NO;""",
+			"""_output_item=x = 1y = 2YES;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3819,7 +3227,7 @@ public class ClientTests : ClientTest
 		var path = "unit/output/var_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="["X_INTRODUCED_16_", "X_INTRODUCED_17_", "X_INTRODUCED_18_"] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch]";""",
+			"""_output_item=["X_INTRODUCED_16_", "X_INTRODUCED_17_", "X_INTRODUCED_18_"] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -3849,38 +3257,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/param_file/param_file_blacklist.mzn")]
-	public async Task test_solve_unit_param_file_param_file_blacklist()
-	{
-		var path = "unit/param_file/param_file_blacklist.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_blacklist_1.mpc\"",
-		};
-		string error = ".*not allowed in configuration file.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/param_file/param_file_blacklist.mzn")]
-	public async Task test_solve_unit_param_file_param_file_blacklist_2()
-	{
-		var path = "unit/param_file/param_file_blacklist.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_blacklist_2.mpc\"",
-		};
-		string error = ".*not allowed in configuration file.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/param_file/param_file_nested_object.mzn")]
 	public async Task test_solve_unit_param_file_param_file_nested_object()
 	{
@@ -3894,22 +3270,6 @@ public class ClientTests : ClientTest
 		var allSolutions = true;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/param_file/param_file_recursive.mzn")]
-	public async Task test_solve_unit_param_file_param_file_recursive()
-	{
-		var path = "unit/param_file/param_file_recursive.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_recursive.mpc\"",
-		};
-		string error = ".*Cyclic parameter configuration file.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -4036,8 +3396,8 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/regression/array_set_element_nosets.mzn";
 		var solutions = new List<string> {
-			"""x=1;y=[{[1, ],},{[2, ],},{[3, ],}];z={[1, ],};""",
-			"""x=3;y=[{[1, ],},{[2, ],},{[3, ],}];z={[3, ],};""",
+			"""x=1;y=[{1},{2},{3}];z={1};""",
+			"""x=3;y=[{1},{2},{3}];z={3};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -4056,7 +3416,7 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/regression/array_var_set_element_nosets.mzn";
 		var solutions = new List<string> {
-			"""x=1;y=[1..3,{},{[1, ],}];z=1..3;""",
+			"""x=1;y=[1..3,{},{1}];z=1..3;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -4096,7 +3456,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -4107,7 +3467,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/binop_mult_gclock.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -4462,20 +3822,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/bug570.mzn")]
-	public async Task test_solve_unit_regression_bug570()
-	{
-		var path = "unit/regression/bug570.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/bug635.mzn")]
 	public async Task test_solve_unit_regression_bug635()
 	{
@@ -4532,45 +3878,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/bug_629.mzn")]
-	public async Task test_solve_unit_regression_bug_629()
-	{
-		var path = "unit/regression/bug_629.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O1",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/bug_629.mzn")]
-	public async Task test_solve_unit_regression_bug_629_2()
-	{
-		var path = "unit/regression/bug_629.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O2",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/bug_empty_enum_extension.mzn")]
 	public async Task test_solve_unit_regression_bug_empty_enum_extension()
 	{
 		var path = "unit/regression/bug_empty_enum_extension.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""as=[z("z2"),z("z1"),x("x2"),x("x1")];""",
+			"""as=[z(z2),z(z1),x(x2),x(x1)];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -4604,7 +3918,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/checker_mzn_check_var.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_checker="Ok";""",
+			"""_checker=Ok;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_mzn_check_var.mzc.mzn\"",
@@ -4623,7 +3937,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/checker_opt.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_checker="y = 20;";""",
+			"""_checker=y = 20;;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_opt.mzc.mzn\"",
@@ -4642,7 +3956,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/checker_params.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_checker="yay!";""",
+			"""_checker=yay!;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_params.mzc.mzn\"",
@@ -4661,7 +3975,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/checker_same_var.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_checker="x = 10;";objective=5;""",
+			"""_checker=x = 10;;objective=5;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_same_var.mzc.mzn\"",
@@ -4680,8 +3994,8 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/checker_var_bug.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_checker="x = 1;";""",
-			"""_checker="x = 2;";""",
+			"""_checker=x = 1;;""",
+			"""_checker=x = 2;;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/checker_var_bug.mzc.mzn\"",
@@ -4724,34 +4038,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/cse_array_lit.mzn")]
-	public async Task test_solve_unit_regression_cse_array_lit()
-	{
-		var path = "unit/regression/cse_array_lit.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/cyclic_include.mzn")]
-	public async Task test_solve_unit_regression_cyclic_include()
-	{
-		var path = "unit/regression/cyclic_include.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -4924,7 +4210,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_639_part2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5037,48 +4323,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/github_648_par_array_decl.mzn")]
-	public async Task test_solve_unit_regression_github_648_par_array_decl()
-	{
-		var path = "unit/regression/github_648_par_array_decl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*declared domain of `x[1]' is 1..3, but assigned value is 0.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/github_648_par_decl.mzn")]
-	public async Task test_solve_unit_regression_github_648_par_decl()
-	{
-		var path = "unit/regression/github_648_par_decl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*declared domain of `x' is 1..3, but assigned value is 0.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/github_656.mzn")]
-	public async Task test_solve_unit_regression_github_656()
-	{
-		var path = "unit/regression/github_656.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*cannot coerce set into 2-dimensional array.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/github_661_part1.mzn")]
 	public async Task test_solve_unit_regression_github_661_part1()
 	{
@@ -5089,7 +4333,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -5117,7 +4361,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_664.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x={[1, ],};""",
+			"""x={1};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5140,7 +4384,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -5240,7 +4484,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_673.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="[X, <>]";""",
+			"""_output_item=[X, <>];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5300,20 +4544,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/github_680.mzn")]
-	public async Task test_solve_unit_regression_github_680()
-	{
-		var path = "unit/regression/github_680.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -5430,7 +4660,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_693_part2.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x=[{},{[2, ],},{[1, ],},1..2];""",
+			"""x=[{},{2},{1},1..2];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5467,7 +4697,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_700.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""c={[1, ],};d=1..2;""",
+			"""c={1};d=1..2;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5485,8 +4715,8 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/regression/github_700_bad_sol.mzn";
 		var solutions = new List<string> {
-			"""c={[1, ],};d={};""",
-			"""c={};d={[1, ],};""",
+			"""c={1};d={};""",
+			"""c={};d={1};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5534,20 +4764,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/github_725.mzn")]
-	public async Task test_solve_unit_regression_github_725()
-	{
-		var path = "unit/regression/github_725.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/github_726.mzn")]
 	public async Task test_solve_unit_regression_github_726()
 	{
@@ -5569,28 +4785,14 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_728.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""wanted={[1, ],};""",
-			"""wanted={[4, ],};""",
+			"""wanted={1};""",
+			"""wanted={4};""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/github_730.mzn")]
-	public async Task test_solve_unit_regression_github_730()
-	{
-		var path = "unit/regression/github_730.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -5701,7 +4903,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_752.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5795,7 +4997,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_761.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5834,7 +5036,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -5859,34 +5061,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/github_768a.mzn")]
-	public async Task test_solve_unit_regression_github_768a()
-	{
-		var path = "unit/regression/github_768a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/github_768b.mzn")]
-	public async Task test_solve_unit_regression_github_768b()
-	{
-		var path = "unit/regression/github_768b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/github_771.mzn")]
 	public async Task test_solve_unit_regression_github_771()
 	{
@@ -5900,20 +5074,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/github_773.mzn")]
-	public async Task test_solve_unit_regression_github_773()
-	{
-		var path = "unit/regression/github_773.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -5943,7 +5103,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_778.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -5954,27 +5114,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/github_779.mzn")]
-	public async Task test_solve_unit_regression_github_779()
-	{
-		var path = "unit/regression/github_779.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/github_783.mzn")]
 	public async Task test_solve_unit_regression_github_783()
 	{
 		var path = "unit/regression/github_783.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>{
 			"-O2",
@@ -5999,7 +5145,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -6030,7 +5176,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_793.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="[{"e":"A"}] {"v": [{"e":"A"}]}";""",
+			"""_output_item=[{"e":"A"}] {"v": [{"e":"A"}]};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6053,7 +5199,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -6116,7 +5262,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_806.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6150,7 +5296,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/github_809.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""bar=<>;biz={[B, ],};""",
+			"""bar=<>;biz={B};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6281,7 +5427,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/makepar_output.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="1..1";""",
+			"""_output_item=1..1;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6298,27 +5444,13 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/multi_goal_hierarchy_error.mzn";
 		var solver = "coin-bc";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/non-set-array-ti-location.mzn")]
-	public async Task test_solve_unit_regression_non_set_array_ti_location()
-	{
-		var path = "unit/regression/non-set-array-ti-location.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -6397,7 +5529,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/output_2d_array_enum.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6414,8 +5546,8 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/output_fn_toplevel_var.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="[1][true]";""",
-			"""_output_item="[2][false]";""",
+			"""_output_item=[1][true];""",
+			"""_output_item=[2][false];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6426,55 +5558,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/output_only_fn.mzn")]
-	public async Task test_solve_unit_regression_output_only_fn()
-	{
-		var path = "unit/regression/output_only_fn.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/output_only_no_rhs.mzn")]
-	public async Task test_solve_unit_regression_output_only_no_rhs()
-	{
-		var path = "unit/regression/output_only_no_rhs.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/parser_location.mzn")]
-	public async Task test_solve_unit_regression_parser_location()
-	{
-		var path = "unit/regression/parser_location.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/parse_assignments.mzn")]
 	public async Task test_solve_unit_regression_parse_assignments()
 	{
 		var path = "unit/regression/parse_assignments.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_checker="Ok";""",
+			"""_checker=Ok;""",
 			};
 		var args = new List<string>{
 			"--data \"unit/regression/parse_assignments.mzc.mzn\"",
@@ -6493,7 +5583,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/par_opt_dom.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6560,7 +5650,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/slice_enum_indexset.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="ok";""",
+			"""_output_item=ok;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6578,9 +5668,9 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/regression/subsets_100.mzn";
 		var solutions = new List<string> {
-			"""s=1..9;t={[45, ],};s_total=45;t_total=45;""",
-			"""s={[100, ],};t={[49, ],[51, ],};s_total=100;t_total=100;""",
-			"""s={[1, ],[2, ],[40, ],[56, ],[94, ],};t={[3, ],[93, ],[97, ],};s_total=193;t_total=193;""",
+			"""s=1..9;t={45};s_total=45;t_total=45;""",
+			"""s={100};t={49,51};s_total=100;t_total=100;""",
+			"""s={1,2,40,56,94};t={3,93,97};s_total=193;t_total=193;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6670,7 +5760,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/test_bug72.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x={[1, ],};b=true;""",
+			"""x={1};b=true;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6687,7 +5777,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/test_bug72.mzn";
 		var solver = "chuffed";
 		var solutions = new List<string> {
-			"""x={[1, ],};b=true;""",
+			"""x={1};b=true;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6715,27 +5805,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/test_bug_483.mzn")]
-	public async Task test_solve_unit_regression_test_bug_483()
-	{
-		var path = "unit/regression/test_bug_483.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/test_bug_493.mzn")]
 	public async Task test_solve_unit_regression_test_bug_493()
 	{
 		var path = "unit/regression/test_bug_493.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="{}";""",
+			"""_output_item={};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6769,7 +5845,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/test_bug_520.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="{a}"b"";""",
+			"""_output_item={a}"b";""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6820,7 +5896,7 @@ public class ClientTests : ClientTest
 		var path = "unit/regression/test_bug_529.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="ok";""",
+			"""_output_item=ok;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -6935,44 +6011,16 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/regression/test_parout.mzn")]
-	public async Task test_solve_unit_regression_test_parout_2()
-	{
-		var path = "unit/regression/test_parout.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/regression/ti_error_location.mzn")]
-	public async Task test_solve_unit_regression_ti_error_location()
-	{
-		var path = "unit/regression/ti_error_location.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = "^(?!unknown file:0.0).*$";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/regression/ts_bug.mzn")]
 	public async Task test_solve_unit_regression_ts_bug()
 	{
 		var path = "unit/regression/ts_bug.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""cost=48;s=[4,1,2,3,6,5];dur=[{[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],},{[1, ],[3, ],}];bef=[{},{[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[2, ],[3, ],[4, ],},{[1, ],[2, ],[3, ],[4, ],},{[1, ],[2, ],[3, ],[4, ],}];aft=[{[1, ],[2, ],[3, ],[4, ],},{[1, ],[2, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],},{}];a=[{[1, ],[2, ],},{[2, ],[3, ],},{[3, ],[4, ],},{[2, ],[4, ],},{[1, ],[3, ],},{[1, ],[4, ],}];""",
-			"""cost=48;s=[4,1,2,3,6,5];dur=[{[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],},{[1, ],[3, ],}];bef=[{},{[2, ],[4, ],},{[1, ],[2, ],[4, ],},1..4,1..4,1..4];aft=[1..4,1..4,{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],},{}];a=[1..2,2..3,3..4,{[2, ],[4, ],},{[1, ],[3, ],},{[1, ],[4, ],}];""",
-			"""cost=48;s=[5,3,2,1,4,6];dur=[{[1, ],[3, ],},{[1, ],[3, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[4, ],},{[1, ],[4, ],}];bef=[{},{[1, ],[3, ],},{[1, ],[3, ],[4, ],},1..4,1..4,1..4];aft=[1..4,1..4,{[1, ],[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[4, ],},{}];a=[1..2,2..3,3..4,{[2, ],[4, ],},{[1, ],[3, ],},{[1, ],[4, ],}];""",
-			"""cost=48;s=[4,1,2,3,5,6];dur=[{[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[4, ],},{[1, ],[4, ],}];bef=[{},{[2, ],[4, ],},{[1, ],[2, ],[4, ],},1..4,1..4,1..4];aft=[1..4,1..4,{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[4, ],},{}];a=[1..2,2..3,3..4,{[2, ],[4, ],},{[1, ],[3, ],},{[1, ],[4, ],}];""",
+			"""cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},{1,2,3,4},{1,2,3,4},{1,2,3,4}];aft=[{1,2,3,4},{1,2,3,4},{1,3,4},{1,3,4},{1,3},{}];a=[{1,2},{2,3},{3,4},{2,4},{1,3},{1,4}];""",
+			"""cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,3},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];""",
+			"""cost=48;s=[5,3,2,1,4,6];dur=[{1,3},{1,3,4},{1,2,4},{1,2,4},{1,4},{1,4}];bef=[{},{1,3},{1,3,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,2,4},{1,2,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];""",
+			"""cost=48;s=[4,1,2,3,5,6];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,4},{1,4}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -7027,7 +6075,7 @@ public class ClientTests : ClientTest
 	{
 		var path = "unit/regression/var_self_assign_bug.mzn";
 		var solutions = new List<string> {
-			"""partitions=[{[1, ],[2, ],[3, ],},{[1, ],[2, ],[3, ],},{[1, ],[2, ],[3, ],}];""",
+			"""partitions=[{1,2,3},{1,2,3},{1,2,3}];""",
 			"""partitions=[1..3,1..3,1..3];""",
 			"""partitions=[{},{},{}];""",
 			};
@@ -7358,48 +6406,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/alias_set_of_array.mzn")]
-	public async Task test_solve_unit_types_alias_set_of_array()
-	{
-		var path = "unit/types/alias_set_of_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/array_var_opt_set_comprehension.mzn")]
-	public async Task test_solve_unit_types_array_var_opt_set_comprehension()
-	{
-		var path = "unit/types/array_var_opt_set_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/common_record.mzn")]
-	public async Task test_solve_unit_types_common_record()
-	{
-		var path = "unit/types/common_record.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/types/common_struct_bottom.mzn")]
 	public async Task test_solve_unit_types_common_struct_bottom()
 	{
@@ -7417,27 +6423,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/comprehension_of_absent_any_1.mzn")]
-	public async Task test_solve_unit_types_comprehension_of_absent_any_1()
-	{
-		var path = "unit/types/comprehension_of_absent_any_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/types/comprehension_type.mzn")]
 	public async Task test_solve_unit_types_comprehension_type()
 	{
 		var path = "unit/types/comprehension_type.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x=["A","A","A","A"];""",
+			"""x=[A,A,A,A];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -7471,7 +6463,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/enum_decl.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""__val__="";""",
+			"""__val__=;""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -7488,7 +6480,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/enum_refl.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x={};ubx={[a, ],[b, ],[c, ],};y="a";lby="a";uby="c";domy={[a, ],[b, ],[c, ],};""",
+			"""x={};ubx={a,b,c};y=a;lby=a;uby=c;domy={a,b,c};""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -7533,48 +6525,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/nested_type_inst_id.mzn")]
-	public async Task test_solve_unit_types_nested_type_inst_id()
-	{
-		var path = "unit/types/nested_type_inst_id.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*type-inst variable $X used in both array and non-array position.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/nonbool_constraint.mzn")]
-	public async Task test_solve_unit_types_nonbool_constraint()
-	{
-		var path = "unit/types/nonbool_constraint.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/nonbool_constraint_let.mzn")]
-	public async Task test_solve_unit_types_nonbool_constraint_let()
-	{
-		var path = "unit/types/nonbool_constraint_let.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/types/non_contig_enum.mzn")]
 	public async Task test_solve_unit_types_non_contig_enum()
 	{
@@ -7605,34 +6555,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/opt_alias._record.mzn")]
-	public async Task test_solve_unit_types_opt_alias_record()
-	{
-		var path = "unit/types/opt_alias._record.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/opt_alias._tuple.mzn")]
-	public async Task test_solve_unit_types_opt_alias_tuple()
-	{
-		var path = "unit/types/opt_alias._tuple.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -7673,27 +6595,13 @@ public class ClientTests : ClientTest
 		var path = "unit/types/polymorphic_overloading.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="Ok";""",
+			"""_output_item=Ok;""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/record_access_error.mzn")]
-	public async Task test_solve_unit_types_record_access_error()
-	{
-		var path = "unit/types/record_access_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -7704,27 +6612,13 @@ public class ClientTests : ClientTest
 		var path = "unit/types/record_access_success.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="onetwo";""",
+			"""_output_item=onetwo;""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/record_array_access_error.mzn")]
-	public async Task test_solve_unit_types_record_array_access_error()
-	{
-		var path = "unit/types/record_array_access_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -7780,27 +6674,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/record_decl_error.mzn")]
-	public async Task test_solve_unit_types_record_decl_error()
-	{
-		var path = "unit/types/record_decl_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/types/record_in_checker.mzn")]
 	public async Task test_solve_unit_types_record_in_checker()
 	{
 		var path = "unit/types/record_in_checker.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_checker="{"x": 1}";""",
+			"""_checker={"x": 1};""",
 			};
 		var args = new List<string>{
 			"--data \"unit/types/record_in_checker.mzc.mzn\"",
@@ -7809,34 +6689,6 @@ public class ClientTests : ClientTest
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/record_ite_error.mzn")]
-	public async Task test_solve_unit_types_record_ite_error()
-	{
-		var path = "unit/types/record_ite_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/record_lit_dup.mzn")]
-	public async Task test_solve_unit_types_record_lit_dup()
-	{
-		var path = "unit/types/record_lit_dup.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -7862,7 +6714,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/record_output.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="full var: (a: 0, b: true, c: 1.5)var array: [(a: 2, b: false), (a: 1, b: true)]nested: (inner: (left: 3, right: 4), outer: false)element: 3partial: (x: 10, y: true)data: (e: -3.2, f: false)";""",
+			"""_output_item=full var: (a: 0, b: true, c: 1.5)var array: [(a: 2, b: false), (a: 1, b: true)]nested: (inner: (left: 3, right: 4), outer: false)element: 3partial: (x: 10, y: true)data: (e: -3.2, f: false);""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -7896,7 +6748,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/record_var_element.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""idx="iE";selected=(a:6,b:(c:3,d:3,),);""",
+			"""idx=iE;selected=(a:6,b:(c:3,d:3,),);""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -7947,7 +6799,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/struct_array_coercion.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""mzn_enum_X=["A",,"B",,"G",0,1..3];""",
+			"""mzn_enum_X=[A,,B,,G,0,1..3];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -8070,7 +6922,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -8085,35 +6937,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/struct_index_sets_1.mzn")]
-	public async Task test_solve_unit_types_struct_index_sets_1()
-	{
-		var path = "unit/types/struct_index_sets_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/struct_index_sets_2.mzn")]
-	public async Task test_solve_unit_types_struct_index_sets_2()
-	{
-		var path = "unit/types/struct_index_sets_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".* Declared index set of `x.1' is [1..1], but is assigned to array with index set [2..2].*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -8203,20 +7027,6 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/struct_return_ti_3.mzn")]
-	public async Task test_solve_unit_types_struct_return_ti_3()
-	{
-		var path = "unit/types/struct_return_ti_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string error = ".*function result violates function type-inst.*";
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/types/struct_return_ti_4.mzn")]
 	public async Task test_solve_unit_types_struct_return_ti_4()
 	{
@@ -8227,7 +7037,7 @@ public class ClientTests : ClientTest
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
+			SolveStatus.Unsatisfiable
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -8238,7 +7048,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/struct_specialise.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""foo_int=1;foo_str="test";foo_enum="B";bar_int=2;bar_str="pred";bar_enum="C";baz_tup=[3,"func"];baz_rec=(x:"B",);""",
+			"""foo_int=1;foo_str=test;foo_enum=B;bar_int=2;bar_str=pred;bar_enum=C;baz_tup=[3,func];baz_rec=(x:B,);""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -8255,7 +7065,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/struct_specialise_return.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="{C}, [(A,)]";""",
+			"""_output_item={C}, [(A,)];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -8284,61 +7094,19 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/tuple_access_error1.mzn")]
-	public async Task test_solve_unit_types_tuple_access_error1()
-	{
-		var path = "unit/types/tuple_access_error1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_access_error2.mzn")]
-	public async Task test_solve_unit_types_tuple_access_error2()
-	{
-		var path = "unit/types/tuple_access_error2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/types/tuple_access_success.mzn")]
 	public async Task test_solve_unit_types_tuple_access_success()
 	{
 		var path = "unit/types/tuple_access_success.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="onetwo";""",
+			"""_output_item=onetwo;""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/tuple_array_access_error.mzn")]
-	public async Task test_solve_unit_types_tuple_array_access_error()
-	{
-		var path = "unit/types/tuple_array_access_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -8429,27 +7197,13 @@ public class ClientTests : ClientTest
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
 
-	[Fact(DisplayName="unit/types/tuple_ite_error.mzn")]
-	public async Task test_solve_unit_types_tuple_ite_error()
-	{
-		var path = "unit/types/tuple_ite_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
 	[Fact(DisplayName="unit/types/tuple_lit.mzn")]
 	public async Task test_solve_unit_types_tuple_lit()
 	{
 		var path = "unit/types/tuple_lit.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""single=[1];double=[false,-1];triple=[1,false,200.0];square=[1,"one",-2,"two"];""",
+			"""single=[1];double=[false,-1];triple=[1,false,200.0];square=[1,one,-2,two];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -8483,7 +7237,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/tuple_output.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""_output_item="full var: (0, true, 1.5)var array: [(2, false), (1, true)]nested: (false, (3, 4))element: 3partial: (10, true)data: (-3.2, false)enumtup: ((x: a a, y: c), c)";""",
+			"""_output_item=full var: (0, true, 1.5)var array: [(2, false), (1, true)]nested: (false, (3, 4))element: 3partial: (10, true)data: (-3.2, false)enumtup: ((x: a a, y: c), c);""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -8517,7 +7271,7 @@ public class ClientTests : ClientTest
 		var path = "unit/types/tuple_var_element.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""idx="iE";selected=[6,3,3];""",
+			"""idx=iE;selected=[6,3,3];""",
 			};
 		var args = new List<string>();
 		string? error = null;
@@ -8566,153 +7320,13 @@ public class ClientTests : ClientTest
 		var path = "unit/types/type_specialise_struct_domain.mzn";
 		var solver = "gecode";
 		var solutions = new List<string> {
-			"""x=[(a:["A"],),(a:["B"],),(a:["C"],)];""",
+			"""x=[(a:[A],),(a:[B],),(a:[C],)];""",
 			};
 		var args = new List<string>();
 		string? error = null;
 		var allSolutions = false;
 		var statuses = new List<SolveStatus>{
 			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_ann_a.mzn")]
-	public async Task test_solve_unit_types_var_ann_a()
-	{
-		var path = "unit/types/var_ann_a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_ann_b.mzn")]
-	public async Task test_solve_unit_types_var_ann_b()
-	{
-		var path = "unit/types/var_ann_b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_ann_comprehension.mzn")]
-	public async Task test_solve_unit_types_var_ann_comprehension()
-	{
-		var path = "unit/types/var_ann_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_opt_set_if_then_else.mzn")]
-	public async Task test_solve_unit_types_var_opt_set_if_then_else()
-	{
-		var path = "unit/types/var_opt_set_if_then_else.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_set_bool.mzn")]
-	public async Task test_solve_unit_types_var_set_bool()
-	{
-		var path = "unit/types/var_set_bool.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_set_float.mzn")]
-	public async Task test_solve_unit_types_var_set_float()
-	{
-		var path = "unit/types/var_set_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_set_float_comprehension.mzn")]
-	public async Task test_solve_unit_types_var_set_float_comprehension()
-	{
-		var path = "unit/types/var_set_float_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_string_a.mzn")]
-	public async Task test_solve_unit_types_var_string_a()
-	{
-		var path = "unit/types/var_string_a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_string_b.mzn")]
-	public async Task test_solve_unit_types_var_string_b()
-	{
-		var path = "unit/types/var_string_b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
-	}
-
-	[Fact(DisplayName="unit/types/var_string_comprehension.mzn")]
-	public async Task test_solve_unit_types_var_string_comprehension()
-	{
-		var path = "unit/types/var_string_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
 		};
 		await Test(path, solver, solutions, args, error, allSolutions, statuses);
 	}
@@ -9068,7 +7682,7 @@ public class ClientTests : ClientTest
 		var path = "unit/globals/int_set_channel/test_int_set_channel2.mzn";
 		var solutions = new List<string> {
 			"""x=[1,1,1,1,1,1,1,1,1];y=[1..9,{},{},{},{}];""",
-			"""x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{[2, ],},{},{[1, ],}];""",
+			"""x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{2},{},{1}];""",
 			"""x=[2,2,2,2,2,2,2,2,2];y=[{},1..9,{},{},{}];""",
 			"""x=[5,5,5,5,5,5,5,5,5];y=[{},{},{},{},1..9];""",
 			};

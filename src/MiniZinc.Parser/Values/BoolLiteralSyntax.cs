@@ -1,6 +1,6 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class BoolLiteralSyntax : ExpressionSyntax<bool>
+public sealed class BoolLiteralSyntax : ValueSyntax<bool>
 {
     public BoolLiteralSyntax(in Token start)
         : base(start, start.BoolValue) { }

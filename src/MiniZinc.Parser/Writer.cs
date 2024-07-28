@@ -118,17 +118,15 @@ public sealed class Writer
         _indent = 0;
     }
 
-    public void WriteData(IReadOnlyDictionary<string, ExpressionSyntax> data)
+    public void WriteData(DataSyntax data)
     {
-        foreach (var kv in data)
+        foreach (var (name, value) in data.Values)
         {
-            var name = kv.Key;
-            var expr = kv.Value;
             WriteString(name);
             WriteSpace();
             WriteChar('=');
             WriteSpace();
-            WriteExpr(expr);
+            WriteExpr(value);
             EndStatement();
         }
     }
@@ -216,7 +214,7 @@ public sealed class Writer
                 }
                 break;
 
-            case AssignmentSyntax e:
+            case AssignStatement e:
                 WriteIdent(e.Identifier);
                 WriteSpace();
                 WriteChar(EQUAL);
@@ -572,7 +570,7 @@ public sealed class Writer
             {
                 IncludeStatement => 0,
                 DeclareStatement => 1,
-                AssignmentSyntax => 1,
+                AssignStatement => 1,
                 ConstraintStatement => 2,
                 OutputStatement => 4,
                 SolveStatement => 3,

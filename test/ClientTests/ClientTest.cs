@@ -47,7 +47,11 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         WriteLn(mzn);
         WriteSection();
 
-        var options = SolveOptions.Create(solverId: solver).AddArgs(args);
+        var options = SolveOptions.Create(solverId: solver);
+
+        if (args is not null)
+            options = options.AddArgs(args);
+
         var result = await MiniZinc.Solve(model, options);
         WriteLn(result.Command);
         result.IsSuccess.Should().BeTrue();
@@ -55,15 +59,20 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         if (statuses is { Count: > 0 })
             result.Status.Should().BeOneOf(statuses);
 
+        if (error is not null)
+        {
+            result.IsError.Should().BeTrue();
+            return;
+        }
+
         if (solutions is not { Count: > 0 })
             return;
 
         var actual = result.Data;
-
-        foreach (var json in solutions)
+        foreach (var dzn in solutions)
         {
-            var expected = (JsonObject)JsonNode.Parse(json)!;
-            var ok = CheckSolution(expected, actual);
+            var parsed = Parser.Parser.ParseDataString(dzn, out var expected);
+            var ok = Check(expected, actual);
             switch (ok, allSolutions)
             {
                 case (true, true):
@@ -83,22 +92,20 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// <summary>
     /// Compare the solution data against the expected solution json
     /// </summary>
-    public bool CheckSolution(JsonObject expectedData, DataSyntax actualData)
+    public bool Check(DataSyntax expectedData, DataSyntax actualData)
     {
-        foreach (var kv in expectedData)
+        foreach (var kv in expectedData.Values)
         {
             var name = kv.Key;
             var expectedVar = kv.Value;
-            if (!actualData.TryGetValue(name, out var actualVar))
+            if (!actualData.Values.TryGetValue(name, out var actualVar))
                 continue;
-            //WriteLn($"Expected variable \"{name}\" missing from actual solution");
 
-
-            if (!CheckSolution(expectedVar!, actualVar))
+            if (!Check(expectedVar, actualVar))
             {
                 WriteLn();
                 WriteLn("While comparing expected solution:");
-                WriteLn($"{expectedVar?.ToJsonString()}");
+                WriteLn($"{expectedVar.Write()}");
                 WriteLn();
                 WriteLn("And actual solution:");
                 WriteLn($"{actualVar.Write()}");
@@ -113,137 +120,130 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// <summary>
     /// Compare the solution against the json node
     /// </summary>
-    public bool CheckSolution(JsonNode? expected, ExpressionSyntax actual)
+    public bool Check(ExpressionSyntax expected, ExpressionSyntax actual)
     {
         int i = 0;
         switch (expected, actual)
         {
-            case (null, EmptyLiteralSyntax):
-                break;
-
-            case (JsonValue val, IdentifierSyntax id):
-                if (val.ToString() != id.Name)
-                    return Error(val, id);
-                break;
-
-            case (JsonValue val, IntLiteralSyntax iexpr):
-                if (!val.TryGetValue(out i))
-                    return Error(val, iexpr);
-                if (i != iexpr.Value)
-                    return Error(i, iexpr);
-                break;
-
-            case (JsonValue val, FloatLiteralSyntax dexpr):
-                if (!val.TryGetValue(out decimal d))
-                    return Error(val, dexpr);
-                if (d != dexpr.Value)
-                    return Error(d, dexpr);
-                break;
-
-            case (JsonValue val, BoolLiteralSyntax bexpr):
-                if (!val.TryGetValue(out bool b))
-                    return Error(val, bexpr);
-                if (b != bexpr.Value)
-                    return Error(b, bexpr);
-                break;
-
-            case (JsonValue val, StringLiteralSyntax sexpr):
-                if (val.ToString() != sexpr.Value)
-                    return Error(val, sexpr);
-                break;
-
-            case (JsonArray arr, TupleLiteralSyntax tuple):
-                for (i = 0; i < arr.Count; i++)
+            case (TupleLiteralSyntax expectedTuple, TupleLiteralSyntax actualTuple):
+                for (i = 0; i < expectedTuple.Fields.Count; i++)
                 {
-                    var expectedItem = arr[i];
-                    var actualItem = tuple.Fields[i];
-                    if (!CheckSolution(expectedItem, actualItem))
+                    var expectedItem = expectedTuple.Fields[i];
+                    var actualItem = actualTuple.Fields[i];
+                    if (!Check(expectedItem, actualItem))
                         return false;
                 }
                 break;
 
-            case (JsonArray arr, ArraySyntax aexpr):
-                var flattened = Flatten(arr).ToList();
-                for (i = 0; i < flattened.Count; i++)
+            case (ArraySyntax expectedArray, ArraySyntax actualArray):
+                for (i = 0; i < expectedArray.Elements.Count; i++)
                 {
-                    var expectedItem = flattened[i];
-                    var actualItem = aexpr.Elements[i];
-                    if (!CheckSolution(expectedItem, actualItem))
+                    var expectedItem = expectedArray.Elements[i];
+                    var actualItem = actualArray.Elements[i];
+                    if (!Check(expectedItem, actualItem))
                         return false;
                 }
                 break;
 
-            case (JsonArray arr, CallSyntax { Name: "array1d" } arr1d):
-                if (!CheckSolution(arr, arr1d.Args![1]))
+            case (
+                ArraySyntax expectedArray,
+                CallSyntax { Name: "array1d", Args: [_, Array1dSyntax actualArray] }
+            ):
+                if (!Check(expectedArray, actualArray))
                     return false;
                 break;
 
-            case (JsonArray arr, CallSyntax { Name: "array2d" } arr2d):
-                if (!CheckSolution(arr, arr2d.Args![2]))
+            case (
+                ArraySyntax expectedArray,
+                CallSyntax { Name: "array2d", Args: [_, _, Array1dSyntax actualArray] }
+            ):
+                if (!Check(expectedArray, actualArray))
                     return false;
                 break;
 
-            case (JsonArray arr, CallSyntax { Name: "array3d" } arr3d):
-                if (!CheckSolution(arr, arr3d.Args![3]))
+            case (
+                ArraySyntax expectedArray,
+                CallSyntax { Name: "array3d", Args: [_, _, _, Array1dSyntax actualArray] }
+            ):
+                if (!Check(expectedArray, actualArray))
                     return false;
                 break;
 
-            case (JsonObject sobj, _) when sobj.TryGetPropertyValue("_set_", out var set):
-                /* Sets and Ranges are unified into set literal dzn syntax
-                 * and compared as strings for now */
-                var expectedDzn = set!.ToString();
-                string actualDzn = "";
-                var sb = new StringBuilder();
-                switch (actual)
+            case (ArraySyntax expectedArray, TupleLiteralSyntax actualTuple):
+                for (i = 0; i < expectedArray.Elements.Count; i++)
                 {
-                    case RangeLiteralSyntax rng:
-                        sb.Append('{');
-                        int lower = rng.Lower!.Start.IntValue;
-                        int upper = rng.Upper!.Start.IntValue;
-                        for (int j = lower; j <= upper; j++)
-                        {
-                            if (++i > 1)
-                                sb.Append(',');
-                            sb.Append(j);
-                        }
-
-                        sb.Append('}');
-                        actualDzn = sb.ToString();
-                        break;
-                    default:
-                        actualDzn = actual.ToString();
-                        break;
+                    var expectedItem = expectedArray.Elements[i];
+                    var actualItem = actualTuple.Fields[i];
+                    if (!Check(expectedItem, actualItem))
+                        return false;
                 }
-                if (expectedDzn != actualDzn)
-                    return Error(expectedDzn, actualDzn);
                 break;
 
-            case (JsonObject obj, RecordLiteralSyntax rec):
-                foreach (var kv in obj)
+            case (RecordLiteralSyntax expectedRecord, RecordLiteralSyntax actualRecord):
+                foreach (var (fieldName, expectedField) in expectedRecord.Fields)
                 {
-                    var fieldName = kv.Key;
-                    var fieldNode = kv.Value;
                     ExpressionSyntax? field = null;
-                    foreach (var (name, f) in rec.Fields)
-                        if (fieldName == name.Name)
+                    foreach (var (name, actualField) in actualRecord.Fields)
+                        if (fieldName.Name == name.Name)
                         {
-                            field = f;
+                            field = actualField;
                             break;
                         }
 
                     if (field is null)
                         Error($"Expected record field \"{fieldName}\" missing from actual");
-
-                    if (!CheckSolution(fieldNode, field))
+                    else if (!Check(expectedField, field))
                         return false;
                 }
                 break;
+
+            case (SetLiteralSyntax set, RangeLiteralSyntax range):
+                if (!Check(set, range))
+                    return false;
+                break;
+            case (RangeLiteralSyntax range, SetLiteralSyntax set):
+                if (!Check(set, range))
+                    return false;
+                break;
             default:
-                Error($"Could not compare {expected} and {actual}");
-                return false;
+                if (!expected.Equals(actual))
+                    return false;
+                break;
         }
 
         return true;
+    }
+
+    private bool Check(SetLiteralSyntax set, RangeLiteralSyntax range)
+    {
+        switch (set.Elements)
+        {
+            case []:
+                return false;
+
+            case [var e]:
+                if (!e.Equals(range.Lower))
+                    return false;
+                if (!e.Equals(range.Upper))
+                    return false;
+                return true;
+
+            case var elements:
+                int min = (range.Lower as IntLiteralSyntax).Value;
+                int max = (range.Upper as IntLiteralSyntax).Value;
+                for (int i = min; i <= max; i++)
+                {
+                    var e = elements[i];
+                    if (e is not IntLiteralSyntax il)
+                        return false;
+                    if (il.Value != i)
+                        return false;
+                }
+
+                return true;
+            default:
+                break;
+        }
     }
 
     private IEnumerable<JsonNode?> Flatten(JsonArray arr)

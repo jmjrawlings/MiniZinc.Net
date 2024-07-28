@@ -22,5 +22,6 @@ public static class MakeClientTests
         var dir = Projects.ClientTests.Dir;
         var builder = new ClientTestsBuilder("ClientTests", spec);
         builder.WriteTo(dir);
+        await Task.CompletedTask;
     }
 }

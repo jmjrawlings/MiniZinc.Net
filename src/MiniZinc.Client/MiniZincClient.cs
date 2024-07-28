@@ -73,6 +73,21 @@ public sealed partial class MiniZincClient
     }
 
     /// <summary>
+    /// Solve the given minizinc model string, returning the best
+    /// solution found or an error if it occured
+    /// </summary>
+    public SolverProcess Solve(
+        string modelString,
+        SolveOptions? options = default,
+        CancellationToken token = default
+    )
+    {
+        var model = Model.FromString(modelString);
+        var process = new SolverProcess(this, model, options, token);
+        return process;
+    }
+
+    /// <summary>
     /// Solve the given model, returning the best
     /// solution found or an error if it occured
     /// </summary>

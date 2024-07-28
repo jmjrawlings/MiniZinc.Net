@@ -68,7 +68,7 @@ public static class ParseLibMiniZincTests
         public object? ReadYaml(IParser parser, Type type)
         {
             _parser = parser;
-            var node = ParseNode();
+            var node = ParseNode((NodeEvent)_parser.Current!);
             switch (node)
             {
                 case JsonObject obj when IsSuite:
@@ -160,13 +160,38 @@ public static class ParseLibMiniZincTests
             return testCase;
         }
 
-        private JsonNode? ParseNode()
+        private JsonNode ParseSet(MappingStart start)
         {
-            var tag = GetTag((NodeEvent)Current!);
+            var sb = new StringBuilder();
+            sb.Append('{');
+            _parser.MoveNext();
+            while (Current is Scalar key)
+            {
+                _parser.MoveNext();
+                ParseNode(Current as NodeEvent);
+                sb.Append(key.Value);
+                if (Current is not MappingEnd)
+                    sb.Append(',');
+            }
+
+            sb.Append('}');
+            var dzn = sb.ToString();
+            return dzn;
+        }
+
+        private JsonNode? ParseNode(NodeEvent? evt)
+        {
+            if (evt is null)
+                return null;
+
+            var tag = GetTag(evt);
             JsonNode? node = null;
 
-            switch (Current, tag)
+            switch (evt, tag)
             {
+                case (MappingStart start, Tag.Set):
+                    node = ParseSet(start);
+                    break;
                 case (MappingStart start, _):
                     node = ParseMapping(start, tag);
                     break;
@@ -175,6 +200,9 @@ public static class ParseLibMiniZincTests
                     break;
                 case (Scalar scalar, null):
                     node = ParseScalar(scalar);
+                    break;
+                case (Scalar scalar, Tag.Range):
+                    node = scalar.Value;
                     break;
                 case (Scalar scalar, _):
                     node = new JsonObject();
@@ -258,7 +286,7 @@ public static class ParseLibMiniZincTests
             while (Current is Scalar key)
             {
                 _parser.MoveNext();
-                var value = ParseNode();
+                var value = ParseNode(Current as NodeEvent);
                 if (map.ContainsKey(key.Value))
                     WriteLine($"Duplicate Yaml map key \"{key}\"");
                 else
@@ -273,15 +301,15 @@ public static class ParseLibMiniZincTests
             var tag = GetTag(start);
             var node = new JsonArray();
             _parser.MoveNext();
-            while (Current is not SequenceEnd)
+            while (_parser.Current is not SequenceEnd)
             {
-                var item = ParseNode();
+                var item = ParseNode(Current as NodeEvent);
                 node.Add(item);
             }
             return node;
         }
 
-        private ParsingEvent? Current => _parser.Current;
+        private ParsingEvent Current => _parser.Current!;
 
         public void WriteYaml(IEmitter emitter, object? value, Type type) { }
     }
@@ -319,7 +347,7 @@ public static class ParseLibMiniZincTests
                 var status = result.TryGetValue<string>("status");
                 switch (solTag, solNode, status)
                 {
-                    case (_, _, "USATISFIABLE"):
+                    case (_, _, "UNSATISFIABLE"):
                         testCase.Type = TestType.Unsatisfiable;
                         break;
 
@@ -328,7 +356,7 @@ public static class ParseLibMiniZincTests
                         testCase.Solutions ??= new List<string>();
                         foreach (var sol in array)
                         {
-                            dzn = ParseSolution(sol.AsObject());
+                            dzn = ParseSolution(sol?.AsObject());
                             testCase.Solutions ??= new List<string>();
                             testCase.Solutions.Add(dzn);
                         }
@@ -402,9 +430,9 @@ public static class ParseLibMiniZincTests
         }
     }
 
-    private static string? ParseSolution(JsonObject solution)
+    private static string? ParseSolution(JsonObject? solution)
     {
-        if (solution.Count is 0)
+        if (solution is not { Count: > 0 })
             return null;
 
         var tag = GetTag(solution);
@@ -432,9 +460,6 @@ public static class ParseLibMiniZincTests
             case JsonObject record when tag is null:
                 ParseRecord(record, sb);
                 break;
-            case JsonObject set when tag is Tag.Set:
-                ParseSet(set, sb);
-                break;
             case JsonObject obj when tag is Tag.EnumConstructor:
                 ParseEnumConstructor(obj, sb);
                 break;
@@ -444,16 +469,11 @@ public static class ParseLibMiniZincTests
             case JsonObject obj when tag is Tag.Approx:
                 sb.Append(obj[VAL]);
                 break;
-            case JsonObject obj when tag is Tag.Range:
-                sb.Append(obj[VAL]);
-                break;
             case JsonArray array:
                 ParseVariableArray(array, sb, nested);
                 break;
             case JsonValue val when val.GetValueKind() is JsonValueKind.String:
-                sb.Append('"');
-                sb.Append(val.ToString());
-                sb.Append('"');
+                sb.Append(val);
                 break;
             default:
                 sb.Append(node);
@@ -467,22 +487,6 @@ public static class ParseLibMiniZincTests
         var value = obj["value"];
         var dzn = $"{name}({value})";
         sb.Append(dzn);
-    }
-
-    private static void ParseSet(JsonObject set, StringBuilder sb)
-    {
-        int n = set.Count;
-        int i = 0;
-        sb.Append('{');
-
-        foreach (var item in set)
-        {
-            sb.Append(item);
-            if (i++ < n)
-                sb.Append(',');
-        }
-        sb.Append('}');
-        var dzn = sb.ToString();
     }
 
     private static void ParseEnumConstructor(JsonObject map, StringBuilder sb)

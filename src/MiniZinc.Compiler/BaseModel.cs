@@ -188,7 +188,7 @@ public abstract class BaseModel<T>
         if (name is not null)
         {
             con.Annotations ??= new List<ExpressionSyntax>();
-            con.Annotations.Add(new ExpressionSyntax<string>(name));
+            con.Annotations.Add(new ValueSyntax<string>(name));
         }
         AddSyntax(con);
         return name;
@@ -317,7 +317,7 @@ public abstract class BaseModel<T>
                 _namespace.Add(name, alias);
                 break;
 
-            case AssignmentSyntax assign:
+            case AssignStatement assign:
                 name = assign.Name;
                 var expr = assign.Expr;
                 _namespace.TryGetValue(name, out old);
@@ -361,7 +361,7 @@ public abstract class BaseModel<T>
                         _namespace[name] = declare;
                         break;
 
-                    case AssignmentSyntax assign when declare.Body is null:
+                    case AssignStatement assign when declare.Body is null:
                         declare.Body = assign.Expr;
                         _namespace[name] = declare;
                         break;

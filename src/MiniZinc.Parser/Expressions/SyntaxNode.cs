@@ -47,7 +47,7 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
                 return a.Expr.Equals(b.Expr);
             case (IncludeStatement a, IncludeStatement b):
                 return a.Path.Equals(b.Path);
-            case (AssignmentSyntax a, AssignmentSyntax b):
+            case (AssignStatement a, AssignStatement b):
                 if (!a.Identifier.Equals(b.Identifier))
                     return false;
                 if (!a.Expr.Equals(b.Expr))
