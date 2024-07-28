@@ -9,4 +9,6 @@ public sealed class FloatLiteralSyntax : ValueSyntax<decimal>
         : base(Start, Value) { }
 
     public override string ToString() => Value.ToString("g");
+
+    public static implicit operator decimal(FloatLiteralSyntax f) => f.Value;
 }

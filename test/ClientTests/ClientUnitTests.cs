@@ -36,8 +36,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
         var b = model.AddInt("b", 10, 20);
         model.AddConstraint(a < b);
         var result = await Client.Solve(model);
-        var aval = result.GetInt(a);
-        var bval = result.GetInt(b);
+        var aval = result.Data.GetInt(a);
+        var bval = result.Data.GetInt(b);
         aval.Should().BeLessThan(bval);
         result.Status.Should().Be(SolveStatus.Satisfied);
     }
@@ -59,8 +59,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
         model.Maximize("a + b");
         var result = await Client.Solve(model);
         result.Status.Should().Be(SolveStatus.Optimal);
-        var a = result.GetInt("a");
-        var b = result.GetInt("b");
+        var a = result.Data.GetInt("a");
+        var b = result.Data.GetInt("b");
         a.Should().Be(20);
         b.Should().Be(20);
         result.Objective.Should().Be(40);
@@ -71,7 +71,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     {
         var model = Model.FromString("array[1..10] of var 0..100: xd;");
         var result = await Client.Solve(model);
-        var arr = result.GetArray1D<int>("xd").ToArray();
+        var arr = result.Data.GetArray1D<int>("xd").ToArray();
     }
 
     [Fact]
@@ -82,8 +82,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
         model.AddVariable("b", "10..20");
         await foreach (var result in Client.Solve(model))
         {
-            var a = result.GetInt("a");
-            var b = result.GetInt("b");
+            var a = result.Data.GetInt("a");
+            var b = result.Data.GetInt("b");
             result.Status.Should().Be(SolveStatus.Satisfied);
         }
     }

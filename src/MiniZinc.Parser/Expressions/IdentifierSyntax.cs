@@ -10,4 +10,6 @@ public sealed class IdentifierSyntax : ExpressionSyntax
     public string Name => Start.StringValue;
 
     public override string ToString() => Start.ToString();
+
+    public static implicit operator string(IdentifierSyntax f) => f.Name;
 }

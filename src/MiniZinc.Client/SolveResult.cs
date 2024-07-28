@@ -126,62 +126,6 @@ public abstract record SolveResult<T>
             SolveStatus.Unsatisfiable => true,
             _ => false
         };
-
-    /// <summary>
-    /// Get the solution assigned to the given variable
-    /// </summary>
-    /// <param name="id">Name of the model variable</param>
-    /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
-    public U Get<U>(string id)
-        where U : ExpressionSyntax
-    {
-        if (TryGet<U>(id) is not { } value)
-            throw new KeyNotFoundException($"Result did not contain a solution for \"{id}\"");
-
-        return value;
-    }
-
-    public ValueSyntax? TryGet(string id) => Data.Values.GetValueOrDefault(id);
-
-    /// <summary>
-    /// Try to get the solution assigned to the given variable
-    /// </summary>
-    /// <param name="id">Name of the model variable</param>
-    public U? TryGet<U>(string id)
-        where U : ExpressionSyntax
-    {
-        var value = TryGet(id);
-        if (value is null)
-            return null;
-
-        if (value is not U u)
-            throw new Exception();
-
-        return u;
-    }
-
-    public ExpressionSyntax this[string name] => Get<ExpressionSyntax>(name);
-
-    /// Get the int solution for the given variable
-    public int GetInt(string id) => Get<IntLiteralSyntax>(id).Value;
-
-    /// Get the bool solution for the given variable
-    public bool GetBool(string id) => Get<BoolLiteralSyntax>(id).Value;
-
-    /// Get the float solution for the given variable
-    public decimal GetFloat(string id) => Get<FloatLiteralSyntax>(id).Value;
-
-    /// Get the array solution for the given variable
-    public IEnumerable<U> GetArray1D<U>(string id)
-    {
-        var array = Get<Array1dSyntax>(id);
-        foreach (var node in array.Elements)
-        {
-            if (node is not ValueSyntax<U> literal)
-                throw new Exception();
-            yield return literal.Value;
-        }
-    }
 }
 
 public sealed record SolveResult : SolveResult<IntOrFloat> { }

@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using MiniZinc.Parser.Values;
+
+namespace MiniZinc.Parser;
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -127,6 +129,21 @@ public sealed class Parser
         {
             node = null;
             return Expected("Identifier");
+        }
+    }
+
+    private bool TryParseIdent([NotNullWhen(true)] out IdentifierSyntax? node)
+    {
+        if (_kind is TokenKind.IDENTIFIER)
+        {
+            node = new IdentifierSyntax(_token);
+            Step();
+            return true;
+        }
+        else
+        {
+            node = null;
+            return false;
         }
     }
 
@@ -883,7 +900,175 @@ public sealed class Parser
     internal bool ParseValue([NotNullWhen(true)] out ValueSyntax? value)
     {
         value = null;
-        return false;
+        List<ValueSyntax> items;
+
+        switch (_kind)
+        {
+            case TokenKind.MINUS:
+                if (!ParseValueAtom(out value))
+                    return false;
+                break;
+
+            case TokenKind.OPEN_BRACE:
+                Step();
+                items = [];
+                while (_kind is not TokenKind.CLOSE_BRACE)
+                {
+                    if (!ParseValueAtom(out var item))
+                        return false;
+                    items.Add(item);
+                    if (!Skip(TokenKind.COMMA))
+                        break;
+                }
+
+                if (!Expect(TokenKind.CLOSE_BRACE))
+                    return false;
+
+                value = new SetValueSyntax(items);
+                break;
+
+            case TokenKind.OPEN_BRACKET:
+                Step();
+                items = [];
+                while (_kind is not TokenKind.CLOSE_BRACKET)
+                {
+                    if (!ParseValueAtom(out var item))
+                        return false;
+                    items.Add(item);
+                    if (!Skip(TokenKind.COMMA))
+                        break;
+                }
+                if (!Expect(TokenKind.CLOSE_BRACKET))
+                    return false;
+
+                value = new Array1dValueSyntax(items);
+                break;
+
+            case TokenKind.OPEN_PAREN:
+                Step();
+
+                if (_kind is TokenKind.IDENTIFIER)
+                {
+                    var fields = new Dictionary<string, ValueSyntax>();
+                    while (_kind is not TokenKind.CLOSE_PAREN)
+                    {
+                        if (!ParseIdent(out var ident))
+                            return false;
+                        var name = ident.Name;
+
+                        if (!Expect(TokenKind.COLON))
+                            return false;
+
+                        if (!ParseValue(out value))
+                            return false;
+
+                        if (fields.ContainsKey(name))
+                            return Error($"Duplicate name {name}");
+
+                        fields[name] = value;
+
+                        if (!Skip(TokenKind.COMMA))
+                            break;
+                    }
+
+                    if (!Expect(TokenKind.CLOSE_PAREN))
+                        return false;
+
+                    value = new RecordValueSyntax(fields);
+                }
+                else
+                {
+                    items = [];
+                    while (_kind is not TokenKind.CLOSE_PAREN)
+                    {
+                        if (!ParseValueAtom(out value))
+                            return false;
+                        items.Add(value);
+                        if (!Skip(TokenKind.COMMA))
+                            break;
+                    }
+
+                    if (!Expect(TokenKind.CLOSE_PAREN))
+                        return false;
+
+                    value = new TupleValueSyntax(items);
+                }
+                break;
+
+            default:
+                if (!ParseValueAtom(out value))
+                    return false;
+                break;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Parse a Value.
+    /// A value is a subset of Expressions that can be found in MiniZinc data files.
+    /// </summary>
+    /// <mzn>1</mzn>
+    /// <mzn>true</mzn>
+    internal bool ParseValueAtom([NotNullWhen(true)] out ValueSyntax? value)
+    {
+        value = null;
+        Token token = _token;
+        Token right;
+        switch (_kind)
+        {
+            case TokenKind.INT_LITERAL:
+                Step();
+                if (Skip(TokenKind.RANGE_INCLUSIVE))
+                {
+                    if (!Expect(TokenKind.INT_LITERAL, out right))
+                        return false;
+                    value = new IntRange(token.IntValue, right.IntValue);
+                }
+                else
+                {
+                    value = new IntLiteralSyntax(token);
+                }
+                break;
+
+            case TokenKind.FLOAT_LITERAL:
+                Step();
+                if (Skip(TokenKind.RANGE_INCLUSIVE))
+                {
+                    if (!Expect(TokenKind.FLOAT_LITERAL, out right))
+                        return false;
+                    value = new FloatRange(token.DecimalValue, right.DecimalValue);
+                }
+                else
+                {
+                    value = new IntLiteralSyntax(token);
+                }
+                break;
+
+            case TokenKind.TRUE:
+                Step();
+                value = new BoolLiteralSyntax(token);
+                break;
+
+            case TokenKind.FALSE:
+                Step();
+                value = new BoolLiteralSyntax(token);
+                break;
+
+            case TokenKind.STRING_LITERAL:
+                Step();
+                value = new StringLiteralSyntax(token);
+                break;
+
+            case TokenKind.EMPTY:
+                Step();
+                value = new EmptyLiteralSyntax(token);
+                break;
+
+            default:
+                return false;
+        }
+        return true;
     }
 
     /// <summary>

@@ -94,11 +94,11 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// </summary>
     public bool Check(DataSyntax expectedData, DataSyntax actualData)
     {
-        foreach (var kv in expectedData.Values)
+        foreach (var kv in expectedData)
         {
             var name = kv.Key;
             var expectedVar = kv.Value;
-            if (!actualData.Values.TryGetValue(name, out var actualVar))
+            if (!actualData.TryGetValue(name, out var actualVar))
                 continue;
 
             if (!Check(expectedVar, actualVar))

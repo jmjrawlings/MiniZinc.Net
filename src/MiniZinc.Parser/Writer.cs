@@ -120,7 +120,7 @@ public sealed class Writer
 
     public void WriteData(DataSyntax data)
     {
-        foreach (var (name, value) in data.Values)
+        foreach (var (name, value) in data)
         {
             WriteString(name);
             WriteSpace();
@@ -247,6 +247,12 @@ public sealed class Writer
             case Array1dSyntax e:
                 WriteChar(OPEN_BRACKET);
                 WriteSep(e.Elements, WriteExpr);
+                WriteChar(CLOSE_BRACKET);
+                break;
+
+            case Array1dValueSyntax e:
+                WriteChar(OPEN_BRACKET);
+                WriteSep(e.Values, WriteExpr);
                 WriteChar(CLOSE_BRACKET);
                 break;
 
@@ -407,6 +413,32 @@ public sealed class Writer
                 }
 
                 WriteChar(CLOSE_PAREN);
+                break;
+
+            case RecordValueSyntax e:
+                WriteChar(OPEN_PAREN);
+                int j = 0;
+                foreach (var (name, value) in e.Fields)
+                {
+                    WriteString(name);
+                    WriteChar(COLON);
+                    WriteExpr(value);
+                    if (j++ < e.Fields.Count)
+                        WriteChar(COMMA);
+                }
+                WriteChar(CLOSE_PAREN);
+                break;
+
+            case SetValueSyntax e:
+                WriteChar(OPEN_BRACE);
+                int j = 0;
+                foreach (var value in e.Values)
+                {
+                    WriteExpr(value);
+                    if (j++ < e.Values.Count)
+                        WriteChar(COMMA);
+                }
+                WriteChar(CLOSE_BRACE);
                 break;
 
             case SetLiteralSyntax e:
