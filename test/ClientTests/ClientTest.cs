@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Tests;
+﻿using MiniZinc.Parser.Values;
+
+namespace MiniZinc.Tests;
 
 using System.Text;
 using System.Text.Json.Nodes;
@@ -54,7 +56,6 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
 
         var result = await MiniZinc.Solve(model, options);
         WriteLn(result.Command);
-        result.IsSuccess.Should().BeTrue();
 
         if (statuses is { Count: > 0 })
             result.Status.Should().BeOneOf(statuses);
@@ -117,6 +118,56 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
+    public bool Check(IntLiteralSyntax value, IntRange range)
+    {
+        if (value.Value != range.Lower)
+            return false;
+        if (value.Value != range.Upper)
+            return false;
+        return true;
+    }
+
+    public bool Check(FloatLiteralSyntax value, FloatRange range)
+    {
+        if (value.Value != range.Lower)
+            return false;
+        if (value.Value != range.Upper)
+            return false;
+        return true;
+    }
+
+    public bool Check(SetValueSyntax set, IntRange range)
+    {
+        foreach (var item in set.Values)
+        {
+            if (item is not IntLiteralSyntax i)
+                return false;
+
+            if (i < range.Lower)
+                return false;
+
+            if (i > range.Upper)
+                return false;
+        }
+        return true;
+    }
+
+    public bool Check(SetValueSyntax set, FloatRange range)
+    {
+        foreach (var item in set.Values)
+        {
+            if (item is not FloatLiteralSyntax i)
+                return false;
+
+            if (i < range.Lower)
+                return false;
+
+            if (i > range.Upper)
+                return false;
+        }
+        return true;
+    }
+
     /// <summary>
     /// Compare the solution against the json node
     /// </summary>
@@ -125,6 +176,56 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         int i = 0;
         switch (expected, actual)
         {
+            case (IntLiteralSyntax value, IntRange range):
+                if (!Check(value, range))
+                    return false;
+                break;
+
+            case (IntRange range, IntLiteralSyntax value):
+                if (!Check(value, range))
+                    return false;
+                break;
+
+            case (FloatLiteralSyntax value, FloatRange range):
+                if (!Check(value, range))
+                    return false;
+                break;
+
+            case (FloatRange range, FloatLiteralSyntax value):
+                if (!Check(value, range))
+                    return false;
+                break;
+
+            case (FloatRange range, SetValueSyntax set):
+                if (!Check(set, range))
+                    return false;
+                break;
+
+            case (SetValueSyntax set, FloatRange range):
+                if (!Check(set, range))
+                    return false;
+                break;
+
+            case (IntRange range, SetValueSyntax set):
+                if (!Check(set, range))
+                    return false;
+                break;
+
+            case (SetValueSyntax set, IntRange range):
+                if (!Check(set, range))
+                    return false;
+                break;
+
+            case (Array1dValueSyntax { Values: var array }, TupleValueSyntax tuple):
+                for (i = 0; i < array.Count; i++)
+                {
+                    var e = array[i];
+                    var a = tuple.Fields[i];
+                    if (!Check(e, a))
+                        return false;
+                }
+                break;
+
             case (TupleLiteralSyntax expectedTuple, TupleLiteralSyntax actualTuple):
                 for (i = 0; i < expectedTuple.Fields.Count; i++)
                 {

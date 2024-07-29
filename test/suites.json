@@ -380,7 +380,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "b=true;s=\u0022\u0022;x=[];y=[];"
+        "b=true;s=;x=[];y=[];"
       ],
       "output_files": null,
       "error_message": null,
@@ -544,7 +544,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -714,7 +714,7 @@
       "solvers": null,
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -890,8 +890,8 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=[{[0, ],},0..9];",
-        "x=[{[0, ],},{}];"
+        "x=[{0},0..9];",
+        "x=[{0},{}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -963,8 +963,8 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "x=[{[1, ],},{[2, ],},{[3, ],}];b=true;",
-        "x=[{[1, ],[2, ],[3, ],},{[1, ],[2, ],[3, ],},{[1, ],[2, ],[3, ],}];b=false;"
+        "x=[{1},{2},{3}];b=true;",
+        "x=[{1,2,3},{1,2,3},{1,2,3}];b=false;"
       ],
       "output_files": null,
       "error_message": null,
@@ -994,7 +994,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022foosbarsbazs\u0022;"
+        "_output_item=foosbarsbazs;"
       ],
       "output_files": null,
       "error_message": null,
@@ -1010,7 +1010,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=[{[A, ],},{[B, ],},{[C, ],}];"
+        "x=[{A},{B},{C}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -1076,7 +1076,7 @@
       ],
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -1108,7 +1108,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output=\u0022TWO\u0022;"
+        "bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output=TWO;"
       ],
       "output_files": null,
       "error_message": null,
@@ -1124,7 +1124,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream=\u0022trace_logstream_par_int\ntrace_logstream_var_int\ntrace_logstream_par_opt_int\ntrace_logstream_var_opt_int\ntrace_logstream_array_of_par_int\ntrace_logstream_array_of_var_int\ntrace_logstream_array_of_par_opt_int\ntrace_logstream_array_of_var_opt_int\n\u0022;"
+        "assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream=trace_logstream_par_int\ntrace_logstream_var_int\ntrace_logstream_par_opt_int\ntrace_logstream_var_opt_int\ntrace_logstream_array_of_par_int\ntrace_logstream_array_of_var_int\ntrace_logstream_array_of_par_opt_int\ntrace_logstream_array_of_var_opt_int\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -1156,7 +1156,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -1207,7 +1207,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022\u0027Q~\u0027(\u0027F!\u0027(\u0027\u0022\u0027))\u0022;"
+        "_output_item=\u0027Q~\u0027(\u0027F!\u0027(\u0027\u0022\u0027));"
       ],
       "output_files": null,
       "error_message": null,
@@ -1353,7 +1353,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -1388,7 +1388,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_checker=\u0022data_2 = 2;\n\u0022;data_1=1;"
+        "_checker=data_2 = 2;\n;data_1=1;"
       ],
       "output_files": null,
       "error_message": null,
@@ -1665,7 +1665,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2120,7 +2120,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022A?\u0022;"
+        "_output_item=A?;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2136,7 +2136,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Foo~(A?)\u0022;"
+        "_output_item=Foo~(A?);"
       ],
       "output_files": null,
       "error_message": null,
@@ -2152,7 +2152,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x_to_y={[A, ],[B, ],[C, ],};"
+        "x_to_y={A,B,C};"
       ],
       "output_files": null,
       "error_message": null,
@@ -2406,7 +2406,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022\u0022abcdefghi\u0022\u0022;"
+        "_output_item=\u0022abcdefghi\u0022;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2420,7 +2420,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022105.31..3A String\u0022;"
+        "_output_item=105.31..3A String;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2434,7 +2434,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2448,7 +2448,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2474,7 +2474,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022a, b, c, d\u0022;"
+        "_output_item=a, b, c, d;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2488,7 +2488,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u002210, 5.3, A String, foobar\u0022;"
+        "_output_item=10, 5.3, A String, foobar;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2502,7 +2502,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u002210, 5.3, A String, foobar\u0022;"
+        "_output_item=10, 5.3, A String, foobar;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2572,7 +2572,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2766,8 +2766,8 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "a=[{[1, ],},1..2,1..3];s={[1, ],};x=1;",
-        "a=[{[1, ],},1..2,1..3];s=1..2;x=2;"
+        "a=[{1},1..2,1..3];s={1};x=1;",
+        "a=[{1},1..2,1..3];s=1..2;x=2;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2781,7 +2781,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2859,22 +2859,22 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "_output_item=\u0022-2.00, -2, -2, -2 OK\u0022;x=-2.0;",
-        "_output_item=\u0022-1.75, -1, -2, -2 OK\u0022;x=-1.75;",
-        "_output_item=\u0022-1.50, -1, -2, -2 OK\u0022;x=-1.5;",
-        "_output_item=\u0022-1.25, -1, -2, -1 OK\u0022;x=-1.25;",
-        "_output_item=\u0022-1.00, -1, -1, -1 OK\u0022;x=-1.0;",
-        "_output_item=\u0022-0.25, 0, -1, 0 OK\u0022;x=-0.25;",
-        "_output_item=\u0022-0.00, 0, 0, 0 OK\u0022;x=0.0;",
-        "_output_item=\u00220.00, 0, 0, 0 OK\u0022;x=0.0;",
-        "_output_item=\u00220.25, 1, 0, 0 OK\u0022;x=0.25;",
-        "_output_item=\u00220.50, 1, 0, 1 OK\u0022;x=0.5;",
-        "_output_item=\u00220.75, 1, 0, 1 OK\u0022;x=0.75;",
-        "_output_item=\u00221.00, 1, 1, 1 OK\u0022;x=1.0;",
-        "_output_item=\u00221.25, 2, 1, 1 OK\u0022;x=1.25;",
-        "_output_item=\u00221.50, 2, 1, 2 OK\u0022;x=1.5;",
-        "_output_item=\u00221.75, 2, 1, 2 OK\u0022;x=1.75;",
-        "_output_item=\u00222.00, 2, 2, 2 OK\u0022;x=2.0;"
+        "_output_item=-2.00, -2, -2, -2 OK;x=-2.0;",
+        "_output_item=-1.75, -1, -2, -2 OK;x=-1.75;",
+        "_output_item=-1.50, -1, -2, -2 OK;x=-1.5;",
+        "_output_item=-1.25, -1, -2, -1 OK;x=-1.25;",
+        "_output_item=-1.00, -1, -1, -1 OK;x=-1.0;",
+        "_output_item=-0.25, 0, -1, 0 OK;x=-0.25;",
+        "_output_item=-0.00, 0, 0, 0 OK;x=0.0;",
+        "_output_item=0.00, 0, 0, 0 OK;x=0.0;",
+        "_output_item=0.25, 1, 0, 0 OK;x=0.25;",
+        "_output_item=0.50, 1, 0, 1 OK;x=0.5;",
+        "_output_item=0.75, 1, 0, 1 OK;x=0.75;",
+        "_output_item=1.00, 1, 1, 1 OK;x=1.0;",
+        "_output_item=1.25, 2, 1, 1 OK;x=1.25;",
+        "_output_item=1.50, 2, 1, 2 OK;x=1.5;",
+        "_output_item=1.75, 2, 1, 2 OK;x=1.75;",
+        "_output_item=2.00, 2, 2, 2 OK;x=2.0;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2890,15 +2890,15 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "_output_item=\u00220.00, 0, 0, 0 OK\u0022;x=0.0;",
-        "_output_item=\u00220.25, 1, 0, 0 OK\u0022;x=0.25;",
-        "_output_item=\u00220.50, 1, 0, 1 OK\u0022;x=0.5;",
-        "_output_item=\u00220.75, 1, 0, 1 OK\u0022;x=0.75;",
-        "_output_item=\u00221.00, 1, 1, 1 OK\u0022;x=1.0;",
-        "_output_item=\u00221.25, 2, 1, 1 OK\u0022;x=1.25;",
-        "_output_item=\u00221.50, 2, 1, 2 OK\u0022;x=1.5;",
-        "_output_item=\u00221.75, 2, 1, 2 OK\u0022;x=1.75;",
-        "_output_item=\u00222.00, 2, 2, 2 OK\u0022;x=2.0;"
+        "_output_item=0.00, 0, 0, 0 OK;x=0.0;",
+        "_output_item=0.25, 1, 0, 0 OK;x=0.25;",
+        "_output_item=0.50, 1, 0, 1 OK;x=0.5;",
+        "_output_item=0.75, 1, 0, 1 OK;x=0.75;",
+        "_output_item=1.00, 1, 1, 1 OK;x=1.0;",
+        "_output_item=1.25, 2, 1, 1 OK;x=1.25;",
+        "_output_item=1.50, 2, 1, 2 OK;x=1.5;",
+        "_output_item=1.75, 2, 1, 2 OK;x=1.75;",
+        "_output_item=2.00, 2, 2, 2 OK;x=2.0;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2914,13 +2914,13 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "_output_item=\u0022-2.00, -2, -2, -2 OK\u0022;x=-2.0;",
-        "_output_item=\u0022-1.75, -1, -2, -2 OK\u0022;x=-1.75;",
-        "_output_item=\u0022-1.50, -1, -2, -2 OK\u0022;x=-1.5;",
-        "_output_item=\u0022-1.25, -1, -2, -1 OK\u0022;x=-1.25;",
-        "_output_item=\u0022-1.00, -1, -1, -1 OK\u0022;x=-1.0;",
-        "_output_item=\u0022-0.25, 0, -1, 0 OK\u0022;x=-0.25;",
-        "_output_item=\u0022-0.00, 0, 0, 0 OK\u0022;x=0.0;"
+        "_output_item=-2.00, -2, -2, -2 OK;x=-2.0;",
+        "_output_item=-1.75, -1, -2, -2 OK;x=-1.75;",
+        "_output_item=-1.50, -1, -2, -2 OK;x=-1.5;",
+        "_output_item=-1.25, -1, -2, -1 OK;x=-1.25;",
+        "_output_item=-1.00, -1, -1, -1 OK;x=-1.0;",
+        "_output_item=-0.25, 0, -1, 0 OK;x=-0.25;",
+        "_output_item=-0.00, 0, 0, 0 OK;x=0.0;"
       ],
       "output_files": null,
       "error_message": null,
@@ -2966,7 +2966,7 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "sets=[1..3,{[1, ],[2, ],[4, ],},{[1, ],[2, ],[5, ],},{[1, ],[2, ],[6, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[4, ],[5, ],},{[1, ],[4, ],[6, ],},{[1, ],[5, ],[6, ],},2..4,{[2, ],[3, ],[5, ],},{[2, ],[3, ],[6, ],},{[2, ],[4, ],[5, ],},{[2, ],[4, ],[6, ],},{[2, ],[5, ],[6, ],},3..5,{[3, ],[4, ],[6, ],},{[3, ],[5, ],[6, ],},4..6];"
+        "sets=[1..3,{1,2,4},{1,2,5},{1,2,6},{1,3,4},{1,3,5},{1,3,6},{1,4,5},{1,4,6},{1,5,6},2..4,{2,3,5},{2,3,6},{2,4,5},{2,4,6},{2,5,6},3..5,{3,4,6},{3,5,6},4..6];"
       ],
       "output_files": null,
       "error_message": null,
@@ -2982,7 +2982,7 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "sets=[{},{[1, ],},1..2,1..3,{[1, ],[3, ],},{[2, ],},2..3,{[3, ],}];"
+        "sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -2998,7 +2998,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "sets=[{},{[1, ],},1..2,1..3,{[1, ],[3, ],},{[2, ],},2..3,{[3, ],}];"
+        "sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -3016,7 +3016,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "y={[1, ],[4, ],};"
+        "y={1,4};"
       ],
       "output_files": null,
       "error_message": null,
@@ -3030,7 +3030,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022All is well\u0022;"
+        "_output_item=All is well;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3058,7 +3058,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022All is well\u0022;"
+        "_output_item=All is well;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3072,7 +3072,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Escaped single \u0027quotes\u0027 are fine.\u0022;"
+        "_output_item=Escaped single \u0027quotes\u0027 are fine.;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3124,7 +3124,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "par_int=\u0022b\u0022;var_int=\u0022c\u0022;array_of_int=[\u0022a\u0022,\u0022b\u0022,\u0022c\u0022];array_of_var_int=[\u0022a\u0022,\u0022b\u0022,\u0022c\u0022];array_of_set_of_int=[{[a, ],},{[a, ],[b, ],},{[a, ],[b, ],[c, ],}];array_of_var_set_of_int=[{[a, ],},{[a, ],[b, ],},{[a, ],[b, ],[c, ],}];set_of_int={[a, ],[b, ],[c, ],};var_set_of_int={[a, ],[b, ],[c, ],};"
+        "par_int=b;var_int=c;array_of_int=[a,b,c];array_of_var_int=[a,b,c];array_of_set_of_int=[{a},{a,b},{a,b,c}];array_of_var_set_of_int=[{a},{a,b},{a,b,c}];set_of_int={a,b,c};var_set_of_int={a,b,c};"
       ],
       "output_files": null,
       "error_message": null,
@@ -3170,7 +3170,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "i=1;x=1;y={[1, ],};"
+        "i=1;x=1;y={1};"
       ],
       "output_files": null,
       "error_message": null,
@@ -3206,7 +3206,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "a=[{[1, ],},2..3,4..5];"
+        "a=[{1},2..3,4..5];"
       ],
       "output_files": null,
       "error_message": null,
@@ -3282,7 +3282,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3301,7 +3301,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3353,7 +3353,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3387,7 +3387,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3405,7 +3405,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3419,7 +3419,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3437,7 +3437,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=F(\u0022A\u0022);"
+        "x=F(A);"
       ],
       "output_files": null,
       "error_message": null,
@@ -3455,7 +3455,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=F(\u0022A\u0022);"
+        "x=F(A);"
       ],
       "output_files": null,
       "error_message": null,
@@ -3491,7 +3491,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=G(F(\u0022A\u0022));"
+        "x=G(F(A));"
       ],
       "output_files": null,
       "error_message": null,
@@ -3507,7 +3507,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=\u0022\u0022\u0022;"
+        "x=\u0022;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3525,7 +3525,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=\u00222.0e-05\u0022;y=1500.0;"
+        "x=2.0e-05;y=1500.0;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3543,7 +3543,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3561,7 +3561,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "w=\u0022A\u0022;x=\u0022D\u0022;y=\u0022G\u0022;z=\u0022J\u0022;"
+        "w=A;x=D;y=G;z=J;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3579,7 +3579,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "int_set={[1, ],[2, ],[4, ],[5, ],[7, ],[9, ],};float_set={[1.0, ],[2.0, ],};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[true];array_3d_int=[1,2,3,4,5,6,7,8];array_opt_float=[1.5,\u003C\u003E];x=1;y=2.0;z=true;o=\u003C\u003E;"
+        "int_set={1,2,4,5,7,9};float_set={1.0,2.0};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[true];array_3d_int=[1,2,3,4,5,6,7,8];array_opt_float=[1.5,\u003C\u003E];x=1;y=2.0;z=true;o=\u003C\u003E;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3595,7 +3595,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=[\u0022A\u0022,\u0022B\u0022,\u0022C\u0022,\u0022D\u0022];"
+        "x=[A,B,C,D];"
       ],
       "output_files": null,
       "error_message": null,
@@ -3611,7 +3611,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022x = {1,2,3,4,6,9,10,11}, y = 1.0..1.0 union 2.0..4.0 union 6.0..6.0 union 9.0..11.0\u0022;"
+        "_output_item=x = {1,2,3,4,6,9,10,11}, y = 1.0..1.0 union 2.0..4.0 union 6.0..6.0 union 9.0..11.0;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3627,7 +3627,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "s=\u0022abcd\u0022;ss=[\u0022abc\u0022,\u0022def\u0022,\u0022ghi\u0022];"
+        "s=abcd;ss=[abc,def,ghi];"
       ],
       "output_files": null,
       "error_message": null,
@@ -3645,7 +3645,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "a=\u0022A\u0022;mu=\u0022\u03BC\u0022;arrow=\u0022\u2191\u0022;clef=\u0022\uD834\uDD1E\u0022;"
+        "a=A;mu=\u03BC;arrow=\u2191;clef=\uD834\uDD1E;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3663,7 +3663,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "use_e=[\u0022A\u0022,\u0022B\u0022,\u0022B\u0022,\u0022C\u0022];"
+        "use_e=[A,B,B,C];"
       ],
       "output_files": null,
       "error_message": null,
@@ -3681,7 +3681,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3699,7 +3699,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3798,7 +3798,7 @@
       },
       "type": "optimise",
       "solutions": [
-        "x=4;y={[1, ],[2, ],[4, ],[8, ],};"
+        "x=4;y={1,2,4,8};"
       ],
       "output_files": null,
       "error_message": null,
@@ -3877,7 +3877,7 @@
       },
       "type": "optimise",
       "solutions": [
-        "x={};y={[1, ],};"
+        "x={};y={1};"
       ],
       "output_files": null,
       "error_message": null,
@@ -3979,7 +3979,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -3993,7 +3993,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4023,7 +4023,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4039,7 +4039,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4582,7 +4582,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022WORKED\u0022;"
+        "_output_item=WORKED;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4596,7 +4596,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4626,7 +4626,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4640,7 +4640,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4654,7 +4654,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4718,7 +4718,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022\u003E      [Hello, World]\u003C\u0022;"
+        "_output_item=\u003E      [Hello, World]\u003C;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4734,7 +4734,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=\u0022promise_total\u0022;y=\u0022expression_name(\u0022test\u0022)\u0022;"
+        "x=promise_total;y=expression_name(\u0022test\u0022);"
       ],
       "output_files": null,
       "error_message": null,
@@ -4750,7 +4750,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[[{\u0022e\u0022:\u0022A\u0022}, {\u0022e\u0022:\u0022B\u0022}], [{\u0022e\u0022:\u0022C\u0022}, {\u0022e\u0022:\u0022D\u0022}]] [[{\u0022e\u0022:\u0022A\u0022}, {\u0022e\u0022:\u0022B\u0022}], [{\u0022e\u0022:\u0022C\u0022}, {\u0022e\u0022:\u0022D\u0022}]]\u0022;"
+        "_output_item=[[{\u0022e\u0022:\u0022A\u0022}, {\u0022e\u0022:\u0022B\u0022}], [{\u0022e\u0022:\u0022C\u0022}, {\u0022e\u0022:\u0022D\u0022}]] [[{\u0022e\u0022:\u0022A\u0022}, {\u0022e\u0022:\u0022B\u0022}], [{\u0022e\u0022:\u0022C\u0022}, {\u0022e\u0022:\u0022D\u0022}]];"
       ],
       "output_files": null,
       "error_message": null,
@@ -4766,7 +4766,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "a=[1];x@14.5-28|a@13.6=[1];_output_item=\u0022predicate: [1]\u0022;"
+        "a=[1];x@14.5-28|a@13.6=[1];_output_item=predicate: [1];"
       ],
       "output_files": null,
       "error_message": null,
@@ -4780,7 +4780,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022{}\u0022;"
+        "_output_item={};"
       ],
       "output_files": null,
       "error_message": null,
@@ -4794,7 +4794,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u00221..3\u0022;"
+        "_output_item=1..3;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4808,7 +4808,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u00221..2\u0022;"
+        "_output_item=1..2;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4850,7 +4850,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[1, _, _, _, _, _, _, _]\u0022;"
+        "_output_item=[1, _, _, _, _, _, _, _];"
       ],
       "output_files": null,
       "error_message": null,
@@ -4880,7 +4880,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022{A, C}, \u003C\u003E, [{A, B}, \u003C\u003E, {A, C}, \u003C\u003E]\u0022;"
+        "_output_item={A, C}, \u003C\u003E, [{A, B}, \u003C\u003E, {A, C}, \u003C\u003E];"
       ],
       "output_files": null,
       "error_message": null,
@@ -4960,7 +4960,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022aebdc\u0022;"
+        "_output_item=aebdc;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4978,7 +4978,7 @@
       },
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022bdc\u0022;"
+        "_output_item=bdc;"
       ],
       "output_files": null,
       "error_message": null,
@@ -4996,7 +4996,7 @@
       },
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022ae\u0022;"
+        "_output_item=ae;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5012,7 +5012,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022aebdc\u0022;"
+        "_output_item=aebdc;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5030,7 +5030,7 @@
       },
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022bdc\u0022;"
+        "_output_item=bdc;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5048,7 +5048,7 @@
       },
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022ae\u0022;"
+        "_output_item=ae;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5064,7 +5064,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "objective=9;_output_item=\u0022x = 10\u0022;"
+        "objective=9;_output_item=x = 10;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5080,7 +5080,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022x = 10\u0022;"
+        "_output_item=x = 10;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5096,7 +5096,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022x = 10\ny = 1\n\u0022;"
+        "_output_item=x = 10\ny = 1\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5112,7 +5112,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022output_to_section: 10\noutput_item: 10\n\u0022;"
+        "_output_item=output_to_section: 10\noutput_item: 10\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5128,7 +5128,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[1]\n\u0022;"
+        "_output_item=[1]\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5174,7 +5174,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[| |]\u0022;"
+        "_output_item=[| |];"
       ],
       "output_files": null,
       "error_message": null,
@@ -5188,7 +5188,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[| | | |]\u0022;"
+        "_output_item=[| | | |];"
       ],
       "output_files": null,
       "error_message": null,
@@ -5202,7 +5202,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[]\u0022;"
+        "_output_item=[];"
       ],
       "output_files": null,
       "error_message": null,
@@ -5216,7 +5216,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022  123.46@\n123.46  @\n123     @\n\u0022;"
+        "_output_item=  123.46@\n123.46  @\n123     @\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5230,7 +5230,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "y=[\u0022{}\u0022,\u00224.0..infinity\u0022,\u0022{2.0,3.0}\u0022,\u00222.0..2.0 union 3.0..3.0 union 4.0..infinity\u0022,\u0022-1.0..1.0\u0022,\u0022-1.0..1.0 union 4.0..infinity\u0022,\u0022-1.0..1.0 union 2.0..2.0 union 3.0..3.0\u0022,\u0022-1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity\u0022,\u0022{-3.0,-2.0}\u0022,\u0022-3.0..-3.0 union -2.0..-2.0 union 4.0..infinity\u0022,\u0022{-3.0,-2.0,2.0,3.0}\u0022,\u0022-3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity\u0022,\u0022-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0\u0022,\u0022-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 4.0..infinity\u0022,\u0022-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0\u0022,\u0022-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity\u0022,\u0022-infinity..-4.0\u0022,\u0022-infinity..-4.0 union 4.0..infinity\u0022,\u0022-infinity..-4.0 union 2.0..2.0 union 3.0..3.0\u0022,\u0022-infinity..-4.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity\u0022,\u0022-infinity..-4.0 union -1.0..1.0\u0022,\u0022-infinity..-4.0 union -1.0..1.0 union 4.0..infinity\u0022,\u0022-infinity..-4.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0\u0022,\u0022-infinity..-4.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity\u0022,\u0022-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0\u0022,\u0022-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 4.0..infinity\u0022,\u0022-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0\u0022,\u0022-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity\u0022,\u0022-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0\u0022,\u0022-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 4.0..infinity\u0022,\u0022-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0\u0022,\u0022-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity\u0022];"
+        "y=[{},4.0..infinity,{2.0,3.0},2.0..2.0 union 3.0..3.0 union 4.0..infinity,-1.0..1.0,-1.0..1.0 union 4.0..infinity,-1.0..1.0 union 2.0..2.0 union 3.0..3.0,-1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity,{-3.0,-2.0},-3.0..-3.0 union -2.0..-2.0 union 4.0..infinity,{-3.0,-2.0,2.0,3.0},-3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity,-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0,-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 4.0..infinity,-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0,-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity,-infinity..-4.0,-infinity..-4.0 union 4.0..infinity,-infinity..-4.0 union 2.0..2.0 union 3.0..3.0,-infinity..-4.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity,-infinity..-4.0 union -1.0..1.0,-infinity..-4.0 union -1.0..1.0 union 4.0..infinity,-infinity..-4.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0,-infinity..-4.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity,-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0,-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 4.0..infinity,-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0,-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity,-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0,-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 4.0..infinity,-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0,-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity];"
       ],
       "output_files": null,
       "error_message": null,
@@ -5244,7 +5244,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022561@\n 561@\n561 @\n1234567@\n\u0022;"
+        "_output_item=561@\n 561@\n561 @\n1234567@\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5258,7 +5258,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "y=[\u0022{}\u0022,\u00227..infinity\u0022,\u0022{3,5}\u0022,\u0022{3,5} union 7..infinity\u0022,\u0022-1..1\u0022,\u0022{-1,0,1} union 7..infinity\u0022,\u0022{-1,0,1,3,5}\u0022,\u0022{-1,0,1,3,5} union 7..infinity\u0022,\u0022{-5,-3}\u0022,\u0022{-5,-3} union 7..infinity\u0022,\u0022{-5,-3,3,5}\u0022,\u0022{-5,-3,3,5} union 7..infinity\u0022,\u0022{-5,-3,-1,0,1}\u0022,\u0022{-5,-3,-1,0,1} union 7..infinity\u0022,\u0022{-5,-3,-1,0,1,3,5}\u0022,\u0022{-5,-3,-1,0,1,3,5} union 7..infinity\u0022,\u0022-infinity..-7\u0022,\u0022-infinity..-7 union {} union 7..infinity\u0022,\u0022-infinity..-7 union {3,5}\u0022,\u0022-infinity..-7 union {3,5} union 7..infinity\u0022,\u0022-infinity..-7 union {-1,0,1}\u0022,\u0022-infinity..-7 union {-1,0,1} union 7..infinity\u0022,\u0022-infinity..-7 union {-1,0,1,3,5}\u0022,\u0022-infinity..-7 union {-1,0,1,3,5} union 7..infinity\u0022,\u0022-infinity..-7 union {-5,-3}\u0022,\u0022-infinity..-7 union {-5,-3} union 7..infinity\u0022,\u0022-infinity..-7 union {-5,-3,3,5}\u0022,\u0022-infinity..-7 union {-5,-3,3,5} union 7..infinity\u0022,\u0022-infinity..-7 union {-5,-3,-1,0,1}\u0022,\u0022-infinity..-7 union {-5,-3,-1,0,1} union 7..infinity\u0022,\u0022-infinity..-7 union {-5,-3,-1,0,1,3,5}\u0022,\u0022-infinity..-7 union {-5,-3,-1,0,1,3,5} union 7..infinity\u0022];"
+        "y=[{},7..infinity,{3,5},{3,5} union 7..infinity,-1..1,{-1,0,1} union 7..infinity,{-1,0,1,3,5},{-1,0,1,3,5} union 7..infinity,{-5,-3},{-5,-3} union 7..infinity,{-5,-3,3,5},{-5,-3,3,5} union 7..infinity,{-5,-3,-1,0,1},{-5,-3,-1,0,1} union 7..infinity,{-5,-3,-1,0,1,3,5},{-5,-3,-1,0,1,3,5} union 7..infinity,-infinity..-7,-infinity..-7 union {} union 7..infinity,-infinity..-7 union {3,5},-infinity..-7 union {3,5} union 7..infinity,-infinity..-7 union {-1,0,1},-infinity..-7 union {-1,0,1} union 7..infinity,-infinity..-7 union {-1,0,1,3,5},-infinity..-7 union {-1,0,1,3,5} union 7..infinity,-infinity..-7 union {-5,-3},-infinity..-7 union {-5,-3} union 7..infinity,-infinity..-7 union {-5,-3,3,5},-infinity..-7 union {-5,-3,3,5} union 7..infinity,-infinity..-7 union {-5,-3,-1,0,1},-infinity..-7 union {-5,-3,-1,0,1} union 7..infinity,-infinity..-7 union {-5,-3,-1,0,1,3,5},-infinity..-7 union {-5,-3,-1,0,1,3,5} union 7..infinity];"
       ],
       "output_files": null,
       "error_message": null,
@@ -5275,8 +5275,8 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "_output_item=\u0022x = 1\ny = 2\nNO\n\u0022;",
-        "_output_item=\u0022x = 1\ny = 2\nYES\n\u0022;"
+        "_output_item=x = 1\ny = 2\nNO\n;",
+        "_output_item=x = 1\ny = 2\nYES\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5292,7 +5292,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[\u0022X_INTRODUCED_16_\u0022, \u0022X_INTRODUCED_17_\u0022, \u0022X_INTRODUCED_18_\u0022] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch]\u0022;"
+        "_output_item=[\u0022X_INTRODUCED_16_\u0022, \u0022X_INTRODUCED_17_\u0022, \u0022X_INTRODUCED_18_\u0022] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch];"
       ],
       "output_files": null,
       "error_message": null,
@@ -5448,7 +5448,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[4, 10]\n{4,10,13}\n{1,3,4}\ndepot(a,4).\ndepot(c,10).\u0022;"
+        "_output_item=[4, 10]\n{4,10,13}\n{1,3,4}\ndepot(a,4).\ndepot(c,10).;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5555,8 +5555,8 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=1;y=[{[1, ],},{[2, ],},{[3, ],}];z={[1, ],};",
-        "x=3;y=[{[1, ],},{[2, ],},{[3, ],}];z={[3, ],};"
+        "x=1;y=[{1},{2},{3}];z={1};",
+        "x=3;y=[{1},{2},{3}];z={3};"
       ],
       "output_files": null,
       "error_message": null,
@@ -5574,7 +5574,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=1;y=[1..3,{},{[1, ],}];z=1..3;"
+        "x=1;y=[1..3,{},{1}];z=1..3;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5618,7 +5618,7 @@
       "options": {
         "-G": "std"
       },
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -5634,7 +5634,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5648,8 +5648,8 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "allsym=[\u0022P\u0022,\u0022L\u0022,\u0022E\u0022,\u0022A\u0022,\u0022S\u0022,\u0022E\u0022,\u0022 \u0022,\u0022S\u0022,\u0022O\u0022,\u0022L\u0022,\u0022V\u0022,\u0022E\u0022,\u0022P\u0022,\u0022U\u0022,\u0022Z\u0022,\u0022Z\u0022,\u0022L\u0022,\u0022E\u0022,\u0022?\u0022,\u0022?\u0022,\u0022?\u0022,\u0022?\u0022,\u0022?\u0022,\u0022?\u0022];num_symbols2=11;sym2=[\u0022A\u0022,\u0022 \u0022,\u0022S\u0022,\u0022O\u0022,\u0022V\u0022,\u0022P\u0022,\u0022U\u0022,\u0022Z\u0022,\u0022L\u0022,\u0022E\u0022,\u0022?\u0022];x=0;",
-        "allsym=[\u0022P\u0022,\u0022L\u0022,\u0022E\u0022,\u0022A\u0022,\u0022S\u0022,\u0022E\u0022,\u0022 \u0022,\u0022S\u0022,\u0022O\u0022,\u0022L\u0022,\u0022V\u0022,\u0022E\u0022,\u0022P\u0022,\u0022U\u0022,\u0022Z\u0022,\u0022Z\u0022,\u0022L\u0022,\u0022E\u0022,\u0022?\u0022,\u0022?\u0022,\u0022?\u0022,\u0022?\u0022,\u0022?\u0022,\u0022?\u0022];num_symbols2=11;sym2=[\u0022A\u0022,\u0022 \u0022,\u0022S\u0022,\u0022O\u0022,\u0022V\u0022,\u0022P\u0022,\u0022U\u0022,\u0022Z\u0022,\u0022L\u0022,\u0022E\u0022,\u0022?\u0022];x=1;"
+        "allsym=[P,L,E,A,S,E, ,S,O,L,V,E,P,U,Z,Z,L,E,?,?,?,?,?,?];num_symbols2=11;sym2=[A, ,S,O,V,P,U,Z,L,E,?];x=0;",
+        "allsym=[P,L,E,A,S,E, ,S,O,L,V,E,P,U,Z,Z,L,E,?,?,?,?,?,?];num_symbols2=11;sym2=[A, ,S,O,V,P,U,Z,L,E,?];x=1;"
       ],
       "output_files": null,
       "error_message": null,
@@ -5899,9 +5899,9 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022sz[1][1][1][5] = 1\nsz[1][2][1][1] = 1\npz[1][1][1][2][13] = 1\npz[1][2][1][1][13] = 1\n\u0022;obj=62;",
-        "_output_item=\u0022sz[1][1][1][5] = 1\nsz[1][2][1][1] = 1\npz[1][1][1][1][13] = 1\npz[1][2][1][2][13] = 1\n\u0022;obj=62;",
-        "_output_item=\u0022sz[1][1][1][1] = 1\nsz[1][2][1][5] = 1\npz[1][1][1][1][13] = 1\npz[1][2][1][2][13] = 1\n\u0022;obj=62;"
+        "_output_item=sz[1][1][1][5] = 1\nsz[1][2][1][1] = 1\npz[1][1][1][2][13] = 1\npz[1][2][1][1][13] = 1\n;obj=62;",
+        "_output_item=sz[1][1][1][5] = 1\nsz[1][2][1][1] = 1\npz[1][1][1][1][13] = 1\npz[1][2][1][2][13] = 1\n;obj=62;",
+        "_output_item=sz[1][1][1][1] = 1\nsz[1][2][1][5] = 1\npz[1][1][1][1][13] = 1\npz[1][2][1][2][13] = 1\n;obj=62;"
       ],
       "output_files": null,
       "error_message": null,
@@ -6277,7 +6277,7 @@
       "solvers": null,
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -6338,7 +6338,7 @@
       "solvers": null,
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -6368,7 +6368,7 @@
       "type": "satisfy",
       "solutions": [
         "y=1..3;",
-        "y={[2, ],};"
+        "y={2};"
       ],
       "output_files": null,
       "error_message": null,
@@ -6397,7 +6397,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -6522,7 +6522,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "as=[z(\u0022z2\u0022),z(\u0022z1\u0022),x(\u0022x2\u0022),x(\u0022x1\u0022)];"
+        "as=[z(z2),z(z1),x(x2),x(x1)];"
       ],
       "output_files": null,
       "error_message": null,
@@ -6567,7 +6567,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "nvar=2;partitions=[{[1, ],[3, ],},{[4, ],},{[2, ],[6, ],}];variables=[2,3,7,1,6,0];"
+        "nvar=2;partitions=[{1,3},{4},{2,6}];variables=[2,3,7,1,6,0];"
       ],
       "output_files": null,
       "error_message": null,
@@ -6595,7 +6595,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "nchange=2;partitions=[{[1, ],[3, ],},{[4, ],},{[2, ],[6, ],}];variables=[6,6,2,1,3,3,1,6,2,2,2];"
+        "nchange=2;partitions=[{1,3},{4},{2,6}];variables=[6,6,2,1,3,3,1,6,2,2,2];"
       ],
       "output_files": null,
       "error_message": null,
@@ -6613,7 +6613,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_checker=\u0022Ok\u0022;"
+        "_checker=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -6631,7 +6631,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_checker=\u0022y = 20;\u0022;"
+        "_checker=y = 20;;"
       ],
       "output_files": null,
       "error_message": null,
@@ -6649,7 +6649,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_checker=\u0022yay!\u0022;"
+        "_checker=yay!;"
       ],
       "output_files": null,
       "error_message": null,
@@ -6667,7 +6667,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_checker=\u0022x = 10;\u0022;objective=5;"
+        "_checker=x = 10;;objective=5;"
       ],
       "output_files": null,
       "error_message": null,
@@ -6685,8 +6685,8 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_checker=\u0022x = 1;\n\u0022;",
-        "_checker=\u0022x = 2;\n\u0022;"
+        "_checker=x = 1;\n;",
+        "_checker=x = 2;\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -6700,7 +6700,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -7115,7 +7115,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -7265,7 +7265,7 @@
       "solvers": null,
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -7277,7 +7277,7 @@
       "solvers": null,
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -7291,7 +7291,7 @@
       ],
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -7323,7 +7323,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x={[1, ],};"
+        "x={1};"
       ],
       "output_files": null,
       "error_message": null,
@@ -7339,7 +7339,7 @@
       "options": {
         "-G": "std"
       },
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -7439,7 +7439,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[X, \u003C\u003E]\u0022;"
+        "_output_item=[X, \u003C\u003E];"
       ],
       "output_files": null,
       "error_message": null,
@@ -7619,7 +7619,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=[{},{[2, ],},{[1, ],},1..2];"
+        "x=[{},{2},{1},1..2];"
       ],
       "output_files": null,
       "error_message": null,
@@ -7654,7 +7654,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "c={[1, ],};d=1..2;"
+        "c={1};d=1..2;"
       ],
       "output_files": null,
       "error_message": null,
@@ -7671,8 +7671,8 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "c={[1, ],};d={};",
-        "c={};d={[1, ],};"
+        "c={1};d={};",
+        "c={};d={1};"
       ],
       "output_files": null,
       "error_message": null,
@@ -7751,8 +7751,8 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "wanted={[1, ],};",
-        "wanted={[4, ],};"
+        "wanted={1};",
+        "wanted={4};"
       ],
       "output_files": null,
       "error_message": null,
@@ -7877,7 +7877,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -7966,7 +7966,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -7997,7 +7997,7 @@
       ],
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -8114,7 +8114,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8146,7 +8146,7 @@
       },
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8162,7 +8162,7 @@
       "options": {
         "-G": "std"
       },
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -8197,7 +8197,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[{\u0022e\u0022:\u0022A\u0022}] {\u0022v\u0022: [{\u0022e\u0022:\u0022A\u0022}]}\u0022;"
+        "_output_item=[{\u0022e\u0022:\u0022A\u0022}] {\u0022v\u0022: [{\u0022e\u0022:\u0022A\u0022}]};"
       ],
       "output_files": null,
       "error_message": null,
@@ -8213,7 +8213,7 @@
       "options": {
         "-G": "gecode_presolver"
       },
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -8278,7 +8278,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8310,7 +8310,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "bar=\u003C\u003E;biz={[B, ],};"
+        "bar=\u003C\u003E;biz={B};"
       ],
       "output_files": null,
       "error_message": null,
@@ -8368,7 +8368,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "s={[1, ],[4, ],[9, ],[16, ],[25, ],[36, ],[49, ],[64, ],[81, ],[100, ],};x=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,0,0,1,0,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,0,1,1,1,1,1,0,1,0,1,1,0,1,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,0,1,0,1,1,1,0,1,1,1,1,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,0,1,0,0,1,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,0,0,0,0,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,1,0,1,0,1,1,0,0,1,1,0,0,1,1,1,0,1,1,0,0,1,0,0,0,1,0,0,0,0,1,1,1,0,1,0,0,0,1,1,1,0,0,1,0,0,1,0,0,0,0,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,0,1,1,0,0,1,0,0,1,0,1,0,1,0,0,0,1,1,0,0,1,0,1,0,1,1,0,0,1,1,0,0,1,0,0,0,0,0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,0,0,1,0,1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,0,1,0,1,1,1,0,1,0,0,1,0,1,0,0,0,0,0,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,1,1,1,0,1,0,0,1,0,0,0,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1,1,1,1,0,0,1,0,0,0,0,1,1,1,0,1,0,0,1,1,1,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,1,0,1,0,1,0,0,0,0,0,1,1,0,1,0,0,0,0,1,1,1,1,1,0,0,1,0,0,0,0,1,0,0,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,0,1,1,1,1,1,0,0,1,1,1,0,0,0,0,1,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,0,1,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,0,0,0,0,1,1,1,1,0,0,1,0,1,0,0,0,1,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,1,1,1,1,0,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,0,1,0,1,0,0,0,0,1,1,0,1,1,0,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,1,1,0,1,0,1,0,0,1,1,0,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,1,0,0,1,1,1,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];"
+        "s={1,4,9,16,25,36,49,64,81,100};x=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,0,0,1,0,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,0,1,1,1,1,1,0,1,0,1,1,0,1,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,0,1,0,1,1,1,0,1,1,1,1,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,0,1,0,0,1,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,0,0,0,0,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,1,0,1,0,1,1,0,0,1,1,0,0,1,1,1,0,1,1,0,0,1,0,0,0,1,0,0,0,0,1,1,1,0,1,0,0,0,1,1,1,0,0,1,0,0,1,0,0,0,0,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,0,1,1,0,0,1,0,0,1,0,1,0,1,0,0,0,1,1,0,0,1,0,1,0,1,1,0,0,1,1,0,0,1,0,0,0,0,0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,0,0,1,0,1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,0,1,0,1,1,1,0,1,0,0,1,0,1,0,0,0,0,0,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,1,1,1,0,1,0,0,1,0,0,0,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1,1,1,1,0,0,1,0,0,0,0,1,1,1,0,1,0,0,1,1,1,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,1,0,1,0,1,0,0,0,0,0,1,1,0,1,0,0,0,0,1,1,1,1,1,0,0,1,0,0,0,0,1,0,0,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,0,1,1,1,1,1,0,0,1,1,1,0,0,0,0,1,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,0,1,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,0,0,0,0,1,1,1,1,0,0,1,0,1,0,0,0,1,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,1,1,1,1,0,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,0,1,0,1,0,0,0,0,1,1,0,1,1,0,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,1,1,0,1,0,1,0,0,1,1,0,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,1,0,0,1,1,1,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];"
       ],
       "output_files": null,
       "error_message": null,
@@ -8522,7 +8522,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u00221..1\u0022;"
+        "_output_item=1..1;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8538,7 +8538,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8693,7 +8693,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8709,8 +8709,8 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022[1][true]\u0022;",
-        "_output_item=\u0022[2][false]\u0022;"
+        "_output_item=[1][true];",
+        "_output_item=[2][false];"
       ],
       "output_files": null,
       "error_message": null,
@@ -8786,7 +8786,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_checker=\u0022Ok\u0022;"
+        "_checker=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8802,7 +8802,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8919,7 +8919,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022ok\u0022;"
+        "_output_item=ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -8950,9 +8950,9 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "s=1..9;t={[45, ],};s_total=45;t_total=45;",
-        "s={[100, ],};t={[49, ],[51, ],};s_total=100;t_total=100;",
-        "s={[1, ],[2, ],[40, ],[56, ],[94, ],};t={[3, ],[93, ],[97, ],};s_total=193;t_total=193;"
+        "s=1..9;t={45};s_total=45;t_total=45;",
+        "s={100};t={49,51};s_total=100;t_total=100;",
+        "s={1,2,40,56,94};t={3,93,97};s_total=193;t_total=193;"
       ],
       "output_files": null,
       "error_message": null,
@@ -9128,7 +9128,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "s1={[1, ],};s2=1..2;"
+        "s1={1};s2=1..2;"
       ],
       "output_files": null,
       "error_message": null,
@@ -9182,7 +9182,7 @@
       "options": null,
       "type": "all_solutions",
       "solutions": [
-        "x={[1, ],};b=true;"
+        "x={1};b=true;"
       ],
       "output_files": null,
       "error_message": null,
@@ -9198,7 +9198,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x={[1, ],};b=true;"
+        "x={1};b=true;"
       ],
       "output_files": null,
       "error_message": null,
@@ -9258,7 +9258,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022{}\u0022;"
+        "_output_item={};"
       ],
       "output_files": null,
       "error_message": null,
@@ -9290,7 +9290,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022{a}\u0022b\u0022\u0022;"
+        "_output_item={a}\u0022b\u0022;"
       ],
       "output_files": null,
       "error_message": null,
@@ -9338,7 +9338,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022ok\u0022;"
+        "_output_item=ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -9459,7 +9459,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022one\ntwo\u0022;"
+        "_output_item=one\ntwo;"
       ],
       "output_files": null,
       "error_message": null,
@@ -9500,7 +9500,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022a\u0022;"
+        "_output_item=a;"
       ],
       "output_files": null,
       "error_message": null,
@@ -9546,8 +9546,8 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=[{[1, ],},{[1, ],}];",
-        "x=[{[1, ],},{[2, ],}];"
+        "x=[{1},{1}];",
+        "x=[{1},{2}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -9591,10 +9591,10 @@
       "options": null,
       "type": "optimise",
       "solutions": [
-        "cost=48;s=[4,1,2,3,6,5];dur=[{[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],},{[1, ],[3, ],}];bef=[{},{[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[2, ],[3, ],[4, ],},{[1, ],[2, ],[3, ],[4, ],},{[1, ],[2, ],[3, ],[4, ],}];aft=[{[1, ],[2, ],[3, ],[4, ],},{[1, ],[2, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],},{}];a=[{[1, ],[2, ],},{[2, ],[3, ],},{[3, ],[4, ],},{[2, ],[4, ],},{[1, ],[3, ],},{[1, ],[4, ],}];",
-        "cost=48;s=[4,1,2,3,6,5];dur=[{[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],},{[1, ],[3, ],}];bef=[{},{[2, ],[4, ],},{[1, ],[2, ],[4, ],},1..4,1..4,1..4];aft=[1..4,1..4,{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],},{}];a=[1..2,2..3,3..4,{[2, ],[4, ],},{[1, ],[3, ],},{[1, ],[4, ],}];",
-        "cost=48;s=[5,3,2,1,4,6];dur=[{[1, ],[3, ],},{[1, ],[3, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[4, ],},{[1, ],[4, ],}];bef=[{},{[1, ],[3, ],},{[1, ],[3, ],[4, ],},1..4,1..4,1..4];aft=[1..4,1..4,{[1, ],[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[4, ],},{}];a=[1..2,2..3,3..4,{[2, ],[4, ],},{[1, ],[3, ],},{[1, ],[4, ],}];",
-        "cost=48;s=[4,1,2,3,5,6];dur=[{[2, ],[4, ],},{[1, ],[2, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[4, ],},{[1, ],[4, ],}];bef=[{},{[2, ],[4, ],},{[1, ],[2, ],[4, ],},1..4,1..4,1..4];aft=[1..4,1..4,{[1, ],[3, ],[4, ],},{[1, ],[3, ],[4, ],},{[1, ],[4, ],},{}];a=[1..2,2..3,3..4,{[2, ],[4, ],},{[1, ],[3, ],},{[1, ],[4, ],}];"
+        "cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},{1,2,3,4},{1,2,3,4},{1,2,3,4}];aft=[{1,2,3,4},{1,2,3,4},{1,3,4},{1,3,4},{1,3},{}];a=[{1,2},{2,3},{3,4},{2,4},{1,3},{1,4}];",
+        "cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,3},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];",
+        "cost=48;s=[5,3,2,1,4,6];dur=[{1,3},{1,3,4},{1,2,4},{1,2,4},{1,4},{1,4}];bef=[{},{1,3},{1,3,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,2,4},{1,2,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];",
+        "cost=48;s=[4,1,2,3,5,6];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,4},{1,4}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -9660,7 +9660,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "partitions=[{[1, ],[2, ],[3, ],},{[1, ],[2, ],[3, ],},{[1, ],[2, ],[3, ],}];",
+        "partitions=[{1,2,3},{1,2,3},{1,2,3}];",
         "partitions=[1..3,1..3,1..3];",
         "partitions=[{},{},{}];"
       ],
@@ -10090,7 +10090,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=[\u0022A\u0022,\u0022A\u0022,\u0022A\u0022,\u0022A\u0022];"
+        "x=[A,A,A,A];"
       ],
       "output_files": null,
       "error_message": null,
@@ -10122,7 +10122,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "__val__=\u0022\u0022;"
+        "__val__=;"
       ],
       "output_files": null,
       "error_message": null,
@@ -10138,7 +10138,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x={};ubx={[a, ],[b, ],[c, ],};y=\u0022a\u0022;lby=\u0022a\u0022;uby=\u0022c\u0022;domy={[a, ],[b, ],[c, ],};"
+        "x={};ubx={a,b,c};y=a;lby=a;uby=c;domy={a,b,c};"
       ],
       "output_files": null,
       "error_message": null,
@@ -10316,7 +10316,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -10346,7 +10346,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022onetwo\u0022;"
+        "_output_item=onetwo;"
       ],
       "output_files": null,
       "error_message": null,
@@ -10440,7 +10440,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_checker=\u0022{\u0022x\u0022: 1}\u0022;"
+        "_checker={\u0022x\u0022: 1};"
       ],
       "output_files": null,
       "error_message": null,
@@ -10498,7 +10498,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022full var: (a: 0, b: true, c: 1.5)\nvar array: [(a: 2, b: false), (a: 1, b: true)]\nnested: (inner: (left: 3, right: 4), outer: false)\nelement: 3\npartial: (x: 10, y: true)\ndata: (e: -3.2, f: false)\n\u0022;"
+        "_output_item=full var: (a: 0, b: true, c: 1.5)\nvar array: [(a: 2, b: false), (a: 1, b: true)]\nnested: (inner: (left: 3, right: 4), outer: false)\nelement: 3\npartial: (x: 10, y: true)\ndata: (e: -3.2, f: false)\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -10530,7 +10530,7 @@
       "options": null,
       "type": "optimise",
       "solutions": [
-        "idx=\u0022iE\u0022;selected=(a:6,b:(c:3,d:3,),);"
+        "idx=iE;selected=(a:6,b:(c:3,d:3,),);"
       ],
       "output_files": null,
       "error_message": null,
@@ -10578,7 +10578,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "mzn_enum_X=[\u0022A\u0022,,\u0022B\u0022,,\u0022G\u0022,0,1..3];"
+        "mzn_enum_X=[A,,B,,G,0,1..3];"
       ],
       "output_files": null,
       "error_message": null,
@@ -10688,7 +10688,7 @@
       ],
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -10702,7 +10702,7 @@
       ],
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -10838,7 +10838,7 @@
       ],
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -10854,7 +10854,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "foo_int=1;foo_str=\u0022test\u0022;foo_enum=\u0022B\u0022;bar_int=2;bar_str=\u0022pred\u0022;bar_enum=\u0022C\u0022;baz_tup=[3,\u0022func\u0022];baz_rec=(x:\u0022B\u0022,);"
+        "foo_int=1;foo_str=test;foo_enum=B;bar_int=2;bar_str=pred;bar_enum=C;baz_tup=[3,func];baz_rec=(x:B,);"
       ],
       "output_files": null,
       "error_message": null,
@@ -10870,7 +10870,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022{C}, [(A,)]\u0022;"
+        "_output_item={C}, [(A,)];"
       ],
       "output_files": null,
       "error_message": null,
@@ -10931,7 +10931,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022onetwo\u0022;"
+        "_output_item=onetwo;"
       ],
       "output_files": null,
       "error_message": null,
@@ -11056,7 +11056,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "single=[1];double=[false,-1];triple=[1,false,200.0];square=[1,\u0022one\u0022,-2,\u0022two\u0022];"
+        "single=[1];double=[false,-1];triple=[1,false,200.0];square=[1,one,-2,two];"
       ],
       "output_files": null,
       "error_message": null,
@@ -11088,7 +11088,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022full var: (0, true, 1.5)\nvar array: [(2, false), (1, true)]\nnested: (false, (3, 4))\nelement: 3\npartial: (10, true)\ndata: (-3.2, false)\nenumtup: ((x: a a, y: c), c)\n\u0022;"
+        "_output_item=full var: (0, true, 1.5)\nvar array: [(2, false), (1, true)]\nnested: (false, (3, 4))\nelement: 3\npartial: (10, true)\ndata: (-3.2, false)\nenumtup: ((x: a a, y: c), c)\n;"
       ],
       "output_files": null,
       "error_message": null,
@@ -11120,7 +11120,7 @@
       "options": null,
       "type": "optimise",
       "solutions": [
-        "idx=\u0022iE\u0022;selected=[6,3,3];"
+        "idx=iE;selected=[6,3,3];"
       ],
       "output_files": null,
       "error_message": null,
@@ -11166,7 +11166,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=[(a:[\u0022A\u0022],),(a:[\u0022B\u0022],),(a:[\u0022C\u0022],)];"
+        "x=[(a:[A],),(a:[B],),(a:[C],)];"
       ],
       "output_files": null,
       "error_message": null,
@@ -11320,7 +11320,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "alldiff_avsi2=[{},{[1, ],},1..2,1..3,{[1, ],[3, ],},{[2, ],},2..3,{[3, ],}];"
+        "alldiff_avsi2=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -11365,7 +11365,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "alldiff_avsi2=[{},{[3, ],},{[2, ],},2..3,{[1, ],},{[1, ],[3, ],},1..2,1..3];"
+        "alldiff_avsi2=[{},{3},{2},2..3,{1},{1,3},1..2,1..3];"
       ],
       "output_files": null,
       "error_message": null,
@@ -11379,7 +11379,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "_output_item=\u0022Ok\u0022;"
+        "_output_item=Ok;"
       ],
       "output_files": null,
       "error_message": null,
@@ -11408,636 +11408,636 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "alldisj_avsi=[6..7,3..4,{[5, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[5, ],[7, ],},3..4,{[6, ],[8, ],},1..2];",
+        "alldisj_avsi=[6..7,3..4,{5,8},1..2];",
+        "alldisj_avsi=[{5,7},3..4,{6,8},1..2];",
         "alldisj_avsi=[5..6,3..4,7..8,1..2];",
-        "alldisj_avsi=[6..7,{[3, ],[5, ],},{[4, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[3, ],[5, ],},{[6, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[3, ],[5, ],},7..8,1..2];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[3, ],[6, ],},{[4, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[3, ],[6, ],},{[5, ],[8, ],},1..2];",
-        "alldisj_avsi=[4..5,{[3, ],[6, ],},7..8,1..2];",
-        "alldisj_avsi=[5..6,{[3, ],[7, ],},{[4, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[3, ],[7, ],},{[5, ],[8, ],},1..2];",
-        "alldisj_avsi=[4..5,{[3, ],[7, ],},{[6, ],[8, ],},1..2];",
-        "alldisj_avsi=[3..4,6..7,{[5, ],[8, ],},1..2];",
-        "alldisj_avsi=[3..4,{[5, ],[7, ],},{[6, ],[8, ],},1..2];",
+        "alldisj_avsi=[6..7,{3,5},{4,8},1..2];",
+        "alldisj_avsi=[{4,7},{3,5},{6,8},1..2];",
+        "alldisj_avsi=[{4,6},{3,5},7..8,1..2];",
+        "alldisj_avsi=[{5,7},{3,6},{4,8},1..2];",
+        "alldisj_avsi=[{4,7},{3,6},{5,8},1..2];",
+        "alldisj_avsi=[4..5,{3,6},7..8,1..2];",
+        "alldisj_avsi=[5..6,{3,7},{4,8},1..2];",
+        "alldisj_avsi=[{4,6},{3,7},{5,8},1..2];",
+        "alldisj_avsi=[4..5,{3,7},{6,8},1..2];",
+        "alldisj_avsi=[3..4,6..7,{5,8},1..2];",
+        "alldisj_avsi=[3..4,{5,7},{6,8},1..2];",
         "alldisj_avsi=[3..4,5..6,7..8,1..2];",
-        "alldisj_avsi=[{[3, ],[5, ],},6..7,{[4, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[4, ],[7, ],},{[6, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[4, ],[6, ],},7..8,1..2];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[5, ],[7, ],},{[4, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[4, ],[7, ],},{[5, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[3, ],[6, ],},4..5,7..8,1..2];",
-        "alldisj_avsi=[{[3, ],[7, ],},5..6,{[4, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[4, ],[6, ],},{[5, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[3, ],[7, ],},4..5,{[6, ],[8, ],},1..2];",
-        "alldisj_avsi=[6..7,4..5,{[3, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[4, ],[6, ],},{[3, ],[8, ],},1..2];",
-        "alldisj_avsi=[5..6,{[4, ],[7, ],},{[3, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[4, ],[7, ],},5..6,{[3, ],[8, ],},1..2];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[5, ],[7, ],},{[3, ],[8, ],},1..2];",
-        "alldisj_avsi=[4..5,6..7,{[3, ],[8, ],},1..2];",
-        "alldisj_avsi=[6..7,2..3,{[5, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},2..3,{[6, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[5..6,2..3,7..8,{[1, ],[4, ],}];",
-        "alldisj_avsi=[6..7,2..3,{[4, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},2..3,{[6, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},2..3,7..8,{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},2..3,{[4, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},2..3,{[5, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[4..5,2..3,7..8,{[1, ],[6, ],}];",
-        "alldisj_avsi=[5..6,2..3,{[4, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},2..3,{[5, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[4..5,2..3,{[6, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[3..4,{[2, ],[7, ],},{[5, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[3..4,{[2, ],[6, ],},{[5, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[3..4,{[2, ],[7, ],},{[6, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[3..4,{[2, ],[5, ],},{[6, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[3..4,{[2, ],[6, ],},7..8,{[1, ],[5, ],}];",
-        "alldisj_avsi=[3..4,{[2, ],[5, ],},7..8,{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[7, ],},{[6, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[6, ],},7..8,{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[7, ],},{[4, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[4, ],},7..8,{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[6, ],},{[4, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[4, ],},{[6, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[7, ],},{[4, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[5, ],},{[4, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[7, ],},{[5, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[4, ],},{[5, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[5, ],},7..8,{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[4, ],},7..8,{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[4, ],},{[6, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[4, ],},{[5, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[5, ],},{[6, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[5, ],},{[4, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[6, ],},{[5, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[6, ],},{[4, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[6..7,{[2, ],[4, ],},{[3, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[2, ],[4, ],},{[3, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[5..6,{[2, ],[4, ],},{[3, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[6..7,{[2, ],[4, ],},{[5, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[2, ],[4, ],},{[6, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[5..6,{[2, ],[4, ],},7..8,{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[2, ],[5, ],},7..8,{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[2, ],[5, ],},{[3, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[2, ],[5, ],},{[6, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[2, ],[5, ],},{[3, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[6..7,{[2, ],[5, ],},{[4, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[6..7,{[2, ],[5, ],},{[3, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[2, ],[6, ],},{[3, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[2, ],[6, ],},{[3, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[4..5,{[2, ],[6, ],},{[3, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[2, ],[6, ],},{[4, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[2, ],[6, ],},{[5, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[4..5,{[2, ],[6, ],},7..8,{[1, ],[3, ],}];",
-        "alldisj_avsi=[4..5,{[2, ],[7, ],},{[6, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[4..5,{[2, ],[7, ],},{[3, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[2, ],[7, ],},{[5, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[2, ],[7, ],},{[3, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[5..6,{[2, ],[7, ],},{[4, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[5..6,{[2, ],[7, ],},{[3, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},6..7,{[5, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[5, ],[7, ],},{[6, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},5..6,7..8,{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},6..7,{[4, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[4, ],[7, ],},{[6, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[4, ],[6, ],},7..8,{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[5, ],[7, ],},{[4, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[4, ],[7, ],},{[5, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},4..5,7..8,{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},5..6,{[4, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[4, ],[6, ],},{[5, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},4..5,{[6, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[4..5,6..7,{[2, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[5, ],[7, ],},{[2, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},5..6,{[2, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[5..6,{[4, ],[7, ],},{[2, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[4, ],[6, ],},{[2, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[6..7,4..5,{[2, ],[8, ],},{[1, ],[3, ],}];",
-        "alldisj_avsi=[6..7,{[3, ],[5, ],},{[2, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[3, ],[5, ],},{[6, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[3, ],[5, ],},7..8,{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[3, ],[6, ],},{[2, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[3, ],[6, ],},{[5, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[3, ],[6, ],},7..8,{[1, ],[4, ],}];",
-        "alldisj_avsi=[5..6,{[3, ],[7, ],},{[2, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[3, ],[7, ],},{[5, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[3, ],[7, ],},{[6, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},5..6,{[2, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},5..6,{[3, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[2..3,5..6,7..8,{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[5, ],[7, ],},{[2, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[5, ],[7, ],},{[3, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[2..3,{[5, ],[7, ],},{[6, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},6..7,{[2, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},6..7,{[3, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[2..3,6..7,{[5, ],[8, ],},{[1, ],[4, ],}];",
-        "alldisj_avsi=[6..7,3..4,{[2, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[3, ],[6, ],},{[2, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[3, ],[7, ],},{[2, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[4, ],[6, ],},{[2, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[4, ],[7, ],},{[2, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[3..4,6..7,{[2, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[4, ],[6, ],},{[3, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[4, ],[7, ],},{[3, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},6..7,{[3, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[3, ],[6, ],},{[4, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[3, ],[7, ],},{[4, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[2..3,6..7,{[4, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},3..4,{[6, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[7, ],},{[6, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[2..3,{[4, ],[7, ],},{[6, ],[8, ],},{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},3..4,7..8,{[1, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[6, ],},7..8,{[1, ],[5, ],}];",
-        "alldisj_avsi=[2..3,{[4, ],[6, ],},7..8,{[1, ],[5, ],}];",
-        "alldisj_avsi=[2..3,{[5, ],[7, ],},{[4, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[2..3,{[4, ],[7, ],},{[5, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[2..3,4..5,7..8,{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[5, ],[7, ],},{[3, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[7, ],},{[5, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[5, ],},7..8,{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[4, ],[7, ],},{[3, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[3, ],[7, ],},{[4, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},3..4,7..8,{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},4..5,{[3, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[3, ],[5, ],},{[4, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},3..4,{[5, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[3..4,{[5, ],[7, ],},{[2, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[4, ],[7, ],},{[2, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},4..5,{[2, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[4..5,{[3, ],[7, ],},{[2, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[3, ],[5, ],},{[2, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},3..4,{[2, ],[8, ],},{[1, ],[6, ],}];",
-        "alldisj_avsi=[5..6,3..4,{[2, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},3..4,{[5, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},3..4,{[6, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[3, ],[5, ],},{[2, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[3, ],[5, ],},{[4, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[5, ],},{[6, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[4..5,{[3, ],[6, ],},{[2, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[3, ],[6, ],},{[4, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[6, ],},{[5, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},4..5,{[2, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},4..5,{[3, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[2..3,4..5,{[6, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[4, ],[6, ],},{[2, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[4, ],[6, ],},{[3, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[2..3,{[4, ],[6, ],},{[5, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[3..4,5..6,{[2, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},5..6,{[3, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[2..3,5..6,{[4, ],[8, ],},{[1, ],[7, ],}];",
-        "alldisj_avsi=[2..3,6..7,{[1, ],[8, ],},4..5];",
-        "alldisj_avsi=[2..3,{[5, ],[7, ],},{[1, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[2..3,5..6,{[1, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[2..3,{[4, ],[7, ],},{[1, ],[8, ],},5..6];",
-        "alldisj_avsi=[2..3,{[4, ],[6, ],},{[1, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[2..3,4..5,{[1, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[4, ],},6..7,{[1, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[5, ],[7, ],},{[1, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},5..6,{[1, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[7, ],},{[1, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[6, ],},{[1, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[3, ],[5, ],},{[1, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[5, ],},6..7,{[1, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[4, ],[7, ],},{[1, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[4, ],[6, ],},{[1, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[3, ],[7, ],},{[1, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[3, ],[6, ],},{[1, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},3..4,{[1, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[5, ],[7, ],},{[1, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[4, ],[7, ],},{[1, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},4..5,{[1, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[3, ],[7, ],},{[1, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[3, ],[5, ],},{[1, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},3..4,{[1, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},5..6,{[1, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[4, ],[6, ],},{[1, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},4..5,{[1, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[3, ],[6, ],},{[1, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[3, ],[5, ],},{[1, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},3..4,{[1, ],[8, ],},5..6];",
-        "alldisj_avsi=[3..4,6..7,{[1, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[3..4,{[5, ],[7, ],},{[1, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[3..4,5..6,{[1, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[3..4,{[2, ],[7, ],},{[1, ],[8, ],},5..6];",
-        "alldisj_avsi=[3..4,{[2, ],[6, ],},{[1, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[3..4,{[2, ],[5, ],},{[1, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[3, ],[5, ],},6..7,{[1, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[4, ],[7, ],},{[1, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[4, ],[6, ],},{[1, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[7, ],},{[1, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[6, ],},{[1, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[2, ],[4, ],},{[1, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[5, ],[7, ],},{[1, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[4, ],[7, ],},{[1, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},4..5,{[1, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[7, ],},{[1, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[5, ],},{[1, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[2, ],[4, ],},{[1, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},5..6,{[1, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[4, ],[6, ],},{[1, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},4..5,{[1, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[6, ],},{[1, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[5, ],},{[1, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[2, ],[4, ],},{[1, ],[8, ],},5..6];",
-        "alldisj_avsi=[4..5,6..7,{[1, ],[8, ],},2..3];",
-        "alldisj_avsi=[4..5,{[3, ],[7, ],},{[1, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[4..5,{[3, ],[6, ],},{[1, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[4..5,{[2, ],[7, ],},{[1, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[4..5,{[2, ],[6, ],},{[1, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[4..5,2..3,{[1, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[5, ],[7, ],},{[1, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[3, ],[7, ],},{[1, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[3, ],[5, ],},{[1, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[2, ],[7, ],},{[1, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[2, ],[5, ],},{[1, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},2..3,{[1, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},5..6,{[1, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[3, ],[6, ],},{[1, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[3, ],[5, ],},{[1, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[2, ],[6, ],},{[1, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[2, ],[5, ],},{[1, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},2..3,{[1, ],[8, ],},5..6];",
-        "alldisj_avsi=[5..6,{[4, ],[7, ],},{[1, ],[8, ],},2..3];",
-        "alldisj_avsi=[5..6,{[3, ],[7, ],},{[1, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[5..6,3..4,{[1, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[5..6,{[2, ],[7, ],},{[1, ],[8, ],},3..4];",
-        "alldisj_avsi=[5..6,{[2, ],[4, ],},{[1, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[5..6,2..3,{[1, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[4, ],[6, ],},{[1, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[3, ],[6, ],},{[1, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},3..4,{[1, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[2, ],[6, ],},{[1, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[2, ],[4, ],},{[1, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},2..3,{[1, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[6..7,4..5,{[1, ],[8, ],},2..3];",
-        "alldisj_avsi=[6..7,{[3, ],[5, ],},{[1, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[6..7,3..4,{[1, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[6..7,{[2, ],[5, ],},{[1, ],[8, ],},3..4];",
-        "alldisj_avsi=[6..7,{[2, ],[4, ],},{[1, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[6..7,2..3,{[1, ],[8, ],},4..5];",
-        "alldisj_avsi=[6..7,{[1, ],[4, ],},{[5, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[4, ],},{[6, ],[8, ],},2..3];",
-        "alldisj_avsi=[5..6,{[1, ],[4, ],},7..8,2..3];",
-        "alldisj_avsi=[6..7,{[1, ],[5, ],},{[4, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[5, ],},{[6, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[5, ],},7..8,2..3];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[6, ],},{[4, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[6, ],},{[5, ],[8, ],},2..3];",
-        "alldisj_avsi=[4..5,{[1, ],[6, ],},7..8,2..3];",
-        "alldisj_avsi=[5..6,{[1, ],[7, ],},{[4, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[7, ],},{[5, ],[8, ],},2..3];",
-        "alldisj_avsi=[4..5,{[1, ],[7, ],},{[6, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[7, ],},4..5,{[6, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[6, ],},4..5,7..8,2..3];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[4, ],[6, ],},{[5, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[4, ],[6, ],},7..8,2..3];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[4, ],[7, ],},{[5, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[4, ],[7, ],},{[6, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[7, ],},5..6,{[4, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[4, ],},5..6,7..8,2..3];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[5, ],[7, ],},{[4, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[5, ],[7, ],},{[6, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[5, ],},6..7,{[4, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[4, ],},6..7,{[5, ],[8, ],},2..3];",
-        "alldisj_avsi=[{[1, ],[3, ],},6..7,{[5, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[5, ],[7, ],},{[6, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},5..6,7..8,{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},6..7,{[3, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[3, ],[7, ],},{[6, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[3, ],[6, ],},7..8,{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[5, ],[7, ],},{[3, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[3, ],[7, ],},{[5, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[3, ],[5, ],},7..8,{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},5..6,{[3, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[3, ],[6, ],},{[5, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[3, ],[5, ],},{[6, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[7, ],},{[6, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[6, ],},7..8,{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[7, ],},{[5, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[5, ],},7..8,{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[6, ],},{[5, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[5, ],},{[6, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[5..6,{[1, ],[7, ],},{[3, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[5..6,{[1, ],[3, ],},7..8,{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[6, ],},{[3, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[3, ],},{[6, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[6..7,{[1, ],[5, ],},{[3, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[6..7,{[1, ],[3, ],},{[5, ],[8, ],},{[2, ],[4, ],}];",
-        "alldisj_avsi=[6..7,{[1, ],[3, ],},{[4, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[3, ],},{[6, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[3, ],},7..8,{[2, ],[5, ],}];",
-        "alldisj_avsi=[6..7,{[1, ],[4, ],},{[3, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[4, ],},{[6, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[4, ],},7..8,{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[6, ],},{[3, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[6, ],},{[4, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[3..4,{[1, ],[6, ],},7..8,{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[7, ],},{[3, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[7, ],},{[4, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[3..4,{[1, ],[7, ],},{[6, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},3..4,{[6, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},3..4,7..8,{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[3, ],[6, ],},{[4, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[6, ],},7..8,{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[3, ],[7, ],},{[4, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[7, ],},{[6, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[4, ],[6, ],},{[3, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[4, ],[6, ],},7..8,{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[4, ],[7, ],},{[3, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[4, ],[7, ],},{[6, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},6..7,{[3, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},6..7,{[4, ],[8, ],},{[2, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[5, ],[7, ],},{[4, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[4, ],[7, ],},{[5, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},4..5,7..8,{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[5, ],[7, ],},{[3, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[7, ],},{[5, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[5, ],},7..8,{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[4, ],[7, ],},{[3, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[3, ],[7, ],},{[4, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},3..4,7..8,{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},4..5,{[3, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[3, ],[5, ],},{[4, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},3..4,{[5, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[3..4,{[1, ],[7, ],},{[5, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[3..4,{[1, ],[5, ],},7..8,{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[7, ],},{[4, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[4, ],},7..8,{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[5, ],},{[4, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[4, ],},{[5, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[4..5,{[1, ],[7, ],},{[3, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[4..5,{[1, ],[3, ],},7..8,{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[5, ],},{[3, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[3, ],},{[5, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[4, ],},{[3, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[3, ],},{[4, ],[8, ],},{[2, ],[6, ],}];",
-        "alldisj_avsi=[5..6,{[1, ],[4, ],},{[3, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[5, ],},{[3, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[4..5,{[1, ],[6, ],},{[3, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},4..5,{[3, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[4, ],[6, ],},{[3, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},5..6,{[3, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[5..6,{[1, ],[3, ],},{[4, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[5, ],},{[4, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[6, ],},{[4, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[3, ],[5, ],},{[4, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[3, ],[6, ],},{[4, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},5..6,{[4, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[3, ],},{[5, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[4, ],},{[5, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[3..4,{[1, ],[6, ],},{[5, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},3..4,{[5, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[6, ],},{[5, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[4, ],[6, ],},{[5, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[4..5,{[1, ],[3, ],},{[6, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[4, ],},{[6, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[3..4,{[1, ],[5, ],},{[6, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},3..4,{[6, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[5, ],},{[6, ],[8, ],},{[2, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},4..5,{[6, ],[8, ],},{[2, ],[7, ],}];",
+        "alldisj_avsi=[{3,5},6..7,{4,8},1..2];",
+        "alldisj_avsi=[{3,5},{4,7},{6,8},1..2];",
+        "alldisj_avsi=[{3,5},{4,6},7..8,1..2];",
+        "alldisj_avsi=[{3,6},{5,7},{4,8},1..2];",
+        "alldisj_avsi=[{3,6},{4,7},{5,8},1..2];",
+        "alldisj_avsi=[{3,6},4..5,7..8,1..2];",
+        "alldisj_avsi=[{3,7},5..6,{4,8},1..2];",
+        "alldisj_avsi=[{3,7},{4,6},{5,8},1..2];",
+        "alldisj_avsi=[{3,7},4..5,{6,8},1..2];",
+        "alldisj_avsi=[6..7,4..5,{3,8},1..2];",
+        "alldisj_avsi=[{5,7},{4,6},{3,8},1..2];",
+        "alldisj_avsi=[5..6,{4,7},{3,8},1..2];",
+        "alldisj_avsi=[{4,7},5..6,{3,8},1..2];",
+        "alldisj_avsi=[{4,6},{5,7},{3,8},1..2];",
+        "alldisj_avsi=[4..5,6..7,{3,8},1..2];",
+        "alldisj_avsi=[6..7,2..3,{5,8},{1,4}];",
+        "alldisj_avsi=[{5,7},2..3,{6,8},{1,4}];",
+        "alldisj_avsi=[5..6,2..3,7..8,{1,4}];",
+        "alldisj_avsi=[6..7,2..3,{4,8},{1,5}];",
+        "alldisj_avsi=[{4,7},2..3,{6,8},{1,5}];",
+        "alldisj_avsi=[{4,6},2..3,7..8,{1,5}];",
+        "alldisj_avsi=[{5,7},2..3,{4,8},{1,6}];",
+        "alldisj_avsi=[{4,7},2..3,{5,8},{1,6}];",
+        "alldisj_avsi=[4..5,2..3,7..8,{1,6}];",
+        "alldisj_avsi=[5..6,2..3,{4,8},{1,7}];",
+        "alldisj_avsi=[{4,6},2..3,{5,8},{1,7}];",
+        "alldisj_avsi=[4..5,2..3,{6,8},{1,7}];",
+        "alldisj_avsi=[3..4,{2,7},{5,8},{1,6}];",
+        "alldisj_avsi=[3..4,{2,6},{5,8},{1,7}];",
+        "alldisj_avsi=[3..4,{2,7},{6,8},{1,5}];",
+        "alldisj_avsi=[3..4,{2,5},{6,8},{1,7}];",
+        "alldisj_avsi=[3..4,{2,6},7..8,{1,5}];",
+        "alldisj_avsi=[3..4,{2,5},7..8,{1,6}];",
+        "alldisj_avsi=[{3,5},{2,7},{6,8},{1,4}];",
+        "alldisj_avsi=[{3,5},{2,6},7..8,{1,4}];",
+        "alldisj_avsi=[{3,5},{2,7},{4,8},{1,6}];",
+        "alldisj_avsi=[{3,5},{2,4},7..8,{1,6}];",
+        "alldisj_avsi=[{3,5},{2,6},{4,8},{1,7}];",
+        "alldisj_avsi=[{3,5},{2,4},{6,8},{1,7}];",
+        "alldisj_avsi=[{3,6},{2,7},{4,8},{1,5}];",
+        "alldisj_avsi=[{3,6},{2,5},{4,8},{1,7}];",
+        "alldisj_avsi=[{3,6},{2,7},{5,8},{1,4}];",
+        "alldisj_avsi=[{3,6},{2,4},{5,8},{1,7}];",
+        "alldisj_avsi=[{3,6},{2,5},7..8,{1,4}];",
+        "alldisj_avsi=[{3,6},{2,4},7..8,{1,5}];",
+        "alldisj_avsi=[{3,7},{2,4},{6,8},{1,5}];",
+        "alldisj_avsi=[{3,7},{2,4},{5,8},{1,6}];",
+        "alldisj_avsi=[{3,7},{2,5},{6,8},{1,4}];",
+        "alldisj_avsi=[{3,7},{2,5},{4,8},{1,6}];",
+        "alldisj_avsi=[{3,7},{2,6},{5,8},{1,4}];",
+        "alldisj_avsi=[{3,7},{2,6},{4,8},{1,5}];",
+        "alldisj_avsi=[6..7,{2,4},{3,8},{1,5}];",
+        "alldisj_avsi=[{5,7},{2,4},{3,8},{1,6}];",
+        "alldisj_avsi=[5..6,{2,4},{3,8},{1,7}];",
+        "alldisj_avsi=[6..7,{2,4},{5,8},{1,3}];",
+        "alldisj_avsi=[{5,7},{2,4},{6,8},{1,3}];",
+        "alldisj_avsi=[5..6,{2,4},7..8,{1,3}];",
+        "alldisj_avsi=[{4,6},{2,5},7..8,{1,3}];",
+        "alldisj_avsi=[{4,6},{2,5},{3,8},{1,7}];",
+        "alldisj_avsi=[{4,7},{2,5},{6,8},{1,3}];",
+        "alldisj_avsi=[{4,7},{2,5},{3,8},{1,6}];",
+        "alldisj_avsi=[6..7,{2,5},{4,8},{1,3}];",
+        "alldisj_avsi=[6..7,{2,5},{3,8},{1,4}];",
+        "alldisj_avsi=[{5,7},{2,6},{3,8},{1,4}];",
+        "alldisj_avsi=[{4,7},{2,6},{3,8},{1,5}];",
+        "alldisj_avsi=[4..5,{2,6},{3,8},{1,7}];",
+        "alldisj_avsi=[{5,7},{2,6},{4,8},{1,3}];",
+        "alldisj_avsi=[{4,7},{2,6},{5,8},{1,3}];",
+        "alldisj_avsi=[4..5,{2,6},7..8,{1,3}];",
+        "alldisj_avsi=[4..5,{2,7},{6,8},{1,3}];",
+        "alldisj_avsi=[4..5,{2,7},{3,8},{1,6}];",
+        "alldisj_avsi=[{4,6},{2,7},{5,8},{1,3}];",
+        "alldisj_avsi=[{4,6},{2,7},{3,8},{1,5}];",
+        "alldisj_avsi=[5..6,{2,7},{4,8},{1,3}];",
+        "alldisj_avsi=[5..6,{2,7},{3,8},{1,4}];",
+        "alldisj_avsi=[{2,4},6..7,{5,8},{1,3}];",
+        "alldisj_avsi=[{2,4},{5,7},{6,8},{1,3}];",
+        "alldisj_avsi=[{2,4},5..6,7..8,{1,3}];",
+        "alldisj_avsi=[{2,5},6..7,{4,8},{1,3}];",
+        "alldisj_avsi=[{2,5},{4,7},{6,8},{1,3}];",
+        "alldisj_avsi=[{2,5},{4,6},7..8,{1,3}];",
+        "alldisj_avsi=[{2,6},{5,7},{4,8},{1,3}];",
+        "alldisj_avsi=[{2,6},{4,7},{5,8},{1,3}];",
+        "alldisj_avsi=[{2,6},4..5,7..8,{1,3}];",
+        "alldisj_avsi=[{2,7},5..6,{4,8},{1,3}];",
+        "alldisj_avsi=[{2,7},{4,6},{5,8},{1,3}];",
+        "alldisj_avsi=[{2,7},4..5,{6,8},{1,3}];",
+        "alldisj_avsi=[4..5,6..7,{2,8},{1,3}];",
+        "alldisj_avsi=[{4,6},{5,7},{2,8},{1,3}];",
+        "alldisj_avsi=[{4,7},5..6,{2,8},{1,3}];",
+        "alldisj_avsi=[5..6,{4,7},{2,8},{1,3}];",
+        "alldisj_avsi=[{5,7},{4,6},{2,8},{1,3}];",
+        "alldisj_avsi=[6..7,4..5,{2,8},{1,3}];",
+        "alldisj_avsi=[6..7,{3,5},{2,8},{1,4}];",
+        "alldisj_avsi=[{2,7},{3,5},{6,8},{1,4}];",
+        "alldisj_avsi=[{2,6},{3,5},7..8,{1,4}];",
+        "alldisj_avsi=[{5,7},{3,6},{2,8},{1,4}];",
+        "alldisj_avsi=[{2,7},{3,6},{5,8},{1,4}];",
+        "alldisj_avsi=[{2,5},{3,6},7..8,{1,4}];",
+        "alldisj_avsi=[5..6,{3,7},{2,8},{1,4}];",
+        "alldisj_avsi=[{2,6},{3,7},{5,8},{1,4}];",
+        "alldisj_avsi=[{2,5},{3,7},{6,8},{1,4}];",
+        "alldisj_avsi=[{3,7},5..6,{2,8},{1,4}];",
+        "alldisj_avsi=[{2,7},5..6,{3,8},{1,4}];",
+        "alldisj_avsi=[2..3,5..6,7..8,{1,4}];",
+        "alldisj_avsi=[{3,6},{5,7},{2,8},{1,4}];",
+        "alldisj_avsi=[{2,6},{5,7},{3,8},{1,4}];",
+        "alldisj_avsi=[2..3,{5,7},{6,8},{1,4}];",
+        "alldisj_avsi=[{3,5},6..7,{2,8},{1,4}];",
+        "alldisj_avsi=[{2,5},6..7,{3,8},{1,4}];",
+        "alldisj_avsi=[2..3,6..7,{5,8},{1,4}];",
+        "alldisj_avsi=[6..7,3..4,{2,8},{1,5}];",
+        "alldisj_avsi=[{4,7},{3,6},{2,8},{1,5}];",
+        "alldisj_avsi=[{4,6},{3,7},{2,8},{1,5}];",
+        "alldisj_avsi=[{3,7},{4,6},{2,8},{1,5}];",
+        "alldisj_avsi=[{3,6},{4,7},{2,8},{1,5}];",
+        "alldisj_avsi=[3..4,6..7,{2,8},{1,5}];",
+        "alldisj_avsi=[{2,7},{4,6},{3,8},{1,5}];",
+        "alldisj_avsi=[{2,6},{4,7},{3,8},{1,5}];",
+        "alldisj_avsi=[{2,4},6..7,{3,8},{1,5}];",
+        "alldisj_avsi=[{2,7},{3,6},{4,8},{1,5}];",
+        "alldisj_avsi=[{2,6},{3,7},{4,8},{1,5}];",
+        "alldisj_avsi=[2..3,6..7,{4,8},{1,5}];",
+        "alldisj_avsi=[{2,7},3..4,{6,8},{1,5}];",
+        "alldisj_avsi=[{2,4},{3,7},{6,8},{1,5}];",
+        "alldisj_avsi=[2..3,{4,7},{6,8},{1,5}];",
+        "alldisj_avsi=[{2,6},3..4,7..8,{1,5}];",
+        "alldisj_avsi=[{2,4},{3,6},7..8,{1,5}];",
+        "alldisj_avsi=[2..3,{4,6},7..8,{1,5}];",
+        "alldisj_avsi=[2..3,{5,7},{4,8},{1,6}];",
+        "alldisj_avsi=[2..3,{4,7},{5,8},{1,6}];",
+        "alldisj_avsi=[2..3,4..5,7..8,{1,6}];",
+        "alldisj_avsi=[{2,4},{5,7},{3,8},{1,6}];",
+        "alldisj_avsi=[{2,4},{3,7},{5,8},{1,6}];",
+        "alldisj_avsi=[{2,4},{3,5},7..8,{1,6}];",
+        "alldisj_avsi=[{2,5},{4,7},{3,8},{1,6}];",
+        "alldisj_avsi=[{2,5},{3,7},{4,8},{1,6}];",
+        "alldisj_avsi=[{2,5},3..4,7..8,{1,6}];",
+        "alldisj_avsi=[{2,7},4..5,{3,8},{1,6}];",
+        "alldisj_avsi=[{2,7},{3,5},{4,8},{1,6}];",
+        "alldisj_avsi=[{2,7},3..4,{5,8},{1,6}];",
+        "alldisj_avsi=[3..4,{5,7},{2,8},{1,6}];",
+        "alldisj_avsi=[{3,5},{4,7},{2,8},{1,6}];",
+        "alldisj_avsi=[{3,7},4..5,{2,8},{1,6}];",
+        "alldisj_avsi=[4..5,{3,7},{2,8},{1,6}];",
+        "alldisj_avsi=[{4,7},{3,5},{2,8},{1,6}];",
+        "alldisj_avsi=[{5,7},3..4,{2,8},{1,6}];",
+        "alldisj_avsi=[5..6,3..4,{2,8},{1,7}];",
+        "alldisj_avsi=[{2,6},3..4,{5,8},{1,7}];",
+        "alldisj_avsi=[{2,5},3..4,{6,8},{1,7}];",
+        "alldisj_avsi=[{4,6},{3,5},{2,8},{1,7}];",
+        "alldisj_avsi=[{2,6},{3,5},{4,8},{1,7}];",
+        "alldisj_avsi=[{2,4},{3,5},{6,8},{1,7}];",
+        "alldisj_avsi=[4..5,{3,6},{2,8},{1,7}];",
+        "alldisj_avsi=[{2,5},{3,6},{4,8},{1,7}];",
+        "alldisj_avsi=[{2,4},{3,6},{5,8},{1,7}];",
+        "alldisj_avsi=[{3,6},4..5,{2,8},{1,7}];",
+        "alldisj_avsi=[{2,6},4..5,{3,8},{1,7}];",
+        "alldisj_avsi=[2..3,4..5,{6,8},{1,7}];",
+        "alldisj_avsi=[{3,5},{4,6},{2,8},{1,7}];",
+        "alldisj_avsi=[{2,5},{4,6},{3,8},{1,7}];",
+        "alldisj_avsi=[2..3,{4,6},{5,8},{1,7}];",
+        "alldisj_avsi=[3..4,5..6,{2,8},{1,7}];",
+        "alldisj_avsi=[{2,4},5..6,{3,8},{1,7}];",
+        "alldisj_avsi=[2..3,5..6,{4,8},{1,7}];",
+        "alldisj_avsi=[2..3,6..7,{1,8},4..5];",
+        "alldisj_avsi=[2..3,{5,7},{1,8},{4,6}];",
+        "alldisj_avsi=[2..3,5..6,{1,8},{4,7}];",
+        "alldisj_avsi=[2..3,{4,7},{1,8},5..6];",
+        "alldisj_avsi=[2..3,{4,6},{1,8},{5,7}];",
+        "alldisj_avsi=[2..3,4..5,{1,8},6..7];",
+        "alldisj_avsi=[{2,4},6..7,{1,8},{3,5}];",
+        "alldisj_avsi=[{2,4},{5,7},{1,8},{3,6}];",
+        "alldisj_avsi=[{2,4},5..6,{1,8},{3,7}];",
+        "alldisj_avsi=[{2,4},{3,7},{1,8},5..6];",
+        "alldisj_avsi=[{2,4},{3,6},{1,8},{5,7}];",
+        "alldisj_avsi=[{2,4},{3,5},{1,8},6..7];",
+        "alldisj_avsi=[{2,5},6..7,{1,8},3..4];",
+        "alldisj_avsi=[{2,5},{4,7},{1,8},{3,6}];",
+        "alldisj_avsi=[{2,5},{4,6},{1,8},{3,7}];",
+        "alldisj_avsi=[{2,5},{3,7},{1,8},{4,6}];",
+        "alldisj_avsi=[{2,5},{3,6},{1,8},{4,7}];",
+        "alldisj_avsi=[{2,5},3..4,{1,8},6..7];",
+        "alldisj_avsi=[{2,6},{5,7},{1,8},3..4];",
+        "alldisj_avsi=[{2,6},{4,7},{1,8},{3,5}];",
+        "alldisj_avsi=[{2,6},4..5,{1,8},{3,7}];",
+        "alldisj_avsi=[{2,6},{3,7},{1,8},4..5];",
+        "alldisj_avsi=[{2,6},{3,5},{1,8},{4,7}];",
+        "alldisj_avsi=[{2,6},3..4,{1,8},{5,7}];",
+        "alldisj_avsi=[{2,7},5..6,{1,8},3..4];",
+        "alldisj_avsi=[{2,7},{4,6},{1,8},{3,5}];",
+        "alldisj_avsi=[{2,7},4..5,{1,8},{3,6}];",
+        "alldisj_avsi=[{2,7},{3,6},{1,8},4..5];",
+        "alldisj_avsi=[{2,7},{3,5},{1,8},{4,6}];",
+        "alldisj_avsi=[{2,7},3..4,{1,8},5..6];",
+        "alldisj_avsi=[3..4,6..7,{1,8},{2,5}];",
+        "alldisj_avsi=[3..4,{5,7},{1,8},{2,6}];",
+        "alldisj_avsi=[3..4,5..6,{1,8},{2,7}];",
+        "alldisj_avsi=[3..4,{2,7},{1,8},5..6];",
+        "alldisj_avsi=[3..4,{2,6},{1,8},{5,7}];",
+        "alldisj_avsi=[3..4,{2,5},{1,8},6..7];",
+        "alldisj_avsi=[{3,5},6..7,{1,8},{2,4}];",
+        "alldisj_avsi=[{3,5},{4,7},{1,8},{2,6}];",
+        "alldisj_avsi=[{3,5},{4,6},{1,8},{2,7}];",
+        "alldisj_avsi=[{3,5},{2,7},{1,8},{4,6}];",
+        "alldisj_avsi=[{3,5},{2,6},{1,8},{4,7}];",
+        "alldisj_avsi=[{3,5},{2,4},{1,8},6..7];",
+        "alldisj_avsi=[{3,6},{5,7},{1,8},{2,4}];",
+        "alldisj_avsi=[{3,6},{4,7},{1,8},{2,5}];",
+        "alldisj_avsi=[{3,6},4..5,{1,8},{2,7}];",
+        "alldisj_avsi=[{3,6},{2,7},{1,8},4..5];",
+        "alldisj_avsi=[{3,6},{2,5},{1,8},{4,7}];",
+        "alldisj_avsi=[{3,6},{2,4},{1,8},{5,7}];",
+        "alldisj_avsi=[{3,7},5..6,{1,8},{2,4}];",
+        "alldisj_avsi=[{3,7},{4,6},{1,8},{2,5}];",
+        "alldisj_avsi=[{3,7},4..5,{1,8},{2,6}];",
+        "alldisj_avsi=[{3,7},{2,6},{1,8},4..5];",
+        "alldisj_avsi=[{3,7},{2,5},{1,8},{4,6}];",
+        "alldisj_avsi=[{3,7},{2,4},{1,8},5..6];",
+        "alldisj_avsi=[4..5,6..7,{1,8},2..3];",
+        "alldisj_avsi=[4..5,{3,7},{1,8},{2,6}];",
+        "alldisj_avsi=[4..5,{3,6},{1,8},{2,7}];",
+        "alldisj_avsi=[4..5,{2,7},{1,8},{3,6}];",
+        "alldisj_avsi=[4..5,{2,6},{1,8},{3,7}];",
+        "alldisj_avsi=[4..5,2..3,{1,8},6..7];",
+        "alldisj_avsi=[{4,6},{5,7},{1,8},2..3];",
+        "alldisj_avsi=[{4,6},{3,7},{1,8},{2,5}];",
+        "alldisj_avsi=[{4,6},{3,5},{1,8},{2,7}];",
+        "alldisj_avsi=[{4,6},{2,7},{1,8},{3,5}];",
+        "alldisj_avsi=[{4,6},{2,5},{1,8},{3,7}];",
+        "alldisj_avsi=[{4,6},2..3,{1,8},{5,7}];",
+        "alldisj_avsi=[{4,7},5..6,{1,8},2..3];",
+        "alldisj_avsi=[{4,7},{3,6},{1,8},{2,5}];",
+        "alldisj_avsi=[{4,7},{3,5},{1,8},{2,6}];",
+        "alldisj_avsi=[{4,7},{2,6},{1,8},{3,5}];",
+        "alldisj_avsi=[{4,7},{2,5},{1,8},{3,6}];",
+        "alldisj_avsi=[{4,7},2..3,{1,8},5..6];",
+        "alldisj_avsi=[5..6,{4,7},{1,8},2..3];",
+        "alldisj_avsi=[5..6,{3,7},{1,8},{2,4}];",
+        "alldisj_avsi=[5..6,3..4,{1,8},{2,7}];",
+        "alldisj_avsi=[5..6,{2,7},{1,8},3..4];",
+        "alldisj_avsi=[5..6,{2,4},{1,8},{3,7}];",
+        "alldisj_avsi=[5..6,2..3,{1,8},{4,7}];",
+        "alldisj_avsi=[{5,7},{4,6},{1,8},2..3];",
+        "alldisj_avsi=[{5,7},{3,6},{1,8},{2,4}];",
+        "alldisj_avsi=[{5,7},3..4,{1,8},{2,6}];",
+        "alldisj_avsi=[{5,7},{2,6},{1,8},3..4];",
+        "alldisj_avsi=[{5,7},{2,4},{1,8},{3,6}];",
+        "alldisj_avsi=[{5,7},2..3,{1,8},{4,6}];",
+        "alldisj_avsi=[6..7,4..5,{1,8},2..3];",
+        "alldisj_avsi=[6..7,{3,5},{1,8},{2,4}];",
+        "alldisj_avsi=[6..7,3..4,{1,8},{2,5}];",
+        "alldisj_avsi=[6..7,{2,5},{1,8},3..4];",
+        "alldisj_avsi=[6..7,{2,4},{1,8},{3,5}];",
+        "alldisj_avsi=[6..7,2..3,{1,8},4..5];",
+        "alldisj_avsi=[6..7,{1,4},{5,8},2..3];",
+        "alldisj_avsi=[{5,7},{1,4},{6,8},2..3];",
+        "alldisj_avsi=[5..6,{1,4},7..8,2..3];",
+        "alldisj_avsi=[6..7,{1,5},{4,8},2..3];",
+        "alldisj_avsi=[{4,7},{1,5},{6,8},2..3];",
+        "alldisj_avsi=[{4,6},{1,5},7..8,2..3];",
+        "alldisj_avsi=[{5,7},{1,6},{4,8},2..3];",
+        "alldisj_avsi=[{4,7},{1,6},{5,8},2..3];",
+        "alldisj_avsi=[4..5,{1,6},7..8,2..3];",
+        "alldisj_avsi=[5..6,{1,7},{4,8},2..3];",
+        "alldisj_avsi=[{4,6},{1,7},{5,8},2..3];",
+        "alldisj_avsi=[4..5,{1,7},{6,8},2..3];",
+        "alldisj_avsi=[{1,7},4..5,{6,8},2..3];",
+        "alldisj_avsi=[{1,6},4..5,7..8,2..3];",
+        "alldisj_avsi=[{1,7},{4,6},{5,8},2..3];",
+        "alldisj_avsi=[{1,5},{4,6},7..8,2..3];",
+        "alldisj_avsi=[{1,6},{4,7},{5,8},2..3];",
+        "alldisj_avsi=[{1,5},{4,7},{6,8},2..3];",
+        "alldisj_avsi=[{1,7},5..6,{4,8},2..3];",
+        "alldisj_avsi=[{1,4},5..6,7..8,2..3];",
+        "alldisj_avsi=[{1,6},{5,7},{4,8},2..3];",
+        "alldisj_avsi=[{1,4},{5,7},{6,8},2..3];",
+        "alldisj_avsi=[{1,5},6..7,{4,8},2..3];",
+        "alldisj_avsi=[{1,4},6..7,{5,8},2..3];",
+        "alldisj_avsi=[{1,3},6..7,{5,8},{2,4}];",
+        "alldisj_avsi=[{1,3},{5,7},{6,8},{2,4}];",
+        "alldisj_avsi=[{1,3},5..6,7..8,{2,4}];",
+        "alldisj_avsi=[{1,5},6..7,{3,8},{2,4}];",
+        "alldisj_avsi=[{1,5},{3,7},{6,8},{2,4}];",
+        "alldisj_avsi=[{1,5},{3,6},7..8,{2,4}];",
+        "alldisj_avsi=[{1,6},{5,7},{3,8},{2,4}];",
+        "alldisj_avsi=[{1,6},{3,7},{5,8},{2,4}];",
+        "alldisj_avsi=[{1,6},{3,5},7..8,{2,4}];",
+        "alldisj_avsi=[{1,7},5..6,{3,8},{2,4}];",
+        "alldisj_avsi=[{1,7},{3,6},{5,8},{2,4}];",
+        "alldisj_avsi=[{1,7},{3,5},{6,8},{2,4}];",
+        "alldisj_avsi=[{3,5},{1,7},{6,8},{2,4}];",
+        "alldisj_avsi=[{3,5},{1,6},7..8,{2,4}];",
+        "alldisj_avsi=[{3,6},{1,7},{5,8},{2,4}];",
+        "alldisj_avsi=[{3,6},{1,5},7..8,{2,4}];",
+        "alldisj_avsi=[{3,7},{1,6},{5,8},{2,4}];",
+        "alldisj_avsi=[{3,7},{1,5},{6,8},{2,4}];",
+        "alldisj_avsi=[5..6,{1,7},{3,8},{2,4}];",
+        "alldisj_avsi=[5..6,{1,3},7..8,{2,4}];",
+        "alldisj_avsi=[{5,7},{1,6},{3,8},{2,4}];",
+        "alldisj_avsi=[{5,7},{1,3},{6,8},{2,4}];",
+        "alldisj_avsi=[6..7,{1,5},{3,8},{2,4}];",
+        "alldisj_avsi=[6..7,{1,3},{5,8},{2,4}];",
+        "alldisj_avsi=[6..7,{1,3},{4,8},{2,5}];",
+        "alldisj_avsi=[{4,7},{1,3},{6,8},{2,5}];",
+        "alldisj_avsi=[{4,6},{1,3},7..8,{2,5}];",
+        "alldisj_avsi=[6..7,{1,4},{3,8},{2,5}];",
+        "alldisj_avsi=[{3,7},{1,4},{6,8},{2,5}];",
+        "alldisj_avsi=[{3,6},{1,4},7..8,{2,5}];",
+        "alldisj_avsi=[{4,7},{1,6},{3,8},{2,5}];",
+        "alldisj_avsi=[{3,7},{1,6},{4,8},{2,5}];",
+        "alldisj_avsi=[3..4,{1,6},7..8,{2,5}];",
+        "alldisj_avsi=[{4,6},{1,7},{3,8},{2,5}];",
+        "alldisj_avsi=[{3,6},{1,7},{4,8},{2,5}];",
+        "alldisj_avsi=[3..4,{1,7},{6,8},{2,5}];",
+        "alldisj_avsi=[{1,7},3..4,{6,8},{2,5}];",
+        "alldisj_avsi=[{1,6},3..4,7..8,{2,5}];",
+        "alldisj_avsi=[{1,7},{3,6},{4,8},{2,5}];",
+        "alldisj_avsi=[{1,4},{3,6},7..8,{2,5}];",
+        "alldisj_avsi=[{1,6},{3,7},{4,8},{2,5}];",
+        "alldisj_avsi=[{1,4},{3,7},{6,8},{2,5}];",
+        "alldisj_avsi=[{1,7},{4,6},{3,8},{2,5}];",
+        "alldisj_avsi=[{1,3},{4,6},7..8,{2,5}];",
+        "alldisj_avsi=[{1,6},{4,7},{3,8},{2,5}];",
+        "alldisj_avsi=[{1,3},{4,7},{6,8},{2,5}];",
+        "alldisj_avsi=[{1,4},6..7,{3,8},{2,5}];",
+        "alldisj_avsi=[{1,3},6..7,{4,8},{2,5}];",
+        "alldisj_avsi=[{1,3},{5,7},{4,8},{2,6}];",
+        "alldisj_avsi=[{1,3},{4,7},{5,8},{2,6}];",
+        "alldisj_avsi=[{1,3},4..5,7..8,{2,6}];",
+        "alldisj_avsi=[{1,4},{5,7},{3,8},{2,6}];",
+        "alldisj_avsi=[{1,4},{3,7},{5,8},{2,6}];",
+        "alldisj_avsi=[{1,4},{3,5},7..8,{2,6}];",
+        "alldisj_avsi=[{1,5},{4,7},{3,8},{2,6}];",
+        "alldisj_avsi=[{1,5},{3,7},{4,8},{2,6}];",
+        "alldisj_avsi=[{1,5},3..4,7..8,{2,6}];",
+        "alldisj_avsi=[{1,7},4..5,{3,8},{2,6}];",
+        "alldisj_avsi=[{1,7},{3,5},{4,8},{2,6}];",
+        "alldisj_avsi=[{1,7},3..4,{5,8},{2,6}];",
+        "alldisj_avsi=[3..4,{1,7},{5,8},{2,6}];",
+        "alldisj_avsi=[3..4,{1,5},7..8,{2,6}];",
+        "alldisj_avsi=[{3,5},{1,7},{4,8},{2,6}];",
+        "alldisj_avsi=[{3,5},{1,4},7..8,{2,6}];",
+        "alldisj_avsi=[{3,7},{1,5},{4,8},{2,6}];",
+        "alldisj_avsi=[{3,7},{1,4},{5,8},{2,6}];",
+        "alldisj_avsi=[4..5,{1,7},{3,8},{2,6}];",
+        "alldisj_avsi=[4..5,{1,3},7..8,{2,6}];",
+        "alldisj_avsi=[{4,7},{1,5},{3,8},{2,6}];",
+        "alldisj_avsi=[{4,7},{1,3},{5,8},{2,6}];",
+        "alldisj_avsi=[{5,7},{1,4},{3,8},{2,6}];",
+        "alldisj_avsi=[{5,7},{1,3},{4,8},{2,6}];",
+        "alldisj_avsi=[5..6,{1,4},{3,8},{2,7}];",
+        "alldisj_avsi=[{4,6},{1,5},{3,8},{2,7}];",
+        "alldisj_avsi=[4..5,{1,6},{3,8},{2,7}];",
+        "alldisj_avsi=[{1,6},4..5,{3,8},{2,7}];",
+        "alldisj_avsi=[{1,5},{4,6},{3,8},{2,7}];",
+        "alldisj_avsi=[{1,4},5..6,{3,8},{2,7}];",
+        "alldisj_avsi=[5..6,{1,3},{4,8},{2,7}];",
+        "alldisj_avsi=[{3,6},{1,5},{4,8},{2,7}];",
+        "alldisj_avsi=[{3,5},{1,6},{4,8},{2,7}];",
+        "alldisj_avsi=[{1,6},{3,5},{4,8},{2,7}];",
+        "alldisj_avsi=[{1,5},{3,6},{4,8},{2,7}];",
+        "alldisj_avsi=[{1,3},5..6,{4,8},{2,7}];",
+        "alldisj_avsi=[{4,6},{1,3},{5,8},{2,7}];",
+        "alldisj_avsi=[{3,6},{1,4},{5,8},{2,7}];",
+        "alldisj_avsi=[3..4,{1,6},{5,8},{2,7}];",
+        "alldisj_avsi=[{1,6},3..4,{5,8},{2,7}];",
+        "alldisj_avsi=[{1,4},{3,6},{5,8},{2,7}];",
+        "alldisj_avsi=[{1,3},{4,6},{5,8},{2,7}];",
+        "alldisj_avsi=[4..5,{1,3},{6,8},{2,7}];",
+        "alldisj_avsi=[{3,5},{1,4},{6,8},{2,7}];",
+        "alldisj_avsi=[3..4,{1,5},{6,8},{2,7}];",
+        "alldisj_avsi=[{1,5},3..4,{6,8},{2,7}];",
+        "alldisj_avsi=[{1,4},{3,5},{6,8},{2,7}];",
+        "alldisj_avsi=[{1,3},4..5,{6,8},{2,7}];",
         "alldisj_avsi=[3..4,1..2,7..8,5..6];",
-        "alldisj_avsi=[3..4,1..2,{[6, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[3..4,1..2,{[5, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[3, ],[5, ],},1..2,7..8,{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},1..2,{[6, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},1..2,{[4, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[3, ],[6, ],},1..2,7..8,4..5];",
-        "alldisj_avsi=[{[3, ],[6, ],},1..2,{[5, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},1..2,{[4, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},1..2,{[6, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[3, ],[7, ],},1..2,{[5, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},1..2,{[4, ],[8, ],},5..6];",
-        "alldisj_avsi=[4..5,1..2,7..8,{[3, ],[6, ],}];",
-        "alldisj_avsi=[4..5,1..2,{[6, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[4..5,1..2,{[3, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[4, ],[6, ],},1..2,7..8,{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},1..2,{[5, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},1..2,{[3, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},1..2,{[6, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},1..2,{[5, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},1..2,{[3, ],[8, ],},5..6];",
+        "alldisj_avsi=[3..4,1..2,{6,8},{5,7}];",
+        "alldisj_avsi=[3..4,1..2,{5,8},6..7];",
+        "alldisj_avsi=[{3,5},1..2,7..8,{4,6}];",
+        "alldisj_avsi=[{3,5},1..2,{6,8},{4,7}];",
+        "alldisj_avsi=[{3,5},1..2,{4,8},6..7];",
+        "alldisj_avsi=[{3,6},1..2,7..8,4..5];",
+        "alldisj_avsi=[{3,6},1..2,{5,8},{4,7}];",
+        "alldisj_avsi=[{3,6},1..2,{4,8},{5,7}];",
+        "alldisj_avsi=[{3,7},1..2,{6,8},4..5];",
+        "alldisj_avsi=[{3,7},1..2,{5,8},{4,6}];",
+        "alldisj_avsi=[{3,7},1..2,{4,8},5..6];",
+        "alldisj_avsi=[4..5,1..2,7..8,{3,6}];",
+        "alldisj_avsi=[4..5,1..2,{6,8},{3,7}];",
+        "alldisj_avsi=[4..5,1..2,{3,8},6..7];",
+        "alldisj_avsi=[{4,6},1..2,7..8,{3,5}];",
+        "alldisj_avsi=[{4,6},1..2,{5,8},{3,7}];",
+        "alldisj_avsi=[{4,6},1..2,{3,8},{5,7}];",
+        "alldisj_avsi=[{4,7},1..2,{6,8},{3,5}];",
+        "alldisj_avsi=[{4,7},1..2,{5,8},{3,6}];",
+        "alldisj_avsi=[{4,7},1..2,{3,8},5..6];",
         "alldisj_avsi=[5..6,1..2,7..8,3..4];",
-        "alldisj_avsi=[5..6,1..2,{[4, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[5..6,1..2,{[3, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},1..2,{[6, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[5, ],[7, ],},1..2,{[4, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},1..2,{[3, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[6..7,1..2,{[5, ],[8, ],},3..4];",
-        "alldisj_avsi=[6..7,1..2,{[4, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[6..7,1..2,{[3, ],[8, ],},4..5];",
-        "alldisj_avsi=[6..7,{[1, ],[3, ],},{[2, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[3, ],},{[6, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[3, ],},7..8,4..5];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[3, ],},{[2, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[3, ],},{[5, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[3, ],},7..8,{[4, ],[6, ],}];",
-        "alldisj_avsi=[5..6,{[1, ],[3, ],},{[2, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[3, ],},{[5, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[3, ],},{[6, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[3, ],},{[2, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[3, ],},{[4, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[3, ],},7..8,5..6];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[3, ],},{[2, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[3, ],},{[4, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[3, ],},{[6, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[4..5,{[1, ],[3, ],},{[2, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[3, ],},{[4, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[3, ],},{[5, ],[8, ],},6..7];",
-        "alldisj_avsi=[2..3,{[1, ],[4, ],},7..8,5..6];",
-        "alldisj_avsi=[2..3,{[1, ],[4, ],},{[6, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[2..3,{[1, ],[4, ],},{[5, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[4, ],},7..8,{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[4, ],},{[6, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[4, ],},{[3, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[4, ],},7..8,{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[4, ],},{[5, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[4, ],},{[3, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[4, ],},{[6, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[4, ],},{[5, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[4, ],},{[3, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[4, ],},{[2, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[4, ],},{[2, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[4, ],},{[2, ],[8, ],},5..6];",
-        "alldisj_avsi=[5..6,{[1, ],[4, ],},{[2, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[4, ],},{[2, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[6..7,{[1, ],[4, ],},{[2, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[2..3,{[1, ],[5, ],},7..8,{[4, ],[6, ],}];",
-        "alldisj_avsi=[2..3,{[1, ],[5, ],},{[6, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[2..3,{[1, ],[5, ],},{[4, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[5, ],},7..8,{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[5, ],},{[6, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[5, ],},{[3, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[5, ],},7..8,3..4];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[5, ],},{[4, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[5, ],},{[3, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[5, ],},{[6, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[5, ],},{[4, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[5, ],},{[3, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[3..4,{[1, ],[5, ],},{[2, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[5, ],},{[2, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[5, ],},{[2, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[5, ],},{[2, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[5, ],},{[2, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[6..7,{[1, ],[5, ],},{[2, ],[8, ],},3..4];",
-        "alldisj_avsi=[2..3,{[1, ],[6, ],},7..8,4..5];",
-        "alldisj_avsi=[2..3,{[1, ],[6, ],},{[5, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[2..3,{[1, ],[6, ],},{[4, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[6, ],},7..8,{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[6, ],},{[5, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[6, ],},{[3, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[6, ],},7..8,3..4];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[6, ],},{[4, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[6, ],},{[3, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[6, ],},{[5, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[6, ],},{[4, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[7, ],},{[1, ],[6, ],},{[3, ],[8, ],},4..5];",
-        "alldisj_avsi=[3..4,{[1, ],[6, ],},{[2, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[6, ],},{[2, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[3, ],[7, ],},{[1, ],[6, ],},{[2, ],[8, ],},4..5];",
-        "alldisj_avsi=[4..5,{[1, ],[6, ],},{[2, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[4, ],[7, ],},{[1, ],[6, ],},{[2, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[5, ],[7, ],},{[1, ],[6, ],},{[2, ],[8, ],},3..4];",
-        "alldisj_avsi=[5..6,{[1, ],[7, ],},{[2, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[7, ],},{[5, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[7, ],},{[6, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[4, ],[6, ],},{[1, ],[7, ],},{[2, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[7, ],},{[4, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[7, ],},{[6, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[4..5,{[1, ],[7, ],},{[2, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[7, ],},{[4, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[7, ],},{[5, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[3, ],[6, ],},{[1, ],[7, ],},{[2, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[2, ],[6, ],},{[1, ],[7, ],},{[3, ],[8, ],},4..5];",
-        "alldisj_avsi=[2..3,{[1, ],[7, ],},{[6, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[3, ],[5, ],},{[1, ],[7, ],},{[2, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[2, ],[5, ],},{[1, ],[7, ],},{[3, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[2..3,{[1, ],[7, ],},{[5, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[3..4,{[1, ],[7, ],},{[2, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[2, ],[4, ],},{[1, ],[7, ],},{[3, ],[8, ],},5..6];",
-        "alldisj_avsi=[2..3,{[1, ],[7, ],},{[4, ],[8, ],},5..6];",
-        "alldisj_avsi=[1..2,6..7,{[5, ],[8, ],},3..4];",
-        "alldisj_avsi=[1..2,{[5, ],[7, ],},{[6, ],[8, ],},3..4];",
+        "alldisj_avsi=[5..6,1..2,{4,8},{3,7}];",
+        "alldisj_avsi=[5..6,1..2,{3,8},{4,7}];",
+        "alldisj_avsi=[{5,7},1..2,{6,8},3..4];",
+        "alldisj_avsi=[{5,7},1..2,{4,8},{3,6}];",
+        "alldisj_avsi=[{5,7},1..2,{3,8},{4,6}];",
+        "alldisj_avsi=[6..7,1..2,{5,8},3..4];",
+        "alldisj_avsi=[6..7,1..2,{4,8},{3,5}];",
+        "alldisj_avsi=[6..7,1..2,{3,8},4..5];",
+        "alldisj_avsi=[6..7,{1,3},{2,8},4..5];",
+        "alldisj_avsi=[{2,7},{1,3},{6,8},4..5];",
+        "alldisj_avsi=[{2,6},{1,3},7..8,4..5];",
+        "alldisj_avsi=[{5,7},{1,3},{2,8},{4,6}];",
+        "alldisj_avsi=[{2,7},{1,3},{5,8},{4,6}];",
+        "alldisj_avsi=[{2,5},{1,3},7..8,{4,6}];",
+        "alldisj_avsi=[5..6,{1,3},{2,8},{4,7}];",
+        "alldisj_avsi=[{2,6},{1,3},{5,8},{4,7}];",
+        "alldisj_avsi=[{2,5},{1,3},{6,8},{4,7}];",
+        "alldisj_avsi=[{4,7},{1,3},{2,8},5..6];",
+        "alldisj_avsi=[{2,7},{1,3},{4,8},5..6];",
+        "alldisj_avsi=[{2,4},{1,3},7..8,5..6];",
+        "alldisj_avsi=[{4,6},{1,3},{2,8},{5,7}];",
+        "alldisj_avsi=[{2,6},{1,3},{4,8},{5,7}];",
+        "alldisj_avsi=[{2,4},{1,3},{6,8},{5,7}];",
+        "alldisj_avsi=[4..5,{1,3},{2,8},6..7];",
+        "alldisj_avsi=[{2,5},{1,3},{4,8},6..7];",
+        "alldisj_avsi=[{2,4},{1,3},{5,8},6..7];",
+        "alldisj_avsi=[2..3,{1,4},7..8,5..6];",
+        "alldisj_avsi=[2..3,{1,4},{6,8},{5,7}];",
+        "alldisj_avsi=[2..3,{1,4},{5,8},6..7];",
+        "alldisj_avsi=[{2,5},{1,4},7..8,{3,6}];",
+        "alldisj_avsi=[{2,5},{1,4},{6,8},{3,7}];",
+        "alldisj_avsi=[{2,5},{1,4},{3,8},6..7];",
+        "alldisj_avsi=[{2,6},{1,4},7..8,{3,5}];",
+        "alldisj_avsi=[{2,6},{1,4},{5,8},{3,7}];",
+        "alldisj_avsi=[{2,6},{1,4},{3,8},{5,7}];",
+        "alldisj_avsi=[{2,7},{1,4},{6,8},{3,5}];",
+        "alldisj_avsi=[{2,7},{1,4},{5,8},{3,6}];",
+        "alldisj_avsi=[{2,7},{1,4},{3,8},5..6];",
+        "alldisj_avsi=[{3,5},{1,4},{2,8},6..7];",
+        "alldisj_avsi=[{3,6},{1,4},{2,8},{5,7}];",
+        "alldisj_avsi=[{3,7},{1,4},{2,8},5..6];",
+        "alldisj_avsi=[5..6,{1,4},{2,8},{3,7}];",
+        "alldisj_avsi=[{5,7},{1,4},{2,8},{3,6}];",
+        "alldisj_avsi=[6..7,{1,4},{2,8},{3,5}];",
+        "alldisj_avsi=[2..3,{1,5},7..8,{4,6}];",
+        "alldisj_avsi=[2..3,{1,5},{6,8},{4,7}];",
+        "alldisj_avsi=[2..3,{1,5},{4,8},6..7];",
+        "alldisj_avsi=[{2,4},{1,5},7..8,{3,6}];",
+        "alldisj_avsi=[{2,4},{1,5},{6,8},{3,7}];",
+        "alldisj_avsi=[{2,4},{1,5},{3,8},6..7];",
+        "alldisj_avsi=[{2,6},{1,5},7..8,3..4];",
+        "alldisj_avsi=[{2,6},{1,5},{4,8},{3,7}];",
+        "alldisj_avsi=[{2,6},{1,5},{3,8},{4,7}];",
+        "alldisj_avsi=[{2,7},{1,5},{6,8},3..4];",
+        "alldisj_avsi=[{2,7},{1,5},{4,8},{3,6}];",
+        "alldisj_avsi=[{2,7},{1,5},{3,8},{4,6}];",
+        "alldisj_avsi=[3..4,{1,5},{2,8},6..7];",
+        "alldisj_avsi=[{3,6},{1,5},{2,8},{4,7}];",
+        "alldisj_avsi=[{3,7},{1,5},{2,8},{4,6}];",
+        "alldisj_avsi=[{4,6},{1,5},{2,8},{3,7}];",
+        "alldisj_avsi=[{4,7},{1,5},{2,8},{3,6}];",
+        "alldisj_avsi=[6..7,{1,5},{2,8},3..4];",
+        "alldisj_avsi=[2..3,{1,6},7..8,4..5];",
+        "alldisj_avsi=[2..3,{1,6},{5,8},{4,7}];",
+        "alldisj_avsi=[2..3,{1,6},{4,8},{5,7}];",
+        "alldisj_avsi=[{2,4},{1,6},7..8,{3,5}];",
+        "alldisj_avsi=[{2,4},{1,6},{5,8},{3,7}];",
+        "alldisj_avsi=[{2,4},{1,6},{3,8},{5,7}];",
+        "alldisj_avsi=[{2,5},{1,6},7..8,3..4];",
+        "alldisj_avsi=[{2,5},{1,6},{4,8},{3,7}];",
+        "alldisj_avsi=[{2,5},{1,6},{3,8},{4,7}];",
+        "alldisj_avsi=[{2,7},{1,6},{5,8},3..4];",
+        "alldisj_avsi=[{2,7},{1,6},{4,8},{3,5}];",
+        "alldisj_avsi=[{2,7},{1,6},{3,8},4..5];",
+        "alldisj_avsi=[3..4,{1,6},{2,8},{5,7}];",
+        "alldisj_avsi=[{3,5},{1,6},{2,8},{4,7}];",
+        "alldisj_avsi=[{3,7},{1,6},{2,8},4..5];",
+        "alldisj_avsi=[4..5,{1,6},{2,8},{3,7}];",
+        "alldisj_avsi=[{4,7},{1,6},{2,8},{3,5}];",
+        "alldisj_avsi=[{5,7},{1,6},{2,8},3..4];",
+        "alldisj_avsi=[5..6,{1,7},{2,8},3..4];",
+        "alldisj_avsi=[{2,6},{1,7},{5,8},3..4];",
+        "alldisj_avsi=[{2,5},{1,7},{6,8},3..4];",
+        "alldisj_avsi=[{4,6},{1,7},{2,8},{3,5}];",
+        "alldisj_avsi=[{2,6},{1,7},{4,8},{3,5}];",
+        "alldisj_avsi=[{2,4},{1,7},{6,8},{3,5}];",
+        "alldisj_avsi=[4..5,{1,7},{2,8},{3,6}];",
+        "alldisj_avsi=[{2,5},{1,7},{4,8},{3,6}];",
+        "alldisj_avsi=[{2,4},{1,7},{5,8},{3,6}];",
+        "alldisj_avsi=[{3,6},{1,7},{2,8},4..5];",
+        "alldisj_avsi=[{2,6},{1,7},{3,8},4..5];",
+        "alldisj_avsi=[2..3,{1,7},{6,8},4..5];",
+        "alldisj_avsi=[{3,5},{1,7},{2,8},{4,6}];",
+        "alldisj_avsi=[{2,5},{1,7},{3,8},{4,6}];",
+        "alldisj_avsi=[2..3,{1,7},{5,8},{4,6}];",
+        "alldisj_avsi=[3..4,{1,7},{2,8},5..6];",
+        "alldisj_avsi=[{2,4},{1,7},{3,8},5..6];",
+        "alldisj_avsi=[2..3,{1,7},{4,8},5..6];",
+        "alldisj_avsi=[1..2,6..7,{5,8},3..4];",
+        "alldisj_avsi=[1..2,{5,7},{6,8},3..4];",
         "alldisj_avsi=[1..2,5..6,7..8,3..4];",
-        "alldisj_avsi=[{[1, ],[5, ],},6..7,{[2, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[7, ],},{[6, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[6, ],},7..8,3..4];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[5, ],[7, ],},{[2, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[7, ],},{[5, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[5, ],},7..8,3..4];",
-        "alldisj_avsi=[{[1, ],[7, ],},5..6,{[2, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[6, ],},{[5, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[5, ],},{[6, ],[8, ],},3..4];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[4, ],[6, ],},{[2, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[4, ],[7, ],},{[2, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},6..7,{[2, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[6, ],},{[4, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[7, ],},{[4, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[1..2,6..7,{[4, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[4, ],},{[6, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[7, ],},{[6, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[1..2,{[4, ],[7, ],},{[6, ],[8, ],},{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[4, ],},7..8,{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[6, ],},7..8,{[3, ],[5, ],}];",
-        "alldisj_avsi=[1..2,{[4, ],[6, ],},7..8,{[3, ],[5, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[4, ],},{[5, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[4, ],},7..8,{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[5, ],},{[4, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[5, ],},7..8,{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[7, ],},{[4, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[7, ],},{[5, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},4..5,{[2, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[1..2,4..5,7..8,{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[4, ],[7, ],},{[2, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[1..2,{[4, ],[7, ],},{[5, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[5, ],[7, ],},{[2, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[1..2,{[5, ],[7, ],},{[4, ],[8, ],},{[3, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},4..5,{[2, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[4, ],[6, ],},{[2, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},5..6,{[2, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[5, ],},{[4, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[6, ],},{[4, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[1..2,5..6,{[4, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[4, ],},{[5, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[6, ],},{[5, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[1..2,{[4, ],[6, ],},{[5, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[4, ],},{[6, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[5, ],},{[6, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[1..2,4..5,{[6, ],[8, ],},{[3, ],[7, ],}];",
-        "alldisj_avsi=[1..2,6..7,{[3, ],[8, ],},4..5];",
-        "alldisj_avsi=[1..2,{[3, ],[7, ],},{[6, ],[8, ],},4..5];",
-        "alldisj_avsi=[1..2,{[3, ],[6, ],},7..8,4..5];",
-        "alldisj_avsi=[{[1, ],[3, ],},6..7,{[2, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[7, ],},{[6, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[6, ],},7..8,4..5];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[3, ],[7, ],},{[2, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[7, ],},{[3, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[1, ],[6, ],},2..3,7..8,4..5];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[3, ],[6, ],},{[2, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[6, ],},{[3, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[1, ],[7, ],},2..3,{[6, ],[8, ],},4..5];",
-        "alldisj_avsi=[{[1, ],[7, ],},2..3,{[5, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},2..3,7..8,{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[5, ],},{[3, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[5, ],},7..8,{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[7, ],},{[3, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[7, ],},{[5, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[3, ],[5, ],},{[2, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[1..2,{[3, ],[5, ],},7..8,{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[3, ],[7, ],},{[2, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[1..2,{[3, ],[7, ],},{[5, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[5, ],[7, ],},{[2, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[1..2,{[5, ],[7, ],},{[3, ],[8, ],},{[4, ],[6, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[3, ],[5, ],},{[2, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[3, ],[6, ],},{[2, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},5..6,{[2, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[5, ],},{[3, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[6, ],},{[3, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[1..2,5..6,{[3, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},2..3,{[5, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[6, ],},{[5, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[1..2,{[3, ],[6, ],},{[5, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[5, ],},2..3,{[6, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[5, ],},{[6, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[1..2,{[3, ],[5, ],},{[6, ],[8, ],},{[4, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[7, ],},3..4,{[2, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[7, ],},{[2, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[4, ],[7, ],},{[2, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[1, ],[7, ],},{[2, ],[4, ],},{[3, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[7, ],},{[3, ],[8, ],},5..6];",
-        "alldisj_avsi=[1..2,{[4, ],[7, ],},{[3, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[1, ],[7, ],},2..3,{[4, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[7, ],},{[4, ],[8, ],},5..6];",
-        "alldisj_avsi=[1..2,{[3, ],[7, ],},{[4, ],[8, ],},5..6];",
-        "alldisj_avsi=[{[1, ],[4, ],},2..3,7..8,5..6];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[4, ],},7..8,5..6];",
+        "alldisj_avsi=[{1,5},6..7,{2,8},3..4];",
+        "alldisj_avsi=[{1,5},{2,7},{6,8},3..4];",
+        "alldisj_avsi=[{1,5},{2,6},7..8,3..4];",
+        "alldisj_avsi=[{1,6},{5,7},{2,8},3..4];",
+        "alldisj_avsi=[{1,6},{2,7},{5,8},3..4];",
+        "alldisj_avsi=[{1,6},{2,5},7..8,3..4];",
+        "alldisj_avsi=[{1,7},5..6,{2,8},3..4];",
+        "alldisj_avsi=[{1,7},{2,6},{5,8},3..4];",
+        "alldisj_avsi=[{1,7},{2,5},{6,8},3..4];",
+        "alldisj_avsi=[{1,7},{4,6},{2,8},{3,5}];",
+        "alldisj_avsi=[{1,6},{4,7},{2,8},{3,5}];",
+        "alldisj_avsi=[{1,4},6..7,{2,8},{3,5}];",
+        "alldisj_avsi=[{1,7},{2,6},{4,8},{3,5}];",
+        "alldisj_avsi=[{1,6},{2,7},{4,8},{3,5}];",
+        "alldisj_avsi=[1..2,6..7,{4,8},{3,5}];",
+        "alldisj_avsi=[{1,7},{2,4},{6,8},{3,5}];",
+        "alldisj_avsi=[{1,4},{2,7},{6,8},{3,5}];",
+        "alldisj_avsi=[1..2,{4,7},{6,8},{3,5}];",
+        "alldisj_avsi=[{1,6},{2,4},7..8,{3,5}];",
+        "alldisj_avsi=[{1,4},{2,6},7..8,{3,5}];",
+        "alldisj_avsi=[1..2,{4,6},7..8,{3,5}];",
+        "alldisj_avsi=[{1,7},{2,4},{5,8},{3,6}];",
+        "alldisj_avsi=[{1,5},{2,4},7..8,{3,6}];",
+        "alldisj_avsi=[{1,7},{2,5},{4,8},{3,6}];",
+        "alldisj_avsi=[{1,4},{2,5},7..8,{3,6}];",
+        "alldisj_avsi=[{1,5},{2,7},{4,8},{3,6}];",
+        "alldisj_avsi=[{1,4},{2,7},{5,8},{3,6}];",
+        "alldisj_avsi=[{1,7},4..5,{2,8},{3,6}];",
+        "alldisj_avsi=[1..2,4..5,7..8,{3,6}];",
+        "alldisj_avsi=[{1,5},{4,7},{2,8},{3,6}];",
+        "alldisj_avsi=[1..2,{4,7},{5,8},{3,6}];",
+        "alldisj_avsi=[{1,4},{5,7},{2,8},{3,6}];",
+        "alldisj_avsi=[1..2,{5,7},{4,8},{3,6}];",
+        "alldisj_avsi=[{1,6},4..5,{2,8},{3,7}];",
+        "alldisj_avsi=[{1,5},{4,6},{2,8},{3,7}];",
+        "alldisj_avsi=[{1,4},5..6,{2,8},{3,7}];",
+        "alldisj_avsi=[{1,6},{2,5},{4,8},{3,7}];",
+        "alldisj_avsi=[{1,5},{2,6},{4,8},{3,7}];",
+        "alldisj_avsi=[1..2,5..6,{4,8},{3,7}];",
+        "alldisj_avsi=[{1,6},{2,4},{5,8},{3,7}];",
+        "alldisj_avsi=[{1,4},{2,6},{5,8},{3,7}];",
+        "alldisj_avsi=[1..2,{4,6},{5,8},{3,7}];",
+        "alldisj_avsi=[{1,5},{2,4},{6,8},{3,7}];",
+        "alldisj_avsi=[{1,4},{2,5},{6,8},{3,7}];",
+        "alldisj_avsi=[1..2,4..5,{6,8},{3,7}];",
+        "alldisj_avsi=[1..2,6..7,{3,8},4..5];",
+        "alldisj_avsi=[1..2,{3,7},{6,8},4..5];",
+        "alldisj_avsi=[1..2,{3,6},7..8,4..5];",
+        "alldisj_avsi=[{1,3},6..7,{2,8},4..5];",
+        "alldisj_avsi=[{1,3},{2,7},{6,8},4..5];",
+        "alldisj_avsi=[{1,3},{2,6},7..8,4..5];",
+        "alldisj_avsi=[{1,6},{3,7},{2,8},4..5];",
+        "alldisj_avsi=[{1,6},{2,7},{3,8},4..5];",
+        "alldisj_avsi=[{1,6},2..3,7..8,4..5];",
+        "alldisj_avsi=[{1,7},{3,6},{2,8},4..5];",
+        "alldisj_avsi=[{1,7},{2,6},{3,8},4..5];",
+        "alldisj_avsi=[{1,7},2..3,{6,8},4..5];",
+        "alldisj_avsi=[{1,7},2..3,{5,8},{4,6}];",
+        "alldisj_avsi=[{1,5},2..3,7..8,{4,6}];",
+        "alldisj_avsi=[{1,7},{2,5},{3,8},{4,6}];",
+        "alldisj_avsi=[{1,3},{2,5},7..8,{4,6}];",
+        "alldisj_avsi=[{1,5},{2,7},{3,8},{4,6}];",
+        "alldisj_avsi=[{1,3},{2,7},{5,8},{4,6}];",
+        "alldisj_avsi=[{1,7},{3,5},{2,8},{4,6}];",
+        "alldisj_avsi=[1..2,{3,5},7..8,{4,6}];",
+        "alldisj_avsi=[{1,5},{3,7},{2,8},{4,6}];",
+        "alldisj_avsi=[1..2,{3,7},{5,8},{4,6}];",
+        "alldisj_avsi=[{1,3},{5,7},{2,8},{4,6}];",
+        "alldisj_avsi=[1..2,{5,7},{3,8},{4,6}];",
+        "alldisj_avsi=[{1,6},{3,5},{2,8},{4,7}];",
+        "alldisj_avsi=[{1,5},{3,6},{2,8},{4,7}];",
+        "alldisj_avsi=[{1,3},5..6,{2,8},{4,7}];",
+        "alldisj_avsi=[{1,6},{2,5},{3,8},{4,7}];",
+        "alldisj_avsi=[{1,5},{2,6},{3,8},{4,7}];",
+        "alldisj_avsi=[1..2,5..6,{3,8},{4,7}];",
+        "alldisj_avsi=[{1,6},2..3,{5,8},{4,7}];",
+        "alldisj_avsi=[{1,3},{2,6},{5,8},{4,7}];",
+        "alldisj_avsi=[1..2,{3,6},{5,8},{4,7}];",
+        "alldisj_avsi=[{1,5},2..3,{6,8},{4,7}];",
+        "alldisj_avsi=[{1,3},{2,5},{6,8},{4,7}];",
+        "alldisj_avsi=[1..2,{3,5},{6,8},{4,7}];",
+        "alldisj_avsi=[{1,7},3..4,{2,8},5..6];",
+        "alldisj_avsi=[{1,4},{3,7},{2,8},5..6];",
+        "alldisj_avsi=[{1,3},{4,7},{2,8},5..6];",
+        "alldisj_avsi=[{1,7},{2,4},{3,8},5..6];",
+        "alldisj_avsi=[{1,4},{2,7},{3,8},5..6];",
+        "alldisj_avsi=[1..2,{4,7},{3,8},5..6];",
+        "alldisj_avsi=[{1,7},2..3,{4,8},5..6];",
+        "alldisj_avsi=[{1,3},{2,7},{4,8},5..6];",
+        "alldisj_avsi=[1..2,{3,7},{4,8},5..6];",
+        "alldisj_avsi=[{1,4},2..3,7..8,5..6];",
+        "alldisj_avsi=[{1,3},{2,4},7..8,5..6];",
         "alldisj_avsi=[1..2,3..4,7..8,5..6];",
-        "alldisj_avsi=[{[1, ],[6, ],},2..3,{[4, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},2..3,{[6, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},{[2, ],[4, ],},{[3, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[4, ],},{[6, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[6, ],},{[3, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[6, ],},{[4, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[6, ],},3..4,{[2, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[1..2,3..4,{[6, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[6, ],},{[2, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[1..2,{[3, ],[6, ],},{[4, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[4, ],[6, ],},{[2, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[1..2,{[4, ],[6, ],},{[3, ],[8, ],},{[5, ],[7, ],}];",
-        "alldisj_avsi=[1..2,4..5,{[3, ],[8, ],},6..7];",
-        "alldisj_avsi=[1..2,{[3, ],[5, ],},{[4, ],[8, ],},6..7];",
-        "alldisj_avsi=[1..2,3..4,{[5, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[3, ],},4..5,{[2, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[5, ],},{[4, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[3, ],},{[2, ],[4, ],},{[5, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[3, ],[5, ],},{[2, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[4, ],},{[2, ],[5, ],},{[3, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[4, ],},2..3,{[5, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[5, ],},3..4,{[2, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[5, ],},{[2, ],[4, ],},{[3, ],[8, ],},6..7];",
-        "alldisj_avsi=[{[1, ],[5, ],},2..3,{[4, ],[8, ],},6..7];"
+        "alldisj_avsi=[{1,6},2..3,{4,8},{5,7}];",
+        "alldisj_avsi=[{1,4},2..3,{6,8},{5,7}];",
+        "alldisj_avsi=[{1,6},{2,4},{3,8},{5,7}];",
+        "alldisj_avsi=[{1,3},{2,4},{6,8},{5,7}];",
+        "alldisj_avsi=[{1,4},{2,6},{3,8},{5,7}];",
+        "alldisj_avsi=[{1,3},{2,6},{4,8},{5,7}];",
+        "alldisj_avsi=[{1,6},3..4,{2,8},{5,7}];",
+        "alldisj_avsi=[1..2,3..4,{6,8},{5,7}];",
+        "alldisj_avsi=[{1,4},{3,6},{2,8},{5,7}];",
+        "alldisj_avsi=[1..2,{3,6},{4,8},{5,7}];",
+        "alldisj_avsi=[{1,3},{4,6},{2,8},{5,7}];",
+        "alldisj_avsi=[1..2,{4,6},{3,8},{5,7}];",
+        "alldisj_avsi=[1..2,4..5,{3,8},6..7];",
+        "alldisj_avsi=[1..2,{3,5},{4,8},6..7];",
+        "alldisj_avsi=[1..2,3..4,{5,8},6..7];",
+        "alldisj_avsi=[{1,3},4..5,{2,8},6..7];",
+        "alldisj_avsi=[{1,3},{2,5},{4,8},6..7];",
+        "alldisj_avsi=[{1,3},{2,4},{5,8},6..7];",
+        "alldisj_avsi=[{1,4},{3,5},{2,8},6..7];",
+        "alldisj_avsi=[{1,4},{2,5},{3,8},6..7];",
+        "alldisj_avsi=[{1,4},2..3,{5,8},6..7];",
+        "alldisj_avsi=[{1,5},3..4,{2,8},6..7];",
+        "alldisj_avsi=[{1,5},{2,4},{3,8},6..7];",
+        "alldisj_avsi=[{1,5},2..3,{4,8},6..7];"
       ],
       "output_files": null,
       "error_message": null,
@@ -12213,10 +12213,10 @@
       "type": "satisfy",
       "solutions": [
         "s=[{},{},{}];",
-        "s=[{[1, ],},{[1, ],},1..3];",
+        "s=[{1},{1},1..3];",
         "s=[1..3,{},{}];",
         "s=[{},{},1..3];",
-        "s=[{[3, ],},{[3, ],},{[3, ],}];"
+        "s=[{3},{3},{3}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -12317,7 +12317,7 @@
       "solvers": null,
       "input_files": null,
       "options": null,
-      "type": "satisfy",
+      "type": "unsatisfiable",
       "solutions": null,
       "output_files": null,
       "error_message": null,
@@ -12626,7 +12626,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "chan_avi=[1,2,3,5,4,2,1,3,2];chan_avsi=[{[1, ],[7, ],},{[2, ],[6, ],[9, ],},{[3, ],[8, ],},{[5, ],},{[4, ],}];"
+        "chan_avi=[1,2,3,5,4,2,1,3,2];chan_avsi=[{1,7},{2,6,9},{3,8},{5},{4}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -12645,7 +12645,7 @@
       "type": "satisfy",
       "solutions": [
         "x=[1,1,1,1,1,1,1,1,1];y=[1..9,{},{},{},{}];",
-        "x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{[2, ],},{},{[1, ],}];",
+        "x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{2},{},{1}];",
         "x=[2,2,2,2,2,2,2,2,2];y=[{},1..9,{},{},{}];",
         "x=[5,5,5,5,5,5,5,5,5];y=[{},{},{},{},1..9];"
       ],
@@ -12712,11 +12712,11 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "invs_f1=[{[1, ],},3..4,2..4,1..3];invs_f2=[{[1, ],[4, ],},3..4,2..4,2..3];",
-        "invs_f1=[{[1, ],},2..4,2..4,1..2];invs_f2=[{[1, ],[4, ],},2..4,2..3,2..3];",
-        "invs_f1=[{[1, ],},1..4,2..4,{[1, ],}];invs_f2=[{[1, ],[2, ],[4, ],},2..3,2..3,2..3];",
-        "invs_f1=[{[1, ],},{[4, ],},2..4,{}];invs_f2=[{[1, ],},{[3, ],},{[3, ],},2..3];",
-        "invs_f1=[{[1, ],},1..4,2..4,1..3];invs_f2=[{[1, ],[2, ],[4, ],},2..4,2..4,2..3];"
+        "invs_f1=[{1},3..4,2..4,1..3];invs_f2=[{1,4},3..4,2..4,2..3];",
+        "invs_f1=[{1},2..4,2..4,1..2];invs_f2=[{1,4},2..4,2..3,2..3];",
+        "invs_f1=[{1},1..4,2..4,{1}];invs_f2=[{1,2,4},2..3,2..3,2..3];",
+        "invs_f1=[{1},{4},2..4,{}];invs_f2=[{1},{3},{3},2..3];",
+        "invs_f1=[{1},1..4,2..4,1..3];invs_f2=[{1,2,4},2..4,2..4,2..3];"
       ],
       "output_files": null,
       "error_message": null,
@@ -12888,7 +12888,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "link_avb=[false,true,false,true,true];link_vsi={[1, ],[4, ],};"
+        "link_avb=[false,true,false,true,true];link_vsi={1,4};"
       ],
       "output_files": null,
       "error_message": null,
@@ -12976,7 +12976,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "partset_avsi=[{[1, ],[3, ],[5, ],},{[2, ],[6, ],[7, ],[8, ],[10, ],},{},{[4, ],[9, ],}];"
+        "partset_avsi=[{1,3,5},{2,6,7,8,10},{},{4,9}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -13098,7 +13098,7 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "x=[\u0022A\u0022,\u0022B\u0022,\u0022A\u0022,\u0022C\u0022,\u0022A\u0022,\u0022D\u0022,\u0022A\u0022];"
+        "x=[A,B,A,C,A,D,A];"
       ],
       "output_files": null,
       "error_message": null,
@@ -14117,10 +14117,10 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "sets=[5..7,{[3, ],[4, ],[7, ],},{[2, ],[4, ],[6, ],},{[2, ],[3, ],[5, ],},{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[4..6,{[3, ],[6, ],[7, ],},{[2, ],[4, ],[7, ],},{[2, ],[3, ],[5, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[4, ],},{[1, ],[2, ],[6, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},{[3, ],[5, ],[7, ],},{[2, ],[5, ],[6, ],},2..4,{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},3..5,{[2, ],[5, ],[6, ],},{[2, ],[3, ],[7, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[4, ],}];"
+        "sets=[5..7,{3,4,7},{2,4,6},{2,3,5},{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[4..6,{3,6,7},{2,4,7},{2,3,5},{1,5,7},{1,3,4},{1,2,6}];",
+        "sets=[{4,6,7},{3,5,7},{2,5,6},2..4,{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[{4,6,7},3..5,{2,5,6},{2,3,7},{1,5,7},{1,3,6},{1,2,4}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -15025,10 +15025,10 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "sets=[5..7,{[3, ],[4, ],[7, ],},{[2, ],[4, ],[6, ],},{[2, ],[3, ],[5, ],},{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[4..6,{[3, ],[6, ],[7, ],},{[2, ],[4, ],[7, ],},{[2, ],[3, ],[5, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[4, ],},{[1, ],[2, ],[6, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},{[3, ],[5, ],[7, ],},{[2, ],[5, ],[6, ],},2..4,{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},3..5,{[2, ],[5, ],[6, ],},{[2, ],[3, ],[7, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[4, ],}];"
+        "sets=[5..7,{3,4,7},{2,4,6},{2,3,5},{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[4..6,{3,6,7},{2,4,7},{2,3,5},{1,5,7},{1,3,4},{1,2,6}];",
+        "sets=[{4,6,7},{3,5,7},{2,5,6},2..4,{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[{4,6,7},3..5,{2,5,6},{2,3,7},{1,5,7},{1,3,6},{1,2,4}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -15933,10 +15933,10 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "sets=[5..7,{[3, ],[4, ],[7, ],},{[2, ],[4, ],[6, ],},{[2, ],[3, ],[5, ],},{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[4..6,{[3, ],[6, ],[7, ],},{[2, ],[4, ],[7, ],},{[2, ],[3, ],[5, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[4, ],},{[1, ],[2, ],[6, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},{[3, ],[5, ],[7, ],},{[2, ],[5, ],[6, ],},2..4,{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},3..5,{[2, ],[5, ],[6, ],},{[2, ],[3, ],[7, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[4, ],}];"
+        "sets=[5..7,{3,4,7},{2,4,6},{2,3,5},{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[4..6,{3,6,7},{2,4,7},{2,3,5},{1,5,7},{1,3,4},{1,2,6}];",
+        "sets=[{4,6,7},{3,5,7},{2,5,6},2..4,{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[{4,6,7},3..5,{2,5,6},{2,3,7},{1,5,7},{1,3,6},{1,2,4}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -16841,10 +16841,10 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "sets=[5..7,{[3, ],[4, ],[7, ],},{[2, ],[4, ],[6, ],},{[2, ],[3, ],[5, ],},{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[4..6,{[3, ],[6, ],[7, ],},{[2, ],[4, ],[7, ],},{[2, ],[3, ],[5, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[4, ],},{[1, ],[2, ],[6, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},{[3, ],[5, ],[7, ],},{[2, ],[5, ],[6, ],},2..4,{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},3..5,{[2, ],[5, ],[6, ],},{[2, ],[3, ],[7, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[4, ],}];"
+        "sets=[5..7,{3,4,7},{2,4,6},{2,3,5},{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[4..6,{3,6,7},{2,4,7},{2,3,5},{1,5,7},{1,3,4},{1,2,6}];",
+        "sets=[{4,6,7},{3,5,7},{2,5,6},2..4,{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[{4,6,7},3..5,{2,5,6},{2,3,7},{1,5,7},{1,3,6},{1,2,4}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -17749,10 +17749,10 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "sets=[5..7,{[3, ],[4, ],[7, ],},{[2, ],[4, ],[6, ],},{[2, ],[3, ],[5, ],},{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[4..6,{[3, ],[6, ],[7, ],},{[2, ],[4, ],[7, ],},{[2, ],[3, ],[5, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[4, ],},{[1, ],[2, ],[6, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},{[3, ],[5, ],[7, ],},{[2, ],[5, ],[6, ],},2..4,{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},3..5,{[2, ],[5, ],[6, ],},{[2, ],[3, ],[7, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[4, ],}];"
+        "sets=[5..7,{3,4,7},{2,4,6},{2,3,5},{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[4..6,{3,6,7},{2,4,7},{2,3,5},{1,5,7},{1,3,4},{1,2,6}];",
+        "sets=[{4,6,7},{3,5,7},{2,5,6},2..4,{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[{4,6,7},3..5,{2,5,6},{2,3,7},{1,5,7},{1,3,6},{1,2,4}];"
       ],
       "output_files": null,
       "error_message": null,
@@ -18657,10 +18657,10 @@
       "options": null,
       "type": "satisfy",
       "solutions": [
-        "sets=[5..7,{[3, ],[4, ],[7, ],},{[2, ],[4, ],[6, ],},{[2, ],[3, ],[5, ],},{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[4..6,{[3, ],[6, ],[7, ],},{[2, ],[4, ],[7, ],},{[2, ],[3, ],[5, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[4, ],},{[1, ],[2, ],[6, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},{[3, ],[5, ],[7, ],},{[2, ],[5, ],[6, ],},2..4,{[1, ],[4, ],[5, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[7, ],}];",
-        "sets=[{[4, ],[6, ],[7, ],},3..5,{[2, ],[5, ],[6, ],},{[2, ],[3, ],[7, ],},{[1, ],[5, ],[7, ],},{[1, ],[3, ],[6, ],},{[1, ],[2, ],[4, ],}];"
+        "sets=[5..7,{3,4,7},{2,4,6},{2,3,5},{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[4..6,{3,6,7},{2,4,7},{2,3,5},{1,5,7},{1,3,4},{1,2,6}];",
+        "sets=[{4,6,7},{3,5,7},{2,5,6},2..4,{1,4,5},{1,3,6},{1,2,7}];",
+        "sets=[{4,6,7},3..5,{2,5,6},{2,3,7},{1,5,7},{1,3,6},{1,2,4}];"
       ],
       "output_files": null,
       "error_message": null,

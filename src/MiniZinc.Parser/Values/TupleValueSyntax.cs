@@ -2,5 +2,5 @@
 
 public sealed class TupleValueSyntax(List<ValueSyntax> fields) : ValueSyntax(default)
 {
-    private IReadOnlyList<ValueSyntax> Fields => fields;
+    public IReadOnlyList<ValueSyntax> Fields => fields;
 }

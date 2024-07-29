@@ -19,169 +19,111 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_test_globals_float(string solver)
 	{
-		var path = "unit/test-globals-float.mzn";
-		var solutions = new List<string> {
-			"""inc_avf=[1.0,2.0,2.0];min_vf1=0.0;min_vf2=0.0;max_vf1=9.9;max_vf2=0.0;""",
-			"""inc_avf=[1.0,2.0,2.0];min_vf1=0.0;min_vf2=0.0;max_vf1=9.9;max_vf2=9.9;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/test-globals-float.mzn",
+			solver: solver,
+			solutions: ["""inc_avf=[1.0,2.0,2.0];min_vf1=0.0;min_vf2=0.0;max_vf1=9.9;max_vf2=0.0;""","""inc_avf=[1.0,2.0,2.0];min_vf1=0.0;min_vf2=0.0;max_vf1=9.9;max_vf2=9.9;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/annotate_bool_literal.mzn")]
 	public async Task test_solve_unit_compilation_annotate_bool_literal()
 	{
-		var path = "unit/compilation/annotate_bool_literal.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/annotate_bool_literal.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/assert_dbg_ignore.mzn")]
 	public async Task test_solve_unit_compilation_assert_dbg_ignore()
 	{
-		var path = "unit/compilation/assert_dbg_ignore.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/assert_dbg_ignore.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/debug_mode_false.mzn")]
 	public async Task test_solve_unit_compilation_debug_mode_false()
 	{
-		var path = "unit/compilation/debug_mode_false.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/debug_mode_false.mzn",
+			solver: "gecode",
+			solutions: ["""b=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/debug_mode_true.mzn")]
 	public async Task test_solve_unit_compilation_debug_mode_true()
 	{
-		var path = "unit/compilation/debug_mode_true.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=true;""",
-			};
-		var args = new List<string>{
-			"--debug",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/debug_mode_true.mzn",
+			solver: "gecode",
+			solutions: ["""b=true;"""],
+			args: ["--debug"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/has_ann.mzn")]
 	public async Task test_solve_unit_compilation_has_ann()
 	{
-		var path = "unit/compilation/has_ann.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/has_ann.mzn",
+			solver: "gecode",
+			solutions: ["""b=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/if_then_no_else.mzn")]
 	public async Task test_solve_unit_compilation_if_then_no_else()
 	{
-		var path = "unit/compilation/if_then_no_else.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=true;s=;x=[];y=[];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/if_then_no_else.mzn",
+			solver: "gecode",
+			solutions: ["""b=true;s=;x=[];y=[];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/multiple_neg.mzn")]
 	public async Task test_solve_unit_compilation_multiple_neg()
 	{
-		var path = "unit/compilation/multiple_neg.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/multiple_neg.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/par_arg_out_of_bounds.mzn")]
 	public async Task test_solve_unit_compilation_par_arg_out_of_bounds()
 	{
-		var path = "unit/compilation/par_arg_out_of_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/par_arg_out_of_bounds.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/compilation/poly_overload.mzn")]
 	public async Task test_solve_unit_compilation_poly_overload()
 	{
-		var path = "unit/compilation/poly_overload.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/poly_overload.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/compilation/set2iter.mzn")]
@@ -189,17 +131,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_compilation_set2iter(string solver)
 	{
-		var path = "unit/compilation/set2iter.mzn";
-		var solutions = new List<string> {
-			"""x=2..3;y=4..5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/compilation/set2iter.mzn",
+			solver: solver,
+			solutions: ["""x=2..3;y=4..5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/division/test_div10.mzn")]
@@ -208,17 +145,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_division_test_div10(string solver)
 	{
-		var path = "unit/division/test_div10.mzn";
-		var solutions = new List<string> {
-			"""y=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/division/test_div10.mzn",
+			solver: solver,
+			solutions: ["""y=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/division/test_div11.mzn")]
@@ -227,35 +159,23 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_division_test_div11(string solver)
 	{
-		var path = "unit/division/test_div11.mzn";
-		var solutions = new List<string> {
-			"""y=0;""",
-			"""y=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/division/test_div11.mzn",
+			solver: solver,
+			solutions: ["""y=0;""","""y=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/division/test_div12.mzn")]
 	public async Task test_solve_unit_division_test_div12()
 	{
-		var path = "unit/division/test_div12.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""aCostSupport=0;mdl8_Z=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/division/test_div12.mzn",
+			solver: "gecode",
+			solutions: ["""aCostSupport=0;mdl8_Z=0;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/division/test_div8.mzn")]
@@ -264,18 +184,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_division_test_div8(string solver)
 	{
-		var path = "unit/division/test_div8.mzn";
-		var solutions = new List<string> {
-			"""y=0;""",
-			"""y=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/division/test_div8.mzn",
+			solver: solver,
+			solutions: ["""y=0;""","""y=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/division/test_div_mod_bounds.mzn")]
@@ -284,17 +198,12 @@ public class ClientTests : ClientTest
 	[InlineData("scip", Skip="Solver not supported")]
 	public async Task test_solve_unit_division_test_div_mod_bounds(string solver)
 	{
-		var path = "unit/division/test_div_mod_bounds.mzn";
-		var solutions = new List<string> {
-			"""x=20;y=-3;z=-6;zbnd=[-20,20];zfbnd=[0.15,1.333333333333333];zif=-6.666666666666667;tf=1.0;tfbnd=[0.1125,8.888888888888889];zmbnd=[0,6];zm2lb=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/division/test_div_mod_bounds.mzn",
+			solver: solver,
+			solutions: ["""x=20;y=-3;z=-6;zbnd=[-20,20];zfbnd=[0.15,1.333333333333333];zif=-6.666666666666667;tf=1.0;tfbnd=[0.1125,8.888888888888889];zmbnd=[0,6];zm2lb=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/division/test_fldiv_01.mzn")]
@@ -302,17 +211,12 @@ public class ClientTests : ClientTest
 	[InlineData("scip", Skip="Solver not supported")]
 	public async Task test_solve_unit_division_test_fldiv_01(string solver)
 	{
-		var path = "unit/division/test_fldiv_01.mzn";
-		var solutions = new List<string> {
-			"""x=0.3;y=2.0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/division/test_fldiv_01.mzn",
+			solver: solver,
+			solutions: ["""x=0.3;y=2.0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/division/test_fldiv_02.mzn")]
@@ -320,348 +224,224 @@ public class ClientTests : ClientTest
 	[InlineData("scip", Skip="Solver not supported")]
 	public async Task test_solve_unit_division_test_fldiv_02(string solver)
 	{
-		var path = "unit/division/test_fldiv_02.mzn";
-		var solutions = new List<string> {
-			"""x=2.0;y=1.5;z=1.5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/division/test_fldiv_02.mzn",
+			solver: solver,
+			solutions: ["""x=2.0;y=1.5;z=1.5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/annotated_expression_1.mzn")]
 	public async Task test_solve_unit_general_annotated_expression_1()
 	{
-		var path = "unit/general/annotated_expression_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=3;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/annotated_expression_1.mzn",
+			solver: "gecode",
+			solutions: ["""x=3;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/array_intersect_context.mzn")]
 	public async Task test_solve_unit_general_array_intersect_context()
 	{
-		var path = "unit/general/array_intersect_context.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[{1},{2},{3}];b=true;""",
-			"""x=[{1,2,3},{1,2,3},{1,2,3}];b=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/array_intersect_context.mzn",
+			solver: "gecode",
+			solutions: ["""x=[{1},{2},{3}];b=true;""","""x=[{1,2,3},{1,2,3},{1,2,3}];b=false;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/array_param_non_array_return.mzn")]
 	public async Task test_solve_unit_general_array_param_non_array_return()
 	{
-		var path = "unit/general/array_param_non_array_return.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/array_param_non_array_return.mzn",
+			solver: "gecode",
+			solutions: ["""x=[1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/array_union_intersect_enum.mzn")]
 	public async Task test_solve_unit_general_array_union_intersect_enum()
 	{
-		var path = "unit/general/array_union_intersect_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[{A},{B},{C}];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/array_union_intersect_enum.mzn",
+			solver: "gecode",
+			solutions: ["""x=[{A},{B},{C}];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/bind_par_opt.mzn")]
 	public async Task test_solve_unit_general_bind_par_opt()
 	{
-		var path = "unit/general/bind_par_opt.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/bind_par_opt.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/bin_pack_multiobj.mzn", Skip="Solver not supported")]
 	public async Task test_solve_unit_general_bin_pack_multiobj()
 	{
-		var path = "unit/general/bin_pack_multiobj.mzn";
-		var solver = "gurobi";
-		var solutions = new List<string> {
-			"""load=[3,8,10];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/bin_pack_multiobj.mzn",
+			solver: "gurobi",
+			solutions: ["""load=[3,8,10];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/builtins_arg_max.mzn")]
 	public async Task test_solve_unit_general_builtins_arg_max()
 	{
-		var path = "unit/general/builtins_arg_max.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output=TWO;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/builtins_arg_max.mzn",
+			solver: "gecode",
+			solutions: ["""bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output=TWO;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/builtins_debug.mzn")]
 	public async Task test_solve_unit_general_builtins_debug()
 	{
-		var path = "unit/general/builtins_debug.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream=trace_logstream_par_inttrace_logstream_var_inttrace_logstream_par_opt_inttrace_logstream_var_opt_inttrace_logstream_array_of_par_inttrace_logstream_array_of_var_inttrace_logstream_array_of_par_opt_inttrace_logstream_array_of_var_opt_int;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/builtins_debug.mzn",
+			solver: "gecode",
+			solutions: ["""assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream=trace_logstream_par_inttrace_logstream_var_inttrace_logstream_par_opt_inttrace_logstream_var_opt_inttrace_logstream_array_of_par_inttrace_logstream_array_of_var_inttrace_logstream_array_of_par_opt_inttrace_logstream_array_of_var_opt_int;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/comprehension_cv_struct.mzn")]
 	public async Task test_solve_unit_general_comprehension_cv_struct()
 	{
-		var path = "unit/general/comprehension_cv_struct.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;z=[<>];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/comprehension_cv_struct.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;z=[<>];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/comprehension_var_ub.mzn")]
 	public async Task test_solve_unit_general_comprehension_var_ub()
 	{
-		var path = "unit/general/comprehension_var_ub.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/comprehension_var_ub.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/cse_ctx.mzn")]
 	public async Task test_solve_unit_general_cse_ctx()
 	{
-		var path = "unit/general/cse_ctx.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;b=true;a=true;c=false;""",
-			"""x=0;b=false;a=false;c=true;""",
-			"""x=0;b=false;a=true;c=true;""",
-			"""x=1;b=true;a=false;c=true;""",
-			};
-		var args = new List<string>{
-			"-G std",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/cse_ctx.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;b=true;a=true;c=false;""","""x=0;b=false;a=false;c=true;""","""x=0;b=false;a=true;c=true;""","""x=1;b=true;a=false;c=true;"""],
+			args: ["-G std"],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/enum_constructor_quoting.mzn")]
 	public async Task test_solve_unit_general_enum_constructor_quoting()
 	{
-		var path = "unit/general/enum_constructor_quoting.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item='Q~'('F!'('"'));""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/enum_constructor_quoting.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item='Q~'('F!'('"'));"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/enum_order.mzn")]
 	public async Task test_solve_unit_general_enum_order()
 	{
-		var path = "unit/general/enum_order.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/enum_order.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/eval_par_opt_set.mzn")]
 	public async Task test_solve_unit_general_eval_par_opt_set()
 	{
-		var path = "unit/general/eval_par_opt_set.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=<>;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/eval_par_opt_set.mzn",
+			solver: "gecode",
+			solutions: ["""x=<>;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/fix_struct.mzn")]
 	public async Task test_solve_unit_general_fix_struct()
 	{
-		var path = "unit/general/fix_struct.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=(a:[1],b:1,);y=(a:[1],b:1,);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/fix_struct.mzn",
+			solver: "gecode",
+			solutions: ["""x=(a:[1],b:1,);y=(a:[1],b:1,);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/fn_par_array_undefined.mzn")]
 	public async Task test_solve_unit_general_fn_par_array_undefined()
 	{
-		var path = "unit/general/fn_par_array_undefined.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[2];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/fn_par_array_undefined.mzn",
+			solver: "gecode",
+			solutions: ["""x=[2];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/infinite_domain_bind.mzn")]
 	public async Task test_solve_unit_general_infinite_domain_bind()
 	{
-		var path = "unit/general/infinite_domain_bind.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=10;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/infinite_domain_bind.mzn",
+			solver: "gecode",
+			solutions: ["""x=10;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/json_ignore.mzn")]
 	public async Task test_solve_unit_general_json_ignore()
 	{
-		var path = "unit/general/json_ignore.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_checker=data_2 = 2;;data_1=1;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/general/json_ignore.mzc.mzn\"",
-			"--data \"unit/general/json_ignore.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/json_ignore.mzn",
+			solver: "gecode",
+			solutions: ["""_checker=data_2 = 2;;data_1=1;"""],
+			args: ["--data \"unit/general/json_ignore.mzc.mzn\"","--data \"unit/general/json_ignore.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/let_struct_domain.mzn")]
 	public async Task test_solve_unit_general_let_struct_domain()
 	{
-		var path = "unit/general/let_struct_domain.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;y=2;""",
-			"""x=2;y=2;""",
-			"""x=1;y=3;""",
-			"""x=2;y=3;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/let_struct_domain.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;y=2;""","""x=2;y=2;""","""x=1;y=3;""","""x=2;y=3;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/md_exists.mzn")]
@@ -669,47 +449,34 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_md_exists(string solver)
 	{
-		var path = "unit/general/md_exists.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_exists.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/md_exists.mzn")]
 	public async Task test_solve_unit_general_md_exists_2()
 	{
-		var path = "unit/general/md_exists.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""b=true;bs=[true,true,false,false,false,false,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_exists.mzn",
+			solver: "coin-bc",
+			solutions: ["""b=true;bs=[true,true,false,false,false,false,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/md_forall.mzn")]
 	public async Task test_solve_unit_general_md_forall()
 	{
-		var path = "unit/general/md_forall.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_forall.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/md_forall.mzn")]
@@ -717,17 +484,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_md_forall_2(string solver)
 	{
-		var path = "unit/general/md_forall.mzn";
-		var solutions = new List<string> {
-			"""b=true;bs=[true,true,true,true,true,true,true,true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_forall.mzn",
+			solver: solver,
+			solutions: ["""b=true;bs=[true,true,true,true,true,true,true,true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/md_iffall.mzn")]
@@ -735,32 +497,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_md_iffall(string solver)
 	{
-		var path = "unit/general/md_iffall.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_iffall.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/md_iffall.mzn")]
 	public async Task test_solve_unit_general_md_iffall_2()
 	{
-		var path = "unit/general/md_iffall.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""b=false;bs=[false,false,false,false,false,false,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_iffall.mzn",
+			solver: "coin-bc",
+			solutions: ["""b=false;bs=[false,false,false,false,false,false,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/md_product_int.mzn")]
@@ -768,47 +521,34 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_md_product_int(string solver)
 	{
-		var path = "unit/general/md_product_int.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_product_int.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/md_sum_float.mzn")]
 	public async Task test_solve_unit_general_md_sum_float()
 	{
-		var path = "unit/general/md_sum_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_sum_float.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/md_sum_float.mzn")]
 	public async Task test_solve_unit_general_md_sum_float_2()
 	{
-		var path = "unit/general/md_sum_float.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""a=55.0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_sum_float.mzn",
+			solver: "chuffed",
+			solutions: ["""a=55.0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/md_sum_int.mzn")]
@@ -816,15 +556,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_md_sum_int(string solver)
 	{
-		var path = "unit/general/md_sum_int.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_sum_int.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/md_xorall.mzn")]
@@ -832,32 +569,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_md_xorall(string solver)
 	{
-		var path = "unit/general/md_xorall.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/md_xorall.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/missing_ozn_decl.mzn")]
 	public async Task test_solve_unit_general_missing_ozn_decl()
 	{
-		var path = "unit/general/missing_ozn_decl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""I1=7;B2=true;B3=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/missing_ozn_decl.mzn",
+			solver: "gecode",
+			solutions: ["""I1=7;B2=true;B3=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/mortgage.mzn")]
@@ -866,34 +594,24 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_general_mortgage(string solver)
 	{
-		var path = "unit/general/mortgage.mzn";
-		var solutions = new List<string> {
-			"""P=373.0277986476333;mortgage=[260.3305785123967,136.3636363636363,0.0];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/mortgage.mzn",
+			solver: solver,
+			solutions: ["""P=373.0277986476333;mortgage=[260.3305785123967,136.3636363636363,0.0];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/negated_boolean_let.mzn")]
 	public async Task test_solve_unit_general_negated_boolean_let()
 	{
-		var path = "unit/general/negated_boolean_let.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/negated_boolean_let.mzn",
+			solver: "gecode",
+			solutions: ["""x=2;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/nosets_empty.mzn")]
@@ -901,456 +619,309 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_nosets_empty(string solver)
 	{
-		var path = "unit/general/nosets_empty.mzn";
-		var solutions = new List<string> {
-			"""x={};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/nosets_empty.mzn",
+			solver: solver,
+			solutions: ["""x={};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/overload_bottom.mzn")]
 	public async Task test_solve_unit_general_overload_bottom()
 	{
-		var path = "unit/general/overload_bottom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x={};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/overload_bottom.mzn",
+			solver: "gecode",
+			solutions: ["""x={};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_1.mzn")]
 	public async Task test_solve_unit_general_pow_1()
 	{
-		var path = "unit/general/pow_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_1.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_2.mzn")]
 	public async Task test_solve_unit_general_pow_2()
 	{
-		var path = "unit/general/pow_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = -2..2; y = 0\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_2.mzn",
+			solver: "gecode",
+			args: ["-D \"x = -2..2; y = 0\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_2.mzn")]
 	public async Task test_solve_unit_general_pow_2_2()
 	{
-		var path = "unit/general/pow_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = -2..2; y = 1\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_2.mzn",
+			solver: "gecode",
+			args: ["-D \"x = -2..2; y = 1\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_2.mzn")]
 	public async Task test_solve_unit_general_pow_2_3()
 	{
-		var path = "unit/general/pow_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = 0..1; y = 2\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_2.mzn",
+			solver: "gecode",
+			args: ["-D \"x = 0..1; y = 2\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_2.mzn")]
 	public async Task test_solve_unit_general_pow_2_4()
 	{
-		var path = "unit/general/pow_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = -1..1; y = 3\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_2.mzn",
+			solver: "gecode",
+			args: ["-D \"x = -1..1; y = 3\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_2.mzn")]
 	public async Task test_solve_unit_general_pow_2_5()
 	{
-		var path = "unit/general/pow_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = 1..3; y = -1\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_2.mzn",
+			solver: "gecode",
+			args: ["-D \"x = 1..3; y = -1\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_2.mzn")]
 	public async Task test_solve_unit_general_pow_2_6()
 	{
-		var path = "unit/general/pow_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = 2..3; y = 2\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_2.mzn",
+			solver: "gecode",
+			args: ["-D \"x = 2..3; y = 2\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_2.mzn")]
 	public async Task test_solve_unit_general_pow_2_7()
 	{
-		var path = "unit/general/pow_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = -1..2; y = -2\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_2.mzn",
+			solver: "gecode",
+			args: ["-D \"x = -1..2; y = -2\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_3.mzn")]
 	public async Task test_solve_unit_general_pow_3()
 	{
-		var path = "unit/general/pow_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = 0..1; y = 0..1\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_3.mzn",
+			solver: "gecode",
+			args: ["-D \"x = 0..1; y = 0..1\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_3.mzn")]
 	public async Task test_solve_unit_general_pow_3_2()
 	{
-		var path = "unit/general/pow_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = 0..1; y = 1..2\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_3.mzn",
+			solver: "gecode",
+			args: ["-D \"x = 0..1; y = 1..2\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_3.mzn")]
 	public async Task test_solve_unit_general_pow_3_3()
 	{
-		var path = "unit/general/pow_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = -1..2; y = 0..2\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_3.mzn",
+			solver: "gecode",
+			args: ["-D \"x = -1..2; y = 0..2\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_3.mzn")]
 	public async Task test_solve_unit_general_pow_3_4()
 	{
-		var path = "unit/general/pow_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = -2..2 diff {0}; y = -2..-1\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_3.mzn",
+			solver: "gecode",
+			args: ["-D \"x = -2..2 diff {0}; y = -2..-1\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_3.mzn")]
 	public async Task test_solve_unit_general_pow_3_5()
 	{
-		var path = "unit/general/pow_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = -2..2 diff {0}; y = -1..2\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_3.mzn",
+			solver: "gecode",
+			args: ["-D \"x = -2..2 diff {0}; y = -1..2\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_3.mzn")]
 	public async Task test_solve_unit_general_pow_3_6()
 	{
-		var path = "unit/general/pow_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-D \"x = -1..1; y = -1..1\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_3.mzn",
+			solver: "gecode",
+			args: ["-D \"x = -1..1; y = -1..1\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_4.mzn")]
 	public async Task test_solve_unit_general_pow_4()
 	{
-		var path = "unit/general/pow_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_4.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/pow_bounds.mzn")]
 	public async Task test_solve_unit_general_pow_bounds()
 	{
-		var path = "unit/general/pow_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/pow_bounds.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/quoted_id_1.mzn")]
 	public async Task test_solve_unit_general_quoted_id_1()
 	{
-		var path = "unit/general/quoted_id_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""hello!=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/quoted_id_1.mzn",
+			solver: "gecode",
+			solutions: ["""hello!=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/quoted_id_2.mzn")]
 	public async Task test_solve_unit_general_quoted_id_2()
 	{
-		var path = "unit/general/quoted_id_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/quoted_id_2.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/quoted_id_3.mzn")]
 	public async Task test_solve_unit_general_quoted_id_3()
 	{
-		var path = "unit/general/quoted_id_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=A?;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/quoted_id_3.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=A?;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/quoted_id_4.mzn")]
 	public async Task test_solve_unit_general_quoted_id_4()
 	{
-		var path = "unit/general/quoted_id_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=Foo~(A?);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/quoted_id_4.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=Foo~(A?);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/range_var_enum.mzn")]
 	public async Task test_solve_unit_general_range_var_enum()
 	{
-		var path = "unit/general/range_var_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x_to_y={A,B,C};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/range_var_enum.mzn",
+			solver: "gecode",
+			solutions: ["""x_to_y={A,B,C};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/reverse_map_path.mzn")]
 	public async Task test_solve_unit_general_reverse_map_path()
 	{
-		var path = "unit/general/reverse_map_path.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[<>,<>];""",
-			"""x=[1,<>];""",
-			"""x=[<>,1];""",
-			"""x=[1,1];""",
-			};
-		var args = new List<string>{
-			"--keep-paths",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/reverse_map_path.mzn",
+			solver: "gecode",
+			solutions: ["""x=[<>,<>];""","""x=[1,<>];""","""x=[<>,1];""","""x=[1,1];"""],
+			args: ["--keep-paths"],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/string_length.mzn")]
 	public async Task test_solve_unit_general_string_length()
 	{
-		var path = "unit/general/string_length.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/string_length.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/string_split.mzn")]
 	public async Task test_solve_unit_general_string_split()
 	{
-		var path = "unit/general/string_split.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/string_split.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/struct_flat_cv_path.mzn")]
 	public async Task test_solve_unit_general_struct_flat_cv_path()
 	{
-		var path = "unit/general/struct_flat_cv_path.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=2;b=1;c=[1,2,3,4];""",
-			};
-		var args = new List<string>{
-			"--keep-paths",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/struct_flat_cv_path.mzn",
+			solver: "gecode",
+			solutions: ["""a=2;b=1;c=[1,2,3,4];"""],
+			args: ["--keep-paths"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test-search1.mzn")]
@@ -1359,34 +930,23 @@ public class ClientTests : ClientTest
 	[InlineData("coin-bc")]
 	public async Task test_solve_unit_general_test_search1(string solver)
 	{
-		var path = "unit/general/test-search1.mzn";
-		var solutions = new List<string> {
-			"""x=3;y=8;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test-search1.mzn",
+			solver: solver,
+			solutions: ["""x=3;y=8;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/test_mod_bounds.mzn")]
 	public async Task test_solve_unit_general_test_mod_bounds()
 	{
-		var path = "unit/general/test_mod_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=0..2;c=-2..2;d=-2..0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_mod_bounds.mzn",
+			solver: "gecode",
+			solutions: ["""b=0..2;c=-2..2;d=-2..0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_negated_and.mzn")]
@@ -1394,23 +954,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_test_negated_and(string solver)
 	{
-		var path = "unit/general/test_negated_and.mzn";
-		var solutions = new List<string> {
-			"""x=false;y=false;z=false;""",
-			"""x=false;y=false;z=true;""",
-			"""x=false;y=true;z=false;""",
-			"""x=false;y=true;z=true;""",
-			"""x=true;y=false;z=false;""",
-			"""x=true;y=false;z=true;""",
-			"""x=true;y=true;z=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_negated_and.mzn",
+			solver: solver,
+			solutions: ["""x=false;y=false;z=false;""","""x=false;y=false;z=true;""","""x=false;y=true;z=false;""","""x=false;y=true;z=true;""","""x=true;y=false;z=false;""","""x=true;y=false;z=true;""","""x=true;y=true;z=false;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_negated_and_or.mzn")]
@@ -1418,19 +968,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_test_negated_and_or(string solver)
 	{
-		var path = "unit/general/test_negated_and_or.mzn";
-		var solutions = new List<string> {
-			"""x=true;y=false;z=false;""",
-			"""x=false;y=true;z=false;""",
-			"""x=false;y=false;z=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_negated_and_or.mzn",
+			solver: solver,
+			solutions: ["""x=true;y=false;z=false;""","""x=false;y=true;z=false;""","""x=false;y=false;z=false;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_negated_let_good_2.mzn")]
@@ -1438,18 +982,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_test_negated_let_good_2(string solver)
 	{
-		var path = "unit/general/test_negated_let_good_2.mzn";
-		var solutions = new List<string> {
-			"""x=[0];""",
-			"""x=[2];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_negated_let_good_2.mzn",
+			solver: solver,
+			solutions: ["""x=[0];""","""x=[2];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_negated_or.mzn")]
@@ -1457,17 +996,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_test_negated_or(string solver)
 	{
-		var path = "unit/general/test_negated_or.mzn";
-		var solutions = new List<string> {
-			"""x=false;y=false;z=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_negated_or.mzn",
+			solver: solver,
+			solutions: ["""x=false;y=false;z=false;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_queens.mzn")]
@@ -1475,98 +1010,48 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_test_queens(string solver)
 	{
-		var path = "unit/general/test_queens.mzn";
-		var solutions = new List<string> {
-			"""q=[9,13,2,8,11,20,10,6,19,15,18,12,7,16,4,17,14,5,3,1];""",
-			"""q=[9,7,10,14,11,15,4,12,5,13,1,3,6,8,2,17,19,16,18,20];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_queens.mzn",
+			solver: solver,
+			solutions: ["""q=[9,13,2,8,11,20,10,6,19,15,18,12,7,16,4,17,14,5,3,1];""","""q=[9,7,10,14,11,15,4,12,5,13,1,3,6,8,2,17,19,16,18,20];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/test_rounding_a.mzn")]
 	public async Task test_solve_unit_general_test_rounding_a()
 	{
-		var path = "unit/general/test_rounding_a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=-2.00, -2, -2, -2 OK;x=-2.0;""",
-			"""_output_item=-1.75, -1, -2, -2 OK;x=-1.75;""",
-			"""_output_item=-1.50, -1, -2, -2 OK;x=-1.5;""",
-			"""_output_item=-1.25, -1, -2, -1 OK;x=-1.25;""",
-			"""_output_item=-1.00, -1, -1, -1 OK;x=-1.0;""",
-			"""_output_item=-0.25, 0, -1, 0 OK;x=-0.25;""",
-			"""_output_item=-0.00, 0, 0, 0 OK;x=0.0;""",
-			"""_output_item=0.00, 0, 0, 0 OK;x=0.0;""",
-			"""_output_item=0.25, 1, 0, 0 OK;x=0.25;""",
-			"""_output_item=0.50, 1, 0, 1 OK;x=0.5;""",
-			"""_output_item=0.75, 1, 0, 1 OK;x=0.75;""",
-			"""_output_item=1.00, 1, 1, 1 OK;x=1.0;""",
-			"""_output_item=1.25, 2, 1, 1 OK;x=1.25;""",
-			"""_output_item=1.50, 2, 1, 2 OK;x=1.5;""",
-			"""_output_item=1.75, 2, 1, 2 OK;x=1.75;""",
-			"""_output_item=2.00, 2, 2, 2 OK;x=2.0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_rounding_a.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=-2.00, -2, -2, -2 OK;x=-2.0;""","""_output_item=-1.75, -1, -2, -2 OK;x=-1.75;""","""_output_item=-1.50, -1, -2, -2 OK;x=-1.5;""","""_output_item=-1.25, -1, -2, -1 OK;x=-1.25;""","""_output_item=-1.00, -1, -1, -1 OK;x=-1.0;""","""_output_item=-0.25, 0, -1, 0 OK;x=-0.25;""","""_output_item=-0.00, 0, 0, 0 OK;x=0.0;""","""_output_item=0.00, 0, 0, 0 OK;x=0.0;""","""_output_item=0.25, 1, 0, 0 OK;x=0.25;""","""_output_item=0.50, 1, 0, 1 OK;x=0.5;""","""_output_item=0.75, 1, 0, 1 OK;x=0.75;""","""_output_item=1.00, 1, 1, 1 OK;x=1.0;""","""_output_item=1.25, 2, 1, 1 OK;x=1.25;""","""_output_item=1.50, 2, 1, 2 OK;x=1.5;""","""_output_item=1.75, 2, 1, 2 OK;x=1.75;""","""_output_item=2.00, 2, 2, 2 OK;x=2.0;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/test_rounding_b.mzn")]
 	public async Task test_solve_unit_general_test_rounding_b()
 	{
-		var path = "unit/general/test_rounding_b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=0.00, 0, 0, 0 OK;x=0.0;""",
-			"""_output_item=0.25, 1, 0, 0 OK;x=0.25;""",
-			"""_output_item=0.50, 1, 0, 1 OK;x=0.5;""",
-			"""_output_item=0.75, 1, 0, 1 OK;x=0.75;""",
-			"""_output_item=1.00, 1, 1, 1 OK;x=1.0;""",
-			"""_output_item=1.25, 2, 1, 1 OK;x=1.25;""",
-			"""_output_item=1.50, 2, 1, 2 OK;x=1.5;""",
-			"""_output_item=1.75, 2, 1, 2 OK;x=1.75;""",
-			"""_output_item=2.00, 2, 2, 2 OK;x=2.0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_rounding_b.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=0.00, 0, 0, 0 OK;x=0.0;""","""_output_item=0.25, 1, 0, 0 OK;x=0.25;""","""_output_item=0.50, 1, 0, 1 OK;x=0.5;""","""_output_item=0.75, 1, 0, 1 OK;x=0.75;""","""_output_item=1.00, 1, 1, 1 OK;x=1.0;""","""_output_item=1.25, 2, 1, 1 OK;x=1.25;""","""_output_item=1.50, 2, 1, 2 OK;x=1.5;""","""_output_item=1.75, 2, 1, 2 OK;x=1.75;""","""_output_item=2.00, 2, 2, 2 OK;x=2.0;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/test_rounding_c.mzn")]
 	public async Task test_solve_unit_general_test_rounding_c()
 	{
-		var path = "unit/general/test_rounding_c.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=-2.00, -2, -2, -2 OK;x=-2.0;""",
-			"""_output_item=-1.75, -1, -2, -2 OK;x=-1.75;""",
-			"""_output_item=-1.50, -1, -2, -2 OK;x=-1.5;""",
-			"""_output_item=-1.25, -1, -2, -1 OK;x=-1.25;""",
-			"""_output_item=-1.00, -1, -1, -1 OK;x=-1.0;""",
-			"""_output_item=-0.25, 0, -1, 0 OK;x=-0.25;""",
-			"""_output_item=-0.00, 0, 0, 0 OK;x=0.0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_rounding_c.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=-2.00, -2, -2, -2 OK;x=-2.0;""","""_output_item=-1.75, -1, -2, -2 OK;x=-1.75;""","""_output_item=-1.50, -1, -2, -2 OK;x=-1.5;""","""_output_item=-1.25, -1, -2, -1 OK;x=-1.25;""","""_output_item=-1.00, -1, -1, -1 OK;x=-1.0;""","""_output_item=-0.25, 0, -1, 0 OK;x=-0.25;""","""_output_item=-0.00, 0, 0, 0 OK;x=0.0;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_same.mzn")]
@@ -1575,68 +1060,47 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_general_test_same(string solver)
 	{
-		var path = "unit/general/test_same.mzn";
-		var solutions = new List<string> {
-			"""if5_5=1;if5f_5=0;if5_4=0;if5f_5f=1;if2_set2_4=0;ifTwoVars=0;ifTwoOptVars=0;ifEqualInitVars=1;ifEqualChainInitVars=1;ifOneVar=1;ifOneOptVar=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_same.mzn",
+			solver: solver,
+			solutions: ["""if5_5=1;if5f_5=0;if5_4=0;if5f_5f=1;if2_set2_4=0;ifTwoVars=0;ifTwoOptVars=0;ifEqualInitVars=1;ifEqualChainInitVars=1;ifOneVar=1;ifOneOptVar=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/test_set_lt_1.mzn")]
 	public async Task test_solve_unit_general_test_set_lt_1()
 	{
-		var path = "unit/general/test_set_lt_1.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""sets=[1..3,{1,2,4},{1,2,5},{1,2,6},{1,3,4},{1,3,5},{1,3,6},{1,4,5},{1,4,6},{1,5,6},2..4,{2,3,5},{2,3,6},{2,4,5},{2,4,6},{2,5,6},3..5,{3,4,6},{3,5,6},4..6];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_set_lt_1.mzn",
+			solver: "chuffed",
+			solutions: ["""sets=[1..3,{1,2,4},{1,2,5},{1,2,6},{1,3,4},{1,3,5},{1,3,6},{1,4,5},{1,4,6},{1,5,6},2..4,{2,3,5},{2,3,6},{2,4,5},{2,4,6},{2,5,6},3..5,{3,4,6},{3,5,6},4..6];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/test_set_lt_2.mzn")]
 	public async Task test_solve_unit_general_test_set_lt_2()
 	{
-		var path = "unit/general/test_set_lt_2.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_set_lt_2.mzn",
+			solver: "chuffed",
+			solutions: ["""sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/test_set_lt_2.mzn")]
 	public async Task test_solve_unit_general_test_set_lt_2_2()
 	{
-		var path = "unit/general/test_set_lt_2.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_set_lt_2.mzn",
+			solver: "coin-bc",
+			solutions: ["""sets=[{},{1},1..2,1..3,{1,3},{2},2..3,{3}];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_set_lt_3.mzn")]
@@ -1645,17 +1109,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_general_test_set_lt_3(string solver)
 	{
-		var path = "unit/general/test_set_lt_3.mzn";
-		var solutions = new List<string> {
-			"""y={1,4};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_set_lt_3.mzn",
+			solver: solver,
+			solutions: ["""y={1,4};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_times_int_float_eq.mzn")]
@@ -1663,19 +1122,13 @@ public class ClientTests : ClientTest
 	[InlineData("scip", Skip="Solver not supported")]
 	public async Task test_solve_unit_general_test_times_int_float_eq(string solver)
 	{
-		var path = "unit/general/test_times_int_float_eq.mzn";
-		var solutions = new List<string> {
-			"""objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;""",
-			};
-		var args = new List<string>{
-			"-D QuadrFloat=true;QuadrIntCard=0",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_times_int_float_eq.mzn",
+			solver: solver,
+			solutions: ["""objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;"""],
+			args: ["-D QuadrFloat=true;QuadrIntCard=0"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_times_int_float_eq__defaultopt.mzn")]
@@ -1683,34 +1136,23 @@ public class ClientTests : ClientTest
 	[InlineData("scip", Skip="Solver not supported")]
 	public async Task test_solve_unit_general_test_times_int_float_eq__defaultopt(string solver)
 	{
-		var path = "unit/general/test_times_int_float_eq__defaultopt.mzn";
-		var solutions = new List<string> {
-			"""objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_times_int_float_eq__defaultopt.mzn",
+			solver: solver,
+			solutions: ["""objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/test_to_enum.mzn")]
 	public async Task test_solve_unit_general_test_to_enum()
 	{
-		var path = "unit/general/test_to_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""par_int=b;var_int=c;array_of_int=[a,b,c];array_of_var_int=[a,b,c];array_of_set_of_int=[{a},{a,b},{a,b,c}];array_of_var_set_of_int=[{a},{a,b},{a,b,c}];set_of_int={a,b,c};var_set_of_int={a,b,c};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_to_enum.mzn",
+			solver: "gecode",
+			solutions: ["""par_int=b;var_int=c;array_of_int=[a,b,c];array_of_var_int=[a,b,c];array_of_set_of_int=[{a},{a,b},{a,b,c}];array_of_var_set_of_int=[{a},{a,b},{a,b,c}];set_of_int={a,b,c};var_set_of_int={a,b,c};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_var_prod.mzn")]
@@ -1718,22 +1160,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_general_test_var_prod(string solver)
 	{
-		var path = "unit/general/test_var_prod.mzn";
-		var solutions = new List<string> {
-			"""p=1;xs=[1,1,1,1];""",
-			"""p=140;xs=[2,7,10,1];""",
-			"""p=700;xs=[10,10,7,1];""",
-			"""p=1000;xs=[1,10,10,10];""",
-			"""p=1000;xs=[10,10,1,10];""",
-			"""p=1000;xs=[10,10,10,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_var_prod.mzn",
+			solver: solver,
+			solutions: ["""p=1;xs=[1,1,1,1];""","""p=140;xs=[2,7,10,1];""","""p=700;xs=[10,10,7,1];""","""p=1000;xs=[1,10,10,10];""","""p=1000;xs=[10,10,1,10];""","""p=1000;xs=[10,10,10,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/general/test_var_set_element.mzn")]
@@ -1742,33 +1174,22 @@ public class ClientTests : ClientTest
 	[InlineData("coin-bc")]
 	public async Task test_solve_unit_general_test_var_set_element(string solver)
 	{
-		var path = "unit/general/test_var_set_element.mzn";
-		var solutions = new List<string> {
-			"""a=[{},{},{}];s={};x=3;""",
-			"""a=[1..5,1..5,1..5];s=1..5;x=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/test_var_set_element.mzn",
+			solver: solver,
+			solutions: ["""a=[{},{},{}];s={};x=3;""","""a=[1..5,1..5,1..5];s=1..5;x=2;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/general/unicode_file_name_μ.mzn")]
 	public async Task test_solve_unit_general_unicode_file_name_μ()
 	{
-		var path = "unit/general/unicode_file_name_μ.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/general/unicode_file_name_μ.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/typecheck_globals.mzn")]
@@ -1778,338 +1199,215 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_globals_typecheck_globals(string solver)
 	{
-		var path = "unit/globals/typecheck_globals.mzn";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/typecheck_globals.mzn",
+			solver: solver,
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/anon_enum_json.mzn")]
 	public async Task test_solve_unit_json_anon_enum_json()
 	{
-		var path = "unit/json/anon_enum_json.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=Foo(1);y=Foo(2);""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/anon_enum_json.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/anon_enum_json.mzn",
+			solver: "gecode",
+			solutions: ["""x=Foo(1);y=Foo(2);"""],
+			args: ["--data \"unit/json/anon_enum_json.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/coerce_enum_str.mzn")]
 	public async Task test_solve_unit_json_coerce_enum_str()
 	{
-		var path = "unit/json/coerce_enum_str.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/coerce_enum_str.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/coerce_enum_str.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			args: ["--data \"unit/json/coerce_enum_str.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/coerce_indices.mzn")]
 	public async Task test_solve_unit_json_coerce_indices()
 	{
-		var path = "unit/json/coerce_indices.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/coerce_indices.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/coerce_indices.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			args: ["--data \"unit/json/coerce_indices.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/coerce_set.mzn")]
 	public async Task test_solve_unit_json_coerce_set()
 	{
-		var path = "unit/json/coerce_set.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/coerce_set.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/coerce_set.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			args: ["--data \"unit/json/coerce_set.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/enum_constructor_basic.mzn")]
 	public async Task test_solve_unit_json_enum_constructor_basic()
 	{
-		var path = "unit/json/enum_constructor_basic.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=F(A);""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/enum_constructor_basic.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/enum_constructor_basic.mzn",
+			solver: "gecode",
+			solutions: ["""x=F(A);"""],
+			args: ["--data \"unit/json/enum_constructor_basic.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/enum_constructor_basic_2.mzn")]
 	public async Task test_solve_unit_json_enum_constructor_basic_2()
 	{
-		var path = "unit/json/enum_constructor_basic_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=F(A);""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/enum_constructor_basic_2.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/enum_constructor_basic_2.mzn",
+			solver: "gecode",
+			solutions: ["""x=F(A);"""],
+			args: ["--data \"unit/json/enum_constructor_basic_2.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/enum_constructor_int.mzn")]
 	public async Task test_solve_unit_json_enum_constructor_int()
 	{
-		var path = "unit/json/enum_constructor_int.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=Foo(2);""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/enum_constructor_int.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/enum_constructor_int.mzn",
+			solver: "gecode",
+			solutions: ["""x=Foo(2);"""],
+			args: ["--data \"unit/json/enum_constructor_int.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/enum_constructor_nested.mzn")]
 	public async Task test_solve_unit_json_enum_constructor_nested()
 	{
-		var path = "unit/json/enum_constructor_nested.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=G(F(A));""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/enum_constructor_nested.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/enum_constructor_nested.mzn",
+			solver: "gecode",
+			solutions: ["""x=G(F(A));"""],
+			args: ["--data \"unit/json/enum_constructor_nested.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/enum_escaping.mzn")]
 	public async Task test_solve_unit_json_enum_escaping()
 	{
-		var path = "unit/json/enum_escaping.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=";""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/enum_escaping.mzn",
+			solver: "gecode",
+			solutions: ["""x=";"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/float_json_exponent.mzn")]
 	public async Task test_solve_unit_json_float_json_exponent()
 	{
-		var path = "unit/json/float_json_exponent.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=2.0e-05;y=1500.0;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/float_json_exponent.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/float_json_exponent.mzn",
+			solver: "gecode",
+			solutions: ["""x=2.0e-05;y=1500.0;"""],
+			args: ["--data \"unit/json/float_json_exponent.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/json_array2d_set.mzn")]
 	public async Task test_solve_unit_json_json_array2d_set()
 	{
-		var path = "unit/json/json_array2d_set.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/json_array2d_set.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/json_array2d_set.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			args: ["--data \"unit/json/json_array2d_set.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/json_enum_def.mzn")]
 	public async Task test_solve_unit_json_json_enum_def()
 	{
-		var path = "unit/json/json_enum_def.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""w=A;x=D;y=G;z=J;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/json_enum_def.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/json_enum_def.mzn",
+			solver: "gecode",
+			solutions: ["""w=A;x=D;y=G;z=J;"""],
+			args: ["--data \"unit/json/json_enum_def.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/json_input_1.mzn")]
 	public async Task test_solve_unit_json_json_input_1()
 	{
-		var path = "unit/json/json_input_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""int_set={1,2,4,5,7,9};float_set={1.0,2.0};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[true];array_3d_int=[1,2,3,4,5,6,7,8];array_opt_float=[1.5,<>];x=1;y=2.0;z=true;o=<>;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/json_input_1.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/json_input_1.mzn",
+			solver: "gecode",
+			solutions: ["""int_set={1,2,4,5,7,9};float_set={1.0,2.0};array_1d_float=[1.0,2.0,3.0];array_2d_bool=[true];array_3d_int=[1,2,3,4,5,6,7,8];array_opt_float=[1.5,<>];x=1;y=2.0;z=true;o=<>;"""],
+			args: ["--data \"unit/json/json_input_1.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/json_unicode_escapes.mzn")]
 	public async Task test_solve_unit_json_json_unicode_escapes()
 	{
-		var path = "unit/json/json_unicode_escapes.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=A;mu=μ;arrow=↑;clef=𝄞;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/json_unicode_escapes.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/json_unicode_escapes.mzn",
+			solver: "gecode",
+			solutions: ["""a=A;mu=μ;arrow=↑;clef=𝄞;"""],
+			args: ["--data \"unit/json/json_unicode_escapes.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/mult_dim_enum.mzn")]
 	public async Task test_solve_unit_json_mult_dim_enum()
 	{
-		var path = "unit/json/mult_dim_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""use_e=[A,B,B,C];""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/mult_dim_enum.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/mult_dim_enum.mzn",
+			solver: "gecode",
+			solutions: ["""use_e=[A,B,B,C];"""],
+			args: ["--data \"unit/json/mult_dim_enum.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/record_json_input.mzn")]
 	public async Task test_solve_unit_json_record_json_input()
 	{
-		var path = "unit/json/record_json_input.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/record_json_input.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/record_json_input.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			args: ["--data \"unit/json/record_json_input.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/json/tuple_json_input.mzn")]
 	public async Task test_solve_unit_json_tuple_json_input()
 	{
-		var path = "unit/json/tuple_json_input.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/json/tuple_json_input.json\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/json/tuple_json_input.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			args: ["--data \"unit/json/tuple_json_input.json\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/on_restart/complete.mzn")]
@@ -2117,20 +1415,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_on_restart_complete(string solver)
 	{
-		var path = "unit/on_restart/complete.mzn";
-		var solutions = new List<string> {
-			"""x=3;""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/complete.mzn",
+			solver: solver,
+			solutions: ["""x=3;"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/on_restart/last_val_bool.mzn")]
@@ -2138,40 +1429,25 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_on_restart_last_val_bool(string solver)
 	{
-		var path = "unit/on_restart/last_val_bool.mzn";
-		var solutions = new List<string> {
-			"""x=4;y=true;""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/last_val_bool.mzn",
+			solver: solver,
+			solutions: ["""x=4;y=true;"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/on_restart/last_val_float.mzn")]
 	public async Task test_solve_unit_on_restart_last_val_float()
 	{
-		var path = "unit/on_restart/last_val_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=4;y=0.85;""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/last_val_float.mzn",
+			solver: "gecode",
+			solutions: ["""x=4;y=0.85;"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/on_restart/last_val_int.mzn")]
@@ -2179,20 +1455,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_on_restart_last_val_int(string solver)
 	{
-		var path = "unit/on_restart/last_val_int.mzn";
-		var solutions = new List<string> {
-			"""x=4;y=3;""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/last_val_int.mzn",
+			solver: solver,
+			solutions: ["""x=4;y=3;"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/on_restart/last_val_set.mzn")]
@@ -2200,20 +1469,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_on_restart_last_val_set(string solver)
 	{
-		var path = "unit/on_restart/last_val_set.mzn";
-		var solutions = new List<string> {
-			"""x=4;y={1,2,4,8};""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/last_val_set.mzn",
+			solver: solver,
+			solutions: ["""x=4;y={1,2,4,8};"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/on_restart/sol_bool.mzn")]
@@ -2221,40 +1483,25 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_on_restart_sol_bool(string solver)
 	{
-		var path = "unit/on_restart/sol_bool.mzn";
-		var solutions = new List<string> {
-			"""x=3;is_even=false;y=true;""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/sol_bool.mzn",
+			solver: solver,
+			solutions: ["""x=3;is_even=false;y=true;"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/on_restart/sol_float.mzn")]
 	public async Task test_solve_unit_on_restart_sol_float()
 	{
-		var path = "unit/on_restart/sol_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=3;y=2.0;""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/sol_float.mzn",
+			solver: "gecode",
+			solutions: ["""x=3;y=2.0;"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/on_restart/sol_int.mzn")]
@@ -2262,20 +1509,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_on_restart_sol_int(string solver)
 	{
-		var path = "unit/on_restart/sol_int.mzn";
-		var solutions = new List<string> {
-			"""x=3;y=2;""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/sol_int.mzn",
+			solver: solver,
+			solutions: ["""x=3;y=2;"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/on_restart/sol_set.mzn")]
@@ -2283,118 +1523,77 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_on_restart_sol_set(string solver)
 	{
-		var path = "unit/on_restart/sol_set.mzn";
-		var solutions = new List<string> {
-			"""x={};y={1};""",
-			};
-		var args = new List<string>{
-			"--restart constant",
-			"--restart-base 100",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/on_restart/sol_set.mzn",
+			solver: solver,
+			solutions: ["""x={};y={1};"""],
+			args: ["--restart constant","--restart-base 100"],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/conj_absent_1.mzn")]
 	public async Task test_solve_unit_optional_conj_absent_1()
 	{
-		var path = "unit/optional/conj_absent_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/conj_absent_1.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/conj_absent_2.mzn")]
 	public async Task test_solve_unit_optional_conj_absent_2()
 	{
-		var path = "unit/optional/conj_absent_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/conj_absent_2.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/fn_return_array_absent.mzn")]
 	public async Task test_solve_unit_optional_fn_return_array_absent()
 	{
-		var path = "unit/optional/fn_return_array_absent.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[<>];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/fn_return_array_absent.mzn",
+			solver: "gecode",
+			solutions: ["""x=[<>];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/opt_array_access.mzn")]
 	public async Task test_solve_unit_optional_opt_array_access()
 	{
-		var path = "unit/optional/opt_array_access.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/opt_array_access.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/opt_math_abs.mzn")]
 	public async Task test_solve_unit_optional_opt_math_abs()
 	{
-		var path = "unit/optional/opt_math_abs.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/opt_math_abs.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/opt_math_neg.mzn")]
 	public async Task test_solve_unit_optional_opt_math_neg()
 	{
-		var path = "unit/optional/opt_math_neg.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/opt_math_neg.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test-opt-bool-2.mzn")]
@@ -2402,20 +1601,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_opt_bool_2(string solver)
 	{
-		var path = "unit/optional/test-opt-bool-2.mzn";
-		var solutions = new List<string> {
-			"""x=true;y=true;""",
-			"""x=true;y=<>;""",
-			"""x=<>;y=true;""",
-			"""x=<>;y=<>;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-bool-2.mzn",
+			solver: solver,
+			solutions: ["""x=true;y=true;""","""x=true;y=<>;""","""x=<>;y=true;""","""x=<>;y=<>;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test-opt-bool-3.mzn")]
@@ -2423,21 +1615,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_opt_bool_3(string solver)
 	{
-		var path = "unit/optional/test-opt-bool-3.mzn";
-		var solutions = new List<string> {
-			"""x=true;y=true;""",
-			"""x=true;y=<>;""",
-			"""x=<>;y=true;""",
-			"""x=false;y=true;""",
-			"""x=true;y=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-bool-3.mzn",
+			solver: solver,
+			solutions: ["""x=true;y=true;""","""x=true;y=<>;""","""x=<>;y=true;""","""x=false;y=true;""","""x=true;y=false;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test-opt-bool-4.mzn")]
@@ -2445,19 +1629,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_opt_bool_4(string solver)
 	{
-		var path = "unit/optional/test-opt-bool-4.mzn";
-		var solutions = new List<string> {
-			"""x=true;y=false;""",
-			"""x=false;y=true;""",
-			"""x=<>;y=<>;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-bool-4.mzn",
+			solver: solver,
+			solutions: ["""x=true;y=false;""","""x=false;y=true;""","""x=<>;y=<>;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test-opt-bool-5.mzn")]
@@ -2465,24 +1643,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_opt_bool_5(string solver)
 	{
-		var path = "unit/optional/test-opt-bool-5.mzn";
-		var solutions = new List<string> {
-			"""x=[<>,<>,<>];""",
-			"""x=[true,<>,<>];""",
-			"""x=[<>,true,<>];""",
-			"""x=[true,true,<>];""",
-			"""x=[<>,<>,true];""",
-			"""x=[true,<>,true];""",
-			"""x=[<>,true,true];""",
-			"""x=[true,true,true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-bool-5.mzn",
+			solver: solver,
+			solutions: ["""x=[<>,<>,<>];""","""x=[true,<>,<>];""","""x=[<>,true,<>];""","""x=[true,true,<>];""","""x=[<>,<>,true];""","""x=[true,<>,true];""","""x=[<>,true,true];""","""x=[true,true,true];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test-opt-bool-6.mzn")]
@@ -2490,35 +1657,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_opt_bool_6(string solver)
 	{
-		var path = "unit/optional/test-opt-bool-6.mzn";
-		var solutions = new List<string> {
-			"""x=[true,<>,<>];""",
-			"""x=[true,false,<>];""",
-			"""x=[true,<>,false];""",
-			"""x=[true,false,false];""",
-			"""x=[<>,true,<>];""",
-			"""x=[false,true,<>];""",
-			"""x=[<>,true,false];""",
-			"""x=[false,true,false];""",
-			"""x=[true,true,<>];""",
-			"""x=[true,true,false];""",
-			"""x=[<>,<>,true];""",
-			"""x=[false,<>,true];""",
-			"""x=[<>,false,true];""",
-			"""x=[false,false,true];""",
-			"""x=[true,<>,true];""",
-			"""x=[true,false,true];""",
-			"""x=[<>,true,true];""",
-			"""x=[false,true,true];""",
-			"""x=[true,true,true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-bool-6.mzn",
+			solver: solver,
+			solutions: ["""x=[true,<>,<>];""","""x=[true,false,<>];""","""x=[true,<>,false];""","""x=[true,false,false];""","""x=[<>,true,<>];""","""x=[false,true,<>];""","""x=[<>,true,false];""","""x=[false,true,false];""","""x=[true,true,<>];""","""x=[true,true,false];""","""x=[<>,<>,true];""","""x=[false,<>,true];""","""x=[<>,false,true];""","""x=[false,false,true];""","""x=[true,<>,true];""","""x=[true,false,true];""","""x=[<>,true,true];""","""x=[false,true,true];""","""x=[true,true,true];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test-opt-float-1.mzn")]
@@ -2527,18 +1672,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_optional_test_opt_float_1(string solver)
 	{
-		var path = "unit/optional/test-opt-float-1.mzn";
-		var solutions = new List<string> {
-			"""x=[1.0,<>];""",
-			"""x=[<>,1.0];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-float-1.mzn",
+			solver: solver,
+			solutions: ["""x=[1.0,<>];""","""x=[<>,1.0];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test-opt-if-then-else.mzn")]
@@ -2546,104 +1685,59 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_opt_if_then_else(string solver)
 	{
-		var path = "unit/optional/test-opt-if-then-else.mzn";
-		var solutions = new List<string> {
-			"""x=1;y=<>;p=false;a=1;b=<>;c=<>;""",
-			"""x=<>;y=1;p=false;a=1;b=1;c=<>;""",
-			"""x=<>;y=1;p=true;a=<>;b=<>;c=<>;""",
-			"""x=1;y=<>;p=true;a=<>;b=1;c=<>;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-if-then-else.mzn",
+			solver: solver,
+			solutions: ["""x=1;y=<>;p=false;a=1;b=<>;c=<>;""","""x=<>;y=1;p=false;a=1;b=1;c=<>;""","""x=<>;y=1;p=true;a=<>;b=<>;c=<>;""","""x=1;y=<>;p=true;a=<>;b=1;c=<>;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test-opt-int-2.mzn")]
 	public async Task test_solve_unit_optional_test_opt_int_2()
 	{
-		var path = "unit/optional/test-opt-int-2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[2,<>,<>];""",
-			"""x=[<>,2,<>];""",
-			"""x=[1,1,<>];""",
-			"""x=[<>,<>,2];""",
-			"""x=[1,<>,1];""",
-			"""x=[<>,1,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-int-2.mzn",
+			solver: "gecode",
+			solutions: ["""x=[2,<>,<>];""","""x=[<>,2,<>];""","""x=[1,1,<>];""","""x=[<>,<>,2];""","""x=[1,<>,1];""","""x=[<>,1,1];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test-opt-int-3.mzn")]
 	public async Task test_solve_unit_optional_test_opt_int_3()
 	{
-		var path = "unit/optional/test-opt-int-3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[3,2,<>];""",
-			"""x=[2,3,<>];""",
-			"""x=[3,<>,2];""",
-			"""x=[2,<>,3];""",
-			"""x=[<>,3,2];""",
-			"""x=[<>,2,3];""",
-			"""x=[3,2,1];""",
-			"""x=[2,3,1];""",
-			"""x=[3,1,2];""",
-			"""x=[1,3,2];""",
-			"""x=[2,1,3];""",
-			"""x=[1,2,3];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test-opt-int-3.mzn",
+			solver: "gecode",
+			solutions: ["""x=[3,2,<>];""","""x=[2,3,<>];""","""x=[3,<>,2];""","""x=[2,<>,3];""","""x=[<>,3,2];""","""x=[<>,2,3];""","""x=[3,2,1];""","""x=[2,3,1];""","""x=[3,1,2];""","""x=[1,3,2];""","""x=[2,1,3];""","""x=[1,2,3];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test_count_set.mzn")]
 	public async Task test_solve_unit_optional_test_count_set()
 	{
-		var path = "unit/optional/test_count_set.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""i=0;x=6..10;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_count_set.mzn",
+			solver: "gecode",
+			solutions: ["""i=0;x=6..10;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test_deopt_absent.mzn")]
 	public async Task test_solve_unit_optional_test_deopt_absent()
 	{
-		var path = "unit/optional/test_deopt_absent.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_deopt_absent.mzn",
+			solver: "gecode",
+			solutions: ["""b=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test_if_then_else_opt_bool.mzn")]
@@ -2651,30 +1745,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_if_then_else_opt_bool(string solver)
 	{
-		var path = "unit/optional/test_if_then_else_opt_bool.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_if_then_else_opt_bool.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test_if_then_else_opt_float.mzn")]
 	public async Task test_solve_unit_optional_test_if_then_else_opt_float()
 	{
-		var path = "unit/optional/test_if_then_else_opt_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_if_then_else_opt_float.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test_if_then_else_opt_int.mzn")]
@@ -2682,15 +1769,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_if_then_else_opt_int(string solver)
 	{
-		var path = "unit/optional/test_if_then_else_opt_int.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_if_then_else_opt_int.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test_if_then_else_var_opt_bool.mzn")]
@@ -2698,30 +1782,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_if_then_else_var_opt_bool(string solver)
 	{
-		var path = "unit/optional/test_if_then_else_var_opt_bool.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_if_then_else_var_opt_bool.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test_if_then_else_var_opt_float.mzn")]
 	public async Task test_solve_unit_optional_test_if_then_else_var_opt_float()
 	{
-		var path = "unit/optional/test_if_then_else_var_opt_float.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_if_then_else_var_opt_float.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test_if_then_else_var_opt_int.mzn")]
@@ -2729,15 +1806,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_optional_test_if_then_else_var_opt_int(string solver)
 	{
-		var path = "unit/optional/test_if_then_else_var_opt_int.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_if_then_else_var_opt_int.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/optional/test_optional_not_absent.mzn")]
@@ -2745,461 +1819,303 @@ public class ClientTests : ClientTest
 	[InlineData("gecode")]
 	public async Task test_solve_unit_optional_test_optional_not_absent(string solver)
 	{
-		var path = "unit/optional/test_optional_not_absent.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_optional_not_absent.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test_opt_comprehension.mzn")]
 	public async Task test_solve_unit_optional_test_opt_comprehension()
 	{
-		var path = "unit/optional/test_opt_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""z=[false,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_opt_comprehension.mzn",
+			solver: "gecode",
+			solutions: ["""z=[false,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test_opt_dom_empty.mzn")]
 	public async Task test_solve_unit_optional_test_opt_dom_empty()
 	{
-		var path = "unit/optional/test_opt_dom_empty.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_opt_dom_empty.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/optional/test_opt_dom_empty_no_absent_zero.mzn")]
 	public async Task test_solve_unit_optional_test_opt_dom_empty_no_absent_zero()
 	{
-		var path = "unit/optional/test_opt_dom_empty_no_absent_zero.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/optional/test_opt_dom_empty_no_absent_zero.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/arg-reif-output.mzn")]
 	public async Task test_solve_unit_output_arg_reif_output()
 	{
-		var path = "unit/output/arg-reif-output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=WORKED;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/arg-reif-output.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=WORKED;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/array_of_array.mzn")]
 	public async Task test_solve_unit_output_array_of_array()
 	{
-		var path = "unit/output/array_of_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[1,2,2];y=[1,1,2,2,2];z=[-1,1,0,2];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/array_of_array.mzn",
+			solver: "gecode",
+			solutions: ["""x=[1,2,2];y=[1,1,2,2,2];z=[-1,1,0,2];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/ctx_ann.mzn")]
 	public async Task test_solve_unit_output_ctx_ann()
 	{
-		var path = "unit/output/ctx_ann.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""c=5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/ctx_ann.mzn",
+			solver: "gecode",
+			solutions: ["""c=5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/format_justified_enums.mzn")]
 	public async Task test_solve_unit_output_format_justified_enums()
 	{
-		var path = "unit/output/format_justified_enums.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=>      [Hello, World]<;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/format_justified_enums.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=>      [Hello, World]<;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/json_ann.mzn")]
 	public async Task test_solve_unit_output_json_ann()
 	{
-		var path = "unit/output/json_ann.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=promise_total;y=expression_name("test");""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/json_ann.mzn",
+			solver: "gecode",
+			solutions: ["""x=promise_total;y=expression_name("test");"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/json_multidim.mzn")]
 	public async Task test_solve_unit_output_json_multidim()
 	{
-		var path = "unit/output/json_multidim.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=[[{"e":"A"}, {"e":"B"}], [{"e":"C"}, {"e":"D"}]] [[{"e":"A"}, {"e":"B"}], [{"e":"C"}, {"e":"D"}]];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/json_multidim.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=[[{"e":"A"}, {"e":"B"}], [{"e":"C"}, {"e":"D"}]] [[{"e":"A"}, {"e":"B"}], [{"e":"C"}, {"e":"D"}]];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/local_output.mzn")]
 	public async Task test_solve_unit_output_local_output()
 	{
-		var path = "unit/output/local_output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=[1];x@14.5-28|a@13.6=[1];_output_item=predicate: [1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/local_output.mzn",
+			solver: "gecode",
+			solutions: ["""a=[1];x@14.5-28|a@13.6=[1];_output_item=predicate: [1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/no_output_reverse_mapped_var.mzn")]
 	public async Task test_solve_unit_output_no_output_reverse_mapped_var()
 	{
-		var path = "unit/output/no_output_reverse_mapped_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""y=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/no_output_reverse_mapped_var.mzn",
+			solver: "gecode",
+			solutions: ["""y=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_annotations_1.mzn")]
 	public async Task test_solve_unit_output_output_annotations_1()
 	{
-		var path = "unit/output/output_annotations_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=4;y=1;z=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_annotations_1.mzn",
+			solver: "gecode",
+			solutions: ["""b=4;y=1;z=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_annotations_2.mzn")]
 	public async Task test_solve_unit_output_output_annotations_2()
 	{
-		var path = "unit/output/output_annotations_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x@10.3-24=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_annotations_2.mzn",
+			solver: "gecode",
+			solutions: ["""x@10.3-24=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_annotations_3.mzn")]
 	public async Task test_solve_unit_output_output_annotations_3()
 	{
-		var path = "unit/output/output_annotations_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""objective=6;x@15.3-23|i=1@14.23|sum@14.18-16.7|=@14.12-16.7=1;x@15.3-23|i=2@14.23|sum@14.18-16.7|=@14.12-16.7=2;x@15.3-23|i=3@14.23|sum@14.18-16.7|=@14.12-16.7=3;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_annotations_3.mzn",
+			solver: "gecode",
+			solutions: ["""objective=6;x@15.3-23|i=1@14.23|sum@14.18-16.7|=@14.12-16.7=1;x@15.3-23|i=2@14.23|sum@14.18-16.7|=@14.12-16.7=2;x@15.3-23|i=3@14.23|sum@14.18-16.7|=@14.12-16.7=3;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_annotations_4.mzn")]
 	public async Task test_solve_unit_output_output_annotations_4()
 	{
-		var path = "unit/output/output_annotations_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=9;y@11.3-24|foo@15.12-17=10;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_annotations_4.mzn",
+			solver: "gecode",
+			solutions: ["""a=9;y@11.3-24|foo@15.12-17=10;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
 	public async Task test_solve_unit_output_output_sections_1()
 	{
-		var path = "unit/output/output_sections_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=aebdc;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_1.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=aebdc;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
 	public async Task test_solve_unit_output_output_sections_1_2()
 	{
-		var path = "unit/output/output_sections_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=bdc;""",
-			};
-		var args = new List<string>{
-			"--only-sections foo,bar",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_1.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=bdc;"""],
+			args: ["--only-sections foo,bar"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_1.mzn")]
 	public async Task test_solve_unit_output_output_sections_1_3()
 	{
-		var path = "unit/output/output_sections_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=ae;""",
-			};
-		var args = new List<string>{
-			"--not-sections foo,bar",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_1.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=ae;"""],
+			args: ["--not-sections foo,bar"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
 	public async Task test_solve_unit_output_output_sections_2()
 	{
-		var path = "unit/output/output_sections_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=aebdc;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_2.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=aebdc;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
-	
+
 	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
 	public async Task test_solve_unit_output_output_sections_2_2()
 	{
-		var path = "unit/output/output_sections_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=bdc;""",
-			};
-		var args = new List<string>{
-			"--only-sections foo,bar",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_2.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=bdc;"""],
+			args: ["--only-sections foo,bar"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_2.mzn")]
 	public async Task test_solve_unit_output_output_sections_2_3()
 	{
-		var path = "unit/output/output_sections_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=ae;""",
-			};
-		var args = new List<string>{
-			"--not-sections foo,bar",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_2.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=ae;"""],
+			args: ["--not-sections foo,bar"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_3.mzn")]
 	public async Task test_solve_unit_output_output_sections_3()
 	{
-		var path = "unit/output/output_sections_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""objective=9;_output_item=x = 10;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_3.mzn",
+			solver: "gecode",
+			solutions: ["""objective=9;_output_item=x = 10;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_4.mzn")]
 	public async Task test_solve_unit_output_output_sections_4()
 	{
-		var path = "unit/output/output_sections_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=x = 10;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_4.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=x = 10;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_5.mzn")]
 	public async Task test_solve_unit_output_output_sections_5()
 	{
-		var path = "unit/output/output_sections_5.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=x = 10y = 1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_5.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=x = 10y = 1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_6.mzn")]
 	public async Task test_solve_unit_output_output_sections_6()
 	{
-		var path = "unit/output/output_sections_6.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=output_to_section: 10output_item: 10;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_6.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=output_to_section: 10output_item: 10;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/output_sections_7.mzn")]
 	public async Task test_solve_unit_output_output_sections_7()
 	{
-		var path = "unit/output/output_sections_7.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=[1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/output_sections_7.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=[1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/output/test-in-output.mzn")]
@@ -3207,90 +2123,60 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_output_test_in_output(string solver)
 	{
-		var path = "unit/output/test-in-output.mzn";
-		var solutions = new List<string> {
-			"""_output_item=x = 1y = 2NO;""",
-			"""_output_item=x = 1y = 2YES;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/test-in-output.mzn",
+			solver: solver,
+			solutions: ["""_output_item=x = 1y = 2NO;""","""_output_item=x = 1y = 2YES;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/output/var_enum.mzn")]
 	public async Task test_solve_unit_output_var_enum()
 	{
-		var path = "unit/output/var_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=["X_INTRODUCED_16_", "X_INTRODUCED_17_", "X_INTRODUCED_18_"] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/output/var_enum.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=["X_INTRODUCED_16_", "X_INTRODUCED_17_", "X_INTRODUCED_18_"] [X_INTRODUCED_16_, X_INTRODUCED_17_, X_INTRODUCED_18_] [Inch, Inch, Inch];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_array.mzn")]
 	public async Task test_solve_unit_param_file_param_file_array()
 	{
-		var path = "unit/param_file/param_file_array.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=true;y=false;""",
-			};
-		var args = new List<string>{
-			"--param-file ./spec/unit/param_file/param_file_array.json",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/param_file/param_file_array.mzn",
+			solver: "gecode",
+			solutions: ["""x=true;y=false;"""],
+			args: ["--param-file ./spec/unit/param_file/param_file_array.json"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_nested_object.mzn")]
 	public async Task test_solve_unit_param_file_param_file_nested_object()
 	{
-		var path = "unit/param_file/param_file_nested_object.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_nested_object.mpc\"",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/param_file/param_file_nested_object.mzn",
+			solver: "gecode",
+			args: ["--data \"unit/param_file/param_file_nested_object.mpc\""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/param_file/param_file_resolution.mzn")]
 	public async Task test_solve_unit_param_file_param_file_resolution()
 	{
-		var path = "unit/param_file/param_file_resolution.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;y=2;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/param_file/param_file_resolution.mpc\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/param_file/param_file_resolution.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;y=2;"""],
+			args: ["--data \"unit/param_file/param_file_resolution.mpc\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/arg-reif-array-float.mzn")]
@@ -3298,15 +2184,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_arg_reif_array_float(string solver)
 	{
-		var path = "unit/regression/arg-reif-array-float.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/arg-reif-array-float.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/arg-reif-array-int.mzn")]
@@ -3314,15 +2197,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_arg_reif_array_int(string solver)
 	{
-		var path = "unit/regression/arg-reif-array-int.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/arg-reif-array-int.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/arg-reif-float.mzn")]
@@ -3330,15 +2210,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_arg_reif_float(string solver)
 	{
-		var path = "unit/regression/arg-reif-float.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/arg-reif-float.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/arg-reif-int-set.mzn")]
@@ -3346,15 +2223,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_arg_reif_int_set(string solver)
 	{
-		var path = "unit/regression/arg-reif-int-set.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/arg-reif-int-set.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/arg-reif-int.mzn")]
@@ -3362,30 +2236,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_arg_reif_int(string solver)
 	{
-		var path = "unit/regression/arg-reif-int.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/arg-reif-int.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/array_of_empty_sets.mzn")]
 	public async Task test_solve_unit_regression_array_of_empty_sets()
 	{
-		var path = "unit/regression/array_of_empty_sets.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/array_of_empty_sets.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/array_set_element_nosets.mzn")]
@@ -3394,18 +2261,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_array_set_element_nosets(string solver)
 	{
-		var path = "unit/regression/array_set_element_nosets.mzn";
-		var solutions = new List<string> {
-			"""x=1;y=[{1},{2},{3}];z={1};""",
-			"""x=3;y=[{1},{2},{3}];z={3};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/array_set_element_nosets.mzn",
+			solver: solver,
+			solutions: ["""x=1;y=[{1},{2},{3}];z={1};""","""x=3;y=[{1},{2},{3}];z={3};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/array_var_set_element_nosets.mzn")]
@@ -3414,68 +2275,45 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_array_var_set_element_nosets(string solver)
 	{
-		var path = "unit/regression/array_var_set_element_nosets.mzn";
-		var solutions = new List<string> {
-			"""x=1;y=[1..3,{},{1}];z=1..3;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/array_var_set_element_nosets.mzn",
+			solver: solver,
+			solutions: ["""x=1;y=[1..3,{},{1}];z=1..3;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/assign_reverse_map.mzn")]
 	public async Task test_solve_unit_regression_assign_reverse_map()
 	{
-		var path = "unit/regression/assign_reverse_map.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/assign_reverse_map.mzn",
+			solver: "gecode",
+			solutions: ["""x=2;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bind-defines-var.mzn")]
 	public async Task test_solve_unit_regression_bind_defines_var()
 	{
-		var path = "unit/regression/bind-defines-var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-G std",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bind-defines-var.mzn",
+			solver: "gecode",
+			args: ["-G std"],
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/binop_mult_gclock.mzn")]
 	public async Task test_solve_unit_regression_binop_mult_gclock()
 	{
-		var path = "unit/regression/binop_mult_gclock.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/binop_mult_gclock.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bounds_for_linear_01_max_0.mzn")]
@@ -3485,17 +2323,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_bounds_for_linear_01_max_0(string solver)
 	{
-		var path = "unit/regression/bounds_for_linear_01_max_0.mzn";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bounds_for_linear_01_max_0.mzn",
+			solver: solver,
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bounds_for_linear_01_max_1.mzn")]
@@ -3505,17 +2338,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_bounds_for_linear_01_max_1(string solver)
 	{
-		var path = "unit/regression/bounds_for_linear_01_max_1.mzn";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bounds_for_linear_01_max_1.mzn",
+			solver: solver,
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bounds_for_linear_01_min_0.mzn")]
@@ -3525,17 +2353,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_bounds_for_linear_01_min_0(string solver)
 	{
-		var path = "unit/regression/bounds_for_linear_01_min_0.mzn";
-		var solutions = new List<string> {
-			"""x=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bounds_for_linear_01_min_0.mzn",
+			solver: solver,
+			solutions: ["""x=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bounds_for_linear_01_min_1.mzn")]
@@ -3545,17 +2368,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_bounds_for_linear_01_min_1(string solver)
 	{
-		var path = "unit/regression/bounds_for_linear_01_min_1.mzn";
-		var solutions = new List<string> {
-			"""x=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bounds_for_linear_01_min_1.mzn",
+			solver: solver,
+			solutions: ["""x=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug110.mzn")]
@@ -3563,18 +2381,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_bug110(string solver)
 	{
-		var path = "unit/regression/bug110.mzn";
-		var solutions = new List<string> {
-			"""board=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];""",
-			"""board=[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug110.mzn",
+			solver: solver,
+			solutions: ["""board=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];""","""board=[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug131.mzn")]
@@ -3582,15 +2394,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_bug131(string solver)
 	{
-		var path = "unit/regression/bug131.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug131.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug212.mzn")]
@@ -3598,15 +2407,11 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_bug212(string solver)
 	{
-		var path = "unit/regression/bug212.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug212.mzn",
+			solver: solver,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug222.mzn")]
@@ -3614,17 +2419,12 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_bug222(string solver)
 	{
-		var path = "unit/regression/bug222.mzn";
-		var solutions = new List<string> {
-			"""K=11;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug222.mzn",
+			solver: solver,
+			solutions: ["""K=11;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug244.mzn")]
@@ -3632,53 +2432,34 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_bug244(string solver)
 	{
-		var path = "unit/regression/bug244.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug244.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug269.mzn")]
 	public async Task test_solve_unit_regression_bug269()
 	{
-		var path = "unit/regression/bug269.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""queens=[4,6,1,5,2,8,3,7];""",
-			"""queens=[4,6,8,3,1,7,5,2];""",
-			"""queens=[8,4,1,3,6,2,7,5];""",
-			"""queens=[2,5,7,4,1,8,6,3];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug269.mzn",
+			solver: "gecode",
+			solutions: ["""queens=[4,6,1,5,2,8,3,7];""","""queens=[4,6,8,3,1,7,5,2];""","""queens=[8,4,1,3,6,2,7,5];""","""queens=[2,5,7,4,1,8,6,3];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug284.mzn")]
 	public async Task test_solve_unit_regression_bug284()
 	{
-		var path = "unit/regression/bug284.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""ignore_me=true;""",
-			"""A=1;B=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug284.mzn",
+			solver: "gecode",
+			solutions: ["""ignore_me=true;""","""A=1;B=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug318_orig.mzn")]
@@ -3686,35 +2467,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_bug318_orig(string solver)
 	{
-		var path = "unit/regression/bug318_orig.mzn";
-		var solutions = new List<string> {
-			"""objective=-2147483646;var1=1;var2=-2147483646;var3=-2147483646;""",
-			"""objective=-500000000;var1=1;var2=-500000000;var3=-500000000;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug318_orig.mzn",
+			solver: solver,
+			solutions: ["""objective=-2147483646;var1=1;var2=-2147483646;var3=-2147483646;""","""objective=-500000000;var1=1;var2=-500000000;var3=-500000000;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug335.mzn")]
 	public async Task test_solve_unit_regression_bug335()
 	{
-		var path = "unit/regression/bug335.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""sokPosns=[14,13,8,7,8,9,4,5,10,1,1,1];stime=9;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug335.mzn",
+			solver: "gecode",
+			solutions: ["""sokPosns=[14,13,8,7,8,9,4,5,10,1,1,1];stime=9;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug380.mzn")]
@@ -3722,121 +2491,79 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_bug380(string solver)
 	{
-		var path = "unit/regression/bug380.mzn";
-		var solutions = new List<string> {
-			"""a=[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];d=[3,3,3,3];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug380.mzn",
+			solver: solver,
+			solutions: ["""a=[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];d=[3,3,3,3];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug532.mzn")]
 	public async Task test_solve_unit_regression_bug532()
 	{
-		var path = "unit/regression/bug532.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""y=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug532.mzn",
+			solver: "gecode",
+			solutions: ["""y=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug534.mzn")]
 	public async Task test_solve_unit_regression_bug534()
 	{
-		var path = "unit/regression/bug534.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[,];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug534.mzn",
+			solver: "gecode",
+			solutions: ["""x=[,];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug536.mzn")]
 	public async Task test_solve_unit_regression_bug536()
 	{
-		var path = "unit/regression/bug536.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[1];""",
-			};
-		var args = new List<string>{
-			"-O2",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug536.mzn",
+			solver: "gecode",
+			solutions: ["""x=[1];"""],
+			args: ["-O2"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug552.mzn")]
 	public async Task test_solve_unit_regression_bug552()
 	{
-		var path = "unit/regression/bug552.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[2.0];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug552.mzn",
+			solver: "gecode",
+			solutions: ["""x=[2.0];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug565.mzn")]
 	public async Task test_solve_unit_regression_bug565()
 	{
-		var path = "unit/regression/bug565.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug565.mzn",
+			solver: "gecode",
+			solutions: ["""x=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug635.mzn")]
 	public async Task test_solve_unit_regression_bug635()
 	{
-		var path = "unit/regression/bug635.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-O2",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug635.mzn",
+			solver: "gecode",
+			args: ["-O2"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug67.mzn")]
@@ -3844,18 +2571,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_bug67(string solver)
 	{
-		var path = "unit/regression/bug67.mzn";
-		var solutions = new List<string> {
-			"""x=-2147483646;y=-2147483646;z=-2147483646;""",
-			"""x=-500000000;y=-500000000;z=-500000000;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug67.mzn",
+			solver: solver,
+			solutions: ["""x=-2147483646;y=-2147483646;z=-2147483646;""","""x=-500000000;y=-500000000;z=-500000000;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/bug82.mzn")]
@@ -3863,183 +2584,116 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_bug82(string solver)
 	{
-		var path = "unit/regression/bug82.mzn";
-		var solutions = new List<string> {
-			"""pos=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];""",
-			"""pos=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,3,1,1,4,1,1,5,1,1,4,1,1,3,1,1,2,1,1,1,1,1];""",
-			"""pos=[6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug82.mzn",
+			solver: solver,
+			solutions: ["""pos=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];""","""pos=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,3,1,1,4,1,1,5,1,1,4,1,1,3,1,1,2,1,1,1,1,1];""","""pos=[6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug_empty_enum_extension.mzn")]
 	public async Task test_solve_unit_regression_bug_empty_enum_extension()
 	{
-		var path = "unit/regression/bug_empty_enum_extension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""as=[z(z2),z(z1),x(x2),x(x1)];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug_empty_enum_extension.mzn",
+			solver: "gecode",
+			solutions: ["""as=[z(z2),z(z1),x(x2),x(x1)];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/bug_opt_polymorphic.mzn")]
 	public async Task test_solve_unit_regression_bug_opt_polymorphic()
 	{
-		var path = "unit/regression/bug_opt_polymorphic.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/bug_opt_polymorphic.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_mzn_check_var.mzn")]
 	public async Task test_solve_unit_regression_checker_mzn_check_var()
 	{
-		var path = "unit/regression/checker_mzn_check_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_checker=Ok;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_mzn_check_var.mzc.mzn\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/checker_mzn_check_var.mzn",
+			solver: "gecode",
+			solutions: ["""_checker=Ok;"""],
+			args: ["--data \"unit/regression/checker_mzn_check_var.mzc.mzn\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_opt.mzn")]
 	public async Task test_solve_unit_regression_checker_opt()
 	{
-		var path = "unit/regression/checker_opt.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_checker=y = 20;;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_opt.mzc.mzn\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/checker_opt.mzn",
+			solver: "gecode",
+			solutions: ["""_checker=y = 20;;"""],
+			args: ["--data \"unit/regression/checker_opt.mzc.mzn\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_params.mzn")]
 	public async Task test_solve_unit_regression_checker_params()
 	{
-		var path = "unit/regression/checker_params.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_checker=yay!;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_params.mzc.mzn\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/checker_params.mzn",
+			solver: "gecode",
+			solutions: ["""_checker=yay!;"""],
+			args: ["--data \"unit/regression/checker_params.mzc.mzn\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_same_var.mzn")]
 	public async Task test_solve_unit_regression_checker_same_var()
 	{
-		var path = "unit/regression/checker_same_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_checker=x = 10;;objective=5;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_same_var.mzc.mzn\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/checker_same_var.mzn",
+			solver: "gecode",
+			solutions: ["""_checker=x = 10;;objective=5;"""],
+			args: ["--data \"unit/regression/checker_same_var.mzc.mzn\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/checker_var_bug.mzn")]
 	public async Task test_solve_unit_regression_checker_var_bug()
 	{
-		var path = "unit/regression/checker_var_bug.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_checker=x = 1;;""",
-			"""_checker=x = 2;;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/checker_var_bug.mzc.mzn\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/checker_var_bug.mzn",
+			solver: "gecode",
+			solutions: ["""_checker=x = 1;;""","""_checker=x = 2;;"""],
+			args: ["--data \"unit/regression/checker_var_bug.mzc.mzn\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/coercion_par.mzn")]
 	public async Task test_solve_unit_regression_coercion_par()
 	{
-		var path = "unit/regression/coercion_par.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[1,<>];y=[1.0,<>];z=[0.0,<>];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/coercion_par.mzn",
+			solver: "gecode",
+			solutions: ["""x=[1,<>];y=[1.0,<>];z=[0.0,<>];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/constructor_of_set.mzn")]
 	public async Task test_solve_unit_regression_constructor_of_set()
 	{
-		var path = "unit/regression/constructor_of_set.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""y=C(2);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/constructor_of_set.mzn",
+			solver: "gecode",
+			solutions: ["""y=C(2);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/decision_tree_binary.mzn")]
@@ -4047,66 +2701,44 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_decision_tree_binary(string solver)
 	{
-		var path = "unit/regression/decision_tree_binary.mzn";
-		var solutions = new List<string> {
-			"""node_used=[3,4,6,9,11,13,15,8,9,10,11,12,13,14,15];x=[6,2,6,2,4,6,8,1,2,3,4,5,6,7,8];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/decision_tree_binary.mzn",
+			solver: solver,
+			solutions: ["""node_used=[3,4,6,9,11,13,15,8,9,10,11,12,13,14,15];x=[6,2,6,2,4,6,8,1,2,3,4,5,6,7,8];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/dim_1_struct_merge.mzn")]
 	public async Task test_solve_unit_regression_dim_1_struct_merge()
 	{
-		var path = "unit/regression/dim_1_struct_merge.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/dim_1_struct_merge.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/enigma_1568.mzn")]
 	public async Task test_solve_unit_regression_enigma_1568()
 	{
-		var path = "unit/regression/enigma_1568.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""D=6;E=5;L=3;O=9;ODD=966;P=1;PUZZLE=102235;U=0;Z=2;num1=161;num2=635;num3=805;num4=483;x=[9,6,1,0,2,3,5];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/enigma_1568.mzn",
+			solver: "gecode",
+			solutions: ["""D=6;E=5;L=3;O=9;ODD=966;P=1;PUZZLE=102235;U=0;Z=2;num1=161;num2=635;num3=805;num4=483;x=[9,6,1,0,2,3,5];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/flatten_comp_in.mzn")]
 	public async Task test_solve_unit_regression_flatten_comp_in()
 	{
-		var path = "unit/regression/flatten_comp_in.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/flatten_comp_in.mzn",
+			solver: "gecode",
+			solutions: ["""x=[true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/flat_set_lit.mzn")]
@@ -4114,279 +2746,189 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_flat_set_lit(string solver)
 	{
-		var path = "unit/regression/flat_set_lit.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/flat_set_lit.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/float_ceil_floor.mzn")]
 	public async Task test_solve_unit_regression_float_ceil_floor()
 	{
-		var path = "unit/regression/float_ceil_floor.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""c=-1;f=-1;p=-1.0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/float_ceil_floor.mzn",
+			solver: "gecode",
+			solutions: ["""c=-1;f=-1;p=-1.0;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/float_opt_crash.mzn")]
 	public async Task test_solve_unit_regression_float_opt_crash()
 	{
-		var path = "unit/regression/float_opt_crash.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/float_opt_crash.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github537.mzn")]
 	public async Task test_solve_unit_regression_github537()
 	{
-		var path = "unit/regression/github537.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github537.mzn",
+			solver: "gecode",
+			solutions: ["""b=true;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_638_reduced.mzn")]
 	public async Task test_solve_unit_regression_github_638_reduced()
 	{
-		var path = "unit/regression/github_638_reduced.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_638_reduced.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_639_part1.mzn")]
 	public async Task test_solve_unit_regression_github_639_part1()
 	{
-		var path = "unit/regression/github_639_part1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_639_part1.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_639_part2.mzn")]
 	public async Task test_solve_unit_regression_github_639_part2()
 	{
-		var path = "unit/regression/github_639_part2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_639_part2.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_a.mzn")]
 	public async Task test_solve_unit_regression_github_644_a()
 	{
-		var path = "unit/regression/github_644_a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""arr=[<>,<>];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_644_a.mzn",
+			solver: "gecode",
+			solutions: ["""arr=[<>,<>];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_b.mzn")]
 	public async Task test_solve_unit_regression_github_644_b()
 	{
-		var path = "unit/regression/github_644_b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=[<>];b=[1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_644_b.mzn",
+			solver: "gecode",
+			solutions: ["""a=[<>];b=[1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_c.mzn")]
 	public async Task test_solve_unit_regression_github_644_c()
 	{
-		var path = "unit/regression/github_644_c.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""arr=[1];x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_644_c.mzn",
+			solver: "gecode",
+			solutions: ["""arr=[1];x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_d.mzn")]
 	public async Task test_solve_unit_regression_github_644_d()
 	{
-		var path = "unit/regression/github_644_d.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""value=<>;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_644_d.mzn",
+			solver: "gecode",
+			solutions: ["""value=<>;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_644_e.mzn")]
 	public async Task test_solve_unit_regression_github_644_e()
 	{
-		var path = "unit/regression/github_644_e.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=<>;y=<>;z=<>;p=3;q=1;r=4;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_644_e.mzn",
+			solver: "gecode",
+			solutions: ["""x=<>;y=<>;z=<>;p=3;q=1;r=4;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_646.mzn")]
 	public async Task test_solve_unit_regression_github_646()
 	{
-		var path = "unit/regression/github_646.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_646.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_661_part1.mzn")]
 	public async Task test_solve_unit_regression_github_661_part1()
 	{
-		var path = "unit/regression/github_661_part1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_661_part1.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_661_part2.mzn")]
 	public async Task test_solve_unit_regression_github_661_part2()
 	{
-		var path = "unit/regression/github_661_part2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;y=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_661_part2.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;y=2;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_664.mzn")]
 	public async Task test_solve_unit_regression_github_664()
 	{
-		var path = "unit/regression/github_664.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x={1};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_664.mzn",
+			solver: "gecode",
+			solutions: ["""x={1};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_666.mzn")]
 	public async Task test_solve_unit_regression_github_666()
 	{
-		var path = "unit/regression/github_666.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-G std",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_666.mzn",
+			solver: "gecode",
+			args: ["-G std"],
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/github_667.mzn")]
@@ -4395,104 +2937,66 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_github_667(string solver)
 	{
-		var path = "unit/regression/github_667.mzn";
-		var solutions = new List<string> {
-			"""arr=[false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_667.mzn",
+			solver: solver,
+			solutions: ["""arr=[false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_668.mzn")]
 	public async Task test_solve_unit_regression_github_668()
 	{
-		var path = "unit/regression/github_668.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=<>;arr=[false];""",
-			"""x=<>;arr=[true];""",
-			"""x=1;arr=[false];""",
-			"""x=1;arr=[true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_668.mzn",
+			solver: "gecode",
+			solutions: ["""x=<>;arr=[false];""","""x=<>;arr=[true];""","""x=1;arr=[false];""","""x=1;arr=[true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_669.mzn")]
 	public async Task test_solve_unit_regression_github_669()
 	{
-		var path = "unit/regression/github_669.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""v=<>;""",
-			"""v=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_669.mzn",
+			solver: "gecode",
+			solutions: ["""v=<>;""","""v=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_670.mzn")]
 	public async Task test_solve_unit_regression_github_670()
 	{
-		var path = "unit/regression/github_670.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_670.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_671.mzn")]
 	public async Task test_solve_unit_regression_github_671()
 	{
-		var path = "unit/regression/github_671.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""arr=[true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_671.mzn",
+			solver: "gecode",
+			solutions: ["""arr=[true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_673.mzn")]
 	public async Task test_solve_unit_regression_github_673()
 	{
-		var path = "unit/regression/github_673.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=[X, <>];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_673.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=[X, <>];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/github_674.mzn")]
@@ -4501,211 +3005,134 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_regression_github_674(string solver)
 	{
-		var path = "unit/regression/github_674.mzn";
-		var solutions = new List<string> {
-			"""arr=[true,false];ns=[false,false,false,false,false,false,false,false,false,true,false];es=[false,false,false,false,false,false,false,false,false,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_674.mzn",
+			solver: solver,
+			solutions: ["""arr=[true,false];ns=[false,false,false,false,false,false,false,false,false,true,false];es=[false,false,false,false,false,false,false,false,false,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_675a.mzn")]
 	public async Task test_solve_unit_regression_github_675a()
 	{
-		var path = "unit/regression/github_675a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""t=[false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_675a.mzn",
+			solver: "gecode",
+			solutions: ["""t=[false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_675b.mzn")]
 	public async Task test_solve_unit_regression_github_675b()
 	{
-		var path = "unit/regression/github_675b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"--keep-paths",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_675b.mzn",
+			solver: "gecode",
+			args: ["--keep-paths"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_681.mzn")]
 	public async Task test_solve_unit_regression_github_681()
 	{
-		var path = "unit/regression/github_681.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""arr=[true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_681.mzn",
+			solver: "gecode",
+			solutions: ["""arr=[true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_683.mzn")]
 	public async Task test_solve_unit_regression_github_683()
 	{
-		var path = "unit/regression/github_683.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""vars=[2,1];c=1;""",
-			"""vars=[1,2];c=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_683.mzn",
+			solver: "gecode",
+			solutions: ["""vars=[2,1];c=1;""","""vars=[1,2];c=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_685.mzn")]
 	public async Task test_solve_unit_regression_github_685()
 	{
-		var path = "unit/regression/github_685.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[false,true];y=[true,false];""",
-			"""x=[true,false];y=[false,true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_685.mzn",
+			solver: "gecode",
+			solutions: ["""x=[false,true];y=[true,false];""","""x=[true,false];y=[false,true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_687.mzn")]
 	public async Task test_solve_unit_regression_github_687()
 	{
-		var path = "unit/regression/github_687.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""r=(x:0,);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_687.mzn",
+			solver: "gecode",
+			solutions: ["""r=(x:0,);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_691.mzn")]
 	public async Task test_solve_unit_regression_github_691()
 	{
-		var path = "unit/regression/github_691.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=-1;c=-2;""",
-			"""a=0;c=0;""",
-			"""a=1;c=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_691.mzn",
+			solver: "gecode",
+			solutions: ["""a=-1;c=-2;""","""a=0;c=0;""","""a=1;c=2;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_693_part1.mzn")]
 	public async Task test_solve_unit_regression_github_693_part1()
 	{
-		var path = "unit/regression/github_693_part1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""c=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_693_part1.mzn",
+			solver: "gecode",
+			solutions: ["""c=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_693_part2.mzn")]
 	public async Task test_solve_unit_regression_github_693_part2()
 	{
-		var path = "unit/regression/github_693_part2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[{},{2},{1},1..2];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_693_part2.mzn",
+			solver: "gecode",
+			solutions: ["""x=[{},{2},{1},1..2];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_695.mzn")]
 	public async Task test_solve_unit_regression_github_695()
 	{
-		var path = "unit/regression/github_695.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=-3;y=-3;idx=0;val=-3;p=true;""",
-			"""x=-3;y=-3;idx=1;val=-3;p=true;""",
-			"""x=-3;y=-3;idx=2;val=-3;p=false;""",
-			"""x=-3;y=-3;idx=2;val=-3;p=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_695.mzn",
+			solver: "gecode",
+			solutions: ["""x=-3;y=-3;idx=0;val=-3;p=true;""","""x=-3;y=-3;idx=1;val=-3;p=true;""","""x=-3;y=-3;idx=2;val=-3;p=false;""","""x=-3;y=-3;idx=2;val=-3;p=true;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_700.mzn")]
 	public async Task test_solve_unit_regression_github_700()
 	{
-		var path = "unit/regression/github_700.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""c={1};d=1..2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_700.mzn",
+			solver: "gecode",
+			solutions: ["""c={1};d=1..2;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/github_700_bad_sol.mzn")]
@@ -4713,763 +3140,485 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_github_700_bad_sol(string solver)
 	{
-		var path = "unit/regression/github_700_bad_sol.mzn";
-		var solutions = new List<string> {
-			"""c={1};d={};""",
-			"""c={};d={1};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_700_bad_sol.mzn",
+			solver: solver,
+			solutions: ["""c={1};d={};""","""c={};d={1};"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_716.mzn")]
 	public async Task test_solve_unit_regression_github_716()
 	{
-		var path = "unit/regression/github_716.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""BV9=false;BV8=true;BV7=false;BV4=true;""",
-			"""BV9=true;BV8=true;BV7=false;BV4=true;""",
-			"""BV9=false;BV8=false;BV7=true;BV4=true;""",
-			"""BV9=true;BV8=false;BV7=true;BV4=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_716.mzn",
+			solver: "gecode",
+			solutions: ["""BV9=false;BV8=true;BV7=false;BV4=true;""","""BV9=true;BV8=true;BV7=false;BV4=true;""","""BV9=false;BV8=false;BV7=true;BV4=true;""","""BV9=true;BV8=false;BV7=true;BV4=true;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_719.mzn")]
 	public async Task test_solve_unit_regression_github_719()
 	{
-		var path = "unit/regression/github_719.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""foo=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_719.mzn",
+			solver: "gecode",
+			solutions: ["""foo=1;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_726.mzn")]
 	public async Task test_solve_unit_regression_github_726()
 	{
-		var path = "unit/regression/github_726.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_726.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_728.mzn")]
 	public async Task test_solve_unit_regression_github_728()
 	{
-		var path = "unit/regression/github_728.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""wanted={1};""",
-			"""wanted={4};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_728.mzn",
+			solver: "gecode",
+			solutions: ["""wanted={1};""","""wanted={4};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_732.mzn")]
 	public async Task test_solve_unit_regression_github_732()
 	{
-		var path = "unit/regression/github_732.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""sts=[(x:0,),(x:1,)];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_732.mzn",
+			solver: "gecode",
+			solutions: ["""sts=[(x:0,),(x:1,)];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_747.mzn")]
 	public async Task test_solve_unit_regression_github_747()
 	{
-		var path = "unit/regression/github_747.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[<>,<>];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_747.mzn",
+			solver: "gecode",
+			solutions: ["""x=[<>,<>];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_748.mzn")]
 	public async Task test_solve_unit_regression_github_748()
 	{
-		var path = "unit/regression/github_748.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[true,false,false];y=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_748.mzn",
+			solver: "gecode",
+			solutions: ["""x=[true,false,false];y=true;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_748.mzn")]
 	public async Task test_solve_unit_regression_github_748_2()
 	{
-		var path = "unit/regression/github_748.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[true,false,false];y=true;""",
-			};
-		var args = new List<string>{
-			"-O0",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_748.mzn",
+			solver: "gecode",
+			solutions: ["""x=[true,false,false];y=true;"""],
+			args: ["-O0"],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_749.mzn")]
 	public async Task test_solve_unit_regression_github_749()
 	{
-		var path = "unit/regression/github_749.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[true,false,false];y=false;c=2;""",
-			"""x=[false,false,false];y=false;c=3;""",
-			"""x=[true,true,false];y=false;c=1;""",
-			"""x=[false,true,false];y=false;c=2;""",
-			"""x=[true,false,true];y=false;c=1;""",
-			"""x=[false,true,true];y=false;c=1;""",
-			"""x=[false,false,true];y=false;c=2;""",
-			"""x=[true,false,false];y=true;c=1;""",
-			"""x=[false,true,false];y=true;c=1;""",
-			"""x=[true,true,false];y=true;c=2;""",
-			"""x=[false,false,true];y=true;c=1;""",
-			"""x=[true,false,true];y=true;c=2;""",
-			"""x=[false,true,true];y=true;c=2;""",
-			"""x=[true,true,true];y=true;c=3;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_749.mzn",
+			solver: "gecode",
+			solutions: ["""x=[true,false,false];y=false;c=2;""","""x=[false,false,false];y=false;c=3;""","""x=[true,true,false];y=false;c=1;""","""x=[false,true,false];y=false;c=2;""","""x=[true,false,true];y=false;c=1;""","""x=[false,true,true];y=false;c=1;""","""x=[false,false,true];y=false;c=2;""","""x=[true,false,false];y=true;c=1;""","""x=[false,true,false];y=true;c=1;""","""x=[true,true,false];y=true;c=2;""","""x=[false,false,true];y=true;c=1;""","""x=[true,false,true];y=true;c=2;""","""x=[false,true,true];y=true;c=2;""","""x=[true,true,true];y=true;c=3;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_752.mzn")]
 	public async Task test_solve_unit_regression_github_752()
 	{
-		var path = "unit/regression/github_752.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_752.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_754.mzn")]
 	public async Task test_solve_unit_regression_github_754()
 	{
-		var path = "unit/regression/github_754.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=false;b=false;c=true;d=true;""",
-			"""a=false;b=false;c=false;d=true;""",
-			"""a=false;b=false;c=true;d=false;""",
-			"""a=false;b=false;c=false;d=false;""",
-			"""a=true;b=false;c=false;d=false;""",
-			"""a=false;b=true;c=false;d=false;""",
-			"""a=true;b=true;c=false;d=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_754.mzn",
+			solver: "gecode",
+			solutions: ["""a=false;b=false;c=true;d=true;""","""a=false;b=false;c=false;d=true;""","""a=false;b=false;c=true;d=false;""","""a=false;b=false;c=false;d=false;""","""a=true;b=false;c=false;d=false;""","""a=false;b=true;c=false;d=false;""","""a=true;b=true;c=false;d=false;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_758.mzn")]
 	public async Task test_solve_unit_regression_github_758()
 	{
-		var path = "unit/regression/github_758.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_758.mzn",
+			solver: "gecode",
+			solutions: ["""x=[true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_758.mzn")]
 	public async Task test_solve_unit_regression_github_758_2()
 	{
-		var path = "unit/regression/github_758.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[true];""",
-			};
-		var args = new List<string>{
-			"-O0",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_758.mzn",
+			solver: "gecode",
+			solutions: ["""x=[true];"""],
+			args: ["-O0"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_760.mzn")]
 	public async Task test_solve_unit_regression_github_760()
 	{
-		var path = "unit/regression/github_760.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			"""x=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_760.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;""","""x=2;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_761.mzn")]
 	public async Task test_solve_unit_regression_github_761()
 	{
-		var path = "unit/regression/github_761.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_761.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_762.mzn")]
 	public async Task test_solve_unit_regression_github_762()
 	{
-		var path = "unit/regression/github_762.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""x=[true];""",
-			"""x=[false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_762.mzn",
+			solver: "chuffed",
+			solutions: ["""x=[true];""","""x=[false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_765.mzn")]
 	public async Task test_solve_unit_regression_github_765()
 	{
-		var path = "unit/regression/github_765.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_765.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_766.mzn")]
 	public async Task test_solve_unit_regression_github_766()
 	{
-		var path = "unit/regression/github_766.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=-2;b=-2;""",
-			"""a=-2;b=2;""",
-			"""a=2;b=-2;""",
-			"""a=2;b=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_766.mzn",
+			solver: "gecode",
+			solutions: ["""a=-2;b=-2;""","""a=-2;b=2;""","""a=2;b=-2;""","""a=2;b=2;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_771.mzn")]
 	public async Task test_solve_unit_regression_github_771()
 	{
-		var path = "unit/regression/github_771.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_771.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_776.mzn")]
 	public async Task test_solve_unit_regression_github_776()
 	{
-		var path = "unit/regression/github_776.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=A(1);""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/github_776.dzn\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_776.mzn",
+			solver: "gecode",
+			solutions: ["""x=A(1);"""],
+			args: ["--data \"unit/regression/github_776.dzn\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_778.mzn")]
 	public async Task test_solve_unit_regression_github_778()
 	{
-		var path = "unit/regression/github_778.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_778.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_783.mzn")]
 	public async Task test_solve_unit_regression_github_783()
 	{
-		var path = "unit/regression/github_783.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>{
-			"-O2",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_783.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			args: ["-O2"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_785.mzn")]
 	public async Task test_solve_unit_regression_github_785()
 	{
-		var path = "unit/regression/github_785.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-G std",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_785.mzn",
+			solver: "gecode",
+			args: ["-G std"],
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_792.mzn")]
 	public async Task test_solve_unit_regression_github_792()
 	{
-		var path = "unit/regression/github_792.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""y=true;""",
-			"""y=false;""",
-			};
-		var args = new List<string>{
-			"-G std",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_792.mzn",
+			solver: "gecode",
+			solutions: ["""y=true;""","""y=false;"""],
+			args: ["-G std"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_793.mzn")]
 	public async Task test_solve_unit_regression_github_793()
 	{
-		var path = "unit/regression/github_793.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=[{"e":"A"}] {"v": [{"e":"A"}]};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_793.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=[{"e":"A"}] {"v": [{"e":"A"}]};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_798.mzn")]
 	public async Task test_solve_unit_regression_github_798()
 	{
-		var path = "unit/regression/github_798.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-G gecode_presolver",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_798.mzn",
+			solver: "gecode",
+			args: ["-G gecode_presolver"],
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_802.mzn")]
 	public async Task test_solve_unit_regression_github_802()
 	{
-		var path = "unit/regression/github_802.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""i=1;x=5;""",
-			"""i=2;x=10;""",
-			};
-		var args = new List<string>{
-			"--keep-paths",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_802.mzn",
+			solver: "gecode",
+			solutions: ["""i=1;x=5;""","""i=2;x=10;"""],
+			args: ["--keep-paths"],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_803.mzn")]
 	public async Task test_solve_unit_regression_github_803()
 	{
-		var path = "unit/regression/github_803.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""BV0=false;IV0=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_803.mzn",
+			solver: "gecode",
+			solutions: ["""BV0=false;IV0=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_805.mzn")]
 	public async Task test_solve_unit_regression_github_805()
 	{
-		var path = "unit/regression/github_805.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_805.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_806.mzn")]
 	public async Task test_solve_unit_regression_github_806()
 	{
-		var path = "unit/regression/github_806.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_806.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_807.mzn")]
 	public async Task test_solve_unit_regression_github_807()
 	{
-		var path = "unit/regression/github_807.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""bar=[1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_807.mzn",
+			solver: "gecode",
+			solutions: ["""bar=[1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_809.mzn")]
 	public async Task test_solve_unit_regression_github_809()
 	{
-		var path = "unit/regression/github_809.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""bar=<>;biz={B};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_809.mzn",
+			solver: "gecode",
+			solutions: ["""bar=<>;biz={B};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_810a.mzn")]
 	public async Task test_solve_unit_regression_github_810a()
 	{
-		var path = "unit/regression/github_810a.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_810a.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_810b.mzn")]
 	public async Task test_solve_unit_regression_github_810b()
 	{
-		var path = "unit/regression/github_810b.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_810b.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/github_813.mzn")]
 	public async Task test_solve_unit_regression_github_813()
 	{
-		var path = "unit/regression/github_813.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=true;b=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/github_813.mzn",
+			solver: "gecode",
+			solutions: ["""a=true;b=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/if_then_else_absent.mzn")]
 	public async Task test_solve_unit_regression_if_then_else_absent()
 	{
-		var path = "unit/regression/if_then_else_absent.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[<>];b=true;""",
-			"""x=[1];b=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/if_then_else_absent.mzn",
+			solver: "gecode",
+			solutions: ["""x=[<>];b=true;""","""x=[1];b=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/int2float_subst.mzn")]
 	public async Task test_solve_unit_regression_int2float_subst()
 	{
-		var path = "unit/regression/int2float_subst.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x_int=1;y_int=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/int2float_subst.mzn",
+			solver: "gecode",
+			solutions: ["""x_int=1;y_int=2;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/in_array_eval_error.mzn")]
 	public async Task test_solve_unit_regression_in_array_eval_error()
 	{
-		var path = "unit/regression/in_array_eval_error.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[1];y=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/in_array_eval_error.mzn",
+			solver: "gecode",
+			solutions: ["""x=[1];y=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/let_domain_from_generator.mzn")]
 	public async Task test_solve_unit_regression_let_domain_from_generator()
 	{
-		var path = "unit/regression/let_domain_from_generator.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/let_domain_from_generator.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/makepar_output.mzn")]
 	public async Task test_solve_unit_regression_makepar_output()
 	{
-		var path = "unit/regression/makepar_output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=1..1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/makepar_output.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=1..1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/multi_goal_hierarchy_error.mzn")]
 	public async Task test_solve_unit_regression_multi_goal_hierarchy_error()
 	{
-		var path = "unit/regression/multi_goal_hierarchy_error.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/multi_goal_hierarchy_error.mzn",
+			solver: "coin-bc",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/non_pos_pow.mzn")]
 	public async Task test_solve_unit_regression_non_pos_pow()
 	{
-		var path = "unit/regression/non_pos_pow.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/non_pos_pow.mzn",
+			solver: "gecode",
+			solutions: ["""a=2;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/nosets_set_search.mzn")]
@@ -5477,34 +3626,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_nosets_set_search(string solver)
 	{
-		var path = "unit/regression/nosets_set_search.mzn";
-		var solutions = new List<string> {
-			"""x=1..3;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/nosets_set_search.mzn",
+			solver: solver,
+			solutions: ["""x=1..3;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/opt_minmax.mzn")]
 	public async Task test_solve_unit_regression_opt_minmax()
 	{
-		var path = "unit/regression/opt_minmax.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""xmax=10;xmin=1;ymax=10.0;ymin=1.0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/opt_minmax.mzn",
+			solver: "gecode",
+			solutions: ["""xmax=10;xmin=1;ymax=10.0;ymin=1.0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/opt_noncontiguous_domain.mzn")]
@@ -5512,118 +3650,79 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_opt_noncontiguous_domain(string solver)
 	{
-		var path = "unit/regression/opt_noncontiguous_domain.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/opt_noncontiguous_domain.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/output_2d_array_enum.mzn")]
 	public async Task test_solve_unit_regression_output_2d_array_enum()
 	{
-		var path = "unit/regression/output_2d_array_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/output_2d_array_enum.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/output_fn_toplevel_var.mzn")]
 	public async Task test_solve_unit_regression_output_fn_toplevel_var()
 	{
-		var path = "unit/regression/output_fn_toplevel_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=[1][true];""",
-			"""_output_item=[2][false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/output_fn_toplevel_var.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=[1][true];""","""_output_item=[2][false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/parse_assignments.mzn")]
 	public async Task test_solve_unit_regression_parse_assignments()
 	{
-		var path = "unit/regression/parse_assignments.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_checker=Ok;""",
-			};
-		var args = new List<string>{
-			"--data \"unit/regression/parse_assignments.mzc.mzn\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/parse_assignments.mzn",
+			solver: "gecode",
+			solutions: ["""_checker=Ok;"""],
+			args: ["--data \"unit/regression/parse_assignments.mzc.mzn\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/par_opt_dom.mzn")]
 	public async Task test_solve_unit_regression_par_opt_dom()
 	{
-		var path = "unit/regression/par_opt_dom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/par_opt_dom.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/polymorphic_var_and_par.mzn")]
 	public async Task test_solve_unit_regression_polymorphic_var_and_par()
 	{
-		var path = "unit/regression/polymorphic_var_and_par.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/polymorphic_var_and_par.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/pow_undefined.mzn")]
 	public async Task test_solve_unit_regression_pow_undefined()
 	{
-		var path = "unit/regression/pow_undefined.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/pow_undefined.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/pred_param_r7550.mzn")]
@@ -5631,34 +3730,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_pred_param_r7550(string solver)
 	{
-		var path = "unit/regression/pred_param_r7550.mzn";
-		var solutions = new List<string> {
-			"""end=53;objective=53;s=[0,0,0,4,7,7,6,8,12,8,6,4,14,19,12,12,13,18,8,11,14,18,19,4,16,10,20,9,14,6,24,26,21,16,9,21,24,28,31,22,24,11,25,16,30,26,38,25,25,30,33,36,39,34,33,47,25,44,50,38];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/pred_param_r7550.mzn",
+			solver: solver,
+			solutions: ["""end=53;objective=53;s=[0,0,0,4,7,7,6,8,12,8,6,4,14,19,12,12,13,18,8,11,14,18,19,4,16,10,20,9,14,6,24,26,21,16,9,21,24,28,31,22,24,11,25,16,30,26,38,25,25,30,33,36,39,34,33,47,25,44,50,38];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/slice_enum_indexset.mzn")]
 	public async Task test_solve_unit_regression_slice_enum_indexset()
 	{
-		var path = "unit/regression/slice_enum_indexset.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=ok;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/slice_enum_indexset.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=ok;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/subsets_100.mzn")]
@@ -5666,38 +3754,24 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_subsets_100(string solver)
 	{
-		var path = "unit/regression/subsets_100.mzn";
-		var solutions = new List<string> {
-			"""s=1..9;t={45};s_total=45;t_total=45;""",
-			"""s={100};t={49,51};s_total=100;t_total=100;""",
-			"""s={1,2,40,56,94};t={3,93,97};s_total=193;t_total=193;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/subsets_100.mzn",
+			solver: solver,
+			solutions: ["""s=1..9;t={45};s_total=45;t_total=45;""","""s={100};t={49,51};s_total=100;t_total=100;""","""s={1,2,40,56,94};t={3,93,97};s_total=193;t_total=193;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_annotation_on_exists.mzn")]
 	public async Task test_solve_unit_regression_test_annotation_on_exists()
 	{
-		var path = "unit/regression/test_annotation_on_exists.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=true;c=true;d=false;""",
-			"""b=true;c=false;d=true;""",
-			"""b=true;c=true;d=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_annotation_on_exists.mzn",
+			solver: "gecode",
+			solutions: ["""b=true;c=true;d=false;""","""b=true;c=false;d=true;""","""b=true;c=true;d=true;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/test_bug359.mzn")]
@@ -5705,291 +3779,191 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_test_bug359(string solver)
 	{
-		var path = "unit/regression/test_bug359.mzn";
-		var solutions = new List<string> {
-			"""p1=1;p2=1;p3=0;p4=0;""",
-			"""p1=1;p2=1;p3=0;p4=1;""",
-			"""p1=1;p2=1;p3=1;p4=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug359.mzn",
+			solver: solver,
+			solutions: ["""p1=1;p2=1;p3=0;p4=0;""","""p1=1;p2=1;p3=0;p4=1;""","""p1=1;p2=1;p3=1;p4=1;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug54.mzn")]
 	public async Task test_solve_unit_regression_test_bug54()
 	{
-		var path = "unit/regression/test_bug54.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=7;y=1;z=7;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug54.mzn",
+			solver: "gecode",
+			solutions: ["""x=7;y=1;z=7;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug54.mzn")]
 	public async Task test_solve_unit_regression_test_bug54_2()
 	{
-		var path = "unit/regression/test_bug54.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""x=7;y=1;z=7;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug54.mzn",
+			solver: "chuffed",
+			solutions: ["""x=7;y=1;z=7;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug72.mzn")]
 	public async Task test_solve_unit_regression_test_bug72()
 	{
-		var path = "unit/regression/test_bug72.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x={1};b=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug72.mzn",
+			solver: "gecode",
+			solutions: ["""x={1};b=true;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug72.mzn")]
 	public async Task test_solve_unit_regression_test_bug72_2()
 	{
-		var path = "unit/regression/test_bug72.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""x={1};b=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug72.mzn",
+			solver: "chuffed",
+			solutions: ["""x={1};b=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_476.mzn")]
 	public async Task test_solve_unit_regression_test_bug_476()
 	{
-		var path = "unit/regression/test_bug_476.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=1;c=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_476.mzn",
+			solver: "gecode",
+			solutions: ["""b=1;c=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_493.mzn")]
 	public async Task test_solve_unit_regression_test_bug_493()
 	{
-		var path = "unit/regression/test_bug_493.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item={};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_493.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item={};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_494.mzn")]
 	public async Task test_solve_unit_regression_test_bug_494()
 	{
-		var path = "unit/regression/test_bug_494.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x1=1;x2=[0];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_494.mzn",
+			solver: "gecode",
+			solutions: ["""x1=1;x2=[0];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_520.mzn")]
 	public async Task test_solve_unit_regression_test_bug_520()
 	{
-		var path = "unit/regression/test_bug_520.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item={a}"b";""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_520.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item={a}"b";"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_521.mzn")]
 	public async Task test_solve_unit_regression_test_bug_521()
 	{
-		var path = "unit/regression/test_bug_521.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_521.mzn",
+			solver: "gecode",
+			solutions: ["""x=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_527.mzn")]
 	public async Task test_solve_unit_regression_test_bug_527()
 	{
-		var path = "unit/regression/test_bug_527.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_527.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_529.mzn")]
 	public async Task test_solve_unit_regression_test_bug_529()
 	{
-		var path = "unit/regression/test_bug_529.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=ok;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_529.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=ok;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_588.mzn")]
 	public async Task test_solve_unit_regression_test_bug_588()
 	{
-		var path = "unit/regression/test_bug_588.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=2;y=1;z=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_588.mzn",
+			solver: "gecode",
+			solutions: ["""x=2;y=1;z=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_637.mzn")]
 	public async Task test_solve_unit_regression_test_bug_637()
 	{
-		var path = "unit/regression/test_bug_637.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_637.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_array_sum_bounds.mzn")]
 	public async Task test_solve_unit_regression_test_bug_array_sum_bounds()
 	{
-		var path = "unit/regression/test_bug_array_sum_bounds.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""C=[0,0,0];y=0;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_array_sum_bounds.mzn",
+			solver: "gecode",
+			solutions: ["""C=[0,0,0];y=0;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_ite_array_eq.mzn")]
 	public async Task test_solve_unit_regression_test_bug_ite_array_eq()
 	{
-		var path = "unit/regression/test_bug_ite_array_eq.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=true;x=[false,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_ite_array_eq.mzn",
+			solver: "gecode",
+			solutions: ["""b=true;x=[false,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/test_bug_pred_arg.mzn")]
 	public async Task test_solve_unit_regression_test_bug_pred_arg()
 	{
-		var path = "unit/regression/test_bug_pred_arg.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=false;x=1;""",
-			"""b=true;x=1;""",
-			"""b=false;x=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_bug_pred_arg.mzn",
+			solver: "gecode",
+			solutions: ["""b=false;x=1;""","""b=true;x=1;""","""b=false;x=2;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/test_parout.mzn")]
@@ -5997,55 +3971,34 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_test_parout(string solver)
 	{
-		var path = "unit/regression/test_parout.mzn";
-		var solutions = new List<string> {
-			"""x=10;y=-2147483646;""",
-			"""x=10;y=11;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/test_parout.mzn",
+			solver: solver,
+			solutions: ["""x=10;y=-2147483646;""","""x=10;y=11;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/ts_bug.mzn")]
 	public async Task test_solve_unit_regression_ts_bug()
 	{
-		var path = "unit/regression/ts_bug.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},{1,2,3,4},{1,2,3,4},{1,2,3,4}];aft=[{1,2,3,4},{1,2,3,4},{1,3,4},{1,3,4},{1,3},{}];a=[{1,2},{2,3},{3,4},{2,4},{1,3},{1,4}];""",
-			"""cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,3},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];""",
-			"""cost=48;s=[5,3,2,1,4,6];dur=[{1,3},{1,3,4},{1,2,4},{1,2,4},{1,4},{1,4}];bef=[{},{1,3},{1,3,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,2,4},{1,2,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];""",
-			"""cost=48;s=[4,1,2,3,5,6];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,4},{1,4}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/ts_bug.mzn",
+			solver: "gecode",
+			solutions: ["""cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},{1,2,3,4},{1,2,3,4},{1,2,3,4}];aft=[{1,2,3,4},{1,2,3,4},{1,3,4},{1,3,4},{1,3},{}];a=[{1,2},{2,3},{3,4},{2,4},{1,3},{1,4}];""","""cost=48;s=[4,1,2,3,6,5];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,3},{1,3}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,3},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];""","""cost=48;s=[5,3,2,1,4,6];dur=[{1,3},{1,3,4},{1,2,4},{1,2,4},{1,4},{1,4}];bef=[{},{1,3},{1,3,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,2,4},{1,2,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];""","""cost=48;s=[4,1,2,3,5,6];dur=[{2,4},{1,2,4},{1,3,4},{1,3,4},{1,4},{1,4}];bef=[{},{2,4},{1,2,4},1..4,1..4,1..4];aft=[1..4,1..4,{1,3,4},{1,3,4},{1,4},{}];a=[1..2,2..3,3..4,{2,4},{1,3},{1,4}];"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/regression/var_bool_comp.mzn")]
 	public async Task test_solve_unit_regression_var_bool_comp()
 	{
-		var path = "unit/regression/var_bool_comp.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[2,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/var_bool_comp.mzn",
+			solver: "gecode",
+			solutions: ["""x=[2,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/var_opt_unconstrained.mzn")]
@@ -6053,18 +4006,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_regression_var_opt_unconstrained(string solver)
 	{
-		var path = "unit/regression/var_opt_unconstrained.mzn";
-		var solutions = new List<string> {
-			"""x=<>;""",
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/var_opt_unconstrained.mzn",
+			solver: solver,
+			solutions: ["""x=<>;""","""x=1;"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/regression/var_self_assign_bug.mzn")]
@@ -6073,19 +4021,12 @@ public class ClientTests : ClientTest
 	[InlineData("coin-bc")]
 	public async Task test_solve_unit_regression_var_self_assign_bug(string solver)
 	{
-		var path = "unit/regression/var_self_assign_bug.mzn";
-		var solutions = new List<string> {
-			"""partitions=[{1,2,3},{1,2,3},{1,2,3}];""",
-			"""partitions=[1..3,1..3,1..3];""",
-			"""partitions=[{},{},{}];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/regression/var_self_assign_bug.mzn",
+			solver: solver,
+			solutions: ["""partitions=[{1,2,3},{1,2,3},{1,2,3}];""","""partitions=[1..3,1..3,1..3];""","""partitions=[{},{},{}];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/int_choice_1.mzn")]
@@ -6093,17 +4034,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_int_choice_1(string solver)
 	{
-		var path = "unit/search/int_choice_1.mzn";
-		var solutions = new List<string> {
-			"""q=[1,5,8,6,3,7,2,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/int_choice_1.mzn",
+			solver: solver,
+			solutions: ["""q=[1,5,8,6,3,7,2,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/int_choice_2.mzn")]
@@ -6111,17 +4047,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_int_choice_2(string solver)
 	{
-		var path = "unit/search/int_choice_2.mzn";
-		var solutions = new List<string> {
-			"""q=[8,4,1,3,6,2,7,5];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/int_choice_2.mzn",
+			solver: solver,
+			solutions: ["""q=[8,4,1,3,6,2,7,5];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/int_choice_6.mzn")]
@@ -6129,17 +4060,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_int_choice_6(string solver)
 	{
-		var path = "unit/search/int_choice_6.mzn";
-		var solutions = new List<string> {
-			"""q=[1,5,8,6,3,7,2,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/int_choice_6.mzn",
+			solver: solver,
+			solutions: ["""q=[1,5,8,6,3,7,2,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/int_var_select_1.mzn")]
@@ -6147,17 +4073,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_int_var_select_1(string solver)
 	{
-		var path = "unit/search/int_var_select_1.mzn";
-		var solutions = new List<string> {
-			"""q=[1,5,8,6,3,7,2,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/int_var_select_1.mzn",
+			solver: solver,
+			solutions: ["""q=[1,5,8,6,3,7,2,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/int_var_select_2.mzn")]
@@ -6165,35 +4086,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_int_var_select_2(string solver)
 	{
-		var path = "unit/search/int_var_select_2.mzn";
-		var solutions = new List<string> {
-			"""q=[1,5,8,6,3,7,2,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/int_var_select_2.mzn",
+			solver: solver,
+			solutions: ["""q=[1,5,8,6,3,7,2,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/search/int_var_select_3.mzn")]
 	public async Task test_solve_unit_search_int_var_select_3()
 	{
-		var path = "unit/search/int_var_select_3.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""q=[1,7,4,6,8,2,5,3];""",
-			"""q=[1,7,5,8,2,4,6,3];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/int_var_select_3.mzn",
+			solver: "chuffed",
+			solutions: ["""q=[1,7,4,6,8,2,5,3];""","""q=[1,7,5,8,2,4,6,3];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/int_var_select_4.mzn")]
@@ -6201,18 +4110,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_int_var_select_4(string solver)
 	{
-		var path = "unit/search/int_var_select_4.mzn";
-		var solutions = new List<string> {
-			"""q=[1,7,4,6,8,2,5,3];""",
-			"""q=[1,7,5,8,2,4,6,3];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/int_var_select_4.mzn",
+			solver: solver,
+			solutions: ["""q=[1,7,4,6,8,2,5,3];""","""q=[1,7,5,8,2,4,6,3];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/int_var_select_6.mzn")]
@@ -6220,17 +4123,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_int_var_select_6(string solver)
 	{
-		var path = "unit/search/int_var_select_6.mzn";
-		var solutions = new List<string> {
-			"""q=[1,5,8,6,3,7,2,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/int_var_select_6.mzn",
+			solver: solver,
+			solutions: ["""q=[1,5,8,6,3,7,2,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/test-ff1.mzn")]
@@ -6238,17 +4136,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_test_ff1(string solver)
 	{
-		var path = "unit/search/test-ff1.mzn";
-		var solutions = new List<string> {
-			"""x=3;y=8;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/test-ff1.mzn",
+			solver: solver,
+			solutions: ["""x=3;y=8;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/test-ff2.mzn")]
@@ -6256,17 +4149,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_test_ff2(string solver)
 	{
-		var path = "unit/search/test-ff2.mzn";
-		var solutions = new List<string> {
-			"""x=5;y=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/test-ff2.mzn",
+			solver: solver,
+			solutions: ["""x=5;y=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/test-ff3.mzn")]
@@ -6274,51 +4162,34 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_test_ff3(string solver)
 	{
-		var path = "unit/search/test-ff3.mzn";
-		var solutions = new List<string> {
-			"""x=5;y=1;z=1;w=3;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/test-ff3.mzn",
+			solver: solver,
+			solutions: ["""x=5;y=1;z=1;w=3;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/search/test-large1.mzn")]
 	public async Task test_solve_unit_search_test_large1()
 	{
-		var path = "unit/search/test-large1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=5;y=8;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/test-large1.mzn",
+			solver: "gecode",
+			solutions: ["""x=5;y=8;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/search/test-large1.mzn")]
 	public async Task test_solve_unit_search_test_large1_2()
 	{
-		var path = "unit/search/test-large1.mzn";
-		var solver = "chuffed";
-		var solutions = new List<string> {
-			"""x=6;y=7;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/test-large1.mzn",
+			solver: "chuffed",
+			solutions: ["""x=6;y=7;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/test-med1.mzn")]
@@ -6326,17 +4197,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_test_med1(string solver)
 	{
-		var path = "unit/search/test-med1.mzn";
-		var solutions = new List<string> {
-			"""x=5;y=6;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/test-med1.mzn",
+			solver: solver,
+			solutions: ["""x=5;y=6;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/search/test-small1.mzn")]
@@ -6344,991 +4210,648 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_search_test_small1(string solver)
 	{
-		var path = "unit/search/test-small1.mzn";
-		var solutions = new List<string> {
-			"""x=9;y=2;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/search/test-small1.mzn",
+			solver: solver,
+			solutions: ["""x=9;y=2;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/alias.mzn")]
 	public async Task test_solve_unit_types_alias()
 	{
-		var path = "unit/types/alias.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=3;y=[<>,1];tup=[2,true];tuptup=[2,true,2,true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/alias.mzn",
+			solver: "gecode",
+			solutions: ["""x=3;y=[<>,1];tup=[2,true];tuptup=[2,true,2,true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/alias_call.mzn")]
 	public async Task test_solve_unit_types_alias_call()
 	{
-		var path = "unit/types/alias_call.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/alias_call.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/alias_extern_dom.mzn")]
 	public async Task test_solve_unit_types_alias_extern_dom()
 	{
-		var path = "unit/types/alias_extern_dom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/alias_extern_dom.mzn",
+			solver: "gecode",
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/common_struct_bottom.mzn")]
 	public async Task test_solve_unit_types_common_struct_bottom()
 	{
-		var path = "unit/types/common_struct_bottom.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[1,];y=[(a:[(a:1,)],),(a:[],)];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/common_struct_bottom.mzn",
+			solver: "gecode",
+			solutions: ["""x=[1,];y=[(a:[(a:1,)],),(a:[],)];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/comprehension_type.mzn")]
 	public async Task test_solve_unit_types_comprehension_type()
 	{
-		var path = "unit/types/comprehension_type.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[A,A,A,A];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/comprehension_type.mzn",
+			solver: "gecode",
+			solutions: ["""x=[A,A,A,A];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/cv_comprehension.mzn")]
 	public async Task test_solve_unit_types_cv_comprehension()
 	{
-		var path = "unit/types/cv_comprehension.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/cv_comprehension.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/enum_decl.mzn")]
 	public async Task test_solve_unit_types_enum_decl()
 	{
-		var path = "unit/types/enum_decl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""__val__=;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/enum_decl.mzn",
+			solver: "gecode",
+			solutions: ["""__val__=;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/enum_refl.mzn")]
 	public async Task test_solve_unit_types_enum_refl()
 	{
-		var path = "unit/types/enum_refl.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x={};ubx={a,b,c};y=a;lby=a;uby=c;domy={a,b,c};""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/enum_refl.mzn",
+			solver: "gecode",
+			solutions: ["""x={};ubx={a,b,c};y=a;lby=a;uby=c;domy={a,b,c};"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/github_647.mzn")]
 	public async Task test_solve_unit_types_github_647()
 	{
-		var path = "unit/types/github_647.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/github_647.mzn",
+			solver: "gecode",
+			solutions: ["""b=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/if_then_else_struct.mzn")]
 	public async Task test_solve_unit_types_if_then_else_struct()
 	{
-		var path = "unit/types/if_then_else_struct.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""t=[<>,<>];b=false;u=[0,0];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/if_then_else_struct.mzn",
+			solver: "gecode",
+			solutions: ["""t=[<>,<>];b=false;u=[0,0];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/non_contig_enum.mzn")]
 	public async Task test_solve_unit_types_non_contig_enum()
 	{
-		var path = "unit/types/non_contig_enum.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=S(6);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/non_contig_enum.mzn",
+			solver: "gecode",
+			solutions: ["""x=S(6);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/opt_alias._int.mzn")]
 	public async Task test_solve_unit_types_opt_alias_int()
 	{
-		var path = "unit/types/opt_alias._int.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=<>;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/opt_alias._int.mzn",
+			solver: "gecode",
+			solutions: ["""x=<>;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/overload_inst_tuple_return.mzn")]
 	public async Task test_solve_unit_types_overload_inst_tuple_return()
 	{
-		var path = "unit/types/overload_inst_tuple_return.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/overload_inst_tuple_return.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/par_struct_tiid.mzn")]
 	public async Task test_solve_unit_types_par_struct_tiid()
 	{
-		var path = "unit/types/par_struct_tiid.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/par_struct_tiid.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/polymorphic_overloading.mzn")]
 	public async Task test_solve_unit_types_polymorphic_overloading()
 	{
-		var path = "unit/types/polymorphic_overloading.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=Ok;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/polymorphic_overloading.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=Ok;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_access_success.mzn")]
 	public async Task test_solve_unit_types_record_access_success()
 	{
-		var path = "unit/types/record_access_success.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=onetwo;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_access_success.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=onetwo;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_binop_par.mzn")]
 	public async Task test_solve_unit_types_record_binop_par()
 	{
-		var path = "unit/types/record_binop_par.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;merge1=(x:1,y:2.0,z:true,);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_binop_par.mzn",
+			solver: "gecode",
+			solutions: ["""eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;merge1=(x:1,y:2.0,z:true,);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_binop_var.mzn")]
 	public async Task test_solve_unit_types_record_binop_var()
 	{
-		var path = "unit/types/record_binop_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""eqA=(a:2,b:true,);nq=(a:3,b:true,);leA=(x:2,y:4,);lqA=(x:2,y:4,);arrin=(a:3,b:5.0,);merge1=(a:2,b:true,x:2,y:4,);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_binop_var.mzn",
+			solver: "gecode",
+			solutions: ["""eqA=(a:2,b:true,);nq=(a:3,b:true,);leA=(x:2,y:4,);lqA=(x:2,y:4,);arrin=(a:3,b:5.0,);merge1=(a:2,b:true,x:2,y:4,);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_comprehensions.mzn")]
 	public async Task test_solve_unit_types_record_comprehensions()
 	{
-		var path = "unit/types/record_comprehensions.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""simple=[(x:2,y:true,),(x:1,y:false,),(x:0,y:true,),(x:1,y:false,),(x:2,y:true,)];indexed=[(a:4,b:true,),(a:6,b:true,),(a:8,b:true,),(a:9,b:false,),(a:11,b:false,)];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_comprehensions.mzn",
+			solver: "gecode",
+			solutions: ["""simple=[(x:2,y:true,),(x:1,y:false,),(x:0,y:true,),(x:1,y:false,),(x:2,y:true,)];indexed=[(a:4,b:true,),(a:6,b:true,),(a:8,b:true,),(a:9,b:false,),(a:11,b:false,)];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_in_checker.mzn")]
 	public async Task test_solve_unit_types_record_in_checker()
 	{
-		var path = "unit/types/record_in_checker.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_checker={"x": 1};""",
-			};
-		var args = new List<string>{
-			"--data \"unit/types/record_in_checker.mzc.mzn\"",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_in_checker.mzn",
+			solver: "gecode",
+			solutions: ["""_checker={"x": 1};"""],
+			args: ["--data \"unit/types/record_in_checker.mzc.mzn\""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_nested.mzn")]
 	public async Task test_solve_unit_types_record_nested()
 	{
-		var path = "unit/types/record_nested.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_nested.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_output.mzn")]
 	public async Task test_solve_unit_types_record_output()
 	{
-		var path = "unit/types/record_output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=full var: (a: 0, b: true, c: 1.5)var array: [(a: 2, b: false), (a: 1, b: true)]nested: (inner: (left: 3, right: 4), outer: false)element: 3partial: (x: 10, y: true)data: (e: -3.2, f: false);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_output.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=full var: (a: 0, b: true, c: 1.5)var array: [(a: 2, b: false), (a: 1, b: true)]nested: (inner: (left: 3, right: 4), outer: false)element: 3partial: (x: 10, y: true)data: (e: -3.2, f: false);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_subtyping.mzn")]
 	public async Task test_solve_unit_types_record_subtyping()
 	{
-		var path = "unit/types/record_subtyping.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""single=(a:1,);double=(a:1.0,b:[1,2,3],);tupId=(x:1,y:0.0,);tupExpr=(a:-5.0,b:0,);arr1=[(a:5,b:1.0,),(a:1,b:-1.0,)];arr2=[(a:0,b:1,),(a:0,b:1,)];arrId=[(a:0.0,b:1.0,),(a:0.0,b:1.0,)];arrExpr=[(a:1.0,b:0.0,),(a:2.0,b:1.0,),(a:3.0,b:0.0,)];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_subtyping.mzn",
+			solver: "gecode",
+			solutions: ["""single=(a:1,);double=(a:1.0,b:[1,2,3],);tupId=(x:1,y:0.0,);tupExpr=(a:-5.0,b:0,);arr1=[(a:5,b:1.0,),(a:1,b:-1.0,)];arr2=[(a:0,b:1,),(a:0,b:1,)];arrId=[(a:0.0,b:1.0,),(a:0.0,b:1.0,)];arrExpr=[(a:1.0,b:0.0,),(a:2.0,b:1.0,),(a:3.0,b:0.0,)];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_var_element.mzn")]
 	public async Task test_solve_unit_types_record_var_element()
 	{
-		var path = "unit/types/record_var_element.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""idx=iE;selected=(a:6,b:(c:3,d:3,),);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_var_element.mzn",
+			solver: "gecode",
+			solutions: ["""idx=iE;selected=(a:6,b:(c:3,d:3,),);"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/record_var_ite.mzn")]
 	public async Task test_solve_unit_types_record_var_ite()
 	{
-		var path = "unit/types/record_var_ite.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""tups=[(x:12,y:false,),(x:10,y:true,),(x:11,y:false,)];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/record_var_ite.mzn",
+			solver: "gecode",
+			solutions: ["""tups=[(x:12,y:false,),(x:10,y:true,),(x:11,y:false,)];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/specialise_large_struct.mzn")]
 	public async Task test_solve_unit_types_specialise_large_struct()
 	{
-		var path = "unit/types/specialise_large_struct.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""t=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];u=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/specialise_large_struct.mzn",
+			solver: "gecode",
+			solutions: ["""t=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];u=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_array_coercion.mzn")]
 	public async Task test_solve_unit_types_struct_array_coercion()
 	{
-		var path = "unit/types/struct_array_coercion.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""mzn_enum_X=[A,,B,,G,0,1..3];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_array_coercion.mzn",
+			solver: "gecode",
+			solutions: ["""mzn_enum_X=[A,,B,,G,0,1..3];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_bind_1.mzn")]
 	public async Task test_solve_unit_types_struct_bind_1()
 	{
-		var path = "unit/types/struct_bind_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=[1,1];x=[1,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_bind_1.mzn",
+			solver: "gecode",
+			solutions: ["""a=[1,1];x=[1,1];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_bind_2.mzn")]
 	public async Task test_solve_unit_types_struct_bind_2()
 	{
-		var path = "unit/types/struct_bind_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=[1];x=[1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_bind_2.mzn",
+			solver: "gecode",
+			solutions: ["""a=[1];x=[1];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_1.mzn")]
 	public async Task test_solve_unit_types_struct_domain_1()
 	{
-		var path = "unit/types/struct_domain_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_domain_1.mzn",
+			solver: "gecode",
+			solutions: ["""a=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_2.mzn")]
 	public async Task test_solve_unit_types_struct_domain_2()
 	{
-		var path = "unit/types/struct_domain_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_domain_2.mzn",
+			solver: "gecode",
+			solutions: ["""a=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_3.mzn")]
 	public async Task test_solve_unit_types_struct_domain_3()
 	{
-		var path = "unit/types/struct_domain_3.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_domain_3.mzn",
+			solver: "gecode",
+			solutions: ["""a=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_4.mzn")]
 	public async Task test_solve_unit_types_struct_domain_4()
 	{
-		var path = "unit/types/struct_domain_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_domain_4.mzn",
+			solver: "gecode",
+			solutions: ["""a=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_5.mzn")]
 	public async Task test_solve_unit_types_struct_domain_5()
 	{
-		var path = "unit/types/struct_domain_5.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_domain_5.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_domain_6.mzn")]
 	public async Task test_solve_unit_types_struct_domain_6()
 	{
-		var path = "unit/types/struct_domain_6.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_domain_6.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_member_paths.mzn")]
 	public async Task test_solve_unit_types_struct_member_paths()
 	{
-		var path = "unit/types/struct_member_paths.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""a=[(o:1,s:<>,)];""",
-			};
-		var args = new List<string>{
-			"--keep-paths",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_member_paths.mzn",
+			solver: "gecode",
+			solutions: ["""a=[(o:1,s:<>,)];"""],
+			args: ["--keep-paths"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_opt_supertype.mzn")]
 	public async Task test_solve_unit_types_struct_opt_supertype()
 	{
-		var path = "unit/types/struct_opt_supertype.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_opt_supertype.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_par_function_version.mzn")]
 	public async Task test_solve_unit_types_struct_par_function_version()
 	{
-		var path = "unit/types/struct_par_function_version.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""p=true;a=false;b=true;c=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_par_function_version.mzn",
+			solver: "gecode",
+			solutions: ["""p=true;a=false;b=true;c=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_1.mzn")]
 	public async Task test_solve_unit_types_struct_return_ti_1()
 	{
-		var path = "unit/types/struct_return_ti_1.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_return_ti_1.mzn",
+			solver: "gecode",
+			solutions: ["""x=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_2.mzn")]
 	public async Task test_solve_unit_types_struct_return_ti_2()
 	{
-		var path = "unit/types/struct_return_ti_2.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=false;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_return_ti_2.mzn",
+			solver: "gecode",
+			solutions: ["""x=false;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_return_ti_4.mzn")]
 	public async Task test_solve_unit_types_struct_return_ti_4()
 	{
-		var path = "unit/types/struct_return_ti_4.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Unsatisfiable
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_return_ti_4.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Unsatisfiable]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_specialise.mzn")]
 	public async Task test_solve_unit_types_struct_specialise()
 	{
-		var path = "unit/types/struct_specialise.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""foo_int=1;foo_str=test;foo_enum=B;bar_int=2;bar_str=pred;bar_enum=C;baz_tup=[3,func];baz_rec=(x:B,);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_specialise.mzn",
+			solver: "gecode",
+			solutions: ["""foo_int=1;foo_str=test;foo_enum=B;bar_int=2;bar_str=pred;bar_enum=C;baz_tup=[3,func];baz_rec=(x:B,);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/struct_specialise_return.mzn")]
 	public async Task test_solve_unit_types_struct_specialise_return()
 	{
-		var path = "unit/types/struct_specialise_return.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item={C}, [(A,)];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/struct_specialise_return.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item={C}, [(A,)];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/test_any_enum_typeinstid.mzn")]
 	public async Task test_solve_unit_types_test_any_enum_typeinstid()
 	{
-		var path = "unit/types/test_any_enum_typeinstid.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[true,false];""",
-			"""x=[true,true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/test_any_enum_typeinstid.mzn",
+			solver: "gecode",
+			solutions: ["""x=[true,false];""","""x=[true,true];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_access_success.mzn")]
 	public async Task test_solve_unit_types_tuple_access_success()
 	{
-		var path = "unit/types/tuple_access_success.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=onetwo;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_access_success.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=onetwo;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_binop_par.mzn")]
 	public async Task test_solve_unit_types_tuple_binop_par()
 	{
-		var path = "unit/types/tuple_binop_par.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;con1=[1,2.0,true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_binop_par.mzn",
+			solver: "gecode",
+			solutions: ["""eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;con1=[1,2.0,true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_binop_var.mzn")]
 	public async Task test_solve_unit_types_tuple_binop_var()
 	{
-		var path = "unit/types/tuple_binop_var.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""eqA=[2,true];nq=[3,true];leA=[2,4];lqA=[2,4];arrin=[3,5.0];con1=[2,true,3,true];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_binop_var.mzn",
+			solver: "gecode",
+			solutions: ["""eqA=[2,true];nq=[3,true];leA=[2,4];lqA=[2,4];arrin=[3,5.0];con1=[2,true,3,true];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_comprehensions.mzn")]
 	public async Task test_solve_unit_types_tuple_comprehensions()
 	{
-		var path = "unit/types/tuple_comprehensions.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""simple=[2,true,1,false,0,true,1,false,2,true];indexed=[4,true,6,true,8,true,9,false,11,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_comprehensions.mzn",
+			solver: "gecode",
+			solutions: ["""simple=[2,true,1,false,0,true,1,false,2,true];indexed=[4,true,6,true,8,true,9,false,11,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_if_then_else.mzn")]
 	public async Task test_solve_unit_types_tuple_if_then_else()
 	{
-		var path = "unit/types/tuple_if_then_else.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""b=true;p0=[3,4];""",
-			"""b=false;p0=[3,5];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_if_then_else.mzn",
+			solver: "gecode",
+			solutions: ["""b=true;p0=[3,4];""","""b=false;p0=[3,5];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_int_set_of_int_specialisation.mzn")]
 	public async Task test_solve_unit_types_tuple_int_set_of_int_specialisation()
 	{
-		var path = "unit/types/tuple_int_set_of_int_specialisation.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""f=true;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_int_set_of_int_specialisation.mzn",
+			solver: "gecode",
+			solutions: ["""f=true;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_lit.mzn")]
 	public async Task test_solve_unit_types_tuple_lit()
 	{
-		var path = "unit/types/tuple_lit.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""single=[1];double=[false,-1];triple=[1,false,200.0];square=[1,one,-2,two];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_lit.mzn",
+			solver: "gecode",
+			solutions: ["""single=[1];double=[false,-1];triple=[1,false,200.0];square=[1,one,-2,two];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_mkpar.mzn")]
 	public async Task test_solve_unit_types_tuple_mkpar()
 	{
-		var path = "unit/types/tuple_mkpar.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=1;y=3;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_mkpar.mzn",
+			solver: "gecode",
+			solutions: ["""x=1;y=3;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_output.mzn")]
 	public async Task test_solve_unit_types_tuple_output()
 	{
-		var path = "unit/types/tuple_output.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""_output_item=full var: (0, true, 1.5)var array: [(2, false), (1, true)]nested: (false, (3, 4))element: 3partial: (10, true)data: (-3.2, false)enumtup: ((x: a a, y: c), c);""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_output.mzn",
+			solver: "gecode",
+			solutions: ["""_output_item=full var: (0, true, 1.5)var array: [(2, false), (1, true)]nested: (false, (3, 4))element: 3partial: (10, true)data: (-3.2, false)enumtup: ((x: a a, y: c), c);"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_subtyping.mzn")]
 	public async Task test_solve_unit_types_tuple_subtyping()
 	{
-		var path = "unit/types/tuple_subtyping.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""single=[1];double=[1.0,1,2,3];tupId=[1,0.0];tupExpr=[-5.0,0];arr1=[5,1.0,1,-1.0];arr2=[1,0,1,0];arrId=[1.0,0.0,1.0,0.0];arrExpr=[1.0,0.0,2.0,1.0,3.0,0.0];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_subtyping.mzn",
+			solver: "gecode",
+			solutions: ["""single=[1];double=[1.0,1,2,3];tupId=[1,0.0];tupExpr=[-5.0,0];arr1=[5,1.0,1,-1.0];arr2=[1,0,1,0];arrId=[1.0,0.0,1.0,0.0];arrExpr=[1.0,0.0,2.0,1.0,3.0,0.0];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_var_element.mzn")]
 	public async Task test_solve_unit_types_tuple_var_element()
 	{
-		var path = "unit/types/tuple_var_element.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""idx=iE;selected=[6,3,3];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_var_element.mzn",
+			solver: "gecode",
+			solutions: ["""idx=iE;selected=[6,3,3];"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/tuple_var_ite.mzn")]
 	public async Task test_solve_unit_types_tuple_var_ite()
 	{
-		var path = "unit/types/tuple_var_ite.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""tups=[12,false,10,true,11,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/tuple_var_ite.mzn",
+			solver: "gecode",
+			solutions: ["""tups=[12,false,10,true,11,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/type_specialise_param_arrays.mzn")]
 	public async Task test_solve_unit_types_type_specialise_param_arrays()
 	{
-		var path = "unit/types/type_specialise_param_arrays.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/type_specialise_param_arrays.mzn",
+			solver: "gecode",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/types/type_specialise_struct_domain.mzn")]
 	public async Task test_solve_unit_types_type_specialise_struct_domain()
 	{
-		var path = "unit/types/type_specialise_struct_domain.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""x=[(a:[A],),(a:[B],),(a:[C],)];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/types/type_specialise_struct_domain.mzn",
+			solver: "gecode",
+			solutions: ["""x=[(a:[A],),(a:[B],),(a:[C],)];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/alldifferent_except_0/test_alldiff_except0b.mzn")]
@@ -7336,15 +4859,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_alldifferent_except_0_test_alldiff_except0b(string solver)
 	{
-		var path = "unit/globals/alldifferent_except_0/test_alldiff_except0b.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/alldifferent_except_0/test_alldiff_except0b.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/arg_max/globals_arg_max.mzn")]
@@ -7352,15 +4872,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_arg_max_globals_arg_max(string solver)
 	{
-		var path = "unit/globals/arg_max/globals_arg_max.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/arg_max/globals_arg_max.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/arg_max/globals_arg_max_opt.mzn")]
@@ -7368,15 +4885,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_arg_max_globals_arg_max_opt(string solver)
 	{
-		var path = "unit/globals/arg_max/globals_arg_max_opt.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/arg_max/globals_arg_max_opt.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/arg_max/globals_arg_max_opt_weak.mzn")]
@@ -7384,15 +4898,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_arg_max_globals_arg_max_opt_weak(string solver)
 	{
-		var path = "unit/globals/arg_max/globals_arg_max_opt_weak.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/arg_max/globals_arg_max_opt_weak.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/arg_min/globals_arg_max_opt.mzn")]
@@ -7400,15 +4911,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_arg_min_globals_arg_max_opt(string solver)
 	{
-		var path = "unit/globals/arg_min/globals_arg_max_opt.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/arg_min/globals_arg_max_opt.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/arg_min/globals_arg_min.mzn")]
@@ -7416,15 +4924,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_arg_min_globals_arg_min(string solver)
 	{
-		var path = "unit/globals/arg_min/globals_arg_min.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/arg_min/globals_arg_min.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/arg_min/globals_arg_min_opt_weak.mzn")]
@@ -7432,15 +4937,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_arg_min_globals_arg_min_opt_weak(string solver)
 	{
-		var path = "unit/globals/arg_min/globals_arg_min_opt_weak.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/arg_min/globals_arg_min_opt_weak.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/arg_val/arg_val_enum.mzn")]
@@ -7448,15 +4950,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_arg_val_arg_val_enum(string solver)
 	{
-		var path = "unit/globals/arg_val/arg_val_enum.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/arg_val/arg_val_enum.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/bin_packing/globals_bin_packing.mzn")]
@@ -7464,15 +4963,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_bin_packing_globals_bin_packing(string solver)
 	{
-		var path = "unit/globals/bin_packing/globals_bin_packing.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/bin_packing/globals_bin_packing.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/bin_packing_capa/globals_bin_packing_capa.mzn")]
@@ -7480,15 +4976,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_bin_packing_capa_globals_bin_packing_capa(string solver)
 	{
-		var path = "unit/globals/bin_packing_capa/globals_bin_packing_capa.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/bin_packing_capa/globals_bin_packing_capa.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/circuit/test_circuit.mzn")]
@@ -7496,49 +4989,35 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_circuit_test_circuit(string solver)
 	{
-		var path = "unit/globals/circuit/test_circuit.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/circuit/test_circuit.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/globals/cumulative/github_589.mzn")]
 	public async Task test_solve_unit_globals_cumulative_github_589()
 	{
-		var path = "unit/globals/cumulative/github_589.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-G std",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/cumulative/github_589.mzn",
+			solver: "gecode",
+			args: ["-G std"],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/globals/cumulatives/globals_cumulatives.mzn")]
 	public async Task test_solve_unit_globals_cumulatives_globals_cumulatives()
 	{
-		var path = "unit/globals/cumulatives/globals_cumulatives.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""makespan=11;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/cumulatives/globals_cumulatives.mzn",
+			solver: "gecode",
+			solutions: ["""makespan=11;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/cumulatives/globals_cumulatives.mzn")]
@@ -7546,19 +5025,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_cumulatives_globals_cumulatives_2(string solver)
 	{
-		var path = "unit/globals/cumulatives/globals_cumulatives.mzn";
-		var solutions = new List<string> {
-			"""makespan=11;""",
-			};
-		var args = new List<string>{
-			"-G std",
-		};
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/cumulatives/globals_cumulatives.mzn",
+			solver: solver,
+			solutions: ["""makespan=11;"""],
+			args: ["-G std"],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/global_cardinality/globals_global_cardinality_low_up_set.mzn")]
@@ -7566,15 +5039,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_global_cardinality_globals_global_cardinality_low_up_set(string solver)
 	{
-		var path = "unit/globals/global_cardinality/globals_global_cardinality_low_up_set.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/global_cardinality/globals_global_cardinality_low_up_set.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/global_cardinality/globals_global_cardinality_opt.mzn")]
@@ -7582,15 +5052,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_global_cardinality_globals_global_cardinality_opt(string solver)
 	{
-		var path = "unit/globals/global_cardinality/globals_global_cardinality_opt.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/global_cardinality/globals_global_cardinality_opt.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/global_cardinality/globals_global_cardinality_set.mzn")]
@@ -7598,15 +5065,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_global_cardinality_globals_global_cardinality_set(string solver)
 	{
-		var path = "unit/globals/global_cardinality/globals_global_cardinality_set.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/global_cardinality/globals_global_cardinality_set.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/global_cardinality_closed/globals_global_cardinality_closed_opt.mzn")]
@@ -7614,15 +5078,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_global_cardinality_closed_globals_global_cardinality_closed_opt(string solver)
 	{
-		var path = "unit/globals/global_cardinality_closed/globals_global_cardinality_closed_opt.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/global_cardinality_closed/globals_global_cardinality_closed_opt.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/global_cardinality_closed/globals_global_cardinality_closed_set.mzn")]
@@ -7630,15 +5091,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_global_cardinality_closed_globals_global_cardinality_closed_set(string solver)
 	{
-		var path = "unit/globals/global_cardinality_closed/globals_global_cardinality_closed_set.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/global_cardinality_closed/globals_global_cardinality_closed_set.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_opt.mzn")]
@@ -7646,15 +5104,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_global_cardinality_closed_globals_global_cardinality_low_up_closed_opt(string solver)
 	{
-		var path = "unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_opt.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_opt.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_set.mzn")]
@@ -7662,15 +5117,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_global_cardinality_closed_globals_global_cardinality_low_up_closed_set(string solver)
 	{
-		var path = "unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_set.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/global_cardinality_closed/globals_global_cardinality_low_up_closed_set.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/int_set_channel/test_int_set_channel2.mzn")]
@@ -7679,37 +5131,24 @@ public class ClientTests : ClientTest
 	[InlineData("coin-bc")]
 	public async Task test_solve_unit_globals_int_set_channel_test_int_set_channel2(string solver)
 	{
-		var path = "unit/globals/int_set_channel/test_int_set_channel2.mzn";
-		var solutions = new List<string> {
-			"""x=[1,1,1,1,1,1,1,1,1];y=[1..9,{},{},{},{}];""",
-			"""x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{2},{},{1}];""",
-			"""x=[2,2,2,2,2,2,2,2,2];y=[{},1..9,{},{},{}];""",
-			"""x=[5,5,5,5,5,5,5,5,5];y=[{},{},{},{},1..9];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/int_set_channel/test_int_set_channel2.mzn",
+			solver: solver,
+			solutions: ["""x=[1,1,1,1,1,1,1,1,1];y=[1..9,{},{},{},{}];""","""x=[5,3,1,1,1,1,1,1,1];y=[3..9,{},{2},{},{1}];""","""x=[2,2,2,2,2,2,2,2,2];y=[{},1..9,{},{},{}];""","""x=[5,5,5,5,5,5,5,5,5];y=[{},{},{},{},1..9];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/globals/inverse/inverse_opt.mzn")]
 	public async Task test_solve_unit_globals_inverse_inverse_opt()
 	{
-		var path = "unit/globals/inverse/inverse_opt.mzn";
-		var solver = "gecode";
-		var solutions = new List<string>();
-		var args = new List<string>{
-			"-G std",
-		};
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/inverse/inverse_opt.mzn",
+			solver: "gecode",
+			args: ["-G std"],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/lex2/globals_lex2.mzn")]
@@ -7717,38 +5156,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_lex2_globals_lex2(string solver)
 	{
-		var path = "unit/globals/lex2/globals_lex2.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/lex2/globals_lex2.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/globals/lex2/globals_lex2.mzn")]
 	public async Task test_solve_unit_globals_lex2_globals_lex2_2()
 	{
-		var path = "unit/globals/lex2/globals_lex2.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string> {
-			"""y=[1,1,1,1];""",
-			"""y=[1,2,2,1];""",
-			"""y=[1,1,1,2];""",
-			"""y=[1,2,1,2];""",
-			"""y=[1,1,2,2];""",
-			"""y=[1,2,2,2];""",
-			"""y=[2,2,2,2];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/lex2/globals_lex2.mzn",
+			solver: "coin-bc",
+			solutions: ["""y=[1,1,1,1];""","""y=[1,2,2,1];""","""y=[1,1,1,2];""","""y=[1,2,1,2];""","""y=[1,1,2,2];""","""y=[1,2,2,2];""","""y=[2,2,2,2];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/lex_chain/globals_lex_chain__orbitope.mzn")]
@@ -7757,17 +5181,12 @@ public class ClientTests : ClientTest
 	[InlineData("scip", Skip="Solver not supported")]
 	public async Task test_solve_unit_globals_lex_chain_globals_lex_chain__orbitope(string solver)
 	{
-		var path = "unit/globals/lex_chain/globals_lex_chain__orbitope.mzn";
-		var solutions = new List<string> {
-			"""lex_members_int=[1,0,1];lex_members_bool=[false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/lex_chain/globals_lex_chain__orbitope.mzn",
+			solver: solver,
+			solutions: ["""lex_members_int=[1,0,1];lex_members_bool=[false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/lex_greater/globals_lex_greater.mzn")]
@@ -7775,15 +5194,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_lex_greater_globals_lex_greater(string solver)
 	{
-		var path = "unit/globals/lex_greater/globals_lex_greater.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/lex_greater/globals_lex_greater.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/lex_greatereq/globals_lex_greatereq.mzn")]
@@ -7791,15 +5207,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_lex_greatereq_globals_lex_greatereq(string solver)
 	{
-		var path = "unit/globals/lex_greatereq/globals_lex_greatereq.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/lex_greatereq/globals_lex_greatereq.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/lex_less/test_bool_lex_less.mzn")]
@@ -7807,15 +5220,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_lex_less_test_bool_lex_less(string solver)
 	{
-		var path = "unit/globals/lex_less/test_bool_lex_less.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/lex_less/test_bool_lex_less.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/lex_lesseq/test_bool_lex_lesseq.mzn")]
@@ -7823,15 +5233,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_lex_lesseq_test_bool_lex_lesseq(string solver)
 	{
-		var path = "unit/globals/lex_lesseq/test_bool_lex_lesseq.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/lex_lesseq/test_bool_lex_lesseq.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/nvalue/globals_nvalue.mzn")]
@@ -7839,15 +5246,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_nvalue_globals_nvalue(string solver)
 	{
-		var path = "unit/globals/nvalue/globals_nvalue.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/nvalue/globals_nvalue.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/nvalue/globals_nvalue.mzn")]
@@ -7855,32 +5259,22 @@ public class ClientTests : ClientTest
 	[InlineData("highs")]
 	public async Task test_solve_unit_globals_nvalue_globals_nvalue_2(string solver)
 	{
-		var path = "unit/globals/nvalue/globals_nvalue.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/nvalue/globals_nvalue.mzn",
+			solver: solver,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/globals/nvalue/nvalue_total.mzn")]
 	public async Task test_solve_unit_globals_nvalue_nvalue_total()
 	{
-		var path = "unit/globals/nvalue/nvalue_total.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""l1=1;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/nvalue/nvalue_total.mzn",
+			solver: "gecode",
+			solutions: ["""l1=1;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/range/globals_range.mzn")]
@@ -7888,32 +5282,23 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_range_globals_range(string solver)
 	{
-		var path = "unit/globals/range/globals_range.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/range/globals_range.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="unit/globals/regular/globals_regular.mzn")]
 	public async Task test_solve_unit_globals_regular_globals_regular()
 	{
-		var path = "unit/globals/regular/globals_regular.mzn";
-		var solver = "gecode";
-		var solutions = new List<string> {
-			"""reg_input=[1,2,3,3,3,2,1];reg_input2=[1,2,3,3,3,3,3,3,3,2,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/regular/globals_regular.mzn",
+			solver: "gecode",
+			solutions: ["""reg_input=[1,2,3,3,3,2,1];reg_input2=[1,2,3,3,3,3,3,3,3,2,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/regular/globals_regular_regex_3.mzn")]
@@ -7921,15 +5306,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_regular_globals_regular_regex_3(string solver)
 	{
-		var path = "unit/globals/regular/globals_regular_regex_3.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/regular/globals_regular_regex_3.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/regular/globals_regular_regex_5.mzn")]
@@ -7937,15 +5319,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_regular_globals_regular_regex_5(string solver)
 	{
-		var path = "unit/globals/regular/globals_regular_regex_5.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/regular/globals_regular_regex_5.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/roots/test_roots2.mzn")]
@@ -7953,15 +5332,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_roots_test_roots2(string solver)
 	{
-		var path = "unit/globals/roots/test_roots2.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/roots/test_roots2.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/strict_lex2/globals_strict_lex2.mzn")]
@@ -7969,15 +5345,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_strict_lex2_globals_strict_lex2(string solver)
 	{
-		var path = "unit/globals/strict_lex2/globals_strict_lex2.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/strict_lex2/globals_strict_lex2.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/subcircuit/test_subcircuit.mzn")]
@@ -7985,37 +5358,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_subcircuit_test_subcircuit(string solver)
 	{
-		var path = "unit/globals/subcircuit/test_subcircuit.mzn";
-		var solutions = new List<string> {
-			"""x=[1,2,3,4];""",
-			"""x=[2,1,3,4];""",
-			"""x=[1,4,3,2];""",
-			"""x=[4,2,3,1];""",
-			"""x=[2,4,3,1];""",
-			"""x=[4,1,3,2];""",
-			"""x=[1,2,4,3];""",
-			"""x=[1,3,2,4];""",
-			"""x=[1,3,4,2];""",
-			"""x=[1,4,2,3];""",
-			"""x=[3,2,1,4];""",
-			"""x=[4,2,1,3];""",
-			"""x=[3,2,4,1];""",
-			"""x=[2,3,1,4];""",
-			"""x=[3,1,2,4];""",
-			"""x=[4,3,1,2];""",
-			"""x=[2,3,4,1];""",
-			"""x=[3,4,2,1];""",
-			"""x=[4,1,2,3];""",
-			"""x=[2,4,1,3];""",
-			"""x=[3,1,4,2];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/subcircuit/test_subcircuit.mzn",
+			solver: solver,
+			solutions: ["""x=[1,2,3,4];""","""x=[2,1,3,4];""","""x=[1,4,3,2];""","""x=[4,2,3,1];""","""x=[2,4,3,1];""","""x=[4,1,3,2];""","""x=[1,2,4,3];""","""x=[1,3,2,4];""","""x=[1,3,4,2];""","""x=[1,4,2,3];""","""x=[3,2,1,4];""","""x=[4,2,1,3];""","""x=[3,2,4,1];""","""x=[2,3,1,4];""","""x=[3,1,2,4];""","""x=[4,3,1,2];""","""x=[2,3,4,1];""","""x=[3,4,2,1];""","""x=[4,1,2,3];""","""x=[2,4,1,3];""","""x=[3,1,4,2];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/table/globals_table_opt.mzn")]
@@ -8023,22 +5372,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_table_globals_table_opt(string solver)
 	{
-		var path = "unit/globals/table/globals_table_opt.mzn";
-		var solutions = new List<string> {
-			"""xs=[3,5];""",
-			"""xs=[4,5];""",
-			"""xs=[5,5];""",
-			"""xs=[3,<>];""",
-			"""xs=[4,<>];""",
-			"""xs=[5,<>];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/table/globals_table_opt.mzn",
+			solver: solver,
+			solutions: ["""xs=[3,5];""","""xs=[4,5];""","""xs=[5,5];""","""xs=[3,<>];""","""xs=[4,<>];""","""xs=[5,<>];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/value_precede/globals_value_precede_int.mzn")]
@@ -8046,15 +5386,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_value_precede_globals_value_precede_int(string solver)
 	{
-		var path = "unit/globals/value_precede/globals_value_precede_int.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/value_precede/globals_value_precede_int.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/value_precede/globals_value_precede_int_opt.mzn")]
@@ -8062,52 +5399,13 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_value_precede_globals_value_precede_int_opt(string solver)
 	{
-		var path = "unit/globals/value_precede/globals_value_precede_int_opt.mzn";
-		var solutions = new List<string> {
-			"""x=[<>,<>,<>];""",
-			"""x=[1,<>,<>];""",
-			"""x=[3,<>,<>];""",
-			"""x=[<>,1,<>];""",
-			"""x=[<>,3,<>];""",
-			"""x=[1,1,<>];""",
-			"""x=[1,2,<>];""",
-			"""x=[1,3,<>];""",
-			"""x=[3,1,<>];""",
-			"""x=[3,3,<>];""",
-			"""x=[<>,<>,1];""",
-			"""x=[<>,<>,3];""",
-			"""x=[1,<>,1];""",
-			"""x=[1,<>,2];""",
-			"""x=[1,<>,3];""",
-			"""x=[3,<>,1];""",
-			"""x=[3,<>,3];""",
-			"""x=[<>,1,1];""",
-			"""x=[<>,1,2];""",
-			"""x=[<>,1,3];""",
-			"""x=[<>,3,1];""",
-			"""x=[<>,3,3];""",
-			"""x=[1,1,1];""",
-			"""x=[1,2,1];""",
-			"""x=[1,3,1];""",
-			"""x=[1,1,2];""",
-			"""x=[1,2,2];""",
-			"""x=[1,3,2];""",
-			"""x=[1,1,3];""",
-			"""x=[1,2,3];""",
-			"""x=[1,3,3];""",
-			"""x=[3,1,1];""",
-			"""x=[3,1,2];""",
-			"""x=[3,1,3];""",
-			"""x=[3,3,1];""",
-			"""x=[3,3,3];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/value_precede/globals_value_precede_int_opt.mzn",
+			solver: solver,
+			solutions: ["""x=[<>,<>,<>];""","""x=[1,<>,<>];""","""x=[3,<>,<>];""","""x=[<>,1,<>];""","""x=[<>,3,<>];""","""x=[1,1,<>];""","""x=[1,2,<>];""","""x=[1,3,<>];""","""x=[3,1,<>];""","""x=[3,3,<>];""","""x=[<>,<>,1];""","""x=[<>,<>,3];""","""x=[1,<>,1];""","""x=[1,<>,2];""","""x=[1,<>,3];""","""x=[3,<>,1];""","""x=[3,<>,3];""","""x=[<>,1,1];""","""x=[<>,1,2];""","""x=[<>,1,3];""","""x=[<>,3,1];""","""x=[<>,3,3];""","""x=[1,1,1];""","""x=[1,2,1];""","""x=[1,3,1];""","""x=[1,1,2];""","""x=[1,2,2];""","""x=[1,3,2];""","""x=[1,1,3];""","""x=[1,2,3];""","""x=[1,3,3];""","""x=[3,1,1];""","""x=[3,1,2];""","""x=[3,1,3];""","""x=[3,3,1];""","""x=[3,3,3];"""],
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/value_precede/globals_value_precede_set.mzn")]
@@ -8115,15 +5413,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_value_precede_globals_value_precede_set(string solver)
 	{
-		var path = "unit/globals/value_precede/globals_value_precede_set.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/value_precede/globals_value_precede_set.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/value_precede_chain/globals_value_precede_chain_int.mzn")]
@@ -8131,15 +5426,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_value_precede_chain_globals_value_precede_chain_int(string solver)
 	{
-		var path = "unit/globals/value_precede_chain/globals_value_precede_chain_int.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/value_precede_chain/globals_value_precede_chain_int.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/value_precede_chain/globals_value_precede_chain_int_opt.mzn")]
@@ -8147,15 +5439,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_value_precede_chain_globals_value_precede_chain_int_opt(string solver)
 	{
-		var path = "unit/globals/value_precede_chain/globals_value_precede_chain_int_opt.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/value_precede_chain/globals_value_precede_chain_int_opt.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/value_precede_chain/globals_value_precede_chain_set.mzn")]
@@ -8163,15 +5452,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_value_precede_chain_globals_value_precede_chain_set(string solver)
 	{
-		var path = "unit/globals/value_precede_chain/globals_value_precede_chain_set.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/value_precede_chain/globals_value_precede_chain_set.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="unit/globals/var_sqr_sym/globals_var_sqr_sym.mzn")]
@@ -8179,15 +5465,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_unit_globals_var_sqr_sym_globals_var_sqr_sym(string solver)
 	{
-		var path = "unit/globals/var_sqr_sym/globals_var_sqr_sym.mzn";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = true;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "unit/globals/var_sqr_sym/globals_var_sqr_sym.mzn",
+			solver: solver,
+			allSolutions: true,
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_4.mzn")]
@@ -8196,22 +5479,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_4(string solver)
 	{
-		var path = "examples/battleships_4.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_4.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_7.mzn")]
@@ -8220,24 +5493,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_7(string solver)
 	{
-		var path = "examples/battleships_7.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_7.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/factory_planning_instance.mzn")]
@@ -8246,17 +5507,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_factory_planning_instance(string solver)
 	{
-		var path = "examples/factory_planning_instance.mzn";
-		var solutions = new List<string> {
-			"""last_step=5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/factory_planning_instance.mzn",
+			solver: solver,
+			solutions: ["""last_step=5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/knights.mzn")]
@@ -8264,17 +5520,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_knights(string solver)
 	{
-		var path = "examples/knights.mzn";
-		var solutions = new List<string> {
-			"""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/knights.mzn",
+			solver: solver,
+			solutions: ["""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_4.mzn")]
@@ -8282,22 +5533,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_4(string solver)
 	{
-		var path = "examples/magicsq_4.mzn";
-		var solutions = new List<string> {
-			"""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""",
-			"""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""",
-			"""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""",
-			"""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""",
-			"""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""",
-			"""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_4.mzn",
+			solver: solver,
+			solutions: ["""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""","""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""","""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""","""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""","""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""","""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_5.mzn")]
@@ -8305,22 +5546,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_5(string solver)
 	{
-		var path = "examples/magicsq_5.mzn";
-		var solutions = new List<string> {
-			"""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""",
-			"""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""",
-			"""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""",
-			"""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""",
-			"""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""",
-			"""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_5.mzn",
+			solver: solver,
+			solutions: ["""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""","""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""","""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""","""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""","""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""","""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/oss.mzn")]
@@ -8329,23 +5560,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_oss(string solver)
 	{
-		var path = "examples/oss.mzn";
-		var solutions = new List<string> {
-			"""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""",
-			"""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""",
-			"""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""",
-			"""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/oss.mzn",
+			solver: solver,
+			solutions: ["""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""","""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""","""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""","""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""","""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/packing.mzn")]
@@ -8353,17 +5573,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_packing(string solver)
 	{
-		var path = "examples/packing.mzn";
-		var solutions = new List<string> {
-			"""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/packing.mzn",
+			solver: solver,
+			solutions: ["""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/radiation.mzn")]
@@ -8371,32 +5586,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_radiation(string solver)
 	{
-		var path = "examples/radiation.mzn";
-		var solutions = new List<string> {
-			"""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: solver,
+			solutions: ["""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/radiation.mzn")]
 	public async Task test_solve_examples_radiation_2()
 	{
-		var path = "examples/radiation.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/template_design.mzn")]
@@ -8404,32 +5609,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_template_design(string solver)
 	{
-		var path = "examples/template_design.mzn";
-		var solutions = new List<string> {
-			"""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/template_design.mzn",
+			solver: solver,
+			solutions: ["""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
 	public async Task test_solve_examples_wolf_goat_cabbage()
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/wolf_goat_cabbage.mzn")]
@@ -8437,26 +5632,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_wolf_goat_cabbage_2(string solver)
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solutions = new List<string> {
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: solver,
+			solutions: ["""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_4.mzn")]
@@ -8465,22 +5646,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_4_2(string solver)
 	{
-		var path = "examples/battleships_4.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_4.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_7.mzn")]
@@ -8489,24 +5660,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_7_2(string solver)
 	{
-		var path = "examples/battleships_7.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_7.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/factory_planning_instance.mzn")]
@@ -8515,17 +5674,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_factory_planning_instance_2(string solver)
 	{
-		var path = "examples/factory_planning_instance.mzn";
-		var solutions = new List<string> {
-			"""last_step=5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/factory_planning_instance.mzn",
+			solver: solver,
+			solutions: ["""last_step=5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/knights.mzn")]
@@ -8533,17 +5687,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_knights_2(string solver)
 	{
-		var path = "examples/knights.mzn";
-		var solutions = new List<string> {
-			"""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/knights.mzn",
+			solver: solver,
+			solutions: ["""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_4.mzn")]
@@ -8551,22 +5700,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_4_2(string solver)
 	{
-		var path = "examples/magicsq_4.mzn";
-		var solutions = new List<string> {
-			"""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""",
-			"""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""",
-			"""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""",
-			"""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""",
-			"""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""",
-			"""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_4.mzn",
+			solver: solver,
+			solutions: ["""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""","""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""","""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""","""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""","""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""","""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_5.mzn")]
@@ -8574,22 +5713,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_5_2(string solver)
 	{
-		var path = "examples/magicsq_5.mzn";
-		var solutions = new List<string> {
-			"""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""",
-			"""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""",
-			"""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""",
-			"""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""",
-			"""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""",
-			"""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_5.mzn",
+			solver: solver,
+			solutions: ["""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""","""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""","""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""","""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""","""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""","""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/oss.mzn")]
@@ -8598,23 +5727,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_oss_2(string solver)
 	{
-		var path = "examples/oss.mzn";
-		var solutions = new List<string> {
-			"""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""",
-			"""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""",
-			"""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""",
-			"""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/oss.mzn",
+			solver: solver,
+			solutions: ["""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""","""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""","""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""","""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""","""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/packing.mzn")]
@@ -8622,17 +5740,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_packing_2(string solver)
 	{
-		var path = "examples/packing.mzn";
-		var solutions = new List<string> {
-			"""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/packing.mzn",
+			solver: solver,
+			solutions: ["""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/radiation.mzn")]
@@ -8640,32 +5753,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_radiation_3(string solver)
 	{
-		var path = "examples/radiation.mzn";
-		var solutions = new List<string> {
-			"""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: solver,
+			solutions: ["""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/radiation.mzn")]
 	public async Task test_solve_examples_radiation_4()
 	{
-		var path = "examples/radiation.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/template_design.mzn")]
@@ -8673,32 +5776,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_template_design_2(string solver)
 	{
-		var path = "examples/template_design.mzn";
-		var solutions = new List<string> {
-			"""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/template_design.mzn",
+			solver: solver,
+			solutions: ["""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
 	public async Task test_solve_examples_wolf_goat_cabbage_3()
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/wolf_goat_cabbage.mzn")]
@@ -8706,26 +5799,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_wolf_goat_cabbage_4(string solver)
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solutions = new List<string> {
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: solver,
+			solutions: ["""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_4.mzn")]
@@ -8734,22 +5813,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_4_3(string solver)
 	{
-		var path = "examples/battleships_4.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_4.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_7.mzn")]
@@ -8758,24 +5827,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_7_3(string solver)
 	{
-		var path = "examples/battleships_7.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_7.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/factory_planning_instance.mzn")]
@@ -8784,17 +5841,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_factory_planning_instance_3(string solver)
 	{
-		var path = "examples/factory_planning_instance.mzn";
-		var solutions = new List<string> {
-			"""last_step=5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/factory_planning_instance.mzn",
+			solver: solver,
+			solutions: ["""last_step=5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/knights.mzn")]
@@ -8802,17 +5854,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_knights_3(string solver)
 	{
-		var path = "examples/knights.mzn";
-		var solutions = new List<string> {
-			"""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/knights.mzn",
+			solver: solver,
+			solutions: ["""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_4.mzn")]
@@ -8820,22 +5867,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_4_3(string solver)
 	{
-		var path = "examples/magicsq_4.mzn";
-		var solutions = new List<string> {
-			"""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""",
-			"""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""",
-			"""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""",
-			"""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""",
-			"""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""",
-			"""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_4.mzn",
+			solver: solver,
+			solutions: ["""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""","""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""","""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""","""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""","""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""","""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_5.mzn")]
@@ -8843,22 +5880,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_5_3(string solver)
 	{
-		var path = "examples/magicsq_5.mzn";
-		var solutions = new List<string> {
-			"""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""",
-			"""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""",
-			"""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""",
-			"""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""",
-			"""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""",
-			"""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_5.mzn",
+			solver: solver,
+			solutions: ["""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""","""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""","""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""","""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""","""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""","""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/oss.mzn")]
@@ -8867,23 +5894,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_oss_3(string solver)
 	{
-		var path = "examples/oss.mzn";
-		var solutions = new List<string> {
-			"""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""",
-			"""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""",
-			"""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""",
-			"""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/oss.mzn",
+			solver: solver,
+			solutions: ["""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""","""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""","""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""","""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""","""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/packing.mzn")]
@@ -8891,17 +5907,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_packing_3(string solver)
 	{
-		var path = "examples/packing.mzn";
-		var solutions = new List<string> {
-			"""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/packing.mzn",
+			solver: solver,
+			solutions: ["""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/radiation.mzn")]
@@ -8909,32 +5920,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_radiation_5(string solver)
 	{
-		var path = "examples/radiation.mzn";
-		var solutions = new List<string> {
-			"""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: solver,
+			solutions: ["""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/radiation.mzn")]
 	public async Task test_solve_examples_radiation_6()
 	{
-		var path = "examples/radiation.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/template_design.mzn")]
@@ -8942,32 +5943,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_template_design_3(string solver)
 	{
-		var path = "examples/template_design.mzn";
-		var solutions = new List<string> {
-			"""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/template_design.mzn",
+			solver: solver,
+			solutions: ["""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
 	public async Task test_solve_examples_wolf_goat_cabbage_5()
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/wolf_goat_cabbage.mzn")]
@@ -8975,26 +5966,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_wolf_goat_cabbage_6(string solver)
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solutions = new List<string> {
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: solver,
+			solutions: ["""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_4.mzn")]
@@ -9003,22 +5980,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_4_4(string solver)
 	{
-		var path = "examples/battleships_4.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_4.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_7.mzn")]
@@ -9027,24 +5994,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_7_4(string solver)
 	{
-		var path = "examples/battleships_7.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_7.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/factory_planning_instance.mzn")]
@@ -9053,17 +6008,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_factory_planning_instance_4(string solver)
 	{
-		var path = "examples/factory_planning_instance.mzn";
-		var solutions = new List<string> {
-			"""last_step=5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/factory_planning_instance.mzn",
+			solver: solver,
+			solutions: ["""last_step=5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/knights.mzn")]
@@ -9071,17 +6021,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_knights_4(string solver)
 	{
-		var path = "examples/knights.mzn";
-		var solutions = new List<string> {
-			"""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/knights.mzn",
+			solver: solver,
+			solutions: ["""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_4.mzn")]
@@ -9089,22 +6034,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_4_4(string solver)
 	{
-		var path = "examples/magicsq_4.mzn";
-		var solutions = new List<string> {
-			"""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""",
-			"""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""",
-			"""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""",
-			"""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""",
-			"""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""",
-			"""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_4.mzn",
+			solver: solver,
+			solutions: ["""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""","""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""","""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""","""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""","""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""","""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_5.mzn")]
@@ -9112,22 +6047,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_5_4(string solver)
 	{
-		var path = "examples/magicsq_5.mzn";
-		var solutions = new List<string> {
-			"""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""",
-			"""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""",
-			"""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""",
-			"""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""",
-			"""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""",
-			"""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_5.mzn",
+			solver: solver,
+			solutions: ["""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""","""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""","""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""","""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""","""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""","""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/oss.mzn")]
@@ -9136,23 +6061,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_oss_4(string solver)
 	{
-		var path = "examples/oss.mzn";
-		var solutions = new List<string> {
-			"""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""",
-			"""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""",
-			"""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""",
-			"""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/oss.mzn",
+			solver: solver,
+			solutions: ["""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""","""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""","""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""","""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""","""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/packing.mzn")]
@@ -9160,17 +6074,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_packing_4(string solver)
 	{
-		var path = "examples/packing.mzn";
-		var solutions = new List<string> {
-			"""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/packing.mzn",
+			solver: solver,
+			solutions: ["""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/radiation.mzn")]
@@ -9178,32 +6087,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_radiation_7(string solver)
 	{
-		var path = "examples/radiation.mzn";
-		var solutions = new List<string> {
-			"""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: solver,
+			solutions: ["""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/radiation.mzn")]
 	public async Task test_solve_examples_radiation_8()
 	{
-		var path = "examples/radiation.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/template_design.mzn")]
@@ -9211,32 +6110,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_template_design_4(string solver)
 	{
-		var path = "examples/template_design.mzn";
-		var solutions = new List<string> {
-			"""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/template_design.mzn",
+			solver: solver,
+			solutions: ["""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
 	public async Task test_solve_examples_wolf_goat_cabbage_7()
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/wolf_goat_cabbage.mzn")]
@@ -9244,26 +6133,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_wolf_goat_cabbage_8(string solver)
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solutions = new List<string> {
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: solver,
+			solutions: ["""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_4.mzn")]
@@ -9272,22 +6147,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_4_5(string solver)
 	{
-		var path = "examples/battleships_4.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_4.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_7.mzn")]
@@ -9296,24 +6161,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_7_5(string solver)
 	{
-		var path = "examples/battleships_7.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_7.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/factory_planning_instance.mzn")]
@@ -9322,17 +6175,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_factory_planning_instance_5(string solver)
 	{
-		var path = "examples/factory_planning_instance.mzn";
-		var solutions = new List<string> {
-			"""last_step=5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/factory_planning_instance.mzn",
+			solver: solver,
+			solutions: ["""last_step=5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/knights.mzn")]
@@ -9340,17 +6188,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_knights_5(string solver)
 	{
-		var path = "examples/knights.mzn";
-		var solutions = new List<string> {
-			"""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/knights.mzn",
+			solver: solver,
+			solutions: ["""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_4.mzn")]
@@ -9358,22 +6201,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_4_5(string solver)
 	{
-		var path = "examples/magicsq_4.mzn";
-		var solutions = new List<string> {
-			"""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""",
-			"""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""",
-			"""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""",
-			"""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""",
-			"""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""",
-			"""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_4.mzn",
+			solver: solver,
+			solutions: ["""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""","""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""","""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""","""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""","""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""","""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_5.mzn")]
@@ -9381,22 +6214,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_5_5(string solver)
 	{
-		var path = "examples/magicsq_5.mzn";
-		var solutions = new List<string> {
-			"""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""",
-			"""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""",
-			"""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""",
-			"""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""",
-			"""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""",
-			"""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_5.mzn",
+			solver: solver,
+			solutions: ["""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""","""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""","""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""","""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""","""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""","""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/oss.mzn")]
@@ -9405,23 +6228,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_oss_5(string solver)
 	{
-		var path = "examples/oss.mzn";
-		var solutions = new List<string> {
-			"""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""",
-			"""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""",
-			"""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""",
-			"""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/oss.mzn",
+			solver: solver,
+			solutions: ["""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""","""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""","""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""","""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""","""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/packing.mzn")]
@@ -9429,17 +6241,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_packing_5(string solver)
 	{
-		var path = "examples/packing.mzn";
-		var solutions = new List<string> {
-			"""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/packing.mzn",
+			solver: solver,
+			solutions: ["""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/radiation.mzn")]
@@ -9447,32 +6254,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_radiation_9(string solver)
 	{
-		var path = "examples/radiation.mzn";
-		var solutions = new List<string> {
-			"""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: solver,
+			solutions: ["""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/radiation.mzn")]
 	public async Task test_solve_examples_radiation_10()
 	{
-		var path = "examples/radiation.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/template_design.mzn")]
@@ -9480,32 +6277,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_template_design_5(string solver)
 	{
-		var path = "examples/template_design.mzn";
-		var solutions = new List<string> {
-			"""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/template_design.mzn",
+			solver: solver,
+			solutions: ["""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
 	public async Task test_solve_examples_wolf_goat_cabbage_9()
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/wolf_goat_cabbage.mzn")]
@@ -9513,26 +6300,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_wolf_goat_cabbage_10(string solver)
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solutions = new List<string> {
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: solver,
+			solutions: ["""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_4.mzn")]
@@ -9541,22 +6314,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_4_6(string solver)
 	{
-		var path = "examples/battleships_4.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_4.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,3,0,0,1,0,0,1,2,0,0,4,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,1,0,0,0,3,0,3,0,0,0,0,0,2,0,0,0,4,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,3,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,0,1,0,0,1,2,0,0,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[2,1,0,0,5,2,3,1,4,2];row_sums=[3,2,3,4,0,1,2,2,2,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/battleships_7.mzn")]
@@ -9565,24 +6328,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_battleships_7_6(string solver)
 	{
-		var path = "examples/battleships_7.mzn";
-		var solutions = new List<string> {
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			"""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/battleships_7.mzn",
+			solver: solver,
+			solutions: ["""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,2,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,4,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,2,0,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];""","""a=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,2,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];col_sums=[3,1,4,3,2,2,1,1,2,1];row_sums=[3,2,2,1,4,0,3,1,3,1];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/factory_planning_instance.mzn")]
@@ -9591,17 +6342,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_factory_planning_instance_6(string solver)
 	{
-		var path = "examples/factory_planning_instance.mzn";
-		var solutions = new List<string> {
-			"""last_step=5;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/factory_planning_instance.mzn",
+			solver: solver,
+			solutions: ["""last_step=5;"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/knights.mzn")]
@@ -9609,17 +6355,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_knights_6(string solver)
 	{
-		var path = "examples/knights.mzn";
-		var solutions = new List<string> {
-			"""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/knights.mzn",
+			solver: solver,
+			solutions: ["""p=[1,9,5,16,3,7,15,2,10,6,17,30,34,26,13,21,32,19,8,4,12,23,36,28,20,31,27,35,24,11,22,18,29,33,25,14];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_4.mzn")]
@@ -9627,22 +6368,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_4_6(string solver)
 	{
-		var path = "examples/magicsq_4.mzn";
-		var solutions = new List<string> {
-			"""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""",
-			"""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""",
-			"""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""",
-			"""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""",
-			"""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""",
-			"""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_4.mzn",
+			solver: solver,
+			solutions: ["""a=[16,1,15,2,5,8,10,11,4,13,3,14,9,12,6,7];""","""a=[12,1,14,7,15,4,9,6,2,13,8,11,5,16,3,10];""","""a=[10,5,11,8,6,9,7,12,3,4,14,13,15,16,2,1];""","""a=[10,11,5,8,6,7,9,12,3,2,16,13,15,14,4,1];""","""a=[16,2,9,7,3,13,6,12,5,11,4,14,10,8,15,1];""","""a=[8,11,6,9,13,7,10,4,12,14,3,5,1,2,15,16];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/magicsq_5.mzn")]
@@ -9650,22 +6381,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_magicsq_5_6(string solver)
 	{
-		var path = "examples/magicsq_5.mzn";
-		var solutions = new List<string> {
-			"""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""",
-			"""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""",
-			"""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""",
-			"""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""",
-			"""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""",
-			"""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/magicsq_5.mzn",
+			solver: solver,
+			solutions: ["""a=[20,7,3,24,11,4,19,14,10,18,6,9,17,21,12,13,5,16,8,23,22,25,15,2,1];""","""a=[16,5,4,17,23,9,18,8,6,24,12,7,11,21,14,13,10,20,19,3,15,25,22,2,1];""","""a=[7,5,9,21,23,19,14,22,6,4,25,24,11,3,2,1,12,15,17,20,13,10,8,18,16];""","""a=[23,5,13,17,7,3,21,9,14,18,6,4,12,24,19,11,10,16,8,20,22,25,15,2,1];""","""a=[25,5,9,3,23,4,24,15,14,8,20,7,1,16,21,6,17,18,13,11,10,12,22,19,2];""","""a=[11,21,17,10,6,22,8,12,19,4,16,15,18,9,7,14,20,5,3,23,2,1,13,24,25];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/oss.mzn")]
@@ -9674,23 +6395,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_oss_6(string solver)
 	{
-		var path = "examples/oss.mzn";
-		var solutions = new List<string> {
-			"""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""",
-			"""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""",
-			"""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""",
-			"""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""",
-			"""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/oss.mzn",
+			solver: solver,
+			solutions: ["""makespan=1168;objective=1168;start=[507,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[333,1162,0,1000,0,657,0,657,333];""","""makespan=1168;objective=1168;start=[339,0,6,0,168,663,168,663,339];""","""makespan=1168;objective=1168;start=[0,1162,829,1000,505,0,829,0,505];""","""makespan=1168;objective=1168;start=[339,1162,0,1000,168,657,161,657,333];""","""makespan=1168;objective=1168;start=[503,0,6,0,169,820,168,663,339];""","""makespan=1168;objective=1168;start=[507,0,6,0,174,825,168,663,339];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/packing.mzn")]
@@ -9698,17 +6408,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_packing_6(string solver)
 	{
-		var path = "examples/packing.mzn";
-		var solutions = new List<string> {
-			"""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/packing.mzn",
+			solver: solver,
+			solutions: ["""x=[0,70,75,0,79,50,0,50,46,27,52,35,59,35,35,50,27,52,46,75,50];y=[0,70,33,50,0,0,85,29,88,93,70,65,54,50,82,54,85,63,82,29,63];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/radiation.mzn")]
@@ -9716,32 +6421,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_radiation_11(string solver)
 	{
-		var path = "examples/radiation.mzn";
-		var solutions = new List<string> {
-			"""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: solver,
+			solutions: ["""Beamtime=21;K=7;N=[2,1,1,1,2,0,0,0,0,0,0,0,0,0];Q=[0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];objective=175;"""],
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/radiation.mzn")]
 	public async Task test_solve_examples_radiation_12()
 	{
-		var path = "examples/radiation.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/radiation.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/template_design.mzn")]
@@ -9749,32 +6444,22 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_template_design_6(string solver)
 	{
-		var path = "examples/template_design.mzn";
-		var solutions = new List<string> {
-			"""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/template_design.mzn",
+			solver: solver,
+			solutions: ["""Production=442;R=[167,275];Surplus=313;objective=442;p=[0,1,2,0,1,1,3,0,3,0,0,3,0,4];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Fact(DisplayName="examples/wolf_goat_cabbage.mzn")]
 	public async Task test_solve_examples_wolf_goat_cabbage_11()
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solver = "coin-bc";
-		var solutions = new List<string>();
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: "coin-bc",
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 	[Theory(DisplayName="examples/wolf_goat_cabbage.mzn")]
@@ -9782,26 +6467,12 @@ public class ClientTests : ClientTest
 	[InlineData("chuffed")]
 	public async Task test_solve_examples_wolf_goat_cabbage_12(string solver)
 	{
-		var path = "examples/wolf_goat_cabbage.mzn";
-		var solutions = new List<string> {
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			"""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""",
-			};
-		var args = new List<string>();
-		string? error = null;
-		var allSolutions = false;
-		var statuses = new List<SolveStatus>{
-			SolveStatus.Satisfied,SolveStatus.Optimal
-		};
-		await Test(path, solver, solutions, args, error, allSolutions, statuses);
+		await Test(
+			path: "examples/wolf_goat_cabbage.mzn",
+			solver: solver,
+			solutions: ["""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,false,true,false,true,false,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];""","""cabbage=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];farmer=[false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];goat=[false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,false,true,false,true,false,false,true,false,false];wolf=[false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,true,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false,true,false,false];"""],
+			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
+		);
 	}
 
 }

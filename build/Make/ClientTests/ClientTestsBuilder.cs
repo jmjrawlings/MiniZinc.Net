@@ -1,4 +1,6 @@
-﻿namespace Make;
+﻿using System.Text;
+
+namespace Make;
 
 using LibMiniZinc.Tests;
 
@@ -60,6 +62,7 @@ public sealed class ClientTestsBuilder : TestBuilder
     protected void WriteTest(TestCaseInfo info)
     {
         IDisposable block;
+        List<string> args = [$"path: \"{info.Path}\""];
         if (info.Solvers.Count > 1)
         {
             Attribute("Theory", $"DisplayName=\"{info.Path}\"");
@@ -72,7 +75,7 @@ public sealed class ClientTestsBuilder : TestBuilder
             }
 
             block = Function($"public async Task {info.Name}", "string solver");
-            Var("path", $"\"{info.Path}\"");
+            args.Add("solver: solver");
         }
         else
         {
@@ -83,98 +86,103 @@ public sealed class ClientTestsBuilder : TestBuilder
                 Attribute("Fact", $"DisplayName=\"{info.Path}\"", "Skip=\"Solver not supported\"");
 
             block = Function($"public async Task {info.Name}");
-            Var("path", $"\"{info.Path}\"");
-            Var("solver", Quote(solver));
+            args.Add($"solver: {Quote(solver)}");
         }
 
-        if (info.Solutions is not { Count: > 0 } solutions)
+        var ab = new StringBuilder();
+
+        if (info.Solutions is { Count: > 0 } solutions)
         {
-            WriteLn("var solutions = new List<string>();");
-        }
-        else
-        {
-            WriteLn("var solutions = new List<string> {");
-            using (Indent())
+            ab.Append("solutions: [");
+            int i = 0;
+            foreach (var sol in solutions)
             {
-                foreach (var sol in solutions)
-                {
-                    Write(TripleQuote(sol));
-                    Append(',');
-                    NewLine();
-                }
-                WriteLn("};");
+                ab.Append(TripleQuote(sol));
+                if (++i < solutions.Count)
+                    ab.Append(',');
             }
+            ab.Append(']');
+            args.Add(ab.ToString());
         }
-        if (info.ExtraArgs is not { Count: > 0 } args)
+
+        ab.Clear();
+        if (info.ExtraArgs is { Count: > 0 } extraArgs)
         {
-            WriteLn("var args = new List<string>();");
-        }
-        else
-        {
-            WriteLn("var args = new List<string>{");
-            using (Indent())
+            ab.Append("args: [");
+            int i = 0;
+            foreach (var arg in extraArgs)
             {
-                foreach (var arg in args)
-                {
-                    Write(FormatArg(arg));
-                    Append(',');
-                    NewLine();
-                }
+                ab.Append(FormatArg(arg));
+                if (++i < extraArgs.Count)
+                    ab.Append(',');
             }
-            WriteLn("};");
+
+            ab.Append(']');
+            args.Add(ab.ToString());
         }
+        ab.Clear();
 
         if (info.ErrorMessage is { } err)
-            Declare("string", "error", $"\"{err}\"");
+            args.Add($"error: \"{err}\"");
         else if (info.ErrorRegex is { } regex)
-            Declare("string", "error", $"\"{regex.Replace("\\", "")}\"");
-        else
-            Declare("string?", "error", null);
+        {
+            var rgx = regex.Replace("\\", "");
+            args.Add($"error: \"{rgx}\"");
+        }
 
-        Var("allSolutions", info.Type is TestType.AllSolutions ? "true" : "false");
+        if (info.Type is TestType.AllSolutions)
+            args.Add($"allSolutions: true");
 
-        WriteLn("var statuses = new List<SolveStatus>{");
+        switch (info.Type)
+        {
+            case TestType.Compile:
+                break;
+            case TestType.Satisfy:
+                args.Add("statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]");
+                break;
+            case TestType.AnySolution:
+                args.Add("statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]");
+                break;
+            case TestType.AllSolutions:
+                args.Add("statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]");
+                break;
+            case TestType.Optimise:
+                args.Add("statuses: [SolveStatus.Optimal]");
+                break;
+            case TestType.OutputModel:
+                break;
+            case TestType.Unsatisfiable:
+                args.Add("statuses: [SolveStatus.Unsatisfiable]");
+                break;
+            case TestType.Error:
+                break;
+            case TestType.AssertionError:
+                break;
+            case TestType.EvaluationError:
+                break;
+            case TestType.MiniZincError:
+                break;
+            case TestType.TypeError:
+                break;
+            case TestType.SyntaxError:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        WriteLn("await Test(");
         using (Indent())
         {
-            switch (info.Type)
+            int n = 0;
+            foreach (var arg in args)
             {
-                case TestType.Compile:
-                    break;
-                case TestType.Satisfy:
-                    WriteLn("SolveStatus.Satisfied,SolveStatus.Optimal");
-                    break;
-                case TestType.AnySolution:
-                    WriteLn("SolveStatus.Satisfied,SolveStatus.Optimal");
-                    break;
-                case TestType.AllSolutions:
-                    WriteLn("SolveStatus.Satisfied,SolveStatus.Optimal");
-                    break;
-                case TestType.Optimise:
-                    WriteLn("SolveStatus.Optimal");
-                    break;
-                case TestType.OutputModel:
-                    break;
-                case TestType.Unsatisfiable:
-                    WriteLn("SolveStatus.Unsatisfiable");
-                    break;
-                case TestType.Error:
-                    break;
-                case TestType.AssertionError:
-                    break;
-                case TestType.EvaluationError:
-                    break;
-                case TestType.MiniZincError:
-                    break;
-                case TestType.TypeError:
-                    break;
-                case TestType.SyntaxError:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                if (++n < args.Count)
+                    WriteLn($"{arg},");
+                else
+                    WriteLn(arg);
             }
         }
-        WriteLn("};");
-        WriteLn("await Test(path, solver, solutions, args, error, allSolutions, statuses);");
+        WriteLn(");");
         block.Dispose();
     }
 

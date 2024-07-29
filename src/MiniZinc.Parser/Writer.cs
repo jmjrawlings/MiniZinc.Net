@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using MiniZinc.Parser.Values;
+
+namespace MiniZinc.Parser;
 
 using System.Text;
 using Syntax;
@@ -244,15 +246,13 @@ public sealed class Writer
             case null:
                 break;
 
+            case ValueSyntax v:
+                WriteValue(v);
+                break;
+
             case Array1dSyntax e:
                 WriteChar(OPEN_BRACKET);
                 WriteSep(e.Elements, WriteExpr);
-                WriteChar(CLOSE_BRACKET);
-                break;
-
-            case Array1dValueSyntax e:
-                WriteChar(OPEN_BRACKET);
-                WriteSep(e.Values, WriteExpr);
                 WriteChar(CLOSE_BRACKET);
                 break;
 
@@ -275,25 +275,6 @@ public sealed class Writer
                 WriteBinOp(e, prec);
                 break;
 
-            case IntLiteralSyntax e:
-                _sb.Append(e.Value);
-                break;
-
-            case BoolLiteralSyntax e:
-                WriteString(e.Value ? TRUE : FALSE);
-                WriteAnnotations(e);
-                break;
-
-            case FloatLiteralSyntax e:
-                _sb.Append(e.Value);
-                break;
-
-            case StringLiteralSyntax e:
-                WriteChar(DOUBLE_QUOTE);
-                WriteString(e.Value);
-                WriteChar(DOUBLE_QUOTE);
-                break;
-
             case CallSyntax e:
                 WriteString(e.Name);
                 WriteChar(OPEN_PAREN);
@@ -308,12 +289,6 @@ public sealed class Writer
                 WriteChar(PIPE);
                 WriteSep(e.Generators, WriteExpr);
                 WriteChar(e.IsSet ? CLOSE_BRACE : CLOSE_BRACKET);
-                WriteAnnotations(e);
-                break;
-
-            case EmptyLiteralSyntax e:
-                WriteChar(OPEN_CHEVRON);
-                WriteChar(CLOSE_CHEVRON);
                 WriteAnnotations(e);
                 break;
 
@@ -415,32 +390,6 @@ public sealed class Writer
                 WriteChar(CLOSE_PAREN);
                 break;
 
-            case RecordValueSyntax e:
-                WriteChar(OPEN_PAREN);
-                int j = 0;
-                foreach (var (name, value) in e.Fields)
-                {
-                    WriteString(name);
-                    WriteChar(COLON);
-                    WriteExpr(value);
-                    if (j++ < e.Fields.Count)
-                        WriteChar(COMMA);
-                }
-                WriteChar(CLOSE_PAREN);
-                break;
-
-            case SetValueSyntax e:
-                WriteChar(OPEN_BRACE);
-                int j = 0;
-                foreach (var value in e.Values)
-                {
-                    WriteExpr(value);
-                    if (j++ < e.Values.Count)
-                        WriteChar(COMMA);
-                }
-                WriteChar(CLOSE_BRACE);
-                break;
-
             case SetLiteralSyntax e:
                 WriteChar(OPEN_BRACE);
                 WriteSep(e.Elements, WriteExpr);
@@ -486,6 +435,73 @@ public sealed class Writer
 
             default:
                 throw new Exception(expr.GetType().ToString());
+        }
+    }
+
+    private void WriteValue(ValueSyntax valueSyntax)
+    {
+        switch (valueSyntax)
+        {
+            case Array1dValueSyntax x:
+                WriteValues(x.Values, WriteValue);
+                break;
+            case BoolLiteralSyntax x:
+                WriteString(x.Value ? TRUE : FALSE);
+                break;
+            case EmptyLiteralSyntax x:
+                WriteChar(OPEN_CHEVRON);
+                WriteChar(CLOSE_CHEVRON);
+                break;
+            case IntLiteralSyntax x:
+                _sb.Append(x.Value);
+                break;
+            case FloatLiteralSyntax x:
+                _sb.Append(x.Value);
+                break;
+            case RecordValueSyntax x:
+                WriteValues(
+                    x.Fields,
+                    pair =>
+                    {
+                        WriteString(pair.Key);
+                        WriteChar(COLON);
+                        WriteValue(pair.Value);
+                    },
+                    before: OPEN_PAREN,
+                    after: CLOSE_PAREN
+                );
+                break;
+            case SetValueSyntax x:
+                WriteValues(x.Values, WriteValue, before: OPEN_BRACE, after: CLOSE_BRACE);
+                break;
+            case StringLiteralSyntax x:
+                WriteChar(DOUBLE_QUOTE);
+                WriteString(x.Value);
+                WriteChar(DOUBLE_QUOTE);
+                break;
+            case TupleValueSyntax x:
+                WriteChar(OPEN_PAREN);
+                foreach (var item in x.Fields)
+                {
+                    WriteValue(item);
+                    WriteChar(COMMA);
+                }
+                WriteChar(CLOSE_PAREN);
+                break;
+            case FloatRange x:
+                WriteDecimal(x.Lower);
+                WriteChar(DOT);
+                WriteChar(DOT);
+                WriteDecimal(x.Upper);
+                break;
+            case IntRange x:
+                WriteInt(x.Lower);
+                WriteChar(DOT);
+                WriteChar(DOT);
+                WriteInt(x.Upper);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(valueSyntax));
         }
     }
 
@@ -777,6 +793,10 @@ public sealed class Writer
         _sb.Append(c);
     }
 
+    void WriteInt(int i) => _sb.Append(i);
+
+    void WriteDecimal(decimal d) => _sb.Append(d);
+
     void Newline()
     {
         if (_minify)
@@ -871,6 +891,28 @@ public sealed class Writer
     {
         _sb.Append(s);
         _sb.Append(SPACE);
+    }
+
+    void WriteValues<T>(
+        IEnumerable<T> nodes,
+        Action<T> write,
+        char before = OPEN_BRACKET,
+        string sep = ",",
+        char after = CLOSE_BRACKET
+    )
+    {
+        using var enumerator = nodes.GetEnumerator();
+        bool first = enumerator.MoveNext();
+        if (!first)
+            return;
+
+        write(enumerator.Current);
+        while (enumerator.MoveNext())
+        {
+            WriteString(sep);
+            WriteSpace();
+            write(enumerator.Current);
+        }
     }
 
     void WriteSep<T>(IEnumerable<T>? nodes, Action<T, int?> write, int prec = 0, string sep = ",")

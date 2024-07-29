@@ -1041,7 +1041,7 @@ public sealed class Parser
                 }
                 else
                 {
-                    value = new IntLiteralSyntax(token);
+                    value = new FloatLiteralSyntax(token);
                 }
                 break;
 
