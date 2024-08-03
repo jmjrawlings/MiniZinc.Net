@@ -1,6 +1,4 @@
-﻿using MiniZinc.Parser.Values;
-
-namespace MiniZinc.Tests;
+﻿namespace MiniZinc.Tests;
 
 using System.Text;
 using System.Text.Json.Nodes;
@@ -28,7 +26,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     {
         WriteLn(path);
         WriteSection();
-        var source = File.ReadAllText(path);
+        var source = await File.ReadAllTextAsync(path);
         WriteLn(source);
         WriteSection();
         WriteLn();
@@ -118,20 +116,29 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
+    public bool Check(int a, int b) => a == b;
+
+    public bool Check(decimal a, decimal b)
+    {
+        var ra = Math.Round(a, 4);
+        var rb = Math.Round(b, 4);
+        return ra == rb;
+    }
+
     public bool Check(IntLiteralSyntax value, IntRange range)
     {
-        if (value.Value != range.Lower)
+        if (!Check(value.Value, range.Lower))
             return false;
-        if (value.Value != range.Upper)
+        if (!Check(value.Value, range.Upper))
             return false;
         return true;
     }
 
     public bool Check(FloatLiteralSyntax value, FloatRange range)
     {
-        if (value.Value != range.Lower)
+        if (!Check(value.Value, range.Lower))
             return false;
-        if (value.Value != range.Upper)
+        if (!Check(value.Value, range.Upper))
             return false;
         return true;
     }
@@ -248,7 +255,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
 
             case (
                 ArraySyntax expectedArray,
-                CallSyntax { Name: "array1d", Args: [_, Array1dSyntax actualArray] }
+                CallSyntax { Name.StringValue: "array1d", Args: [_, Array1dSyntax actualArray] }
             ):
                 if (!Check(expectedArray, actualArray))
                     return false;
@@ -256,7 +263,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
 
             case (
                 ArraySyntax expectedArray,
-                CallSyntax { Name: "array2d", Args: [_, _, Array1dSyntax actualArray] }
+                CallSyntax { Name.StringValue: "array2d", Args: [_, _, Array1dSyntax actualArray] }
             ):
                 if (!Check(expectedArray, actualArray))
                     return false;
@@ -264,7 +271,11 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
 
             case (
                 ArraySyntax expectedArray,
-                CallSyntax { Name: "array3d", Args: [_, _, _, Array1dSyntax actualArray] }
+                CallSyntax
+                {
+                    Name.StringValue: "array3d",
+                    Args: [_, _, _, Array1dSyntax actualArray]
+                }
             ):
                 if (!Check(expectedArray, actualArray))
                     return false;
@@ -285,7 +296,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
                 {
                     ExpressionSyntax? field = null;
                     foreach (var (name, actualField) in actualRecord.Fields)
-                        if (fieldName.Name == name.Name)
+                        if (fieldName.StringValue == name.StringValue)
                         {
                             field = actualField;
                             break;
@@ -302,10 +313,22 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
                 if (!Check(set, range))
                     return false;
                 break;
+
             case (RangeLiteralSyntax range, SetLiteralSyntax set):
                 if (!Check(set, range))
                     return false;
                 break;
+
+            case (IntLiteralSyntax a, IntLiteralSyntax b):
+                if (!Check(a.Value, b.Value))
+                    return false;
+                break;
+
+            case (FloatLiteralSyntax a, FloatLiteralSyntax b):
+                if (!Check(a.Value, b.Value))
+                    return false;
+                break;
+
             default:
                 if (!expected.Equals(actual))
                     return false;

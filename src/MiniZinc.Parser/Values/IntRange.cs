@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser.Values;
+﻿namespace MiniZinc.Parser;
 
 public sealed class IntRange(int lower, int upper) : ValueSyntax(default)
 {

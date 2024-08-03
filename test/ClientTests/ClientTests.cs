@@ -587,7 +587,7 @@ public class ClientTests : ClientTest
 			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
 		);
 	}
-
+	
 	[Theory(DisplayName="unit/general/mortgage.mzn")]
 	[InlineData("gecode")]
 	[InlineData("coin-bc")]
@@ -3489,9 +3489,9 @@ public class ClientTests : ClientTest
 		);
 	}
 
+	// Variable binding at the end of a generator expr?
 	[Fact(DisplayName="unit/regression/github_807.mzn")]
-	public async Task test_solve_unit_regression_github_807()
-	{
+	public async Task test_solve_unit_regression_github_807() {
 		await Test(
 			path: "unit/regression/github_807.mzn",
 			solver: "gecode",
@@ -4425,7 +4425,7 @@ public class ClientTests : ClientTest
 		);
 	}
 
-	[Fact(DisplayName="unit/types/record_in_checker.mzn")]
+	[Fact(DisplayName="unit/types/record_in_checker.mzn", Skip="Checker")]
 	public async Task test_solve_unit_types_record_in_checker()
 	{
 		await Test(

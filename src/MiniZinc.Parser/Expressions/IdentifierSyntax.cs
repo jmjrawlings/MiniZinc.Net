@@ -7,9 +7,7 @@ public sealed class IdentifierSyntax : ExpressionSyntax
 
     public TokenKind Kind => Start.Kind;
 
-    public string Name => Start.StringValue;
+    public Token Name => Start;
 
     public override string ToString() => Start.ToString();
-
-    public static implicit operator string(IdentifierSyntax f) => f.Name;
 }

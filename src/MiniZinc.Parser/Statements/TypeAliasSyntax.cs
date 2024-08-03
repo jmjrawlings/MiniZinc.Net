@@ -5,16 +5,16 @@
 /// </summary>
 /// <mzn>type A = record(int: a, bool: b)</mzn>
 /// <mzn>type C = 1..100</mzn>
-public sealed class TypeAliasSyntax : StatementSyntax, IIdentifiedSyntax
+public sealed class TypeAliasSyntax : StatementSyntax, INamedSyntax
 {
-    public IdentifierSyntax Identifier { get; }
+    public Token Name { get; }
 
     public TypeSyntax Type { get; }
 
-    public TypeAliasSyntax(in Token start, in IdentifierSyntax identifer, TypeSyntax type)
+    public TypeAliasSyntax(in Token start, in Token name, TypeSyntax type)
         : base(in start)
     {
-        Identifier = identifer;
+        Name = name;
         Type = type;
     }
 }

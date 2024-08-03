@@ -48,13 +48,13 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
             case (IncludeStatement a, IncludeStatement b):
                 return a.Path.Equals(b.Path);
             case (AssignStatement a, AssignStatement b):
-                if (!a.Identifier.Equals(b.Identifier))
+                if (!a.Name.Equals(b.Name))
                     return false;
                 if (!a.Expr.Equals(b.Expr))
                     return false;
                 return true;
             case (DeclareStatement a, DeclareStatement b):
-                if (!a.Identifier.Equals(b.Identifier))
+                if (!a.Name.Equals(b.Name))
                     return false;
                 if (!a.Type.Equals(b.Type))
                     return false;

@@ -2,10 +2,13 @@
 
 public sealed class GeneratorSyntax : ExpressionSyntax
 {
-    public GeneratorSyntax(in Token start)
-        : base(start) { }
+    public GeneratorSyntax(in Token start, List<Token> names)
+        : base(start)
+    {
+        Names = names;
+    }
 
-    public required List<IdentifierSyntax> Names { get; set; }
+    public List<Token> Names { get; }
 
     public required ExpressionSyntax From { get; set; }
 

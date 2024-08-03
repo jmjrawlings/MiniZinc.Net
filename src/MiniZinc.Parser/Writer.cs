@@ -1,6 +1,4 @@
-﻿using MiniZinc.Parser.Values;
-
-namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser;
 
 using System.Text;
 using Syntax;
@@ -174,7 +172,7 @@ public sealed class Writer
 
             case TypeAliasSyntax e:
                 WriteKeyword(TYPE);
-                WriteIdent(e.Identifier);
+                WriteToken(e.Name);
                 WriteSpace();
                 WriteChar(EQUAL);
                 WriteSpace();
@@ -217,7 +215,7 @@ public sealed class Writer
                 break;
 
             case AssignStatement e:
-                WriteIdent(e.Identifier);
+                WriteToken(e.Name);
                 WriteSpace();
                 WriteChar(EQUAL);
                 WriteSpace();
@@ -276,7 +274,7 @@ public sealed class Writer
                 break;
 
             case CallSyntax e:
-                WriteString(e.Name);
+                WriteToken(e.Name);
                 WriteChar(OPEN_PAREN);
                 WriteSep(e.Args, WriteExpr);
                 WriteChar(CLOSE_PAREN);
@@ -293,7 +291,7 @@ public sealed class Writer
                 break;
 
             case GeneratorCallSyntax e:
-                WriteString(e.Name);
+                WriteToken(e.Name);
                 WriteChar(OPEN_PAREN);
                 WriteSep(e.Generators, WriteGenerator);
                 WriteChar(CLOSE_PAREN);
@@ -380,7 +378,7 @@ public sealed class Writer
                 for (int i = 0; i < e.Fields.Count; i++)
                 {
                     var (name, body) = e.Fields[i];
-                    WriteIdent(name);
+                    WriteToken(name);
                     WriteChar(COLON);
                     WriteExpr(body);
                     if (i < e.Fields.Count - 1)
@@ -536,9 +534,9 @@ public sealed class Writer
         }
 
         WriteSpace();
-        WriteIdent(e.Identifier);
+        WriteToken(e.Name);
         if (e.Parameters is { } parameters)
-            WriteParameters(e.Parameters);
+            WriteParameters(parameters);
 
         if (e.Ann is { } ann)
         {
@@ -546,7 +544,7 @@ public sealed class Writer
             WriteString(ANN);
             WriteChar(':');
             WriteSpace();
-            WriteIdent(ann);
+            WriteToken(ann);
             WriteSpace();
         }
 
@@ -683,7 +681,7 @@ public sealed class Writer
                 WriteSep(e.Types, WriteType, sep: "++");
                 break;
 
-            case ExprType e:
+            case ExprTypeSyntax e:
                 WriteExpr(e.Expr);
                 break;
 
@@ -691,10 +689,6 @@ public sealed class Writer
                 WriteKeyword(LIST);
                 WriteKeyword(OF);
                 WriteType(e.Items);
-                break;
-
-            case IdentifierTypeSyntax e:
-                WriteIdent(e.Identifier);
                 break;
 
             case RecordTypeSyntax e:
@@ -743,34 +737,53 @@ public sealed class Writer
                 WriteString(ANY);
                 break;
 
+            case { Kind: TypeKind.Generic }:
+                WriteString(ANY);
+                WriteSpace();
+                WriteString(type.Name.ToString());
+                break;
+
+            case { Kind: TypeKind.GenericSeq }:
+                WriteString(ANY);
+                WriteSpace();
+                WriteString(type.Name.ToString());
+                break;
+
+            case { Name: { } name }:
+                WriteToken(name);
+                break;
+
             default:
                 throw new NotImplementedException(type.ToString());
         }
     }
 
-    void WriteParameters(IReadOnlyList<ParameterSyntax>? parameters)
+    void WriteParameters(IReadOnlyList<(Token, TypeSyntax)>? parameters)
     {
         WriteChar(OPEN_PAREN);
         WriteSep(parameters, WriteParameter);
         WriteChar(CLOSE_PAREN);
     }
 
-    void WriteParameter(ParameterSyntax x, int? precedence = null)
+    void WriteParameter((Token, TypeSyntax) param, int? precedence = null)
     {
-        WriteType(x.Type);
-        if (x.Identifier is { } name)
+        var (name, type) = param;
+        WriteType(type);
+        if (name.Kind is not TokenKind.ERROR)
         {
             WriteChar(COLON);
-            WriteIdent(name);
+            WriteToken(name);
         }
-        WriteAnnotations(x);
+        WriteAnnotations(type);
     }
+
+    void WriteToken(in Token token) => WriteString(token.ToString());
 
     void WriteArrayAccess(ArrayAccessSyntax e) { }
 
     void WriteGenerator(GeneratorSyntax gen, int? precedence = null)
     {
-        WriteSep(gen.Names, WriteExpr);
+        WriteSep(gen.Names, (name, _) => WriteToken(name));
         WriteKeywordSpaced(IN);
         WriteExpr(gen.From);
         if (gen.Where is { } cond)
@@ -916,7 +929,6 @@ public sealed class Writer
     }
 
     void WriteSep<T>(IEnumerable<T>? nodes, Action<T, int?> write, int prec = 0, string sep = ",")
-        where T : SyntaxNode
     {
         if (nodes is null)
             return;

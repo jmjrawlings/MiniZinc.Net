@@ -5,9 +5,9 @@
 /// </summary>
 /// <mzn>int: a = 10</mzn>
 /// <mzn>var int: a = 10</mzn>
-public sealed class DeclareStatement : StatementSyntax, ILetLocalSyntax, IIdentifiedSyntax
+public sealed class DeclareStatement : StatementSyntax, ILetLocalSyntax, INamedSyntax
 {
-    public IdentifierSyntax Identifier { get; }
+    public Token Name { get; }
 
     public TypeSyntax? Type { get; }
 
@@ -18,11 +18,9 @@ public sealed class DeclareStatement : StatementSyntax, ILetLocalSyntax, IIdenti
     /// <summary>
     /// Typed parameter list if this is a function-like declaration
     /// </summary>
-    public List<ParameterSyntax>? Parameters { get; set; }
+    public List<(Token, TypeSyntax)>? Parameters { get; set; }
 
-    public IdentifierSyntax? Ann { get; init; }
-
-    public string Name => Identifier.Name;
+    public Token? Ann { get; init; }
 
     public bool IsAnnotation => Type.Kind is TypeKind.Annotation;
 
@@ -31,16 +29,11 @@ public sealed class DeclareStatement : StatementSyntax, ILetLocalSyntax, IIdenti
     /// </summary>
     /// <mzn>int: a = 10</mzn>
     /// <mzn>var int: a = 10</mzn>
-    public DeclareStatement(
-        in Token start,
-        DeclareKind kind,
-        TypeSyntax? type,
-        IdentifierSyntax identifier
-    )
+    public DeclareStatement(in Token start, DeclareKind kind, TypeSyntax? type, Token name)
         : base(start)
     {
         Type = type;
         Kind = kind;
-        Identifier = identifier;
+        Name = name;
     }
 }

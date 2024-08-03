@@ -20,6 +20,9 @@ public class TypeSyntax : SyntaxNode
     public TypeKind Kind { get; set; } = TypeKind.Any;
 
     /// True if the type is a variable (ie not a parameter)
+    public Token Name { get; set; }
+
+    /// True if the type is a variable (ie not a parameter)
     public bool Var { get; set; }
 
     /// True if the type is optional
@@ -32,44 +35,48 @@ public class TypeSyntax : SyntaxNode
 /// <mzn>class(a:int) ++ class(b: bool)</mzn>
 public sealed class CompositeTypeSyntax : TypeSyntax
 {
-    /// <summary>
-    /// A concatenation of other types
-    /// </summary>
-    /// <mzn>class(a:int) ++ class(b: bool)</mzn>
-    public CompositeTypeSyntax(in Token Start)
-        : base(Start) { }
+    public IReadOnlyList<TypeSyntax> Types { get; }
 
-    public List<TypeSyntax> Types { get; set; } = new();
+    public CompositeTypeSyntax(in Token Start, List<TypeSyntax> types)
+        : base(Start)
+    {
+        Types = types;
+        Kind = TypeKind.Composite;
+    }
 }
 
 public sealed class RecordTypeSyntax : TypeSyntax
 {
-    public RecordTypeSyntax(in Token start, IReadOnlyList<ParameterSyntax> fields)
+    public IReadOnlyList<(Token, TypeSyntax)> Fields { get; }
+
+    public RecordTypeSyntax(in Token start, List<(Token, TypeSyntax)> fields)
         : base(start)
     {
         Fields = fields;
     }
-
-    public IReadOnlyList<ParameterSyntax> Fields { get; }
 }
 
 public sealed class TupleTypeSyntax : TypeSyntax
 {
-    public TupleTypeSyntax(in Token Start)
-        : base(Start) { }
+    public List<TypeSyntax> Items { get; }
 
-    public List<TypeSyntax> Items { get; set; } = new();
+    public TupleTypeSyntax(in Token Start, List<TypeSyntax> items)
+        : base(Start)
+    {
+        Items = items;
+        Kind = TypeKind.Tuple;
+    }
 }
 
-public sealed class ExprType : TypeSyntax
+public sealed class ExprTypeSyntax : TypeSyntax
 {
-    public ExprType(in Token Start, ExpressionSyntax Expr)
+    public ExpressionSyntax Expr { get; }
+
+    public ExprTypeSyntax(in Token Start, ExpressionSyntax Expr)
         : base(Start)
     {
         this.Expr = Expr;
     }
-
-    public ExpressionSyntax Expr { get; init; }
 }
 
 public sealed class ArrayTypeSyntax : TypeSyntax
@@ -108,24 +115,4 @@ public sealed class SetTypeSyntax : TypeSyntax
         : base(Start) { }
 
     public required TypeSyntax Items { get; init; }
-}
-
-/// <summary>
-/// An identifier used as a type
-/// </summary>
-/// <mzn>type X = 1..3; var X: x;</mzn>
-public sealed class IdentifierTypeSyntax : TypeSyntax
-{
-    /// <summary>
-    /// An identifier used as a type
-    /// </summary>
-    /// <mzn>type X = 1..3; var X: x;</mzn>
-    public IdentifierTypeSyntax(in Token start, IdentifierSyntax identifier)
-        : base(start)
-    {
-        Identifier = identifier;
-    }
-
-    public readonly IdentifierSyntax Identifier;
-    public string Name => Identifier.Name;
 }

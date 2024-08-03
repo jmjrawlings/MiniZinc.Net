@@ -95,7 +95,7 @@ public class ParserUnitTests
         call.Generators.Should().HaveCount(1);
         var gen = call.Generators[0];
         gen.Names.Should().HaveCount(1);
-        var name = gen.Names[0].Name;
+        var name = gen.Names[0];
         name.Should().Be("i");
     }
 
@@ -213,10 +213,9 @@ public class ParserUnitTests
         var mzn = "record(1..1:x): a";
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
         var record = node.Type as RecordTypeSyntax;
-        var field = record!.Fields[0];
-        field.Identifier.ToString().Should().Be("x");
-        var ti = field.Type as ExprType;
-        var rng = (RangeLiteralSyntax)ti!.Expr;
+        var field = (ExprTypeSyntax)record!.Fields[0].Item2;
+        field.ToString().Should().Be("x");
+        var rng = (RangeLiteralSyntax)field.Expr;
         ((IntLiteralSyntax)rng.Lower!).Value.Should().Be(1);
         ((IntLiteralSyntax)rng.Upper!).Value.Should().Be(1);
     }
@@ -241,7 +240,7 @@ public class ParserUnitTests
     {
         var mzn = "0..: xd;";
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
-        var type = node.Type as ExprType;
+        var type = node.Type as ExprTypeSyntax;
         var expr = type!.Expr;
         expr.Should().BeOfType<RangeLiteralSyntax>();
         var rng = (RangeLiteralSyntax)expr;
@@ -265,7 +264,7 @@ public class ParserUnitTests
     {
         var mzn = "set of var int: xd";
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
-        node.Identifier.ToString().Should().Be("xd");
+        node.Name.ToString().Should().Be("xd");
     }
 
     [Fact]
@@ -273,8 +272,8 @@ public class ParserUnitTests
     {
         var mzn = "var 0..: xd";
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
-        node.Identifier.ToString().Should().Be("xd");
-        var type = (ExprType)node.Type;
+        node.Name.ToString().Should().Be("xd");
+        var type = (ExprTypeSyntax)node.Type;
         type.Var.Should().BeTrue();
         var range = (RangeLiteralSyntax)type.Expr;
         range.Lower.Should().BeOfType<IntLiteralSyntax>();
@@ -368,6 +367,14 @@ public class ParserUnitTests
         var expr = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
         var ozn = expr.Write();
         ozn.Should().Be("a diff (b union c)");
+    }
+
+    [Fact]
+    void test_union_type()
+    {
+        var mzn = @"var ..-1 union {1,3} union 5..: i";
+        var expr = Parser.ParseStatement<DeclareStatement>(mzn);
+        expr.Name.ToString().Should().Be("i");
     }
 
     [Fact]

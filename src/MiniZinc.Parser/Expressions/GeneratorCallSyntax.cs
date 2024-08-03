@@ -1,20 +1,15 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
-public sealed class GeneratorCallSyntax : ExpressionSyntax, IIdentifiedSyntax
+public sealed class GeneratorCallSyntax : ExpressionSyntax, INamedSyntax
 {
-    public IdentifierSyntax Identifier { get; }
     public ExpressionSyntax Expr { get; }
     public List<GeneratorSyntax> Generators { get; }
-    public string Name => Identifier.Name;
+    public Token Name { get; }
 
-    public GeneratorCallSyntax(
-        IdentifierSyntax identifier,
-        ExpressionSyntax expr,
-        List<GeneratorSyntax> generators
-    )
-        : base(identifier.Start)
+    public GeneratorCallSyntax(Token name, ExpressionSyntax expr, List<GeneratorSyntax> generators)
+        : base(name)
     {
-        Identifier = identifier;
+        Name = name;
         Expr = expr;
         Generators = generators;
     }

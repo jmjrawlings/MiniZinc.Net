@@ -19,7 +19,7 @@ public abstract class BaseModel<T>
 {
     public string Name { get; set; } = "";
 
-    private Dictionary<string, IIdentifiedSyntax> _namespace;
+    private Dictionary<string, INamedSyntax> _namespace;
 
     private Dictionary<string, List<DeclareStatement>>? _overloads;
 
@@ -50,7 +50,7 @@ public abstract class BaseModel<T>
 
     public IEnumerable<OutputStatement> Outputs => _outputs ?? Enumerable.Empty<OutputStatement>();
 
-    public IReadOnlyDictionary<string, IIdentifiedSyntax> NameSpace => _namespace;
+    public IReadOnlyDictionary<string, INamedSyntax> NameSpace => _namespace;
 
     public SolveStatement? SolveStatement => _solve;
 
@@ -69,7 +69,7 @@ public abstract class BaseModel<T>
         _warnings = null;
         _outputs = null;
         _constraints = null;
-        _namespace = new Dictionary<string, IIdentifiedSyntax>();
+        _namespace = new Dictionary<string, INamedSyntax>();
         _searchDirectories = new List<DirectoryInfo>();
         _allowFloats = allowFloats;
     }
@@ -311,14 +311,14 @@ public abstract class BaseModel<T>
                 break;
 
             case TypeAliasSyntax alias:
-                var name = alias.Identifier.Name;
+                var name = alias.Name.StringValue;
                 if (_namespace.TryGetValue(name, out var old))
                     Error($"Type alias name \"{name}\" conflicts with {old})");
                 _namespace.Add(name, alias);
                 break;
 
             case AssignStatement assign:
-                name = assign.Name;
+                name = assign.Name.StringValue;
                 var expr = assign.Expr;
                 _namespace.TryGetValue(name, out old);
                 switch (old)
@@ -353,7 +353,7 @@ public abstract class BaseModel<T>
                 break;
 
             case DeclareStatement declare:
-                name = declare.Name;
+                name = declare.Name.StringValue;
                 _namespace.TryGetValue(name, out old);
                 switch (old)
                 {

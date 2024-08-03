@@ -1,6 +1,4 @@
-﻿using MiniZinc.Parser.Values;
-
-namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser;
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -117,17 +115,17 @@ public sealed class Parser
         return false;
     }
 
-    private bool ParseIdent([NotNullWhen(true)] out IdentifierSyntax? node)
+    private bool ParseIdent(out Token node)
     {
         if (_kind is TokenKind.IDENTIFIER)
         {
-            node = new IdentifierSyntax(_token);
+            node = _token;
             Step();
             return true;
         }
         else
         {
-            node = null;
+            node = default;
             return Expected("Identifier");
         }
     }
@@ -147,17 +145,16 @@ public sealed class Parser
         }
     }
 
-    private bool ParseGeneric(out IdentifierSyntax ident)
+    private bool ParseGeneric(out Token ident)
     {
-        if (_kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQUENCE)
+        ident = _token;
+        if (ident.Kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQUENCE)
         {
-            ident = new IdentifierSyntax(_token);
             Step();
             return true;
         }
         else
         {
-            ident = null!;
             return Expected("Generic Variable ($$T, $T)");
         }
     }
@@ -274,12 +271,12 @@ public sealed class Parser
             if (!ParseValue(out var value))
                 break;
 
-            if (values.ContainsKey(ident.Name))
+            if (values.ContainsKey(ident.StringValue))
             {
                 Error($"Variable \"{ident}\" was assigned to multiple times");
                 break;
             }
-            values.Add(ident.Name, value);
+            values.Add(ident.StringValue, value);
 
             if (Skip(TokenKind.EOL) && !Skip(TokenKind.EOF))
                 continue;
@@ -371,15 +368,15 @@ public sealed class Parser
     /// </summary>
     private bool ParseDeclareTail(
         in Token start,
-        in IdentifierSyntax identifier,
+        in Token identifier,
         in TypeSyntax type,
         in DeclareKind kind,
         out DeclareStatement node
     )
     {
         node = null!;
-        IdentifierSyntax? ann = null;
-        List<ParameterSyntax>? parameters = null;
+        Token? ann = null;
+        List<(Token, TypeSyntax)>? parameters = null;
 
         if (_kind is TokenKind.OPEN_PAREN)
         {
@@ -491,14 +488,14 @@ public sealed class Parser
                 break;
 
             // Underscore enum `enum A = _(1..10);`
-            case CallSyntax { Identifier.Kind: TokenKind.UNDERSCORE } call:
+            case CallSyntax { Name.Kind: TokenKind.UNDERSCORE } call:
                 if (call.Args is not { Count: 1 })
                     return Expected($"Single argument call to _, got {call.Args}");
                 var arg = call.Args[0];
                 break;
 
             // Anonymous enum: `anon_enum(10);`
-            case CallSyntax { Name: "anon_enum" } call:
+            case CallSyntax { Name.StringValue: "anon_enum" } call:
                 if (call.Args is not { Count: 1 })
                     return Expected($"Single argument call to _, got {call.Args}");
                 var anonArg = call.Args[0];
@@ -758,38 +755,11 @@ public sealed class Parser
                 expr = new StringLiteralSyntax(token);
                 break;
 
-            case TokenKind.PLUS:
-                Step();
-                if (!ParseExpr(out expr))
-                    return false;
-                expr = new UnaryOperatorSyntax(token, Operator.Positive, expr);
-                break;
-
-            case TokenKind.MINUS:
-                Step();
-                if (!ParseExprAtom(out expr))
-                    return false;
-                if (expr is IntLiteralSyntax i)
-                    expr = new IntLiteralSyntax(token, -i.Value);
-                else if (expr is FloatLiteralSyntax f)
-                    expr = new FloatLiteralSyntax(token, -f.Value);
-                else
-                    expr = new UnaryOperatorSyntax(token, Operator.Negative, expr);
-                break;
-
             case TokenKind.NOT:
                 Step();
                 if (!ParseExprAtom(out expr))
                     return false;
                 expr = new UnaryOperatorSyntax(token, Operator.Not, expr);
-                break;
-
-            case TokenKind.RANGE_INCLUSIVE:
-            case TokenKind.RANGE_LEFT_INCLUSIVE:
-                Step();
-                if (!ParseExpr(out var right))
-                    return false;
-                expr = new RangeLiteralSyntax(token, upper: expr, upperInclusive: false);
                 break;
 
             case TokenKind.OPEN_PAREN:
@@ -952,9 +922,8 @@ public sealed class Parser
                     var fields = new Dictionary<string, ValueSyntax>();
                     while (_kind is not TokenKind.CLOSE_PAREN)
                     {
-                        if (!ParseIdent(out var ident))
+                        if (!ParseIdent(out var name))
                             return false;
-                        var name = ident.Name;
 
                         if (!Expect(TokenKind.COLON))
                             return false;
@@ -962,10 +931,10 @@ public sealed class Parser
                         if (!ParseValue(out value))
                             return false;
 
-                        if (fields.ContainsKey(name))
+                        if (fields.ContainsKey(name.StringValue))
                             return Error($"Duplicate name {name}");
 
-                        fields[name] = value;
+                        fields[name.StringValue] = value;
 
                         if (!Skip(TokenKind.COMMA))
                             break;
@@ -1084,13 +1053,55 @@ public sealed class Parser
         bool typeInst = false
     )
     {
-        if (!ParseExprAtom(out expr))
-            return false;
+        expr = null;
+        var start = _token;
+        var (op, assoc, prec) = Precedence(_kind);
+
+        switch (_kind)
+        {
+            case TokenKind.PLUS:
+                Step();
+                if (!ParseExpr(out expr, assoc, prec))
+                    return false;
+                expr = new UnaryOperatorSyntax(start, Operator.Positive, expr);
+                break;
+
+            case TokenKind.MINUS:
+                Step();
+                if (!ParseExpr(out expr, assoc, prec))
+                    return false;
+                if (expr is IntLiteralSyntax i)
+                    expr = new IntLiteralSyntax(start, -i.Value);
+                else if (expr is FloatLiteralSyntax f)
+                    expr = new FloatLiteralSyntax(start, -f.Value);
+                else
+                    expr = new UnaryOperatorSyntax(start, Operator.Negative, expr);
+                break;
+
+            case TokenKind.RANGE_INCLUSIVE:
+                Step();
+                if (!ParseExpr(out expr, assoc, prec))
+                    return false;
+                expr = new RangeLiteralSyntax(start, upper: expr, upperInclusive: true);
+                break;
+
+            case TokenKind.RANGE_LEFT_INCLUSIVE:
+                Step();
+                if (!ParseExpr(out expr, assoc, prec))
+                    return false;
+                expr = new RangeLiteralSyntax(start, upper: expr, upperInclusive: false);
+                break;
+
+            default:
+                if (!ParseExprAtom(out expr))
+                    return false;
+                break;
+        }
 
         while (true)
         {
             var infix = _token;
-            var (op, assoc, prec) = Precedence(infix.Kind);
+            (op, assoc, prec) = Precedence(infix.Kind);
             if (op is 0)
                 return true;
 
@@ -1215,13 +1226,13 @@ public sealed class Parser
     internal bool ParseIdentifierExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
         result = null;
-        var name = new IdentifierSyntax(_token);
+        var name = _token;
         Step();
 
         // Simple identifier
         if (!Skip(TokenKind.OPEN_PAREN))
         {
-            result = name;
+            result = new IdentifierSyntax(name);
             return true;
         }
 
@@ -1279,12 +1290,7 @@ public sealed class Parser
                 if (!ParseExpr(out var where))
                     return false;
 
-                expr = new GeneratorSyntax(expr.Start)
-                {
-                    From = from,
-                    Where = where,
-                    Names = new() { id }
-                };
+                expr = new GeneratorSyntax(expr.Start, [id.Name]) { From = from, Where = where };
                 exprs.Add(expr);
                 break;
 
@@ -1335,15 +1341,15 @@ public sealed class Parser
         var generators = new List<GeneratorSyntax>();
         var gencall = new GeneratorCallSyntax(name, yields, generators);
 
-        List<IdentifierSyntax>? idents = null;
+        List<Token>? idents = null;
         for (i = 0; i < exprs.Count; i++)
         {
             switch (exprs[i])
             {
                 // Identifiers must be collected as they are part of generators
                 case IdentifierSyntax id:
-                    idents ??= new List<IdentifierSyntax>();
-                    idents.Add(id);
+                    idents ??= new List<Token>();
+                    idents.Add(id.Name);
                     break;
                 // Already created generators get added
                 case GeneratorSyntax g:
@@ -1354,9 +1360,9 @@ public sealed class Parser
                     break;
                 // Binops are now known to be generators
                 case BinaryOperatorSyntax binop:
-                    idents ??= new List<IdentifierSyntax>();
-                    idents.Add((IdentifierSyntax)binop.Left);
-                    var gen = new GeneratorSyntax(default) { Names = idents, From = binop.Right };
+                    idents ??= [];
+                    idents.Add(((IdentifierSyntax)binop.Left).Name);
+                    var gen = new GeneratorSyntax(default, idents) { From = binop.Right };
                     generators.Add(gen);
                     idents = null;
                     break;
@@ -1372,13 +1378,13 @@ public sealed class Parser
         generators = null;
 
         begin:
-        var names = new List<IdentifierSyntax>();
+        var names = new List<Token>();
         while (true)
         {
-            IdentifierSyntax name;
+            Token name;
             if (_kind is TokenKind.UNDERSCORE)
             {
-                name = new IdentifierSyntax(_token);
+                name = _token;
                 Step();
             }
             else if (!ParseIdent(out name))
@@ -1399,7 +1405,7 @@ public sealed class Parser
         if (!ParseExpr(out var @from))
             return false;
 
-        var gen = new GeneratorSyntax(start) { Names = names, From = @from };
+        var gen = new GeneratorSyntax(start, names) { From = @from };
 
         if (Skip(TokenKind.WHERE))
             if (!ParseExpr(out var @where))
@@ -1768,7 +1774,10 @@ public sealed class Parser
     /// </summary>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>{ x | x in [1,2,3]}</mzn>
-    private bool ParseBraceExpr([NotNullWhen(true)] out ExpressionSyntax? result)
+    private bool ParseBraceExpr(
+        [NotNullWhen(true)] out ExpressionSyntax? result,
+        bool typeInst = false
+    )
     {
         result = null;
 
@@ -1943,14 +1952,17 @@ public sealed class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private bool ParseParenExpr([NotNullWhen(true)] out ExpressionSyntax? result)
+    private bool ParseParenExpr(
+        [NotNullWhen(true)] out ExpressionSyntax? result,
+        bool typeInst = false
+    )
     {
         result = null;
 
         if (!Expect(TokenKind.OPEN_PAREN, out var start))
             return false;
 
-        if (!ParseExpr(out var expr))
+        if (!ParseExpr(out var expr, typeInst: typeInst))
             return false;
 
         // Bracketed expr
@@ -1963,7 +1975,7 @@ public sealed class Parser
         // Record expr
         if (Skip(TokenKind.COLON))
         {
-            if (expr is not IdentifierSyntax name)
+            if (expr is not IdentifierSyntax { Name: var name })
                 return Expected("Identifier");
 
             var record = new RecordLiteralSyntax(start);
@@ -2070,15 +2082,14 @@ public sealed class Parser
 
         if (Skip(TokenKind.ANY))
         {
-            if (!ParseGeneric(out var ident))
+            if (!ParseGeneric(out var name))
                 return false;
 
-            type = new IdentifierTypeSyntax(start, ident)
+            type = new TypeSyntax(start)
             {
+                Name = name,
                 Kind =
-                    ident.Kind is TokenKind.GENERIC_SEQUENCE
-                        ? TypeKind.GenericSeq
-                        : TypeKind.Generic
+                    name.Kind is TokenKind.GENERIC_SEQUENCE ? TypeKind.GenericSeq : TypeKind.Generic
             };
             return true;
         }
@@ -2204,24 +2215,18 @@ public sealed class Parser
 
             case TokenKind.GENERIC:
                 Step();
-                type = new IdentifierTypeSyntax(start, new IdentifierSyntax(start))
-                {
-                    Kind = TypeKind.Generic
-                };
+                type = new TypeSyntax(start) { Name = start, Kind = TypeKind.Generic };
                 break;
 
             case TokenKind.GENERIC_SEQUENCE:
                 Step();
-                type = new IdentifierTypeSyntax(start, new IdentifierSyntax(start))
-                {
-                    Kind = TypeKind.GenericSeq
-                };
+                type = new TypeSyntax(start) { Kind = TypeKind.GenericSeq, Name = start };
                 break;
 
             default:
                 if (!ParseExpr(out var expr, typeInst: true))
                     return false;
-                type = new ExprType(start, expr) { Kind = TypeKind.Expr };
+                type = new ExprTypeSyntax(start, expr) { Kind = TypeKind.Expr };
                 break;
         }
 
@@ -2234,28 +2239,25 @@ public sealed class Parser
     /// <mzn>int: a</mzn>
     /// <mzn>bool: ABC</mzn>
     /// <mzn>any $$T</mzn>
-    internal bool ParseTypeAndName([NotNullWhen(true)] out ParameterSyntax? param)
+    internal bool ParseTypeAndName([NotNullWhen(true)] out TypeSyntax? type, out Token name)
     {
-        param = null;
-        if (!ParseType(out var type))
+        type = null;
+        name = default;
+        if (!ParseType(out type))
             return false;
 
         // Parameters can have a type only
         // `int: get_two(int) = 2`
         if (!Skip(TokenKind.COLON))
-        {
-            param = new ParameterSyntax(type, null);
             return true;
-        }
 
-        if (!ParseIdent(out var name))
+        if (!ParseIdent(out name))
             return false;
 
         if (!ParseAnnotations(out var anns))
             return false;
 
-        param = new ParameterSyntax(type, name);
-        param.Annotations = anns;
+        type.Annotations = anns;
         return true;
     }
 
@@ -2269,20 +2271,21 @@ public sealed class Parser
         if (!Expect(TokenKind.TUPLE, out var start))
             return false;
 
-        tuple = new TupleTypeSyntax(start) { Kind = TypeKind.Tuple };
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
+        List<TypeSyntax> items = [];
         while (_kind is not TokenKind.CLOSE_PAREN)
         {
             if (!ParseType(out var ti))
                 return false;
 
-            tuple.Items.Add(ti);
+            items.Add(ti);
             if (!Skip(TokenKind.COMMA))
                 break;
         }
 
+        tuple = new TupleTypeSyntax(start, items);
         return Expect(TokenKind.CLOSE_PAREN);
     }
 
@@ -2308,19 +2311,19 @@ public sealed class Parser
     /// and names between parentheses
     /// </summary>
     /// <mzn>(int: a, bool: b)</mzn>
-    private bool ParseParameters([NotNullWhen(true)] out List<ParameterSyntax>? parameters)
+    private bool ParseParameters([NotNullWhen(true)] out List<(Token, TypeSyntax)>? parameters)
     {
         parameters = default;
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
-        parameters = new List<ParameterSyntax>();
+        parameters = new List<(Token, TypeSyntax)>();
         while (_kind is not TokenKind.CLOSE_PAREN)
         {
-            if (!ParseTypeAndName(out var param))
+            if (!ParseTypeAndName(out var ptype, out var pname))
                 return false;
 
-            parameters.Add(param);
+            parameters.Add((pname, ptype));
             if (!Skip(TokenKind.COMMA))
                 break;
         }
@@ -2351,26 +2354,20 @@ public sealed class Parser
         if (!ParseBaseType(out var type))
             return false;
 
-        if (!Skip(TokenKind.PLUS_PLUS))
-        {
-            result = type;
-            return true;
-        }
+        List<TypeSyntax>? types = null;
 
-        // Complex types
-        // `record(a: int) ++ record(b: int)`
-        var complex = new CompositeTypeSyntax(start) { Kind = TypeKind.Composite };
-        complex.Types.Add(type);
-        result = complex;
-
-        while (true)
+        while (Skip(TokenKind.PLUS_PLUS) || Skip(TokenKind.UNION))
         {
+            types ??= [type];
             if (!ParseBaseType(out type))
                 return false;
-            complex.Types.Add(type);
-            if (!Skip(TokenKind.PLUS_PLUS))
-                break;
+            types.Add(type);
         }
+
+        if (types is null)
+            result = type;
+        else
+            result = new CompositeTypeSyntax(start, types);
 
         return true;
     }
