@@ -27,7 +27,7 @@ public sealed class WriterUnitTests
             """;
 
         var expected =
-            """include "b.mzn";include "a.mzn";var int: a;solve maximize a;output ["\(a)"];""";
+            """include "b.mzn";include "a.mzn";var int:a;solve maximize a;output["\(a)"];""";
 
         var result = Parser.ParseModelString(input, out var model);
         result.Ok.Should().BeTrue("Text should parse");

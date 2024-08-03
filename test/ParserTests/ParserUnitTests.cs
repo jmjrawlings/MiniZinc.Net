@@ -90,13 +90,13 @@ public class ParserUnitTests
     {
         var mzn = "sum (i in class where i >= s) (class_sizes[i])";
         var call = Parser.ParseExpression<GeneratorCallSyntax>(mzn);
-        call.Name.Should().Be("sum");
+        call.Name.StringValue.Should().Be("sum");
         call.Expr.Should().BeOfType<ArrayAccessSyntax>();
         call.Generators.Should().HaveCount(1);
         var gen = call.Generators[0];
         gen.Names.Should().HaveCount(1);
         var name = gen.Names[0];
-        name.Should().Be("i");
+        name.ToString().Should().Be("i");
     }
 
     [Theory]
@@ -213,11 +213,9 @@ public class ParserUnitTests
         var mzn = "record(1..1:x): a";
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
         var record = node.Type as RecordTypeSyntax;
-        var field = (ExprTypeSyntax)record!.Fields[0].Item2;
-        field.ToString().Should().Be("x");
-        var rng = (RangeLiteralSyntax)field.Expr;
-        ((IntLiteralSyntax)rng.Lower!).Value.Should().Be(1);
-        ((IntLiteralSyntax)rng.Upper!).Value.Should().Be(1);
+        var (name, field) = record!.Fields[0];
+        name.ToString().Should().Be("x");
+        field.ToString().Should().Be("1..1");
     }
 
     [Fact]
@@ -335,13 +333,13 @@ public class ParserUnitTests
             var right = eval(binop.Right);
             switch (binop.Operator)
             {
-                case Operator.Add:
+                case TokenKind.PLUS:
                     return left + right;
-                case Operator.Subtract:
+                case TokenKind.MINUS:
                     return left - right;
-                case Operator.Multiply:
+                case TokenKind.STAR:
                     return left * right;
-                case Operator.Div:
+                case TokenKind.SLASH:
                     return left / right;
                 default:
                     throw new Exception();
@@ -391,7 +389,7 @@ public class ParserUnitTests
     {
         var mzn = "1 + 2 - 3";
         var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
-        binop.Operator.Should().Be(Operator.Subtract);
+        binop.Operator.Should().Be(TokenKind.MINUS);
         var oz = binop.Write();
         oz.Should().Be(mzn);
         var b = 2;
@@ -402,7 +400,7 @@ public class ParserUnitTests
     {
         var mzn = "a - b >= c";
         var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
-        binop.Operator.Should().Be(Operator.GreaterThanEqual);
+        binop.Operator.Should().Be(TokenKind.GREATER_THAN_EQUAL);
         var oz = binop.Write();
         oz.Should().Be(mzn);
     }
@@ -412,7 +410,7 @@ public class ParserUnitTests
     {
         var mzn = "(Formula[1] > 0) == assignment[1]";
         var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
-        binop.Operator.Should().Be(Operator.Equal);
+        binop.Operator.Should().Be(TokenKind.EQUAL);
         var oz = binop.Write();
         oz.Should().Be(mzn);
     }

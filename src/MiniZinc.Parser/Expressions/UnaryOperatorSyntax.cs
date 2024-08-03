@@ -2,14 +2,14 @@
 
 public sealed class UnaryOperatorSyntax : ExpressionSyntax
 {
-    public Operator Operator { get; }
+    public TokenKind Operator { get; }
 
     public ExpressionSyntax Expr { get; }
 
-    public UnaryOperatorSyntax(in Token start, Operator op, ExpressionSyntax expr)
-        : base(start)
+    public UnaryOperatorSyntax(in Token op, ExpressionSyntax expr)
+        : base(op)
     {
-        Operator = op;
+        Operator = op.Kind;
         Expr = expr;
     }
 }

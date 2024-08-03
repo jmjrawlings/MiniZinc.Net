@@ -509,7 +509,7 @@ public sealed class Parser
             case BinaryOperatorSyntax
             {
                 Left: var left,
-                Operator: Operator.Concat,
+                Operator: TokenKind.PLUS_PLUS,
                 Right: var right
             }:
                 if (!ValidateEnumCases(left))
@@ -753,13 +753,6 @@ public sealed class Parser
             case TokenKind.STRING_LITERAL:
                 Step();
                 expr = new StringLiteralSyntax(token);
-                break;
-
-            case TokenKind.NOT:
-                Step();
-                if (!ParseExprAtom(out expr))
-                    return false;
-                expr = new UnaryOperatorSyntax(token, Operator.Not, expr);
                 break;
 
             case TokenKind.OPEN_PAREN:
@@ -1055,7 +1048,7 @@ public sealed class Parser
     {
         expr = null;
         var start = _token;
-        var (op, assoc, prec) = Precedence(_kind);
+        var (assoc, prec) = Precedence(_kind);
 
         switch (_kind)
         {
@@ -1063,7 +1056,7 @@ public sealed class Parser
                 Step();
                 if (!ParseExpr(out expr, assoc, prec))
                     return false;
-                expr = new UnaryOperatorSyntax(start, Operator.Positive, expr);
+                expr = new UnaryOperatorSyntax(start, expr);
                 break;
 
             case TokenKind.MINUS:
@@ -1075,7 +1068,14 @@ public sealed class Parser
                 else if (expr is FloatLiteralSyntax f)
                     expr = new FloatLiteralSyntax(start, -f.Value);
                 else
-                    expr = new UnaryOperatorSyntax(start, Operator.Negative, expr);
+                    expr = new UnaryOperatorSyntax(start, expr);
+                break;
+
+            case TokenKind.NOT:
+                Step();
+                if (!ParseExpr(out expr, assoc, prec))
+                    return false;
+                expr = new UnaryOperatorSyntax(start, expr);
                 break;
 
             case TokenKind.RANGE_INCLUSIVE:
@@ -1101,8 +1101,9 @@ public sealed class Parser
         while (true)
         {
             var infix = _token;
-            (op, assoc, prec) = Precedence(infix.Kind);
-            if (op is 0)
+            var op = infix.Kind;
+            (assoc, prec) = Precedence(op);
+            if (assoc is 0)
                 return true;
 
             switch (assoc)
@@ -1121,10 +1122,10 @@ public sealed class Parser
 
             if (
                 op
-                is Operator.RangeInclusive
-                    or Operator.RangeExclusive
-                    or Operator.RangeLeftInclusive
-                    or Operator.RangeRightInclusive
+                is TokenKind.RANGE_INCLUSIVE
+                    or TokenKind.RANGE_EXCLUSIVE
+                    or TokenKind.RANGE_LEFT_INCLUSIVE
+                    or TokenKind.RANGE_RIGHT_INCLUSIVE
             )
             {
                 Step();
@@ -1133,19 +1134,19 @@ public sealed class Parser
                         expr.Start,
                         lower: expr,
                         lowerInclusive: op
-                            is Operator.RangeInclusive
-                                or Operator.RangeLeftInclusive,
+                            is TokenKind.RANGE_INCLUSIVE
+                                or TokenKind.RANGE_LEFT_INCLUSIVE,
                         upper: right,
                         upperInclusive: op
-                            is Operator.RangeInclusive
-                                or Operator.RangeRightInclusive
+                            is TokenKind.RANGE_INCLUSIVE
+                                or TokenKind.RANGE_RIGHT_INCLUSIVE
                     );
                 else if (_errorMessage is not null)
                     return false;
                 else
                     expr = new RangeLiteralSyntax(expr.Start, expr);
             }
-            else if (op is Operator.Concat && typeInst)
+            else if (op is TokenKind.PLUS_PLUS && typeInst)
             {
                 return true;
             }
@@ -1154,7 +1155,7 @@ public sealed class Parser
                 Step();
                 if (!ParseExpr(out var right, assoc, prec))
                     return false;
-                expr = new BinaryOperatorSyntax(expr, infix, op, right);
+                expr = new BinaryOperatorSyntax(expr, infix, right);
             }
         }
     }
@@ -1162,52 +1163,52 @@ public sealed class Parser
     /// <summary>
     /// https://docs.minizinc.dev/en/stable/spec.html#operators
     /// </summary>
-    internal static (Operator, Assoc, ushort) Precedence(in TokenKind kind)
+    internal static (Assoc, ushort) Precedence(in TokenKind kind)
     {
-        var (op, assoc, prec) = kind switch
+        var (assoc, prec) = kind switch
         {
-            TokenKind.DOUBLE_ARROW => (Operator.Equivalent, Assoc.Left, 1200),
-            TokenKind.RIGHT_ARROW => (Operator.Implies, Assoc.Left, 1100),
-            TokenKind.LEFT_ARROW => (Operator.ImpliedBy, Assoc.Left, 1100),
-            TokenKind.DOWN_WEDGE => (Operator.Or, Assoc.Left, 1000),
-            TokenKind.XOR => (Operator.Xor, Assoc.Left, 1000),
-            TokenKind.UP_WEDGE => (Operator.And, Assoc.Left, 900),
-            TokenKind.LESS_THAN => (Operator.LessThan, Assoc.None, 800),
-            TokenKind.GREATER_THAN => (Operator.GreaterThan, Assoc.None, 800),
-            TokenKind.LESS_THAN_EQUAL => (Operator.LessThanEqual, Assoc.None, 800),
-            TokenKind.GREATER_THAN_EQUAL => (Operator.GreaterThanEqual, Assoc.None, 800),
-            TokenKind.EQUAL => (Operator.Equal, Assoc.None, 800),
-            TokenKind.NOT_EQUAL => (Operator.NotEqual, Assoc.None, 800),
-            TokenKind.IN => (Operator.In, Assoc.None, 700),
-            TokenKind.SUBSET => (Operator.Subset, Assoc.None, 700),
-            TokenKind.SUPERSET => (Operator.Superset, Assoc.None, 700),
-            TokenKind.UNION => (Operator.Union, Assoc.Left, 600),
-            TokenKind.DIFF => (Operator.Diff, Assoc.Left, 600),
-            TokenKind.SYMDIFF => (Operator.SymDiff, Assoc.Left, 600),
-            TokenKind.RANGE_INCLUSIVE => (Operator.RangeInclusive, Assoc.None, 500),
-            TokenKind.RANGE_EXCLUSIVE => (Operator.RangeExclusive, Assoc.None, 500),
-            TokenKind.RANGE_LEFT_INCLUSIVE => (Operator.RangeLeftInclusive, Assoc.None, 500),
-            TokenKind.RANGE_RIGHT_INCLUSIVE => (Operator.RangeRightInclusive, Assoc.None, 500),
-            TokenKind.PLUS => (Operator.Add, Assoc.Left, 400),
-            TokenKind.MINUS => (Operator.Subtract, Assoc.Left, 400),
-            TokenKind.STAR => (Operator.Multiply, Assoc.Left, 300),
-            TokenKind.DIV => (Operator.Div, Assoc.Left, 300),
-            TokenKind.MOD => (Operator.Mod, Assoc.Left, 300),
-            TokenKind.FWDSLASH => (Operator.Divide, Assoc.Left, 300),
-            TokenKind.INTERSECT => (Operator.Intersect, Assoc.Left, 300),
-            TokenKind.EXP => (Operator.Exponent, Assoc.Left, 200),
-            TokenKind.PLUS_PLUS => (Operator.Concat, Assoc.Right, 100),
-            TokenKind.DEFAULT => (Operator.Default, Assoc.Left, 70),
-            TokenKind.INFIX_IDENTIFIER => (Operator.Identifier, Assoc.Left, 50),
-            TokenKind.TILDE_PLUS => (Operator.TildeAdd, Assoc.Left, 10),
-            TokenKind.TILDE_MINUS => (Operator.TildeSubtract, Assoc.Left, 10),
-            TokenKind.TILDE_STAR => (Operator.TildeMultiply, Assoc.Left, 10),
-            TokenKind.TILDE_EQUALS => (Operator.TildeEqual, Assoc.Left, 10),
+            TokenKind.DOUBLE_ARROW => (Assoc.Left, 1200),
+            TokenKind.RIGHT_ARROW => (Assoc.Left, 1100),
+            TokenKind.LEFT_ARROW => (Assoc.Left, 1100),
+            TokenKind.DOWN_WEDGE => (Assoc.Left, 1000),
+            TokenKind.XOR => (Assoc.Left, 1000),
+            TokenKind.UP_WEDGE => (Assoc.Left, 900),
+            TokenKind.LESS_THAN => (Assoc.None, 800),
+            TokenKind.GREATER_THAN => (Assoc.None, 800),
+            TokenKind.LESS_THAN_EQUAL => (Assoc.None, 800),
+            TokenKind.GREATER_THAN_EQUAL => (Assoc.None, 800),
+            TokenKind.EQUAL => (Assoc.None, 800),
+            TokenKind.NOT_EQUAL => (Assoc.None, 800),
+            TokenKind.IN => (Assoc.None, 700),
+            TokenKind.SUBSET => (Assoc.None, 700),
+            TokenKind.SUPERSET => (Assoc.None, 700),
+            TokenKind.UNION => (Assoc.Left, 600),
+            TokenKind.DIFF => (Assoc.Left, 600),
+            TokenKind.SYMDIFF => (Assoc.Left, 600),
+            TokenKind.RANGE_INCLUSIVE => (Assoc.None, 500),
+            TokenKind.RANGE_EXCLUSIVE => (Assoc.None, 500),
+            TokenKind.RANGE_LEFT_INCLUSIVE => (Assoc.None, 500),
+            TokenKind.RANGE_RIGHT_INCLUSIVE => (Assoc.None, 500),
+            TokenKind.PLUS => (Assoc.Left, 400),
+            TokenKind.MINUS => (Assoc.Left, 400),
+            TokenKind.STAR => (Assoc.Left, 300),
+            TokenKind.DIV => (Assoc.Left, 300),
+            TokenKind.MOD => (Assoc.Left, 300),
+            TokenKind.FWDSLASH => (Assoc.Left, 300),
+            TokenKind.INTERSECT => (Assoc.Left, 300),
+            TokenKind.EXP => (Assoc.Left, 200),
+            TokenKind.PLUS_PLUS => (Assoc.Right, 100),
+            TokenKind.DEFAULT => (Assoc.Left, 70),
+            TokenKind.INFIX_IDENTIFIER => (Assoc.Left, 50),
+            TokenKind.TILDE_PLUS => (Assoc.Left, 10),
+            TokenKind.TILDE_MINUS => (Assoc.Left, 10),
+            TokenKind.TILDE_STAR => (Assoc.Left, 10),
+            TokenKind.TILDE_EQUALS => (Assoc.Left, 10),
             _ => default
         };
         // We invert the ordering of the above so that high number == higher binding
         // because it doesn't make sense to me otherwise
-        return (op, assoc, (ushort)(2000 - prec));
+        return (assoc, (ushort)(2000 - prec));
     }
 
     /// <summary>
@@ -1275,7 +1276,7 @@ public sealed class Parser
             // `in` expressions involving identifiers could mean a gencall
             case BinaryOperatorSyntax
             {
-                Operator: Operator.In,
+                Operator: TokenKind.IN,
                 Left: IdentifierSyntax id,
                 Right: { } from
             } when maybeGen:

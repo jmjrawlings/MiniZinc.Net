@@ -122,6 +122,7 @@ public sealed class Writer
     {
         foreach (var (name, value) in data)
         {
+            Newline();
             WriteString(name);
             WriteSpace();
             WriteChar('=');
@@ -411,7 +412,7 @@ public sealed class Writer
                 break;
 
             case UnaryOperatorSyntax e:
-                WriteOperator(e.Operator);
+                WriteToken(e.Start);
                 WriteChar(SPACE);
                 if (e.Expr is BinaryOperatorSyntax)
                 {
@@ -598,8 +599,12 @@ public sealed class Writer
         {
             statements = e.Statements;
         }
+
         foreach (var statement in statements)
+        {
+            Newline();
             WriteStatement(statement);
+        }
 
         return;
     }
@@ -633,24 +638,14 @@ public sealed class Writer
 
     private void WriteBinOp(BinaryOperatorSyntax e, int? precedence = null)
     {
-        var (op, assoc, prec) = Parser.Precedence(e.Infix.Kind);
+        var (assoc, prec) = Parser.Precedence(e.Infix.Kind);
         var bracketed = prec < precedence;
         if (bracketed)
             WriteChar(OPEN_PAREN);
 
         WriteExpr(e.Left, assoc == Assoc.Left ? prec : prec + 1);
         WriteSpace();
-
-        if (op is Operator.Identifier)
-        {
-            WriteChar(BACKTICK);
-            WriteString(e.Infix.StringValue);
-            WriteChar(BACKTICK);
-        }
-        else
-        {
-            WriteOperator(op);
-        }
+        WriteToken(e.Infix);
         WriteSpace();
         WriteExpr(e.Right, assoc == Assoc.Right ? prec : prec + 1);
         if (bracketed)
@@ -815,6 +810,9 @@ public sealed class Writer
         if (_minify)
             return;
 
+        if (_sb.Length is 0)
+            return;
+
         _sb.AppendLine();
         _sb.Append(SPACE, _tabSize * _indent);
     }
@@ -897,7 +895,6 @@ public sealed class Writer
     void EndStatement()
     {
         WriteChar(EOL);
-        Newline();
     }
 
     void WriteKeyword(string s)
@@ -941,144 +938,10 @@ public sealed class Writer
         write(enumerator.Current, prec);
         while (enumerator.MoveNext())
         {
+            WriteSpace();
             WriteString(sep);
             WriteSpace();
             write(enumerator.Current, prec);
-        }
-    }
-
-    public void WriteOperator(Operator? op)
-    {
-        switch (op)
-        {
-            case null:
-                break;
-
-            case Operator.Equivalent:
-                WriteChar(OPEN_CHEVRON);
-                WriteChar(DASH);
-                WriteChar(CLOSE_CHEVRON);
-                break;
-            case Operator.Implies:
-                WriteChar(DASH);
-                WriteChar(CLOSE_CHEVRON);
-                break;
-            case Operator.ImpliedBy:
-                WriteChar(OPEN_CHEVRON);
-                WriteChar(DASH);
-                break;
-            case Operator.Or:
-                WriteChar(BACK_SLASH);
-                WriteChar(FWD_SLASH);
-                break;
-            case Operator.Xor:
-                WriteString(XOR);
-                break;
-            case Operator.And:
-                WriteChar(FWD_SLASH);
-                WriteChar(BACK_SLASH);
-                break;
-            case Operator.LessThan:
-                WriteChar(OPEN_CHEVRON);
-                break;
-            case Operator.GreaterThan:
-                WriteChar(CLOSE_CHEVRON);
-                break;
-            case Operator.LessThanEqual:
-                WriteChar(OPEN_CHEVRON);
-                WriteChar(EQUAL);
-                break;
-            case Operator.GreaterThanEqual:
-                WriteChar(CLOSE_CHEVRON);
-                WriteChar(EQUAL);
-                break;
-            case Operator.Equal:
-                WriteChar(EQUAL);
-                WriteChar(EQUAL);
-                break;
-            case Operator.NotEqual:
-                WriteChar(EXCLAMATION);
-                WriteChar(EQUAL);
-                break;
-            case Operator.In:
-                WriteString(IN);
-                break;
-            case Operator.Subset:
-                WriteString(SUBSET);
-                break;
-            case Operator.Superset:
-                WriteString(SUPERSET);
-                break;
-            case Operator.Union:
-                WriteString(UNION);
-                break;
-            case Operator.Diff:
-                WriteString(DIFF);
-                break;
-            case Operator.SymDiff:
-                WriteString(SYMDIFF);
-                break;
-            case Operator.Add:
-                WriteChar(PLUS);
-                break;
-            case Operator.Subtract:
-                WriteChar(DASH);
-                break;
-            case Operator.Multiply:
-                WriteChar(STAR);
-                break;
-            case Operator.Div:
-                WriteString(DIV);
-                break;
-            case Operator.Mod:
-                WriteString(MOD);
-                break;
-            case Operator.Divide:
-                WriteChar(FWD_SLASH);
-                break;
-            case Operator.Intersect:
-                WriteString(INTERSECT);
-                break;
-            case Operator.Exponent:
-                WriteChar(UP_CHEVRON);
-                break;
-            case Operator.Default:
-                WriteString(DEFAULT);
-                break;
-            case Operator.Concat:
-                WriteChar(PLUS);
-                WriteChar(PLUS);
-                break;
-            case Operator.Positive:
-                WriteChar(PLUS);
-                break;
-            case Operator.Negative:
-                WriteChar(DASH);
-                break;
-            case Operator.Not:
-                WriteString(NOT);
-                break;
-            case Operator.TildeNotEqual:
-                WriteChar(TILDE);
-                WriteChar(EXCLAMATION);
-                WriteChar(EQUAL);
-                break;
-            case Operator.TildeEqual:
-                WriteChar(TILDE);
-                WriteChar(EQUAL);
-                break;
-            case Operator.TildeAdd:
-                WriteChar(TILDE);
-                WriteChar(PLUS);
-                break;
-            case Operator.TildeSubtract:
-                WriteChar(TILDE);
-                WriteChar(DASH);
-                break;
-            case Operator.TildeMultiply:
-                WriteChar(TILDE);
-                WriteChar(STAR);
-                break;
         }
     }
 
