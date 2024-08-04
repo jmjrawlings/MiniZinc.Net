@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser;
+﻿using System.Diagnostics;
+
+namespace MiniZinc.Parser;
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
@@ -11,6 +13,7 @@ using Syntax;
 /// Data is different from a <see cref="ModelSyntax"/> in that it can only
 /// contain assignments of the form `$name = $expr;`
 /// </remarks>
+[DebuggerDisplay("{SourceText}")]
 public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
     : IEquatable<IReadOnlyDictionary<string, ValueSyntax>>,
         IReadOnlyDictionary<string, ValueSyntax>
@@ -23,11 +26,9 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
         return mzn;
     }
 
-    public override string ToString()
-    {
-        var mzn = Write(WriteOptions.Minimal);
-        return mzn;
-    }
+    public string SourceText => Write(WriteOptions.Minimal);
+
+    public override string ToString() => SourceText;
 
     IEnumerator IEnumerable.GetEnumerator()
     {
@@ -49,7 +50,7 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
             var a = kv.Value;
 
             // Variable does not exist in B
-            if (!other!.TryGetValue(name, out var b))
+            if (!other.TryGetValue(name, out var b))
                 return false;
 
             // Variable exist in B but is different
@@ -70,13 +71,10 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
 
     public IEnumerator<KeyValuePair<string, ValueSyntax>> GetEnumerator() => dict.GetEnumerator();
 
-    public override bool Equals(object? obj)
-    {
-        if (!Equals(obj as IReadOnlyDictionary<string, ExpressionSyntax>))
-            return false;
+    public override bool Equals(object? obj) =>
+        Equals(obj as IReadOnlyDictionary<string, ExpressionSyntax>);
 
-        return true;
-    }
+    public override int GetHashCode() => SourceText.GetHashCode();
 
     /// <summary>
     /// Get the solution assigned to the given variable
@@ -113,7 +111,8 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
 
     public bool ContainsKey(string key) => dict.ContainsKey(key);
 
-    public bool TryGetValue(string key, out ValueSyntax value) => dict.TryGetValue(key, out value);
+    public bool TryGetValue(string key, [NotNullWhen(true)] out ValueSyntax? value) =>
+        dict.TryGetValue(key, out value);
 
     public ValueSyntax this[string name] => Get<ValueSyntax>(name);
 
@@ -141,5 +140,5 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
         }
     }
 
-    public int Count { get; }
+    public int Count => dict.Count;
 }

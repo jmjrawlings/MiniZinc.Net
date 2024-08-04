@@ -244,7 +244,7 @@ public sealed class Parser
                 break;
 
             default:
-                if (!ParseDeclareStatement(out statement))
+                if (!ParseDeclareOrAssignStatement(out statement))
                     return false;
 
                 break;
@@ -679,11 +679,10 @@ public sealed class Parser
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
     /// <mzn>$T: identity($T: x) = x;</mzn>
-    internal bool ParseDeclareStatement([NotNullWhen(true)] out StatementSyntax? statement)
+    internal bool ParseDeclareOrAssignStatement([NotNullWhen(true)] out StatementSyntax? statement)
     {
         statement = null;
         var start = _token;
-        TypeSyntax? type;
 
         if (_kind is TokenKind.IDENTIFIER && Peek().Kind is TokenKind.EQUAL)
         {
@@ -695,11 +694,13 @@ public sealed class Parser
             statement = new AssignStatement(name, expr);
             return true;
         }
-        else if (Skip(TokenKind.ANY))
+
+        TypeSyntax type;
+        if (Skip(TokenKind.ANY))
         {
             type = new TypeSyntax(start) { Kind = TypeKind.Any };
         }
-        else if (!ParseType(out type))
+        else if (!ParseType(out type!))
         {
             return false;
         }
@@ -713,7 +714,7 @@ public sealed class Parser
         if (!ParseDeclareTail(start, ident, type, DeclareKind.Value, out var dec))
             return false;
 
-        if (dec.Body is null && dec.Type.Kind is TypeKind.Any)
+        if (dec.Body is null && type.Kind is TypeKind.Any)
             return Expected("=");
 
         statement = dec;
@@ -1876,7 +1877,7 @@ public sealed class Parser
             return false;
         }
 
-        if (!ParseDeclareStatement(out var node))
+        if (!ParseDeclareOrAssignStatement(out var node))
             return false;
 
         result = (ILetLocalSyntax)node;

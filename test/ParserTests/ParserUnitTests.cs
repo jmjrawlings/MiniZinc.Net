@@ -451,7 +451,7 @@ public class ParserUnitTests
     {
         var mzn = "$T: foo(tuple($T): x) = x.1;";
         var parser = new Parser(mzn);
-        var ok = parser.ParseDeclareStatement(out var node);
+        var ok = parser.ParseDeclareOrAssignStatement(out var node);
         ok.Should().BeTrue();
     }
 

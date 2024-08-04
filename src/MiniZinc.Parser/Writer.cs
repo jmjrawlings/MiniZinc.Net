@@ -529,7 +529,7 @@ public sealed class Writer
                 WriteKeyword(TYPE);
                 break;
             default:
-                WriteType(e.Type);
+                WriteType(e.Type!);
                 WriteChar(COLON);
                 break;
         }

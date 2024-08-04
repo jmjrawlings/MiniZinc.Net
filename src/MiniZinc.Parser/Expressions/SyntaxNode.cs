@@ -2,11 +2,10 @@
 
 public abstract class SyntaxNode : IEquatable<SyntaxNode>
 {
-    /// <summary>
-    /// The token at whic this node started
-    /// </summary>
+    /// The token at which this node started
     public readonly Token Start;
 
+    /// Any annotations added to this node
     public List<ExpressionSyntax>? Annotations { get; set; } = null;
 
     protected SyntaxNode(in Token start)
@@ -24,6 +23,8 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
             return true;
         return Equals(obj as SyntaxNode);
     }
+
+    public override int GetHashCode() => SourceText.GetHashCode();
 
     public bool Equals(SyntaxNode? other)
     {
@@ -56,15 +57,15 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
             case (DeclareStatement a, DeclareStatement b):
                 if (!a.Name.Equals(b.Name))
                     return false;
-                if (!a.Type.Equals(b.Type))
+                if (!Equals(a.Type, b.Type))
                     return false;
-                if (!object.Equals(a.Body, b.Body))
+                if (!Equals(a.Body, b.Body))
                     return false;
                 return true;
             case (SolveStatement a, SolveStatement b):
                 if (a.Method != b.Method)
                     return false;
-                if (!object.Equals(a.Objective, b.Objective))
+                if (!Equals(a.Objective, b.Objective))
                     return false;
                 return true;
             default:
