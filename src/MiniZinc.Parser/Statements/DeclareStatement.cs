@@ -22,8 +22,6 @@ public sealed class DeclareStatement : StatementSyntax, ILetLocalSyntax, INamedS
 
     public Token? Ann { get; init; }
 
-    public bool IsAnnotation => Type.Kind is TypeKind.Annotation;
-
     /// <summary>
     /// A variable
     /// </summary>
