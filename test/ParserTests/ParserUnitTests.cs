@@ -373,6 +373,8 @@ public class ParserUnitTests
         var mzn = @"var ..-1 union {1,3} union 5..: i";
         var expr = Parser.ParseStatement<DeclareStatement>(mzn);
         expr.Name.ToString().Should().Be("i");
+        var type = (CompositeTypeSyntax)expr.Type;
+        type.Types.Should().HaveCount(3);
     }
 
     [Fact]

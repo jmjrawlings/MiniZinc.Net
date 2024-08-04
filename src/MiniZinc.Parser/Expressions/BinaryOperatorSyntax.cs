@@ -7,12 +7,12 @@ public class BinaryOperatorSyntax : ExpressionSyntax
     public TokenKind Operator { get; }
     public ExpressionSyntax Right { get; }
 
-    public BinaryOperatorSyntax(ExpressionSyntax left, in Token op, ExpressionSyntax right)
+    public BinaryOperatorSyntax(ExpressionSyntax left, in Token infix, ExpressionSyntax right)
         : base(left.Start)
     {
         Left = left;
-        Infix = op;
-        Operator = op.Kind;
+        Infix = infix;
+        Operator = infix.Kind;
         Right = right;
     }
 }

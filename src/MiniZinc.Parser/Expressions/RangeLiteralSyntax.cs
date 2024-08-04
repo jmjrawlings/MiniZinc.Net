@@ -6,19 +6,20 @@ public sealed class RangeLiteralSyntax : ExpressionSyntax
     public readonly bool LowerIncusive;
     public readonly ExpressionSyntax? Upper;
     public readonly bool UpperInclusive;
+    public readonly TokenKind Operator;
 
     public RangeLiteralSyntax(
         Token start,
+        TokenKind op,
         ExpressionSyntax? lower = null,
-        bool lowerInclusive = true,
-        ExpressionSyntax? upper = null,
-        bool upperInclusive = true
+        ExpressionSyntax? upper = null
     )
         : base(start)
     {
+        Operator = op;
         Lower = lower;
-        LowerIncusive = lowerInclusive;
+        LowerIncusive = op is TokenKind.RANGE_INCLUSIVE or TokenKind.RANGE_LEFT_INCLUSIVE;
         Upper = upper;
-        UpperInclusive = upperInclusive;
+        UpperInclusive = op is TokenKind.RANGE_INCLUSIVE or TokenKind.RANGE_RIGHT_INCLUSIVE;
     }
 }

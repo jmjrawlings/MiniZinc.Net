@@ -638,7 +638,7 @@ public sealed class Writer
 
     private void WriteBinOp(BinaryOperatorSyntax e, int? precedence = null)
     {
-        var (assoc, prec) = Parser.Precedence(e.Infix.Kind);
+        var (assoc, prec) = Parser.Precedence(e.Operator);
         var bracketed = prec < precedence;
         if (bracketed)
             WriteChar(OPEN_PAREN);
@@ -733,14 +733,14 @@ public sealed class Writer
                 break;
 
             case { Kind: TypeKind.Generic }:
-                WriteString(ANY);
-                WriteSpace();
+                // WriteString(ANY);
+                // WriteSpace();
                 WriteString(type.Name.ToString());
                 break;
 
             case { Kind: TypeKind.GenericSeq }:
-                WriteString(ANY);
-                WriteSpace();
+                // WriteString(ANY);
+                // WriteSpace();
                 WriteString(type.Name.ToString());
                 break;
 
@@ -764,7 +764,7 @@ public sealed class Writer
     {
         var (name, type) = param;
         WriteType(type);
-        if (name.Kind is not TokenKind.ERROR)
+        if (name.Kind > TokenKind.ERROR)
         {
             WriteChar(COLON);
             WriteToken(name);
@@ -925,7 +925,13 @@ public sealed class Writer
         }
     }
 
-    void WriteSep<T>(IEnumerable<T>? nodes, Action<T, int?> write, int prec = 0, string sep = ",")
+    void WriteSep<T>(
+        IEnumerable<T>? nodes,
+        Action<T, int?> write,
+        int prec = 0,
+        string sep = ",",
+        bool spaced = false
+    )
     {
         if (nodes is null)
             return;
@@ -938,9 +944,11 @@ public sealed class Writer
         write(enumerator.Current, prec);
         while (enumerator.MoveNext())
         {
-            WriteSpace();
+            if (spaced)
+                WriteSpace();
             WriteString(sep);
-            WriteSpace();
+            if (spaced)
+                WriteSpace();
             write(enumerator.Current, prec);
         }
     }

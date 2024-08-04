@@ -94,9 +94,11 @@ public sealed class Parser
             Step();
             return true;
         }
-
-        token = default;
-        return false;
+        else
+        {
+            token = default;
+            return false;
+        }
     }
 
     /// <summary>
@@ -110,9 +112,11 @@ public sealed class Parser
             Step();
             return true;
         }
-
-        result = default;
-        return false;
+        else
+        {
+            result = default;
+            return false;
+        }
     }
 
     private bool ParseIdent(out Token node)
@@ -797,22 +801,6 @@ public sealed class Parser
                 return false;
         }
 
-        if (!ParseExprAtomTail(ref expr))
-            return false;
-
-        if (!ParseAnnotations(out var anns))
-            return false;
-
-        expr.Annotations = anns;
-        return true;
-    }
-
-    /// <summary>
-    /// Parse the tail of an expression atom
-    /// </summary>
-    /// <returns>True if no errors were encountered</returns>
-    internal bool ParseExprAtomTail(ref ExpressionSyntax expr)
-    {
         while (true)
         {
             if (Skip(TokenKind.OPEN_BRACKET))
@@ -847,6 +835,11 @@ public sealed class Parser
                 break;
             }
         }
+
+        if (!ParseAnnotations(out var anns))
+            return false;
+
+        expr.Annotations = anns;
         return true;
     }
 
@@ -1036,60 +1029,35 @@ public sealed class Parser
     /// <summary>
     /// Parse an Expression
     /// </summary>
+    /// <remarks>
+    ///
+    ///
+    ///
+    /// </remarks>
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
     internal bool ParseExpr(
         [NotNullWhen(true)] out ExpressionSyntax? expr,
         Assoc associativity = 0,
-        ushort precedence = 0,
-        bool typeInst = false
+        ushort precedence = 0
     )
     {
         expr = null;
-        var start = _token;
+        var token = _token;
+        var op = token.Kind;
         var (assoc, prec) = Precedence(_kind);
-
-        switch (_kind)
+        switch (op)
         {
             case TokenKind.PLUS:
-                Step();
-                if (!ParseExpr(out expr, assoc, prec))
-                    return false;
-                expr = new UnaryOperatorSyntax(start, expr);
-                break;
-
             case TokenKind.MINUS:
-                Step();
-                if (!ParseExpr(out expr, assoc, prec))
-                    return false;
-                if (expr is IntLiteralSyntax i)
-                    expr = new IntLiteralSyntax(start, -i.Value);
-                else if (expr is FloatLiteralSyntax f)
-                    expr = new FloatLiteralSyntax(start, -f.Value);
-                else
-                    expr = new UnaryOperatorSyntax(start, expr);
-                break;
-
             case TokenKind.NOT:
-                Step();
-                if (!ParseExpr(out expr, assoc, prec))
-                    return false;
-                expr = new UnaryOperatorSyntax(start, expr);
-                break;
-
             case TokenKind.RANGE_INCLUSIVE:
-                Step();
-                if (!ParseExpr(out expr, assoc, prec))
-                    return false;
-                expr = new RangeLiteralSyntax(start, upper: expr, upperInclusive: true);
-                break;
-
             case TokenKind.RANGE_LEFT_INCLUSIVE:
                 Step();
                 if (!ParseExpr(out expr, assoc, prec))
                     return false;
-                expr = new RangeLiteralSyntax(start, upper: expr, upperInclusive: false);
+                expr = UnOpExpr(token, expr);
                 break;
 
             default:
@@ -1100,8 +1068,8 @@ public sealed class Parser
 
         while (true)
         {
-            var infix = _token;
-            var op = infix.Kind;
+            token = _token;
+            op = token.Kind;
             (assoc, prec) = Precedence(op);
             if (assoc is 0)
                 return true;
@@ -1120,43 +1088,75 @@ public sealed class Parser
                     return true;
             }
 
-            if (
-                op
-                is TokenKind.RANGE_INCLUSIVE
-                    or TokenKind.RANGE_EXCLUSIVE
-                    or TokenKind.RANGE_LEFT_INCLUSIVE
-                    or TokenKind.RANGE_RIGHT_INCLUSIVE
-            )
+            Step();
+
+            switch (op)
             {
-                Step();
-                if (ParseExpr(out var right, assoc, prec))
-                    expr = new RangeLiteralSyntax(
-                        expr.Start,
-                        lower: expr,
-                        lowerInclusive: op
-                            is TokenKind.RANGE_INCLUSIVE
-                                or TokenKind.RANGE_LEFT_INCLUSIVE,
-                        upper: right,
-                        upperInclusive: op
-                            is TokenKind.RANGE_INCLUSIVE
-                                or TokenKind.RANGE_RIGHT_INCLUSIVE
-                    );
-                else if (_errorMessage is not null)
-                    return false;
-                else
-                    expr = new RangeLiteralSyntax(expr.Start, expr);
+                // Postfix operators
+                case TokenKind.RANGE_INCLUSIVE:
+                case TokenKind.RANGE_EXCLUSIVE:
+                case TokenKind.RANGE_LEFT_INCLUSIVE:
+                case TokenKind.RANGE_RIGHT_INCLUSIVE:
+                    int i = _i;
+                    if (!ParseExpr(out var right))
+                    {
+                        if (_i > i) // Failed while consuming input
+                            return false;
+
+                        expr = new RangeLiteralSyntax(expr.Start, op, lower: expr);
+                    }
+                    else
+                    {
+                        expr = new RangeLiteralSyntax(expr.Start, op, lower: expr, upper: right);
+                    }
+                    break;
+
+                // Infix operator
+                default:
+                    if (!ParseExpr(out right, assoc, prec))
+                        return false;
+                    expr = BinOpExpr(expr, token, right);
+                    break;
             }
-            else if (op is TokenKind.PLUS_PLUS && typeInst)
-            {
-                return true;
-            }
-            else
-            {
-                Step();
-                if (!ParseExpr(out var right, assoc, prec))
-                    return false;
-                expr = new BinaryOperatorSyntax(expr, infix, right);
-            }
+        }
+    }
+
+    internal static ExpressionSyntax UnOpExpr(in Token prefix, ExpressionSyntax expr)
+    {
+        switch (prefix.Kind, expr)
+        {
+            case (TokenKind.PLUS, IntLiteralSyntax):
+            case (TokenKind.PLUS, FloatLiteralSyntax):
+                return expr;
+            case (TokenKind.MINUS, IntLiteralSyntax { Value: var i }):
+                return new IntLiteralSyntax(expr.Start, -i);
+            case (TokenKind.MINUS, FloatLiteralSyntax { Value: var i }):
+                return new FloatLiteralSyntax(expr.Start, -i);
+            case (TokenKind.RANGE_INCLUSIVE, _):
+            case (TokenKind.RANGE_EXCLUSIVE, _):
+            case (TokenKind.RANGE_LEFT_INCLUSIVE, _):
+            case (TokenKind.RANGE_RIGHT_INCLUSIVE, _):
+                return new RangeLiteralSyntax(prefix, prefix.Kind, upper: expr);
+            default:
+                return new UnaryOperatorSyntax(prefix, expr);
+        }
+    }
+
+    internal static ExpressionSyntax BinOpExpr(
+        ExpressionSyntax left,
+        in Token infix,
+        ExpressionSyntax right
+    )
+    {
+        switch (infix.Kind)
+        {
+            case TokenKind.RANGE_INCLUSIVE:
+            case TokenKind.RANGE_EXCLUSIVE:
+            case TokenKind.RANGE_LEFT_INCLUSIVE:
+            case TokenKind.RANGE_RIGHT_INCLUSIVE:
+
+            default:
+                return new BinaryOperatorSyntax(left, infix, right);
         }
     }
 
@@ -1775,10 +1775,7 @@ public sealed class Parser
     /// </summary>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>{ x | x in [1,2,3]}</mzn>
-    private bool ParseBraceExpr(
-        [NotNullWhen(true)] out ExpressionSyntax? result,
-        bool typeInst = false
-    )
+    private bool ParseBraceExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
         result = null;
 
@@ -1953,17 +1950,14 @@ public sealed class Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private bool ParseParenExpr(
-        [NotNullWhen(true)] out ExpressionSyntax? result,
-        bool typeInst = false
-    )
+    private bool ParseParenExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
         result = null;
 
         if (!Expect(TokenKind.OPEN_PAREN, out var start))
             return false;
 
-        if (!ParseExpr(out var expr, typeInst: typeInst))
+        if (!ParseExpr(out var expr))
             return false;
 
         // Bracketed expr
@@ -2225,7 +2219,9 @@ public sealed class Parser
                 break;
 
             default:
-                if (!ParseExpr(out var expr, typeInst: true))
+                // Parse an expression with precedence set as `union` + 1 so that
+                // multiple union calls are not chained for type declarations
+                if (!ParseExpr(out var expr, precedence: 1401))
                     return false;
                 type = new ExprTypeSyntax(start, expr) { Kind = TypeKind.Expr };
                 break;
