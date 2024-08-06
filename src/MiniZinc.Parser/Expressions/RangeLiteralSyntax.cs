@@ -18,8 +18,8 @@ public sealed class RangeLiteralSyntax : ExpressionSyntax
     {
         Operator = op;
         Lower = lower;
-        LowerIncusive = op is TokenKind.RANGE_INCLUSIVE or TokenKind.RANGE_LEFT_INCLUSIVE;
+        LowerIncusive = op is TokenKind.CLOSED_RANGE or TokenKind.RIGHT_OPEN_RANGE;
         Upper = upper;
-        UpperInclusive = op is TokenKind.RANGE_INCLUSIVE or TokenKind.RANGE_RIGHT_INCLUSIVE;
+        UpperInclusive = op is TokenKind.CLOSED_RANGE or TokenKind.LEFT_OPEN_RANGE;
     }
 }

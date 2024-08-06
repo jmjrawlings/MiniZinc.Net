@@ -10,7 +10,7 @@ using Parser;
 using Parser.Syntax;
 
 public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
-    where TModel : BaseModel<TModel>, new()
+    where TModel : MiniZincModel<TModel>, new()
 {
     public readonly TModel Model;
     public readonly SolveOptions? Options;
@@ -35,7 +35,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
     protected TimePeriod _iterTime;
     protected int _iteration;
     protected SolveStatus _solveStatus;
-    protected DataSyntax _data;
+    protected MiniZincData _data;
     protected string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
@@ -265,12 +265,14 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
                 _current = CreateResult();
                 break;
 
-            case IntLiteralSyntax i:
-                _current = CreateResult(objectiveValue: i.Value);
+            case IntData { Value: var i }:
+                _current = CreateResult(objectiveValue: i);
                 break;
-            case FloatLiteralSyntax f:
-                _current = CreateResult(objectiveValue: f.Value);
+
+            case FloatData { Value: var f }:
+                _current = CreateResult(objectiveValue: f);
                 break;
+
             default:
                 _current = CreateResult(error: $"Unexpected objective value {objectiveNode}");
                 break;

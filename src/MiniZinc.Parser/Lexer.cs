@@ -95,16 +95,16 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Step();
                 if (Skip(STAR))
                     LexBlockComment();
-                else if (!SkipReturn(BACK_SLASH, TokenKind.UP_WEDGE))
-                    Return(TokenKind.FWDSLASH);
+                else if (!SkipReturn(BACK_SLASH, TokenKind.CONJUNCTION))
+                    Return(TokenKind.DIVIDE);
                 break;
             case BACK_SLASH:
                 Step();
-                if (!SkipReturn(FWD_SLASH, TokenKind.DOWN_WEDGE))
+                if (!SkipReturn(FWD_SLASH, TokenKind.DISJUNCTION))
                     Return(TokenKind.BACKSLASH);
                 break;
             case STAR:
-                SkipReturn(TokenKind.STAR);
+                SkipReturn(TokenKind.TIMES);
                 break;
             case DELIMITER:
                 SkipReturn(TokenKind.EOL);
@@ -122,9 +122,9 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
                 if (Skip(DASH))
                 {
-                    if (SkipReturn(RIGHT_CHEVRON, TokenKind.DOUBLE_ARROW))
+                    if (SkipReturn(RIGHT_CHEVRON, TokenKind.BI_IMPLICATION))
                         break;
-                    Return(TokenKind.LEFT_ARROW);
+                    Return(TokenKind.REVERSE_IMPLICATION);
                     break;
                 }
 
@@ -137,14 +137,14 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Return(TokenKind.GREATER_THAN);
                 break;
             case UP_CHEVRON:
-                SkipReturn(TokenKind.EXP);
+                SkipReturn(TokenKind.EXPONENT);
                 break;
             case PIPE:
                 SkipReturn(TokenKind.PIPE);
                 break;
             case DOT:
                 Step();
-                if (SkipReturn(DOT, TokenKind.RANGE_INCLUSIVE)) { }
+                if (SkipReturn(DOT, TokenKind.CLOSED_RANGE)) { }
                 else if (IsDigit(_char))
                     LexTupleAccess();
                 else
@@ -159,7 +159,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case DASH:
                 Step();
-                if (SkipReturn(RIGHT_CHEVRON, TokenKind.RIGHT_ARROW))
+                if (SkipReturn(RIGHT_CHEVRON, TokenKind.FORWARD_IMPLICATION))
                     break;
                 Return(TokenKind.MINUS);
                 break;
@@ -174,7 +174,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                         SkipReturn(TokenKind.TILDE_PLUS);
                         break;
                     case STAR:
-                        SkipReturn(TokenKind.TILDE_STAR);
+                        SkipReturn(TokenKind.TILDE_TIMES);
                         break;
                     case EQUAL:
                         SkipReturn(TokenKind.TILDE_EQUALS);
@@ -316,7 +316,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
 
         var ident = ReadString();
-        Return(seq ? TokenKind.GENERIC_SEQUENCE : TokenKind.GENERIC, ident);
+        Return(seq ? TokenKind.IDENTIFIER_GENERIC_SEQUENCE : TokenKind.IDENTIFIER_GENERIC, ident);
     }
 
     /// <summary>
@@ -340,7 +340,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         else if (!IsLetter(ident[0]))
             Error(ERROR_BACKTICK_IDENTIFIER);
         else
-            Return(TokenKind.INFIX_IDENTIFIER, ident);
+            Return(TokenKind.IDENTIFIER_INFIX, ident);
     }
 
     /// <summary>

@@ -1,7 +1,6 @@
-﻿using System.Text;
+﻿namespace Make;
 
-namespace Make;
-
+using System.Text;
 using LibMiniZinc.Tests;
 
 public sealed class ClientTestsBuilder : TestBuilder

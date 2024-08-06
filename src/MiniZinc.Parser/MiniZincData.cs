@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
-
-namespace MiniZinc.Parser;
+﻿namespace MiniZinc.Parser;
 
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Syntax;
 
@@ -10,13 +9,13 @@ using Syntax;
 /// Result of parsing a minizinc data from a file (.dzn) or string.
 /// </summary>
 /// <remarks>
-/// Data is different from a <see cref="ModelSyntax"/> in that it can only
+/// Data is different from a <see cref="MiniZincModel"/> in that it can only
 /// contain assignments of the form `$name = $expr;`
 /// </remarks>
 [DebuggerDisplay("{SourceText}")]
-public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
-    : IEquatable<IReadOnlyDictionary<string, ValueSyntax>>,
-        IReadOnlyDictionary<string, ValueSyntax>
+public sealed class MiniZincData(Dictionary<string, DataSyntax> dict)
+    : IEquatable<IReadOnlyDictionary<string, DataSyntax>>,
+        IReadOnlyDictionary<string, DataSyntax>
 {
     public string Write(WriteOptions? options = null)
     {
@@ -35,7 +34,7 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
         return GetEnumerator();
     }
 
-    public bool Equals(IReadOnlyDictionary<string, ValueSyntax>? other)
+    public bool Equals(IReadOnlyDictionary<string, DataSyntax>? other)
     {
         if (other is null)
             return false;
@@ -69,10 +68,10 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
         return true;
     }
 
-    public IEnumerator<KeyValuePair<string, ValueSyntax>> GetEnumerator() => dict.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, DataSyntax>> GetEnumerator() => dict.GetEnumerator();
 
     public override bool Equals(object? obj) =>
-        Equals(obj as IReadOnlyDictionary<string, ExpressionSyntax>);
+        Equals(obj as IReadOnlyDictionary<string, DataSyntax>);
 
     public override int GetHashCode() => SourceText.GetHashCode();
 
@@ -82,7 +81,7 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
     /// <param name="id">Name of the model variable</param>
     /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
     public U Get<U>(string id)
-        where U : ExpressionSyntax
+        where U : DataSyntax
     {
         if (TryGet<U>(id) is not { } value)
             throw new KeyNotFoundException($"Result did not contain a solution for \"{id}\"");
@@ -90,14 +89,14 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
         return value;
     }
 
-    public ValueSyntax? TryGet(string id) => dict.GetValueOrDefault(id);
+    public DataSyntax? TryGet(string id) => dict.GetValueOrDefault(id);
 
     /// <summary>
     /// Try to get the solution assigned to the given variable
     /// </summary>
     /// <param name="id">Name of the model variable</param>
     public U? TryGet<U>(string id)
-        where U : ExpressionSyntax
+        where U : DataSyntax
     {
         var value = TryGet(id);
         if (value is null)
@@ -111,34 +110,13 @@ public sealed class DataSyntax(Dictionary<string, ValueSyntax> dict)
 
     public bool ContainsKey(string key) => dict.ContainsKey(key);
 
-    public bool TryGetValue(string key, [NotNullWhen(true)] out ValueSyntax? value) =>
+    public bool TryGetValue(string key, [NotNullWhen(true)] out DataSyntax? value) =>
         dict.TryGetValue(key, out value);
 
-    public ValueSyntax this[string name] => Get<ValueSyntax>(name);
+    public DataSyntax this[string name] => Get<DataSyntax>(name);
 
     public IEnumerable<string> Keys => dict.Keys;
-    public IEnumerable<ValueSyntax> Values => dict.Values;
-
-    /// Get the int solution for the given variable
-    public int GetInt(string id) => Get<IntLiteralSyntax>(id);
-
-    /// Get the bool solution for the given variable
-    public bool GetBool(string id) => Get<BoolLiteralSyntax>(id);
-
-    /// Get the float solution for the given variable
-    public decimal GetFloat(string id) => Get<FloatLiteralSyntax>(id);
-
-    /// Get the array solution for the given variable
-    public IEnumerable<U> GetArray1D<U>(string id)
-    {
-        var array = Get<Array1dValueSyntax>(id);
-        foreach (var node in array.Values)
-        {
-            if (node is not ValueSyntax<U> literal)
-                throw new Exception();
-            yield return literal.Value;
-        }
-    }
+    public IEnumerable<DataSyntax> Values => dict.Values;
 
     public int Count => dict.Count;
 }

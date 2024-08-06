@@ -26,9 +26,9 @@ public sealed record WriteOptions
     /// </summary>
     public bool SkipOutput { get; init; }
 
-    public static WriteOptions Minimal = new WriteOptions { Minify = true };
+    public static readonly WriteOptions Minimal = new WriteOptions { Minify = true };
 
-    public static WriteOptions Pretty = new WriteOptions { Prettify = true };
+    public static readonly WriteOptions Pretty = new WriteOptions { Prettify = true };
 
-    public static WriteOptions Default = new WriteOptions { };
+    public static readonly WriteOptions Default = new WriteOptions { };
 }

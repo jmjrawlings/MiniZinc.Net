@@ -7,7 +7,7 @@
 /// For models known to contain floating point variables use the <see cref="FloatModel"/>
 /// class or call <see cref="ToFloatModel()"/>.
 /// </summary>
-public sealed class Model : BaseModel<Model>
+public sealed class Model : MiniZincModel<Model>
 {
     public Model()
         : base(allowFloats: true) { }

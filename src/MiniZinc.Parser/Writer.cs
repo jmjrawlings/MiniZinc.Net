@@ -4,96 +4,96 @@ using System.Text;
 using Syntax;
 
 /// <summary>
-/// Writes a minzinc model.
+/// Writes a MiniZinc model.
 /// Intended to be used via the SyntaxNode extension method `node.Write()`
 /// </summary>
 public sealed class Writer
 {
-    private const char FWD_SLASH = '/';
-    private const char BACK_SLASH = '\\';
-    private const char STAR = '*';
-    private const char DELIMITER = ';';
-    private const char EQUAL = '=';
-    private const char OPEN_CHEVRON = '<';
-    private const char CLOSE_CHEVRON = '>';
-    private const char UP_CHEVRON = '^';
-    private const char DOT = '.';
-    private const char PLUS = '+';
-    private const char DASH = '-';
-    private const char TILDE = '~';
-    private const char DOLLAR = '$';
-    private const char OPEN_BRACKET = '[';
-    private const char CLOSE_BRACKET = ']';
-    private const char OPEN_PAREN = '(';
-    private const char CLOSE_PAREN = ')';
-    private const char OPEN_BRACE = '{';
-    private const char CLOSE_BRACE = '}';
-    private const char PIPE = '|';
-    private const char PERCENT = '%';
-    private const char UNDERSCORE = '_';
-    private const char COMMA = ',';
-    private const char EXCLAMATION = '!';
-    private const char SINGLE_QUOTE = '\'';
-    private const char DOUBLE_QUOTE = '"';
-    private const char BACKTICK = '`';
-    private const char SPACE = ' ';
-    private const char COLON = ':';
-    private const char NEWLINE = '\n';
-    private const char RETURN = '\r';
-    private const char EOF = '\uffff';
-    private const string ANNOTATION = "annotation";
-    private const string ANN = "ann";
-    private const string ANY = "any";
-    private const string ARRAY = "array";
-    private const string BOOL = "bool";
-    private const string CASE = "case";
-    private const string CONSTRAINT = "constraint";
-    private const string DEFAULT = "default";
-    private const string DIFF = "diff";
-    private const string DIV = "div";
-    private const string ELSE = "else";
-    private const string ELSEIF = "elseif";
-    private const string ENDIF = "endif";
-    private const string ENUM = "enum";
-    private const string FALSE = "false";
-    private const string FLOAT = "float";
-    private const string FUNCTION = "function";
-    private const string IF = "if";
-    private const string IN = "in";
-    private const string INCLUDE = "include";
-    private const string INT = "int";
-    private const string INTERSECT = "intersect";
-    private const string LET = "let";
-    private const string LIST = "list";
-    private const string MAXIMIZE = "maximize";
-    private const string MINIMIZE = "minimize";
-    private const string MOD = "mod";
-    private const string NOT = "not";
-    private const string OF = "of";
-    private const string OP = "op";
-    private const string OPT = "opt";
-    private const string OUTPUT = "output";
-    private const string PAR = "par";
-    private const string PREDICATE = "predicate";
-    private const string RECORD = "record";
-    private const string SATISFY = "satisfy";
-    private const string SET = "set";
-    private const string SOLVE = "solve";
-    private const string STRING = "string";
-    private const string SUBSET = "subset";
-    private const string SUPERSET = "superset";
-    private const string SYMDIFF = "symdiff";
-    private const string TEST = "test";
-    private const string THEN = "then";
-    private const string TRUE = "true";
-    private const string TUPLE = "tuple";
-    private const string TYPE = "type";
-    private const string UNION = "union";
-    private const string VAR = "var";
-    private const string WHERE = "where";
-    private const string XOR = "xor";
-    private const char EOL = ';';
-    private const string ANON_ENUM = "anon_enum";
+    const char FWD_SLASH = '/';
+    const char BACK_SLASH = '\\';
+    const char STAR = '*';
+    const char DELIMITER = ';';
+    const char EQUAL = '=';
+    const char OPEN_CHEVRON = '<';
+    const char CLOSE_CHEVRON = '>';
+    const char UP_CHEVRON = '^';
+    const char DOT = '.';
+    const char PLUS = '+';
+    const char DASH = '-';
+    const char TILDE = '~';
+    const char DOLLAR = '$';
+    const char OPEN_BRACKET = '[';
+    const char CLOSE_BRACKET = ']';
+    const char OPEN_PAREN = '(';
+    const char CLOSE_PAREN = ')';
+    const char OPEN_BRACE = '{';
+    const char CLOSE_BRACE = '}';
+    const char PIPE = '|';
+    const char PERCENT = '%';
+    const char UNDERSCORE = '_';
+    const char COMMA = ',';
+    const char EXCLAMATION = '!';
+    const char SINGLE_QUOTE = '\'';
+    const char DOUBLE_QUOTE = '"';
+    const char BACKTICK = '`';
+    const char SPACE = ' ';
+    const char COLON = ':';
+    const char NEWLINE = '\n';
+    const char RETURN = '\r';
+    const char EOF = '\uffff';
+    const string ANNOTATION = "annotation";
+    const string ANN = "ann";
+    const string ANY = "any";
+    const string ARRAY = "array";
+    const string BOOL = "bool";
+    const string CASE = "case";
+    const string CONSTRAINT = "constraint";
+    const string DEFAULT = "default";
+    const string DIFF = "diff";
+    const string DIV = "div";
+    const string ELSE = "else";
+    const string ELSEIF = "elseif";
+    const string ENDIF = "endif";
+    const string ENUM = "enum";
+    const string FALSE = "false";
+    const string FLOAT = "float";
+    const string FUNCTION = "function";
+    const string IF = "if";
+    const string IN = "in";
+    const string INCLUDE = "include";
+    const string INT = "int";
+    const string INTERSECT = "intersect";
+    const string LET = "let";
+    const string LIST = "list";
+    const string MAXIMIZE = "maximize";
+    const string MINIMIZE = "minimize";
+    const string MOD = "mod";
+    const string NOT = "not";
+    const string OF = "of";
+    const string OP = "op";
+    const string OPT = "opt";
+    const string OUTPUT = "output";
+    const string PAR = "par";
+    const string PREDICATE = "predicate";
+    const string RECORD = "record";
+    const string SATISFY = "satisfy";
+    const string SET = "set";
+    const string SOLVE = "solve";
+    const string STRING = "string";
+    const string SUBSET = "subset";
+    const string SUPERSET = "superset";
+    const string SYMDIFF = "symdiff";
+    const string TEST = "test";
+    const string THEN = "then";
+    const string TRUE = "true";
+    const string TUPLE = "tuple";
+    const string TYPE = "type";
+    const string UNION = "union";
+    const string VAR = "var";
+    const string WHERE = "where";
+    const string XOR = "xor";
+    const char EOL = ';';
+    const string ANON_ENUM = "anon_enum";
 
     private readonly StringBuilder _sb;
     private readonly WriteOptions _options;
@@ -118,16 +118,16 @@ public sealed class Writer
         _indent = 0;
     }
 
-    public void WriteData(DataSyntax data)
+    public void WriteData(MiniZincData data)
     {
         foreach (var (name, value) in data)
         {
-            Newline();
+            NewLine();
             WriteString(name);
             WriteSpace();
             WriteChar('=');
             WriteSpace();
-            WriteExpr(value);
+            WriteValue(value);
             EndStatement();
         }
     }
@@ -155,6 +155,7 @@ public sealed class Writer
 
     public void WriteStatement(StatementSyntax? syntax)
     {
+        NewLine();
         switch (syntax)
         {
             case null:
@@ -183,7 +184,7 @@ public sealed class Writer
             case ConstraintStatement e:
                 WriteKeyword(CONSTRAINT);
                 Indent();
-                Newline();
+                NewLine();
                 WriteExpr(e.Expr);
                 WriteAnnotations(e);
                 Dedent();
@@ -201,14 +202,14 @@ public sealed class Writer
                     case SolveMethod.Maximize:
                         WriteKeyword(MAXIMIZE);
                         Indent();
-                        Newline();
+                        NewLine();
                         WriteExpr(e.Objective);
                         Dedent();
                         break;
                     case SolveMethod.Minimize:
                         WriteKeyword(MINIMIZE);
                         Indent();
-                        Newline();
+                        NewLine();
                         WriteExpr(e.Objective);
                         Dedent();
                         break;
@@ -245,8 +246,27 @@ public sealed class Writer
             case null:
                 break;
 
-            case ValueSyntax v:
-                WriteValue(v);
+            case IntLiteralSyntax i:
+                WriteInt(i);
+                break;
+
+            case FloatLiteralSyntax f:
+                WriteDecimal(f);
+                break;
+
+            case BoolLiteralSyntax b:
+                WriteBool(b);
+                break;
+
+            case StringLiteralSyntax s:
+                WriteChar(DOUBLE_QUOTE);
+                WriteString(s);
+                WriteChar(DOUBLE_QUOTE);
+                break;
+
+            case EmptyLiteralSyntax:
+                WriteChar(OPEN_CHEVRON);
+                WriteChar(CLOSE_CHEVRON);
                 break;
 
             case Array1dSyntax e:
@@ -437,27 +457,39 @@ public sealed class Writer
         }
     }
 
-    private void WriteValue(ValueSyntax valueSyntax)
+    internal void WriteValue(DataSyntax dataSyntax)
     {
-        switch (valueSyntax)
+        switch (dataSyntax)
         {
-            case Array1dValueSyntax x:
+            case IntArray1d x:
+                WriteValues(x.Values, WriteInt);
+                break;
+            case BoolArray1d x:
+                WriteValues(x.Values, WriteBool);
+                break;
+            case FloatArray1d x:
+                WriteValues(x.Values, WriteDecimal);
+                break;
+            case StringArray1d x:
+                WriteValues(x.Values, WriteString);
+                break;
+            case ValueArray1d x:
                 WriteValues(x.Values, WriteValue);
                 break;
-            case BoolLiteralSyntax x:
-                WriteString(x.Value ? TRUE : FALSE);
+            case BoolData x:
+                WriteBool(x);
                 break;
-            case EmptyLiteralSyntax x:
+            case EmptyData x:
                 WriteChar(OPEN_CHEVRON);
                 WriteChar(CLOSE_CHEVRON);
                 break;
-            case IntLiteralSyntax x:
-                _sb.Append(x.Value);
+            case IntData x:
+                WriteInt(x);
                 break;
-            case FloatLiteralSyntax x:
-                _sb.Append(x.Value);
+            case FloatData x:
+                WriteDecimal(x);
                 break;
-            case RecordValueSyntax x:
+            case RecordData x:
                 WriteValues(
                     x.Fields,
                     pair =>
@@ -470,15 +502,24 @@ public sealed class Writer
                     after: CLOSE_PAREN
                 );
                 break;
-            case SetValueSyntax x:
+            case IntSet x:
+                WriteValues(x.Values, WriteInt, before: OPEN_BRACE, after: CLOSE_BRACE);
+                break;
+            case FloatSet x:
+                WriteValues(x.Values, WriteDecimal, before: OPEN_BRACE, after: CLOSE_BRACE);
+                break;
+            case BoolSet x:
+                WriteValues(x.Values, WriteBool, before: OPEN_BRACE, after: CLOSE_BRACE);
+                break;
+            case ValueSet x:
                 WriteValues(x.Values, WriteValue, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
-            case StringLiteralSyntax x:
+            case StringData x:
                 WriteChar(DOUBLE_QUOTE);
                 WriteString(x.Value);
                 WriteChar(DOUBLE_QUOTE);
                 break;
-            case TupleValueSyntax x:
+            case TupleData x:
                 WriteChar(OPEN_PAREN);
                 foreach (var item in x.Fields)
                 {
@@ -487,20 +528,18 @@ public sealed class Writer
                 }
                 WriteChar(CLOSE_PAREN);
                 break;
-            case FloatRange x:
+            case FloatRangeData x:
                 WriteDecimal(x.Lower);
                 WriteChar(DOT);
                 WriteChar(DOT);
                 WriteDecimal(x.Upper);
                 break;
-            case IntRange x:
+            case IntRangeData x:
                 WriteInt(x.Lower);
                 WriteChar(DOT);
                 WriteChar(DOT);
                 WriteInt(x.Upper);
                 break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(valueSyntax));
         }
     }
 
@@ -601,10 +640,7 @@ public sealed class Writer
         }
 
         foreach (var statement in statements)
-        {
-            Newline();
             WriteStatement(statement);
-        }
 
         return;
     }
@@ -638,7 +674,8 @@ public sealed class Writer
 
     private void WriteBinOp(BinaryOperatorSyntax e, int? precedence = null)
     {
-        var (assoc, prec) = Parser.Precedence(e.Operator);
+        var prec = Parser.Precedence(e.Operator);
+        var assoc = Parser.Associativity(e.Operator);
         var bracketed = prec < precedence;
         if (bracketed)
             WriteChar(OPEN_PAREN);
@@ -673,7 +710,7 @@ public sealed class Writer
                 break;
 
             case CompositeTypeSyntax e:
-                WriteSep(e.Types, WriteType, sep: "++");
+                WriteSep(e.Types, WriteType, sep: "++", spaced: true);
                 break;
 
             case ExprTypeSyntax e:
@@ -732,20 +769,8 @@ public sealed class Writer
                 WriteString(ANY);
                 break;
 
-            case { Kind: TypeKind.Generic }:
-                // WriteString(ANY);
-                // WriteSpace();
-                WriteString(type.Name.ToString());
-                break;
-
-            case { Kind: TypeKind.GenericSeq }:
-                // WriteString(ANY);
-                // WriteSpace();
-                WriteString(type.Name.ToString());
-                break;
-
-            case { Name: { } name }:
-                WriteToken(name);
+            case { Kind: TypeKind.Identifier }:
+                WriteToken(type.Name);
                 break;
 
             default:
@@ -753,23 +778,22 @@ public sealed class Writer
         }
     }
 
-    void WriteParameters(IReadOnlyList<(Token, TypeSyntax)>? parameters)
+    void WriteParameters(IReadOnlyList<ParameterSyntax>? parameters)
     {
         WriteChar(OPEN_PAREN);
         WriteSep(parameters, WriteParameter);
         WriteChar(CLOSE_PAREN);
     }
 
-    void WriteParameter((Token, TypeSyntax) param, int? precedence = null)
+    void WriteParameter(ParameterSyntax param, int? precedence = null)
     {
-        var (name, type) = param;
-        WriteType(type);
-        if (name.Kind > TokenKind.ERROR)
+        WriteType(param.Type);
+        if (param.Name.Kind > TokenKind.ERROR)
         {
             WriteChar(COLON);
-            WriteToken(name);
+            WriteToken(param.Name);
         }
-        WriteAnnotations(type);
+        WriteAnnotations(param);
     }
 
     void WriteToken(in Token token) => WriteString(token.ToString());
@@ -805,7 +829,9 @@ public sealed class Writer
 
     void WriteDecimal(decimal d) => _sb.Append(d);
 
-    void Newline()
+    void WriteBool(bool b) => _sb.Append(b ? TRUE : FALSE);
+
+    void NewLine()
     {
         if (_minify)
             return;
@@ -859,10 +885,10 @@ public sealed class Writer
             case TokenKind.IDENTIFIER:
                 _sb.Append(id);
                 break;
-            case TokenKind.GENERIC:
+            case TokenKind.IDENTIFIER_GENERIC:
                 _sb.Append(id);
                 break;
-            case TokenKind.GENERIC_SEQUENCE:
+            case TokenKind.IDENTIFIER_GENERIC_SEQUENCE:
                 _sb.Append(id);
                 break;
             default:

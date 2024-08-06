@@ -15,11 +15,10 @@ public sealed class DeclareStatement : StatementSyntax, ILetLocalSyntax, INamedS
 
     public ExpressionSyntax? Body { get; set; }
 
-    /// <summary>
     /// Typed parameter list if this is a function-like declaration
-    /// </summary>
-    public List<(Token, TypeSyntax)>? Parameters { get; set; }
+    public List<ParameterSyntax>? Parameters { get; set; }
 
+    /// Single
     public Token? Ann { get; init; }
 
     /// <summary>

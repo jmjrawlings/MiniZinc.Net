@@ -1,8 +1,8 @@
-﻿namespace MiniZinc.Parser;
-
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Syntax;
+using MiniZinc.Parser.Syntax;
+
+namespace MiniZinc.Parser;
 
 /// <summary>
 /// Parses a MiniZinc AST from the given stream of tokens
@@ -10,8 +10,9 @@ using Syntax;
 public sealed class Parser
 {
     private readonly Token[] _tokens;
+    private readonly int _n;
     private string _sourceText;
-    private Token _token;
+    private Token _current;
     private TokenKind _kind;
     private int _i;
     private string? _errorMessage;
@@ -21,6 +22,7 @@ public sealed class Parser
     {
         _tokens = Lexer.Lex(sourceText);
         _sourceText = sourceText;
+        _n = _tokens.Length;
         _i = 0;
         Step();
     }
@@ -29,20 +31,21 @@ public sealed class Parser
     private void Step()
     {
         next:
-        if (_i >= _tokens.Length)
+        if (_i >= _n)
         {
             _kind = TokenKind.EOF;
             return;
         }
-        _token = _tokens[_i++];
-        _kind = _token.Kind;
+
+        _current = _tokens[_i++];
+        _kind = _current.Kind;
         if (_kind is TokenKind.LINE_COMMENT or TokenKind.BLOCK_COMMENT)
             goto next;
     }
 
     private Token Peek()
     {
-        for (int j = _i; j < _tokens.Length; j++)
+        for (int j = _i; j < _n; j++)
         {
             var token = _tokens[j];
             if (token.Kind is TokenKind.LINE_COMMENT or TokenKind.BLOCK_COMMENT)
@@ -66,7 +69,7 @@ public sealed class Parser
     private bool Expect(TokenKind kind)
     {
         if (_kind != kind)
-            return Expected($"a {kind} but encountered a {_token.Kind}");
+            return Expected($"a {kind} but encountered a {_current.Kind}");
 
         Step();
         return true;
@@ -78,10 +81,10 @@ public sealed class Parser
         if (_kind != kind)
         {
             token = default;
-            return Expected($"a {kind} but encountered a {_token.Kind}");
+            return Expected($"a {kind} but encountered a {_current.Kind}");
         }
 
-        token = _token;
+        token = _current;
         Step();
         return true;
     }
@@ -90,7 +93,7 @@ public sealed class Parser
     {
         if (_kind is TokenKind.INT_LITERAL)
         {
-            token = _token;
+            token = _current;
             Step();
             return true;
         }
@@ -108,7 +111,7 @@ public sealed class Parser
     {
         if (_kind == kind)
         {
-            result = _token;
+            result = _current;
             Step();
             return true;
         }
@@ -123,7 +126,7 @@ public sealed class Parser
     {
         if (_kind is TokenKind.IDENTIFIER)
         {
-            node = _token;
+            node = _current;
             Step();
             return true;
         }
@@ -134,35 +137,6 @@ public sealed class Parser
         }
     }
 
-    private bool TryParseIdent([NotNullWhen(true)] out IdentifierSyntax? node)
-    {
-        if (_kind is TokenKind.IDENTIFIER)
-        {
-            node = new IdentifierSyntax(_token);
-            Step();
-            return true;
-        }
-        else
-        {
-            node = null;
-            return false;
-        }
-    }
-
-    private bool ParseGeneric(out Token ident)
-    {
-        ident = _token;
-        if (ident.Kind is TokenKind.GENERIC or TokenKind.GENERIC_SEQUENCE)
-        {
-            Step();
-            return true;
-        }
-        else
-        {
-            return Expected("Generic Variable ($$T, $T)");
-        }
-    }
-
     /// <summary>
     /// Parse a model
     /// </summary>
@@ -170,6 +144,8 @@ public sealed class Parser
     internal bool ParseModel(out ModelSyntax model)
     {
         var statements = new List<StatementSyntax>();
+        model = new ModelSyntax(statements);
+
         while (ParseStatement(out var statement))
         {
             statements.Add(statement);
@@ -181,7 +157,6 @@ public sealed class Parser
             break;
         }
 
-        model = new ModelSyntax(statements);
         if (_errorMessage is null)
             return true;
         else
@@ -193,52 +168,52 @@ public sealed class Parser
         statement = null;
         switch (_kind)
         {
-            case TokenKind.INCLUDE:
+            case TokenKind.KEYWORD_INCLUDE:
                 if (!ParseIncludeStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.CONSTRAINT:
+            case TokenKind.KEYWORD_CONSTRAINT:
                 if (!ParseConstraintStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.SOLVE:
+            case TokenKind.KEYWORD_SOLVE:
                 if (!ParseSolveStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.OUTPUT:
+            case TokenKind.KEYWORD_OUTPUT:
                 if (!ParseOutputStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.ENUM:
+            case TokenKind.KEYWORD_ENUM:
                 if (!ParseEnumStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.TYPE:
+            case TokenKind.KEYWORD_TYPE:
                 if (!ParseTypeAliasStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.FUNCTION:
+            case TokenKind.KEYWORD_FUNCTION:
                 if (!ParseFunctionStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.PREDICATE:
+            case TokenKind.KEYWORD_PREDICATE:
                 if (!ParsePredicateStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.TEST:
+            case TokenKind.KEYWORD_TEST:
                 if (!ParseTestStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.ANNOTATION:
+            case TokenKind.KEYWORD_ANNOTATION:
                 if (!ParseAnnotationStatement(out statement))
                     return false;
                 break;
@@ -259,40 +234,40 @@ public sealed class Parser
     /// from name to value.
     /// </summary>
     /// <mzn>a = 1;b = 2; c= true;</mzn>
-    internal bool ParseData(out DataSyntax data)
+    internal bool ParseData(out MiniZincData data)
     {
-        Dictionary<string, ValueSyntax> values = new();
-        data = new DataSyntax(values);
+        Dictionary<string, DataSyntax> values = new();
+        data = new MiniZincData(values);
 
-        if (_kind is TokenKind.EOF)
-            return true;
-
-        while (ParseIdent(out var ident))
+        while (true)
         {
+            if (_kind is TokenKind.EOF)
+                return true;
+
+            if (!ParseIdent(out var name))
+                return false;
+
             if (!Expect(TokenKind.EQUAL))
-                break;
+                return false;
 
             if (!ParseValue(out var value))
-                break;
+                return false;
 
-            if (values.ContainsKey(ident.StringValue))
-            {
-                Error($"Variable \"{ident}\" was assigned to multiple times");
-                break;
-            }
-            values.Add(ident.StringValue, value);
+            if (values.ContainsKey(name.StringValue))
+                return Error($"Variable \"{name}\" was assigned to multiple times");
 
-            if (Skip(TokenKind.EOL) && !Skip(TokenKind.EOF))
+            values.Add(name.StringValue, value);
+
+            if (Skip(TokenKind.EOL))
                 continue;
-            else
-                Expect(TokenKind.EOF);
+
+            if (!Expect(TokenKind.EOF))
+                return false;
+
             break;
         }
 
-        if (_errorMessage is null)
-            return true;
-        else
-            return false;
+        return true;
     }
 
     /// <summary>
@@ -302,7 +277,7 @@ public sealed class Parser
     private bool ParsePredicateStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
-        if (!Expect(TokenKind.PREDICATE, out var start))
+        if (!Expect(TokenKind.KEYWORD_PREDICATE, out var start))
             return false;
 
         var type = new TypeSyntax(start) { Var = true, Kind = TypeKind.Bool };
@@ -324,7 +299,7 @@ public sealed class Parser
     private bool ParseTestStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
-        if (!Expect(TokenKind.TEST, out var start))
+        if (!Expect(TokenKind.KEYWORD_TEST, out var start))
             return false;
 
         var type = new TypeSyntax(start) { Kind = TypeKind.Bool };
@@ -346,7 +321,7 @@ public sealed class Parser
     private bool ParseFunctionStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
-        if (!Expect(TokenKind.FUNCTION, out var start))
+        if (!Expect(TokenKind.KEYWORD_FUNCTION, out var start))
             return false;
 
         if (!ParseType(out var type))
@@ -380,14 +355,14 @@ public sealed class Parser
     {
         node = null!;
         Token? ann = null;
-        List<(Token, TypeSyntax)>? parameters = null;
+        List<ParameterSyntax>? parameters = null;
 
         if (_kind is TokenKind.OPEN_PAREN)
         {
             if (!ParseParameters(out parameters))
                 return false;
 
-            if (Skip(TokenKind.ANN))
+            if (Skip(TokenKind.KEYWORD_ANN))
             {
                 if (!Expect(TokenKind.COLON))
                     return false;
@@ -424,7 +399,7 @@ public sealed class Parser
     private bool ParseAnnotationStatement([NotNullWhen(true)] out StatementSyntax? ann)
     {
         ann = null;
-        if (!Expect(TokenKind.ANNOTATION, out var start))
+        if (!Expect(TokenKind.KEYWORD_ANNOTATION, out var start))
             return false;
 
         var type = new TypeSyntax(start) { Kind = TypeKind.Annotation };
@@ -448,7 +423,7 @@ public sealed class Parser
     internal bool ParseEnumStatement([NotNullWhen(true)] out StatementSyntax? result)
     {
         result = null;
-        if (!Expect(TokenKind.ENUM, out var start))
+        if (!Expect(TokenKind.KEYWORD_ENUM, out var start))
             return false;
 
         if (!ParseIdent(out var name))
@@ -489,6 +464,7 @@ public sealed class Parser
                     if (item is not IdentifierSyntax name)
                         return Expected($"Enum case name, got {item}");
                 }
+
                 break;
 
             // Underscore enum `enum A = _(1..10);`
@@ -548,7 +524,7 @@ public sealed class Parser
     {
         node = null;
 
-        if (!Expect(TokenKind.OUTPUT, out var start))
+        if (!Expect(TokenKind.KEYWORD_OUTPUT, out var start))
             return false;
 
         if (!ParseStringAnnotations(out var anns))
@@ -569,7 +545,7 @@ public sealed class Parser
     {
         alias = null;
 
-        if (!Expect(TokenKind.TYPE, out var start))
+        if (!Expect(TokenKind.KEYWORD_TYPE, out var start))
             return false;
 
         if (!ParseIdent(out var name))
@@ -596,7 +572,7 @@ public sealed class Parser
     {
         node = null;
 
-        if (!Expect(TokenKind.INCLUDE, out var token))
+        if (!Expect(TokenKind.KEYWORD_INCLUDE, out var token))
             return false;
 
         if (!ParseString(out var path))
@@ -615,7 +591,7 @@ public sealed class Parser
     {
         node = null;
 
-        if (!Expect(TokenKind.SOLVE, out var start))
+        if (!Expect(TokenKind.KEYWORD_SOLVE, out var start))
             return false;
 
         if (!ParseAnnotations(out var anns))
@@ -625,19 +601,19 @@ public sealed class Parser
         SolveMethod method = SolveMethod.Satisfy;
         switch (_kind)
         {
-            case TokenKind.SATISFY:
+            case TokenKind.KEYWORD_SATISFY:
                 Step();
                 method = SolveMethod.Satisfy;
                 break;
 
-            case TokenKind.MINIMIZE:
+            case TokenKind.KEYWORD_MINIMIZE:
                 Step();
                 method = SolveMethod.Minimize;
                 if (!ParseExpr(out objective))
                     return false;
                 break;
 
-            case TokenKind.MAXIMIZE:
+            case TokenKind.KEYWORD_MAXIMIZE:
                 Step();
                 method = SolveMethod.Maximize;
                 if (!ParseExpr(out objective))
@@ -660,7 +636,7 @@ public sealed class Parser
     {
         constraint = null;
 
-        if (!Expect(TokenKind.CONSTRAINT, out var start))
+        if (!Expect(TokenKind.KEYWORD_CONSTRAINT, out var start))
             return false;
 
         if (!ParseStringAnnotations(out var anns))
@@ -682,7 +658,7 @@ public sealed class Parser
     internal bool ParseDeclareOrAssignStatement([NotNullWhen(true)] out StatementSyntax? statement)
     {
         statement = null;
-        var start = _token;
+        var start = _current;
 
         if (_kind is TokenKind.IDENTIFIER && Peek().Kind is TokenKind.EQUAL)
         {
@@ -696,7 +672,7 @@ public sealed class Parser
         }
 
         TypeSyntax type;
-        if (Skip(TokenKind.ANY))
+        if (Skip(TokenKind.KEYWORD_ANY))
         {
             type = new TypeSyntax(start) { Kind = TypeKind.Any };
         }
@@ -731,7 +707,7 @@ public sealed class Parser
     internal bool ParseExprAtom([NotNullWhen(true)] out ExpressionSyntax? expr)
     {
         expr = null;
-        var token = _token;
+        var token = _current;
 
         switch (_kind)
         {
@@ -745,12 +721,12 @@ public sealed class Parser
                 expr = new FloatLiteralSyntax(token);
                 break;
 
-            case TokenKind.TRUE:
+            case TokenKind.KEYWORD_TRUE:
                 Step();
                 expr = new BoolLiteralSyntax(token);
                 break;
 
-            case TokenKind.FALSE:
+            case TokenKind.KEYWORD_FALSE:
                 Step();
                 expr = new BoolLiteralSyntax(token);
                 break;
@@ -775,13 +751,13 @@ public sealed class Parser
                     return false;
                 break;
 
-            case TokenKind.IF:
+            case TokenKind.KEYWORD_IF:
                 if (!ParseIfElseExpr(out var ite))
                     return false;
                 expr = ite;
                 break;
 
-            case TokenKind.LET:
+            case TokenKind.KEYWORD_LET:
                 if (!ParseLetExpr(out var let))
                     return false;
                 expr = let;
@@ -823,12 +799,12 @@ public sealed class Parser
             }
             else if (_kind is TokenKind.TUPLE_ACCESS)
             {
-                expr = new TupleAccessSyntax(expr, _token);
+                expr = new TupleAccessSyntax(expr, _current);
                 Step();
             }
             else if (_kind is TokenKind.RECORD_ACCESS)
             {
-                expr = new RecordAccessSyntax(expr, _token);
+                expr = new RecordAccessSyntax(expr, _current);
                 Step();
             }
             else
@@ -846,6 +822,99 @@ public sealed class Parser
 
     private bool IsOk => _errorMessage is null;
 
+    /// Parse array data into the most refined type possible
+    internal bool ParseArrayData([NotNullWhen(true)] out DataSyntax? value)
+    {
+        Step();
+        value = null;
+
+        List<int>? ints = null;
+        List<bool>? bools = null;
+        List<decimal>? floats = null;
+        List<string>? strings = null;
+        List<DataSyntax>? values = null;
+
+        while (_kind is not TokenKind.CLOSE_BRACKET)
+        {
+            throw new NotImplementedException();
+            // if (!ParseValueAtom(out var item))
+            //     return false;
+            // items.Add(item);
+            // if (!Skip(TokenKind.COMMA))
+            //     break;
+        }
+
+        if (!Expect(TokenKind.CLOSE_BRACKET))
+            return false;
+
+        // value = new Array1dData(items);
+        if (ints is not null)
+            value = new IntArray1d(ints);
+        else if (floats is not null)
+            value = new FloatArray1d(floats);
+        else if (bools is not null)
+            value = new BoolArray1d(bools);
+        else if (strings is not null)
+            value = new StringArray1d(strings);
+        else
+            value = new ValueSet(values ?? []);
+        return true;
+    }
+
+    /// Parse set data into the most refined type possible
+    internal bool ParseSetData([NotNullWhen(true)] out DataSyntax? value)
+    {
+        Step();
+        value = null;
+        HashSet<int>? intSet = null;
+        HashSet<bool>? boolSet = null;
+        HashSet<decimal>? floatSet = null;
+        List<DataSyntax>? set = null;
+
+        while (_kind is not TokenKind.CLOSE_BRACE)
+        {
+            var token = _current;
+            Step();
+            switch (_kind)
+            {
+                case TokenKind.INT_LITERAL:
+                    (intSet ?? []).Add(token.IntValue);
+                    break;
+
+                case TokenKind.FLOAT_LITERAL:
+                    (floatSet ?? []).Add(token.DecimalValue);
+                    break;
+
+                case TokenKind.KEYWORD_TRUE:
+                    (boolSet ?? []).Add(true);
+                    break;
+
+                case TokenKind.KEYWORD_FALSE:
+                    (boolSet ?? []).Add(false);
+                    break;
+
+                default:
+                    return Error($"Unexpected {token} in set data");
+            }
+
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
+
+        if (!Expect(TokenKind.CLOSE_BRACE))
+            return false;
+
+        if (intSet is not null)
+            value = new IntSet(intSet);
+        else if (floatSet is not null)
+            value = new FloatSet(floatSet);
+        else if (boolSet is not null)
+            value = new BoolSet(boolSet);
+        else
+            value = new ValueSet(set ?? []);
+        return true;
+    }
+
     /// <summary>
     /// Parse a Value.
     /// A value is a subset of Expressions that can be found in MiniZinc data files.
@@ -854,101 +923,30 @@ public sealed class Parser
     /// <mzn>true</mzn>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>1..10</mzn>
-    internal bool ParseValue([NotNullWhen(true)] out ValueSyntax? value)
+    internal bool ParseValue([NotNullWhen(true)] out DataSyntax? value)
     {
         value = null;
-        List<ValueSyntax> items;
 
         switch (_kind)
         {
-            case TokenKind.MINUS:
-                if (!ParseValueAtom(out value))
-                    return false;
-                break;
-
             case TokenKind.OPEN_BRACE:
-                Step();
-                items = [];
-                while (_kind is not TokenKind.CLOSE_BRACE)
-                {
-                    if (!ParseValueAtom(out var item))
-                        return false;
-                    items.Add(item);
-                    if (!Skip(TokenKind.COMMA))
-                        break;
-                }
-
-                if (!Expect(TokenKind.CLOSE_BRACE))
+                if (!ParseSetData(out value))
                     return false;
-
-                value = new SetValueSyntax(items);
                 break;
 
             case TokenKind.OPEN_BRACKET:
-                Step();
-                items = [];
-                while (_kind is not TokenKind.CLOSE_BRACKET)
-                {
-                    if (!ParseValueAtom(out var item))
-                        return false;
-                    items.Add(item);
-                    if (!Skip(TokenKind.COMMA))
-                        break;
-                }
-                if (!Expect(TokenKind.CLOSE_BRACKET))
+                if (!ParseArrayData(out value))
                     return false;
+                break;
 
-                value = new Array1dValueSyntax(items);
+            case TokenKind.OPEN_PAREN when Peek().Kind is TokenKind.IDENTIFIER:
+                if (!ParseRecordData(out value))
+                    return false;
                 break;
 
             case TokenKind.OPEN_PAREN:
-                Step();
-
-                if (_kind is TokenKind.IDENTIFIER)
-                {
-                    var fields = new Dictionary<string, ValueSyntax>();
-                    while (_kind is not TokenKind.CLOSE_PAREN)
-                    {
-                        if (!ParseIdent(out var name))
-                            return false;
-
-                        if (!Expect(TokenKind.COLON))
-                            return false;
-
-                        if (!ParseValue(out value))
-                            return false;
-
-                        if (fields.ContainsKey(name.StringValue))
-                            return Error($"Duplicate name {name}");
-
-                        fields[name.StringValue] = value;
-
-                        if (!Skip(TokenKind.COMMA))
-                            break;
-                    }
-
-                    if (!Expect(TokenKind.CLOSE_PAREN))
-                        return false;
-
-                    value = new RecordValueSyntax(fields);
-                }
-                else
-                {
-                    items = [];
-                    while (_kind is not TokenKind.CLOSE_PAREN)
-                    {
-                        if (!ParseValueAtom(out value))
-                            return false;
-                        items.Add(value);
-                        if (!Skip(TokenKind.COMMA))
-                            break;
-                    }
-
-                    if (!Expect(TokenKind.CLOSE_PAREN))
-                        return false;
-
-                    value = new TupleValueSyntax(items);
-                }
+                if (!ParseTupleData(out value))
+                    return false;
                 break;
 
             default:
@@ -960,70 +958,101 @@ public sealed class Parser
         return true;
     }
 
+    internal bool ParseTupleData([NotNullWhen(true)] out DataSyntax? value)
+    {
+        Step();
+        value = null;
+        List<DataSyntax> values = [];
+        while (_kind is not TokenKind.CLOSE_PAREN)
+        {
+            if (!ParseValue(out value))
+                return false;
+            values.Add(value);
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
+
+        if (!Expect(TokenKind.CLOSE_PAREN))
+            return false;
+
+        value = new TupleData(values);
+        return true;
+    }
+
+    internal bool ParseRecordData([NotNullWhen(true)] out DataSyntax? value)
+    {
+        Step();
+        value = null;
+        return true;
+    }
+
     /// <summary>
     /// Parse a Value.
     /// A value is a subset of Expressions that can be found in MiniZinc data files.
     /// </summary>
     /// <mzn>1</mzn>
     /// <mzn>true</mzn>
-    internal bool ParseValueAtom([NotNullWhen(true)] out ValueSyntax? value)
+    internal bool ParseValueAtom([NotNullWhen(true)] out DataSyntax? value)
     {
         value = null;
-        Token token = _token;
+        Token token = _current;
         Token right;
         switch (_kind)
         {
             case TokenKind.INT_LITERAL:
                 Step();
-                if (Skip(TokenKind.RANGE_INCLUSIVE))
+                if (Skip(TokenKind.CLOSED_RANGE))
                 {
                     if (!Expect(TokenKind.INT_LITERAL, out right))
                         return false;
-                    value = new IntRange(token.IntValue, right.IntValue);
+                    value = new IntRangeData(token.IntValue, right.IntValue);
                 }
                 else
                 {
-                    value = new IntLiteralSyntax(token);
+                    value = new IntData(token.IntValue);
                 }
+
                 break;
 
             case TokenKind.FLOAT_LITERAL:
                 Step();
-                if (Skip(TokenKind.RANGE_INCLUSIVE))
+                if (Skip(TokenKind.CLOSED_RANGE))
                 {
                     if (!Expect(TokenKind.FLOAT_LITERAL, out right))
                         return false;
-                    value = new FloatRange(token.DecimalValue, right.DecimalValue);
+                    value = new FloatRangeData(token.DecimalValue, right.DecimalValue);
                 }
                 else
                 {
-                    value = new FloatLiteralSyntax(token);
+                    value = new FloatData(token.DecimalValue);
                 }
+
                 break;
 
-            case TokenKind.TRUE:
+            case TokenKind.KEYWORD_TRUE:
                 Step();
-                value = new BoolLiteralSyntax(token);
+                value = new BoolData(token.BoolValue);
                 break;
 
-            case TokenKind.FALSE:
+            case TokenKind.KEYWORD_FALSE:
                 Step();
-                value = new BoolLiteralSyntax(token);
+                value = new BoolData(token.BoolValue);
                 break;
 
             case TokenKind.STRING_LITERAL:
                 Step();
-                value = new StringLiteralSyntax(token);
+                value = new StringData(token.ToString());
                 break;
 
             case TokenKind.EMPTY:
                 Step();
-                value = new EmptyLiteralSyntax(token);
+                value = new EmptyData();
                 break;
 
             default:
                 return false;
         }
+
         return true;
     }
 
@@ -1041,20 +1070,32 @@ public sealed class Parser
     internal bool ParseExpr(
         [NotNullWhen(true)] out ExpressionSyntax? expr,
         Assoc associativity = 0,
-        ushort precedence = 0
+        short precedence = 0,
+        bool typeInst = false
     )
     {
         expr = null;
-        var token = _token;
-        var op = token.Kind;
-        var (assoc, prec) = Precedence(_kind);
+        Token token = _current;
+        TokenKind op = token.Kind;
+        short prec = Precedence(op);
+        Assoc assoc = Associativity(op);
+
         switch (op)
         {
+            // Unary operators bind tighter than all binary operators
             case TokenKind.PLUS:
             case TokenKind.MINUS:
-            case TokenKind.NOT:
-            case TokenKind.RANGE_INCLUSIVE:
-            case TokenKind.RANGE_LEFT_INCLUSIVE:
+            case TokenKind.KEYWORD_NOT:
+                Step();
+                if (!ParseExpr(out expr, Assoc.Right, MAX_PRECEDENCE))
+                    return false;
+                expr = UnOpExpr(token, expr);
+                break;
+
+            // Open range operators are a special case as their binary precedence
+            // rules still apply which means  ..1+1
+            case TokenKind.CLOSED_RANGE:
+            case TokenKind.RIGHT_OPEN_RANGE:
                 Step();
                 if (!ParseExpr(out expr, assoc, prec))
                     return false;
@@ -1069,55 +1110,51 @@ public sealed class Parser
 
         while (true)
         {
-            token = _token;
+            token = _current;
             op = token.Kind;
-            (assoc, prec) = Precedence(op);
-            if (assoc is 0)
+            prec = Precedence(op);
+            assoc = Associativity(op);
+
+            if (typeInst && op is TokenKind.PLUS_PLUS)
                 return true;
 
-            switch (assoc)
-            {
-                case Assoc.None when associativity is Assoc.None && prec == precedence:
+            if (prec < precedence)
+                return true;
+
+            if (prec == precedence)
+                if (associativity is Assoc.None && assoc is Assoc.None)
                     return Error($"Invalid application of operator {op} due to precedence rules");
-
-                case Assoc.Left when prec <= precedence:
-                case Assoc.None when prec <= precedence:
+                else if (associativity is Assoc.Left)
                     return true;
-
-                case Assoc.None when prec < precedence:
-                case Assoc.Right when prec < precedence:
-                    return true;
-            }
 
             Step();
 
-            switch (op)
+            if (
+                op
+                is TokenKind.CLOSED_RANGE
+                    or TokenKind.OPEN_RANGE
+                    or TokenKind.RIGHT_OPEN_RANGE
+                    or TokenKind.LEFT_OPEN_RANGE
+            )
             {
-                // Postfix operators
-                case TokenKind.RANGE_INCLUSIVE:
-                case TokenKind.RANGE_EXCLUSIVE:
-                case TokenKind.RANGE_LEFT_INCLUSIVE:
-                case TokenKind.RANGE_RIGHT_INCLUSIVE:
-                    int i = _i;
-                    if (!ParseExpr(out var right))
-                    {
-                        if (_i > i) // Failed while consuming input
-                            return false;
-
-                        expr = new RangeLiteralSyntax(expr.Start, op, lower: expr);
-                    }
-                    else
-                    {
-                        expr = new RangeLiteralSyntax(expr.Start, op, lower: expr, upper: right);
-                    }
-                    break;
-
-                // Infix operator
-                default:
-                    if (!ParseExpr(out right, assoc, prec))
+                int i = _i;
+                if (!ParseExpr(out var right))
+                {
+                    if (_i > i) // Failed while consuming input
                         return false;
-                    expr = BinOpExpr(expr, token, right);
-                    break;
+
+                    expr = new RangeLiteralSyntax(expr.Start, op, lower: expr);
+                }
+                else
+                {
+                    expr = new RangeLiteralSyntax(expr.Start, op, lower: expr, upper: right);
+                }
+            }
+            else
+            {
+                if (!ParseExpr(out var right, assoc, prec))
+                    return false;
+                expr = BinOpExpr(expr, token, right);
             }
         }
     }
@@ -1133,10 +1170,10 @@ public sealed class Parser
                 return new IntLiteralSyntax(expr.Start, -i);
             case (TokenKind.MINUS, FloatLiteralSyntax { Value: var i }):
                 return new FloatLiteralSyntax(expr.Start, -i);
-            case (TokenKind.RANGE_INCLUSIVE, _):
-            case (TokenKind.RANGE_EXCLUSIVE, _):
-            case (TokenKind.RANGE_LEFT_INCLUSIVE, _):
-            case (TokenKind.RANGE_RIGHT_INCLUSIVE, _):
+            case (TokenKind.CLOSED_RANGE, _):
+            case (TokenKind.OPEN_RANGE, _):
+            case (TokenKind.RIGHT_OPEN_RANGE, _):
+            case (TokenKind.LEFT_OPEN_RANGE, _):
                 return new RangeLiteralSyntax(prefix, prefix.Kind, upper: expr);
             default:
                 return new UnaryOperatorSyntax(prefix, expr);
@@ -1151,65 +1188,106 @@ public sealed class Parser
     {
         switch (infix.Kind)
         {
-            case TokenKind.RANGE_INCLUSIVE:
-            case TokenKind.RANGE_EXCLUSIVE:
-            case TokenKind.RANGE_LEFT_INCLUSIVE:
-            case TokenKind.RANGE_RIGHT_INCLUSIVE:
+            case TokenKind.CLOSED_RANGE:
+            case TokenKind.OPEN_RANGE:
+            case TokenKind.RIGHT_OPEN_RANGE:
+            case TokenKind.LEFT_OPEN_RANGE:
 
             default:
                 return new BinaryOperatorSyntax(left, infix, right);
         }
     }
 
-    /// <summary>
-    /// https://docs.minizinc.dev/en/stable/spec.html#operators
-    /// </summary>
-    internal static (Assoc, ushort) Precedence(in TokenKind kind)
+    internal static Assoc Associativity(in TokenKind kind)
     {
-        var (assoc, prec) = kind switch
+        switch (kind)
         {
-            TokenKind.DOUBLE_ARROW => (Assoc.Left, 1200),
-            TokenKind.RIGHT_ARROW => (Assoc.Left, 1100),
-            TokenKind.LEFT_ARROW => (Assoc.Left, 1100),
-            TokenKind.DOWN_WEDGE => (Assoc.Left, 1000),
-            TokenKind.XOR => (Assoc.Left, 1000),
-            TokenKind.UP_WEDGE => (Assoc.Left, 900),
-            TokenKind.LESS_THAN => (Assoc.None, 800),
-            TokenKind.GREATER_THAN => (Assoc.None, 800),
-            TokenKind.LESS_THAN_EQUAL => (Assoc.None, 800),
-            TokenKind.GREATER_THAN_EQUAL => (Assoc.None, 800),
-            TokenKind.EQUAL => (Assoc.None, 800),
-            TokenKind.NOT_EQUAL => (Assoc.None, 800),
-            TokenKind.IN => (Assoc.None, 700),
-            TokenKind.SUBSET => (Assoc.None, 700),
-            TokenKind.SUPERSET => (Assoc.None, 700),
-            TokenKind.UNION => (Assoc.Left, 600),
-            TokenKind.DIFF => (Assoc.Left, 600),
-            TokenKind.SYMDIFF => (Assoc.Left, 600),
-            TokenKind.RANGE_INCLUSIVE => (Assoc.None, 500),
-            TokenKind.RANGE_EXCLUSIVE => (Assoc.None, 500),
-            TokenKind.RANGE_LEFT_INCLUSIVE => (Assoc.None, 500),
-            TokenKind.RANGE_RIGHT_INCLUSIVE => (Assoc.None, 500),
-            TokenKind.PLUS => (Assoc.Left, 400),
-            TokenKind.MINUS => (Assoc.Left, 400),
-            TokenKind.STAR => (Assoc.Left, 300),
-            TokenKind.DIV => (Assoc.Left, 300),
-            TokenKind.MOD => (Assoc.Left, 300),
-            TokenKind.FWDSLASH => (Assoc.Left, 300),
-            TokenKind.INTERSECT => (Assoc.Left, 300),
-            TokenKind.EXP => (Assoc.Left, 200),
-            TokenKind.PLUS_PLUS => (Assoc.Right, 100),
-            TokenKind.DEFAULT => (Assoc.Left, 70),
-            TokenKind.INFIX_IDENTIFIER => (Assoc.Left, 50),
-            TokenKind.TILDE_PLUS => (Assoc.Left, 10),
-            TokenKind.TILDE_MINUS => (Assoc.Left, 10),
-            TokenKind.TILDE_STAR => (Assoc.Left, 10),
-            TokenKind.TILDE_EQUALS => (Assoc.Left, 10),
-            _ => default
-        };
-        // We invert the ordering of the above so that high number == higher binding
-        // because it doesn't make sense to me otherwise
-        return (assoc, (ushort)(2000 - prec));
+            case TokenKind.LESS_THAN:
+            case TokenKind.GREATER_THAN:
+            case TokenKind.LESS_THAN_EQUAL:
+            case TokenKind.GREATER_THAN_EQUAL:
+            case TokenKind.EQUAL:
+            case TokenKind.NOT_EQUAL:
+            case TokenKind.KEYWORD_IN:
+            case TokenKind.KEYWORD_SUBSET:
+            case TokenKind.KEYWORD_SUPERSET:
+            case TokenKind.OPEN_RANGE:
+            case TokenKind.CLOSED_RANGE:
+            case TokenKind.LEFT_OPEN_RANGE:
+            case TokenKind.RIGHT_OPEN_RANGE:
+                return Assoc.None;
+            case TokenKind.PLUS_PLUS:
+                return Assoc.Right;
+            default:
+                return Assoc.Left;
+        }
+    }
+
+    public const short MAX_PRECEDENCE = 2000;
+
+    /// <summary>
+    /// Get the precedence for the given operator
+    /// </summary>
+    /// <remarks>These numbers are taken from <see href="https://docs.minizinc.dev/en/stable/spec.html#operators"/> but
+    /// inverted such that stronger binding has a higher number
+    /// </remarks>
+    internal static short Precedence(in TokenKind kind)
+    {
+        switch (kind)
+        {
+            case TokenKind.BI_IMPLICATION:
+                return 800; //1200,
+            case TokenKind.FORWARD_IMPLICATION:
+            case TokenKind.REVERSE_IMPLICATION:
+                return 900; //1100,
+            case TokenKind.DISJUNCTION:
+            case TokenKind.KEYWORD_XOR:
+            case TokenKind.CONJUNCTION:
+                return 1100; //900,
+            case TokenKind.LESS_THAN:
+            case TokenKind.GREATER_THAN:
+            case TokenKind.LESS_THAN_EQUAL:
+            case TokenKind.GREATER_THAN_EQUAL:
+            case TokenKind.EQUAL:
+            case TokenKind.NOT_EQUAL:
+                return 1200; //800
+            case TokenKind.KEYWORD_IN:
+            case TokenKind.KEYWORD_SUBSET:
+            case TokenKind.KEYWORD_SUPERSET:
+                return 1300; // 700
+            case TokenKind.KEYWORD_UNION:
+            case TokenKind.KEYWORD_DIFF:
+            case TokenKind.KEYWORD_SYMDIFF:
+                return 1400; //600
+            case TokenKind.OPEN_RANGE:
+            case TokenKind.CLOSED_RANGE:
+            case TokenKind.LEFT_OPEN_RANGE:
+            case TokenKind.RIGHT_OPEN_RANGE:
+                return 1500; //500
+            case TokenKind.PLUS:
+            case TokenKind.MINUS:
+                return 1600; //400
+            case TokenKind.TIMES:
+            case TokenKind.DIVIDE:
+            case TokenKind.KEYWORD_MOD:
+            case TokenKind.KEYWORD_DIV:
+            case TokenKind.KEYWORD_INTERSECT:
+            case TokenKind.TILDE_PLUS:
+            case TokenKind.TILDE_MINUS:
+            case TokenKind.TILDE_TIMES:
+            case TokenKind.TILDE_EQUALS:
+                return 1700; //300
+            case TokenKind.EXPONENT:
+                return 1800; //200
+            case TokenKind.PLUS_PLUS:
+                return 1900; //100
+            case TokenKind.KEYWORD_DEFAULT:
+                return 1930; // 70
+            case TokenKind.IDENTIFIER_INFIX:
+                return 1950; //50
+            default:
+                return -1;
+        }
     }
 
     /// <summary>
@@ -1228,7 +1306,7 @@ public sealed class Parser
     internal bool ParseIdentifierExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
         result = null;
-        var name = _token;
+        var name = _current;
         Step();
 
         // Simple identifier
@@ -1277,11 +1355,11 @@ public sealed class Parser
             // `in` expressions involving identifiers could mean a gencall
             case BinaryOperatorSyntax
             {
-                Operator: TokenKind.IN,
+                Operator: TokenKind.KEYWORD_IN,
                 Left: IdentifierSyntax id,
                 Right: { } from
             } when maybeGen:
-                if (!Skip(TokenKind.WHERE))
+                if (!Skip(TokenKind.KEYWORD_WHERE))
                 {
                     exprs.Add(expr);
                     break;
@@ -1370,13 +1448,14 @@ public sealed class Parser
                     break;
             }
         }
+
         result = gencall;
         return true;
     }
 
     private bool ParseGenerators([NotNullWhen(true)] out List<GeneratorSyntax>? generators)
     {
-        var start = _token;
+        var start = _current;
         generators = null;
 
         begin:
@@ -1386,7 +1465,7 @@ public sealed class Parser
             Token name;
             if (_kind is TokenKind.UNDERSCORE)
             {
-                name = _token;
+                name = _current;
                 Step();
             }
             else if (!ParseIdent(out name))
@@ -1401,19 +1480,19 @@ public sealed class Parser
             break;
         }
 
-        if (!Expect(TokenKind.IN))
+        if (!Expect(TokenKind.KEYWORD_IN))
             return false;
 
-        if (!ParseExpr(out var @from))
+        if (!ParseExpr(out var from))
             return false;
 
-        var gen = new GeneratorSyntax(start, names) { From = @from };
+        var gen = new GeneratorSyntax(start, names) { From = from };
 
-        if (Skip(TokenKind.WHERE))
-            if (!ParseExpr(out var @where))
+        if (Skip(TokenKind.KEYWORD_WHERE))
+            if (!ParseExpr(out var where))
                 return false;
             else
-                gen.Where = @where;
+                gen.Where = where;
 
         generators ??= new List<GeneratorSyntax>();
         generators.Add(gen);
@@ -1656,6 +1735,7 @@ public sealed class Parser
                 arr.Elements.Add(value);
                 Skip(TokenKind.COMMA);
             }
+
             goto parse_row_values;
         }
 
@@ -1749,6 +1829,7 @@ public sealed class Parser
             if (!Skip(TokenKind.COMMA))
                 break;
         }
+
         if (!Expect(TokenKind.PIPE))
             return false;
 
@@ -1822,6 +1903,7 @@ public sealed class Parser
             if (!Skip(TokenKind.COMMA))
                 break;
         }
+
         return Expect(TokenKind.CLOSE_BRACE);
     }
 
@@ -1829,7 +1911,7 @@ public sealed class Parser
     {
         let = null;
 
-        if (!Expect(TokenKind.LET, out var start))
+        if (!Expect(TokenKind.KEYWORD_LET, out var start))
             return false;
 
         if (!Expect(TokenKind.OPEN_BRACE))
@@ -1853,7 +1935,7 @@ public sealed class Parser
         if (!Expect(TokenKind.CLOSE_BRACE))
             return false;
 
-        if (!Expect(TokenKind.IN))
+        if (!Expect(TokenKind.KEYWORD_IN))
             return false;
 
         if (!ParseExpr(out var body))
@@ -1866,7 +1948,7 @@ public sealed class Parser
     private bool ParseLetLocal(out ILetLocalSyntax result)
     {
         result = null!;
-        if (_kind is TokenKind.CONSTRAINT)
+        if (_kind is TokenKind.KEYWORD_CONSTRAINT)
         {
             if (ParseConstraintStatement(out var con))
             {
@@ -1899,7 +1981,7 @@ public sealed class Parser
         if (!ParseExpr(out ifCase))
             return false;
 
-        if (!Skip(TokenKind.THEN))
+        if (!Skip(TokenKind.KEYWORD_THEN))
             return false;
 
         if (!ParseExpr(out thenCase))
@@ -1916,21 +1998,21 @@ public sealed class Parser
     private bool ParseIfElseExpr([NotNullWhen(true)] out ExpressionSyntax? result)
     {
         result = null;
-        var start = _token;
+        var start = _current;
 
-        if (!ParseIfThenCase(out var ifCase, out var thenCase, TokenKind.IF))
+        if (!ParseIfThenCase(out var ifCase, out var thenCase, TokenKind.KEYWORD_IF))
             return false;
 
         var ite = new IfThenSyntax(start, ifCase, thenCase);
         result = ite;
 
-        while (ParseIfThenCase(out ifCase, out thenCase, TokenKind.ELSEIF))
+        while (ParseIfThenCase(out ifCase, out thenCase, TokenKind.KEYWORD_ELSEIF))
         {
             ite.ElseIfs ??= new List<(ExpressionSyntax elseif, ExpressionSyntax then)>();
             ite.ElseIfs.Add((ifCase, thenCase!));
         }
 
-        if (Skip(TokenKind.ELSE))
+        if (Skip(TokenKind.KEYWORD_ELSE))
         {
             if (!ParseExpr(out var @else))
                 return false;
@@ -1938,7 +2020,7 @@ public sealed class Parser
             ite.Else = @else;
         }
 
-        if (!Expect(TokenKind.ENDIF))
+        if (!Expect(TokenKind.KEYWORD_ENDIF))
             return false;
 
         return true;
@@ -2035,9 +2117,9 @@ public sealed class Parser
             // Edge case where 'output' keyword can be used
             // in a non-keyword context, eg:
             // int : x :: output = 3;
-            if (_kind is TokenKind.OUTPUT)
+            if (_kind is TokenKind.KEYWORD_OUTPUT)
             {
-                ann = new IdentifierSyntax(_token);
+                ann = new IdentifierSyntax(_current);
                 Step();
             }
             else if (!ParseExprAtom(out ann))
@@ -2048,6 +2130,7 @@ public sealed class Parser
             annotations ??= new List<ExpressionSyntax>();
             annotations.Add(ann);
         }
+
         return true;
     }
 
@@ -2074,50 +2157,97 @@ public sealed class Parser
     internal bool ParseBaseType([NotNullWhen(true)] out TypeSyntax? type)
     {
         type = default;
-        var start = _token;
+        var start = _current;
 
-        if (Skip(TokenKind.ANY))
+        if (Skip(TokenKind.KEYWORD_ANY))
         {
-            if (!ParseGeneric(out var name))
-                return false;
-
-            type = new TypeSyntax(start)
+            var ident = _current;
+            if (ident.Kind is TokenKind.IDENTIFIER_GENERIC or TokenKind.IDENTIFIER_GENERIC_SEQUENCE)
             {
-                Name = name,
-                Kind =
-                    name.Kind is TokenKind.GENERIC_SEQUENCE ? TypeKind.GenericSeq : TypeKind.Generic
-            };
-            return true;
+                Step();
+                type = new TypeSyntax(start) { Name = ident, Kind = TypeKind.Identifier };
+                return true;
+            }
+            else
+            {
+                return Expected("Generic Variable ($$T, $T)");
+            }
         }
 
         var var = false;
-        if (Skip(TokenKind.VAR))
+        if (Skip(TokenKind.KEYWORD_VAR))
             var = true;
         else
-            Skip(TokenKind.PAR);
+            Skip(TokenKind.KEYWORD_PAR);
 
-        var opt = Skip(TokenKind.OPT);
+        var opt = Skip(TokenKind.KEYWORD_OPT);
 
-        if (Skip(TokenKind.SET))
+        if (Skip(TokenKind.KEYWORD_SET))
         {
-            if (!Expect(TokenKind.OF))
+            if (!Expect(TokenKind.KEYWORD_OF))
                 return false;
 
             if (!ParseBaseType(out type))
                 return false;
 
-            type = new SetTypeSyntax(start)
-            {
-                Items = type,
-                Var = var,
-                Opt = opt,
-                Kind = TypeKind.Set
-            };
+            type = new SetTypeSyntax(start, type) { Var = var, Opt = opt };
             return true;
         }
 
-        if (!ParseBaseTypeTail(out type))
-            return false;
+        start = _current;
+        switch (_kind)
+        {
+            case TokenKind.KEYWORD_INT:
+                Step();
+                type = new TypeSyntax(start) { Kind = TypeKind.Int };
+                break;
+
+            case TokenKind.KEYWORD_BOOL:
+                Step();
+                type = new TypeSyntax(start) { Kind = TypeKind.Bool };
+                break;
+
+            case TokenKind.KEYWORD_FLOAT:
+                Step();
+                type = new TypeSyntax(start) { Kind = TypeKind.Float };
+                break;
+
+            case TokenKind.KEYWORD_STRING:
+                Step();
+                type = new TypeSyntax(start) { Kind = TypeKind.String };
+                break;
+
+            case TokenKind.KEYWORD_ANN:
+                Step();
+                type = new TypeSyntax(start) { Kind = TypeKind.Ann };
+                break;
+
+            case TokenKind.KEYWORD_RECORD:
+                if (!ParseRecordType(out type))
+                    return false;
+                break;
+
+            case TokenKind.KEYWORD_TUPLE:
+                if (!ParseTupleType(out type))
+                    return false;
+                break;
+
+            case TokenKind.IDENTIFIER_GENERIC:
+                Step();
+                type = new TypeSyntax(start) { Name = start, Kind = TypeKind.Identifier };
+                break;
+
+            case TokenKind.IDENTIFIER_GENERIC_SEQUENCE:
+                Step();
+                type = new TypeSyntax(start) { Kind = TypeKind.Identifier, Name = start };
+                break;
+
+            default:
+                if (!ParseExpr(out var expr, typeInst: true))
+                    return false;
+                type = new ExprTypeSyntax(start, expr);
+                break;
+        }
 
         type.Var = var;
         type.Opt = opt;
@@ -2128,134 +2258,37 @@ public sealed class Parser
     /// Parse an array type
     /// </summary>
     /// <mzn>array[X, 1..2] of var int</mzn>
-    internal bool ParseArrayType([NotNullWhen(true)] out ArrayTypeSyntax? arr)
+    internal bool ParseArrayType([NotNullWhen(true)] out TypeSyntax? arr)
     {
         arr = default;
         var dims = new List<TypeSyntax>();
 
-        if (!Expect(TokenKind.ARRAY, out var start))
+        if (!Expect(TokenKind.KEYWORD_ARRAY, out var start))
             return false;
 
         if (!Expect(TokenKind.OPEN_BRACKET))
             return false;
 
-        next:
-        if (!ParseBaseType(out var expr))
+        while (ParseBaseType(out var expr))
+        {
+            dims.Add(expr);
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
+
+        if (_errorMessage is not null)
             return false;
-
-        dims.Add(expr);
-
-        if (Skip(TokenKind.COMMA))
-            goto next;
 
         if (!Expect(TokenKind.CLOSE_BRACKET))
             return false;
 
-        if (!Expect(TokenKind.OF))
+        if (!Expect(TokenKind.KEYWORD_OF))
             return false;
 
         if (!ParseType(out var type))
             return false;
 
-        arr = new ArrayTypeSyntax(start)
-        {
-            Kind = TypeKind.Array,
-            Dimensions = dims,
-            Items = type
-        };
-        return true;
-    }
-
-    private bool ParseBaseTypeTail([NotNullWhen(true)] out TypeSyntax? type)
-    {
-        type = default;
-        var start = _token;
-        switch (_kind)
-        {
-            case TokenKind.INT:
-                Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Int };
-                break;
-
-            case TokenKind.BOOL:
-                Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Bool };
-                break;
-
-            case TokenKind.FLOAT:
-                Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Float };
-                break;
-
-            case TokenKind.STRING:
-                Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.String };
-                break;
-
-            case TokenKind.ANN:
-                Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Ann };
-                break;
-
-            case TokenKind.RECORD:
-                if (!ParseRecordType(out var record))
-                    return false;
-                type = record;
-                break;
-
-            case TokenKind.TUPLE:
-                if (!ParseTupleType(out var tuple))
-                    return false;
-                type = tuple;
-                break;
-
-            case TokenKind.GENERIC:
-                Step();
-                type = new TypeSyntax(start) { Name = start, Kind = TypeKind.Generic };
-                break;
-
-            case TokenKind.GENERIC_SEQUENCE:
-                Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.GenericSeq, Name = start };
-                break;
-
-            default:
-                // Parse an expression with precedence set as `union` + 1 so that
-                // multiple union calls are not chained for type declarations
-                if (!ParseExpr(out var expr, precedence: 1401))
-                    return false;
-                type = new ExprTypeSyntax(start, expr) { Kind = TypeKind.Expr };
-                break;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Parse a type name pair
-    /// </summary>
-    /// <mzn>int: a</mzn>
-    /// <mzn>bool: ABC</mzn>
-    /// <mzn>any $$T</mzn>
-    internal bool ParseTypeAndName([NotNullWhen(true)] out TypeSyntax? type, out Token name)
-    {
-        type = null;
-        name = default;
-        if (!ParseType(out type))
-            return false;
-
-        // Parameters can have a type only
-        // `int: get_two(int) = 2`
-        if (!Skip(TokenKind.COLON))
-            return true;
-
-        if (!ParseIdent(out name))
-            return false;
-
-        if (!ParseAnnotations(out var anns))
-            return false;
-
-        type.Annotations = anns;
+        arr = new ArrayTypeSyntax(start, dims, type) { Kind = TypeKind.Array };
         return true;
     }
 
@@ -2263,10 +2296,10 @@ public sealed class Parser
     /// Parse a tuple type constructor
     /// </summary>
     /// <mzn>tuple(int, bool, tuple(int))</mzn>
-    private bool ParseTupleType([NotNullWhen(true)] out TupleTypeSyntax? tuple)
+    private bool ParseTupleType([NotNullWhen(true)] out TypeSyntax? tuple)
     {
         tuple = null;
-        if (!Expect(TokenKind.TUPLE, out var start))
+        if (!Expect(TokenKind.KEYWORD_TUPLE, out var start))
             return false;
 
         if (!Expect(TokenKind.OPEN_PAREN))
@@ -2291,16 +2324,17 @@ public sealed class Parser
     /// Parse a record type constructor
     /// </summary>
     /// <mzn>record(int: a, bool: b)</mzn>
-    private bool ParseRecordType([NotNullWhen(true)] out RecordTypeSyntax? record)
+    private bool ParseRecordType([NotNullWhen(true)] out TypeSyntax? record)
     {
-        record = default;
-        if (!Expect(TokenKind.RECORD, out var start))
+        record = null;
+
+        if (!Expect(TokenKind.KEYWORD_RECORD, out var start))
             return false;
 
         if (!ParseParameters(out var fields))
             return false;
 
-        record = new RecordTypeSyntax(start, fields) { Kind = TypeKind.Record };
+        record = new RecordTypeSyntax(start, fields);
         return true;
     }
 
@@ -2309,19 +2343,40 @@ public sealed class Parser
     /// and names between parentheses
     /// </summary>
     /// <mzn>(int: a, bool: b)</mzn>
-    private bool ParseParameters([NotNullWhen(true)] out List<(Token, TypeSyntax)>? parameters)
+    private bool ParseParameters([NotNullWhen(true)] out List<ParameterSyntax>? parameters)
     {
         parameters = default;
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
-        parameters = new List<(Token, TypeSyntax)>();
+        Token name;
+        List<ExpressionSyntax>? anns;
+        TypeSyntax? type;
+
+        parameters = new List<ParameterSyntax>();
         while (_kind is not TokenKind.CLOSE_PAREN)
         {
-            if (!ParseTypeAndName(out var ptype, out var pname))
+            if (!ParseType(out type))
                 return false;
 
-            parameters.Add((pname, ptype));
+            // Parameters can sometimes have a type only which
+            // seems like a really bad idea and it quite confusing
+            // but what can you do.  In practice this is extremely rare
+            if (!Skip(TokenKind.COLON))
+            {
+                name = default;
+                anns = null;
+            }
+            else
+            {
+                if (!ParseIdent(out name))
+                    return false;
+                if (!ParseAnnotations(out anns))
+                    return false;
+            }
+
+            var param = new ParameterSyntax(type.Start, type, name) { Annotations = anns };
+            parameters.Add(param);
             if (!Skip(TokenKind.COMMA))
                 break;
         }
@@ -2332,39 +2387,36 @@ public sealed class Parser
     internal bool ParseType([NotNullWhen(true)] out TypeSyntax? result)
     {
         result = default;
-        var start = _token;
-        if (_kind is TokenKind.ARRAY)
+        var start = _current;
+        switch (_kind)
         {
-            if (!ParseArrayType(out var arr))
-                return false;
-            result = arr;
-            return true;
-        }
+            case TokenKind.KEYWORD_ARRAY:
+                if (!ParseArrayType(out result))
+                    return false;
+                break;
 
-        if (_kind is TokenKind.LIST)
-        {
-            if (!ParseListType(out var list))
-                return false;
-            result = list;
-            return true;
-        }
+            case TokenKind.KEYWORD_LIST:
+                if (!ParseListType(out result))
+                    return false;
+                break;
 
-        if (!ParseBaseType(out var type))
-            return false;
+            default:
+                if (!ParseBaseType(out result))
+                    return false;
+                break;
+        }
 
         List<TypeSyntax>? types = null;
 
-        while (Skip(TokenKind.PLUS_PLUS) || Skip(TokenKind.UNION))
+        while (Skip(TokenKind.PLUS_PLUS) || Skip(TokenKind.KEYWORD_UNION))
         {
-            types ??= [type];
-            if (!ParseBaseType(out type))
+            types ??= [result];
+            if (!ParseBaseType(out result))
                 return false;
-            types.Add(type);
+            types.Add(result);
         }
 
-        if (types is null)
-            result = type;
-        else
+        if (types is not null)
             result = new CompositeTypeSyntax(start, types);
 
         return true;
@@ -2374,20 +2426,20 @@ public sealed class Parser
     /// Parse a list type
     /// </summary>
     /// <mzn>list of var int</mzn>
-    private bool ParseListType(out ListTypeSyntax arr)
+    private bool ParseListType([NotNullWhen(true)] out TypeSyntax? list)
     {
-        arr = null!;
+        list = null!;
 
-        if (!Expect(TokenKind.LIST, out var start))
+        if (!Expect(TokenKind.KEYWORD_LIST, out var start))
             return false;
 
-        if (!Expect(TokenKind.OF))
+        if (!Expect(TokenKind.KEYWORD_OF))
             return false;
 
         if (!ParseBaseType(out var items))
             return false;
 
-        arr = new ListTypeSyntax(start) { Kind = TypeKind.List, Items = items };
+        list = new ListTypeSyntax(start, items);
         return true;
     }
 
@@ -2399,15 +2451,15 @@ public sealed class Parser
         if (_errorMessage is not null)
             return false;
 
-        _errorTrace = _sourceText[.._token.End];
+        _errorTrace = _sourceText[.._current.End];
         _errorTrace = $"""
             ---------------------------------------------
             {msg}
             ---------------------------------------------
             Token {_kind}
-            Line {_token.Line}
-            Col {_token.Col}
-            Pos {_token.Start}
+            Line {_current.Line}
+            Col {_current.Col}
+            Pos {_current.Start}
             ---------------------------------------------
             {_errorTrace}
             """;
@@ -2433,7 +2485,7 @@ public sealed class Parser
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
-            FinalToken = parser._token,
+            FinalToken = parser._current,
             Elapsed = elapsed,
             ErrorMessage = parser._errorMessage,
             ErrorTrace = parser._errorTrace
@@ -2462,7 +2514,7 @@ public sealed class Parser
             SourceFile = null,
             SourceText = text,
             Ok = ok,
-            FinalToken = parser._token,
+            FinalToken = parser._current,
             Elapsed = elapsed,
             ErrorMessage = parser._errorMessage,
             ErrorTrace = parser._errorTrace
@@ -2479,7 +2531,7 @@ public sealed class Parser
     /// Data files only allow assignments eg: `a = 10;`
     /// </summary>
     /// <example>Parser.ParseDataFile("data.dzn")</example>
-    public static ParseResult ParseDataFile(string path, out DataSyntax data)
+    public static ParseResult ParseDataFile(string path, out MiniZincData data)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
@@ -2491,7 +2543,7 @@ public sealed class Parser
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
-            FinalToken = parser._token,
+            FinalToken = parser._current,
             Elapsed = elapsed,
             ErrorMessage = parser._errorMessage,
             ErrorTrace = parser._errorTrace
@@ -2506,7 +2558,7 @@ public sealed class Parser
     /// <example>
     /// Parser.ParseDataString("a = 10; b=true;");
     /// </example>
-    public static ParseResult ParseDataString(string text, out DataSyntax data)
+    public static ParseResult ParseDataString(string text, out MiniZincData data)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
@@ -2517,7 +2569,7 @@ public sealed class Parser
             SourceFile = null,
             SourceText = text,
             Ok = ok,
-            FinalToken = parser._token,
+            FinalToken = parser._current,
             Elapsed = elapsed,
             ErrorMessage = parser._errorMessage,
             ErrorTrace = parser._errorTrace
@@ -2525,8 +2577,8 @@ public sealed class Parser
         return result;
     }
 
-    /// <inheritdoc cref="ParseDataFile(string,out DataSyntax)"/>
-    public static ParseResult ParseDataFile(FileInfo file, out DataSyntax data) =>
+    /// <inheritdoc cref="ParseDataFile(string,out MiniZincData)"/>
+    public static ParseResult ParseDataFile(FileInfo file, out MiniZincData data) =>
         ParseDataFile(file.FullName, out data);
 
     /// Parse an expression of the given type from text
@@ -2537,7 +2589,7 @@ public sealed class Parser
         if (!parser.ParseExpr(out var expr))
             throw new MiniZincParseException(
                 parser._errorMessage ?? "",
-                parser._token,
+                parser._current,
                 parser._errorTrace
             );
 
@@ -2545,9 +2597,10 @@ public sealed class Parser
         {
             throw new MiniZincParseException(
                 $"The parsed expression is of type {expr.GetType()} but expected {typeof(T)}",
-                parser._token
+                parser._current
             );
         }
+
         return result;
     }
 
@@ -2559,7 +2612,7 @@ public sealed class Parser
         if (!parser.ParseStatement(out var statement))
             throw new MiniZincParseException(
                 parser._errorMessage ?? "",
-                parser._token,
+                parser._current,
                 parser._errorTrace
             );
 
@@ -2567,9 +2620,10 @@ public sealed class Parser
         {
             throw new MiniZincParseException(
                 $"The parsed statement is of type {statement.GetType()} but expected a {typeof(T)}",
-                parser._token
+                parser._current
             );
         }
+
         return result;
     }
 

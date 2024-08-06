@@ -54,7 +54,7 @@ public abstract record SolveResult<T>
     /// <summary>
     /// The variables and their assigned values from the solution
     /// </summary>
-    public required DataSyntax Data { get; init; }
+    public required MiniZincData Data { get; init; }
 
     // /// <summary>
     // /// Items from the output section

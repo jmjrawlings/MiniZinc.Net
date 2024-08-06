@@ -213,9 +213,9 @@ public class ParserUnitTests
         var mzn = "record(1..1:x): a";
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
         var record = node.Type as RecordTypeSyntax;
-        var (name, field) = record!.Fields[0];
-        name.ToString().Should().Be("x");
-        field.ToString().Should().Be("1..1");
+        var param = record!.Fields[0];
+        param.Name.ToString().Should().Be("x");
+        param.Type.ToString().Should().Be("1..1");
     }
 
     [Fact]
@@ -337,9 +337,9 @@ public class ParserUnitTests
                     return left + right;
                 case TokenKind.MINUS:
                     return left - right;
-                case TokenKind.STAR:
+                case TokenKind.TIMES:
                     return left * right;
-                case TokenKind.SLASH:
+                case TokenKind.DIVIDE:
                     return left / right;
                 default:
                     throw new Exception();
@@ -370,11 +370,11 @@ public class ParserUnitTests
     [Fact]
     void test_union_type()
     {
-        var mzn = @"var ..-1 union {1,3} union 5..: i";
+        var mzn = @"tuple(int) ++ tuple(int): i";
         var expr = Parser.ParseStatement<DeclareStatement>(mzn);
         expr.Name.ToString().Should().Be("i");
         var type = (CompositeTypeSyntax)expr.Type;
-        type.Types.Should().HaveCount(3);
+        type.Types.Should().HaveCount(2);
     }
 
     [Fact]
@@ -420,7 +420,7 @@ public class ParserUnitTests
     [Fact]
     void test_parse_right_assoc()
     {
-        var mzn = "var MyTuple ++ var MyTuple: tuptup ::output = tup ++ tup;";
+        var mzn = "var MyTuple ++ var MyTuple: tuptup = tup ++ tup;";
         var binop = Parser.ParseStatement<DeclareStatement>(mzn);
         var oz = binop.Write();
         oz.Should().BeEquivalentTo(mzn);

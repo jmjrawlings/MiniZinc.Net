@@ -26,11 +26,11 @@
     {
         TestTokens(
             "if else then constraint maximize",
-            TokenKind.IF,
-            TokenKind.ELSE,
-            TokenKind.THEN,
-            TokenKind.CONSTRAINT,
-            TokenKind.MAXIMIZE
+            TokenKind.KEYWORD_IF,
+            TokenKind.KEYWORD_ELSE,
+            TokenKind.KEYWORD_THEN,
+            TokenKind.KEYWORD_CONSTRAINT,
+            TokenKind.KEYWORD_MAXIMIZE
         );
     }
 
@@ -69,7 +69,7 @@
     [InlineData("1..10")]
     void test_range_ti(string mzn)
     {
-        TestTokens(mzn, TokenKind.INT_LITERAL, TokenKind.RANGE_INCLUSIVE, TokenKind.INT_LITERAL);
+        TestTokens(mzn, TokenKind.INT_LITERAL, TokenKind.CLOSED_RANGE, TokenKind.INT_LITERAL);
     }
 
     [Theory]
@@ -79,7 +79,7 @@
         TestTokens(
             mzn,
             TokenKind.FLOAT_LITERAL,
-            TokenKind.RANGE_INCLUSIVE,
+            TokenKind.CLOSED_RANGE,
             TokenKind.FLOAT_LITERAL,
             TokenKind.TUPLE_ACCESS
         );

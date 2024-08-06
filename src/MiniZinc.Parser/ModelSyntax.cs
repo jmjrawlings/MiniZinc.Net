@@ -7,7 +7,7 @@ public sealed class ModelSyntax
 {
     public readonly IReadOnlyList<StatementSyntax> Statements;
 
-    public ModelSyntax(IReadOnlyList<StatementSyntax> statements)
+    public ModelSyntax(List<StatementSyntax> statements)
     {
         Statements = statements;
     }

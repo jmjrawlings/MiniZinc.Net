@@ -39,7 +39,7 @@ public sealed class WriterUnitTests
     [Theory]
     [InlineData("""a <-> (b \/ c)""", """a <-> b \/ c""")]
     [InlineData("""(a <-> b) \/ c""", """(a <-> b) \/ c""")]
-    [InlineData("""a <-> b \/ c""", """(a <-> b) \/ c""")]
+    [InlineData("""a <-> b \/ c""", """a <-> b \/ c""")]
     [InlineData("""2 * i""", """2 * i""")]
     void test_write_precedence(string input, string expected)
     {

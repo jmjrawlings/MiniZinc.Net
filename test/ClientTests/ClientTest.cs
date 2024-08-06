@@ -36,10 +36,10 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         {
             model = Model.FromFile(path);
         }
-        catch (Exception)
+        catch (Exception exn)
         {
             model = null;
-            error.Should().NotBeNull();
+            error.Should().NotBeNull(exn.Message);
             return;
         }
 
@@ -91,7 +91,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// <summary>
     /// Compare the solution data against the expected solution json
     /// </summary>
-    public bool Check(DataSyntax expectedData, DataSyntax actualData)
+    public bool Check(MiniZincData expectedData, MiniZincData actualData)
     {
         foreach (var kv in expectedData)
         {
@@ -125,7 +125,16 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return ra == rb;
     }
 
-    public bool Check(IntLiteralSyntax value, IntRange range)
+    public bool Check(IntLiteralSyntax value, IntRangeData rangeData)
+    {
+        if (!Check(value.Value, rangeData.Lower))
+            return false;
+        if (!Check(value.Value, rangeData.Upper))
+            return false;
+        return true;
+    }
+
+    public bool Check(FloatLiteralSyntax value, FloatRangeData range)
     {
         if (!Check(value.Value, range.Lower))
             return false;
@@ -134,42 +143,27 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
-    public bool Check(FloatLiteralSyntax value, FloatRange range)
+    public bool Check(IntSet set, IntRangeData rangeData)
     {
-        if (!Check(value.Value, range.Lower))
-            return false;
-        if (!Check(value.Value, range.Upper))
-            return false;
-        return true;
-    }
-
-    public bool Check(SetValueSyntax set, IntRange range)
-    {
-        foreach (var item in set.Values)
+        foreach (var value in set.Values)
         {
-            if (item is not IntLiteralSyntax i)
+            if (value < rangeData.Lower)
                 return false;
 
-            if (i < range.Lower)
-                return false;
-
-            if (i > range.Upper)
+            if (value > rangeData.Upper)
                 return false;
         }
         return true;
     }
 
-    public bool Check(SetValueSyntax set, FloatRange range)
+    public bool Check(FloatSet set, FloatRangeData range)
     {
-        foreach (var item in set.Values)
+        foreach (var value in set.Values)
         {
-            if (item is not FloatLiteralSyntax i)
+            if (value < range.Lower)
                 return false;
 
-            if (i < range.Lower)
-                return false;
-
-            if (i > range.Upper)
+            if (value > range.Upper)
                 return false;
         }
         return true;
@@ -178,52 +172,52 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// <summary>
     /// Compare the solution against the json node
     /// </summary>
-    public bool Check(ExpressionSyntax expected, ExpressionSyntax actual)
+    public bool Check(DataSyntax expected, DataSyntax actual)
     {
         int i = 0;
         switch (expected, actual)
         {
-            case (IntLiteralSyntax value, IntRange range):
+            case (IntData value, IntRangeData range):
                 if (!Check(value, range))
                     return false;
                 break;
 
-            case (IntRange range, IntLiteralSyntax value):
+            case (IntRangeData range, IntData value):
                 if (!Check(value, range))
                     return false;
                 break;
 
-            case (FloatLiteralSyntax value, FloatRange range):
+            case (FloatData value, FloatRangeData range):
                 if (!Check(value, range))
                     return false;
                 break;
 
-            case (FloatRange range, FloatLiteralSyntax value):
+            case (FloatRangeData range, FloatData value):
                 if (!Check(value, range))
                     return false;
                 break;
 
-            case (FloatRange range, SetValueSyntax set):
+            case (FloatRangeData range, SetData set):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (SetValueSyntax set, FloatRange range):
+            case (SetData set, FloatRangeData range):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (IntRange range, SetValueSyntax set):
+            case (IntRangeData range, IntSet set):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (SetValueSyntax set, IntRange range):
+            case (IntSet set, IntRangeData range):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (Array1dValueSyntax { Values: var array }, TupleValueSyntax tuple):
+            case (ValueArray1d { Values: var array }, TupleData tuple):
                 for (i = 0; i < array.Count; i++)
                 {
                     var e = array[i];
@@ -233,101 +227,15 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
                 }
                 break;
 
-            case (TupleLiteralSyntax expectedTuple, TupleLiteralSyntax actualTuple):
-                for (i = 0; i < expectedTuple.Fields.Count; i++)
-                {
-                    var expectedItem = expectedTuple.Fields[i];
-                    var actualItem = actualTuple.Fields[i];
-                    if (!Check(expectedItem, actualItem))
-                        return false;
-                }
-                break;
-
-            case (ArraySyntax expectedArray, ArraySyntax actualArray):
-                for (i = 0; i < expectedArray.Elements.Count; i++)
-                {
-                    var expectedItem = expectedArray.Elements[i];
-                    var actualItem = actualArray.Elements[i];
-                    if (!Check(expectedItem, actualItem))
-                        return false;
-                }
-                break;
-
-            case (
-                ArraySyntax expectedArray,
-                CallSyntax { Name.StringValue: "array1d", Args: [_, Array1dSyntax actualArray] }
-            ):
-                if (!Check(expectedArray, actualArray))
-                    return false;
-                break;
-
-            case (
-                ArraySyntax expectedArray,
-                CallSyntax { Name.StringValue: "array2d", Args: [_, _, Array1dSyntax actualArray] }
-            ):
-                if (!Check(expectedArray, actualArray))
-                    return false;
-                break;
-
-            case (
-                ArraySyntax expectedArray,
-                CallSyntax
-                {
-                    Name.StringValue: "array3d",
-                    Args: [_, _, _, Array1dSyntax actualArray]
-                }
-            ):
-                if (!Check(expectedArray, actualArray))
-                    return false;
-                break;
-
-            case (ArraySyntax expectedArray, TupleLiteralSyntax actualTuple):
-                for (i = 0; i < expectedArray.Elements.Count; i++)
-                {
-                    var expectedItem = expectedArray.Elements[i];
-                    var actualItem = actualTuple.Fields[i];
-                    if (!Check(expectedItem, actualItem))
-                        return false;
-                }
-                break;
-
-            case (RecordLiteralSyntax expectedRecord, RecordLiteralSyntax actualRecord):
-                foreach (var (fieldName, expectedField) in expectedRecord.Fields)
-                {
-                    ExpressionSyntax? field = null;
-                    foreach (var (name, actualField) in actualRecord.Fields)
-                        if (fieldName.StringValue == name.StringValue)
-                        {
-                            field = actualField;
-                            break;
-                        }
-
-                    if (field is null)
-                        Error($"Expected record field \"{fieldName}\" missing from actual");
-                    else if (!Check(expectedField, field))
-                        return false;
-                }
-                break;
-
-            case (SetLiteralSyntax set, RangeLiteralSyntax range):
-                if (!Check(set, range))
-                    return false;
-                break;
-
-            case (RangeLiteralSyntax range, SetLiteralSyntax set):
-                if (!Check(set, range))
-                    return false;
-                break;
-
-            case (IntLiteralSyntax a, IntLiteralSyntax b):
-                if (!Check(a.Value, b.Value))
-                    return false;
-                break;
-
-            case (FloatLiteralSyntax a, FloatLiteralSyntax b):
-                if (!Check(a.Value, b.Value))
-                    return false;
-                break;
+            // case (ArraySyntax expectedArray, TupleLiteralSyntax actualTuple):
+            //     for (i = 0; i < expectedArray.Elements.Count; i++)
+            //     {
+            //         var expectedItem = expectedArray.Elements[i];
+            //         var actualItem = actualTuple.Fields[i];
+            //         if (!Check(expectedItem, actualItem))
+            //             return false;
+            //     }
+            //     break;
 
             default:
                 if (!expected.Equals(actual))

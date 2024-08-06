@@ -12,10 +12,10 @@ using static MiniZinc.Parser.Parser;
 /// </summary>
 /// <remarks>
 /// This class extracts useful semantic information
-/// from <see cref="ModelSyntax"/> and <see cref="DataSyntax"/>
+/// from <see cref="ModelSyntax"/> and <see cref="MiniZincData"/>
 /// </remarks>
-public abstract class BaseModel<T>
-    where T : BaseModel<T>, new()
+public abstract class MiniZincModel<T>
+    where T : MiniZincModel<T>, new()
 {
     public string Name { get; set; } = "";
 
@@ -64,7 +64,7 @@ public abstract class BaseModel<T>
 
     public bool HasWarnings => _warnings is null;
 
-    protected BaseModel(bool allowFloats = true)
+    protected MiniZincModel(bool allowFloats = true)
     {
         _warnings = null;
         _outputs = null;
@@ -187,8 +187,8 @@ public abstract class BaseModel<T>
         var con = new ConstraintStatement(default, expr);
         if (name is not null)
         {
-            con.Annotations ??= new List<ExpressionSyntax>();
-            con.Annotations.Add(new ValueSyntax<string>(name));
+            con.Annotations ??= [];
+            con.Annotations.Add(new StringLiteralSyntax(default, name));
         }
         AddSyntax(con);
         return name;
@@ -596,21 +596,21 @@ public abstract class BaseModel<T>
 
         if (_includes is { } includes)
             foreach (var include in includes)
-                writer.WriteSyntax(include);
+                writer.WriteStatement(include);
 
         foreach (var syntax in _namespace.Values)
-            writer.WriteSyntax((SyntaxNode)syntax);
+            writer.WriteStatement((StatementSyntax)syntax);
 
         if (_overloads is { } overloads)
             foreach (var overload in overloads)
             foreach (var syntax in overload.Value)
-                writer.WriteSyntax(syntax);
+                writer.WriteStatement(syntax);
 
         foreach (var constraint in Constraints)
-            writer.WriteSyntax(constraint);
+            writer.WriteStatement(constraint);
 
         if (_solve is not null)
-            writer.WriteSyntax(_solve);
+            writer.WriteStatement(_solve);
 
         // foreach (var output in Outputs)
         //     writer.WriteSyntax(output);

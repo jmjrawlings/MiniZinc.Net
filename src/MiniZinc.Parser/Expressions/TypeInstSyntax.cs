@@ -19,7 +19,7 @@ public class TypeSyntax : SyntaxNode
 
     public TypeKind Kind { get; set; } = TypeKind.Any;
 
-    /// True if the type is a variable (ie not a parameter)
+    /// TODO
     public Token Name { get; set; }
 
     /// True if the type is a variable (ie not a parameter)
@@ -47,12 +47,13 @@ public sealed class CompositeTypeSyntax : TypeSyntax
 
 public sealed class RecordTypeSyntax : TypeSyntax
 {
-    public IReadOnlyList<(Token, TypeSyntax)> Fields { get; }
+    public IReadOnlyList<ParameterSyntax> Fields { get; }
 
-    public RecordTypeSyntax(in Token start, List<(Token, TypeSyntax)> fields)
+    public RecordTypeSyntax(in Token start, List<ParameterSyntax> fields)
         : base(start)
     {
         Fields = fields;
+        Kind = TypeKind.Record;
     }
 }
 
@@ -72,21 +73,26 @@ public sealed class ExprTypeSyntax : TypeSyntax
 {
     public ExpressionSyntax Expr { get; }
 
-    public ExprTypeSyntax(in Token Start, ExpressionSyntax Expr)
+    public ExprTypeSyntax(in Token Start, ExpressionSyntax expr)
         : base(Start)
     {
-        this.Expr = Expr;
+        Expr = expr;
+        Kind = TypeKind.Expr;
     }
 }
 
 public sealed class ArrayTypeSyntax : TypeSyntax
 {
-    public ArrayTypeSyntax(in Token Start)
-        : base(Start) { }
+    public ArrayTypeSyntax(in Token Start, List<TypeSyntax> dimensions, TypeSyntax items)
+        : base(Start)
+    {
+        Dimensions = dimensions;
+        Items = items;
+    }
 
-    public required TypeSyntax Items { get; set; }
+    public TypeSyntax Items { get; }
 
-    public required List<TypeSyntax> Dimensions { get; set; }
+    public IReadOnlyList<TypeSyntax> Dimensions { get; }
 
     public int N => Dimensions.Count;
 }
@@ -97,22 +103,30 @@ public sealed class ArrayTypeSyntax : TypeSyntax
 /// <mzn>list of var int</mzn>
 public sealed class ListTypeSyntax : TypeSyntax
 {
+    public TypeSyntax Items { get; }
+
     /// <summary>
     ///
     /// </summary>
     /// <mzn>list of var int</mzn>
-    public ListTypeSyntax(in Token Start)
-        : base(Start) { }
-
-    public required TypeSyntax Items { get; set; }
+    public ListTypeSyntax(in Token Start, TypeSyntax type)
+        : base(Start)
+    {
+        Items = type;
+        Kind = TypeKind.List;
+    }
 }
 
 /// <mzn>set of  var int</mzn>
 public sealed class SetTypeSyntax : TypeSyntax
 {
-    /// <mzn>set of  var int</mzn>
-    public SetTypeSyntax(in Token Start)
-        : base(Start) { }
+    public TypeSyntax Items { get; }
 
-    public required TypeSyntax Items { get; init; }
+    /// <mzn>set of  var int</mzn>
+    public SetTypeSyntax(in Token start, TypeSyntax items)
+        : base(start)
+    {
+        Items = items;
+        Kind = TypeKind.Set;
+    }
 }
