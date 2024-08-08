@@ -1,7 +1,5 @@
 ﻿namespace MiniZinc.Parser;
 
-using Syntax;
-
 public record ParseResult
 {
     public required string? SourceFile { get; init; }

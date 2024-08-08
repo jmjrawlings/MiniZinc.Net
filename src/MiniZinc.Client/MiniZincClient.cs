@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Command;
-using Compiler;
 using Core;
 
 /// <summary>
@@ -62,13 +61,13 @@ public sealed partial class MiniZincClient
     /// Solve the given model, returning the best
     /// solution found or an error if it occured
     /// </summary>
-    public SolverProcess Solve(
-        Model model,
+    public MiniZincProcess Solve(
+        MiniZincModel model,
         SolveOptions? options = default,
         CancellationToken token = default
     )
     {
-        var process = new SolverProcess(this, model, options, token);
+        var process = new MiniZincProcess(this, model, options, token);
         return process;
     }
 
@@ -76,42 +75,14 @@ public sealed partial class MiniZincClient
     /// Solve the given minizinc model string, returning the best
     /// solution found or an error if it occured
     /// </summary>
-    public SolverProcess Solve(
+    public MiniZincProcess Solve(
         string modelString,
         SolveOptions? options = default,
         CancellationToken token = default
     )
     {
-        var model = Model.FromString(modelString);
-        var process = new SolverProcess(this, model, options, token);
-        return process;
-    }
-
-    /// <summary>
-    /// Solve the given model, returning the best
-    /// solution found or an error if it occured
-    /// </summary>
-    public IntProcess Solve(
-        IntModel model,
-        SolveOptions? options = default,
-        CancellationToken token = default
-    )
-    {
-        var process = new IntProcess(this, model, options, token);
-        return process;
-    }
-
-    /// <summary>
-    /// Solve the given model, returning the best
-    /// solution found or an error if it occured
-    /// </summary>
-    public FloatProcess Solve(
-        FloatModel model,
-        SolveOptions? options = default,
-        CancellationToken token = default
-    )
-    {
-        var process = new FloatProcess(this, model, options, token);
+        var model = MiniZincModel.FromString(modelString);
+        var process = new MiniZincProcess(this, model, options, token);
         return process;
     }
 

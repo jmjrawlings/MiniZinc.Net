@@ -1,7 +1,6 @@
 ﻿namespace MiniZinc.Tests;
 
 using Client;
-using Compiler;
 
 public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
 {
@@ -31,7 +30,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_satisfy_result()
     {
-        var model = new IntModel();
+        var model = new MiniZincModel();
         var a = model.AddInt("a", 10, 20);
         var b = model.AddInt("b", 10, 20);
         model.AddConstraint(a < b);
@@ -45,7 +44,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_unsat_result()
     {
-        var model = Model.FromString("var 10..20: a; constraint a < 0;");
+        var model = MiniZincModel.FromString("var 10..20: a; constraint a < 0;");
         var solution = await Client.Solve(model);
         solution.Status.Should().Be(SolveStatus.Unsatisfiable);
     }
@@ -53,7 +52,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_maximize_result()
     {
-        var model = new IntModel();
+        var model = new MiniZincModel();
         model.AddVariable("a", "10..20");
         model.AddVariable("b", "10..20");
         model.Maximize("a + b");
@@ -69,7 +68,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_return_array()
     {
-        var model = Model.FromString("array[1..10] of var 0..100: xd;");
+        var model = MiniZincModel.FromString("array[1..10] of var 0..100: xd;");
         var result = await Client.Solve(model);
         var arr = result.Data.Get<IntArray1d>("xd");
     }
@@ -77,7 +76,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_satisfy_foreach()
     {
-        var model = new IntModel();
+        var model = new MiniZincModel();
         model.AddVariable("a", "10..20");
         model.AddVariable("b", "10..20");
         await foreach (var result in Client.Solve(model))
@@ -91,7 +90,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_model_replace_objective()
     {
-        var model = new IntModel();
+        var model = new MiniZincModel();
         model.AddInt("a", 0, 10);
         model.AddInt("b", 0, 10);
         model.Minimize("a+b");
@@ -106,7 +105,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_unsat_foreach()
     {
-        var model = Model.FromString("var 10..20: a; constraint a < 0;");
+        var model = MiniZincModel.FromString("var 10..20: a; constraint a < 0;");
         await foreach (var result in Client.Solve(model))
         {
             result.Status.Should().Be(SolveStatus.Unsatisfiable);
@@ -116,7 +115,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     [Fact]
     async void test_solve_maximize_foreach()
     {
-        var model = new IntModel();
+        var model = new MiniZincModel();
         model.AddVariable("a", "10..20");
         model.AddVariable("b", "10..20");
         model.Maximize("a + b");

@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-namespace MiniZinc.Parser;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Syntax;
 
 /// <summary>
 /// Parses a MiniZinc AST from the given stream of tokens

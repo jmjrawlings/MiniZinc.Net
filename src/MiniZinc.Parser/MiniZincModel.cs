@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Compiler;
+﻿namespace MiniZinc;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -14,8 +14,7 @@ using static MiniZinc.Parser.Parser;
 /// This class extracts useful semantic information
 /// from <see cref="ModelSyntax"/> and <see cref="MiniZincData"/>
 /// </remarks>
-public abstract class MiniZincModel<T>
-    where T : MiniZincModel<T>, new()
+public sealed class MiniZincModel
 {
     public string Name { get; set; } = "";
 
@@ -64,7 +63,7 @@ public abstract class MiniZincModel<T>
 
     public bool HasWarnings => _warnings is null;
 
-    protected MiniZincModel(bool allowFloats = true)
+    public MiniZincModel(bool allowFloats = true)
     {
         _warnings = null;
         _outputs = null;
@@ -534,45 +533,23 @@ public abstract class MiniZincModel<T>
     /// <inheritdoc cref="AddSearchPath(System.IO.DirectoryInfo)"/>
     public void AddSearchPath(string directory) => AddSearchPath(new DirectoryInfo(directory));
 
-    /// <summary>
-    /// Return this model as a FloatModel.
-    /// </summary>
-    public FloatModel AsFloatModel()
+    public static MiniZincModel FromString(string mzn)
     {
-        var mzn = Write();
-        var model = FloatModel.FromString(mzn);
-        return model;
-    }
-
-    /// <summary>
-    /// Return this model as an IntModel. An exception
-    /// will be thrown if there were any floating point
-    /// variables in the model.
-    /// </summary>
-    public IntModel AsIntModel()
-    {
-        var mzn = Write();
-        var model = IntModel.FromString(mzn);
-        return model;
-    }
-
-    public static T FromString(string mzn)
-    {
-        var model = new T();
+        var model = new MiniZincModel();
         model.AddString(mzn);
         return model;
     }
 
-    public static T FromFile(string path)
+    public static MiniZincModel FromFile(string path)
     {
-        var model = new T();
+        var model = new MiniZincModel();
         model.AddFile(path);
         return model;
     }
 
-    public static T FromFile(FileInfo file)
+    public static MiniZincModel FromFile(FileInfo file)
     {
-        var model = new T();
+        var model = new MiniZincModel();
         model.AddFile(file);
         return model;
     }
@@ -601,10 +578,13 @@ public abstract class MiniZincModel<T>
         foreach (var syntax in _namespace.Values)
             writer.WriteStatement((StatementSyntax)syntax);
 
-        if (_overloads is { } overloads)
-            foreach (var overload in overloads)
-            foreach (var syntax in overload.Value)
-                writer.WriteStatement(syntax);
+        if (_overloads is { } dict)
+            foreach (var name in dict.Keys)
+            {
+                var overloads = dict[name];
+                foreach (var overload in overloads)
+                    writer.WriteStatement(overload);
+            }
 
         foreach (var constraint in Constraints)
             writer.WriteStatement(constraint);

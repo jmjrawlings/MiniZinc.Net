@@ -33,10 +33,10 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         WriteSection();
         WriteLn();
 
-        Model? model;
+        MiniZincModel? model;
         try
         {
-            model = Model.FromFile(path);
+            model = MiniZincModel.FromFile(path);
         }
         catch (Exception exn)
         {
@@ -116,10 +116,9 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// </summary>
     public bool Check(MiniZincData expectedData, MiniZincData actualData)
     {
-        foreach (var kv in expectedData)
+        foreach (var name in expectedData.Keys)
         {
-            var name = kv.Key;
-            var expectedVar = kv.Value;
+            var expectedVar = expectedData[name];
             if (!actualData.TryGetValue(name, out var actualVar))
                 continue;
 

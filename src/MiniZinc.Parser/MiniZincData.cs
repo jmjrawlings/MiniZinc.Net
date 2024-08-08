@@ -3,20 +3,27 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Syntax;
+using MiniZinc;
 
 /// <summary>
 /// Result of parsing a minizinc data from a file (.dzn) or string.
 /// </summary>
 /// <remarks>
-/// Data is different from a <see cref="MiniZincModel"/> in that it can only
+/// Data is different from a <see cref="Mini"/> in that it can only
 /// contain assignments of the form `$name = $expr;`
 /// </remarks>
 [DebuggerDisplay("{SourceText}")]
-public sealed class MiniZincData(Dictionary<string, DataSyntax> dict)
+public sealed class MiniZincData
     : IEquatable<IReadOnlyDictionary<string, DataSyntax>>,
         IReadOnlyDictionary<string, DataSyntax>
 {
+    private readonly IReadOnlyDictionary<string, DataSyntax> _dict;
+
+    public MiniZincData(IReadOnlyDictionary<string, DataSyntax>? dict = null)
+    {
+        _dict = dict ?? new Dictionary<string, DataSyntax>();
+    }
+
     public string Write(WriteOptions? options = null)
     {
         var writer = new Writer(options);
@@ -43,7 +50,7 @@ public sealed class MiniZincData(Dictionary<string, DataSyntax> dict)
             return true;
 
         // TODO - faster/better
-        foreach (var kv in dict)
+        foreach (var kv in _dict)
         {
             var name = kv.Key;
             var a = kv.Value;
@@ -61,14 +68,14 @@ public sealed class MiniZincData(Dictionary<string, DataSyntax> dict)
         foreach (var kv in other)
         {
             var name = kv.Key;
-            if (!dict.ContainsKey(name))
+            if (!_dict.ContainsKey(name))
                 return false;
         }
 
         return true;
     }
 
-    public IEnumerator<KeyValuePair<string, DataSyntax>> GetEnumerator() => dict.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, DataSyntax>> GetEnumerator() => _dict.GetEnumerator();
 
     public override bool Equals(object? obj) =>
         Equals(obj as IReadOnlyDictionary<string, DataSyntax>);
@@ -89,7 +96,7 @@ public sealed class MiniZincData(Dictionary<string, DataSyntax> dict)
         return value;
     }
 
-    public DataSyntax? TryGet(string id) => dict.GetValueOrDefault(id);
+    public DataSyntax? TryGet(string id) => _dict.GetValueOrDefault(id);
 
     /// <summary>
     /// Try to get the solution assigned to the given variable
@@ -108,15 +115,15 @@ public sealed class MiniZincData(Dictionary<string, DataSyntax> dict)
         return u;
     }
 
-    public bool ContainsKey(string key) => dict.ContainsKey(key);
+    public bool ContainsKey(string key) => _dict.ContainsKey(key);
 
     public bool TryGetValue(string key, [NotNullWhen(true)] out DataSyntax? value) =>
-        dict.TryGetValue(key, out value);
+        _dict.TryGetValue(key, out value);
 
     public DataSyntax this[string name] => Get<DataSyntax>(name);
 
-    public IEnumerable<string> Keys => dict.Keys;
-    public IEnumerable<DataSyntax> Values => dict.Values;
+    public IEnumerable<string> Keys => _dict.Keys;
+    public IEnumerable<DataSyntax> Values => _dict.Values;
 
-    public int Count => dict.Count;
+    public int Count => _dict.Count;
 }

@@ -1,7 +1,7 @@
-﻿namespace MiniZinc.Compiler;
+﻿namespace MiniZinc;
 
-using Parser;
 using Parser.Syntax;
+using static Parser.Parser;
 
 /// <summary>
 /// Wraps a minizinc variable name.
@@ -22,46 +22,46 @@ public readonly struct Variable
     }
 
     public static BinaryOperatorSyntax operator +(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} + {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} + {b}");
 
     public static BinaryOperatorSyntax operator -(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} - {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} - {b}");
 
     public static BinaryOperatorSyntax operator *(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} * {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} * {b}");
 
     public static BinaryOperatorSyntax operator /(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} / {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} / {b}");
 
     public static BinaryOperatorSyntax operator %(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} % {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} % {b}");
 
     public static BinaryOperatorSyntax operator |(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} \\/ {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} \\/ {b}");
 
     public static BinaryOperatorSyntax operator &(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} /\\ {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} /\\ {b}");
 
     public static UnaryOperatorSyntax operator !(Variable a) =>
-        Parser.ParseExpression<UnaryOperatorSyntax>($"not {a}");
+        ParseExpression<UnaryOperatorSyntax>($"not {a}");
 
     public static BinaryOperatorSyntax operator ==(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} == {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} == {b}");
 
     public static BinaryOperatorSyntax operator !=(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} != {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} != {b}");
 
     public static BinaryOperatorSyntax operator <(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} < {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} < {b}");
 
     public static BinaryOperatorSyntax operator >(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} > {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} > {b}");
 
     public static BinaryOperatorSyntax operator <=(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} <= {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} <= {b}");
 
     public static BinaryOperatorSyntax operator >=(in Variable a, in Variable b) =>
-        Parser.ParseExpression<BinaryOperatorSyntax>($"{a} >= {b}");
+        ParseExpression<BinaryOperatorSyntax>($"{a} >= {b}");
 
     public static implicit operator string(in Variable v) => v.Name;
 

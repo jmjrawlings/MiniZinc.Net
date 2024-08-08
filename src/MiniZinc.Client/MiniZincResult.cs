@@ -1,18 +1,13 @@
-﻿using MiniZinc.Parser;
+﻿namespace MiniZinc.Client;
 
-namespace MiniZinc.Client;
-
-using Compiler;
 using Core;
-using Parser.Syntax;
+using Parser;
 
 /// <summary>
 /// An intermediate or final result from using MiniZinc
 /// to solve a Model
 /// </summary>
-/// <typeparam name="T">The type of objective eg int, float</typeparam>
-public abstract record SolveResult<T>
-    where T : struct
+public sealed record MiniZincResult
 {
     /// <summary>
     /// The full command passed to minizinc
@@ -79,18 +74,18 @@ public abstract record SolveResult<T>
     /// <summary>
     /// Text content of the message
     /// </summary>
-    public required T? Objective { get; init; }
+    public required DataSyntax? Objective { get; init; }
 
     /// <summary>
     /// Upper or lower bound (solver-dependent)
     /// </summary>
-    public required T? ObjectiveBound { get; init; }
+    public required DataSyntax? ObjectiveBound { get; init; }
 
     /// <summary>
     /// Absolute Gap to optimality
     /// `abs(objective - bound)`
     /// </summary>
-    public required T? AbsoluteGapToOptimality { get; init; }
+    public required DataSyntax? AbsoluteGapToOptimality { get; init; }
 
     /// <summary>
     /// Relative Gap to optimality
@@ -103,7 +98,7 @@ public abstract record SolveResult<T>
     /// the previous iteration
     /// `objective[i] - objective[i-1]`
     /// </summary>
-    public required T? AbsoluteIterationGap { get; init; }
+    public required DataSyntax? AbsoluteIterationGap { get; init; }
 
     /// <summary>
     /// Relative difference between this iteration and
@@ -127,9 +122,3 @@ public abstract record SolveResult<T>
             _ => false
         };
 }
-
-public sealed record SolveResult : SolveResult<IntOrFloat> { }
-
-public sealed record IntResult : SolveResult<int> { }
-
-public sealed record FloatResult : SolveResult<decimal> { }

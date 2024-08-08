@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MiniZinc.Core\MiniZinc.Core.csproj" />
-      <ProjectReference Include="..\MiniZinc.Compiler\MiniZinc.Compiler.csproj" />
       <ProjectReference Include="..\MiniZinc.Parser\MiniZinc.Parser.csproj" />
       <ProjectReference Include="..\MiniZinc.Command\MiniZinc.Command.csproj" />
     </ItemGroup>

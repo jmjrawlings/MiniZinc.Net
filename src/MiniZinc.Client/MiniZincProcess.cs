@@ -1,18 +1,17 @@
-﻿namespace MiniZinc.Client;
+﻿using System.Text.Json.Nodes;
+
+namespace MiniZinc.Client;
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Command;
-using Compiler;
 using Core;
 using Parser;
-using Parser.Syntax;
 
-public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
-    where TModel : MiniZincModel<TModel>, new()
+public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
 {
-    public readonly TModel Model;
+    public readonly MiniZincModel Model;
     public readonly SolveOptions? Options;
     public readonly Command Command;
     public readonly string CommandString;
@@ -28,25 +27,25 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
     private readonly Process _process;
     private readonly Stopwatch _watch;
     private readonly ProcessStartInfo _startInfo;
-    private readonly Channel<TResult> _channel;
+    private readonly Channel<MiniZincResult> _channel;
     private readonly Task _task;
-    protected readonly List<string> _warnings;
-    protected TimePeriod _totalTime;
-    protected TimePeriod _iterTime;
-    protected int _iteration;
-    protected SolveStatus _solveStatus;
-    protected MiniZincData _data;
-    protected string? _dataString;
+    private readonly List<string> _warnings;
+    private TimePeriod _totalTime;
+    private TimePeriod _iterationTime;
+    private int _iteration;
+    private SolveStatus _solveStatus;
+    private MiniZincData _data;
+    private string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
-    private readonly TaskCompletionSource<TResult> _completion;
-    protected Dictionary<string, object>? _statistics;
-    protected TResult? _current;
-    private readonly IAsyncEnumerator<TResult> _asyncEnumerator;
+    private readonly TaskCompletionSource<MiniZincResult> _completion;
+    private Dictionary<string, object>? _statistics;
+    private MiniZincResult? _current;
+    private readonly IAsyncEnumerator<MiniZincResult> _asyncEnumerator;
 
-    internal SolverProcess(
+    internal MiniZincProcess(
         MiniZincClient client,
-        TModel model,
+        MiniZincModel model,
         SolveOptions? options = null,
         CancellationToken cancellation = default
     )
@@ -55,8 +54,9 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         Model = model;
         Options = options;
         _cancellation = cancellation;
-        _completion = new TaskCompletionSource<TResult>();
+        _completion = new TaskCompletionSource<MiniZincResult>();
         _warnings = new List<string>();
+        _data = new MiniZincData();
 
         ModelText = model.Write();
         SolverId = options?.SolverId ?? Solver.Gecode;
@@ -101,7 +101,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
 
         _watch = Stopwatch.StartNew();
         _totalTime = new TimePeriod(DateTimeOffset.Now);
-        _iterTime = _totalTime;
+        _iterationTime = _totalTime;
         _startInfo = new ProcessStartInfo
         {
             FileName = Command.Exe,
@@ -119,7 +119,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         _process = new Process();
         _process.StartInfo = _startInfo;
         _processStatus = ProcessStatus.Idle;
-        _channel = Channel.CreateUnbounded<TResult>(
+        _channel = Channel.CreateUnbounded<MiniZincResult>(
             new UnboundedChannelOptions
             {
                 SingleWriter = true,
@@ -144,7 +144,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
 
             var time = DateTimeOffset.Now;
             _totalTime = _totalTime.WithEnd(time);
-            _iterTime = _iterTime.WithEnd(time);
+            _iterationTime = _iterationTime.WithEnd(time);
             var output = JsonOutput.Deserialize(msg);
             switch (output)
             {
@@ -188,29 +188,21 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
             _solveStatus = SolveStatus.Error;
             var error = _process.StandardError.ReadToEnd();
             if (string.IsNullOrEmpty(error))
-                _current = CreateResult(error: $"MiniZinc exited without producing a result");
+                _current = Result(error: $"MiniZinc exited without producing a result");
             else
-                _current = CreateResult(error: error);
+                _current = Result(error: error);
         }
         _channel.Writer.TryWrite(_current);
         _channel.Writer.Complete();
         _completion.SetResult(_current);
     }
 
-    protected abstract TResult CreateResult(
-        in IntOrFloat? objectiveValue = null,
-        in IntOrFloat? objectiveBoundValue = null,
-        string? error = null
-    );
-
     private void OnStatisticsOutput(StatisticsOutput o)
     {
-        foreach (var kv in o.Statistics)
+        foreach (KeyValuePair<string, JsonNode> kv in o.Statistics)
         {
             var name = kv.Key;
-            var value = kv.Value?.AsValue();
-            if (value is null)
-                continue;
+            var value = kv.Value.AsValue();
             object? stat = null;
 
             if (value.TryGetValue<int>(out var i))
@@ -235,7 +227,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         _dataString = null;
         if (o.Sections is not { } sections)
         {
-            _current = CreateResult();
+            _current = Result();
             goto send;
         }
 
@@ -247,14 +239,14 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
 
         if (_dataString is null)
         {
-            _current = CreateResult();
+            _current = Result();
             goto send;
         }
 
         var parsed = Parser.ParseDataString(_dataString, out _data);
         if (!parsed.Ok)
         {
-            _current = CreateResult(error: parsed.ErrorTrace);
+            _current = Result(error: parsed.ErrorTrace);
             goto send;
         }
 
@@ -262,19 +254,11 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         switch (objectiveNode)
         {
             case null:
-                _current = CreateResult();
+                _current = Result();
                 break;
 
-            case IntData { Value: var i }:
-                _current = CreateResult(objectiveValue: i);
-                break;
-
-            case FloatData { Value: var f }:
-                _current = CreateResult(objectiveValue: f);
-                break;
-
-            default:
-                _current = CreateResult(error: $"Unexpected objective value {objectiveNode}");
+            case var data:
+                _current = Result(objectiveValue: data);
                 break;
         }
 
@@ -297,7 +281,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
             "EvaluationError" => SolveStatus.EvaluationError,
             _ => SolveStatus.Error
         };
-        _current = CreateResult(error: o.Message);
+        _current = Result(error: o.Message);
         _channel.Writer.TryWrite(_current);
     }
 
@@ -323,13 +307,13 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         if (solveStatus is { } status)
         {
             _solveStatus = status;
-            _current = CreateResult();
+            _current = Result();
         }
         else
         {
             // TODO - confirm
             _solveStatus = SolveStatus.Timeout;
-            _current = CreateResult(error: "time limit reached");
+            _current = Result(error: "time limit reached");
         }
 
         _channel.Writer.TryWrite(_current);
@@ -363,7 +347,7 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         if (_current is null)
         {
             _solveStatus = SolveStatus.Error;
-            _current = CreateResult(error: $"MiniZinc exited without producing a result");
+            _current = Result(error: $"MiniZinc exited without producing a result");
             _channel.Writer.TryWrite(_current);
             _channel.Writer.TryComplete();
             _completion.SetResult(_current);
@@ -375,15 +359,16 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
         _warnings.Add(msg);
     }
 
-    public TaskAwaiter<TResult> GetAwaiter() => _completion.Task.GetAwaiter();
+    public TaskAwaiter<MiniZincResult> GetAwaiter() => _completion.Task.GetAwaiter();
 
-    IAsyncEnumerator<TResult> IAsyncEnumerable<TResult>.GetAsyncEnumerator(
+    IAsyncEnumerator<MiniZincResult> IAsyncEnumerable<MiniZincResult>.GetAsyncEnumerator(
         CancellationToken cancellationToken = new CancellationToken()
     ) => _asyncEnumerator;
 
     public async ValueTask DisposeAsync()
     {
         Stop();
+        await ValueTask.CompletedTask;
     }
 
     public void Dispose()
@@ -392,25 +377,14 @@ public abstract class SolverProcess<TModel, TResult> : IAsyncEnumerable<TResult>
     }
 
     public override string ToString() => CommandString;
-}
 
-public sealed class SolverProcess : SolverProcess<Model, SolveResult>
-{
-    public SolverProcess(
-        MiniZincClient client,
-        Model model,
-        SolveOptions? options = null,
-        CancellationToken cancellation = default
-    )
-        : base(client, model, options, cancellation) { }
-
-    protected override SolveResult CreateResult(
-        in IntOrFloat? objectiveValue = null,
-        in IntOrFloat? objectiveBoundValue = null,
+    private MiniZincResult Result(
+        in DataSyntax? objectiveValue = null,
+        in DataSyntax? objectiveBoundValue = null,
         string? error = null
     )
     {
-        var result = new SolveResult
+        var result = new MiniZincResult
         {
             Command = CommandString,
             ProcessId = ProcessId,
@@ -419,8 +393,7 @@ public sealed class SolverProcess : SolverProcess<Model, SolveResult>
             Status = _solveStatus,
             Iteration = _iteration,
             Warnings = _warnings,
-            IterationTime = _iterTime,
-            // DataString = _dataString,
+            IterationTime = _iterationTime,
             Data = _data,
             Statistics = _statistics,
             Error = error,
@@ -430,109 +403,6 @@ public sealed class SolverProcess : SolverProcess<Model, SolveResult>
             RelativeGapToOptimality = default,
             AbsoluteIterationGap = default,
             RelativeIterationGap = default
-        };
-        return result;
-    }
-}
-
-public sealed class IntProcess : SolverProcess<IntModel, IntResult>
-{
-    public IntProcess(
-        MiniZincClient client,
-        IntModel model,
-        SolveOptions? options = null,
-        CancellationToken cancellation = default
-    )
-        : base(client, model, options, cancellation) { }
-
-    protected override IntResult CreateResult(
-        in IntOrFloat? objectiveValue = null,
-        in IntOrFloat? objectiveBoundValue = null,
-        string? error = null
-    )
-    {
-        Guard.IsFalse(objectiveValue?.IsFloat ?? false);
-        Guard.IsFalse(objectiveBoundValue?.IsFloat ?? false);
-        int? objectivePrev = _current?.Objective;
-        int? objective = objectiveValue?.IntValue ?? _current?.Objective;
-        int? objectiveBoundPrev = _current?.ObjectiveBound;
-        int? objectiveBound = objectiveBoundValue?.IntValue ?? _current?.ObjectiveBound;
-        int? absoluteGapToOptimality = objective - objectiveBound;
-        int? absoluteIterationGap = objective - objectivePrev;
-        double? relativeGapToOptimality = null;
-        double? relativeIterationGap = null;
-
-        var result = new IntResult
-        {
-            Command = CommandString,
-            ProcessId = ProcessId,
-            SolverId = SolverId,
-            TotalTime = _totalTime,
-            Status = _solveStatus,
-            Iteration = _iteration,
-            Warnings = _warnings,
-            IterationTime = _iterTime,
-            // DataString = _dataString,
-            Data = _data,
-            Statistics = _statistics,
-            Error = error,
-            Objective = objective,
-            ObjectiveBound = objectiveBound,
-            AbsoluteGapToOptimality = absoluteGapToOptimality,
-            RelativeGapToOptimality = relativeGapToOptimality,
-            AbsoluteIterationGap = absoluteIterationGap,
-            RelativeIterationGap = relativeIterationGap
-        };
-        return result;
-    }
-}
-
-public sealed class FloatProcess : SolverProcess<FloatModel, FloatResult>
-{
-    public FloatProcess(
-        MiniZincClient client,
-        FloatModel model,
-        SolveOptions? options = null,
-        CancellationToken cancellation = default
-    )
-        : base(client, model, options, cancellation) { }
-
-    protected override FloatResult CreateResult(
-        in IntOrFloat? objectiveValue = null,
-        in IntOrFloat? objectiveBoundValue = null,
-        string? error = null
-    )
-    {
-        Guard.IsTrue(objectiveValue?.IsFloat ?? true);
-        Guard.IsTrue(objectiveBoundValue?.IsFloat ?? true);
-        decimal? objectivePrev = _current?.Objective;
-        decimal? objective = objectiveValue?.DecimalValue ?? objectivePrev;
-        decimal? objectiveBoundPrev = _current?.ObjectiveBound;
-        decimal? objectiveBound = objectiveBoundValue?.DecimalValue ?? objectiveBoundPrev;
-        decimal? absoluteGapToOptimality = objective - objectiveBound;
-        decimal? absoluteIterationGap = objective - _current?.Objective;
-        double? relativeGapToOptimality = null; //absoluteGapToOptimality / objectiveBound;
-        double? relativeIterationGap = null; // absoluteIterationGap / _current?.Objective;
-        var result = new FloatResult
-        {
-            Command = CommandString,
-            ProcessId = ProcessId,
-            SolverId = SolverId,
-            TotalTime = _totalTime,
-            Status = _solveStatus,
-            Iteration = _iteration,
-            Warnings = _warnings,
-            IterationTime = _iterTime,
-            // DataString = _dataString,
-            Data = _data,
-            Statistics = _statistics,
-            Error = error,
-            Objective = objective,
-            ObjectiveBound = objectiveBound,
-            AbsoluteGapToOptimality = absoluteGapToOptimality,
-            RelativeGapToOptimality = relativeGapToOptimality,
-            AbsoluteIterationGap = absoluteIterationGap,
-            RelativeIterationGap = relativeIterationGap
         };
         return result;
     }
