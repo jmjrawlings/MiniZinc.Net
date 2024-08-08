@@ -41,6 +41,13 @@ public sealed class ClientTestsBuilder : TestBuilder
                 TestType.Unsatisfiable => true,
                 _ => false
             };
+
+            // We don't care about checker solutions for now
+            if (testCase.Solutions is { } sols)
+                foreach (var sol in sols)
+                    if (sol.Contains("_checker"))
+                        ok = false;
+
             if (!ok)
                 continue;
 
