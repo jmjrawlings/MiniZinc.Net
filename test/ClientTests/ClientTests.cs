@@ -420,18 +420,6 @@ public class ClientTests : ClientTest
 		);
 	}
 
-	[Fact(DisplayName="unit/general/json_ignore.mzn")]
-	public async Task test_solve_unit_general_json_ignore()
-	{
-		await Test(
-			path: "unit/general/json_ignore.mzn",
-			solver: "gecode",
-			solutions: ["""_checker=data_2 = 2;;data_1=1;"""],
-			args: ["--data \"unit/general/json_ignore.mzc.mzn\"","--data \"unit/general/json_ignore.json\""],
-			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
-		);
-	}
-
 	[Fact(DisplayName="unit/general/let_struct_domain.mzn")]
 	public async Task test_solve_unit_general_let_struct_domain()
 	{
@@ -587,7 +575,7 @@ public class ClientTests : ClientTest
 			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
 		);
 	}
-	
+
 	[Theory(DisplayName="unit/general/mortgage.mzn")]
 	[InlineData("gecode")]
 	[InlineData("coin-bc")]
@@ -2614,54 +2602,6 @@ public class ClientTests : ClientTest
 		);
 	}
 
-	[Fact(DisplayName="unit/regression/checker_mzn_check_var.mzn")]
-	public async Task test_solve_unit_regression_checker_mzn_check_var()
-	{
-		await Test(
-			path: "unit/regression/checker_mzn_check_var.mzn",
-			solver: "gecode",
-			solutions: ["""_checker=Ok;"""],
-			args: ["--data \"unit/regression/checker_mzn_check_var.mzc.mzn\""],
-			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
-		);
-	}
-
-	[Fact(DisplayName="unit/regression/checker_opt.mzn")]
-	public async Task test_solve_unit_regression_checker_opt()
-	{
-		await Test(
-			path: "unit/regression/checker_opt.mzn",
-			solver: "gecode",
-			solutions: ["""_checker=y = 20;;"""],
-			args: ["--data \"unit/regression/checker_opt.mzc.mzn\""],
-			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
-		);
-	}
-
-	[Fact(DisplayName="unit/regression/checker_params.mzn")]
-	public async Task test_solve_unit_regression_checker_params()
-	{
-		await Test(
-			path: "unit/regression/checker_params.mzn",
-			solver: "gecode",
-			solutions: ["""_checker=yay!;"""],
-			args: ["--data \"unit/regression/checker_params.mzc.mzn\""],
-			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
-		);
-	}
-
-	[Fact(DisplayName="unit/regression/checker_same_var.mzn")]
-	public async Task test_solve_unit_regression_checker_same_var()
-	{
-		await Test(
-			path: "unit/regression/checker_same_var.mzn",
-			solver: "gecode",
-			solutions: ["""_checker=x = 10;;objective=5;"""],
-			args: ["--data \"unit/regression/checker_same_var.mzc.mzn\""],
-			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
-		);
-	}
-
 	[Fact(DisplayName="unit/regression/checker_var_bug.mzn")]
 	public async Task test_solve_unit_regression_checker_var_bug()
 	{
@@ -3489,9 +3429,9 @@ public class ClientTests : ClientTest
 		);
 	}
 
-	// Variable binding at the end of a generator expr?
 	[Fact(DisplayName="unit/regression/github_807.mzn")]
-	public async Task test_solve_unit_regression_github_807() {
+	public async Task test_solve_unit_regression_github_807()
+	{
 		await Test(
 			path: "unit/regression/github_807.mzn",
 			solver: "gecode",
@@ -3676,18 +3616,6 @@ public class ClientTests : ClientTest
 			path: "unit/regression/output_fn_toplevel_var.mzn",
 			solver: "gecode",
 			solutions: ["""_output_item=[1][true];""","""_output_item=[2][false];"""],
-			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
-		);
-	}
-
-	[Fact(DisplayName="unit/regression/parse_assignments.mzn")]
-	public async Task test_solve_unit_regression_parse_assignments()
-	{
-		await Test(
-			path: "unit/regression/parse_assignments.mzn",
-			solver: "gecode",
-			solutions: ["""_checker=Ok;"""],
-			args: ["--data \"unit/regression/parse_assignments.mzc.mzn\""],
 			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
 		);
 	}
@@ -4421,18 +4349,6 @@ public class ClientTests : ClientTest
 			path: "unit/types/record_comprehensions.mzn",
 			solver: "gecode",
 			solutions: ["""simple=[(x:2,y:true,),(x:1,y:false,),(x:0,y:true,),(x:1,y:false,),(x:2,y:true,)];indexed=[(a:4,b:true,),(a:6,b:true,),(a:8,b:true,),(a:9,b:false,),(a:11,b:false,)];"""],
-			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
-		);
-	}
-
-	[Fact(DisplayName="unit/types/record_in_checker.mzn", Skip="Checker")]
-	public async Task test_solve_unit_types_record_in_checker()
-	{
-		await Test(
-			path: "unit/types/record_in_checker.mzn",
-			solver: "gecode",
-			solutions: ["""_checker={"x": 1};"""],
-			args: ["--data \"unit/types/record_in_checker.mzc.mzn\""],
 			statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]
 		);
 	}

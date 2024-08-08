@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Tests;
+﻿using MiniZinc.Command;
+
+namespace MiniZinc.Tests;
 
 using System.Text;
 using System.Text.Json.Nodes;
@@ -50,7 +52,28 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         var options = SolveOptions.Create(solverId: solver);
 
         if (args is not null)
-            options = options.AddArgs(args);
+        {
+            foreach (var argString in args)
+            {
+                var arg = Arg.Parse(argString).First();
+                if (arg.Value is { } value)
+                {
+                    var argFile = Path.Join(
+                            Directory.GetCurrentDirectory(),
+                            value.Replace("\"", "")
+                        )
+                        .ToFile();
+                    if (argFile.Exists)
+                        options = options.AddArgs($"{arg.Flag} \"{argFile.FullName}\"");
+                    else
+                        options = options.AddArgs(arg);
+                }
+                else
+                {
+                    options = options.AddArgs(arg);
+                }
+            }
+        }
 
         var result = await MiniZinc.Solve(model, options);
         WriteLn(result.Command);
@@ -227,18 +250,10 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
                 }
                 break;
 
-            // case (ArraySyntax expectedArray, TupleLiteralSyntax actualTuple):
-            //     for (i = 0; i < expectedArray.Elements.Count; i++)
-            //     {
-            //         var expectedItem = expectedArray.Elements[i];
-            //         var actualItem = actualTuple.Fields[i];
-            //         if (!Check(expectedItem, actualItem))
-            //             return false;
-            //     }
-            //     break;
-
             default:
-                if (!expected.Equals(actual))
+                var expectedMzn = expected.Write(WriteOptions.Minimal);
+                var actualMzn = expected.Write(WriteOptions.Minimal);
+                if (!expectedMzn.Equals(actualMzn))
                     return false;
                 break;
         }

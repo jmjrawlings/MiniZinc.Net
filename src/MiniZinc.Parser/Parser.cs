@@ -823,11 +823,10 @@ public sealed class Parser
     private bool IsOk => _errorMessage is null;
 
     /// Parse array data into the most refined type possible
-    internal bool ParseArrayData([NotNullWhen(true)] out DataSyntax? value)
+    internal bool ParseArrayData([NotNullWhen(true)] out DataSyntax? array)
     {
         Step();
-        value = null;
-
+        array = null;
         List<int>? ints = null;
         List<bool>? bools = null;
         List<decimal>? floats = null;
@@ -836,28 +835,57 @@ public sealed class Parser
 
         while (_kind is not TokenKind.CLOSE_BRACKET)
         {
-            throw new NotImplementedException();
-            // if (!ParseValueAtom(out var item))
-            //     return false;
-            // items.Add(item);
-            // if (!Skip(TokenKind.COMMA))
-            //     break;
+            switch (_kind)
+            {
+                case TokenKind.INT_LITERAL:
+                    (ints ??= []).Add(_current.IntValue);
+                    Step();
+                    break;
+
+                case TokenKind.FLOAT_LITERAL:
+                    (floats ??= []).Add(_current.DecimalValue);
+                    Step();
+                    break;
+
+                case TokenKind.KEYWORD_TRUE:
+                    (bools ??= []).Add(true);
+                    Step();
+                    break;
+
+                case TokenKind.KEYWORD_FALSE:
+                    (bools ??= []).Add(false);
+                    Step();
+                    break;
+
+                case TokenKind.STRING_LITERAL:
+                    (strings ??= []).Add(_current.StringValue);
+                    Step();
+                    break;
+
+                default:
+                    if (!ParseValueAtom(out var value))
+                        return false;
+                    (values ??= []).Add(value);
+                    break;
+            }
+
+            if (!Skip(TokenKind.COMMA))
+                break;
         }
 
         if (!Expect(TokenKind.CLOSE_BRACKET))
             return false;
 
-        // value = new Array1dData(items);
         if (ints is not null)
-            value = new IntArray1d(ints);
+            array = new IntArray1d(ints);
         else if (floats is not null)
-            value = new FloatArray1d(floats);
+            array = new FloatArray1d(floats);
         else if (bools is not null)
-            value = new BoolArray1d(bools);
+            array = new BoolArray1d(bools);
         else if (strings is not null)
-            value = new StringArray1d(strings);
+            array = new StringArray1d(strings);
         else
-            value = new ValueSet(values ?? []);
+            array = new ValueSet(values ?? []);
         return true;
     }
 
@@ -878,19 +906,19 @@ public sealed class Parser
             switch (_kind)
             {
                 case TokenKind.INT_LITERAL:
-                    (intSet ?? []).Add(token.IntValue);
+                    (intSet ??= []).Add(token.IntValue);
                     break;
 
                 case TokenKind.FLOAT_LITERAL:
-                    (floatSet ?? []).Add(token.DecimalValue);
+                    (floatSet ??= []).Add(token.DecimalValue);
                     break;
 
                 case TokenKind.KEYWORD_TRUE:
-                    (boolSet ?? []).Add(true);
+                    (boolSet ??= []).Add(true);
                     break;
 
                 case TokenKind.KEYWORD_FALSE:
-                    (boolSet ?? []).Add(false);
+                    (boolSet ??= []).Add(false);
                     break;
 
                 default:
@@ -981,8 +1009,38 @@ public sealed class Parser
 
     internal bool ParseRecordData([NotNullWhen(true)] out DataSyntax? value)
     {
-        Step();
         value = null;
+
+        if (!Expect(TokenKind.OPEN_PAREN))
+            return false;
+
+        Dictionary<string, DataSyntax> fields = [];
+        value = new RecordData(fields);
+
+        while (_kind is not TokenKind.CLOSE_PAREN)
+        {
+            if (!ParseIdent(out var field))
+                return false;
+
+            var fieldName = field.ToString();
+
+            if (!Expect(TokenKind.COLON))
+                return false;
+
+            if (!ParseValue(out var fieldValue))
+                return false;
+
+            if (fields.ContainsKey(fieldName))
+                return Expected($"a unique value name, got {fieldName}");
+
+            fields.Add(fieldName, fieldValue);
+            if (!Skip(TokenKind.COMMA))
+                break;
+        }
+
+        if (!Expect(TokenKind.CLOSE_PAREN))
+            return false;
+
         return true;
     }
 
