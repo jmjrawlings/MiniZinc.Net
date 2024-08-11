@@ -74,18 +74,18 @@ public sealed record MiniZincResult
     /// <summary>
     /// Text content of the message
     /// </summary>
-    public required DataSyntax? Objective { get; init; }
+    public required DataNode? Objective { get; init; }
 
     /// <summary>
     /// Upper or lower bound (solver-dependent)
     /// </summary>
-    public required DataSyntax? ObjectiveBound { get; init; }
+    public required DataNode? ObjectiveBound { get; init; }
 
     /// <summary>
     /// Absolute Gap to optimality
     /// `abs(objective - bound)`
     /// </summary>
-    public required DataSyntax? AbsoluteGapToOptimality { get; init; }
+    public required DataNode? AbsoluteGapToOptimality { get; init; }
 
     /// <summary>
     /// Relative Gap to optimality
@@ -98,7 +98,7 @@ public sealed record MiniZincResult
     /// the previous iteration
     /// `objective[i] - objective[i-1]`
     /// </summary>
-    public required DataSyntax? AbsoluteIterationGap { get; init; }
+    public required DataNode? AbsoluteIterationGap { get; init; }
 
     /// <summary>
     /// Relative difference between this iteration and

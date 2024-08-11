@@ -17,4 +17,6 @@ public record ParseResult
 
         throw new MiniZincParseException(ErrorMessage ?? "", FinalToken, ErrorTrace);
     }
+
+    public static implicit operator bool(ParseResult result) => result.Ok;
 }

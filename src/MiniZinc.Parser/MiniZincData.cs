@@ -9,20 +9,16 @@ using MiniZinc;
 /// Result of parsing a minizinc data from a file (.dzn) or string.
 /// </summary>
 /// <remarks>
-/// Data is different from a <see cref="Mini"/> in that it can only
+/// Data is different from a <see cref="MiniZincModel"/> in that it can only
 /// contain assignments of the form `$name = $expr;`
 /// </remarks>
 [DebuggerDisplay("{SourceText}")]
-public sealed class MiniZincData
-    : IEquatable<IReadOnlyDictionary<string, DataSyntax>>,
-        IReadOnlyDictionary<string, DataSyntax>
+public sealed class MiniZincData(IReadOnlyDictionary<string, DataNode>? dict = null)
+    : IEquatable<IReadOnlyDictionary<string, DataNode>>,
+        IReadOnlyDictionary<string, DataNode>
 {
-    private readonly IReadOnlyDictionary<string, DataSyntax> _dict;
-
-    public MiniZincData(IReadOnlyDictionary<string, DataSyntax>? dict = null)
-    {
-        _dict = dict ?? new Dictionary<string, DataSyntax>();
-    }
+    private readonly IReadOnlyDictionary<string, DataNode> _dict =
+        dict ?? new Dictionary<string, DataNode>();
 
     public string Write(WriteOptions? options = null)
     {
@@ -34,14 +30,7 @@ public sealed class MiniZincData
 
     public string SourceText => Write(WriteOptions.Minimal);
 
-    public override string ToString() => SourceText;
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-    public bool Equals(IReadOnlyDictionary<string, DataSyntax>? other)
+    public bool Equals(IReadOnlyDictionary<string, DataNode>? other)
     {
         if (other is null)
             return false;
@@ -75,55 +64,27 @@ public sealed class MiniZincData
         return true;
     }
 
-    public IEnumerator<KeyValuePair<string, DataSyntax>> GetEnumerator() => _dict.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, DataNode>> GetEnumerator() => _dict.GetEnumerator();
 
     public override bool Equals(object? obj) =>
-        Equals(obj as IReadOnlyDictionary<string, DataSyntax>);
+        Equals(obj as IReadOnlyDictionary<string, DataNode>);
 
     public override int GetHashCode() => SourceText.GetHashCode();
 
-    /// <summary>
-    /// Get the solution assigned to the given variable
-    /// </summary>
-    /// <param name="id">Name of the model variable</param>
-    /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
-    public U Get<U>(string id)
-        where U : DataSyntax
-    {
-        if (TryGet<U>(id) is not { } value)
-            throw new KeyNotFoundException($"Result did not contain a solution for \"{id}\"");
-
-        return value;
-    }
-
-    public DataSyntax? TryGet(string id) => _dict.GetValueOrDefault(id);
-
-    /// <summary>
-    /// Try to get the solution assigned to the given variable
-    /// </summary>
-    /// <param name="id">Name of the model variable</param>
-    public U? TryGet<U>(string id)
-        where U : DataSyntax
-    {
-        var value = TryGet(id);
-        if (value is null)
-            return null;
-
-        if (value is not U u)
-            throw new Exception();
-
-        return u;
-    }
+    public bool TryGetValue(string key, [NotNullWhen(true)] out DataNode? value) =>
+        _dict.TryGetValue(key, out value);
 
     public bool ContainsKey(string key) => _dict.ContainsKey(key);
 
-    public bool TryGetValue(string key, [NotNullWhen(true)] out DataSyntax? value) =>
-        _dict.TryGetValue(key, out value);
-
-    public DataSyntax this[string name] => Get<DataSyntax>(name);
+    public DataNode this[string name] => _dict[name];
 
     public IEnumerable<string> Keys => _dict.Keys;
-    public IEnumerable<DataSyntax> Values => _dict.Values;
+
+    public IEnumerable<DataNode> Values => _dict.Values;
 
     public int Count => _dict.Count;
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public override string ToString() => SourceText;
 }

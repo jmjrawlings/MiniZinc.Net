@@ -457,24 +457,24 @@ public sealed class Writer
         }
     }
 
-    internal void WriteValue(DataSyntax dataSyntax)
+    internal void WriteValue(DataNode dataSyntax)
     {
         switch (dataSyntax)
         {
-            case IntArray1d x:
-                WriteValues(x.Values, WriteInt);
+            case IntArrayData x:
+                WriteValues(x, WriteInt);
                 break;
-            case BoolArray1d x:
-                WriteValues(x.Values, WriteBool);
+            case BoolArrayData x:
+                WriteValues(x, WriteBool);
                 break;
-            case FloatArray1d x:
-                WriteValues(x.Values, WriteDecimal);
+            case FloatArrayData x:
+                WriteValues(x, WriteDecimal);
                 break;
-            case StringArray1d x:
-                WriteValues(x.Values, WriteString);
+            case StringArrayData x:
+                WriteValues(x, WriteString);
                 break;
-            case ValueArray1d x:
-                WriteValues(x.Values, WriteValue);
+            case ArrayData x:
+                WriteValues(x, WriteValue);
                 break;
             case BoolData x:
                 WriteBool(x);
@@ -491,7 +491,7 @@ public sealed class Writer
                 break;
             case RecordData x:
                 WriteValues(
-                    x.Fields,
+                    x,
                     pair =>
                     {
                         WriteString(pair.Key);
@@ -502,17 +502,17 @@ public sealed class Writer
                     after: CLOSE_PAREN
                 );
                 break;
-            case IntSet x:
-                WriteValues(x.Values, WriteInt, before: OPEN_BRACE, after: CLOSE_BRACE);
+            case IntSetData x:
+                WriteValues(x, WriteInt, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
-            case FloatSet x:
-                WriteValues(x.Values, WriteDecimal, before: OPEN_BRACE, after: CLOSE_BRACE);
+            case FloatSetData x:
+                WriteValues(x, WriteDecimal, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
-            case BoolSet x:
-                WriteValues(x.Values, WriteBool, before: OPEN_BRACE, after: CLOSE_BRACE);
+            case BoolSetData x:
+                WriteValues(x, WriteBool, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
-            case ValueSet x:
-                WriteValues(x.Values, WriteValue, before: OPEN_BRACE, after: CLOSE_BRACE);
+            case SetData x:
+                WriteValues(x, WriteValue, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
             case StringData x:
                 WriteChar(DOUBLE_QUOTE);
@@ -521,7 +521,7 @@ public sealed class Writer
                 break;
             case TupleData x:
                 WriteChar(OPEN_PAREN);
-                foreach (var item in x.Fields)
+                foreach (var item in x)
                 {
                     WriteValue(item);
                     WriteChar(COMMA);
@@ -680,11 +680,11 @@ public sealed class Writer
         if (bracketed)
             WriteChar(OPEN_PAREN);
 
-        WriteExpr(e.Left, assoc == Assoc.Left ? prec : prec + 1);
+        WriteExpr(e.Left, assoc == Parser.Assoc.Left ? prec : prec + 1);
         WriteSpace();
         WriteToken(e.Infix);
         WriteSpace();
-        WriteExpr(e.Right, assoc == Assoc.Right ? prec : prec + 1);
+        WriteExpr(e.Right, assoc == Parser.Assoc.Right ? prec : prec + 1);
         if (bracketed)
             WriteChar(CLOSE_PAREN);
     }

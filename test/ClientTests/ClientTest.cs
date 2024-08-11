@@ -165,9 +165,9 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
-    public bool Check(IntSet set, IntRangeData rangeData)
+    public bool Check(IntSetData set, IntRangeData rangeData)
     {
-        foreach (var value in set.Values)
+        foreach (var value in set)
         {
             if (value < rangeData.Lower)
                 return false;
@@ -178,9 +178,9 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
-    public bool Check(FloatSet set, FloatRangeData range)
+    public bool Check(FloatSetData set, FloatRangeData range)
     {
-        foreach (var value in set.Values)
+        foreach (var value in set)
         {
             if (value < range.Lower)
                 return false;
@@ -194,7 +194,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// <summary>
     /// Compare the solution against the json node
     /// </summary>
-    public bool Check(DataSyntax expected, DataSyntax actual)
+    public bool Check(DataNode expected, DataNode actual)
     {
         int i = 0;
         switch (expected, actual)
@@ -229,21 +229,21 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
                     return false;
                 break;
 
-            case (IntRangeData range, IntSet set):
+            case (IntRangeData range, IntSetData set):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (IntSet set, IntRangeData range):
+            case (IntSetData set, IntRangeData range):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (ValueArray1d { Values: var array }, TupleData tuple):
+            case (ArrayData array, TupleData tuple):
                 for (i = 0; i < array.Count; i++)
                 {
                     var e = array[i];
-                    var a = tuple.Fields[i];
+                    var a = tuple[i];
                     if (!Check(e, a))
                         return false;
                 }

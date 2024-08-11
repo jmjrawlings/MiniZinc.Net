@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
+
+using Syntax;
 
 public static class SyntaxExtensions
 {
@@ -27,5 +29,33 @@ public static class SyntaxExtensions
         if (statement is not T t)
             throw new Exception();
         return t;
+    }
+
+    /// <summary>
+    /// Get the solution assigned to the given variable
+    /// </summary>
+    /// <param name="id">Name of the model variable</param>
+    /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
+    public static T Get<T>(this IReadOnlyDictionary<string, DataNode> dict, string id)
+        where T : DataNode
+    {
+        var data = dict[id];
+        var value = (T)data;
+        return value;
+    }
+
+    /// Try to get the solution assigned to the given variable
+    public static DataNode? TryGet(this IReadOnlyDictionary<string, DataNode> dict, string id) =>
+        dict.GetValueOrDefault(id);
+
+    /// Try to get the solution assigned to the given variable
+    public static T? TryGet<T>(this IReadOnlyDictionary<string, DataNode> dict, string id)
+        where T : DataNode
+    {
+        if (!dict.TryGetValue(id, out var data))
+            return null;
+
+        T value = (T)data;
+        return value;
     }
 }

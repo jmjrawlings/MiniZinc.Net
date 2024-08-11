@@ -70,7 +70,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     {
         var model = MiniZincModel.FromString("array[1..10] of var 0..100: xd;");
         var result = await Client.Solve(model);
-        var arr = result.Data.Get<IntArray1d>("xd");
+        var arr = result.Data.Get<IntArrayData>("xd");
     }
 
     [Fact]

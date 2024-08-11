@@ -1,9 +1,8 @@
-﻿using System.Text.Json.Nodes;
-
-namespace MiniZinc.Client;
+﻿namespace MiniZinc.Client;
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 using System.Threading.Channels;
 using Command;
 using Core;
@@ -15,7 +14,6 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
     public readonly SolveOptions? Options;
     public readonly Command Command;
     public readonly string CommandString;
-    public int ProcessId { get; private set; }
     private readonly CancellationToken _cancellation;
     public readonly Solver Solver;
     public readonly string SolverId;
@@ -42,6 +40,7 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
     private Dictionary<string, object>? _statistics;
     private MiniZincResult? _current;
     private readonly IAsyncEnumerator<MiniZincResult> _asyncEnumerator;
+    public int ProcessId { get; private set; }
 
     internal MiniZincProcess(
         MiniZincClient client,
@@ -128,10 +127,11 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
             }
         );
         _asyncEnumerator = _channel.Reader.ReadAllAsync(_cancellation).GetAsyncEnumerator();
-        _task = Task.Factory.StartNew(Run);
+        _task = Task.Factory.StartNew(Start);
     }
 
-    private void Run()
+    /// Start the process and wait for it to exit
+    private void Start()
     {
         _process.Start();
         ProcessId = _process.Id;
@@ -199,12 +199,11 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
 
     private void OnStatisticsOutput(StatisticsOutput o)
     {
-        foreach (KeyValuePair<string, JsonNode> kv in o.Statistics)
+        foreach (KeyValuePair<string, JsonNode?> kv in o.Statistics)
         {
             var name = kv.Key;
-            var value = kv.Value.AsValue();
+            var value = kv.Value!.AsValue();
             object? stat = null;
-
             if (value.TryGetValue<int>(out var i))
                 stat = i;
             else if (value.TryGetValue<bool>(out var b))
@@ -379,8 +378,8 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
     public override string ToString() => CommandString;
 
     private MiniZincResult Result(
-        in DataSyntax? objectiveValue = null,
-        in DataSyntax? objectiveBoundValue = null,
+        in DataNode? objectiveValue = null,
+        in DataNode? objectiveBoundValue = null,
         string? error = null
     )
     {

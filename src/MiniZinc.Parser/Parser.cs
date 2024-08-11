@@ -9,6 +9,16 @@ using Syntax;
 /// </summary>
 public sealed class Parser
 {
+    /// <summary>
+    /// Operator Associativity
+    /// </summary>
+    public enum Assoc : byte
+    {
+        None = 1,
+        Left,
+        Right
+    }
+
     private readonly Token[] _tokens;
     private readonly int _n;
     private string _sourceText;
@@ -236,7 +246,7 @@ public sealed class Parser
     /// <mzn>a = 1;b = 2; c= true;</mzn>
     internal bool ParseData(out MiniZincData data)
     {
-        Dictionary<string, DataSyntax> values = new();
+        Dictionary<string, DataNode> values = new();
         data = new MiniZincData(values);
 
         while (true)
@@ -823,7 +833,7 @@ public sealed class Parser
     private bool IsOk => _errorMessage is null;
 
     /// Parse array data into the most refined type possible
-    internal bool ParseArrayData([NotNullWhen(true)] out DataSyntax? array)
+    internal bool ParseArrayData([NotNullWhen(true)] out DataNode? array)
     {
         Step();
         array = null;
@@ -831,7 +841,7 @@ public sealed class Parser
         List<bool>? bools = null;
         List<decimal>? floats = null;
         List<string>? strings = null;
-        List<DataSyntax>? values = null;
+        List<DataNode>? values = null;
 
         while (_kind is not TokenKind.CLOSE_BRACKET)
         {
@@ -877,27 +887,27 @@ public sealed class Parser
             return false;
 
         if (ints is not null)
-            array = new IntArray1d(ints);
+            array = new IntArrayData(ints);
         else if (floats is not null)
-            array = new FloatArray1d(floats);
+            array = new FloatArrayData(floats);
         else if (bools is not null)
-            array = new BoolArray1d(bools);
+            array = new BoolArrayData(bools);
         else if (strings is not null)
-            array = new StringArray1d(strings);
+            array = new StringArrayData(strings);
         else
-            array = new ValueSet(values ?? []);
+            array = new ArrayData(values ?? []);
         return true;
     }
 
     /// Parse set data into the most refined type possible
-    internal bool ParseSetData([NotNullWhen(true)] out DataSyntax? value)
+    internal bool ParseSetData([NotNullWhen(true)] out DataNode? value)
     {
         Step();
         value = null;
-        HashSet<int>? intSet = null;
-        HashSet<bool>? boolSet = null;
-        HashSet<decimal>? floatSet = null;
-        List<DataSyntax>? set = null;
+        List<int>? intSet = null;
+        List<bool>? boolSet = null;
+        List<decimal>? floatSet = null;
+        List<DataNode>? set = null;
 
         while (_kind is not TokenKind.CLOSE_BRACE)
         {
@@ -933,13 +943,13 @@ public sealed class Parser
             return false;
 
         if (intSet is not null)
-            value = new IntSet(intSet);
+            value = new IntSetData(intSet);
         else if (floatSet is not null)
-            value = new FloatSet(floatSet);
+            value = new FloatSetData(floatSet);
         else if (boolSet is not null)
-            value = new BoolSet(boolSet);
+            value = new BoolSetData(boolSet);
         else
-            value = new ValueSet(set ?? []);
+            value = new SetData(set ?? []);
         return true;
     }
 
@@ -951,7 +961,7 @@ public sealed class Parser
     /// <mzn>true</mzn>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>1..10</mzn>
-    internal bool ParseValue([NotNullWhen(true)] out DataSyntax? value)
+    internal bool ParseValue([NotNullWhen(true)] out DataNode? value)
     {
         value = null;
 
@@ -986,11 +996,11 @@ public sealed class Parser
         return true;
     }
 
-    internal bool ParseTupleData([NotNullWhen(true)] out DataSyntax? value)
+    internal bool ParseTupleData([NotNullWhen(true)] out DataNode? value)
     {
         Step();
         value = null;
-        List<DataSyntax> values = [];
+        List<DataNode> values = [];
         while (_kind is not TokenKind.CLOSE_PAREN)
         {
             if (!ParseValue(out value))
@@ -1007,14 +1017,14 @@ public sealed class Parser
         return true;
     }
 
-    internal bool ParseRecordData([NotNullWhen(true)] out DataSyntax? value)
+    internal bool ParseRecordData([NotNullWhen(true)] out DataNode? value)
     {
         value = null;
 
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
-        Dictionary<string, DataSyntax> fields = [];
+        Dictionary<string, DataNode> fields = [];
         value = new RecordData(fields);
 
         while (_kind is not TokenKind.CLOSE_PAREN)
@@ -1050,7 +1060,7 @@ public sealed class Parser
     /// </summary>
     /// <mzn>1</mzn>
     /// <mzn>true</mzn>
-    internal bool ParseValueAtom([NotNullWhen(true)] out DataSyntax? value)
+    internal bool ParseValueAtom([NotNullWhen(true)] out DataNode? value)
     {
         value = null;
         Token token = _current;
@@ -1069,7 +1079,6 @@ public sealed class Parser
                 {
                     value = new IntData(token.IntValue);
                 }
-
                 break;
 
             case TokenKind.FLOAT_LITERAL:
@@ -1084,17 +1093,16 @@ public sealed class Parser
                 {
                     value = new FloatData(token.DecimalValue);
                 }
-
                 break;
 
             case TokenKind.KEYWORD_TRUE:
                 Step();
-                value = new BoolData(token.BoolValue);
+                value = DataNode.True;
                 break;
 
             case TokenKind.KEYWORD_FALSE:
                 Step();
-                value = new BoolData(token.BoolValue);
+                value = DataNode.False;
                 break;
 
             case TokenKind.STRING_LITERAL:
@@ -1104,7 +1112,7 @@ public sealed class Parser
 
             case TokenKind.EMPTY:
                 Step();
-                value = new EmptyData();
+                value = DataNode.Empty;
                 break;
 
             default:
