@@ -1,4 +1,6 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
+
+using Syntax;
 
 /// <summary>
 /// Result of parsing a minizinc model from a file (.mzn) or string

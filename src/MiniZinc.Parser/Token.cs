@@ -12,8 +12,7 @@ public readonly struct Token
     public readonly object? Data;
     public int IntValue => (int)Data!;
     public string StringValue => (string)Data!;
-    public decimal DecimalValue => (decimal)Data!;
-    public bool BoolValue => Kind is TokenKind.KEYWORD_TRUE;
+    public decimal FloatValue => (decimal)Data!;
     public int End => Start + Length;
 
     public Token(TokenKind kind, int line, int col, int start, int length, object? data = null)
@@ -121,7 +120,7 @@ public readonly struct Token
             TokenKind.PIPE => "|",
             TokenKind.EMPTY => "<>",
             TokenKind.INT_LITERAL => IntValue.ToString(),
-            TokenKind.FLOAT_LITERAL => DecimalValue.ToString(CultureInfo.InvariantCulture),
+            TokenKind.FLOAT_LITERAL => FloatValue.ToString(CultureInfo.InvariantCulture),
             TokenKind.STRING_LITERAL => $"\"{Data}\"",
             TokenKind.KEYWORD_ANONENUM => "anon_enum",
             TokenKind.NOT_EQUAL => "!=",

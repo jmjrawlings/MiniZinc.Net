@@ -457,39 +457,39 @@ public sealed class Writer
         }
     }
 
-    internal void WriteValue(DataNode dataSyntax)
+    internal void WriteValue(Datum dataSyntax)
     {
         switch (dataSyntax)
         {
-            case IntArrayData x:
+            case IntArray x:
                 WriteValues(x, WriteInt);
                 break;
-            case BoolArrayData x:
+            case BoolArray x:
                 WriteValues(x, WriteBool);
                 break;
-            case FloatArrayData x:
+            case FloatArray x:
                 WriteValues(x, WriteDecimal);
                 break;
-            case StringArrayData x:
+            case StringArray x:
                 WriteValues(x, WriteString);
                 break;
-            case ArrayData x:
+            case DatumArray x:
                 WriteValues(x, WriteValue);
                 break;
-            case BoolData x:
+            case BoolDatum x:
                 WriteBool(x);
                 break;
-            case EmptyData x:
+            case EmptyDatum x:
                 WriteChar(OPEN_CHEVRON);
                 WriteChar(CLOSE_CHEVRON);
                 break;
-            case IntData x:
+            case IntDatum x:
                 WriteInt(x);
                 break;
-            case FloatData x:
+            case FloatDatum x:
                 WriteDecimal(x);
                 break;
-            case RecordData x:
+            case RecordDatum x:
                 WriteValues(
                     x,
                     pair =>
@@ -502,24 +502,24 @@ public sealed class Writer
                     after: CLOSE_PAREN
                 );
                 break;
-            case IntSetData x:
+            case IntSet x:
                 WriteValues(x, WriteInt, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
-            case FloatSetData x:
+            case FloatSet x:
                 WriteValues(x, WriteDecimal, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
-            case BoolSetData x:
+            case BoolSet x:
                 WriteValues(x, WriteBool, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
-            case SetData x:
+            case SetDatum x:
                 WriteValues(x, WriteValue, before: OPEN_BRACE, after: CLOSE_BRACE);
                 break;
-            case StringData x:
+            case StringDatum x:
                 WriteChar(DOUBLE_QUOTE);
                 WriteString(x.Value);
                 WriteChar(DOUBLE_QUOTE);
                 break;
-            case TupleData x:
+            case DatumTuple x:
                 WriteChar(OPEN_PAREN);
                 foreach (var item in x)
                 {
@@ -528,13 +528,13 @@ public sealed class Writer
                 }
                 WriteChar(CLOSE_PAREN);
                 break;
-            case FloatRangeData x:
+            case FloatRange x:
                 WriteDecimal(x.Lower);
                 WriteChar(DOT);
                 WriteChar(DOT);
                 WriteDecimal(x.Upper);
                 break;
-            case IntRangeData x:
+            case IntRange x:
                 WriteInt(x.Lower);
                 WriteChar(DOT);
                 WriteChar(DOT);

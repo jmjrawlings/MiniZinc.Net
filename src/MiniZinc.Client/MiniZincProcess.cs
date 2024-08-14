@@ -378,8 +378,8 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
     public override string ToString() => CommandString;
 
     private MiniZincResult Result(
-        in DataNode? objectiveValue = null,
-        in DataNode? objectiveBoundValue = null,
+        in Datum? objectiveValue = null,
+        in Datum? objectiveBoundValue = null,
         string? error = null
     )
     {

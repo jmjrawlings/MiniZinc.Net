@@ -7,28 +7,30 @@ using System.Diagnostics.CodeAnalysis;
 /// MiniZinc record literal
 /// </summary>
 /// <mzn>(bool: a, int: c, float: f)</mzn>
-public sealed class RecordData(Dictionary<string, DataNode> dict)
-    : DataNode,
-        IReadOnlyDictionary<string, DataNode>
+public sealed class RecordDatum(Dictionary<string, Datum> dict)
+    : Datum,
+        IReadOnlyDictionary<string, Datum>
 {
-    public IEnumerator<KeyValuePair<string, DataNode>> GetEnumerator() => dict.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, Datum>> GetEnumerator() => dict.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public override DatumKind Kind => DatumKind.Record;
 
     public int Count => dict.Count;
 
     public bool ContainsKey(string key) => dict.ContainsKey(key);
 
-    public bool TryGetValue(string key, [NotNullWhen(true)] out DataNode? value) =>
+    public bool TryGetValue(string key, [NotNullWhen(true)] out Datum? value) =>
         dict.TryGetValue(key, out value);
 
-    public DataNode this[string key] => dict[key];
+    public Datum this[string key] => dict[key];
 
     public IEnumerable<string> Keys => dict.Keys;
 
-    public IEnumerable<DataNode> Values => dict.Values;
+    public IEnumerable<Datum> Values => dict.Values;
 
-    public bool Equals(IReadOnlyDictionary<string, DataNode>? other)
+    public bool Equals(IReadOnlyDictionary<string, Datum>? other)
     {
         if (other is null)
             return false;
@@ -46,6 +48,5 @@ public sealed class RecordData(Dictionary<string, DataNode> dict)
         return true;
     }
 
-    public override bool Equals(object? obj) =>
-        Equals(obj as IReadOnlyDictionary<string, DataNode>);
+    public override bool Equals(object? obj) => Equals(obj as IReadOnlyDictionary<string, Datum>);
 }

@@ -1,13 +1,16 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class FloatSetData(List<decimal> values) : SetData<decimal>(values)
+public sealed class FloatSet : SetDatum<decimal>
 {
+    public FloatSet(List<decimal> values)
+        : base(values) { }
+
     public override bool Equals(object? obj)
     {
-        if (obj is FloatRangeData { Lower: var lo, Upper: var hi })
+        if (obj is FloatRange { Lower: var lo, Upper: var hi })
         {
             // Can only compare float set/range equality for the singleton set
-            if (values is not [var value])
+            if (_values is not [var value])
                 return false;
 
             if (!lo.Equals(value))

@@ -6,19 +6,19 @@ using System.Diagnostics.CodeAnalysis;
 using MiniZinc;
 
 /// <summary>
-/// Result of parsing a minizinc data from a file (.dzn) or string.
+/// Result of parsing minizinc data from a file (.dzn) or string.
 /// </summary>
 /// <remarks>
-/// Data is different from a <see cref="MiniZincModel"/> in that it can only
-/// contain assignments of the form `$name = $expr;`
+/// This is different from a <see cref="MiniZincModel"/> in that it can only
+/// contain assignments of the form `$name = $datum;`
 /// </remarks>
 [DebuggerDisplay("{SourceText}")]
-public sealed class MiniZincData(IReadOnlyDictionary<string, DataNode>? dict = null)
-    : IEquatable<IReadOnlyDictionary<string, DataNode>>,
-        IReadOnlyDictionary<string, DataNode>
+public sealed class MiniZincData(IReadOnlyDictionary<string, Datum>? dict = null)
+    : IEquatable<IReadOnlyDictionary<string, Datum>>,
+        IReadOnlyDictionary<string, Datum>
 {
-    private readonly IReadOnlyDictionary<string, DataNode> _dict =
-        dict ?? new Dictionary<string, DataNode>();
+    private readonly IReadOnlyDictionary<string, Datum> _dict =
+        dict ?? new Dictionary<string, Datum>();
 
     public string Write(WriteOptions? options = null)
     {
@@ -30,7 +30,7 @@ public sealed class MiniZincData(IReadOnlyDictionary<string, DataNode>? dict = n
 
     public string SourceText => Write(WriteOptions.Minimal);
 
-    public bool Equals(IReadOnlyDictionary<string, DataNode>? other)
+    public bool Equals(IReadOnlyDictionary<string, Datum>? other)
     {
         if (other is null)
             return false;
@@ -64,23 +64,22 @@ public sealed class MiniZincData(IReadOnlyDictionary<string, DataNode>? dict = n
         return true;
     }
 
-    public IEnumerator<KeyValuePair<string, DataNode>> GetEnumerator() => _dict.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, Datum>> GetEnumerator() => _dict.GetEnumerator();
 
-    public override bool Equals(object? obj) =>
-        Equals(obj as IReadOnlyDictionary<string, DataNode>);
+    public override bool Equals(object? obj) => Equals(obj as IReadOnlyDictionary<string, Datum>);
 
     public override int GetHashCode() => SourceText.GetHashCode();
 
-    public bool TryGetValue(string key, [NotNullWhen(true)] out DataNode? value) =>
+    public bool TryGetValue(string key, [NotNullWhen(true)] out Datum? value) =>
         _dict.TryGetValue(key, out value);
 
     public bool ContainsKey(string key) => _dict.ContainsKey(key);
 
-    public DataNode this[string name] => _dict[name];
+    public Datum this[string name] => _dict[name];
 
     public IEnumerable<string> Keys => _dict.Keys;
 
-    public IEnumerable<DataNode> Values => _dict.Values;
+    public IEnumerable<Datum> Values => _dict.Values;
 
     public int Count => _dict.Count;
 

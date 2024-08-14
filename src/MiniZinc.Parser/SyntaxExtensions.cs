@@ -36,8 +36,8 @@ public static class SyntaxExtensions
     /// </summary>
     /// <param name="id">Name of the model variable</param>
     /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
-    public static T Get<T>(this IReadOnlyDictionary<string, DataNode> dict, string id)
-        where T : DataNode
+    public static T Get<T>(this IReadOnlyDictionary<string, Datum> dict, string id)
+        where T : Datum
     {
         var data = dict[id];
         var value = (T)data;
@@ -45,12 +45,12 @@ public static class SyntaxExtensions
     }
 
     /// Try to get the solution assigned to the given variable
-    public static DataNode? TryGet(this IReadOnlyDictionary<string, DataNode> dict, string id) =>
+    public static Datum? TryGet(this IReadOnlyDictionary<string, Datum> dict, string id) =>
         dict.GetValueOrDefault(id);
 
     /// Try to get the solution assigned to the given variable
-    public static T? TryGet<T>(this IReadOnlyDictionary<string, DataNode> dict, string id)
-        where T : DataNode
+    public static T? TryGet<T>(this IReadOnlyDictionary<string, Datum> dict, string id)
+        where T : Datum
     {
         if (!dict.TryGetValue(id, out var data))
             return null;

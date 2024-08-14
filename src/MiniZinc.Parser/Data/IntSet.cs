@@ -1,10 +1,13 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class IntSetData(List<int> values) : SetData<int>(values)
+public sealed class IntSet : SetDatum<int>
 {
+    public IntSet(List<int> values)
+        : base(values) { }
+
     public override bool Equals(object? obj)
     {
-        if (obj is IntRangeData range)
+        if (obj is IntRange range)
         {
             if (Count is 0)
                 return false;
@@ -15,7 +18,7 @@ public sealed class IntSetData(List<int> values) : SetData<int>(values)
             int i = 0;
             for (int v = range.Lower; v <= range.Upper; v++)
             {
-                if (values[i++] != v)
+                if (_values[i++] != v)
                     return false;
             }
 

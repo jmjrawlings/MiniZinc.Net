@@ -6,12 +6,6 @@ public sealed class BoolLiteralSyntax : ExpressionSyntax
 {
     public bool Value { get; }
 
-    public BoolLiteralSyntax(in Token start)
-        : base(start)
-    {
-        Value = start.BoolValue;
-    }
-
     public BoolLiteralSyntax(in Token start, bool value)
         : base(start)
     {

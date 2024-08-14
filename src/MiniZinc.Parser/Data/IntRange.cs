@@ -1,13 +1,17 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class IntRangeData : DataNode
+using System.Collections;
+
+public sealed class IntRange : Datum, IEnumerable<int>
 {
     public readonly int Lower;
     public readonly int Upper;
     public readonly int Size;
     public readonly int Count;
 
-    public IntRangeData(int lower, int upper)
+    public override DatumKind Kind => DatumKind.Set;
+
+    public IntRange(int lower, int upper)
     {
         Lower = lower;
         Upper = upper;
@@ -15,9 +19,17 @@ public sealed class IntRangeData : DataNode
         Count = Size + 1;
     }
 
+    public bool Contains(int i) => i >= Lower && i <= Upper;
+
+    public IEnumerable<int> Enumerate()
+    {
+        for (int i = Lower; i <= Upper; i++)
+            yield return i;
+    }
+
     public override bool Equals(object? obj)
     {
-        if (obj is IntRangeData range)
+        if (obj is IntRange range)
         {
             if (!Lower.Equals(range.Lower))
                 return false;
@@ -25,7 +37,7 @@ public sealed class IntRangeData : DataNode
                 return false;
             return true;
         }
-        else if (obj is IntSetData set)
+        else if (obj is IntSet set)
         {
             if (!set.Equals(this))
                 return false;
@@ -36,4 +48,8 @@ public sealed class IntRangeData : DataNode
             return false;
         }
     }
+
+    public IEnumerator<int> GetEnumerator() => Enumerate().GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

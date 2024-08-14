@@ -246,7 +246,7 @@ public sealed class Parser
     /// <mzn>a = 1;b = 2; c= true;</mzn>
     internal bool ParseData(out MiniZincData data)
     {
-        Dictionary<string, DataNode> values = new();
+        Dictionary<string, Datum> values = new();
         data = new MiniZincData(values);
 
         while (true)
@@ -260,7 +260,7 @@ public sealed class Parser
             if (!Expect(TokenKind.EQUAL))
                 return false;
 
-            if (!ParseValue(out var value))
+            if (!ParseDatum(out var value))
                 return false;
 
             if (values.ContainsKey(name.StringValue))
@@ -733,12 +733,12 @@ public sealed class Parser
 
             case TokenKind.KEYWORD_TRUE:
                 Step();
-                expr = new BoolLiteralSyntax(token);
+                expr = new BoolLiteralSyntax(token, true);
                 break;
 
             case TokenKind.KEYWORD_FALSE:
                 Step();
-                expr = new BoolLiteralSyntax(token);
+                expr = new BoolLiteralSyntax(token, false);
                 break;
 
             case TokenKind.STRING_LITERAL:
@@ -832,50 +832,199 @@ public sealed class Parser
 
     private bool IsOk => _errorMessage is null;
 
-    /// Parse array data into the most refined type possible
-    internal bool ParseArrayData([NotNullWhen(true)] out DataNode? array)
+    /// Parse an int range data starting at the given token
+    /// The parser will step over the given lower bound
+    /// Will only return false in the case of an error
+    internal bool ParseIntDatum(out int i, out IntRange? range)
     {
+        range = null;
+        Token start = _current;
+        i = start.IntValue;
         Step();
+        if (!Skip(TokenKind.CLOSED_RANGE))
+            return true;
+        if (!Expect(TokenKind.INT_LITERAL, out Token upper))
+            return false;
+        range = new IntRange(i, upper.IntValue);
+        return true;
+    }
+
+    /// Parse a float range starting at the given token
+    /// The parser will step over the given lower bound
+    /// Will only return false in the case of an error
+    internal bool ParseFloatDatum(out decimal f, out FloatRange? range)
+    {
+        range = null;
+        Token start = _current;
+        f = start.FloatValue;
+        if (!Skip(TokenKind.CLOSED_RANGE))
+            return true;
+        if (!Expect(TokenKind.FLOAT_LITERAL, out Token upper))
+            return false;
+        range = new FloatRange(f, upper.FloatValue);
+        return true;
+    }
+
+    /// Parse array data into the most refined type possible
+    internal bool ParseArrayDatum([NotNullWhen(true)] out Datum? array)
+    {
         array = null;
+        if (!Skip(TokenKind.OPEN_BRACKET))
+            return false;
+
         List<int>? ints = null;
         List<bool>? bools = null;
         List<decimal>? floats = null;
         List<string>? strings = null;
-        List<DataNode>? values = null;
-
+        List<Datum>? values = null;
+        DatumKind type = default;
+        bool opt = false;
         while (_kind is not TokenKind.CLOSE_BRACKET)
         {
-            switch (_kind)
+            switch (_kind, type, opt)
             {
-                case TokenKind.INT_LITERAL:
-                    (ints ??= []).Add(_current.IntValue);
-                    Step();
+                // First value is <>
+                case (TokenKind.EMPTY, DatumKind.Unknown, false):
+                    values = [Datum.Empty];
+                    opt = true;
                     break;
 
-                case TokenKind.FLOAT_LITERAL:
-                    (floats ??= []).Add(_current.DecimalValue);
-                    Step();
+                // <> found in IntArray
+                case (TokenKind.EMPTY, DatumKind.Int, false):
+                    values = [];
+                    foreach (var ix in ints!)
+                        values.Add(Datum.Int(ix));
+                    values.Add(Datum.Empty);
+                    opt = true;
                     break;
 
-                case TokenKind.KEYWORD_TRUE:
+                // <> found in FloatArray
+                case (TokenKind.EMPTY, DatumKind.Float, false):
+                    values = [];
+                    foreach (var fx in floats!)
+                        values.Add(Datum.Float(fx));
+                    values.Add(Datum.Empty);
+                    opt = true;
+                    break;
+
+                // <> found in StringArray
+                case (TokenKind.EMPTY, DatumKind.String, false):
+                    values = [];
+                    foreach (var s in strings!)
+                        values.Add(Datum.String(s));
+                    values.Add(Datum.Empty);
+                    opt = true;
+                    break;
+
+                // <> found in BoolArray
+                case (TokenKind.EMPTY, DatumKind.Bool, false):
+                    values = [];
+                    foreach (var b in bools!)
+                        values.Add(Datum.Bool(b));
+                    values.Add(Datum.Empty);
+                    opt = true;
+                    break;
+
+                // <> occured
+                case (TokenKind.EMPTY, _, _):
+                    values!.Add(Datum.Empty);
+                    opt = true;
+                    break;
+
+                // Int or IntRange
+                case (TokenKind.INT_LITERAL, _, _):
+                    if (!ParseIntDatum(out int i, out var intRange))
+                    {
+                        return false;
+                    }
+                    else if (intRange is not null)
+                    {
+                        (values ??= []).Add(intRange);
+                        if (type is not DatumKind.Set)
+                            return Expected($"datum of type {type}, got IntRange");
+                        type = DatumKind.Set;
+                    }
+                    else if (opt)
+                    {
+                        values!.Add(Datum.Int(i));
+                        type = DatumKind.Int;
+                    }
+                    else
+                    {
+                        (ints ??= []).Add(i);
+                        type = DatumKind.Int;
+                    }
+                    break;
+
+                // Float or FloatRange
+                case (TokenKind.FLOAT_LITERAL, _, _):
+                    if (!ParseFloatDatum(out decimal f, out var floatRange))
+                    {
+                        return false;
+                    }
+                    else if (floatRange is not null)
+                    {
+                        (values ??= []).Add(floatRange);
+                        if (type is not DatumKind.Set)
+                            return Expected($"datum of type {type}, got FloatRange");
+                        type = DatumKind.Set;
+                    }
+                    else if (opt)
+                    {
+                        values!.Add(Datum.Float(f));
+                        type = DatumKind.Float;
+                    }
+                    else
+                    {
+                        (floats ??= []).Add(f);
+                        type = DatumKind.Float;
+                    }
+                    break;
+
+                case (TokenKind.KEYWORD_TRUE, DatumKind.Unknown or DatumKind.Bool, false):
                     (bools ??= []).Add(true);
+                    type = DatumKind.Bool;
                     Step();
                     break;
 
-                case TokenKind.KEYWORD_FALSE:
+                case (TokenKind.KEYWORD_TRUE, DatumKind.Unknown or DatumKind.Bool, true):
+                    values!.Add(Datum.True);
+                    type = DatumKind.Bool;
+                    Step();
+                    break;
+
+                case (TokenKind.KEYWORD_FALSE, DatumKind.Unknown or DatumKind.Bool, false):
                     (bools ??= []).Add(false);
+                    type = DatumKind.Bool;
                     Step();
                     break;
 
-                case TokenKind.STRING_LITERAL:
+                case (TokenKind.KEYWORD_FALSE, DatumKind.Unknown or DatumKind.Bool, true):
+                    values!.Add(Datum.False);
+                    type = DatumKind.Bool;
+                    Step();
+                    break;
+
+                case (TokenKind.STRING_LITERAL, DatumKind.Unknown or DatumKind.String, false):
                     (strings ??= []).Add(_current.StringValue);
+                    type = DatumKind.String;
+                    Step();
+                    break;
+
+                case (TokenKind.STRING_LITERAL, DatumKind.Unknown or DatumKind.String, true):
+                    values!.Add(Datum.String(_current.StringValue));
+                    type = DatumKind.String;
                     Step();
                     break;
 
                 default:
-                    if (!ParseValueAtom(out var value))
+                    if (!ParseDatum(out var datum))
                         return false;
-                    (values ??= []).Add(value);
+                    if (type is not DatumKind.Unknown)
+                        if (type != datum.Kind)
+                            return Expected($"Datum of type {type}, got {datum.Kind}");
+                    type = datum.Kind;
+                    (values ??= []).Add(datum);
                     break;
             }
 
@@ -887,48 +1036,50 @@ public sealed class Parser
             return false;
 
         if (ints is not null)
-            array = new IntArrayData(ints);
+            array = new IntArray(ints);
         else if (floats is not null)
-            array = new FloatArrayData(floats);
+            array = new FloatArray(floats);
         else if (bools is not null)
-            array = new BoolArrayData(bools);
+            array = new BoolArray(bools);
         else if (strings is not null)
-            array = new StringArrayData(strings);
+            array = new StringArray(strings);
         else
-            array = new ArrayData(values ?? []);
+            array = new DatumArray(values ?? []);
         return true;
     }
 
     /// Parse set data into the most refined type possible
-    internal bool ParseSetData([NotNullWhen(true)] out DataNode? value)
+    internal bool ParseSetDatum([NotNullWhen(true)] out Datum? set)
     {
-        Step();
-        value = null;
-        List<int>? intSet = null;
-        List<bool>? boolSet = null;
-        List<decimal>? floatSet = null;
-        List<DataNode>? set = null;
+        set = null;
+        if (!Skip(TokenKind.OPEN_BRACE))
+            return false;
+
+        List<int>? ints = null;
+        List<bool>? bools = null;
+        List<decimal>? floats = null;
+        List<Datum>? data = null;
 
         while (_kind is not TokenKind.CLOSE_BRACE)
         {
             var token = _current;
             Step();
-            switch (_kind)
+            switch (token.Kind)
             {
                 case TokenKind.INT_LITERAL:
-                    (intSet ??= []).Add(token.IntValue);
+                    (ints ??= []).Add(token.IntValue);
                     break;
 
                 case TokenKind.FLOAT_LITERAL:
-                    (floatSet ??= []).Add(token.DecimalValue);
+                    (floats ??= []).Add(token.FloatValue);
                     break;
 
                 case TokenKind.KEYWORD_TRUE:
-                    (boolSet ??= []).Add(true);
+                    (bools ??= []).Add(true);
                     break;
 
                 case TokenKind.KEYWORD_FALSE:
-                    (boolSet ??= []).Add(false);
+                    (bools ??= []).Add(false);
                     break;
 
                 default:
@@ -942,68 +1093,103 @@ public sealed class Parser
         if (!Expect(TokenKind.CLOSE_BRACE))
             return false;
 
-        if (intSet is not null)
-            value = new IntSetData(intSet);
-        else if (floatSet is not null)
-            value = new FloatSetData(floatSet);
-        else if (boolSet is not null)
-            value = new BoolSetData(boolSet);
+        if (ints is not null)
+            set = new IntSet(ints);
+        else if (floats is not null)
+            set = new FloatSet(floats);
+        else if (bools is not null)
+            set = new BoolSet(bools);
         else
-            value = new SetData(set ?? []);
+            set = new SetDatum(data ?? []);
         return true;
     }
 
     /// <summary>
-    /// Parse a Value.
-    /// A value is a subset of Expressions that can be found in MiniZinc data files.
+    /// Parse a <see cref="Datum"/>.
     /// </summary>
     /// <mzn>1</mzn>
     /// <mzn>true</mzn>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>1..10</mzn>
-    internal bool ParseValue([NotNullWhen(true)] out DataNode? value)
+    public bool ParseDatum([NotNullWhen(true)] out Datum? datum)
     {
-        value = null;
-
+        datum = null;
         switch (_kind)
         {
             case TokenKind.OPEN_BRACE:
-                if (!ParseSetData(out value))
+                if (!ParseSetDatum(out datum))
                     return false;
                 break;
 
             case TokenKind.OPEN_BRACKET:
-                if (!ParseArrayData(out value))
+                if (!ParseArrayDatum(out datum))
                     return false;
                 break;
 
             case TokenKind.OPEN_PAREN when Peek().Kind is TokenKind.IDENTIFIER:
-                if (!ParseRecordData(out value))
+                if (!ParseRecordDatum(out datum))
                     return false;
                 break;
 
             case TokenKind.OPEN_PAREN:
-                if (!ParseTupleData(out value))
+                if (!ParseTupleDatum(out datum))
                     return false;
                 break;
 
-            default:
-                if (!ParseValueAtom(out value))
+            case TokenKind.INT_LITERAL:
+                if (!ParseIntDatum(out int i, out var intRange))
                     return false;
+                else if (intRange is not null)
+                    datum = intRange;
+                else
+                    datum = new IntDatum(i);
                 break;
+
+            case TokenKind.FLOAT_LITERAL:
+                if (!ParseFloatDatum(out decimal f, out var floatRange))
+                    return false;
+                else if (floatRange is not null)
+                    datum = floatRange;
+                else
+                    datum = new FloatDatum(f);
+                break;
+
+            case TokenKind.KEYWORD_TRUE:
+                Step();
+                datum = Datum.True;
+                break;
+
+            case TokenKind.KEYWORD_FALSE:
+                Step();
+                datum = Datum.False;
+                break;
+
+            case TokenKind.STRING_LITERAL:
+                var s = _current.StringValue;
+                Step();
+                datum = new StringDatum(s);
+                break;
+
+            case TokenKind.EMPTY:
+                Step();
+                datum = Datum.Empty;
+                break;
+
+            default:
+                return Error($"Unexpected token {_current}");
         }
 
         return true;
     }
 
-    internal bool ParseTupleData([NotNullWhen(true)] out DataNode? value)
+    internal bool ParseTupleDatum([NotNullWhen(true)] out Datum? value)
     {
         Step();
         value = null;
-        List<DataNode> values = [];
+        List<Datum> values = [];
         while (_kind is not TokenKind.CLOSE_PAREN)
         {
-            if (!ParseValue(out value))
+            if (!ParseDatum(out value))
                 return false;
             values.Add(value);
             if (!Skip(TokenKind.COMMA))
@@ -1013,19 +1199,19 @@ public sealed class Parser
         if (!Expect(TokenKind.CLOSE_PAREN))
             return false;
 
-        value = new TupleData(values);
+        value = new DatumTuple(values);
         return true;
     }
 
-    internal bool ParseRecordData([NotNullWhen(true)] out DataNode? value)
+    internal bool ParseRecordDatum([NotNullWhen(true)] out Datum? value)
     {
         value = null;
 
         if (!Expect(TokenKind.OPEN_PAREN))
             return false;
 
-        Dictionary<string, DataNode> fields = [];
-        value = new RecordData(fields);
+        Dictionary<string, Datum> fields = [];
+        value = new RecordDatum(fields);
 
         while (_kind is not TokenKind.CLOSE_PAREN)
         {
@@ -1037,7 +1223,7 @@ public sealed class Parser
             if (!Expect(TokenKind.COLON))
                 return false;
 
-            if (!ParseValue(out var fieldValue))
+            if (!ParseDatum(out var fieldValue))
                 return false;
 
             if (fields.ContainsKey(fieldName))
@@ -1060,61 +1246,12 @@ public sealed class Parser
     /// </summary>
     /// <mzn>1</mzn>
     /// <mzn>true</mzn>
-    internal bool ParseValueAtom([NotNullWhen(true)] out DataNode? value)
+    internal bool ParseSimpleDatum([NotNullWhen(true)] out Datum? value)
     {
         value = null;
         Token token = _current;
-        Token right;
         switch (_kind)
         {
-            case TokenKind.INT_LITERAL:
-                Step();
-                if (Skip(TokenKind.CLOSED_RANGE))
-                {
-                    if (!Expect(TokenKind.INT_LITERAL, out right))
-                        return false;
-                    value = new IntRangeData(token.IntValue, right.IntValue);
-                }
-                else
-                {
-                    value = new IntData(token.IntValue);
-                }
-                break;
-
-            case TokenKind.FLOAT_LITERAL:
-                Step();
-                if (Skip(TokenKind.CLOSED_RANGE))
-                {
-                    if (!Expect(TokenKind.FLOAT_LITERAL, out right))
-                        return false;
-                    value = new FloatRangeData(token.DecimalValue, right.DecimalValue);
-                }
-                else
-                {
-                    value = new FloatData(token.DecimalValue);
-                }
-                break;
-
-            case TokenKind.KEYWORD_TRUE:
-                Step();
-                value = DataNode.True;
-                break;
-
-            case TokenKind.KEYWORD_FALSE:
-                Step();
-                value = DataNode.False;
-                break;
-
-            case TokenKind.STRING_LITERAL:
-                Step();
-                value = new StringData(token.ToString());
-                break;
-
-            case TokenKind.EMPTY:
-                Step();
-                value = DataNode.Empty;
-                break;
-
             default:
                 return false;
         }
@@ -1125,11 +1262,6 @@ public sealed class Parser
     /// <summary>
     /// Parse an Expression
     /// </summary>
-    /// <remarks>
-    ///
-    ///
-    ///
-    /// </remarks>
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
@@ -2511,6 +2643,8 @@ public sealed class Parser
 
     private bool Expected(string msg) => Error($"Expected {msg}");
 
+    private bool Unexpected(string msg) => Error($"Unexpected {msg}");
+
     /// Record the given message as an error and return false
     private bool Error(string? msg = null)
     {
@@ -2588,7 +2722,7 @@ public sealed class Parser
         return result;
     }
 
-    /// <inheritdoc cref="ParseModelFile(string,out MiniZinc.Parser.Syntax.ModelSyntax)"/>
+    /// <inheritdoc cref="ParseModelFile(string,out MiniZinc.Parser.ModelSyntax)"/>
     public static ParseResult ParseModelFile(FileInfo file, out ModelSyntax model) =>
         ParseModelFile(file.FullName, out model);
 
@@ -2615,6 +2749,40 @@ public sealed class Parser
             ErrorTrace = parser._errorTrace
         };
         return result;
+    }
+
+    /// <summary>
+    /// Parse a <see cref="Datum"/> from the given string.
+    /// </summary>
+    /// <example>
+    /// Parser.ParseDatum("{1, 2, 3}"); // IntSet([1,2,3]);
+    /// </example>
+    public static bool ParseDatum(string text, [NotNullWhen(true)] out Datum? datum)
+    {
+        datum = null;
+        var parser = new Parser(text);
+        if (!parser.ParseDatum(out datum))
+            return false;
+        return true;
+    }
+
+    /// <summary>
+    /// Parse a <see cref="Datum"/> from the given string.
+    /// </summary>
+    /// <example>
+    /// Parser.ParseDatum%ltIntArray%gt("[1,2,1,2,3]"); // IntArray([1,2,3]);
+    /// </example>
+    public static bool ParseDatum<T>(string text, [NotNullWhen(true)] out T? datum)
+        where T : Datum
+    {
+        datum = null;
+        var parser = new Parser(text);
+        if (!parser.ParseDatum(out var mzDatum))
+            return false;
+        if (mzDatum is not T t)
+            return false;
+        datum = t;
+        return true;
     }
 
     /// <summary>

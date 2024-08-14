@@ -147,7 +147,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return ra == rb;
     }
 
-    public bool Check(IntLiteralSyntax value, IntRangeData rangeData)
+    public bool Check(IntLiteralSyntax value, IntRange rangeData)
     {
         if (!Check(value.Value, rangeData.Lower))
             return false;
@@ -156,7 +156,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
-    public bool Check(FloatLiteralSyntax value, FloatRangeData range)
+    public bool Check(FloatLiteralSyntax value, FloatRange range)
     {
         if (!Check(value.Value, range.Lower))
             return false;
@@ -165,7 +165,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
-    public bool Check(IntSetData set, IntRangeData rangeData)
+    public bool Check(IntSet set, IntRange rangeData)
     {
         foreach (var value in set)
         {
@@ -178,7 +178,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
-    public bool Check(FloatSetData set, FloatRangeData range)
+    public bool Check(FloatSet set, FloatRange range)
     {
         foreach (var value in set)
         {
@@ -194,52 +194,52 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// <summary>
     /// Compare the solution against the json node
     /// </summary>
-    public bool Check(DataNode expected, DataNode actual)
+    public bool Check(Datum expected, Datum actual)
     {
         int i = 0;
         switch (expected, actual)
         {
-            case (IntData value, IntRangeData range):
+            case (IntDatum value, IntRange range):
                 if (!Check(value, range))
                     return false;
                 break;
 
-            case (IntRangeData range, IntData value):
+            case (IntRange range, IntDatum value):
                 if (!Check(value, range))
                     return false;
                 break;
 
-            case (FloatData value, FloatRangeData range):
+            case (FloatDatum value, FloatRange range):
                 if (!Check(value, range))
                     return false;
                 break;
 
-            case (FloatRangeData range, FloatData value):
+            case (FloatRange range, FloatDatum value):
                 if (!Check(value, range))
                     return false;
                 break;
 
-            case (FloatRangeData range, SetData set):
+            case (FloatRange range, SetDatum set):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (SetData set, FloatRangeData range):
+            case (SetDatum set, FloatRange range):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (IntRangeData range, IntSetData set):
+            case (IntRange range, IntSet set):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (IntSetData set, IntRangeData range):
+            case (IntSet set, IntRange range):
                 if (!Check(set, range))
                     return false;
                 break;
 
-            case (ArrayData array, TupleData tuple):
+            case (DatumArray array, DatumTuple tuple):
                 for (i = 0; i < array.Count; i++)
                 {
                     var e = array[i];

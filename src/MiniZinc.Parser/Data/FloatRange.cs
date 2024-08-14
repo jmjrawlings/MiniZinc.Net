@@ -1,11 +1,14 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class FloatRangeData : DataNode
+public sealed class FloatRange : Datum
 {
     public readonly decimal Lower;
+
     public readonly decimal Upper;
 
-    public FloatRangeData(decimal lower, decimal upper)
+    public override DatumKind Kind => DatumKind.Set;
+
+    public FloatRange(decimal lower, decimal upper)
     {
         Lower = lower;
         Upper = upper;
@@ -13,7 +16,7 @@ public sealed class FloatRangeData : DataNode
 
     public override bool Equals(object? obj)
     {
-        if (obj is FloatRangeData range)
+        if (obj is FloatRange range)
         {
             if (!Lower.Equals(range.Lower))
                 return false;
@@ -23,7 +26,7 @@ public sealed class FloatRangeData : DataNode
 
             return true;
         }
-        else if (obj is FloatSetData set)
+        else if (obj is FloatSet set)
         {
             if (!set.Equals(this))
                 return false;
