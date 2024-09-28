@@ -3,12 +3,28 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
+public enum DatumKind
+{
+    Unknown,
+    String,
+    Bool,
+    Int,
+    Float,
+    Record,
+    Tuple,
+    Set,
+    Array,
+    Empty
+}
+
 /// <summary>
 /// The values that that appear in MiniZinc data files or
 /// syntax.
 /// </summary>
-public abstract class MiniZincDatum
+public abstract class Datum
 {
+    public abstract DatumKind Kind { get; }
+
     public string Write(WriteOptions? options = null)
     {
         var writer = new Writer(options);
@@ -17,19 +33,21 @@ public abstract class MiniZincDatum
         return mzn;
     }
 
-    public static readonly MiniZincDatum Empty = new EmptyDatum();
+    public static readonly Datum Empty = new EmptyDatum();
 
-    public static readonly MiniZincDatum True = new BoolDatum(true);
+    public static readonly Datum True = new BoolDatum(true);
 
-    public static readonly MiniZincDatum False = new BoolDatum(false);
+    public static readonly Datum False = new BoolDatum(false);
 
-    public static MiniZincDatum Float(decimal f) => new FloatDatum(f);
+    public static Datum Bool(bool b) => new BoolDatum(b);
 
-    public static MiniZincDatum Int(int i) => new IntDatum(i);
+    public static Datum Float(decimal f) => new FloatDatum(f);
 
-    public static MiniZincDatum String(string s) => new StringDatum(s);
+    public static Datum Int(int i) => new IntDatum(i);
 
-    public static MiniZincDatum FromJson(JsonNode? node)
+    public static Datum String(string s) => new StringDatum(s);
+
+    public static Datum FromJson(JsonNode? node)
     {
         switch (node)
         {
@@ -44,9 +62,9 @@ public abstract class MiniZincDatum
         }
     }
 
-    public static MiniZincDatum FromJson(JsonObject obj)
+    public static Datum FromJson(JsonObject obj)
     {
-        Dictionary<string, MiniZincDatum> dict = [];
+        Dictionary<string, Datum> dict = [];
         foreach (var (key, node) in obj)
         {
             var value = FromJson(node);
@@ -57,9 +75,9 @@ public abstract class MiniZincDatum
         return data;
     }
 
-    public static MiniZincDatum FromJson(JsonArray array)
+    public static Datum FromJson(JsonArray array)
     {
-        List<MiniZincDatum> items = [];
+        List<Datum> items = [];
         foreach (var node in array)
         {
             var item = FromJson(node);
@@ -69,7 +87,7 @@ public abstract class MiniZincDatum
         return data;
     }
 
-    public static MiniZincDatum FromJson(JsonValue node) =>
+    public static Datum FromJson(JsonValue node) =>
         node.GetValueKind() switch
         {
             JsonValueKind.Null => Empty,

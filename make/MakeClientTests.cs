@@ -20,7 +20,7 @@ public static class MakeClientTests
         }
 
         var dir = Projects.ClientTests.Dir;
-        var builder = new ClientTestsBuilder("ClientTests", spec);
+        var builder = new ClientTestsBuilder("ClientIntegrationTests", spec);
         builder.WriteTo(dir);
         await Task.CompletedTask;
     }

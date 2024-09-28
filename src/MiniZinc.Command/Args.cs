@@ -8,7 +8,7 @@ public static class Args
     public static Arg[] Parse(params string[]? args)
     {
         if (args is null)
-            return Array.Empty<Arg>();
+            return [];
 
         var arguments = string.Join(' ', args);
         var array = Arg.Parse(arguments).ToArray();

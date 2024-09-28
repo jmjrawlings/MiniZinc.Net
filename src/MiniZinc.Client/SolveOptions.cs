@@ -37,7 +37,7 @@ public readonly struct SolveOptions
         SolverId = solverId;
         OutputFolder = outputFolder;
         Timeout = timeout;
-        Arguments = args ?? Array.Empty<Arg>();
+        Arguments = args ?? [];
     }
 
     /// <summary>

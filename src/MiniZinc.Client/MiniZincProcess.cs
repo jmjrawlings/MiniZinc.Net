@@ -54,7 +54,7 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
         Options = options;
         _cancellation = cancellation;
         _completion = new TaskCompletionSource<MiniZincResult>();
-        _warnings = new List<string>();
+        _warnings = [];
         _data = new MiniZincData();
 
         ModelText = model.Write();

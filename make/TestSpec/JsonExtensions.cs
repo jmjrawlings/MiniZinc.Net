@@ -11,7 +11,7 @@ public static class JsonExtensions
     {
         if (node is JsonArray arr)
         {
-            List<T> list = new();
+            List<T> list = [];
             foreach (var item in arr)
             {
                 if (item is null)
@@ -50,7 +50,7 @@ public static class JsonExtensions
     {
         if (node is JsonArray arr)
         {
-            List<T> list = new();
+            List<T> list = [];
             foreach (var item in arr)
             {
                 var val = item!.GetValue<T>();
@@ -74,7 +74,7 @@ public static class JsonExtensions
         {
             foreach (var item in arr)
             {
-                ret ??= new List<T>();
+                ret ??= [];
                 var val = item!.GetValue<T>();
                 ret.Add(val);
             }
@@ -83,7 +83,7 @@ public static class JsonExtensions
         }
         else
         {
-            ret ??= new List<T>();
+            ret ??= [];
             var val = node.GetValue<T>();
             ret.Add(val);
         }

@@ -7,7 +7,7 @@ public sealed class FloatLiteralSyntax : ExpressionSyntax
     public FloatLiteralSyntax(in Token Start)
         : base(Start)
     {
-        Value = Start.DecimalValue;
+        Value = Start.FloatValue;
     }
 
     public FloatLiteralSyntax(in Token Start, decimal value)

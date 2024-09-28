@@ -97,8 +97,7 @@ public static class ParseLibMiniZincTests
             var strict = suiteNode["strict"]?.GetValue<bool>();
             var options = suiteNode["options"]?.AsObject();
             var solvers =
-                suiteNode["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList()
-                ?? new List<string>();
+                suiteNode["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList() ?? [];
             var includes = suiteNode["includes"]!
                 .AsArray()
                 .Select(x => x!.GetValue<string>())
@@ -353,11 +352,11 @@ public static class ParseLibMiniZincTests
 
                     case (_, JsonArray array, "ALL_SOLUTIONS"):
                         testCase.Type = TestType.AllSolutions;
-                        testCase.Solutions ??= new List<string>();
+                        testCase.Solutions ??= [];
                         foreach (var sol in array)
                         {
                             dzn = ParseSolution(sol?.AsObject());
-                            testCase.Solutions ??= new List<string>();
+                            testCase.Solutions ??= [];
                             testCase.Solutions.Add(dzn);
                         }
                         break;
@@ -367,7 +366,7 @@ public static class ParseLibMiniZincTests
                         testCase.Type = TestType.Optimise;
                         if (dzn is not null)
                         {
-                            testCase.Solutions ??= new List<string>();
+                            testCase.Solutions ??= [];
                             testCase.Solutions.Add(dzn);
                         }
                         break;
@@ -377,7 +376,7 @@ public static class ParseLibMiniZincTests
                         testCase.Type = TestType.Satisfy;
                         if (dzn is not null)
                         {
-                            testCase.Solutions ??= new List<string>();
+                            testCase.Solutions ??= [];
                             testCase.Solutions.Add(dzn);
                         }
                         break;
@@ -388,7 +387,7 @@ public static class ParseLibMiniZincTests
                             dzn = ParseSolution(sol.AsObject());
                             if (dzn is not null)
                             {
-                                testCase.Solutions ??= new List<string>();
+                                testCase.Solutions ??= [];
                                 testCase.Solutions.Add(dzn);
                             }
                         }
@@ -398,13 +397,13 @@ public static class ParseLibMiniZincTests
 
             case (_, Tag.FlatZinc):
                 testCase.Type = TestType.Compile;
-                testCase.OutputFiles ??= new List<string>();
+                testCase.OutputFiles ??= [];
                 testCase.OutputFiles.Add(expected[VAL]!.ToString());
                 break;
 
             case (_, Tag.OutputModel):
                 testCase.Type = TestType.OutputModel;
-                testCase.OutputFiles ??= new List<string>();
+                testCase.OutputFiles ??= [];
                 testCase.OutputFiles.Add(expected[VAL]!.ToString());
                 break;
 

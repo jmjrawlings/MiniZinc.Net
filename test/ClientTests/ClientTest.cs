@@ -1,9 +1,7 @@
-﻿using MiniZinc.Command;
+﻿namespace MiniZinc.Tests;
 
-namespace MiniZinc.Tests;
-
-using System.Text;
 using System.Text.Json.Nodes;
+using Command;
 using Parser.Syntax;
 
 public class ClientTest : TestBase, IClassFixture<ClientFixture>

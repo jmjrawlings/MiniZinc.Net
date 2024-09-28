@@ -45,9 +45,6 @@ public readonly struct TimePeriod
 
 public static class TimePeriodExtensions
 {
-    public static TimePeriod ToPeriod(this DateTimeOffset start, DateTimeOffset end) =>
+    public static TimePeriod To(this DateTimeOffset start, DateTimeOffset end) =>
         new TimePeriod(start, end);
-
-    public static TimePeriod ToPeriod(this DateTimeOffset start, TimeSpan duration) =>
-        new TimePeriod(start, duration);
 }

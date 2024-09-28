@@ -6,10 +6,10 @@ dotnet run --project ./build/Make/Make.csproj --make-client-tests
 */
 #nullable enable
 
-public class ClientTests : ClientTest
+public class ClientIntegrationTests : ClientTest
 {
 
-	public ClientTests(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)
+	public ClientIntegrationTests(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)
 	{
 	}
 

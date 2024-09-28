@@ -7,6 +7,6 @@ public sealed class TupleLiteralSyntax : ExpressionSyntax
     public TupleLiteralSyntax(in Token start)
         : base(start)
     {
-        Fields = new List<ExpressionSyntax>();
+        Fields = [];
     }
 }

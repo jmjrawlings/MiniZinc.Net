@@ -14,7 +14,7 @@ public sealed record TestCaseInfo : TestCase
 
     public string Signature { get; init; }
 
-    public List<string> ExtraArgs { get; } = new();
+    public List<string> ExtraArgs { get; } = [];
 
-    public new List<(string solver, bool enabled)> Solvers { get; } = new();
+    public new List<(string solver, bool enabled)> Solvers { get; } = [];
 }

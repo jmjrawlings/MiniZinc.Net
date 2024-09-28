@@ -857,6 +857,7 @@ public sealed class Parser
         range = null;
         Token start = _current;
         f = start.FloatValue;
+        Step();
         if (!Skip(TokenKind.CLOSED_RANGE))
             return true;
         if (!Expect(TokenKind.FLOAT_LITERAL, out Token upper))
@@ -865,7 +866,23 @@ public sealed class Parser
         return true;
     }
 
-    /// Parse array data into the most refined type possible
+    /// <summary>
+    /// Parse an array datum
+    /// </summary>
+    /// <mzn>[1,2,3]</mzn>
+    /// <mzn>[<>,true,false,<>]</mzn>
+    /// <mzn>[(1,"s"), (2, "a")]</mzn>
+    /// <remarks>
+    /// We attempt to refine the return type as much as possible
+    /// which complicates the code a little but is well worth it
+    /// as it makes common cases such as int and float arrays much
+    /// easier to consume and faster too as they do not need to be
+    /// unpacked from their Datum equivalents.
+    ///
+    /// Perhaps a case could be made for first class support for
+    /// int?[] and float?[] but for now those will fallback
+    /// to Datum[]
+    /// </remarks>
     internal bool ParseArrayDatum([NotNullWhen(true)] out Datum? array)
     {
         array = null;
@@ -940,17 +957,23 @@ public sealed class Parser
                     else if (intRange is not null)
                     {
                         (values ??= []).Add(intRange);
-                        if (type is not DatumKind.Set)
+                        if (type is not (DatumKind.Set or DatumKind.Unknown))
                             return Expected($"datum of type {type}, got IntRange");
                         type = DatumKind.Set;
                     }
                     else if (opt)
                     {
+                        if (type is not (DatumKind.Int or DatumKind.Unknown))
+                            return Expected($"datum of type {type}, got int");
+
                         values!.Add(Datum.Int(i));
                         type = DatumKind.Int;
                     }
                     else
                     {
+                        if (type is not (DatumKind.Int or DatumKind.Unknown))
+                            return Expected($"datum of type {type}, got int");
+
                         (ints ??= []).Add(i);
                         type = DatumKind.Int;
                     }
@@ -965,43 +988,47 @@ public sealed class Parser
                     else if (floatRange is not null)
                     {
                         (values ??= []).Add(floatRange);
-                        if (type is not DatumKind.Set)
+                        if (type is not (DatumKind.Set or DatumKind.Unknown))
                             return Expected($"datum of type {type}, got FloatRange");
                         type = DatumKind.Set;
                     }
                     else if (opt)
                     {
+                        if (type is not (DatumKind.Float or DatumKind.Unknown))
+                            return Expected($"datum of type {type}, got Float");
+
                         values!.Add(Datum.Float(f));
                         type = DatumKind.Float;
                     }
                     else
                     {
+                        if (type is not (DatumKind.Float or DatumKind.Unknown))
+                            return Expected($"datum of type {type}, got Float");
+
                         (floats ??= []).Add(f);
                         type = DatumKind.Float;
                     }
                     break;
 
-                case (TokenKind.KEYWORD_TRUE, DatumKind.Unknown or DatumKind.Bool, false):
-                    (bools ??= []).Add(true);
+                case (TokenKind.KEYWORD_TRUE, DatumKind.Unknown, false):
+                    bools = [true];
                     type = DatumKind.Bool;
                     Step();
                     break;
 
-                case (TokenKind.KEYWORD_TRUE, DatumKind.Unknown or DatumKind.Bool, true):
-                    values!.Add(Datum.True);
+                case (TokenKind.KEYWORD_TRUE, DatumKind.Bool, false):
+                    bools!.Add(true);
+                    Step();
+                    break;
+
+                case (TokenKind.KEYWORD_FALSE, DatumKind.Unknown, false):
+                    bools = [false];
                     type = DatumKind.Bool;
                     Step();
                     break;
 
-                case (TokenKind.KEYWORD_FALSE, DatumKind.Unknown or DatumKind.Bool, false):
-                    (bools ??= []).Add(false);
-                    type = DatumKind.Bool;
-                    Step();
-                    break;
-
-                case (TokenKind.KEYWORD_FALSE, DatumKind.Unknown or DatumKind.Bool, true):
-                    values!.Add(Datum.False);
-                    type = DatumKind.Bool;
+                case (TokenKind.KEYWORD_FALSE, DatumKind.Bool, false):
+                    bools!.Add(false);
                     Step();
                     break;
 
@@ -1236,25 +1263,6 @@ public sealed class Parser
 
         if (!Expect(TokenKind.CLOSE_PAREN))
             return false;
-
-        return true;
-    }
-
-    /// <summary>
-    /// Parse a Value.
-    /// A value is a subset of Expressions that can be found in MiniZinc data files.
-    /// </summary>
-    /// <mzn>1</mzn>
-    /// <mzn>true</mzn>
-    internal bool ParseSimpleDatum([NotNullWhen(true)] out Datum? value)
-    {
-        value = null;
-        Token token = _current;
-        switch (_kind)
-        {
-            default:
-                return false;
-        }
 
         return true;
     }
@@ -1626,7 +1634,7 @@ public sealed class Parser
             {
                 // Identifiers must be collected as they are part of generators
                 case IdentifierSyntax id:
-                    idents ??= new List<Token>();
+                    idents ??= [];
                     idents.Add(id.Name);
                     break;
                 // Already created generators get added
@@ -1692,7 +1700,7 @@ public sealed class Parser
             else
                 gen.Where = where;
 
-        generators ??= new List<GeneratorSyntax>();
+        generators ??= [];
         generators.Add(gen);
 
         if (Skip(TokenKind.COMMA))
@@ -2122,7 +2130,7 @@ public sealed class Parser
             if (!ParseLetLocal(out var local))
                 return false;
 
-            locals ??= new List<ILetLocalSyntax>();
+            locals ??= [];
             locals.Add(local);
 
             if (Skip(TokenKind.EOL) || Skip(TokenKind.COMMA))
@@ -2206,7 +2214,7 @@ public sealed class Parser
 
         while (ParseIfThenCase(out ifCase, out thenCase, TokenKind.KEYWORD_ELSEIF))
         {
-            ite.ElseIfs ??= new List<(ExpressionSyntax elseif, ExpressionSyntax then)>();
+            ite.ElseIfs ??= [];
             ite.ElseIfs.Add((ifCase, thenCase!));
         }
 
@@ -2325,7 +2333,7 @@ public sealed class Parser
                 return Expected("Annotation");
             }
 
-            annotations ??= new List<ExpressionSyntax>();
+            annotations ??= [];
             annotations.Add(ann);
         }
 
@@ -2345,7 +2353,7 @@ public sealed class Parser
         {
             if (!ParseString(out var ann))
                 return false;
-            annotations ??= new List<ExpressionSyntax>();
+            annotations ??= [];
             annotations.Add(new StringLiteralSyntax(ann));
         }
 
@@ -2551,7 +2559,7 @@ public sealed class Parser
         List<ExpressionSyntax>? anns;
         TypeSyntax? type;
 
-        parameters = new List<ParameterSyntax>();
+        parameters = [];
         while (_kind is not TokenKind.CLOSE_PAREN)
         {
             if (!ParseType(out type))

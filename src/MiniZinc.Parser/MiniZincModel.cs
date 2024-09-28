@@ -8,7 +8,6 @@ using static MiniZinc.Parser.Parser;
 
 /// <summary>
 /// A MiniZinc model.
-/// Instantiated as either an <see cref="IntModel"/> or a <see cref="FloatModel"/>
 /// </summary>
 /// <remarks>
 /// This class extracts useful semantic information
@@ -40,7 +39,7 @@ public sealed class MiniZincModel
 
     private bool _allowFloats;
 
-    private bool _containsFloats;
+    // private bool _containsFloats;
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
 
@@ -68,8 +67,8 @@ public sealed class MiniZincModel
         _warnings = null;
         _outputs = null;
         _constraints = null;
-        _namespace = new Dictionary<string, INamedSyntax>();
-        _searchDirectories = new List<DirectoryInfo>();
+        _namespace = [];
+        _searchDirectories = [];
         _allowFloats = allowFloats;
     }
 
@@ -300,12 +299,12 @@ public sealed class MiniZincModel
                 break;
 
             case OutputStatement output:
-                _outputs ??= new List<OutputStatement>();
+                _outputs ??= [];
                 _outputs.Add(output);
                 break;
 
             case ConstraintStatement node:
-                _constraints ??= new List<ConstraintStatement>();
+                _constraints ??= [];
                 _constraints.Add(node);
                 break;
 
@@ -340,7 +339,7 @@ public sealed class MiniZincModel
                          * becomes:
                          * enum Dir = {A, B, C, D};
                          */
-                        var mzn = $"{declare.ToString()[..^1]} = {expr.ToString()};";
+                        var mzn = $"{declare.ToString()[..^1]} = {expr};";
                         declare = ParseStatement<DeclareStatement>(mzn);
                         _namespace[name] = declare;
                         break;
@@ -376,7 +375,7 @@ public sealed class MiniZincModel
                         _overloads ??= new Dictionary<string, List<DeclareStatement>>();
                         if (!_overloads.TryGetValue(name, out var overloads))
                         {
-                            overloads = new List<DeclareStatement>();
+                            overloads = [];
                             _overloads[name] = overloads;
                         }
                         overloads.Add(declare);
@@ -399,20 +398,19 @@ public sealed class MiniZincModel
                 if (file is null)
                 {
                     Warning(FileNotFoundMessage(path));
-                    _includes ??= new List<IncludeStatement>();
+                    _includes ??= [];
                     _includes.Add(include);
                 }
                 else
                 {
-                    _parsedFiles ??= new HashSet<string>();
-                    if (_parsedFiles.Contains(file.FullName))
+                    _parsedFiles ??= [];
+                    if (!_parsedFiles.Add(file.FullName))
                     {
                         // TODO - should we just ignore this?
                         Error($"Detected recursive include of \"{file.FullName}\"");
                     }
                     else
                     {
-                        _parsedFiles.Add(file.FullName);
                         var result = ParseModelFile(file, out var model);
                         result.EnsureOk();
                         AddModel(model);
@@ -458,7 +456,7 @@ public sealed class MiniZincModel
         // Added models become a search directory
         if (file.Directory is { } dir)
             AddSearchPath(dir);
-        _addedFiles ??= new List<FileInfo>();
+        _addedFiles ??= [];
         _addedFiles.Add(file);
         AddModel(model);
     }
@@ -486,7 +484,7 @@ public sealed class MiniZincModel
     /// </summary>
     void Warning(string msg)
     {
-        _warnings ??= new List<string>();
+        _warnings ??= [];
         _warnings.Add(msg);
     }
 

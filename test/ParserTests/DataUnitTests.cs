@@ -18,13 +18,22 @@ public class DataUnitTests
     [Theory]
     [InlineData("{1}", "1..1")]
     [InlineData("{1,2,3}", "1..3")]
-    [InlineData("{1.5}", "1.5..1.5")]
-    void test_data_set_eq(string mznA, string mznB)
+    void test_int_set_eq(string mznA, string mznB)
     {
-        ParseDataString(mznA, out var a);
-        ParseDataString(mznB, out var b);
+        ParseDatum<IntSet>(mznA, out var a).Should().BeTrue();
+        ParseDatum<IntRange>(mznB, out var b).Should().BeTrue();
         a.Should().Equal(b);
         b.Should().Equal(a);
+    }
+
+    [Theory]
+    [InlineData("{1.5}", "1.5..1.5")]
+    void test_float_set_eq(string mznA, string mznB)
+    {
+        ParseDatum(mznA, out FloatSet a).Should().BeTrue();
+        ParseDatum(mznB, out FloatRange b).Should().BeTrue();
+        // a.Should().Be(b);
+        b.Should().Be(a);
     }
 
     [Fact]

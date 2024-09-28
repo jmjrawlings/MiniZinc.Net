@@ -27,7 +27,7 @@ public readonly struct Command
         if (string.IsNullOrEmpty(exe))
             throw new ArgumentNullException(exe);
         Exe = exe;
-        Arguments = args ?? Array.Empty<Arg>();
+        Arguments = args ?? [];
         WorkingDirectory = workingDirectory;
     }
 

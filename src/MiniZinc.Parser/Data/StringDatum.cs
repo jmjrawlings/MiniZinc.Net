@@ -1,8 +1,10 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class StringDatum(string value) : MiniZincDatum
+public sealed class StringDatum(string value) : Datum
 {
     public string Value => value;
+
+    public override DatumKind Kind => DatumKind.String;
 
     public static implicit operator string(StringDatum expr) => expr.Value;
 

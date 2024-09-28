@@ -1,8 +1,10 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class FloatDatum(decimal value) : MiniZincDatum
+public sealed class FloatDatum(decimal value) : Datum
 {
     public decimal Value => value;
+
+    public override DatumKind Kind => DatumKind.Float;
 
     public static implicit operator decimal(FloatDatum expr) => expr.Value;
 

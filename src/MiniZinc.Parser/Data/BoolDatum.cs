@@ -1,8 +1,10 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class BoolDatum(bool value) : MiniZincDatum
+public sealed class BoolDatum(bool value) : Datum
 {
     public bool Value => value;
+
+    public override DatumKind Kind => DatumKind.Bool;
 
     public static implicit operator bool(BoolDatum expr) => expr.Value;
 

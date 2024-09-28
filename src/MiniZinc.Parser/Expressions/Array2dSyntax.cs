@@ -5,7 +5,7 @@ public sealed class Array2dSyntax : ArraySyntax
     public Array2dSyntax(in Token start)
         : base(start) { }
 
-    public List<SyntaxNode> Indices { get; set; } = new();
+    public List<SyntaxNode> Indices { get; set; } = [];
 
     public int I { get; set; }
 

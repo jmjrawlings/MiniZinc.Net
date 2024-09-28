@@ -62,7 +62,7 @@
     {
         var token = Lexer.Lex(mzn).First();
         token.Kind.Should().Be(TokenKind.FLOAT_LITERAL);
-        token.DecimalValue.Should().Be(d);
+        token.FloatValue.Should().Be(d);
     }
 
     [Theory]

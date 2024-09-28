@@ -278,10 +278,7 @@ public class CodeBuilder
         foreach (var line in lines)
         {
             foreach (
-                var str in line.Split(
-                    new[] { Environment.NewLine },
-                    StringSplitOptions.RemoveEmptyEntries
-                )
+                var str in line.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries)
             )
             {
                 Write("/// ");

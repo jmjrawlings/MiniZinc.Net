@@ -6,7 +6,7 @@ public abstract class SyntaxNode : IEquatable<SyntaxNode>
     public readonly Token Start;
 
     /// Any annotations added to this node
-    public List<ExpressionSyntax>? Annotations { get; set; } = null;
+    public List<ExpressionSyntax>? Annotations;
 
     protected SyntaxNode(in Token start)
     {
