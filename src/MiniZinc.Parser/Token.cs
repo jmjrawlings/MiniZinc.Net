@@ -2,27 +2,37 @@
 
 using System.Globalization;
 
-public readonly struct Token
+public readonly struct Token : IEquatable<Token>
 {
     public readonly TokenKind Kind;
     public readonly int Line;
     public readonly int Col;
     public readonly int Start;
     public readonly int Length;
-    public readonly object? Data;
-    public int IntValue => (int)Data!;
-    public string StringValue => (string)Data!;
-    public decimal FloatValue => (decimal)Data!;
+    public readonly int IntValue;
+    public readonly string StringValue;
+    public readonly decimal FloatValue;
     public int End => Start + Length;
 
-    public Token(TokenKind kind, int line, int col, int start, int length, object? data = null)
+    public Token(
+        TokenKind kind,
+        int line,
+        int col,
+        int start,
+        int length,
+        int i = 0,
+        string s = null,
+        decimal f = 0
+    )
     {
         Kind = kind;
         Line = line;
         Col = col;
         Start = start;
         Length = length;
-        Data = data;
+        StringValue = s;
+        FloatValue = f;
+        IntValue = i;
     }
 
     public override string ToString() =>
@@ -109,7 +119,7 @@ public readonly struct Token
             TokenKind.OPEN_BRACE => "{",
             TokenKind.CLOSE_BRACE => "}",
             TokenKind.TUPLE_ACCESS => $".{IntValue}",
-            TokenKind.RECORD_ACCESS => $".{Data}",
+            TokenKind.RECORD_ACCESS => $".{StringValue}",
             TokenKind.PERCENT => "%",
             TokenKind.UNDERSCORE => "_",
             TokenKind.TILDE => "~",
@@ -121,14 +131,50 @@ public readonly struct Token
             TokenKind.EMPTY => "<>",
             TokenKind.INT_LITERAL => IntValue.ToString(),
             TokenKind.FLOAT_LITERAL => FloatValue.ToString(CultureInfo.InvariantCulture),
-            TokenKind.STRING_LITERAL => $"\"{Data}\"",
+            TokenKind.STRING_LITERAL => $"\"{StringValue}\"",
             TokenKind.KEYWORD_ANONENUM => "anon_enum",
             TokenKind.NOT_EQUAL => "!=",
             TokenKind.EXPONENT => "^",
             TokenKind.COMMA => ",",
-            TokenKind.IDENTIFIER_GENERIC_SEQUENCE => $"$${Data}",
-            TokenKind.IDENTIFIER_GENERIC => $"${Data}",
-            TokenKind.IDENTIFIER_INFIX => $"`{Data}`",
-            _ => Data?.ToString() ?? string.Empty
+            TokenKind.IDENTIFIER_GENERIC_SEQUENCE => $"$${StringValue}",
+            TokenKind.IDENTIFIER_GENERIC => $"${StringValue}",
+            TokenKind.IDENTIFIER_INFIX => $"`{StringValue}`",
+            _ => StringValue ?? string.Empty
         };
+
+    public bool Equals(Token other)
+    {
+        if (Kind != other.Kind)
+            return false;
+
+        if (IntValue != other.IntValue)
+            return false;
+
+        if (FloatValue != other.FloatValue)
+            return false;
+
+        if (!StringValue.Equals(other.StringValue))
+            return false;
+
+        return true;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Token other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(
+            (int)Kind,
+            Line,
+            Col,
+            Start,
+            Length,
+            IntValue,
+            FloatValue,
+            StringValue
+        );
+    }
 }

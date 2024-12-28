@@ -73,12 +73,13 @@ public readonly struct Variable
             return false;
 
         if (obj is Variable v)
-            return Name.Equals(v.Name);
+            if (!Name.Equals(v.Name))
+                return false;
 
-        if (obj is string s)
-            return Name.Equals(s);
+        if (!Name.Equals(obj.ToString()))
+            return false;
 
-        return false;
+        return true;
     }
 
     public override int GetHashCode() => Name.GetHashCode();

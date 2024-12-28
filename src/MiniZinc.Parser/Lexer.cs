@@ -225,7 +225,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 if (IsLetter(Peek))
                 {
                     var ident = LexIdentifier();
-                    Return(_kind, ident);
+                    StringToken(_kind, ident);
                 }
                 else
                 {
@@ -264,7 +264,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     if (Keyword.Lookup.TryGetValue(ident, out _kind))
                         Return(_kind);
                     else
-                        Return(TokenKind.IDENTIFIER, ident);
+                        StringToken(TokenKind.IDENTIFIER, ident);
                 }
 
                 break;
@@ -276,7 +276,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private void LexRecordAccess()
     {
         string ident = LexIdentifier();
-        Return(TokenKind.RECORD_ACCESS, ident);
+        StringToken(TokenKind.RECORD_ACCESS, ident);
     }
 
     private void LexTupleAccess()
@@ -289,13 +289,13 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         var span = ReadChars();
         int item = int.Parse(span);
-        Return(TokenKind.TUPLE_ACCESS, item);
+        IntToken(TokenKind.TUPLE_ACCESS, item);
     }
 
     private void LexQuotedIdentifier()
     {
         string ident = LexIdentifier();
-        Return(_kind, ident);
+        StringToken(_kind, ident);
     }
 
     /// <summary>
@@ -316,7 +316,10 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             Step();
 
         var ident = ReadString();
-        Return(seq ? TokenKind.IDENTIFIER_GENERIC_SEQUENCE : TokenKind.IDENTIFIER_GENERIC, ident);
+        StringToken(
+            seq ? TokenKind.IDENTIFIER_GENERIC_SEQUENCE : TokenKind.IDENTIFIER_GENERIC,
+            ident
+        );
     }
 
     /// <summary>
@@ -340,7 +343,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         else if (!IsLetter(ident[0]))
             Error(ERROR_BACKTICK_IDENTIFIER);
         else
-            Return(TokenKind.IDENTIFIER_INFIX, ident);
+            StringToken(TokenKind.IDENTIFIER_INFIX, ident);
     }
 
     /// <summary>
@@ -367,7 +370,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         var comment = ReadString();
-        Return(TokenKind.BLOCK_COMMENT, comment);
+        StringToken(TokenKind.BLOCK_COMMENT, comment);
     }
 
     /// <summary>
@@ -382,7 +385,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             _startCol,
             _startPos,
             _length - 1,
-            msg
+            s: msg
         );
     }
 
@@ -409,7 +412,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         var comment = ReadString();
-        Return(TokenKind.LINE_COMMENT, comment);
+        StringToken(TokenKind.LINE_COMMENT, comment);
     }
 
     /// <summary>
@@ -484,7 +487,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
                 case DOUBLE_QUOTE:
                     string lit = ReadString();
-                    Return(TokenKind.STRING_LITERAL, lit);
+                    StringToken(TokenKind.STRING_LITERAL, lit);
                     Step();
                     return;
                 case CLOSE_PAREN when inExpr:
@@ -533,7 +536,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         var hex = ReadChars();
         if (int.TryParse(hex, NumberStyles.AllowHexSpecifier, null, out var i))
-            Return(TokenKind.INT_LITERAL, i);
+            IntToken(TokenKind.INT_LITERAL, i);
         else
             Error($"Could not parse \"{hex.ToString()}\" as an integer");
     }
@@ -555,7 +558,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         try
         {
             int i = Convert.ToInt32(oct, 8);
-            Return(TokenKind.INT_LITERAL, i);
+            IntToken(TokenKind.INT_LITERAL, i);
         }
         catch (Exception)
         {
@@ -607,7 +610,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
             var span = ReadChars();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
-                Return(TokenKind.FLOAT_LITERAL, d);
+                FloatToken(TokenKind.FLOAT_LITERAL, d);
             else
                 Error($"Could not parse \"{span}\" as a float");
         }
@@ -620,7 +623,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             } while (IsDigit(_char));
             var span = ReadChars();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
-                Return(TokenKind.FLOAT_LITERAL, d);
+                FloatToken(TokenKind.FLOAT_LITERAL, d);
             else
                 Error($"Could not parse \"{span}\" as a float");
         }
@@ -628,7 +631,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         {
             var span = ReadChars();
             if (int.TryParse(span, NumberStyles.None, null, out var i))
-                Return(TokenKind.INT_LITERAL, i);
+                IntToken(TokenKind.INT_LITERAL, i);
             else
                 Error($"Could not parse \"{span}\" as an integer");
             return;
@@ -671,9 +674,24 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return false;
     }
 
-    private void Return(in TokenKind kind, object? data = null)
+    private void Return(in TokenKind kind)
     {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, data);
+        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1);
+    }
+
+    private void IntToken(in TokenKind kind, int i)
+    {
+        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, i: i);
+    }
+
+    private void FloatToken(in TokenKind kind, decimal d)
+    {
+        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, f: d);
+    }
+
+    private void StringToken(in TokenKind kind, string s)
+    {
+        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, s: s);
     }
 
     private bool SkipReturn(in char c, in TokenKind kind)
