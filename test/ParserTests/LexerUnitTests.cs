@@ -1,4 +1,6 @@
-﻿public class LexerUnitTests : TestBase
+﻿using static MiniZinc.Parser.TokenKind;
+
+public class LexerUnitTests : TestBase
 {
     void TestTokens(string mzn, params TokenKind[] kinds)
     {
@@ -18,7 +20,7 @@
     [InlineData("aN4m3w1thnumb3r5")]
     public void Test_identifer(string mzn)
     {
-        TestTokens(mzn, TokenKind.IDENTIFIER);
+        TestTokens(mzn, TOKEN_IDENTIFIER);
     }
 
     [Fact]
@@ -26,11 +28,11 @@
     {
         TestTokens(
             "if else then constraint maximize",
-            TokenKind.KEYWORD_IF,
-            TokenKind.KEYWORD_ELSE,
-            TokenKind.KEYWORD_THEN,
-            TokenKind.KEYWORD_CONSTRAINT,
-            TokenKind.KEYWORD_MAXIMIZE
+            KEYWORD_IF,
+            KEYWORD_ELSE,
+            KEYWORD_THEN,
+            KEYWORD_CONSTRAINT,
+            KEYWORD_MAXIMIZE
         );
     }
 
@@ -40,7 +42,7 @@
     [InlineData(""" "Escaped \"quotes\" " """)]
     void test_string_literal(string mzn)
     {
-        TestTokens(mzn, TokenKind.STRING_LITERAL);
+        TestTokens(mzn, TOKEN_STRING_LITERAL);
     }
 
     [Theory]
@@ -51,7 +53,7 @@
     void test_int(string mzn, int i)
     {
         var token = Lexer.Lex(mzn).First();
-        token.Kind.Should().Be(TokenKind.INT_LITERAL);
+        token.Kind.Should().Be(TOKEN_INT_LITERAL);
         token.IntValue.Should().Be(i);
     }
 
@@ -61,7 +63,7 @@
     void test_float(string mzn, decimal d)
     {
         var token = Lexer.Lex(mzn).First();
-        token.Kind.Should().Be(TokenKind.FLOAT_LITERAL);
+        token.Kind.Should().Be(TOKEN_FLOAT_LITERAL);
         token.FloatValue.Should().Be(d);
     }
 
@@ -69,7 +71,7 @@
     [InlineData("1..10")]
     void test_range_ti(string mzn)
     {
-        TestTokens(mzn, TokenKind.INT_LITERAL, TokenKind.CLOSED_RANGE, TokenKind.INT_LITERAL);
+        TestTokens(mzn, TOKEN_INT_LITERAL, TOKEN_CLOSED_RANGE, TOKEN_INT_LITERAL);
     }
 
     [Theory]
@@ -78,22 +80,22 @@
     {
         TestTokens(
             mzn,
-            TokenKind.FLOAT_LITERAL,
-            TokenKind.CLOSED_RANGE,
-            TokenKind.FLOAT_LITERAL,
-            TokenKind.TUPLE_ACCESS
+            TOKEN_FLOAT_LITERAL,
+            TOKEN_CLOSED_RANGE,
+            TOKEN_FLOAT_LITERAL,
+            TOKEN_TUPLE_ACCESS
         );
     }
 
     [Theory]
-    [InlineData("<", TokenKind.LESS_THAN)]
-    [InlineData("<=", TokenKind.LESS_THAN_EQUAL)]
-    [InlineData("==", TokenKind.EQUAL)]
-    [InlineData("=", TokenKind.EQUAL)]
-    [InlineData(">=", TokenKind.GREATER_THAN_EQUAL)]
-    [InlineData(">", TokenKind.GREATER_THAN)]
-    [InlineData("<>", TokenKind.EMPTY)]
-    [InlineData("_", TokenKind.UNDERSCORE)]
+    [InlineData("<", TOKEN_LESS_THAN)]
+    [InlineData("<=", TOKEN_LESS_THAN_EQUAL)]
+    [InlineData("==", TOKEN_EQUAL)]
+    [InlineData("=", TOKEN_EQUAL)]
+    [InlineData(">=", TOKEN_GREATER_THAN_EQUAL)]
+    [InlineData(">", TOKEN_GREATER_THAN)]
+    [InlineData("<>", TOKEN_EMPTY)]
+    [InlineData("_", TOKEN_UNDERSCORE)]
     void test_literals(string mzn, TokenKind tokenKind)
     {
         var token = Lexer.Lex(mzn).First();
@@ -124,7 +126,7 @@
         mzn = $"\"{mzn}\"";
         var tokens = Lexer.Lex(mzn).ToArray();
         tokens.Should().HaveCount(1);
-        tokens[0].Kind.Should().Be(TokenKind.STRING_LITERAL);
+        tokens[0].Kind.Should().Be(TOKEN_STRING_LITERAL);
         tokens[0].StringValue.Should().Be("\\([\"lala\" | i in 1..3 where b])");
     }
 

@@ -2,6 +2,7 @@
 
 using System.Text;
 using Syntax;
+using static TokenKind;
 
 /// <summary>
 /// Writes a MiniZinc model.
@@ -788,7 +789,7 @@ public sealed class Writer
     void WriteParameter(ParameterSyntax param, int? precedence = null)
     {
         WriteType(param.Type);
-        if (param.Name.Kind > TokenKind.ERROR)
+        if (param.Name.Kind > ERROR)
         {
             WriteChar(COLON);
             WriteToken(param.Name);
@@ -882,13 +883,13 @@ public sealed class Writer
     {
         switch (id.Kind)
         {
-            case TokenKind.IDENTIFIER:
+            case TOKEN_IDENTIFIER:
                 _sb.Append(id);
                 break;
-            case TokenKind.IDENTIFIER_GENERIC:
+            case TOKEN_IDENTIFIER_GENERIC:
                 _sb.Append(id);
                 break;
-            case TokenKind.IDENTIFIER_GENERIC_SEQUENCE:
+            case TOKEN_IDENTIFIER_GENERIC_SEQUENCE:
                 _sb.Append(id);
                 break;
             default:

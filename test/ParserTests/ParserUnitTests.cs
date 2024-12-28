@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using MiniZinc.Parser.Syntax;
+using static MiniZinc.Parser.TokenKind;
 
 public class ParserUnitTests
 {
@@ -333,13 +334,13 @@ public class ParserUnitTests
             var right = eval(binop.Right);
             switch (binop.Operator)
             {
-                case TokenKind.PLUS:
+                case TOKEN_PLUS:
                     return left + right;
-                case TokenKind.MINUS:
+                case TOKEN_MINUS:
                     return left - right;
-                case TokenKind.TIMES:
+                case TOKEN_TIMES:
                     return left * right;
-                case TokenKind.DIVIDE:
+                case TOKEN_DIVIDE:
                     return left / right;
                 default:
                     throw new Exception();
@@ -391,7 +392,7 @@ public class ParserUnitTests
     {
         var mzn = "1 + 2 - 3";
         var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
-        binop.Operator.Should().Be(TokenKind.MINUS);
+        binop.Operator.Should().Be(TOKEN_MINUS);
         var oz = binop.Write();
         oz.Should().Be(mzn);
         var b = 2;
@@ -402,7 +403,7 @@ public class ParserUnitTests
     {
         var mzn = "a - b >= c";
         var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
-        binop.Operator.Should().Be(TokenKind.GREATER_THAN_EQUAL);
+        binop.Operator.Should().Be(TOKEN_GREATER_THAN_EQUAL);
         var oz = binop.Write();
         oz.Should().Be(mzn);
     }
@@ -412,7 +413,7 @@ public class ParserUnitTests
     {
         var mzn = "(Formula[1] > 0) == assignment[1]";
         var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
-        binop.Operator.Should().Be(TokenKind.EQUAL);
+        binop.Operator.Should().Be(TOKEN_EQUAL);
         var oz = binop.Write();
         oz.Should().Be(mzn);
     }

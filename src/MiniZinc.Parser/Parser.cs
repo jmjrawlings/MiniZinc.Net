@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Syntax;
+using static TokenKind;
 
 /// <summary>
 /// Parses a MiniZinc AST from the given stream of tokens
@@ -43,13 +44,13 @@ public sealed class Parser
         next:
         if (_i >= _n)
         {
-            _kind = TokenKind.EOF;
+            _kind = TOKEN_EOF;
             return;
         }
 
         _current = _tokens[_i++];
         _kind = _current.Kind;
-        if (_kind is TokenKind.LINE_COMMENT or TokenKind.BLOCK_COMMENT)
+        if (_kind is TOKEN_LINE_COMMENT or TOKEN_BLOCK_COMMENT)
             goto next;
     }
 
@@ -58,7 +59,7 @@ public sealed class Parser
         for (int j = _i; j < _n; j++)
         {
             var token = _tokens[j];
-            if (token.Kind is TokenKind.LINE_COMMENT or TokenKind.BLOCK_COMMENT)
+            if (token.Kind is TOKEN_LINE_COMMENT or TOKEN_BLOCK_COMMENT)
                 continue;
             return token;
         }
@@ -101,7 +102,7 @@ public sealed class Parser
 
     private bool ParseInt(out Token token)
     {
-        if (_kind is TokenKind.INT_LITERAL)
+        if (_kind is TOKEN_INT_LITERAL)
         {
             token = _current;
             Step();
@@ -117,7 +118,7 @@ public sealed class Parser
     /// <summary>
     /// Read the current tokens string into the given variable
     /// </summary>
-    private bool ParseString(out Token result, TokenKind kind = TokenKind.STRING_LITERAL)
+    private bool ParseString(out Token result, TokenKind kind = TOKEN_STRING_LITERAL)
     {
         if (_kind == kind)
         {
@@ -134,7 +135,7 @@ public sealed class Parser
 
     private bool ParseIdent(out Token node)
     {
-        if (_kind is TokenKind.IDENTIFIER)
+        if (_kind is TOKEN_IDENTIFIER)
         {
             node = _current;
             Step();
@@ -160,10 +161,10 @@ public sealed class Parser
         {
             statements.Add(statement);
 
-            if (Skip(TokenKind.EOL) && !Skip(TokenKind.EOF))
+            if (Skip(TOKEN_EOL) && !Skip(TOKEN_EOF))
                 continue;
             else
-                Expect(TokenKind.EOF);
+                Expect(TOKEN_EOF);
             break;
         }
 
@@ -178,52 +179,52 @@ public sealed class Parser
         statement = null;
         switch (_kind)
         {
-            case TokenKind.KEYWORD_INCLUDE:
+            case KEYWORD_INCLUDE:
                 if (!ParseIncludeStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_CONSTRAINT:
+            case KEYWORD_CONSTRAINT:
                 if (!ParseConstraintStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_SOLVE:
+            case KEYWORD_SOLVE:
                 if (!ParseSolveStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_OUTPUT:
+            case KEYWORD_OUTPUT:
                 if (!ParseOutputStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_ENUM:
+            case KEYWORD_ENUM:
                 if (!ParseEnumStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_TYPE:
+            case KEYWORD_TYPE:
                 if (!ParseTypeAliasStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_FUNCTION:
+            case KEYWORD_FUNCTION:
                 if (!ParseFunctionStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_PREDICATE:
+            case KEYWORD_PREDICATE:
                 if (!ParsePredicateStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_TEST:
+            case KEYWORD_TEST:
                 if (!ParseTestStatement(out statement))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_ANNOTATION:
+            case KEYWORD_ANNOTATION:
                 if (!ParseAnnotationStatement(out statement))
                     return false;
                 break;
@@ -251,13 +252,13 @@ public sealed class Parser
 
         while (true)
         {
-            if (_kind is TokenKind.EOF)
+            if (_kind is TOKEN_EOF)
                 return true;
 
             if (!ParseIdent(out var name))
                 return false;
 
-            if (!Expect(TokenKind.EQUAL))
+            if (!Expect(TOKEN_EQUAL))
                 return false;
 
             if (!ParseDatum(out var value))
@@ -268,10 +269,10 @@ public sealed class Parser
 
             values.Add(name.StringValue, value);
 
-            if (Skip(TokenKind.EOL))
+            if (Skip(TOKEN_EOL))
                 continue;
 
-            if (!Expect(TokenKind.EOF))
+            if (!Expect(TOKEN_EOF))
                 return false;
 
             break;
@@ -287,7 +288,7 @@ public sealed class Parser
     private bool ParsePredicateStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
-        if (!Expect(TokenKind.KEYWORD_PREDICATE, out var start))
+        if (!Expect(KEYWORD_PREDICATE, out var start))
             return false;
 
         var type = new TypeSyntax(start) { Var = true, Kind = TypeKind.Bool };
@@ -309,7 +310,7 @@ public sealed class Parser
     private bool ParseTestStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
-        if (!Expect(TokenKind.KEYWORD_TEST, out var start))
+        if (!Expect(KEYWORD_TEST, out var start))
             return false;
 
         var type = new TypeSyntax(start) { Kind = TypeKind.Bool };
@@ -331,13 +332,13 @@ public sealed class Parser
     private bool ParseFunctionStatement([NotNullWhen(true)] out StatementSyntax? node)
     {
         node = null;
-        if (!Expect(TokenKind.KEYWORD_FUNCTION, out var start))
+        if (!Expect(KEYWORD_FUNCTION, out var start))
             return false;
 
         if (!ParseType(out var type))
             return false;
 
-        if (!Expect(TokenKind.COLON))
+        if (!Expect(TOKEN_COLON))
             return false;
 
         if (!ParseIdent(out var ident))
@@ -367,14 +368,14 @@ public sealed class Parser
         Token? ann = null;
         List<ParameterSyntax>? parameters = null;
 
-        if (_kind is TokenKind.OPEN_PAREN)
+        if (_kind is TOKEN_OPEN_PAREN)
         {
             if (!ParseParameters(out parameters))
                 return false;
 
-            if (Skip(TokenKind.KEYWORD_ANN))
+            if (Skip(KEYWORD_ANN))
             {
-                if (!Expect(TokenKind.COLON))
+                if (!Expect(TOKEN_COLON))
                     return false;
 
                 if (!ParseIdent(out var a))
@@ -387,7 +388,7 @@ public sealed class Parser
             return false;
 
         ExpressionSyntax? body = null;
-        if (Skip(TokenKind.EQUAL))
+        if (Skip(TOKEN_EQUAL))
             if (!ParseExpr(out body))
                 return false;
 
@@ -409,7 +410,7 @@ public sealed class Parser
     private bool ParseAnnotationStatement([NotNullWhen(true)] out StatementSyntax? ann)
     {
         ann = null;
-        if (!Expect(TokenKind.KEYWORD_ANNOTATION, out var start))
+        if (!Expect(KEYWORD_ANNOTATION, out var start))
             return false;
 
         var type = new TypeSyntax(start) { Kind = TypeKind.Annotation };
@@ -433,7 +434,7 @@ public sealed class Parser
     internal bool ParseEnumStatement([NotNullWhen(true)] out StatementSyntax? result)
     {
         result = null;
-        if (!Expect(TokenKind.KEYWORD_ENUM, out var start))
+        if (!Expect(KEYWORD_ENUM, out var start))
             return false;
 
         if (!ParseIdent(out var name))
@@ -443,7 +444,7 @@ public sealed class Parser
             return false;
 
         // Enum without assignments are valid
-        if (!Skip(TokenKind.EQUAL))
+        if (!Skip(TOKEN_EQUAL))
         {
             result = new DeclareStatement(start, DeclareKind.Enum, null, name)
             {
@@ -478,7 +479,7 @@ public sealed class Parser
                 break;
 
             // Underscore enum `enum A = _(1..10);`
-            case CallSyntax { Name.Kind: TokenKind.UNDERSCORE } call:
+            case CallSyntax { Name.Kind: TOKEN_UNDERSCORE } call:
                 if (call.Args is not { Count: 1 })
                     return Expected($"Single argument call to _, got {call.Args}");
                 var arg = call.Args[0];
@@ -499,7 +500,7 @@ public sealed class Parser
             case BinaryOperatorSyntax
             {
                 Left: var left,
-                Operator: TokenKind.PLUS_PLUS,
+                Operator: TOKEN_PLUS_PLUS,
                 Right: var right
             }:
                 if (!ValidateEnumCases(left))
@@ -534,7 +535,7 @@ public sealed class Parser
     {
         node = null;
 
-        if (!Expect(TokenKind.KEYWORD_OUTPUT, out var start))
+        if (!Expect(KEYWORD_OUTPUT, out var start))
             return false;
 
         if (!ParseStringAnnotations(out var anns))
@@ -555,7 +556,7 @@ public sealed class Parser
     {
         alias = null;
 
-        if (!Expect(TokenKind.KEYWORD_TYPE, out var start))
+        if (!Expect(KEYWORD_TYPE, out var start))
             return false;
 
         if (!ParseIdent(out var name))
@@ -564,7 +565,7 @@ public sealed class Parser
         if (!ParseAnnotations(out var anns))
             return false;
 
-        if (!Expect(TokenKind.EQUAL))
+        if (!Expect(TOKEN_EQUAL))
             return false;
 
         if (!ParseType(out var type))
@@ -582,7 +583,7 @@ public sealed class Parser
     {
         node = null;
 
-        if (!Expect(TokenKind.KEYWORD_INCLUDE, out var token))
+        if (!Expect(KEYWORD_INCLUDE, out var token))
             return false;
 
         if (!ParseString(out var path))
@@ -601,7 +602,7 @@ public sealed class Parser
     {
         node = null;
 
-        if (!Expect(TokenKind.KEYWORD_SOLVE, out var start))
+        if (!Expect(KEYWORD_SOLVE, out var start))
             return false;
 
         if (!ParseAnnotations(out var anns))
@@ -611,19 +612,19 @@ public sealed class Parser
         SolveMethod method = SolveMethod.Satisfy;
         switch (_kind)
         {
-            case TokenKind.KEYWORD_SATISFY:
+            case KEYWORD_SATISFY:
                 Step();
                 method = SolveMethod.Satisfy;
                 break;
 
-            case TokenKind.KEYWORD_MINIMIZE:
+            case KEYWORD_MINIMIZE:
                 Step();
                 method = SolveMethod.Minimize;
                 if (!ParseExpr(out objective))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_MAXIMIZE:
+            case KEYWORD_MAXIMIZE:
                 Step();
                 method = SolveMethod.Maximize;
                 if (!ParseExpr(out objective))
@@ -646,7 +647,7 @@ public sealed class Parser
     {
         constraint = null;
 
-        if (!Expect(TokenKind.KEYWORD_CONSTRAINT, out var start))
+        if (!Expect(KEYWORD_CONSTRAINT, out var start))
             return false;
 
         if (!ParseStringAnnotations(out var anns))
@@ -670,7 +671,7 @@ public sealed class Parser
         statement = null;
         var start = _current;
 
-        if (_kind is TokenKind.IDENTIFIER && Peek().Kind is TokenKind.EQUAL)
+        if (_kind is TOKEN_IDENTIFIER && Peek().Kind is TOKEN_EQUAL)
         {
             ParseIdent(out var name);
             Step();
@@ -682,7 +683,7 @@ public sealed class Parser
         }
 
         TypeSyntax type;
-        if (Skip(TokenKind.KEYWORD_ANY))
+        if (Skip(KEYWORD_ANY))
         {
             type = new TypeSyntax(start) { Kind = TypeKind.Any };
         }
@@ -691,7 +692,7 @@ public sealed class Parser
             return false;
         }
 
-        if (!Expect(TokenKind.COLON))
+        if (!Expect(TOKEN_COLON))
             return false;
 
         if (!ParseIdent(out var ident))
@@ -721,65 +722,65 @@ public sealed class Parser
 
         switch (_kind)
         {
-            case TokenKind.INT_LITERAL:
+            case TOKEN_INT_LITERAL:
                 Step();
                 expr = new IntLiteralSyntax(token);
                 break;
 
-            case TokenKind.FLOAT_LITERAL:
+            case TOKEN_FLOAT_LITERAL:
                 Step();
                 expr = new FloatLiteralSyntax(token);
                 break;
 
-            case TokenKind.KEYWORD_TRUE:
+            case KEYWORD_TRUE:
                 Step();
                 expr = new BoolLiteralSyntax(token, true);
                 break;
 
-            case TokenKind.KEYWORD_FALSE:
+            case KEYWORD_FALSE:
                 Step();
                 expr = new BoolLiteralSyntax(token, false);
                 break;
 
-            case TokenKind.STRING_LITERAL:
+            case TOKEN_STRING_LITERAL:
                 Step();
                 expr = new StringLiteralSyntax(token);
                 break;
 
-            case TokenKind.OPEN_PAREN:
+            case TOKEN_OPEN_PAREN:
                 if (!ParseParenExpr(out expr))
                     return false;
                 break;
 
-            case TokenKind.OPEN_BRACE:
+            case TOKEN_OPEN_BRACE:
                 if (!ParseBraceExpr(out expr))
                     return false;
                 break;
 
-            case TokenKind.OPEN_BRACKET:
+            case TOKEN_OPEN_BRACKET:
                 if (!ParseBracketExpr(out expr))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_IF:
+            case KEYWORD_IF:
                 if (!ParseIfElseExpr(out var ite))
                     return false;
                 expr = ite;
                 break;
 
-            case TokenKind.KEYWORD_LET:
+            case KEYWORD_LET:
                 if (!ParseLetExpr(out var let))
                     return false;
                 expr = let;
                 break;
 
-            case TokenKind.UNDERSCORE:
-            case TokenKind.IDENTIFIER:
+            case TOKEN_UNDERSCORE:
+            case TOKEN_IDENTIFIER:
                 if (!ParseIdentifierExpr(out expr))
                     return false;
                 break;
 
-            case TokenKind.EMPTY:
+            case TOKEN_EMPTY:
                 Step();
                 expr = new EmptyLiteralSyntax(token);
                 break;
@@ -790,29 +791,29 @@ public sealed class Parser
 
         while (true)
         {
-            if (Skip(TokenKind.OPEN_BRACKET))
+            if (Skip(TOKEN_OPEN_BRACKET))
             {
                 // Array access eg: `a[1,2]`
                 var access = new List<ExpressionSyntax>();
-                while (_kind is not TokenKind.CLOSE_BRACKET)
+                while (_kind is not TOKEN_CLOSE_BRACKET)
                 {
                     if (!ParseExpr(out var index))
                         return false;
                     access.Add(index);
-                    if (!Skip(TokenKind.COMMA))
+                    if (!Skip(TOKEN_COMMA))
                         break;
                 }
 
                 expr = new ArrayAccessSyntax(expr, access);
-                if (!Expect(TokenKind.CLOSE_BRACKET))
+                if (!Expect(TOKEN_CLOSE_BRACKET))
                     return false;
             }
-            else if (_kind is TokenKind.TUPLE_ACCESS)
+            else if (_kind is TOKEN_TUPLE_ACCESS)
             {
                 expr = new TupleAccessSyntax(expr, _current);
                 Step();
             }
-            else if (_kind is TokenKind.RECORD_ACCESS)
+            else if (_kind is TOKEN_RECORD_ACCESS)
             {
                 expr = new RecordAccessSyntax(expr, _current);
                 Step();
@@ -841,9 +842,9 @@ public sealed class Parser
         Token start = _current;
         i = start.IntValue;
         Step();
-        if (!Skip(TokenKind.CLOSED_RANGE))
+        if (!Skip(TOKEN_CLOSED_RANGE))
             return true;
-        if (!Expect(TokenKind.INT_LITERAL, out Token upper))
+        if (!Expect(TOKEN_INT_LITERAL, out Token upper))
             return false;
         range = new IntRange(i, upper.IntValue);
         return true;
@@ -858,9 +859,9 @@ public sealed class Parser
         Token start = _current;
         f = start.FloatValue;
         Step();
-        if (!Skip(TokenKind.CLOSED_RANGE))
+        if (!Skip(TOKEN_CLOSED_RANGE))
             return true;
-        if (!Expect(TokenKind.FLOAT_LITERAL, out Token upper))
+        if (!Expect(TOKEN_FLOAT_LITERAL, out Token upper))
             return false;
         range = new FloatRange(f, upper.FloatValue);
         return true;
@@ -886,7 +887,7 @@ public sealed class Parser
     internal bool ParseArrayDatum([NotNullWhen(true)] out Datum? array)
     {
         array = null;
-        if (!Skip(TokenKind.OPEN_BRACKET))
+        if (!Skip(TOKEN_OPEN_BRACKET))
             return false;
 
         List<int>? ints = null;
@@ -896,18 +897,18 @@ public sealed class Parser
         List<Datum>? values = null;
         DatumKind type = default;
         bool opt = false;
-        while (_kind is not TokenKind.CLOSE_BRACKET)
+        while (_kind is not TOKEN_CLOSE_BRACKET)
         {
             switch (_kind, type, opt)
             {
                 // First value is <>
-                case (TokenKind.EMPTY, DatumKind.Unknown, false):
+                case (TOKEN_EMPTY, DatumKind.Unknown, false):
                     values = [Datum.Empty];
                     opt = true;
                     break;
 
                 // <> found in IntArray
-                case (TokenKind.EMPTY, DatumKind.Int, false):
+                case (TOKEN_EMPTY, DatumKind.Int, false):
                     values = [];
                     foreach (var ix in ints!)
                         values.Add(Datum.Int(ix));
@@ -916,7 +917,7 @@ public sealed class Parser
                     break;
 
                 // <> found in FloatArray
-                case (TokenKind.EMPTY, DatumKind.Float, false):
+                case (TOKEN_EMPTY, DatumKind.Float, false):
                     values = [];
                     foreach (var fx in floats!)
                         values.Add(Datum.Float(fx));
@@ -925,7 +926,7 @@ public sealed class Parser
                     break;
 
                 // <> found in StringArray
-                case (TokenKind.EMPTY, DatumKind.String, false):
+                case (TOKEN_EMPTY, DatumKind.String, false):
                     values = [];
                     foreach (var s in strings!)
                         values.Add(Datum.String(s));
@@ -934,7 +935,7 @@ public sealed class Parser
                     break;
 
                 // <> found in BoolArray
-                case (TokenKind.EMPTY, DatumKind.Bool, false):
+                case (TOKEN_EMPTY, DatumKind.Bool, false):
                     values = [];
                     foreach (var b in bools!)
                         values.Add(Datum.Bool(b));
@@ -943,13 +944,13 @@ public sealed class Parser
                     break;
 
                 // <> occured
-                case (TokenKind.EMPTY, _, _):
+                case (TOKEN_EMPTY, _, _):
                     values!.Add(Datum.Empty);
                     opt = true;
                     break;
 
                 // Int or IntRange
-                case (TokenKind.INT_LITERAL, _, _):
+                case (TOKEN_INT_LITERAL, _, _):
                     if (!ParseIntDatum(out int i, out var intRange))
                     {
                         return false;
@@ -980,7 +981,7 @@ public sealed class Parser
                     break;
 
                 // Float or FloatRange
-                case (TokenKind.FLOAT_LITERAL, _, _):
+                case (TOKEN_FLOAT_LITERAL, _, _):
                     if (!ParseFloatDatum(out decimal f, out var floatRange))
                     {
                         return false;
@@ -1010,35 +1011,35 @@ public sealed class Parser
                     }
                     break;
 
-                case (TokenKind.KEYWORD_TRUE, DatumKind.Unknown, false):
+                case (KEYWORD_TRUE, DatumKind.Unknown, false):
                     bools = [true];
                     type = DatumKind.Bool;
                     Step();
                     break;
 
-                case (TokenKind.KEYWORD_TRUE, DatumKind.Bool, false):
+                case (KEYWORD_TRUE, DatumKind.Bool, false):
                     bools!.Add(true);
                     Step();
                     break;
 
-                case (TokenKind.KEYWORD_FALSE, DatumKind.Unknown, false):
+                case (KEYWORD_FALSE, DatumKind.Unknown, false):
                     bools = [false];
                     type = DatumKind.Bool;
                     Step();
                     break;
 
-                case (TokenKind.KEYWORD_FALSE, DatumKind.Bool, false):
+                case (KEYWORD_FALSE, DatumKind.Bool, false):
                     bools!.Add(false);
                     Step();
                     break;
 
-                case (TokenKind.STRING_LITERAL, DatumKind.Unknown or DatumKind.String, false):
+                case (TOKEN_STRING_LITERAL, DatumKind.Unknown or DatumKind.String, false):
                     (strings ??= []).Add(_current.StringValue);
                     type = DatumKind.String;
                     Step();
                     break;
 
-                case (TokenKind.STRING_LITERAL, DatumKind.Unknown or DatumKind.String, true):
+                case (TOKEN_STRING_LITERAL, DatumKind.Unknown or DatumKind.String, true):
                     values!.Add(Datum.String(_current.StringValue));
                     type = DatumKind.String;
                     Step();
@@ -1055,11 +1056,11 @@ public sealed class Parser
                     break;
             }
 
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
-        if (!Expect(TokenKind.CLOSE_BRACKET))
+        if (!Expect(TOKEN_CLOSE_BRACKET))
             return false;
 
         if (ints is not null)
@@ -1079,7 +1080,7 @@ public sealed class Parser
     internal bool ParseSetDatum([NotNullWhen(true)] out Datum? set)
     {
         set = null;
-        if (!Skip(TokenKind.OPEN_BRACE))
+        if (!Skip(TOKEN_OPEN_BRACE))
             return false;
 
         List<int>? ints = null;
@@ -1087,25 +1088,25 @@ public sealed class Parser
         List<decimal>? floats = null;
         List<Datum>? data = null;
 
-        while (_kind is not TokenKind.CLOSE_BRACE)
+        while (_kind is not TOKEN_CLOSE_BRACE)
         {
             var token = _current;
             Step();
             switch (token.Kind)
             {
-                case TokenKind.INT_LITERAL:
+                case TOKEN_INT_LITERAL:
                     (ints ??= []).Add(token.IntValue);
                     break;
 
-                case TokenKind.FLOAT_LITERAL:
+                case TOKEN_FLOAT_LITERAL:
                     (floats ??= []).Add(token.FloatValue);
                     break;
 
-                case TokenKind.KEYWORD_TRUE:
+                case KEYWORD_TRUE:
                     (bools ??= []).Add(true);
                     break;
 
-                case TokenKind.KEYWORD_FALSE:
+                case KEYWORD_FALSE:
                     (bools ??= []).Add(false);
                     break;
 
@@ -1113,11 +1114,11 @@ public sealed class Parser
                     return Error($"Unexpected {token} in set data");
             }
 
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
-        if (!Expect(TokenKind.CLOSE_BRACE))
+        if (!Expect(TOKEN_CLOSE_BRACE))
             return false;
 
         if (ints is not null)
@@ -1143,27 +1144,27 @@ public sealed class Parser
         datum = null;
         switch (_kind)
         {
-            case TokenKind.OPEN_BRACE:
+            case TOKEN_OPEN_BRACE:
                 if (!ParseSetDatum(out datum))
                     return false;
                 break;
 
-            case TokenKind.OPEN_BRACKET:
+            case TOKEN_OPEN_BRACKET:
                 if (!ParseArrayDatum(out datum))
                     return false;
                 break;
 
-            case TokenKind.OPEN_PAREN when Peek().Kind is TokenKind.IDENTIFIER:
+            case TOKEN_OPEN_PAREN when Peek().Kind is TOKEN_IDENTIFIER:
                 if (!ParseRecordDatum(out datum))
                     return false;
                 break;
 
-            case TokenKind.OPEN_PAREN:
+            case TOKEN_OPEN_PAREN:
                 if (!ParseTupleDatum(out datum))
                     return false;
                 break;
 
-            case TokenKind.INT_LITERAL:
+            case TOKEN_INT_LITERAL:
                 if (!ParseIntDatum(out int i, out var intRange))
                     return false;
                 else if (intRange is not null)
@@ -1172,7 +1173,7 @@ public sealed class Parser
                     datum = new IntDatum(i);
                 break;
 
-            case TokenKind.FLOAT_LITERAL:
+            case TOKEN_FLOAT_LITERAL:
                 if (!ParseFloatDatum(out decimal f, out var floatRange))
                     return false;
                 else if (floatRange is not null)
@@ -1181,23 +1182,23 @@ public sealed class Parser
                     datum = new FloatDatum(f);
                 break;
 
-            case TokenKind.KEYWORD_TRUE:
+            case KEYWORD_TRUE:
                 Step();
                 datum = Datum.True;
                 break;
 
-            case TokenKind.KEYWORD_FALSE:
+            case KEYWORD_FALSE:
                 Step();
                 datum = Datum.False;
                 break;
 
-            case TokenKind.STRING_LITERAL:
+            case TOKEN_STRING_LITERAL:
                 var s = _current.StringValue;
                 Step();
                 datum = new StringDatum(s);
                 break;
 
-            case TokenKind.EMPTY:
+            case TOKEN_EMPTY:
                 Step();
                 datum = Datum.Empty;
                 break;
@@ -1214,16 +1215,16 @@ public sealed class Parser
         Step();
         value = null;
         List<Datum> values = [];
-        while (_kind is not TokenKind.CLOSE_PAREN)
+        while (_kind is not TOKEN_CLOSE_PAREN)
         {
             if (!ParseDatum(out value))
                 return false;
             values.Add(value);
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
-        if (!Expect(TokenKind.CLOSE_PAREN))
+        if (!Expect(TOKEN_CLOSE_PAREN))
             return false;
 
         value = new DatumTuple(values);
@@ -1234,20 +1235,20 @@ public sealed class Parser
     {
         value = null;
 
-        if (!Expect(TokenKind.OPEN_PAREN))
+        if (!Expect(TOKEN_OPEN_PAREN))
             return false;
 
         Dictionary<string, Datum> fields = [];
         value = new RecordDatum(fields);
 
-        while (_kind is not TokenKind.CLOSE_PAREN)
+        while (_kind is not TOKEN_CLOSE_PAREN)
         {
             if (!ParseIdent(out var field))
                 return false;
 
             var fieldName = field.ToString();
 
-            if (!Expect(TokenKind.COLON))
+            if (!Expect(TOKEN_COLON))
                 return false;
 
             if (!ParseDatum(out var fieldValue))
@@ -1257,11 +1258,11 @@ public sealed class Parser
                 return Expected($"a unique value name, got {fieldName}");
 
             fields.Add(fieldName, fieldValue);
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
-        if (!Expect(TokenKind.CLOSE_PAREN))
+        if (!Expect(TOKEN_CLOSE_PAREN))
             return false;
 
         return true;
@@ -1289,9 +1290,9 @@ public sealed class Parser
         switch (op)
         {
             // Unary operators bind tighter than all binary operators
-            case TokenKind.PLUS:
-            case TokenKind.MINUS:
-            case TokenKind.KEYWORD_NOT:
+            case TOKEN_PLUS:
+            case TOKEN_MINUS:
+            case KEYWORD_NOT:
                 Step();
                 if (!ParseExpr(out expr, Assoc.Right, MAX_PRECEDENCE))
                     return false;
@@ -1300,8 +1301,8 @@ public sealed class Parser
 
             // Open range operators are a special case as their binary precedence
             // rules still apply which means  ..1+1
-            case TokenKind.CLOSED_RANGE:
-            case TokenKind.RIGHT_OPEN_RANGE:
+            case TOKEN_CLOSED_RANGE:
+            case TOKEN_RIGHT_OPEN_RANGE:
                 Step();
                 if (!ParseExpr(out expr, assoc, prec))
                     return false;
@@ -1321,7 +1322,7 @@ public sealed class Parser
             prec = Precedence(op);
             assoc = Associativity(op);
 
-            if (typeInst && op is TokenKind.PLUS_PLUS)
+            if (typeInst && op is TOKEN_PLUS_PLUS)
                 return true;
 
             if (prec < precedence)
@@ -1337,10 +1338,10 @@ public sealed class Parser
 
             if (
                 op
-                is TokenKind.CLOSED_RANGE
-                    or TokenKind.OPEN_RANGE
-                    or TokenKind.RIGHT_OPEN_RANGE
-                    or TokenKind.LEFT_OPEN_RANGE
+                is TOKEN_CLOSED_RANGE
+                    or TOKEN_OPEN_RANGE
+                    or TOKEN_RIGHT_OPEN_RANGE
+                    or TOKEN_LEFT_OPEN_RANGE
             )
             {
                 int i = _i;
@@ -1369,17 +1370,17 @@ public sealed class Parser
     {
         switch (prefix.Kind, expr)
         {
-            case (TokenKind.PLUS, IntLiteralSyntax):
-            case (TokenKind.PLUS, FloatLiteralSyntax):
+            case (TOKEN_PLUS, IntLiteralSyntax):
+            case (TOKEN_PLUS, FloatLiteralSyntax):
                 return expr;
-            case (TokenKind.MINUS, IntLiteralSyntax { Value: var i }):
+            case (TOKEN_MINUS, IntLiteralSyntax { Value: var i }):
                 return new IntLiteralSyntax(expr.Start, -i);
-            case (TokenKind.MINUS, FloatLiteralSyntax { Value: var i }):
+            case (TOKEN_MINUS, FloatLiteralSyntax { Value: var i }):
                 return new FloatLiteralSyntax(expr.Start, -i);
-            case (TokenKind.CLOSED_RANGE, _):
-            case (TokenKind.OPEN_RANGE, _):
-            case (TokenKind.RIGHT_OPEN_RANGE, _):
-            case (TokenKind.LEFT_OPEN_RANGE, _):
+            case (TOKEN_CLOSED_RANGE, _):
+            case (TOKEN_OPEN_RANGE, _):
+            case (TOKEN_RIGHT_OPEN_RANGE, _):
+            case (TOKEN_LEFT_OPEN_RANGE, _):
                 return new RangeLiteralSyntax(prefix, prefix.Kind, upper: expr);
             default:
                 return new UnaryOperatorSyntax(prefix, expr);
@@ -1394,10 +1395,10 @@ public sealed class Parser
     {
         switch (infix.Kind)
         {
-            case TokenKind.CLOSED_RANGE:
-            case TokenKind.OPEN_RANGE:
-            case TokenKind.RIGHT_OPEN_RANGE:
-            case TokenKind.LEFT_OPEN_RANGE:
+            case TOKEN_CLOSED_RANGE:
+            case TOKEN_OPEN_RANGE:
+            case TOKEN_RIGHT_OPEN_RANGE:
+            case TOKEN_LEFT_OPEN_RANGE:
 
             default:
                 return new BinaryOperatorSyntax(left, infix, right);
@@ -1408,21 +1409,21 @@ public sealed class Parser
     {
         switch (kind)
         {
-            case TokenKind.LESS_THAN:
-            case TokenKind.GREATER_THAN:
-            case TokenKind.LESS_THAN_EQUAL:
-            case TokenKind.GREATER_THAN_EQUAL:
-            case TokenKind.EQUAL:
-            case TokenKind.NOT_EQUAL:
-            case TokenKind.KEYWORD_IN:
-            case TokenKind.KEYWORD_SUBSET:
-            case TokenKind.KEYWORD_SUPERSET:
-            case TokenKind.OPEN_RANGE:
-            case TokenKind.CLOSED_RANGE:
-            case TokenKind.LEFT_OPEN_RANGE:
-            case TokenKind.RIGHT_OPEN_RANGE:
+            case TOKEN_LESS_THAN:
+            case TOKEN_GREATER_THAN:
+            case TOKEN_LESS_THAN_EQUAL:
+            case TOKEN_GREATER_THAN_EQUAL:
+            case TOKEN_EQUAL:
+            case TOKEN_NOT_EQUAL:
+            case KEYWORD_IN:
+            case KEYWORD_SUBSET:
+            case KEYWORD_SUPERSET:
+            case TOKEN_OPEN_RANGE:
+            case TOKEN_CLOSED_RANGE:
+            case TOKEN_LEFT_OPEN_RANGE:
+            case TOKEN_RIGHT_OPEN_RANGE:
                 return Assoc.None;
-            case TokenKind.PLUS_PLUS:
+            case TOKEN_PLUS_PLUS:
                 return Assoc.Right;
             default:
                 return Assoc.Left;
@@ -1441,55 +1442,55 @@ public sealed class Parser
     {
         switch (kind)
         {
-            case TokenKind.BI_IMPLICATION:
+            case TOKEN_BI_IMPLICATION:
                 return 800; //1200,
-            case TokenKind.FORWARD_IMPLICATION:
-            case TokenKind.REVERSE_IMPLICATION:
+            case TOKEN_FORWARD_IMPLICATION:
+            case TOKEN_REVERSE_IMPLICATION:
                 return 900; //1100,
-            case TokenKind.DISJUNCTION:
-            case TokenKind.KEYWORD_XOR:
-            case TokenKind.CONJUNCTION:
+            case TOKEN_DISJUNCTION:
+            case KEYWORD_XOR:
+            case TOKEN_CONJUNCTION:
                 return 1100; //900,
-            case TokenKind.LESS_THAN:
-            case TokenKind.GREATER_THAN:
-            case TokenKind.LESS_THAN_EQUAL:
-            case TokenKind.GREATER_THAN_EQUAL:
-            case TokenKind.EQUAL:
-            case TokenKind.NOT_EQUAL:
+            case TOKEN_LESS_THAN:
+            case TOKEN_GREATER_THAN:
+            case TOKEN_LESS_THAN_EQUAL:
+            case TOKEN_GREATER_THAN_EQUAL:
+            case TOKEN_EQUAL:
+            case TOKEN_NOT_EQUAL:
                 return 1200; //800
-            case TokenKind.KEYWORD_IN:
-            case TokenKind.KEYWORD_SUBSET:
-            case TokenKind.KEYWORD_SUPERSET:
+            case KEYWORD_IN:
+            case KEYWORD_SUBSET:
+            case KEYWORD_SUPERSET:
                 return 1300; // 700
-            case TokenKind.KEYWORD_UNION:
-            case TokenKind.KEYWORD_DIFF:
-            case TokenKind.KEYWORD_SYMDIFF:
+            case KEYWORD_UNION:
+            case KEYWORD_DIFF:
+            case KEYWORD_SYMDIFF:
                 return 1400; //600
-            case TokenKind.OPEN_RANGE:
-            case TokenKind.CLOSED_RANGE:
-            case TokenKind.LEFT_OPEN_RANGE:
-            case TokenKind.RIGHT_OPEN_RANGE:
+            case TOKEN_OPEN_RANGE:
+            case TOKEN_CLOSED_RANGE:
+            case TOKEN_LEFT_OPEN_RANGE:
+            case TOKEN_RIGHT_OPEN_RANGE:
                 return 1500; //500
-            case TokenKind.PLUS:
-            case TokenKind.MINUS:
+            case TOKEN_PLUS:
+            case TOKEN_MINUS:
                 return 1600; //400
-            case TokenKind.TIMES:
-            case TokenKind.DIVIDE:
-            case TokenKind.KEYWORD_MOD:
-            case TokenKind.KEYWORD_DIV:
-            case TokenKind.KEYWORD_INTERSECT:
-            case TokenKind.TILDE_PLUS:
-            case TokenKind.TILDE_MINUS:
-            case TokenKind.TILDE_TIMES:
-            case TokenKind.TILDE_EQUALS:
+            case TOKEN_TIMES:
+            case TOKEN_DIVIDE:
+            case KEYWORD_MOD:
+            case KEYWORD_DIV:
+            case KEYWORD_INTERSECT:
+            case TOKEN_TILDE_PLUS:
+            case TOKEN_TILDE_MINUS:
+            case TOKEN_TILDE_TIMES:
+            case TOKEN_TILDE_EQUALS:
                 return 1700; //300
-            case TokenKind.EXPONENT:
+            case TOKEN_EXPONENT:
                 return 1800; //200
-            case TokenKind.PLUS_PLUS:
+            case TOKEN_PLUS_PLUS:
                 return 1900; //100
-            case TokenKind.KEYWORD_DEFAULT:
+            case KEYWORD_DEFAULT:
                 return 1930; // 70
-            case TokenKind.IDENTIFIER_INFIX:
+            case TOKEN_IDENTIFIER_INFIX:
                 return 1950; //50
             default:
                 return -1;
@@ -1516,14 +1517,14 @@ public sealed class Parser
         Step();
 
         // Simple identifier
-        if (!Skip(TokenKind.OPEN_PAREN))
+        if (!Skip(TOKEN_OPEN_PAREN))
         {
             result = new IdentifierSyntax(name);
             return true;
         }
 
         // Function call without arguments
-        if (Skip(TokenKind.CLOSE_PAREN))
+        if (Skip(TOKEN_CLOSE_PAREN))
         {
             result = new CallSyntax(name);
             return true;
@@ -1561,11 +1562,11 @@ public sealed class Parser
             // `in` expressions involving identifiers could mean a gencall
             case BinaryOperatorSyntax
             {
-                Operator: TokenKind.KEYWORD_IN,
+                Operator: KEYWORD_IN,
                 Left: IdentifierSyntax id,
                 Right: { } from
             } when maybeGen:
-                if (!Skip(TokenKind.KEYWORD_WHERE))
+                if (!Skip(KEYWORD_WHERE))
                 {
                     exprs.Add(expr);
                     break;
@@ -1589,16 +1590,16 @@ public sealed class Parser
                 break;
         }
 
-        if (Skip(TokenKind.COMMA))
+        if (Skip(TOKEN_COMMA))
         {
             if (isGen)
                 goto next;
 
-            if (_kind is not TokenKind.CLOSE_PAREN)
+            if (_kind is not TOKEN_CLOSE_PAREN)
                 goto next;
         }
 
-        if (!Expect(TokenKind.CLOSE_PAREN))
+        if (!Expect(TOKEN_CLOSE_PAREN))
             return false;
 
         // For sure it's just a call
@@ -1609,19 +1610,19 @@ public sealed class Parser
         }
 
         // Could be a gencall if followed by (
-        if (!isGen && _kind is not TokenKind.OPEN_PAREN)
+        if (!isGen && _kind is not TOKEN_OPEN_PAREN)
         {
             result = new CallSyntax(name, exprs);
             return true;
         }
 
-        if (!Expect(TokenKind.OPEN_PAREN))
+        if (!Expect(TOKEN_OPEN_PAREN))
             return false;
 
         if (!ParseExpr(out var yields))
             return false;
 
-        if (!Expect(TokenKind.CLOSE_PAREN))
+        if (!Expect(TOKEN_CLOSE_PAREN))
             return false;
 
         var generators = new List<GeneratorSyntax>();
@@ -1669,7 +1670,7 @@ public sealed class Parser
         while (true)
         {
             Token name;
-            if (_kind is TokenKind.UNDERSCORE)
+            if (_kind is TOKEN_UNDERSCORE)
             {
                 name = _current;
                 Step();
@@ -1680,13 +1681,13 @@ public sealed class Parser
             }
 
             names.Add(name);
-            if (Skip(TokenKind.COMMA))
+            if (Skip(TOKEN_COMMA))
                 continue;
 
             break;
         }
 
-        if (!Expect(TokenKind.KEYWORD_IN))
+        if (!Expect(KEYWORD_IN))
             return false;
 
         if (!ParseExpr(out var from))
@@ -1694,7 +1695,7 @@ public sealed class Parser
 
         var gen = new GeneratorSyntax(start, names) { From = from };
 
-        if (Skip(TokenKind.KEYWORD_WHERE))
+        if (Skip(KEYWORD_WHERE))
             if (!ParseExpr(out var where))
                 return false;
             else
@@ -1703,7 +1704,7 @@ public sealed class Parser
         generators ??= [];
         generators.Add(gen);
 
-        if (Skip(TokenKind.COMMA))
+        if (Skip(TOKEN_COMMA))
             goto begin;
 
         return true;
@@ -1719,18 +1720,18 @@ public sealed class Parser
     {
         result = null;
 
-        if (!Expect(TokenKind.OPEN_BRACKET, out var start))
+        if (!Expect(TOKEN_OPEN_BRACKET, out var start))
             return false;
 
-        if (_kind is TokenKind.CLOSE_BRACKET)
+        if (_kind is TOKEN_CLOSE_BRACKET)
         {
             result = new Array1dSyntax(start);
-            return Expect(TokenKind.CLOSE_BRACKET);
+            return Expect(TOKEN_CLOSE_BRACKET);
         }
 
-        if (Skip(TokenKind.PIPE))
+        if (Skip(TOKEN_PIPE))
         {
-            if (_kind is TokenKind.PIPE)
+            if (_kind is TOKEN_PIPE)
             {
                 if (!Parse3dArrayLiteral(start, out var arr3d))
                     return false;
@@ -1774,7 +1775,7 @@ public sealed class Parser
             return false;
 
         // Determine if its an indexed array
-        bool indexed = Skip(TokenKind.COLON);
+        bool indexed = Skip(TOKEN_COLON);
         if (indexed)
         {
             index = value;
@@ -1788,7 +1789,7 @@ public sealed class Parser
         }
 
         // Array comprehension
-        if (Skip(TokenKind.PIPE))
+        if (Skip(TOKEN_PIPE))
         {
             if (!ParseGenerators(out var generators))
                 return false;
@@ -1799,7 +1800,7 @@ public sealed class Parser
                 Generators = generators
             };
 
-            return Expect(TokenKind.CLOSE_BRACKET);
+            return Expect(TOKEN_CLOSE_BRACKET);
         }
 
         // 1D Array literal
@@ -1809,17 +1810,17 @@ public sealed class Parser
 
         while (true)
         {
-            if (!Skip(TokenKind.COMMA))
-                return Expect(TokenKind.CLOSE_BRACKET);
+            if (!Skip(TOKEN_COMMA))
+                return Expect(TOKEN_CLOSE_BRACKET);
 
-            if (Skip(TokenKind.CLOSE_BRACKET))
+            if (Skip(TOKEN_CLOSE_BRACKET))
                 return true;
 
             if (indexed)
             {
                 if (!ParseExpr(out index!))
                     return false;
-                if (!Skip(TokenKind.COLON))
+                if (!Skip(TOKEN_COLON))
                 {
                     arr1d.Elements.Add(index);
                     indexed = false;
@@ -1864,25 +1865,25 @@ public sealed class Parser
     {
         arr = new Array2dSyntax(start);
 
-        if (Skip(TokenKind.PIPE))
-            return Expect(TokenKind.CLOSE_BRACKET);
+        if (Skip(TOKEN_PIPE))
+            return Expect(TOKEN_CLOSE_BRACKET);
 
         if (!ParseExpr(out var value))
             return false;
 
         int j = 1;
 
-        if (!Skip(TokenKind.COLON))
+        if (!Skip(TOKEN_COLON))
         {
             // If first value is not an index skip the rest of the check
             arr.Elements.Add(value);
-            Skip(TokenKind.COMMA);
+            Skip(TOKEN_COMMA);
             goto parse_row_values;
         }
 
         arr.Indices.Add(value);
 
-        if (Skip(TokenKind.PIPE))
+        if (Skip(TOKEN_PIPE))
         {
             arr.ColIndexed = true;
             goto parse_row_values;
@@ -1891,14 +1892,14 @@ public sealed class Parser
         arr.ColIndexed = true;
         arr.RowIndexed = true;
 
-        while (_kind is not TokenKind.PIPE)
+        while (_kind is not TOKEN_PIPE)
         {
             j++;
 
             if (!ParseExpr(out value))
                 return false;
 
-            if (Skip(TokenKind.COLON))
+            if (Skip(TOKEN_COLON))
             {
                 if (!arr.ColIndexed)
                     return Error("Invalid : in row indexed array literal");
@@ -1911,17 +1912,17 @@ public sealed class Parser
             arr.ColIndexed = false;
             arr.Elements.Add(value);
 
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
         arr.I = 1;
         arr.J = j;
 
-        if (!Expect(TokenKind.PIPE))
+        if (!Expect(TOKEN_PIPE))
             return false;
 
-        if (Skip(TokenKind.CLOSE_BRACKET))
+        if (Skip(TOKEN_CLOSE_BRACKET))
             return true;
 
         /* Use the second row if necessary to detect dual
@@ -1931,7 +1932,7 @@ public sealed class Parser
             if (!ParseExpr(out value))
                 return false;
 
-            if (Skip(TokenKind.COLON))
+            if (Skip(TOKEN_COLON))
             {
                 arr.RowIndexed = true;
                 arr.Indices.Add(value);
@@ -1939,7 +1940,7 @@ public sealed class Parser
             else
             {
                 arr.Elements.Add(value);
-                Skip(TokenKind.COMMA);
+                Skip(TOKEN_COMMA);
             }
 
             goto parse_row_values;
@@ -1949,14 +1950,14 @@ public sealed class Parser
         if (!ParseExpr(out value))
             return false;
 
-        if (!Expect(TokenKind.COLON))
+        if (!Expect(TOKEN_COLON))
             return false;
 
         arr.Indices.Add(value);
 
         parse_row_values:
         arr.I++;
-        while (_kind is not TokenKind.PIPE)
+        while (_kind is not TOKEN_PIPE)
         {
             if (!ParseExpr(out value))
                 return false;
@@ -1965,22 +1966,22 @@ public sealed class Parser
 
             arr.Elements.Add(value);
 
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
         if (arr.J is 0)
             arr.J = j;
 
-        if (!Expect(TokenKind.PIPE))
+        if (!Expect(TOKEN_PIPE))
             return false;
 
         // Optional double pipe at the end
         // [|1, 2,|3, 4,||]
-        if (Skip(TokenKind.PIPE))
-            return Expect(TokenKind.CLOSE_BRACKET);
+        if (Skip(TOKEN_PIPE))
+            return Expect(TOKEN_CLOSE_BRACKET);
 
-        if (Skip(TokenKind.CLOSE_BRACKET))
+        if (Skip(TOKEN_CLOSE_BRACKET))
             return true;
 
         if (arr.RowIndexed)
@@ -2004,15 +2005,15 @@ public sealed class Parser
     {
         arr = new Array3dSyntax(start);
 
-        if (!Expect(TokenKind.PIPE))
+        if (!Expect(TOKEN_PIPE))
             return false;
 
         // Check for empty literal
         // `[| | | |]`
-        if (Skip(TokenKind.PIPE))
+        if (Skip(TOKEN_PIPE))
         {
-            Expect(TokenKind.PIPE);
-            Expect(TokenKind.CLOSE_BRACKET);
+            Expect(TOKEN_PIPE);
+            Expect(TOKEN_CLOSE_BRACKET);
             return IsOk;
         }
 
@@ -2026,33 +2027,33 @@ public sealed class Parser
         j++;
         int k = 0;
 
-        while (_kind is not TokenKind.PIPE)
+        while (_kind is not TOKEN_PIPE)
         {
             if (!ParseExpr(out var expr))
                 return false;
             k++;
             arr.Elements.Add(expr);
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
-        if (!Expect(TokenKind.PIPE))
+        if (!Expect(TOKEN_PIPE))
             return false;
 
-        if (Skip(TokenKind.COMMA))
+        if (Skip(TOKEN_COMMA))
         {
-            if (!Expect(TokenKind.PIPE))
+            if (!Expect(TOKEN_PIPE))
                 return false;
             goto table;
         }
 
-        if (!Skip(TokenKind.PIPE))
+        if (!Skip(TOKEN_PIPE))
             goto row;
 
         arr.I = i;
         arr.J = j;
         arr.K = k;
-        if (!Expect(TokenKind.CLOSE_BRACKET))
+        if (!Expect(TOKEN_CLOSE_BRACKET))
             return false;
         return true;
     }
@@ -2067,14 +2068,14 @@ public sealed class Parser
     {
         result = null;
 
-        if (!Expect(TokenKind.OPEN_BRACE, out var start))
+        if (!Expect(TOKEN_OPEN_BRACE, out var start))
             return false;
 
         // Empty Set
-        if (_kind is TokenKind.CLOSE_BRACE)
+        if (_kind is TOKEN_CLOSE_BRACE)
         {
             result = new SetLiteralSyntax(start);
-            return Expect(TokenKind.CLOSE_BRACE);
+            return Expect(TOKEN_CLOSE_BRACE);
         }
 
         // Parse first expression
@@ -2082,7 +2083,7 @@ public sealed class Parser
             return false;
 
         // Set comprehension
-        if (Skip(TokenKind.PIPE))
+        if (Skip(TOKEN_PIPE))
         {
             if (!ParseGenerators(out var generators))
                 return false;
@@ -2092,40 +2093,40 @@ public sealed class Parser
                 IsSet = true,
                 Generators = generators
             };
-            return Expect(TokenKind.CLOSE_BRACE);
+            return Expect(TOKEN_CLOSE_BRACE);
         }
 
         // Set literal
         var set = new SetLiteralSyntax(start);
         result = set;
         set.Elements.Add(element);
-        Skip(TokenKind.COMMA);
-        while (_kind is not TokenKind.CLOSE_BRACE)
+        Skip(TOKEN_COMMA);
+        while (_kind is not TOKEN_CLOSE_BRACE)
         {
             if (!ParseExpr(out var item))
                 return false;
 
             set.Elements.Add(item);
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
-        return Expect(TokenKind.CLOSE_BRACE);
+        return Expect(TOKEN_CLOSE_BRACE);
     }
 
     internal bool ParseLetExpr([NotNullWhen(true)] out ExpressionSyntax? let)
     {
         let = null;
 
-        if (!Expect(TokenKind.KEYWORD_LET, out var start))
+        if (!Expect(KEYWORD_LET, out var start))
             return false;
 
-        if (!Expect(TokenKind.OPEN_BRACE))
+        if (!Expect(TOKEN_OPEN_BRACE))
             return false;
 
         List<ILetLocalSyntax>? locals = null;
 
-        while (_kind is not TokenKind.CLOSE_BRACE)
+        while (_kind is not TOKEN_CLOSE_BRACE)
         {
             if (!ParseLetLocal(out var local))
                 return false;
@@ -2133,15 +2134,15 @@ public sealed class Parser
             locals ??= [];
             locals.Add(local);
 
-            if (Skip(TokenKind.EOL) || Skip(TokenKind.COMMA))
+            if (Skip(TOKEN_EOL) || Skip(TOKEN_COMMA))
                 continue;
             break;
         }
 
-        if (!Expect(TokenKind.CLOSE_BRACE))
+        if (!Expect(TOKEN_CLOSE_BRACE))
             return false;
 
-        if (!Expect(TokenKind.KEYWORD_IN))
+        if (!Expect(KEYWORD_IN))
             return false;
 
         if (!ParseExpr(out var body))
@@ -2154,7 +2155,7 @@ public sealed class Parser
     private bool ParseLetLocal(out ILetLocalSyntax result)
     {
         result = null!;
-        if (_kind is TokenKind.KEYWORD_CONSTRAINT)
+        if (_kind is KEYWORD_CONSTRAINT)
         {
             if (ParseConstraintStatement(out var con))
             {
@@ -2187,7 +2188,7 @@ public sealed class Parser
         if (!ParseExpr(out ifCase))
             return false;
 
-        if (!Skip(TokenKind.KEYWORD_THEN))
+        if (!Skip(KEYWORD_THEN))
             return false;
 
         if (!ParseExpr(out thenCase))
@@ -2206,19 +2207,19 @@ public sealed class Parser
         result = null;
         var start = _current;
 
-        if (!ParseIfThenCase(out var ifCase, out var thenCase, TokenKind.KEYWORD_IF))
+        if (!ParseIfThenCase(out var ifCase, out var thenCase, KEYWORD_IF))
             return false;
 
         var ite = new IfThenSyntax(start, ifCase, thenCase);
         result = ite;
 
-        while (ParseIfThenCase(out ifCase, out thenCase, TokenKind.KEYWORD_ELSEIF))
+        while (ParseIfThenCase(out ifCase, out thenCase, KEYWORD_ELSEIF))
         {
             ite.ElseIfs ??= [];
             ite.ElseIfs.Add((ifCase, thenCase!));
         }
 
-        if (Skip(TokenKind.KEYWORD_ELSE))
+        if (Skip(KEYWORD_ELSE))
         {
             if (!ParseExpr(out var @else))
                 return false;
@@ -2226,7 +2227,7 @@ public sealed class Parser
             ite.Else = @else;
         }
 
-        if (!Expect(TokenKind.KEYWORD_ENDIF))
+        if (!Expect(KEYWORD_ENDIF))
             return false;
 
         return true;
@@ -2243,21 +2244,21 @@ public sealed class Parser
     {
         result = null;
 
-        if (!Expect(TokenKind.OPEN_PAREN, out var start))
+        if (!Expect(TOKEN_OPEN_PAREN, out var start))
             return false;
 
         if (!ParseExpr(out var expr))
             return false;
 
         // Bracketed expr
-        if (Skip(TokenKind.CLOSE_PAREN))
+        if (Skip(TOKEN_CLOSE_PAREN))
         {
             result = expr;
             return true;
         }
 
         // Record expr
-        if (Skip(TokenKind.COLON))
+        if (Skip(TOKEN_COLON))
         {
             if (expr is not IdentifierSyntax { Name: var name })
                 return Expected("Identifier");
@@ -2271,16 +2272,16 @@ public sealed class Parser
             record.Fields.Add(field);
 
             record_field:
-            if (!Skip(TokenKind.COMMA))
-                return Expect(TokenKind.CLOSE_PAREN);
+            if (!Skip(TOKEN_COMMA))
+                return Expect(TOKEN_CLOSE_PAREN);
 
-            if (Skip(TokenKind.CLOSE_PAREN))
+            if (Skip(TOKEN_CLOSE_PAREN))
                 return true;
 
             if (!ParseIdent(out name))
                 return false;
 
-            if (!Expect(TokenKind.COLON))
+            if (!Expect(TOKEN_COLON))
                 return false;
 
             if (!ParseExpr(out expr))
@@ -2295,18 +2296,18 @@ public sealed class Parser
         var tuple = new TupleLiteralSyntax(start);
         result = tuple;
         tuple.Fields.Add(expr);
-        if (!Expect(TokenKind.COMMA))
+        if (!Expect(TOKEN_COMMA))
             return false;
-        while (_kind is not TokenKind.CLOSE_PAREN)
+        while (_kind is not TOKEN_CLOSE_PAREN)
         {
             if (!ParseExpr(out expr))
                 return false;
             tuple.Fields.Add(expr);
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
-        return Expect(TokenKind.CLOSE_PAREN);
+        return Expect(TOKEN_CLOSE_PAREN);
     }
 
     /// <summary>
@@ -2316,14 +2317,14 @@ public sealed class Parser
     internal bool ParseAnnotations(out List<ExpressionSyntax>? annotations)
     {
         annotations = null;
-        while (Skip(TokenKind.COLON_COLON))
+        while (Skip(TOKEN_COLON_COLON))
         {
             ExpressionSyntax? ann;
 
             // Edge case where 'output' keyword can be used
             // in a non-keyword context, eg:
             // int : x :: output = 3;
-            if (_kind is TokenKind.KEYWORD_OUTPUT)
+            if (_kind is KEYWORD_OUTPUT)
             {
                 ann = new IdentifierSyntax(_current);
                 Step();
@@ -2349,7 +2350,7 @@ public sealed class Parser
     internal bool ParseStringAnnotations(out List<ExpressionSyntax>? annotations)
     {
         annotations = null;
-        while (Skip(TokenKind.COLON_COLON))
+        while (Skip(TOKEN_COLON_COLON))
         {
             if (!ParseString(out var ann))
                 return false;
@@ -2365,10 +2366,10 @@ public sealed class Parser
         type = default;
         var start = _current;
 
-        if (Skip(TokenKind.KEYWORD_ANY))
+        if (Skip(KEYWORD_ANY))
         {
             var ident = _current;
-            if (ident.Kind is TokenKind.IDENTIFIER_GENERIC or TokenKind.IDENTIFIER_GENERIC_SEQUENCE)
+            if (ident.Kind is TOKEN_IDENTIFIER_GENERIC or TOKEN_IDENTIFIER_GENERIC_SEQUENCE)
             {
                 Step();
                 type = new TypeSyntax(start) { Name = ident, Kind = TypeKind.Identifier };
@@ -2381,16 +2382,16 @@ public sealed class Parser
         }
 
         var var = false;
-        if (Skip(TokenKind.KEYWORD_VAR))
+        if (Skip(KEYWORD_VAR))
             var = true;
         else
-            Skip(TokenKind.KEYWORD_PAR);
+            Skip(KEYWORD_PAR);
 
-        var opt = Skip(TokenKind.KEYWORD_OPT);
+        var opt = Skip(KEYWORD_OPT);
 
-        if (Skip(TokenKind.KEYWORD_SET))
+        if (Skip(KEYWORD_SET))
         {
-            if (!Expect(TokenKind.KEYWORD_OF))
+            if (!Expect(KEYWORD_OF))
                 return false;
 
             if (!ParseBaseType(out type))
@@ -2403,47 +2404,47 @@ public sealed class Parser
         start = _current;
         switch (_kind)
         {
-            case TokenKind.KEYWORD_INT:
+            case KEYWORD_INT:
                 Step();
                 type = new TypeSyntax(start) { Kind = TypeKind.Int };
                 break;
 
-            case TokenKind.KEYWORD_BOOL:
+            case KEYWORD_BOOL:
                 Step();
                 type = new TypeSyntax(start) { Kind = TypeKind.Bool };
                 break;
 
-            case TokenKind.KEYWORD_FLOAT:
+            case KEYWORD_FLOAT:
                 Step();
                 type = new TypeSyntax(start) { Kind = TypeKind.Float };
                 break;
 
-            case TokenKind.KEYWORD_STRING:
+            case KEYWORD_STRING:
                 Step();
                 type = new TypeSyntax(start) { Kind = TypeKind.String };
                 break;
 
-            case TokenKind.KEYWORD_ANN:
+            case KEYWORD_ANN:
                 Step();
                 type = new TypeSyntax(start) { Kind = TypeKind.Ann };
                 break;
 
-            case TokenKind.KEYWORD_RECORD:
+            case KEYWORD_RECORD:
                 if (!ParseRecordType(out type))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_TUPLE:
+            case KEYWORD_TUPLE:
                 if (!ParseTupleType(out type))
                     return false;
                 break;
 
-            case TokenKind.IDENTIFIER_GENERIC:
+            case TOKEN_IDENTIFIER_GENERIC:
                 Step();
                 type = new TypeSyntax(start) { Name = start, Kind = TypeKind.Identifier };
                 break;
 
-            case TokenKind.IDENTIFIER_GENERIC_SEQUENCE:
+            case TOKEN_IDENTIFIER_GENERIC_SEQUENCE:
                 Step();
                 type = new TypeSyntax(start) { Kind = TypeKind.Identifier, Name = start };
                 break;
@@ -2469,26 +2470,26 @@ public sealed class Parser
         arr = default;
         var dims = new List<TypeSyntax>();
 
-        if (!Expect(TokenKind.KEYWORD_ARRAY, out var start))
+        if (!Expect(KEYWORD_ARRAY, out var start))
             return false;
 
-        if (!Expect(TokenKind.OPEN_BRACKET))
+        if (!Expect(TOKEN_OPEN_BRACKET))
             return false;
 
         while (ParseBaseType(out var expr))
         {
             dims.Add(expr);
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
         if (_errorMessage is not null)
             return false;
 
-        if (!Expect(TokenKind.CLOSE_BRACKET))
+        if (!Expect(TOKEN_CLOSE_BRACKET))
             return false;
 
-        if (!Expect(TokenKind.KEYWORD_OF))
+        if (!Expect(KEYWORD_OF))
             return false;
 
         if (!ParseType(out var type))
@@ -2505,25 +2506,25 @@ public sealed class Parser
     private bool ParseTupleType([NotNullWhen(true)] out TypeSyntax? tuple)
     {
         tuple = null;
-        if (!Expect(TokenKind.KEYWORD_TUPLE, out var start))
+        if (!Expect(KEYWORD_TUPLE, out var start))
             return false;
 
-        if (!Expect(TokenKind.OPEN_PAREN))
+        if (!Expect(TOKEN_OPEN_PAREN))
             return false;
 
         List<TypeSyntax> items = [];
-        while (_kind is not TokenKind.CLOSE_PAREN)
+        while (_kind is not TOKEN_CLOSE_PAREN)
         {
             if (!ParseType(out var ti))
                 return false;
 
             items.Add(ti);
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
         tuple = new TupleTypeSyntax(start, items);
-        return Expect(TokenKind.CLOSE_PAREN);
+        return Expect(TOKEN_CLOSE_PAREN);
     }
 
     /// <summary>
@@ -2534,7 +2535,7 @@ public sealed class Parser
     {
         record = null;
 
-        if (!Expect(TokenKind.KEYWORD_RECORD, out var start))
+        if (!Expect(KEYWORD_RECORD, out var start))
             return false;
 
         if (!ParseParameters(out var fields))
@@ -2552,7 +2553,7 @@ public sealed class Parser
     private bool ParseParameters([NotNullWhen(true)] out List<ParameterSyntax>? parameters)
     {
         parameters = default;
-        if (!Expect(TokenKind.OPEN_PAREN))
+        if (!Expect(TOKEN_OPEN_PAREN))
             return false;
 
         Token name;
@@ -2560,7 +2561,7 @@ public sealed class Parser
         TypeSyntax? type;
 
         parameters = [];
-        while (_kind is not TokenKind.CLOSE_PAREN)
+        while (_kind is not TOKEN_CLOSE_PAREN)
         {
             if (!ParseType(out type))
                 return false;
@@ -2568,7 +2569,7 @@ public sealed class Parser
             // Parameters can sometimes have a type only which
             // seems like a really bad idea and it quite confusing
             // but what can you do.  In practice this is extremely rare
-            if (!Skip(TokenKind.COLON))
+            if (!Skip(TOKEN_COLON))
             {
                 name = default;
                 anns = null;
@@ -2583,11 +2584,11 @@ public sealed class Parser
 
             var param = new ParameterSyntax(type.Start, type, name) { Annotations = anns };
             parameters.Add(param);
-            if (!Skip(TokenKind.COMMA))
+            if (!Skip(TOKEN_COMMA))
                 break;
         }
 
-        return Expect(TokenKind.CLOSE_PAREN);
+        return Expect(TOKEN_CLOSE_PAREN);
     }
 
     internal bool ParseType([NotNullWhen(true)] out TypeSyntax? result)
@@ -2596,12 +2597,12 @@ public sealed class Parser
         var start = _current;
         switch (_kind)
         {
-            case TokenKind.KEYWORD_ARRAY:
+            case KEYWORD_ARRAY:
                 if (!ParseArrayType(out result))
                     return false;
                 break;
 
-            case TokenKind.KEYWORD_LIST:
+            case KEYWORD_LIST:
                 if (!ParseListType(out result))
                     return false;
                 break;
@@ -2614,7 +2615,7 @@ public sealed class Parser
 
         List<TypeSyntax>? types = null;
 
-        while (Skip(TokenKind.PLUS_PLUS) || Skip(TokenKind.KEYWORD_UNION))
+        while (Skip(TOKEN_PLUS_PLUS) || Skip(KEYWORD_UNION))
         {
             types ??= [result];
             if (!ParseBaseType(out result))
@@ -2636,10 +2637,10 @@ public sealed class Parser
     {
         list = null!;
 
-        if (!Expect(TokenKind.KEYWORD_LIST, out var start))
+        if (!Expect(KEYWORD_LIST, out var start))
             return false;
 
-        if (!Expect(TokenKind.KEYWORD_OF))
+        if (!Expect(KEYWORD_OF))
             return false;
 
         if (!ParseBaseType(out var items))

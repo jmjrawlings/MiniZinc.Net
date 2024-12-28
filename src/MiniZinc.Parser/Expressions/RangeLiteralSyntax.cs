@@ -1,5 +1,7 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
+using static TokenKind;
+
 public sealed class RangeLiteralSyntax : ExpressionSyntax
 {
     public readonly ExpressionSyntax? Lower;
@@ -18,8 +20,8 @@ public sealed class RangeLiteralSyntax : ExpressionSyntax
     {
         Operator = op;
         Lower = lower;
-        LowerIncusive = op is TokenKind.CLOSED_RANGE or TokenKind.RIGHT_OPEN_RANGE;
+        LowerIncusive = op is TOKEN_CLOSED_RANGE or TOKEN_RIGHT_OPEN_RANGE;
         Upper = upper;
-        UpperInclusive = op is TokenKind.CLOSED_RANGE or TokenKind.LEFT_OPEN_RANGE;
+        UpperInclusive = op is TOKEN_CLOSED_RANGE or TOKEN_LEFT_OPEN_RANGE;
     }
 }
