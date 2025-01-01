@@ -2,8 +2,11 @@
 
 public sealed class SetLiteralSyntax : ExpressionSyntax
 {
-    public SetLiteralSyntax(in Token start)
-        : base(start) { }
+    public IReadOnlyList<ExpressionSyntax>? Elements { get; }
 
-    public List<ExpressionSyntax> Elements { get; } = [];
+    public SetLiteralSyntax(in Token start, IReadOnlyList<ExpressionSyntax>? elements = null)
+        : base(start)
+    {
+        Elements = elements;
+    }
 }

@@ -4,7 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Parser;
 using Parser.Syntax;
-using static MiniZinc.Parser.Parser;
+using static Parser.Parser;
+using static Parser.SolveMethod;
 
 /// <summary>
 /// A MiniZinc model.
@@ -37,8 +38,6 @@ public sealed class MiniZincModel
 
     private HashSet<string>? _parsedFiles;
 
-    private bool _allowFloats;
-
     // private bool _containsFloats;
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
@@ -52,7 +51,7 @@ public sealed class MiniZincModel
 
     public SolveStatement? SolveStatement => _solve;
 
-    public SolveMethod SolveMethod => _solve?.Method ?? SolveMethod.Satisfy;
+    public SolveMethod SolveMethod => _solve?.Method ?? SOLVE_SATISFY;
 
     public ExpressionSyntax? Objective => _solve?.Objective;
 
@@ -62,14 +61,15 @@ public sealed class MiniZincModel
 
     public bool HasWarnings => _warnings is null;
 
-    public MiniZincModel(bool allowFloats = true)
+    public MiniZincModel()
     {
         _warnings = null;
         _outputs = null;
         _constraints = null;
+        _includes = null;
         _namespace = [];
         _searchDirectories = [];
-        _allowFloats = allowFloats;
+        _overloads = null;
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public sealed class MiniZincModel
     /// <returns>
     /// The name of the declared variable
     /// </returns>
-    public Variable AddBool(string name, bool value) =>
+    public Variable AddBool(ReadOnlySpan<char> name, bool value) =>
         Declare(name, $"var bool", value.ToString());
 
     /// <summary>
@@ -155,7 +155,7 @@ public sealed class MiniZincModel
     /// Declare a parameter, variable, or type alias
     /// </summary>
     /// <returns>The name of the declared variable</returns>
-    public Variable Declare(string name, string type, string? value = null)
+    public Variable Declare(ReadOnlySpan<char> name, string type, string? value = null)
     {
         if (value != null)
             AddString($"{type}: {name} = {value};");
@@ -228,11 +228,12 @@ public sealed class MiniZincModel
     /// </summary>
     /// <example>model.Minimize("a+b")</example>
     /// <example>model.Minimize("makespan", "int_search(q, first_fail, indomain_min)")</example>
-    public void Minimize(string objective, params string[] annotations)
+    public SolveStatement Minimize(ReadOnlySpan<char> objective, params string[] annotations)
     {
         var mzn = $"solve minimize {objective}{Annotations(annotations)};";
-        var stm = ParseStatement<SolveStatement>(mzn);
-        SetObjective(stm);
+        var obj = ParseStatement<SolveStatement>(mzn);
+        SetObjective(obj);
+        return obj;
     }
 
     /// <summary>
@@ -240,11 +241,12 @@ public sealed class MiniZincModel
     /// </summary>
     /// <example>model.Maximize("a+b")</example>
     /// <example>model.Maximize("makespan", "int_search(q, first_fail, indomain_min)")</example>
-    public void Maximize(string objective, params string[] annotations)
+    public SolveStatement Maximize(ReadOnlySpan<char> objective, params string[] annotations)
     {
         var mzn = $"solve maximize {objective}{Annotations(annotations)};";
-        var stm = ParseStatement<SolveStatement>(mzn);
-        SetObjective(stm);
+        var obj = ParseStatement<SolveStatement>(mzn);
+        SetObjective(obj);
+        return obj;
     }
 
     /// <summary>
@@ -252,11 +254,12 @@ public sealed class MiniZincModel
     /// </summary>
     /// <example>model.Satisfy();</example>
     /// <example>model.Satisfy("int_search(q, first_fail, indomain_min)")</example>
-    public void Satisfy(params string[] annotations)
+    public SolveStatement Satisfy(params string[] annotations)
     {
         var mzn = $"solve satisfy{Annotations(annotations)};";
-        var stm = ParseStatement<SolveStatement>(mzn);
-        SetObjective(stm);
+        var obj = ParseStatement<SolveStatement>(mzn);
+        SetObjective(obj);
+        return obj;
     }
 
     /// <summary>
@@ -266,7 +269,7 @@ public sealed class MiniZincModel
     /// <seealso cref="Minimize"/>
     /// <seealso cref="Satisfy"/>
     /// </summary>
-    public void SetObjective(SolveStatement solve)
+    private void SetObjective(SolveStatement solve)
     {
         _solve = solve;
     }
@@ -290,12 +293,10 @@ public sealed class MiniZincModel
     {
         switch (syntax)
         {
-            case SolveStatement solve when _solve is null:
-                _solve = solve;
-                break;
-
             case SolveStatement solve:
-                Error($"Can not override \"{_solve}\" with \"{syntax}\"");
+                if (_solve is not null)
+                    Warning($"Existing solve statement `{_solve}` was overwritten with `{solve}`");
+                _solve = solve;
                 break;
 
             case OutputStatement output:

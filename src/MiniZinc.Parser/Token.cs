@@ -22,7 +22,7 @@ public readonly struct Token : IEquatable<Token>
         int start,
         int length,
         int i = 0,
-        string s = null,
+        string? s = null,
         decimal f = 0
     )
     {
@@ -34,6 +34,52 @@ public readonly struct Token : IEquatable<Token>
         StringValue = s;
         FloatValue = f;
         IntValue = i;
+    }
+
+    public bool Equals(Token other)
+    {
+        if (Kind != other.Kind)
+            return false;
+
+        if (IntValue != other.IntValue)
+            return false;
+
+        if (FloatValue != other.FloatValue)
+            return false;
+
+        if (!(StringValue?.Equals(other.StringValue) ?? true))
+            return false;
+
+        return true;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Token other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(
+            (int)Kind,
+            Line,
+            Col,
+            Start,
+            Length,
+            IntValue,
+            FloatValue,
+            StringValue
+        );
+    }
+
+    public static bool operator ==(Token left, Token right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Token left, Token right)
+    {
+        return !left.Equals(right);
     }
 
     public override string ToString() =>
@@ -142,40 +188,4 @@ public readonly struct Token : IEquatable<Token>
             TOKEN_IDENTIFIER_INFIX => $"`{StringValue}`",
             _ => StringValue ?? string.Empty
         };
-
-    public bool Equals(Token other)
-    {
-        if (Kind != other.Kind)
-            return false;
-
-        if (IntValue != other.IntValue)
-            return false;
-
-        if (FloatValue != other.FloatValue)
-            return false;
-
-        if (!(StringValue?.Equals(other.StringValue) ?? true))
-            return false;
-
-        return true;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is Token other && Equals(other);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(
-            (int)Kind,
-            Line,
-            Col,
-            Start,
-            Length,
-            IntValue,
-            FloatValue,
-            StringValue
-        );
-    }
 }

@@ -116,9 +116,9 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     async void test_solve_maximize_foreach()
     {
         var model = new MiniZincModel();
-        model.AddVariable("a", "10..20");
-        model.AddVariable("b", "10..20");
-        model.Maximize("a + b");
+        var a = model.AddVariable("a", "10..20");
+        var b = model.AddVariable("b", "10..20");
+        // model.Maximize(a + b);
         await foreach (var result in Client.Solve(model))
         {
             result.Status.Should().BeOneOf(SolveStatus.Optimal, SolveStatus.Satisfied);

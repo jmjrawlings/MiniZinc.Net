@@ -2,7 +2,7 @@
 
 public enum SolveMethod : byte
 {
-    Satisfy,
-    Minimize,
-    Maximize
+    SOLVE_SATISFY,
+    SOLVE_MINIMIZE,
+    SOLVE_MAXIMIZE
 }
