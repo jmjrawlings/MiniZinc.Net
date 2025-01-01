@@ -19,47 +19,46 @@ public readonly struct Variable
             throw new ArgumentException("Variables cannot be empty strings");
     }
 
-    public static BinaryOperatorSyntax operator +(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} + {b}");
+    public static BinOpExpr operator +(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} + {b}");
 
-    public static BinaryOperatorSyntax operator -(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} - {b}");
+    public static BinOpExpr operator -(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} - {b}");
 
-    public static BinaryOperatorSyntax operator *(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} * {b}");
+    public static BinOpExpr operator *(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} * {b}");
 
-    public static BinaryOperatorSyntax operator /(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} / {b}");
+    public static BinOpExpr operator /(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} / {b}");
 
-    public static BinaryOperatorSyntax operator %(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} % {b}");
+    public static BinOpExpr operator %(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} % {b}");
 
-    public static BinaryOperatorSyntax operator |(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} \\/ {b}");
+    public static BinOpExpr operator |(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} \\/ {b}");
 
-    public static BinaryOperatorSyntax operator &(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} /\\ {b}");
+    public static BinOpExpr operator &(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} /\\ {b}");
 
-    public static UnaryOperatorSyntax operator !(Variable a) =>
-        ParseExpression<UnaryOperatorSyntax>($"not {a}");
+    public static UnOpExpr operator !(Variable a) => ParseExpression<UnOpExpr>($"not {a}");
 
-    public static BinaryOperatorSyntax operator ==(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} == {b}");
+    public static BinOpExpr operator ==(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} == {b}");
 
-    public static BinaryOperatorSyntax operator !=(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} != {b}");
+    public static BinOpExpr operator !=(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} != {b}");
 
-    public static BinaryOperatorSyntax operator <(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} < {b}");
+    public static BinOpExpr operator <(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} < {b}");
 
-    public static BinaryOperatorSyntax operator >(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} > {b}");
+    public static BinOpExpr operator >(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} > {b}");
 
-    public static BinaryOperatorSyntax operator <=(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} <= {b}");
+    public static BinOpExpr operator <=(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} <= {b}");
 
-    public static BinaryOperatorSyntax operator >=(in Variable a, in Variable b) =>
-        ParseExpression<BinaryOperatorSyntax>($"{a} >= {b}");
+    public static BinOpExpr operator >=(in Variable a, in Variable b) =>
+        ParseExpression<BinOpExpr>($"{a} >= {b}");
 
     public static implicit operator string(in Variable v) => v.Name;
 

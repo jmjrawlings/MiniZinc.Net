@@ -7,7 +7,7 @@ public static class SyntaxExtensions
     /// <summary>
     /// Write this node as a minizinc string
     /// </summary>
-    public static string Write(this SyntaxNode node, WriteOptions? options = null)
+    public static string Write(this Syntax.Syntax node, WriteOptions? options = null)
     {
         var writer = new Writer(options);
         writer.WriteSyntax(node);
@@ -19,7 +19,7 @@ public static class SyntaxExtensions
     /// Create a deep clone of this syntax node
     /// </summary>
     public static T Clone<T>(this T node)
-        where T : SyntaxNode
+        where T : Syntax.Syntax
     {
         var mzn = node.Write(WriteOptions.Minimal);
         var parser = new Parser(mzn);
@@ -36,8 +36,8 @@ public static class SyntaxExtensions
     /// </summary>
     /// <param name="id">Name of the model variable</param>
     /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
-    public static T Get<T>(this IReadOnlyDictionary<string, Datum> dict, string id)
-        where T : Datum
+    public static T Get<T>(this IReadOnlyDictionary<string, Expr> dict, string id)
+        where T : Expr
     {
         var data = dict[id];
         var value = (T)data;
@@ -45,17 +45,19 @@ public static class SyntaxExtensions
     }
 
     /// Try to get the solution assigned to the given variable
-    public static Datum? TryGet(this IReadOnlyDictionary<string, Datum> dict, string id) =>
+    public static Expr? TryGet(this IReadOnlyDictionary<string, Expr> dict, string id) =>
         dict.GetValueOrDefault(id);
 
     /// Try to get the solution assigned to the given variable
-    public static T? TryGet<T>(this IReadOnlyDictionary<string, Datum> dict, string id)
-        where T : Datum
+    public static T? TryGet<T>(this IReadOnlyDictionary<string, Expr> dict, string id)
+        where T : Expr
     {
         if (!dict.TryGetValue(id, out var data))
             return null;
 
-        T value = (T)data;
+        if (data is not T value)
+            return null;
+
         return value;
     }
 }

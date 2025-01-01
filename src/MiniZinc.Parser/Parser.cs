@@ -155,7 +155,7 @@ public struct Parser
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
     internal bool ParseModel(out ModelSyntax model)
     {
-        var statements = new List<StatementSyntax>();
+        var statements = new List<Statement>();
         model = new ModelSyntax(statements);
 
         while (ParseStatement(out var statement))
@@ -175,7 +175,7 @@ public struct Parser
             return false;
     }
 
-    internal bool ParseStatement([NotNullWhen(true)] out StatementSyntax? statement)
+    internal bool ParseStatement([NotNullWhen(true)] out Statement? statement)
     {
         statement = null;
         switch (_kind)
@@ -248,7 +248,7 @@ public struct Parser
     /// <mzn>a = 1;b = 2; c= true;</mzn>
     internal bool ParseData(out MiniZincData data)
     {
-        Dictionary<string, Datum> values = new();
+        Dictionary<string, Expr> values = new();
         data = new MiniZincData(values);
 
         while (true)
@@ -256,19 +256,26 @@ public struct Parser
             if (_kind is TOKEN_EOF)
                 return true;
 
-            if (!ParseIdent(out var name))
+            if (!ParseIdent(out var ident))
+                return false;
+
+            if (ident.StringValue is not { } name)
                 return false;
 
             if (!Expect(TOKEN_EQUAL))
                 return false;
 
-            if (!ParseDatum(out var value))
+            if (!ParseExpr(out var expr))
                 return false;
 
-            if (values.ContainsKey(name.StringValue))
+            // if (expr is not IMiniZincDatum datum)
+            //     return false;
+            // TODO - Datum Check
+
+            if (values.ContainsKey(name))
                 return Error($"Variable \"{name}\" was assigned to multiple times");
 
-            values.Add(name.StringValue, value);
+            values.Add(name, expr);
 
             if (Skip(TOKEN_EOL))
                 continue;
@@ -286,7 +293,7 @@ public struct Parser
     /// Parse a predicate declaration
     /// </summary>
     /// <mzn>predicate ok(int: x) = x > 0;</mzn>
-    private bool ParsePredicateStatement([NotNullWhen(true)] out StatementSyntax? node)
+    private bool ParsePredicateStatement([NotNullWhen(true)] out Statement? node)
     {
         node = null;
         if (!Expect(KEYWORD_PREDICATE, out var start))
@@ -308,7 +315,7 @@ public struct Parser
     /// Parse a test declaration
     /// </summary>
     /// <mzn>predicate ok(int: x) = x > 0;</mzn>
-    private bool ParseTestStatement([NotNullWhen(true)] out StatementSyntax? node)
+    private bool ParseTestStatement([NotNullWhen(true)] out Statement? node)
     {
         node = null;
         if (!Expect(KEYWORD_TEST, out var start))
@@ -330,7 +337,7 @@ public struct Parser
     /// Parse a function declaration
     /// </summary>
     /// <mzn>function bool: opposite(bool: x) = not x;</mzn>
-    private bool ParseFunctionStatement([NotNullWhen(true)] out StatementSyntax? node)
+    private bool ParseFunctionStatement([NotNullWhen(true)] out Statement? node)
     {
         node = null;
         if (!Expect(KEYWORD_FUNCTION, out var start))
@@ -388,7 +395,7 @@ public struct Parser
         if (!ParseAnnotations(out var anns))
             return false;
 
-        ExpressionSyntax? body = null;
+        Expr? body = null;
         if (Skip(TOKEN_EQUAL))
             if (!ParseExpr(out body))
                 return false;
@@ -408,7 +415,7 @@ public struct Parser
     /// </summary>
     /// <mzn>annotation custom;</mzn>
     /// <mzn>annotation custom(int: x);</mzn>
-    private bool ParseAnnotationStatement([NotNullWhen(true)] out StatementSyntax? ann)
+    private bool ParseAnnotationStatement([NotNullWhen(true)] out Statement? ann)
     {
         ann = null;
         if (!Expect(KEYWORD_ANNOTATION, out var start))
@@ -432,7 +439,7 @@ public struct Parser
     /// <mzn>enum Dir = {N,S,E,W};</mzn>
     /// <mzn>enum Z = anon_enum(10);</mzn>
     /// <mzn>enum X = Q({1,2});</mzn>
-    internal bool ParseEnumStatement([NotNullWhen(true)] out StatementSyntax? result)
+    internal bool ParseEnumStatement([NotNullWhen(true)] out Statement? result)
     {
         result = null;
         if (!Expect(KEYWORD_ENUM, out var start))
@@ -465,45 +472,40 @@ public struct Parser
         return true;
     }
 
-    private bool ValidateEnumCases(ExpressionSyntax expr)
+    private bool ValidateEnumCases(Expr expr)
     {
         switch (expr)
         {
             // Named cases: 'enum Dir = {N,S,E,W};`
-            case SetLiteralSyntax set:
+            case SetExpr set:
                 foreach (var item in set.Elements)
                 {
-                    if (item is not IdentifierSyntax name)
+                    if (item is not IdentExpr name)
                         return Expected($"Enum case name, got {item}");
                 }
 
                 break;
 
             // Underscore enum `enum A = _(1..10);`
-            case CallSyntax { Name.Kind: TOKEN_UNDERSCORE } call:
+            case CallExpr { Name.Kind: TOKEN_UNDERSCORE } call:
                 if (call.Args is not { Count: 1 })
                     return Expected($"Single argument call to _, got {call.Args}");
                 var arg = call.Args[0];
                 break;
 
             // Anonymous enum: `anon_enum(10);`
-            case CallSyntax { Name.StringValue: "anon_enum" } call:
+            case CallExpr { Name.StringValue: "anon_enum" } call:
                 if (call.Args is not { Count: 1 })
                     return Expected($"Single argument call to _, got {call.Args}");
                 var anonArg = call.Args[0];
                 break;
 
             // Complex enum: `C(1..10)`
-            case CallSyntax call:
+            case CallExpr call:
                 break;
 
             // ++
-            case BinaryOperatorSyntax
-            {
-                Left: var left,
-                Operator: TOKEN_PLUS_PLUS,
-                Right: var right
-            }:
+            case BinOpExpr { Left: var left, Operator: TOKEN_PLUS_PLUS, Right: var right }:
                 if (!ValidateEnumCases(left))
                     return false;
                 if (!ValidateEnumCases(right))
@@ -517,7 +519,7 @@ public struct Parser
         return true;
     }
 
-    internal bool ParseEnumCases([NotNullWhen(true)] out ExpressionSyntax? expr)
+    internal bool ParseEnumCases([NotNullWhen(true)] out Expr? expr)
     {
         if (!ParseExpr(out expr))
             return false;
@@ -532,7 +534,7 @@ public struct Parser
     /// Parse an Output Item
     /// </summary>
     /// <mzn>output ["The result is \(result)"];</mzn>
-    internal bool ParseOutputStatement([NotNullWhen(true)] out StatementSyntax? node)
+    internal bool ParseOutputStatement([NotNullWhen(true)] out Statement? node)
     {
         node = null;
 
@@ -553,7 +555,7 @@ public struct Parser
     /// Parse a type alias
     /// </summary>
     /// <mzn>type X = 1 .. 10;</mzn>
-    internal bool ParseTypeAliasStatement([NotNullWhen(true)] out StatementSyntax? alias)
+    internal bool ParseTypeAliasStatement([NotNullWhen(true)] out Statement? alias)
     {
         alias = null;
 
@@ -580,7 +582,7 @@ public struct Parser
     /// Parse an include item
     /// </summary>
     /// <mzn>include "utils.mzn"</mzn>
-    internal bool ParseIncludeStatement([NotNullWhen(true)] out StatementSyntax? node)
+    internal bool ParseIncludeStatement([NotNullWhen(true)] out Statement? node)
     {
         node = null;
 
@@ -599,7 +601,7 @@ public struct Parser
     /// </summary>
     /// <mzn>solve satisfy;</mzn>
     /// <mzn>solve maximize a;</mzn>
-    internal bool ParseSolveStatement([NotNullWhen(true)] out StatementSyntax? node)
+    internal bool ParseSolveStatement([NotNullWhen(true)] out Statement? node)
     {
         node = null;
 
@@ -609,7 +611,7 @@ public struct Parser
         if (!ParseAnnotations(out var anns))
             return false;
 
-        ExpressionSyntax? objective = null;
+        Expr? objective = null;
         SolveMethod method = SOLVE_SATISFY;
         switch (_kind)
         {
@@ -644,7 +646,7 @@ public struct Parser
     /// Parse a constraint
     /// </summary>
     /// <mzn>constraint a > b;</mzn>
-    internal bool ParseConstraintStatement([NotNullWhen(true)] out StatementSyntax? constraint)
+    internal bool ParseConstraintStatement([NotNullWhen(true)] out Statement? constraint)
     {
         constraint = null;
 
@@ -667,7 +669,7 @@ public struct Parser
     /// <mzn>a = 10;</mzn>
     /// <mzn>set of var int: xd;</mzn>
     /// <mzn>$T: identity($T: x) = x;</mzn>
-    internal bool ParseDeclareOrAssignStatement([NotNullWhen(true)] out StatementSyntax? statement)
+    internal bool ParseDeclareOrAssignStatement([NotNullWhen(true)] out Statement? statement)
     {
         statement = null;
         var start = _current;
@@ -716,7 +718,7 @@ public struct Parser
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1]</mzn>
     /// <mzn>record.field</mzn>
-    internal bool ParseExprAtom([NotNullWhen(true)] out ExpressionSyntax? expr)
+    internal bool ParseExprAtom([NotNullWhen(true)] out Expr? expr)
     {
         expr = null;
         var token = _current;
@@ -725,27 +727,27 @@ public struct Parser
         {
             case TOKEN_INT_LITERAL:
                 Step();
-                expr = new IntLiteralSyntax(token);
+                expr = new IntExpr(token);
                 break;
 
             case TOKEN_FLOAT_LITERAL:
                 Step();
-                expr = new FloatLiteralSyntax(token);
+                expr = new FloatExpr(token);
                 break;
 
             case KEYWORD_TRUE:
                 Step();
-                expr = new BoolLiteralSyntax(token, true);
+                expr = new BoolExpr(token, true);
                 break;
 
             case KEYWORD_FALSE:
                 Step();
-                expr = new BoolLiteralSyntax(token, false);
+                expr = new BoolExpr(token, false);
                 break;
 
             case TOKEN_STRING_LITERAL:
                 Step();
-                expr = new StringLiteralSyntax(token);
+                expr = new StringExpr(token);
                 break;
 
             case TOKEN_OPEN_PAREN:
@@ -783,7 +785,7 @@ public struct Parser
 
             case TOKEN_EMPTY:
                 Step();
-                expr = new EmptyLiteralSyntax(token);
+                expr = new EmptyExpr(token);
                 break;
 
             default:
@@ -795,7 +797,7 @@ public struct Parser
             if (Skip(TOKEN_OPEN_BRACKET))
             {
                 // Array access eg: `a[1,2]`
-                var access = new List<ExpressionSyntax>();
+                var access = new List<Expr>();
                 while (_kind is not TOKEN_CLOSE_BRACKET)
                 {
                     if (!ParseExpr(out var index))
@@ -805,18 +807,18 @@ public struct Parser
                         break;
                 }
 
-                expr = new ArrayAccessSyntax(expr, access);
+                expr = new ArrayAccessExpr(expr, access);
                 if (!Expect(TOKEN_CLOSE_BRACKET))
                     return false;
             }
             else if (_kind is TOKEN_TUPLE_ACCESS)
             {
-                expr = new TupleAccessSyntax(expr, _current);
+                expr = new TupleAccessExpr(expr, _current);
                 Step();
             }
             else if (_kind is TOKEN_RECORD_ACCESS)
             {
-                expr = new RecordAccessSyntax(expr, _current);
+                expr = new RecordAccessExpr(expr, _current);
                 Step();
             }
             else
@@ -834,39 +836,39 @@ public struct Parser
 
     private bool IsOk => _errorMessage is null;
 
-    /// Parse an int range data starting at the given token
-    /// The parser will step over the given lower bound
-    /// Will only return false in the case of an error
-    internal bool ParseIntDatum(out int i, out IntRange? range)
-    {
-        range = null;
-        Token start = _current;
-        i = start.IntValue;
-        Step();
-        if (!Skip(TOKEN_CLOSED_RANGE))
-            return true;
-        if (!Expect(TOKEN_INT_LITERAL, out Token upper))
-            return false;
-        range = new IntRange(i, upper.IntValue);
-        return true;
-    }
-
-    /// Parse a float range starting at the given token
-    /// The parser will step over the given lower bound
-    /// Will only return false in the case of an error
-    internal bool ParseFloatDatum(out decimal f, out FloatRange? range)
-    {
-        range = null;
-        Token start = _current;
-        f = start.FloatValue;
-        Step();
-        if (!Skip(TOKEN_CLOSED_RANGE))
-            return true;
-        if (!Expect(TOKEN_FLOAT_LITERAL, out Token upper))
-            return false;
-        range = new FloatRange(f, upper.FloatValue);
-        return true;
-    }
+    // /// Parse an int range data starting at the given token
+    // /// The parser will step over the given lower bound
+    // /// Will only return false in the case of an error
+    // internal bool ParseIntDatum(out int i, out IntRange? range)
+    // {
+    //     range = null;
+    //     Token start = _current;
+    //     i = start.IntValue;
+    //     Step();
+    //     if (!Skip(TOKEN_CLOSED_RANGE))
+    //         return true;
+    //     if (!Expect(TOKEN_INT_LITERAL, out Token upper))
+    //         return false;
+    //     range = new IntRange(i, upper.IntValue);
+    //     return true;
+    // }
+    //
+    // /// Parse a float range starting at the given token
+    // /// The parser will step over the given lower bound
+    // /// Will only return false in the case of an error
+    // internal bool ParseFloatDatum(out decimal f, out FloatRange? range)
+    // {
+    //     range = null;
+    //     Token start = _current;
+    //     f = start.FloatValue;
+    //     Step();
+    //     if (!Skip(TOKEN_CLOSED_RANGE))
+    //         return true;
+    //     if (!Expect(TOKEN_FLOAT_LITERAL, out Token upper))
+    //         return false;
+    //     range = new FloatRange(f, upper.FloatValue);
+    //     return true;
+    // }
 
     /// <summary>
     /// Parse an array datum
@@ -885,389 +887,389 @@ public struct Parser
     /// int?[] and float?[] but for now those will fallback
     /// to Datum[]
     /// </remarks>
-    internal bool ParseArrayDatum([NotNullWhen(true)] out Datum? array)
-    {
-        array = null;
-        if (!Skip(TOKEN_OPEN_BRACKET))
-            return false;
-
-        List<int>? ints = null;
-        List<bool>? bools = null;
-        List<decimal>? floats = null;
-        List<string>? strings = null;
-        List<Datum>? values = null;
-        DatumKind type = default;
-        bool opt = false;
-        while (_kind is not TOKEN_CLOSE_BRACKET)
-        {
-            switch (_kind, type, opt)
-            {
-                // First value is <>
-                case (TOKEN_EMPTY, DatumKind.Unknown, false):
-                    values = [Datum.Empty];
-                    opt = true;
-                    break;
-
-                // <> found in IntArray
-                case (TOKEN_EMPTY, DatumKind.Int, false):
-                    values = [];
-                    foreach (var ix in ints!)
-                        values.Add(Datum.Int(ix));
-                    values.Add(Datum.Empty);
-                    opt = true;
-                    break;
-
-                // <> found in FloatArray
-                case (TOKEN_EMPTY, DatumKind.Float, false):
-                    values = [];
-                    foreach (var fx in floats!)
-                        values.Add(Datum.Float(fx));
-                    values.Add(Datum.Empty);
-                    opt = true;
-                    break;
-
-                // <> found in StringArray
-                case (TOKEN_EMPTY, DatumKind.String, false):
-                    values = [];
-                    foreach (var s in strings!)
-                        values.Add(Datum.String(s));
-                    values.Add(Datum.Empty);
-                    opt = true;
-                    break;
-
-                // <> found in BoolArray
-                case (TOKEN_EMPTY, DatumKind.Bool, false):
-                    values = [];
-                    foreach (var b in bools!)
-                        values.Add(Datum.Bool(b));
-                    values.Add(Datum.Empty);
-                    opt = true;
-                    break;
-
-                // <> occured
-                case (TOKEN_EMPTY, _, _):
-                    values!.Add(Datum.Empty);
-                    opt = true;
-                    break;
-
-                // Int or IntRange
-                case (TOKEN_INT_LITERAL, _, _):
-                    if (!ParseIntDatum(out int i, out var intRange))
-                    {
-                        return false;
-                    }
-                    else if (intRange is not null)
-                    {
-                        (values ??= []).Add(intRange);
-                        if (type is not (DatumKind.Set or DatumKind.Unknown))
-                            return Expected($"datum of type {type}, got IntRange");
-                        type = DatumKind.Set;
-                    }
-                    else if (opt)
-                    {
-                        if (type is not (DatumKind.Int or DatumKind.Unknown))
-                            return Expected($"datum of type {type}, got int");
-
-                        values!.Add(Datum.Int(i));
-                        type = DatumKind.Int;
-                    }
-                    else
-                    {
-                        if (type is not (DatumKind.Int or DatumKind.Unknown))
-                            return Expected($"datum of type {type}, got int");
-
-                        (ints ??= []).Add(i);
-                        type = DatumKind.Int;
-                    }
-                    break;
-
-                // Float or FloatRange
-                case (TOKEN_FLOAT_LITERAL, _, _):
-                    if (!ParseFloatDatum(out decimal f, out var floatRange))
-                    {
-                        return false;
-                    }
-                    else if (floatRange is not null)
-                    {
-                        (values ??= []).Add(floatRange);
-                        if (type is not (DatumKind.Set or DatumKind.Unknown))
-                            return Expected($"datum of type {type}, got FloatRange");
-                        type = DatumKind.Set;
-                    }
-                    else if (opt)
-                    {
-                        if (type is not (DatumKind.Float or DatumKind.Unknown))
-                            return Expected($"datum of type {type}, got Float");
-
-                        values!.Add(Datum.Float(f));
-                        type = DatumKind.Float;
-                    }
-                    else
-                    {
-                        if (type is not (DatumKind.Float or DatumKind.Unknown))
-                            return Expected($"datum of type {type}, got Float");
-
-                        (floats ??= []).Add(f);
-                        type = DatumKind.Float;
-                    }
-                    break;
-
-                case (KEYWORD_TRUE, DatumKind.Unknown, false):
-                    bools = [true];
-                    type = DatumKind.Bool;
-                    Step();
-                    break;
-
-                case (KEYWORD_TRUE, DatumKind.Bool, false):
-                    bools!.Add(true);
-                    Step();
-                    break;
-
-                case (KEYWORD_FALSE, DatumKind.Unknown, false):
-                    bools = [false];
-                    type = DatumKind.Bool;
-                    Step();
-                    break;
-
-                case (KEYWORD_FALSE, DatumKind.Bool, false):
-                    bools!.Add(false);
-                    Step();
-                    break;
-
-                case (TOKEN_STRING_LITERAL, DatumKind.Unknown or DatumKind.String, false):
-                    (strings ??= []).Add(_current.StringValue);
-                    type = DatumKind.String;
-                    Step();
-                    break;
-
-                case (TOKEN_STRING_LITERAL, DatumKind.Unknown or DatumKind.String, true):
-                    values!.Add(Datum.String(_current.StringValue));
-                    type = DatumKind.String;
-                    Step();
-                    break;
-
-                default:
-                    if (!ParseDatum(out var datum))
-                        return false;
-                    if (type is not DatumKind.Unknown)
-                        if (type != datum.Kind)
-                            return Expected($"Datum of type {type}, got {datum.Kind}");
-                    type = datum.Kind;
-                    (values ??= []).Add(datum);
-                    break;
-            }
-
-            if (!Skip(TOKEN_COMMA))
-                break;
-        }
-
-        if (!Expect(TOKEN_CLOSE_BRACKET))
-            return false;
-
-        if (ints is not null)
-            array = new IntArray(ints);
-        else if (floats is not null)
-            array = new FloatArray(floats);
-        else if (bools is not null)
-            array = new BoolArray(bools);
-        else if (strings is not null)
-            array = new StringArray(strings);
-        else
-            array = new DatumArray(values ?? []);
-        return true;
-    }
+    // internal bool ParseArrayDatum([NotNullWhen(true)] out Datum? array)
+    // {
+    //     array = null;
+    //     if (!Skip(TOKEN_OPEN_BRACKET))
+    //         return false;
+    //
+    //     List<int>? ints = null;
+    //     List<bool>? bools = null;
+    //     List<decimal>? floats = null;
+    //     List<string>? strings = null;
+    //     List<Datum>? values = null;
+    //     DatumKind type = default;
+    //     bool opt = false;
+    //     while (_kind is not TOKEN_CLOSE_BRACKET)
+    //     {
+    //         switch (_kind, type, opt)
+    //         {
+    //             // First value is <>
+    //             case (TOKEN_EMPTY, DatumKind.Unknown, false):
+    //                 values = [Datum.Empty];
+    //                 opt = true;
+    //                 break;
+    //
+    //             // <> found in IntArray
+    //             case (TOKEN_EMPTY, DatumKind.Int, false):
+    //                 values = [];
+    //                 foreach (var ix in ints!)
+    //                     values.Add(Datum.Int(ix));
+    //                 values.Add(Datum.Empty);
+    //                 opt = true;
+    //                 break;
+    //
+    //             // <> found in FloatArray
+    //             case (TOKEN_EMPTY, DatumKind.Float, false):
+    //                 values = [];
+    //                 foreach (var fx in floats!)
+    //                     values.Add(Datum.Float(fx));
+    //                 values.Add(Datum.Empty);
+    //                 opt = true;
+    //                 break;
+    //
+    //             // <> found in StringArray
+    //             case (TOKEN_EMPTY, DatumKind.String, false):
+    //                 values = [];
+    //                 foreach (var s in strings!)
+    //                     values.Add(Datum.String(s));
+    //                 values.Add(Datum.Empty);
+    //                 opt = true;
+    //                 break;
+    //
+    //             // <> found in BoolArray
+    //             case (TOKEN_EMPTY, DatumKind.Bool, false):
+    //                 values = [];
+    //                 foreach (var b in bools!)
+    //                     values.Add(Datum.Bool(b));
+    //                 values.Add(Datum.Empty);
+    //                 opt = true;
+    //                 break;
+    //
+    //             // <> occured
+    //             case (TOKEN_EMPTY, _, _):
+    //                 values!.Add(Datum.Empty);
+    //                 opt = true;
+    //                 break;
+    //
+    //             // Int or IntRange
+    //             case (TOKEN_INT_LITERAL, _, _):
+    //                 if (!ParseIntDatum(out int i, out var intRange))
+    //                 {
+    //                     return false;
+    //                 }
+    //                 else if (intRange is not null)
+    //                 {
+    //                     (values ??= []).Add(intRange);
+    //                     if (type is not (DatumKind.Set or DatumKind.Unknown))
+    //                         return Expected($"datum of type {type}, got IntRange");
+    //                     type = DatumKind.Set;
+    //                 }
+    //                 else if (opt)
+    //                 {
+    //                     if (type is not (DatumKind.Int or DatumKind.Unknown))
+    //                         return Expected($"datum of type {type}, got int");
+    //
+    //                     values!.Add(Datum.Int(i));
+    //                     type = DatumKind.Int;
+    //                 }
+    //                 else
+    //                 {
+    //                     if (type is not (DatumKind.Int or DatumKind.Unknown))
+    //                         return Expected($"datum of type {type}, got int");
+    //
+    //                     (ints ??= []).Add(i);
+    //                     type = DatumKind.Int;
+    //                 }
+    //                 break;
+    //
+    //             // Float or FloatRange
+    //             case (TOKEN_FLOAT_LITERAL, _, _):
+    //                 if (!ParseFloatDatum(out decimal f, out var floatRange))
+    //                 {
+    //                     return false;
+    //                 }
+    //                 else if (floatRange is not null)
+    //                 {
+    //                     (values ??= []).Add(floatRange);
+    //                     if (type is not (DatumKind.Set or DatumKind.Unknown))
+    //                         return Expected($"datum of type {type}, got FloatRange");
+    //                     type = DatumKind.Set;
+    //                 }
+    //                 else if (opt)
+    //                 {
+    //                     if (type is not (DatumKind.Float or DatumKind.Unknown))
+    //                         return Expected($"datum of type {type}, got Float");
+    //
+    //                     values!.Add(Datum.Float(f));
+    //                     type = DatumKind.Float;
+    //                 }
+    //                 else
+    //                 {
+    //                     if (type is not (DatumKind.Float or DatumKind.Unknown))
+    //                         return Expected($"datum of type {type}, got Float");
+    //
+    //                     (floats ??= []).Add(f);
+    //                     type = DatumKind.Float;
+    //                 }
+    //                 break;
+    //
+    //             case (KEYWORD_TRUE, DatumKind.Unknown, false):
+    //                 bools = [true];
+    //                 type = DatumKind.Bool;
+    //                 Step();
+    //                 break;
+    //
+    //             case (KEYWORD_TRUE, DatumKind.Bool, false):
+    //                 bools!.Add(true);
+    //                 Step();
+    //                 break;
+    //
+    //             case (KEYWORD_FALSE, DatumKind.Unknown, false):
+    //                 bools = [false];
+    //                 type = DatumKind.Bool;
+    //                 Step();
+    //                 break;
+    //
+    //             case (KEYWORD_FALSE, DatumKind.Bool, false):
+    //                 bools!.Add(false);
+    //                 Step();
+    //                 break;
+    //
+    //             case (TOKEN_STRING_LITERAL, DatumKind.Unknown or DatumKind.String, false):
+    //                 (strings ??= []).Add(_current.StringValue);
+    //                 type = DatumKind.String;
+    //                 Step();
+    //                 break;
+    //
+    //             case (TOKEN_STRING_LITERAL, DatumKind.Unknown or DatumKind.String, true):
+    //                 values!.Add(Datum.String(_current.StringValue));
+    //                 type = DatumKind.String;
+    //                 Step();
+    //                 break;
+    //
+    //             default:
+    //                 if (!ParseDatum(out var datum))
+    //                     return false;
+    //                 if (type is not DatumKind.Unknown)
+    //                     if (type != datum.Kind)
+    //                         return Expected($"Datum of type {type}, got {datum.Kind}");
+    //                 type = datum.Kind;
+    //                 (values ??= []).Add(datum);
+    //                 break;
+    //         }
+    //
+    //         if (!Skip(TOKEN_COMMA))
+    //             break;
+    //     }
+    //
+    //     if (!Expect(TOKEN_CLOSE_BRACKET))
+    //         return false;
+    //
+    //     if (ints is not null)
+    //         array = new IntArray(ints);
+    //     else if (floats is not null)
+    //         array = new FloatArray(floats);
+    //     else if (bools is not null)
+    //         array = new BoolArray(bools);
+    //     else if (strings is not null)
+    //         array = new StringArray(strings);
+    //     else
+    //         array = new DatumArray(values ?? []);
+    //     return true;
+    // }
 
     /// Parse set data into the most refined type possible
-    internal bool ParseSetDatum([NotNullWhen(true)] out Datum? set)
-    {
-        set = null;
-        if (!Skip(TOKEN_OPEN_BRACE))
-            return false;
+    // internal bool ParseSetDatum([NotNullWhen(true)] out Datum? set)
+    // {
+    //     set = null;
+    //     if (!Skip(TOKEN_OPEN_BRACE))
+    //         return false;
+    //
+    //     List<int>? ints = null;
+    //     List<bool>? bools = null;
+    //     List<decimal>? floats = null;
+    //     List<Datum>? data = null;
+    //
+    //     while (_kind is not TOKEN_CLOSE_BRACE)
+    //     {
+    //         var token = _current;
+    //         Step();
+    //         switch (token.Kind)
+    //         {
+    //             case TOKEN_INT_LITERAL:
+    //                 (ints ??= []).Add(token.IntValue);
+    //                 break;
+    //
+    //             case TOKEN_FLOAT_LITERAL:
+    //                 (floats ??= []).Add(token.FloatValue);
+    //                 break;
+    //
+    //             case KEYWORD_TRUE:
+    //                 (bools ??= []).Add(true);
+    //                 break;
+    //
+    //             case KEYWORD_FALSE:
+    //                 (bools ??= []).Add(false);
+    //                 break;
+    //
+    //             default:
+    //                 return Error($"Unexpected {token} in set data");
+    //         }
+    //
+    //         if (!Skip(TOKEN_COMMA))
+    //             break;
+    //     }
+    //
+    //     if (!Expect(TOKEN_CLOSE_BRACE))
+    //         return false;
+    //
+    //     if (ints is not null)
+    //         set = new IntSet(ints);
+    //     else if (floats is not null)
+    //         set = new FloatSet(floats);
+    //     else if (bools is not null)
+    //         set = new BoolSet(bools);
+    //     else
+    //         set = new SetDatum(data ?? []);
+    //     return true;
+    // }
 
-        List<int>? ints = null;
-        List<bool>? bools = null;
-        List<decimal>? floats = null;
-        List<Datum>? data = null;
-
-        while (_kind is not TOKEN_CLOSE_BRACE)
-        {
-            var token = _current;
-            Step();
-            switch (token.Kind)
-            {
-                case TOKEN_INT_LITERAL:
-                    (ints ??= []).Add(token.IntValue);
-                    break;
-
-                case TOKEN_FLOAT_LITERAL:
-                    (floats ??= []).Add(token.FloatValue);
-                    break;
-
-                case KEYWORD_TRUE:
-                    (bools ??= []).Add(true);
-                    break;
-
-                case KEYWORD_FALSE:
-                    (bools ??= []).Add(false);
-                    break;
-
-                default:
-                    return Error($"Unexpected {token} in set data");
-            }
-
-            if (!Skip(TOKEN_COMMA))
-                break;
-        }
-
-        if (!Expect(TOKEN_CLOSE_BRACE))
-            return false;
-
-        if (ints is not null)
-            set = new IntSet(ints);
-        else if (floats is not null)
-            set = new FloatSet(floats);
-        else if (bools is not null)
-            set = new BoolSet(bools);
-        else
-            set = new SetDatum(data ?? []);
-        return true;
-    }
-
-    /// <summary>
-    /// Parse a <see cref="Datum"/>.
-    /// </summary>
-    /// <mzn>1</mzn>
-    /// <mzn>true</mzn>
-    /// <mzn>{1,2,3}</mzn>
-    /// <mzn>1..10</mzn>
-    public bool ParseDatum([NotNullWhen(true)] out Datum? datum)
-    {
-        datum = null;
-        switch (_kind)
-        {
-            case TOKEN_OPEN_BRACE:
-                if (!ParseSetDatum(out datum))
-                    return false;
-                break;
-
-            case TOKEN_OPEN_BRACKET:
-                if (!ParseArrayDatum(out datum))
-                    return false;
-                break;
-
-            case TOKEN_OPEN_PAREN when Peek().Kind is TOKEN_IDENTIFIER:
-                if (!ParseRecordDatum(out datum))
-                    return false;
-                break;
-
-            case TOKEN_OPEN_PAREN:
-                if (!ParseTupleDatum(out datum))
-                    return false;
-                break;
-
-            case TOKEN_INT_LITERAL:
-                if (!ParseIntDatum(out int i, out var intRange))
-                    return false;
-                else if (intRange is not null)
-                    datum = intRange;
-                else
-                    datum = new IntDatum(i);
-                break;
-
-            case TOKEN_FLOAT_LITERAL:
-                if (!ParseFloatDatum(out decimal f, out var floatRange))
-                    return false;
-                else if (floatRange is not null)
-                    datum = floatRange;
-                else
-                    datum = new FloatDatum(f);
-                break;
-
-            case KEYWORD_TRUE:
-                Step();
-                datum = Datum.True;
-                break;
-
-            case KEYWORD_FALSE:
-                Step();
-                datum = Datum.False;
-                break;
-
-            case TOKEN_STRING_LITERAL:
-                var s = _current.StringValue;
-                Step();
-                datum = new StringDatum(s);
-                break;
-
-            case TOKEN_EMPTY:
-                Step();
-                datum = Datum.Empty;
-                break;
-
-            default:
-                return Error($"Unexpected token {_current}");
-        }
-
-        return true;
-    }
-
-    internal bool ParseTupleDatum([NotNullWhen(true)] out Datum? value)
-    {
-        Step();
-        value = null;
-        List<Datum> values = [];
-        while (_kind is not TOKEN_CLOSE_PAREN)
-        {
-            if (!ParseDatum(out value))
-                return false;
-            values.Add(value);
-            if (!Skip(TOKEN_COMMA))
-                break;
-        }
-
-        if (!Expect(TOKEN_CLOSE_PAREN))
-            return false;
-
-        value = new DatumTuple(values);
-        return true;
-    }
-
-    internal bool ParseRecordDatum([NotNullWhen(true)] out Datum? value)
-    {
-        value = null;
-
-        if (!Expect(TOKEN_OPEN_PAREN))
-            return false;
-
-        Dictionary<string, Datum> fields = [];
-        value = new RecordDatum(fields);
-
-        while (_kind is not TOKEN_CLOSE_PAREN)
-        {
-            if (!ParseIdent(out var field))
-                return false;
-
-            var fieldName = field.ToString();
-
-            if (!Expect(TOKEN_COLON))
-                return false;
-
-            if (!ParseDatum(out var fieldValue))
-                return false;
-
-            if (fields.ContainsKey(fieldName))
-                return Expected($"a unique value name, got {fieldName}");
-
-            fields.Add(fieldName, fieldValue);
-            if (!Skip(TOKEN_COMMA))
-                break;
-        }
-
-        if (!Expect(TOKEN_CLOSE_PAREN))
-            return false;
-
-        return true;
-    }
+    // /// <summary>
+    // /// Parse a <see cref="Datum"/>.
+    // /// </summary>
+    // /// <mzn>1</mzn>
+    // /// <mzn>true</mzn>
+    // /// <mzn>{1,2,3}</mzn>
+    // /// <mzn>1..10</mzn>
+    // public bool ParseDatum([NotNullWhen(true)] out IMiniZincDatum? datum)
+    // {
+    //     datum = null;
+    //     switch (_kind)
+    //     {
+    //         case TOKEN_OPEN_BRACE:
+    //             if (!ParseSetDatum(out datum))
+    //                 return false;
+    //             break;
+    //
+    //         case TOKEN_OPEN_BRACKET:
+    //             if (!ParseArrayDatum(out datum))
+    //                 return false;
+    //             break;
+    //
+    //         case TOKEN_OPEN_PAREN when Peek().Kind is TOKEN_IDENTIFIER:
+    //             if (!ParseRecordDatum(out datum))
+    //                 return false;
+    //             break;
+    //
+    //         case TOKEN_OPEN_PAREN:
+    //             if (!ParseTupleDatum(out datum))
+    //                 return false;
+    //             break;
+    //
+    //         case TOKEN_INT_LITERAL:
+    //             if (!ParseIntDatum(out int i, out var intRange))
+    //                 return false;
+    //             else if (intRange is not null)
+    //                 datum = intRange;
+    //             else
+    //                 datum = new IntDatum(i);
+    //             break;
+    //
+    //         case TOKEN_FLOAT_LITERAL:
+    //             if (!ParseFloatDatum(out decimal f, out var floatRange))
+    //                 return false;
+    //             else if (floatRange is not null)
+    //                 datum = floatRange;
+    //             else
+    //                 datum = new FloatDatum(f);
+    //             break;
+    //
+    //         case KEYWORD_TRUE:
+    //             Step();
+    //             datum = Datum.True;
+    //             break;
+    //
+    //         case KEYWORD_FALSE:
+    //             Step();
+    //             datum = Datum.False;
+    //             break;
+    //
+    //         case TOKEN_STRING_LITERAL:
+    //             var s = _current.StringValue;
+    //             Step();
+    //             datum = new StringDatum(s);
+    //             break;
+    //
+    //         case TOKEN_EMPTY:
+    //             Step();
+    //             datum = Datum.Empty;
+    //             break;
+    //
+    //         default:
+    //             return Error($"Unexpected token {_current}");
+    //     }
+    //
+    //     return true;
+    // }
+    //
+    // internal bool ParseTupleDatum([NotNullWhen(true)] out Datum? value)
+    // {
+    //     Step();
+    //     value = null;
+    //     List<Datum> values = [];
+    //     while (_kind is not TOKEN_CLOSE_PAREN)
+    //     {
+    //         if (!ParseDatum(out value))
+    //             return false;
+    //         values.Add(value);
+    //         if (!Skip(TOKEN_COMMA))
+    //             break;
+    //     }
+    //
+    //     if (!Expect(TOKEN_CLOSE_PAREN))
+    //         return false;
+    //
+    //     value = new DatumTuple(values);
+    //     return true;
+    // }
+    //
+    // internal bool ParseRecordDatum([NotNullWhen(true)] out Datum? value)
+    // {
+    //     value = null;
+    //
+    //     if (!Expect(TOKEN_OPEN_PAREN))
+    //         return false;
+    //
+    //     Dictionary<string, Datum> fields = [];
+    //     value = new RecordDatum(fields);
+    //
+    //     while (_kind is not TOKEN_CLOSE_PAREN)
+    //     {
+    //         if (!ParseIdent(out var field))
+    //             return false;
+    //
+    //         var fieldName = field.ToString();
+    //
+    //         if (!Expect(TOKEN_COLON))
+    //             return false;
+    //
+    //         if (!ParseDatum(out var fieldValue))
+    //             return false;
+    //
+    //         if (fields.ContainsKey(fieldName))
+    //             return Expected($"a unique value name, got {fieldName}");
+    //
+    //         fields.Add(fieldName, fieldValue);
+    //         if (!Skip(TOKEN_COMMA))
+    //             break;
+    //     }
+    //
+    //     if (!Expect(TOKEN_CLOSE_PAREN))
+    //         return false;
+    //
+    //     return true;
+    // }
 
     /// <summary>
     /// Parse an Expression
@@ -1276,7 +1278,7 @@ public struct Parser
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
     internal bool ParseExpr(
-        [NotNullWhen(true)] out ExpressionSyntax? expr,
+        [NotNullWhen(true)] out Expr? expr,
         Assoc associativity = 0,
         short precedence = 0,
         bool typeInst = false
@@ -1351,11 +1353,11 @@ public struct Parser
                     if (_i > i) // Failed while consuming input
                         return false;
 
-                    expr = new RangeLiteralSyntax(expr.Start, op, lower: expr);
+                    expr = new RangeExpr(expr.Start, op, lower: expr);
                 }
                 else
                 {
-                    expr = new RangeLiteralSyntax(expr.Start, op, lower: expr, upper: right);
+                    expr = new RangeExpr(expr.Start, op, lower: expr, upper: right);
                 }
             }
             else
@@ -1367,32 +1369,28 @@ public struct Parser
         }
     }
 
-    internal static ExpressionSyntax UnOpExpr(in Token prefix, ExpressionSyntax expr)
+    internal static Expr UnOpExpr(in Token prefix, Expr expr)
     {
         switch (prefix.Kind, expr)
         {
-            case (TOKEN_PLUS, IntLiteralSyntax):
-            case (TOKEN_PLUS, FloatLiteralSyntax):
+            case (TOKEN_PLUS, IntExpr):
+            case (TOKEN_PLUS, FloatExpr):
                 return expr;
-            case (TOKEN_MINUS, IntLiteralSyntax { Value: var i }):
-                return new IntLiteralSyntax(expr.Start, -i);
-            case (TOKEN_MINUS, FloatLiteralSyntax { Value: var i }):
-                return new FloatLiteralSyntax(expr.Start, -i);
+            case (TOKEN_MINUS, IntExpr { Value: var i }):
+                return new IntExpr(expr.Start, -i);
+            case (TOKEN_MINUS, FloatExpr { Value: var i }):
+                return new FloatExpr(expr.Start, -i);
             case (TOKEN_CLOSED_RANGE, _):
             case (TOKEN_OPEN_RANGE, _):
             case (TOKEN_RIGHT_OPEN_RANGE, _):
             case (TOKEN_LEFT_OPEN_RANGE, _):
-                return new RangeLiteralSyntax(prefix, prefix.Kind, upper: expr);
+                return new RangeExpr(prefix, prefix.Kind, upper: expr);
             default:
-                return new UnaryOperatorSyntax(prefix, expr);
+                return new UnOpExpr(prefix, expr);
         }
     }
 
-    internal static ExpressionSyntax BinOpExpr(
-        ExpressionSyntax left,
-        in Token infix,
-        ExpressionSyntax right
-    )
+    internal static Expr BinOpExpr(Expr left, in Token infix, Expr right)
     {
         switch (infix.Kind)
         {
@@ -1402,7 +1400,7 @@ public struct Parser
             case TOKEN_LEFT_OPEN_RANGE:
 
             default:
-                return new BinaryOperatorSyntax(left, infix, right);
+                return new BinOpExpr(left, infix, right);
         }
     }
 
@@ -1511,7 +1509,7 @@ public struct Parser
     ///<mzn>forall(i in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i,j in 1..3)(xd[i] > 0);</mzn>
     ///<mzn>forall(i in 1..3, j in 1..3 where i > j)(xd[i]);</mzn>
-    internal bool ParseIdentifierExpr([NotNullWhen(true)] out ExpressionSyntax? result)
+    internal bool ParseIdentifierExpr([NotNullWhen(true)] out Expr? result)
     {
         result = null;
         var name = _current;
@@ -1520,14 +1518,14 @@ public struct Parser
         // Simple identifier
         if (!Skip(TOKEN_OPEN_PAREN))
         {
-            result = new IdentifierSyntax(name);
+            result = new IdentExpr(name);
             return true;
         }
 
         // Function call without arguments
         if (Skip(TOKEN_CLOSE_PAREN))
         {
-            result = new CallSyntax(name);
+            result = new CallExpr(name);
             return true;
         }
 
@@ -1544,7 +1542,7 @@ public struct Parser
          * Backtracking would make this trivial but I think that's
          * more trouble than it's worth.
          */
-        var exprs = new List<ExpressionSyntax>();
+        var exprs = new List<Expr>();
         bool maybeGen = true;
         bool isGen = false;
         int i;
@@ -1556,17 +1554,13 @@ public struct Parser
         switch (expr)
         {
             // Identifier are valid in either call or gencall
-            case IdentifierSyntax id:
+            case IdentExpr id:
                 exprs.Add(expr);
                 break;
 
             // `in` expressions involving identifiers could mean a gencall
-            case BinaryOperatorSyntax
-            {
-                Operator: KEYWORD_IN,
-                Left: IdentifierSyntax id,
-                Right: { } from
-            } when maybeGen:
+            case BinOpExpr { Operator: KEYWORD_IN, Left: IdentExpr id, Right: { } from }
+                when maybeGen:
                 if (!Skip(KEYWORD_WHERE))
                 {
                     exprs.Add(expr);
@@ -1578,7 +1572,7 @@ public struct Parser
                 if (!ParseExpr(out var where))
                     return false;
 
-                expr = new GeneratorSyntax(expr.Start, [id.Name]) { From = from, Where = where };
+                expr = new GenExpr(expr.Start, [id.Name]) { From = from, Where = where };
                 exprs.Add(expr);
                 break;
 
@@ -1606,14 +1600,14 @@ public struct Parser
         // For sure it's just a call
         if (!maybeGen)
         {
-            result = new CallSyntax(name, exprs);
+            result = new CallExpr(name, exprs);
             return true;
         }
 
         // Could be a gencall if followed by (
         if (!isGen && _kind is not TOKEN_OPEN_PAREN)
         {
-            result = new CallSyntax(name, exprs);
+            result = new CallExpr(name, exprs);
             return true;
         }
 
@@ -1626,8 +1620,8 @@ public struct Parser
         if (!Expect(TOKEN_CLOSE_PAREN))
             return false;
 
-        var generators = new List<GeneratorSyntax>();
-        var gencall = new GeneratorCallSyntax(name, yields, generators);
+        var generators = new List<GenExpr>();
+        var gencall = new GenCallExpr(name, yields, generators);
 
         List<Token>? idents = null;
         for (i = 0; i < exprs.Count; i++)
@@ -1635,22 +1629,22 @@ public struct Parser
             switch (exprs[i])
             {
                 // Identifiers must be collected as they are part of generators
-                case IdentifierSyntax id:
+                case IdentExpr id:
                     idents ??= [];
                     idents.Add(id.Name);
                     break;
                 // Already created generators get added
-                case GeneratorSyntax g:
+                case GenExpr g:
                     if (idents is not null)
                         g.Names.InsertRange(0, idents);
                     idents = null;
                     generators.Add(g);
                     break;
                 // Binops are now known to be generators
-                case BinaryOperatorSyntax binop:
+                case BinOpExpr binop:
                     idents ??= [];
-                    idents.Add(((IdentifierSyntax)binop.Left).Name);
-                    var gen = new GeneratorSyntax(default, idents) { From = binop.Right };
+                    idents.Add(((IdentExpr)binop.Left).Name);
+                    var gen = new GenExpr(default, idents) { From = binop.Right };
                     generators.Add(gen);
                     idents = null;
                     break;
@@ -1661,7 +1655,7 @@ public struct Parser
         return true;
     }
 
-    private bool ParseGenerators([NotNullWhen(true)] out List<GeneratorSyntax>? generators)
+    private bool ParseGenerators([NotNullWhen(true)] out List<GenExpr>? generators)
     {
         var start = _current;
         generators = null;
@@ -1694,7 +1688,7 @@ public struct Parser
         if (!ParseExpr(out var from))
             return false;
 
-        var gen = new GeneratorSyntax(start, names) { From = from };
+        var gen = new GenExpr(start, names) { From = from };
 
         if (Skip(KEYWORD_WHERE))
             if (!ParseExpr(out var where))
@@ -1717,7 +1711,7 @@ public struct Parser
     /// </summary>
     /// <mzn>[1,2,3]</mzn>
     /// <mzn>[ x | x in [a,b,c]]</mzn>
-    internal bool ParseBracketExpr([NotNullWhen(true)] out ExpressionSyntax? result)
+    internal bool ParseBracketExpr([NotNullWhen(true)] out Expr? result)
     {
         result = null;
 
@@ -1726,7 +1720,7 @@ public struct Parser
 
         if (_kind is TOKEN_CLOSE_BRACKET)
         {
-            result = new Array1dSyntax(start);
+            result = new Array1dExpr(start);
             return Expect(TOKEN_CLOSE_BRACKET);
         }
 
@@ -1765,11 +1759,11 @@ public struct Parser
      * Or a composite form like
      * `[0: A, B, C, D]`
      */
-    bool Parse1dArrayLiteral(in Token start, [NotNullWhen(true)] out ExpressionSyntax? result)
+    bool Parse1dArrayLiteral(in Token start, [NotNullWhen(true)] out Expr? result)
     {
         result = default;
-        ExpressionSyntax index;
-        ExpressionSyntax element;
+        Expr index;
+        Expr element;
 
         // Parse the first element
         if (!ParseExpr(out var value))
@@ -1782,7 +1776,7 @@ public struct Parser
             index = value;
             if (!ParseExpr(out value))
                 return false;
-            element = new IndexAndNode(index, value);
+            element = new IndexedExpr(index, value);
         }
         else
         {
@@ -1795,17 +1789,13 @@ public struct Parser
             if (!ParseGenerators(out var generators))
                 return false;
 
-            result = new ComprehensionSyntax(start, element)
-            {
-                IsSet = false,
-                Generators = generators
-            };
+            result = new CompExpr(start, element) { IsSet = false, Generators = generators };
 
             return Expect(TOKEN_CLOSE_BRACKET);
         }
 
         // 1D Array literal
-        var arr1d = new Array1dSyntax(start);
+        var arr1d = new Array1dExpr(start);
         result = arr1d;
         arr1d.Elements.Add(element);
 
@@ -1830,7 +1820,7 @@ public struct Parser
 
                 if (!ParseExpr(out value))
                     return false;
-                element = new IndexAndNode(index, value);
+                element = new IndexedExpr(index, value);
             }
             else if (!ParseExpr(out value))
                 return false;
@@ -1862,9 +1852,9 @@ public struct Parser
      *  | B: 1, 1, 1
      *  | C: 2, 2, 2 |];
      */
-    private bool Parse2dArrayLiteral(in Token start, out Array2dSyntax arr)
+    private bool Parse2dArrayLiteral(in Token start, out Array2dExpr arr)
     {
-        arr = new Array2dSyntax(start);
+        arr = new Array2dExpr(start);
 
         if (Skip(TOKEN_PIPE))
             return Expect(TOKEN_CLOSE_BRACKET);
@@ -2065,7 +2055,7 @@ public struct Parser
     /// </summary>
     /// <mzn>{1,2,3}</mzn>
     /// <mzn>{ x | x in [1,2,3]}</mzn>
-    private bool ParseBraceExpr([NotNullWhen(true)] out ExpressionSyntax? result)
+    private bool ParseBraceExpr([NotNullWhen(true)] out Expr? result)
     {
         result = null;
 
@@ -2075,7 +2065,7 @@ public struct Parser
         // Empty Set
         if (_kind is TOKEN_CLOSE_BRACE)
         {
-            result = new SetLiteralSyntax(start);
+            result = new SetExpr(start);
             return Expect(TOKEN_CLOSE_BRACE);
         }
 
@@ -2089,17 +2079,13 @@ public struct Parser
             if (!ParseGenerators(out var generators))
                 return false;
 
-            result = new ComprehensionSyntax(start, element)
-            {
-                IsSet = true,
-                Generators = generators
-            };
+            result = new CompExpr(start, element) { IsSet = true, Generators = generators };
             return Expect(TOKEN_CLOSE_BRACE);
         }
 
         // Set literal
-        var elements = new List<ExpressionSyntax>();
-        var set = new SetLiteralSyntax(start);
+        var elements = new List<Expr>();
+        var set = new SetExpr(start);
         result = set;
         elements.Add(element);
         Skip(TOKEN_COMMA);
@@ -2116,7 +2102,7 @@ public struct Parser
         return Expect(TOKEN_CLOSE_BRACE);
     }
 
-    internal bool ParseLetExpr([NotNullWhen(true)] out ExpressionSyntax? let)
+    internal bool ParseLetExpr([NotNullWhen(true)] out Expr? let)
     {
         let = null;
 
@@ -2150,7 +2136,7 @@ public struct Parser
         if (!ParseExpr(out var body))
             return false;
 
-        let = new LetSyntax(start, locals, body);
+        let = new LetExpr(start, locals, body);
         return true;
     }
 
@@ -2176,8 +2162,8 @@ public struct Parser
     }
 
     private bool ParseIfThenCase(
-        [NotNullWhen(true)] out ExpressionSyntax? ifCase,
-        out ExpressionSyntax? thenCase,
+        [NotNullWhen(true)] out Expr? ifCase,
+        out Expr? thenCase,
         TokenKind ifKeyword
     )
     {
@@ -2204,7 +2190,7 @@ public struct Parser
     /// </summary>
     /// <mzn>if x > 0 then y > 0 else true endif</mzn>
     /// <mzn>if z then 100 else 200 endif</mzn>
-    private bool ParseIfElseExpr([NotNullWhen(true)] out ExpressionSyntax? result)
+    private bool ParseIfElseExpr([NotNullWhen(true)] out Expr? result)
     {
         result = null;
         var start = _current;
@@ -2242,7 +2228,7 @@ public struct Parser
     /// - (a: 100, b:200)
     /// </summary>
     /// <returns></returns>
-    private bool ParseParenExpr([NotNullWhen(true)] out ExpressionSyntax? result)
+    private bool ParseParenExpr([NotNullWhen(true)] out Expr? result)
     {
         result = null;
 
@@ -2262,10 +2248,10 @@ public struct Parser
         // Record expr
         if (Skip(TOKEN_COLON))
         {
-            if (expr is not IdentifierSyntax { Name: var name })
+            if (expr is not IdentExpr { Name: var name })
                 return Expected("Identifier");
 
-            var record = new RecordLiteralSyntax(start);
+            var record = new RecordExpr(start);
             result = record;
             if (!ParseExpr(out expr))
                 return false;
@@ -2295,7 +2281,7 @@ public struct Parser
         }
 
         // Else must be a tuple
-        var tuple = new TupleLiteralSyntax(start);
+        var tuple = new TupleExpr(start);
         result = tuple;
         tuple.Fields.Add(expr);
         if (!Expect(TOKEN_COMMA))
@@ -2316,19 +2302,19 @@ public struct Parser
     /// Parse annotations
     /// </summary>
     /// <returns>True if no error was encountered</returns>
-    internal bool ParseAnnotations(out List<ExpressionSyntax>? annotations)
+    internal bool ParseAnnotations(out List<Expr>? annotations)
     {
         annotations = null;
         while (Skip(TOKEN_COLON_COLON))
         {
-            ExpressionSyntax? ann;
+            Expr? ann;
 
             // Edge case where 'output' keyword can be used
             // in a non-keyword context, eg:
             // int : x :: output = 3;
             if (_kind is KEYWORD_OUTPUT)
             {
-                ann = new IdentifierSyntax(_current);
+                ann = new IdentExpr(_current);
                 Step();
             }
             else if (!ParseExprAtom(out ann))
@@ -2349,7 +2335,7 @@ public struct Parser
     /// <mzn>constraint a > 2 :: "xd"</mzn>
     /// <mzn>output ["xd"] :: "dx"</mzn>
     /// <returns>True if no error was encountered</returns>
-    internal bool ParseStringAnnotations(out List<ExpressionSyntax>? annotations)
+    internal bool ParseStringAnnotations(out List<Expr>? annotations)
     {
         annotations = null;
         while (Skip(TOKEN_COLON_COLON))
@@ -2357,7 +2343,7 @@ public struct Parser
             if (!ParseString(out var ann))
                 return false;
             annotations ??= [];
-            annotations.Add(new StringLiteralSyntax(ann));
+            annotations.Add(new StringExpr(ann));
         }
 
         return true;
@@ -2559,7 +2545,7 @@ public struct Parser
             return false;
 
         Token name;
-        List<ExpressionSyntax>? anns;
+        List<Expr>? anns;
         TypeSyntax? type;
 
         parameters = [];
@@ -2768,14 +2754,14 @@ public struct Parser
     /// <example>
     /// Parser.ParseDatum("{1, 2, 3}"); // IntSet([1,2,3]);
     /// </example>
-    public static bool ParseDatum(string text, [NotNullWhen(true)] out Datum? datum)
-    {
-        datum = null;
-        var parser = new Parser(text);
-        if (!parser.ParseDatum(out datum))
-            return false;
-        return true;
-    }
+    // public static bool ParseDatum(string text, [NotNullWhen(true)] out Datum? datum)
+    // {
+    //     datum = null;
+    //     var parser = new Parser(text);
+    //     if (!parser.ParseDatum(out datum))
+    //         return false;
+    //     return true;
+    // }
 
     /// <summary>
     /// Parse a <see cref="Datum"/> from the given string.
@@ -2783,18 +2769,18 @@ public struct Parser
     /// <example>
     /// Parser.ParseDatum%ltIntArray%gt("[1,2,1,2,3]"); // IntArray([1,2,3]);
     /// </example>
-    public static bool ParseDatum<T>(string text, [NotNullWhen(true)] out T? datum)
-        where T : Datum
-    {
-        datum = null;
-        var parser = new Parser(text);
-        if (!parser.ParseDatum(out var mzDatum))
-            return false;
-        if (mzDatum is not T t)
-            return false;
-        datum = t;
-        return true;
-    }
+    // public static bool ParseDatum<T>(string text, [NotNullWhen(true)] out T? datum)
+    //     where T : Datum
+    // {
+    //     datum = null;
+    //     var parser = new Parser(text);
+    //     if (!parser.ParseDatum(out var mzDatum))
+    //         return false;
+    //     if (mzDatum is not T t)
+    //         return false;
+    //     datum = t;
+    //     return true;
+    // }
 
     /// <summary>
     /// Parse the given minizinc data string.
@@ -2828,7 +2814,7 @@ public struct Parser
 
     /// Parse an expression of the given type from text
     public static T ParseExpression<T>(string text)
-        where T : ExpressionSyntax
+        where T : Expr
     {
         var parser = new Parser(text);
         if (!parser.ParseExpr(out var expr))
@@ -2851,7 +2837,7 @@ public struct Parser
 
     /// Parse a statement of the given type from text
     public static T ParseStatement<T>(string text)
-        where T : StatementSyntax
+        where T : Statement
     {
         var parser = new Parser(text);
         if (!parser.ParseStatement(out var statement))
@@ -2874,7 +2860,7 @@ public struct Parser
 
     /// Try to parse a statement of the given type from text
     public static bool TryParseStatement<T>(string text, [NotNullWhen(true)] out T? result)
-        where T : StatementSyntax
+        where T : Statement
     {
         result = null;
         var parser = new Parser(text);
@@ -2888,17 +2874,46 @@ public struct Parser
     }
 
     /// Parse an expression of the given type from text
-    public static bool TryParseExpression<T>(string text, [NotNullWhen(true)] out T? expression)
-        where T : ExpressionSyntax
+    public static bool TryParseExpr<T>(
+        string text,
+        [NotNullWhen(true)] out T? expression,
+        out Token location,
+        [NotNullWhen(false)] out string? error
+    )
+        where T : Expr
     {
         expression = null;
-        var parser = new Parser(text);
-        if (!parser.ParseExpr(out var expr))
+        if (!TryParseExpr(text, out var expr, out location, out error))
             return false;
 
         if (expr is not T t)
+        {
+            error = $"Expected type {typeof(T)} but got {expr.GetType()}";
             return false;
+        }
+
         expression = t;
+        return true;
+    }
+
+    public static bool TryParseExpr(
+        string text,
+        [NotNullWhen(true)] out Expr? expression,
+        out Token location,
+        [NotNullWhen(false)] out string? error
+    )
+    {
+        expression = null;
+        var parser = new Parser(text);
+        if (!parser.ParseExpr(out expression))
+        {
+            location = parser._current;
+            error = parser._errorMessage!;
+            return false;
+        }
+
+        location = parser._current;
+        error = null;
         return true;
     }
 }

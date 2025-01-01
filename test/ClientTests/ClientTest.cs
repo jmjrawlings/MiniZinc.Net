@@ -136,117 +136,23 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
-    public bool Check(int a, int b) => a == b;
-
-    public bool Check(decimal a, decimal b)
-    {
-        var ra = Math.Round(a, 4);
-        var rb = Math.Round(b, 4);
-        return ra == rb;
-    }
-
-    public bool Check(IntLiteralSyntax value, IntRange rangeData)
-    {
-        if (!Check(value.Value, rangeData.Lower))
-            return false;
-        if (!Check(value.Value, rangeData.Upper))
-            return false;
-        return true;
-    }
-
-    public bool Check(FloatLiteralSyntax value, FloatRange range)
-    {
-        if (!Check(value.Value, range.Lower))
-            return false;
-        if (!Check(value.Value, range.Upper))
-            return false;
-        return true;
-    }
-
-    public bool Check(IntSet set, IntRange rangeData)
-    {
-        foreach (var value in set)
-        {
-            if (value < rangeData.Lower)
-                return false;
-
-            if (value > rangeData.Upper)
-                return false;
-        }
-        return true;
-    }
-
-    public bool Check(FloatSet set, FloatRange range)
-    {
-        foreach (var value in set)
-        {
-            if (value < range.Lower)
-                return false;
-
-            if (value > range.Upper)
-                return false;
-        }
-        return true;
-    }
+    // public bool Check(int a, int b) => a == b;
+    //
+    // public bool Check(decimal a, decimal b)
+    // {
+    //     var ra = Math.Round(a, 4);
+    //     var rb = Math.Round(b, 4);
+    //     return ra == rb;
+    // }
 
     /// <summary>
     /// Compare the solution against the json node
     /// </summary>
-    public bool Check(Datum expected, Datum actual)
+    public bool Check(Expr expected, Expr actual)
     {
         int i = 0;
         switch (expected, actual)
         {
-            case (IntDatum value, IntRange range):
-                if (!Check(value, range))
-                    return false;
-                break;
-
-            case (IntRange range, IntDatum value):
-                if (!Check(value, range))
-                    return false;
-                break;
-
-            case (FloatDatum value, FloatRange range):
-                if (!Check(value, range))
-                    return false;
-                break;
-
-            case (FloatRange range, FloatDatum value):
-                if (!Check(value, range))
-                    return false;
-                break;
-
-            case (FloatRange range, SetDatum set):
-                if (!Check(set, range))
-                    return false;
-                break;
-
-            case (SetDatum set, FloatRange range):
-                if (!Check(set, range))
-                    return false;
-                break;
-
-            case (IntRange range, IntSet set):
-                if (!Check(set, range))
-                    return false;
-                break;
-
-            case (IntSet set, IntRange range):
-                if (!Check(set, range))
-                    return false;
-                break;
-
-            case (DatumArray array, DatumTuple tuple):
-                for (i = 0; i < array.Count; i++)
-                {
-                    var e = array[i];
-                    var a = tuple[i];
-                    if (!Check(e, a))
-                        return false;
-                }
-                break;
-
             default:
                 var expectedMzn = expected.Write(WriteOptions.Minimal);
                 var actualMzn = expected.Write(WriteOptions.Minimal);
@@ -258,37 +164,37 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         return true;
     }
 
-    private bool Check(SetLiteralSyntax set, RangeLiteralSyntax range)
-    {
-        switch (set.Elements)
-        {
-            case []:
-                return false;
-
-            case [var e]:
-                if (!e.Equals(range.Lower))
-                    return false;
-                if (!e.Equals(range.Upper))
-                    return false;
-                return true;
-
-            case var elements:
-                int min = (range.Lower as IntLiteralSyntax).Value;
-                int max = (range.Upper as IntLiteralSyntax).Value;
-                for (int i = min; i <= max; i++)
-                {
-                    var e = elements[i];
-                    if (e is not IntLiteralSyntax il)
-                        return false;
-                    if (il.Value != i)
-                        return false;
-                }
-
-                return true;
-            default:
-                break;
-        }
-    }
+    // private bool Check(SetExpr set, RangeExpr range)
+    // {
+    //     switch (set.Elements)
+    //     {
+    //         case []:
+    //             return false;
+    //
+    //         case [var e]:
+    //             if (!e.Equals(range.Lower))
+    //                 return false;
+    //             if (!e.Equals(range.Upper))
+    //                 return false;
+    //             return true;
+    //
+    //         case var elements:
+    //             int min = (range.Lower as IntExpr).Value;
+    //             int max = (range.Upper as IntExpr).Value;
+    //             for (int i = min; i <= max; i++)
+    //             {
+    //                 var e = elements[i];
+    //                 if (e is not IntExpr il)
+    //                     return false;
+    //                 if (il.Value != i)
+    //                     return false;
+    //             }
+    //
+    //             return true;
+    //         default:
+    //             break;
+    //     }
+    // }
 
     private IEnumerable<JsonNode?> Flatten(JsonArray arr)
     {
