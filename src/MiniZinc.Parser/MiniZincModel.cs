@@ -18,7 +18,7 @@ public sealed class MiniZincModel
 {
     public string Name { get; set; } = "";
 
-    private Dictionary<string, INamedSyntax> _namespace;
+    private Dictionary<string, INamedSyntax> _bindings;
 
     private Dictionary<string, List<DeclareStatement>>? _overloads;
 
@@ -47,13 +47,13 @@ public sealed class MiniZincModel
 
     public IEnumerable<OutputStatement> Outputs => _outputs ?? Enumerable.Empty<OutputStatement>();
 
-    public IReadOnlyDictionary<string, INamedSyntax> NameSpace => _namespace;
+    public IReadOnlyDictionary<string, INamedSyntax> Bindings => _bindings;
 
     public SolveStatement? SolveStatement => _solve;
 
     public SolveMethod SolveMethod => _solve?.Method ?? SOLVE_SATISFY;
 
-    public ExpressionSyntax? Objective => _solve?.Objective;
+    public Expr? Objective => _solve?.Objective;
 
     public IReadOnlyList<DirectoryInfo> SearchDirectories => _searchDirectories;
 
@@ -67,7 +67,7 @@ public sealed class MiniZincModel
         _outputs = null;
         _constraints = null;
         _includes = null;
-        _namespace = [];
+        _bindings = [];
         _searchDirectories = [];
         _overloads = null;
     }
@@ -180,13 +180,13 @@ public sealed class MiniZincModel
     /// The constraint name if one was provided
     /// </returns>
     [return: NotNullIfNotNull(nameof(name))]
-    public string? AddConstraint(ExpressionSyntax expr, string? name = null)
+    public string? AddConstraint(Expr expr, string? name = null)
     {
         var con = new ConstraintStatement(default, expr);
         if (name is not null)
         {
             con.Annotations ??= [];
-            con.Annotations.Add(new StringLiteralSyntax(default, name));
+            con.Annotations.Add(new StringExpr(default, name));
         }
         AddSyntax(con);
         return name;
@@ -289,7 +289,7 @@ public sealed class MiniZincModel
     /// <summary>
     /// Add the given syntax node to the model
     /// </summary>
-    public void AddSyntax(SyntaxNode syntax)
+    public void AddSyntax(Syntax syntax)
     {
         switch (syntax)
         {
@@ -311,20 +311,20 @@ public sealed class MiniZincModel
 
             case TypeAliasSyntax alias:
                 var name = alias.Name.StringValue;
-                if (_namespace.TryGetValue(name, out var old))
+                if (_bindings.TryGetValue(name, out var old))
                     Error($"Type alias name \"{name}\" conflicts with {old})");
-                _namespace.Add(name, alias);
+                _bindings.Add(name, alias);
                 break;
 
             case AssignStatement assign:
                 name = assign.Name.StringValue;
                 var expr = assign.Expr;
-                _namespace.TryGetValue(name, out old);
+                _bindings.TryGetValue(name, out old);
                 switch (old)
                 {
                     // Undeclared variable
                     case null:
-                        _namespace[name] = assign;
+                        _bindings[name] = assign;
                         break;
 
                     // Assignment to a variable that has only been declared
@@ -342,7 +342,7 @@ public sealed class MiniZincModel
                          */
                         var mzn = $"{declare.ToString()[..^1]} = {expr};";
                         declare = ParseStatement<DeclareStatement>(mzn);
-                        _namespace[name] = declare;
+                        _bindings[name] = declare;
                         break;
 
                     default:
@@ -353,16 +353,16 @@ public sealed class MiniZincModel
 
             case DeclareStatement declare:
                 name = declare.Name.StringValue;
-                _namespace.TryGetValue(name, out old);
+                _bindings.TryGetValue(name, out old);
                 switch (old)
                 {
                     case null:
-                        _namespace[name] = declare;
+                        _bindings[name] = declare;
                         break;
 
                     case AssignStatement assign when declare.Body is null:
                         declare.Body = assign.Expr;
-                        _namespace[name] = declare;
+                        _bindings[name] = declare;
                         break;
 
                     case DeclareStatement oldDeclare:
@@ -574,8 +574,8 @@ public sealed class MiniZincModel
             foreach (var include in includes)
                 writer.WriteStatement(include);
 
-        foreach (var syntax in _namespace.Values)
-            writer.WriteStatement((StatementSyntax)syntax);
+        foreach (var syntax in _bindings.Values)
+            writer.WriteStatement((Statement)syntax);
 
         if (_overloads is { } dict)
             foreach (var name in dict.Keys)

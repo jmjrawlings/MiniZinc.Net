@@ -128,23 +128,23 @@ public sealed class Writer
             WriteSpace();
             WriteChar('=');
             WriteSpace();
-            WriteValue(value);
+            WriteExpr(value as Expr);
             EndStatement();
         }
     }
 
-    public void WriteSyntax(SyntaxNode? syntax)
+    public void WriteSyntax(Syntax.Syntax? syntax)
     {
         switch (syntax)
         {
             case null:
                 break;
 
-            case ExpressionSyntax expr:
+            case Expr expr:
                 WriteExpr(expr);
                 break;
 
-            case StatementSyntax statement:
+            case Statement statement:
                 WriteStatement(statement);
                 break;
 
@@ -154,7 +154,7 @@ public sealed class Writer
         }
     }
 
-    public void WriteStatement(StatementSyntax? syntax)
+    public void WriteStatement(Statement? syntax)
     {
         NewLine();
         switch (syntax)
@@ -240,43 +240,43 @@ public sealed class Writer
         EndStatement();
     }
 
-    public void WriteExpr(ExpressionSyntax? expr, int? prec = null)
+    public void WriteExpr(Expr? expr, int? prec = null)
     {
         switch (expr)
         {
             case null:
                 break;
 
-            case IntLiteralSyntax i:
+            case IntExpr i:
                 WriteInt(i);
                 break;
 
-            case FloatLiteralSyntax f:
+            case FloatExpr f:
                 WriteDecimal(f);
                 break;
 
-            case BoolLiteralSyntax b:
+            case BoolExpr b:
                 WriteBool(b);
                 break;
 
-            case StringLiteralSyntax s:
+            case StringExpr s:
                 WriteChar(DOUBLE_QUOTE);
                 WriteString(s);
                 WriteChar(DOUBLE_QUOTE);
                 break;
 
-            case EmptyLiteralSyntax:
+            case EmptyExpr:
                 WriteChar(OPEN_CHEVRON);
                 WriteChar(CLOSE_CHEVRON);
                 break;
 
-            case Array1dSyntax e:
+            case Array1dExpr e:
                 WriteChar(OPEN_BRACKET);
                 WriteSep(e.Elements, WriteExpr);
                 WriteChar(CLOSE_BRACKET);
                 break;
 
-            case Array2dSyntax e:
+            case Array2dExpr e:
                 WriteArray2d(e);
                 break;
 
@@ -284,18 +284,18 @@ public sealed class Writer
                 WriteArray3d(e);
                 break;
 
-            case ArrayAccessSyntax e:
+            case ArrayAccessExpr e:
                 WriteExpr(e.Array);
                 WriteChar(OPEN_BRACKET);
                 WriteSep(e.Access, WriteExpr);
                 WriteChar(CLOSE_BRACKET);
                 break;
 
-            case BinaryOperatorSyntax e:
+            case BinOpExpr e:
                 WriteBinOp(e, prec);
                 break;
 
-            case CallSyntax e:
+            case CallExpr e:
                 WriteToken(e.Name);
                 WriteChar(OPEN_PAREN);
                 WriteSep(e.Args, WriteExpr);
@@ -303,7 +303,7 @@ public sealed class Writer
                 WriteAnnotations(e);
                 break;
 
-            case ComprehensionSyntax e:
+            case CompExpr e:
                 WriteChar(e.IsSet ? OPEN_BRACE : OPEN_BRACKET);
                 WriteExpr(e.Expr);
                 WriteChar(PIPE);
@@ -312,7 +312,7 @@ public sealed class Writer
                 WriteAnnotations(e);
                 break;
 
-            case GeneratorCallSyntax e:
+            case GenCallExpr e:
                 WriteToken(e.Name);
                 WriteChar(OPEN_PAREN);
                 WriteSep(e.Generators, WriteGenerator);
@@ -323,11 +323,11 @@ public sealed class Writer
                 WriteAnnotations(e);
                 break;
 
-            case GeneratorSyntax e:
+            case GenExpr e:
                 WriteGenerator(e);
                 break;
 
-            case IdentifierSyntax e:
+            case IdentExpr e:
                 // Could be (Quoted / Normal / Keyword)
                 WriteString(e.ToString());
                 WriteAnnotations(e);
@@ -362,19 +362,19 @@ public sealed class Writer
                 WriteString(ENDIF);
                 break;
 
-            case LetSyntax e:
+            case LetExpr e:
                 WriteString(LET);
                 WriteChar(OPEN_BRACE);
                 if (e.Locals is { } locals)
                     foreach (var local in locals)
-                        WriteStatement((StatementSyntax)local);
+                        WriteStatement((Statement)local);
 
                 WriteChar(CLOSE_BRACE);
                 WriteKeywordSpaced(IN);
                 WriteExpr(e.Body);
                 break;
 
-            case RangeLiteralSyntax e:
+            case RangeExpr e:
                 if (e.Lower is { } lower)
                     WriteExpr(lower);
                 if (!e.LowerIncusive)
@@ -388,14 +388,14 @@ public sealed class Writer
                 WriteAnnotations(e);
                 break;
 
-            case RecordAccessSyntax e:
+            case RecordAccessExpr e:
                 WriteExpr(e.Expr);
                 WriteChar(DOT);
                 WriteString(e.Field.StringValue);
                 WriteAnnotations(e);
                 break;
 
-            case RecordLiteralSyntax e:
+            case RecordExpr e:
                 WriteChar(OPEN_PAREN);
                 for (int i = 0; i < e.Fields.Count; i++)
                 {
@@ -410,21 +410,21 @@ public sealed class Writer
                 WriteChar(CLOSE_PAREN);
                 break;
 
-            case SetLiteralSyntax e:
+            case SetExpr e:
                 WriteChar(OPEN_BRACE);
                 WriteSep(e.Elements, WriteExpr);
                 WriteChar(CLOSE_BRACE);
                 WriteAnnotations(e);
                 break;
 
-            case TupleAccessSyntax e:
+            case TupleAccessExpr e:
                 WriteExpr(e.Expr);
                 WriteChar(DOT);
                 _sb.Append(e.Index);
                 WriteAnnotations(e);
                 break;
 
-            case TupleLiteralSyntax e:
+            case TupleExpr e:
                 WriteChar(OPEN_PAREN);
                 WriteSep(e.Fields, WriteExpr);
                 WriteChar(COMMA);
@@ -432,10 +432,10 @@ public sealed class Writer
                 WriteAnnotations(e);
                 break;
 
-            case UnaryOperatorSyntax e:
+            case UnOpExpr e:
                 WriteToken(e.Start);
                 WriteChar(SPACE);
-                if (e.Expr is BinaryOperatorSyntax)
+                if (e.Expr is BinOpExpr)
                 {
                     WriteChar(OPEN_PAREN);
                     WriteExpr(e.Expr, prec: 0);
@@ -447,102 +447,102 @@ public sealed class Writer
                 }
                 break;
 
-            case IndexAndNode e:
-                WriteExpr(e.Index);
-                WriteChar(COLON);
-                WriteExpr(e.Value);
-                break;
+            // case IndexAndNode e:
+            //     WriteExpr(e.Index);
+            //     WriteChar(COLON);
+            //     WriteExpr(e.Value);
+            //     break;
 
             default:
                 throw new Exception(expr.GetType().ToString());
         }
     }
 
-    internal void WriteValue(Datum dataSyntax)
-    {
-        switch (dataSyntax)
-        {
-            case IntArray x:
-                WriteValues(x, WriteInt);
-                break;
-            case BoolArray x:
-                WriteValues(x, WriteBool);
-                break;
-            case FloatArray x:
-                WriteValues(x, WriteDecimal);
-                break;
-            case StringArray x:
-                WriteValues(x, WriteString);
-                break;
-            case DatumArray x:
-                WriteValues(x, WriteValue);
-                break;
-            case BoolDatum x:
-                WriteBool(x);
-                break;
-            case EmptyDatum x:
-                WriteChar(OPEN_CHEVRON);
-                WriteChar(CLOSE_CHEVRON);
-                break;
-            case IntDatum x:
-                WriteInt(x);
-                break;
-            case FloatDatum x:
-                WriteDecimal(x);
-                break;
-            case RecordDatum x:
-                WriteValues(
-                    x,
-                    pair =>
-                    {
-                        WriteString(pair.Key);
-                        WriteChar(COLON);
-                        WriteValue(pair.Value);
-                    },
-                    before: OPEN_PAREN,
-                    after: CLOSE_PAREN
-                );
-                break;
-            case IntSet x:
-                WriteValues(x, WriteInt, before: OPEN_BRACE, after: CLOSE_BRACE);
-                break;
-            case FloatSet x:
-                WriteValues(x, WriteDecimal, before: OPEN_BRACE, after: CLOSE_BRACE);
-                break;
-            case BoolSet x:
-                WriteValues(x, WriteBool, before: OPEN_BRACE, after: CLOSE_BRACE);
-                break;
-            case SetDatum x:
-                WriteValues(x, WriteValue, before: OPEN_BRACE, after: CLOSE_BRACE);
-                break;
-            case StringDatum x:
-                WriteChar(DOUBLE_QUOTE);
-                WriteString(x.Value);
-                WriteChar(DOUBLE_QUOTE);
-                break;
-            case DatumTuple x:
-                WriteChar(OPEN_PAREN);
-                foreach (var item in x)
-                {
-                    WriteValue(item);
-                    WriteChar(COMMA);
-                }
-                WriteChar(CLOSE_PAREN);
-                break;
-            case FloatRange x:
-                WriteDecimal(x.Lower);
-                WriteChar(DOT);
-                WriteChar(DOT);
-                WriteDecimal(x.Upper);
-                break;
-            case IntRange x:
-                WriteInt(x.Lower);
-                WriteChar(DOT);
-                WriteChar(DOT);
-                WriteInt(x.Upper);
-                break;
-        }
-    }
+    // internal void WriteValue(Datum dataSyntax)
+    // {
+    //     switch (dataSyntax)
+    //     {
+    //         case IntArray x:
+    //             WriteValues(x, WriteInt);
+    //             break;
+    //         case BoolArray x:
+    //             WriteValues(x, WriteBool);
+    //             break;
+    //         case FloatArray x:
+    //             WriteValues(x, WriteDecimal);
+    //             break;
+    //         case StringArray x:
+    //             WriteValues(x, WriteString);
+    //             break;
+    //         case DatumArray x:
+    //             WriteValues(x, WriteValue);
+    //             break;
+    //         case BoolDatum x:
+    //             WriteBool(x);
+    //             break;
+    //         case EmptyDatum x:
+    //             WriteChar(OPEN_CHEVRON);
+    //             WriteChar(CLOSE_CHEVRON);
+    //             break;
+    //         case IntDatum x:
+    //             WriteInt(x);
+    //             break;
+    //         case FloatDatum x:
+    //             WriteDecimal(x);
+    //             break;
+    //         case RecordDatum x:
+    //             WriteValues(
+    //                 x,
+    //                 pair =>
+    //                 {
+    //                     WriteString(pair.Key);
+    //                     WriteChar(COLON);
+    //                     WriteValue(pair.Value);
+    //                 },
+    //                 before: OPEN_PAREN,
+    //                 after: CLOSE_PAREN
+    //             );
+    //             break;
+    //         case IntSet x:
+    //             WriteValues(x, WriteInt, before: OPEN_BRACE, after: CLOSE_BRACE);
+    //             break;
+    //         case FloatSet x:
+    //             WriteValues(x, WriteDecimal, before: OPEN_BRACE, after: CLOSE_BRACE);
+    //             break;
+    //         case BoolSet x:
+    //             WriteValues(x, WriteBool, before: OPEN_BRACE, after: CLOSE_BRACE);
+    //             break;
+    //         case SetDatum x:
+    //             WriteValues(x, WriteValue, before: OPEN_BRACE, after: CLOSE_BRACE);
+    //             break;
+    //         case StringDatum x:
+    //             WriteChar(DOUBLE_QUOTE);
+    //             WriteString(x.Value);
+    //             WriteChar(DOUBLE_QUOTE);
+    //             break;
+    //         case DatumTuple x:
+    //             WriteChar(OPEN_PAREN);
+    //             foreach (var item in x)
+    //             {
+    //                 WriteValue(item);
+    //                 WriteChar(COMMA);
+    //             }
+    //             WriteChar(CLOSE_PAREN);
+    //             break;
+    //         case FloatRange x:
+    //             WriteDecimal(x.Lower);
+    //             WriteChar(DOT);
+    //             WriteChar(DOT);
+    //             WriteDecimal(x.Upper);
+    //             break;
+    //         case IntRange x:
+    //             WriteInt(x.Lower);
+    //             WriteChar(DOT);
+    //             WriteChar(DOT);
+    //             WriteInt(x.Upper);
+    //             break;
+    //     }
+    // }
 
     private void WriteDeclare(DeclareStatement e)
     {
@@ -628,10 +628,10 @@ public sealed class Writer
 
     public void WriteModel(ModelSyntax e)
     {
-        IEnumerable<StatementSyntax> statements;
+        IEnumerable<Statement> statements;
         if (_prettify)
         {
-            var sorted = new List<StatementSyntax>(e.Statements);
+            var sorted = new List<Statement>(e.Statements);
             sorted.Sort(_prettyPrintComparer);
             statements = sorted;
         }
@@ -651,9 +651,9 @@ public sealed class Writer
     /// <summary>
     /// Used for ordering nodes for pretty printing
     /// </summary>
-    class PrettyPrintNodeComparer : IComparer<StatementSyntax>
+    class PrettyPrintNodeComparer : IComparer<Statement>
     {
-        static int Order(SyntaxNode? node) =>
+        static int Order(Syntax.Syntax? node) =>
             node switch
             {
                 IncludeStatement => 0,
@@ -665,7 +665,7 @@ public sealed class Writer
                 _ => 10
             };
 
-        public int Compare(StatementSyntax? x, StatementSyntax? y)
+        public int Compare(Statement? x, Statement? y)
         {
             int i = Order(x);
             int j = Order(y);
@@ -673,7 +673,7 @@ public sealed class Writer
         }
     }
 
-    private void WriteBinOp(BinaryOperatorSyntax e, int? precedence = null)
+    private void WriteBinOp(BinOpExpr e, int? precedence = null)
     {
         var prec = Parser.Precedence(e.Operator);
         var assoc = Parser.Associativity(e.Operator);
@@ -799,9 +799,9 @@ public sealed class Writer
 
     void WriteToken(in Token token) => WriteString(token.ToString());
 
-    void WriteArrayAccess(ArrayAccessSyntax e) { }
+    void WriteArrayAccess(ArrayAccessExpr e) { }
 
-    void WriteGenerator(GeneratorSyntax gen, int? precedence = null)
+    void WriteGenerator(GenExpr gen, int? precedence = null)
     {
         WriteSep(gen.Names, (name, _) => WriteToken(name));
         WriteKeywordSpaced(IN);
@@ -854,7 +854,7 @@ public sealed class Writer
         _indent--;
     }
 
-    void WriteArray2d(Array2dSyntax arr)
+    void WriteArray2d(Array2dExpr arr)
     {
         WriteChar(OPEN_BRACKET);
         WriteChar(PIPE);
@@ -879,7 +879,7 @@ public sealed class Writer
         WriteChar(CLOSE_BRACKET);
     }
 
-    void WriteIdent(IdentifierSyntax id)
+    void WriteIdent(IdentExpr id)
     {
         switch (id.Kind)
         {
@@ -980,7 +980,7 @@ public sealed class Writer
         }
     }
 
-    void WriteAnnotations(SyntaxNode node)
+    void WriteAnnotations(Syntax.Syntax node)
     {
         if (node.Annotations is not { Count: > 0 } anns)
             return;

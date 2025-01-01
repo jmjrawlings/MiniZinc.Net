@@ -47,7 +47,7 @@ public class ParserUnitTests
     [InlineData("forall(i in 1..3)(true)")]
     void test_parse_gencall_single_name(string mzn)
     {
-        var expr = Parser.ParseExpression<GeneratorCallSyntax>(mzn);
+        var expr = Parser.ParseExpression<GenCallExpr>(mzn);
         expr.Name.ToString().Should().Be("forall");
         expr.Generators.Should()
             .SatisfyRespectively(gen =>
@@ -64,7 +64,7 @@ public class ParserUnitTests
     [InlineData("forall(i,j,k in 1..3)(true)")]
     void test_parse_gencall_multiple_names(string mzn)
     {
-        var expr = Parser.ParseExpression<GeneratorCallSyntax>(mzn);
+        var expr = Parser.ParseExpression<GenCallExpr>(mzn);
         expr.Name.ToString().Should().Be("forall");
         expr.Generators.Should()
             .SatisfyRespectively(gen =>
@@ -77,7 +77,7 @@ public class ParserUnitTests
     [InlineData("forall (i, j, k, l in -3..3 where i <= j /\\ k <= l)(true)")]
     void test_parse_gencall_multiple_names_multiple_filters(string mzn)
     {
-        var expr = Parser.ParseExpression<GeneratorCallSyntax>(mzn);
+        var expr = Parser.ParseExpression<GenCallExpr>(mzn);
         expr.Name.ToString().Should().Be("forall");
         expr.Generators.Should()
             .SatisfyRespectively(gen =>
@@ -90,9 +90,9 @@ public class ParserUnitTests
     void test_parser_gencall_2()
     {
         var mzn = "sum (i in class where i >= s) (class_sizes[i])";
-        var call = Parser.ParseExpression<GeneratorCallSyntax>(mzn);
+        var call = Parser.ParseExpression<GenCallExpr>(mzn);
         call.Name.StringValue.Should().Be("sum");
-        call.Expr.Should().BeOfType<ArrayAccessSyntax>();
+        call.Expr.Should().BeOfType<ArrayAccessExpr>();
         call.Generators.Should().HaveCount(1);
         var gen = call.Generators[0];
         gen.Names.Should().HaveCount(1);
@@ -104,7 +104,7 @@ public class ParserUnitTests
     [InlineData("a[Fst[i] + j * (i + 1)]")]
     void test_array_access(string mzn)
     {
-        var node = Parser.ParseExpression<ArrayAccessSyntax>(mzn);
+        var node = Parser.ParseExpression<ArrayAccessExpr>(mzn);
     }
 
     [Theory]
@@ -115,14 +115,14 @@ public class ParserUnitTests
     [InlineData("[ 1: 1, 2, 3, 4]")]
     void test_indexed_array_1d(string mzn)
     {
-        var expr = Parser.ParseExpression<Array1dSyntax>(mzn);
+        var expr = Parser.ParseExpression<Array1dExpr>(mzn);
     }
 
     [Fact]
     void test_array2d_column_indexed()
     {
         var mzn = "[| A: B: C:\n | 0, 0, 0\n | 1, 1, 1\n | 2, 2, 2 |];";
-        var arr = Parser.ParseExpression<Array2dSyntax>(mzn);
+        var arr = Parser.ParseExpression<Array2dExpr>(mzn);
         arr.RowIndexed.Should().BeFalse();
         arr.ColIndexed.Should().BeTrue();
         arr.Elements.Should().HaveCount(9);
@@ -136,7 +136,7 @@ public class ParserUnitTests
     void test_array2d_row_indexed()
     {
         var mzn = "[| A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |];";
-        var arr = Parser.ParseExpression<Array2dSyntax>(mzn);
+        var arr = Parser.ParseExpression<Array2dExpr>(mzn);
         arr.RowIndexed.Should().BeTrue();
         arr.ColIndexed.Should().BeFalse();
         arr.Elements.Should().HaveCount(9);
@@ -150,7 +150,7 @@ public class ParserUnitTests
     void test_array2d_opt()
     {
         var mzn = "[|<>, 5,|5, 5,||]";
-        var arr = Parser.ParseExpression<Array2dSyntax>(mzn);
+        var arr = Parser.ParseExpression<Array2dExpr>(mzn);
         arr.I.Should().Be(2);
         arr.J.Should().Be(2);
         arr.Elements.Count.Should().Be(4);
@@ -160,7 +160,7 @@ public class ParserUnitTests
     void test_array2d_dual_indexed()
     {
         var mzn = "[| A: B: C:\n | A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |]";
-        var arr = Parser.ParseExpression<Array2dSyntax>(mzn);
+        var arr = Parser.ParseExpression<Array2dExpr>(mzn);
         arr.RowIndexed.Should().BeTrue();
         arr.ColIndexed.Should().BeTrue();
         arr.Elements.Should().HaveCount(9);
@@ -177,7 +177,7 @@ public class ParserUnitTests
     void test_array2d_no_index()
     {
         var mzn = "[| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 | 0, _, _, _, _, _, _, _, _, _, _, 0|]";
-        var arr = Parser.ParseExpression<Array2dSyntax>(mzn);
+        var arr = Parser.ParseExpression<Array2dExpr>(mzn);
         arr.RowIndexed.Should().BeFalse();
         arr.ColIndexed.Should().BeFalse();
         arr.Elements.Should().HaveCount(24);
@@ -202,7 +202,7 @@ public class ParserUnitTests
                  |]
             )
             """;
-        var arr = Parser.ParseExpression<Array2dSyntax>(mzn);
+        var arr = Parser.ParseExpression<Array2dExpr>(mzn);
         arr.I.Should().Be(12);
         arr.J.Should().Be(12);
         arr.Elements.Count.Should().Be(144);
@@ -228,9 +228,9 @@ public class ParserUnitTests
                 constraint res[1];
             } in res;
             """;
-        var let = Parser.ParseExpression<LetSyntax>(mzn);
+        var let = Parser.ParseExpression<LetExpr>(mzn);
         let.Locals.Should().HaveCount(2);
-        let.Body.Should().BeOfType<IdentifierSyntax>();
+        let.Body.Should().BeOfType<IdentExpr>();
         let.Body.ToString().Should().Be("res");
     }
 
@@ -241,8 +241,8 @@ public class ParserUnitTests
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
         var type = node.Type as ExprTypeSyntax;
         var expr = type!.Expr;
-        expr.Should().BeOfType<RangeLiteralSyntax>();
-        var rng = (RangeLiteralSyntax)expr;
+        expr.Should().BeOfType<RangeExpr>();
+        var rng = (RangeExpr)expr;
         rng.Upper.Should().BeNull();
         // rng.Lower.Should().Be(new IntLiteralSyntax(0));
     }
@@ -255,7 +255,7 @@ public class ParserUnitTests
               i: (a: some_map[i], b: some_map[i] mod 2 = 0) | i in Some
             ]
             """;
-        var expr = Parser.ParseExpression<ComprehensionSyntax>(mzn);
+        var expr = Parser.ParseExpression<CompExpr>(mzn);
     }
 
     [Fact]
@@ -274,10 +274,10 @@ public class ParserUnitTests
         node.Name.ToString().Should().Be("xd");
         var type = (ExprTypeSyntax)node.Type;
         type.IsVar.Should().BeTrue();
-        var range = (RangeLiteralSyntax)type.Expr;
-        range.Lower.Should().BeOfType<IntLiteralSyntax>();
+        var range = (RangeExpr)type.Expr;
+        range.Lower.Should().BeOfType<IntExpr>();
         range.Upper.Should().BeNull();
-        var lo = (IntLiteralSyntax)range.Lower!;
+        var lo = (IntExpr)range.Lower!;
         lo.Value.Should().Be(0);
     }
 
@@ -290,7 +290,7 @@ public class ParserUnitTests
         arr.J.Should().Be(2);
         arr.K.Should().Be(2);
         arr.Elements.Should().HaveCount(12);
-        var numbers = arr.Elements.Select(x => (int)(IntLiteralSyntax)x);
+        var numbers = arr.Elements.Select(x => (int)(IntExpr)x);
         numbers.Should().Equal(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
     }
 
@@ -321,13 +321,13 @@ public class ParserUnitTests
     [InlineData("2*4-1", 7)]
     void test_operator_precedence(string mzn, int expected)
     {
-        var expr = Parser.ParseExpression<ExpressionSyntax>(mzn);
-        int eval(SyntaxNode expr)
+        var expr = Parser.ParseExpression<Expr>(mzn);
+        int eval(Syntax expr)
         {
-            if (expr is IntLiteralSyntax i)
+            if (expr is IntExpr i)
                 return i.Value;
 
-            if (expr is not BinaryOperatorSyntax binop)
+            if (expr is not BinOpExpr binop)
                 throw new Exception();
 
             var left = eval(binop.Left);
@@ -354,16 +354,16 @@ public class ParserUnitTests
     void test_float_range()
     {
         var mzn = "0.01..1.123;";
-        var expr = Parser.ParseExpression<RangeLiteralSyntax>(mzn);
-        expr.Lower.Should().BeOfType<FloatLiteralSyntax>();
-        expr.Upper.Should().BeOfType<FloatLiteralSyntax>();
+        var expr = Parser.ParseExpression<RangeExpr>(mzn);
+        expr.Lower.Should().BeOfType<FloatExpr>();
+        expr.Upper.Should().BeOfType<FloatExpr>();
     }
 
     [Fact]
     void test_parse_operator_same_precedence()
     {
         var mzn = "a diff (b union c)";
-        var expr = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
+        var expr = Parser.ParseExpression<BinOpExpr>(mzn);
         var ozn = expr.Write();
         ozn.Should().Be("a diff (b union c)");
     }
@@ -382,16 +382,16 @@ public class ParserUnitTests
     void test_parse_unary_prec()
     {
         var mzn = @"not(A -> B) -> not(C -> D)";
-        var expr = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
-        expr.Left.Should().BeOfType<UnaryOperatorSyntax>();
-        expr.Right.Should().BeOfType<UnaryOperatorSyntax>();
+        var expr = Parser.ParseExpression<BinOpExpr>(mzn);
+        expr.Left.Should().BeOfType<UnOpExpr>();
+        expr.Right.Should().BeOfType<UnOpExpr>();
     }
 
     [Fact]
     void test_parse_precedence_left_assoc_equal()
     {
         var mzn = "1 + 2 - 3";
-        var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
+        var binop = Parser.ParseExpression<BinOpExpr>(mzn);
         binop.Operator.Should().Be(TOKEN_MINUS);
         var oz = binop.Write();
         oz.Should().Be(mzn);
@@ -402,7 +402,7 @@ public class ParserUnitTests
     void test_parse_precedence_left_assoc_descending()
     {
         var mzn = "a - b >= c";
-        var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
+        var binop = Parser.ParseExpression<BinOpExpr>(mzn);
         binop.Operator.Should().Be(TOKEN_GREATER_THAN_EQUAL);
         var oz = binop.Write();
         oz.Should().Be(mzn);
@@ -412,7 +412,7 @@ public class ParserUnitTests
     void test_write_precedence_left_assoc_brackets()
     {
         var mzn = "(Formula[1] > 0) == assignment[1]";
-        var binop = Parser.ParseExpression<BinaryOperatorSyntax>(mzn);
+        var binop = Parser.ParseExpression<BinOpExpr>(mzn);
         binop.Operator.Should().Be(TOKEN_EQUAL);
         var oz = binop.Write();
         oz.Should().Be(mzn);
@@ -443,7 +443,7 @@ public class ParserUnitTests
     void test_parse_float(string f)
     {
         var mzn = f;
-        var node = Parser.ParseExpression<FloatLiteralSyntax>(mzn);
+        var node = Parser.ParseExpression<FloatExpr>(mzn);
         var a = 2;
     }
 

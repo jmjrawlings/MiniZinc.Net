@@ -7,9 +7,9 @@ using Syntax;
 /// </summary>
 public sealed class ModelSyntax
 {
-    public readonly IReadOnlyList<StatementSyntax> Statements;
+    public readonly IReadOnlyList<Statement> Statements;
 
-    public ModelSyntax(List<StatementSyntax> statements)
+    public ModelSyntax(List<Statement> statements)
     {
         Statements = statements;
     }

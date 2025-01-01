@@ -1,6 +1,7 @@
 ﻿namespace MiniZinc.Tests;
 
 using Client;
+using Parser.Syntax;
 
 public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
 {
@@ -35,8 +36,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
         var b = model.AddInt("b", 10, 20);
         model.AddConstraint(a < b);
         var result = await Client.Solve(model);
-        int aval = result.Data.Get<IntDatum>(a);
-        int bval = result.Data.Get<IntDatum>(b);
+        int aval = result.Data.Get<IntExpr>(a);
+        int bval = result.Data.Get<IntExpr>(b);
         aval.Should().BeLessThan(bval);
         result.Status.Should().Be(SolveStatus.Satisfied);
     }
@@ -58,8 +59,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
         model.Maximize("a + b");
         var result = await Client.Solve(model);
         result.Status.Should().Be(SolveStatus.Optimal);
-        int a = result.Data.Get<IntDatum>("a");
-        int b = result.Data.Get<IntDatum>("b");
+        int a = result.Data.Get<IntExpr>("a");
+        int b = result.Data.Get<IntExpr>("b");
         a.Should().Be(20);
         b.Should().Be(20);
         result.Objective.Should().Be(40);
@@ -70,7 +71,7 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
     {
         var model = MiniZincModel.FromString("array[1..10] of var 0..100: xd;");
         var result = await Client.Solve(model);
-        var arr = result.Data.Get<IntArray>("xd");
+        var arr = result.Data.Get<Array1dExpr>("xd");
     }
 
     [Fact]
@@ -81,8 +82,8 @@ public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
         model.AddVariable("b", "10..20");
         await foreach (var result in Client.Solve(model))
         {
-            int a = result.Data.Get<IntDatum>("a");
-            int b = result.Data.Get<IntDatum>("b");
+            int a = result.Data.Get<IntExpr>("a");
+            int b = result.Data.Get<IntExpr>("b");
             result.Status.Should().Be(SolveStatus.Satisfied);
         }
     }

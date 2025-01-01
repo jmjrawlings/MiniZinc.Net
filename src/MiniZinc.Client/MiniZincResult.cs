@@ -2,6 +2,7 @@
 
 using Core;
 using Parser;
+using Parser.Syntax;
 
 /// <summary>
 /// An intermediate or final result from using MiniZinc
@@ -74,18 +75,18 @@ public sealed record MiniZincResult
     /// <summary>
     /// Text content of the message
     /// </summary>
-    public required Datum? Objective { get; init; }
+    public required Expr? Objective { get; init; }
 
     /// <summary>
     /// Upper or lower bound (solver-dependent)
     /// </summary>
-    public required Datum? ObjectiveBound { get; init; }
+    public required Expr? ObjectiveBound { get; init; }
 
     /// <summary>
     /// Absolute Gap to optimality
     /// `abs(objective - bound)`
     /// </summary>
-    public required Datum? AbsoluteGapToOptimality { get; init; }
+    public required Expr? AbsoluteGapToOptimality { get; init; }
 
     /// <summary>
     /// Relative Gap to optimality
@@ -98,7 +99,7 @@ public sealed record MiniZincResult
     /// the previous iteration
     /// `objective[i] - objective[i-1]`
     /// </summary>
-    public required Datum? AbsoluteIterationGap { get; init; }
+    public required Expr? AbsoluteIterationGap { get; init; }
 
     /// <summary>
     /// Relative difference between this iteration and

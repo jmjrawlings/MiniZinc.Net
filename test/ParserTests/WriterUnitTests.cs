@@ -43,7 +43,7 @@ public sealed class WriterUnitTests
     [InlineData("""2 * i""", """2 * i""")]
     void test_write_precedence(string input, string expected)
     {
-        var expr = Parser.ParseExpression<BinaryOperatorSyntax>(input)!;
+        var expr = Parser.ParseExpression<BinOpExpr>(input)!;
         var output = expr.Write();
         output.Should().Be(expected);
     }
@@ -52,7 +52,7 @@ public sealed class WriterUnitTests
     [InlineData("""{A} ++ {B} ++ {C}""", """{A} ++ {B} ++ {C}""")]
     void test_write_precedence_right_assoc(string input, string expected)
     {
-        var expr = Parser.ParseExpression<BinaryOperatorSyntax>(input)!;
+        var expr = Parser.ParseExpression<BinOpExpr>(input)!;
         var output = expr.Write();
         output.Should().Be(expected);
     }

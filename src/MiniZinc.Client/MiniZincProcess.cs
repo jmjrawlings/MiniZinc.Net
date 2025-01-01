@@ -7,6 +7,7 @@ using System.Threading.Channels;
 using Command;
 using Core;
 using Parser;
+using Parser.Syntax;
 
 public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
 {
@@ -378,8 +379,8 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
     public override string ToString() => CommandString;
 
     private MiniZincResult Result(
-        in Datum? objectiveValue = null,
-        in Datum? objectiveBoundValue = null,
+        in Expr? objectiveValue = null,
+        in Expr? objectiveBoundValue = null,
         string? error = null
     )
     {
