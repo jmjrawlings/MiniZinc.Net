@@ -12,13 +12,11 @@ public readonly struct Variable
 {
     public readonly string Name;
 
-    public Variable(string name)
+    public Variable(ReadOnlySpan<char> name)
     {
-        if (string.IsNullOrEmpty(name))
+        Name = name.ToString();
+        if (string.IsNullOrEmpty(Name))
             throw new ArgumentException("Variables cannot be empty strings");
-
-        // TODO - handle quotes
-        Name = name;
     }
 
     public static BinaryOperatorSyntax operator +(in Variable a, in Variable b) =>

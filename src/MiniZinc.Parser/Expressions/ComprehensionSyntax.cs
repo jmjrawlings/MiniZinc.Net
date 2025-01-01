@@ -3,7 +3,7 @@
 /// <summary>
 /// An array or set comprehension
 /// </summary>
-public class ComprehensionSyntax : ExpressionSyntax
+public sealed class ComprehensionSyntax : ExpressionSyntax
 {
     public ExpressionSyntax Expr { get; }
 

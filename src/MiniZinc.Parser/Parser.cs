@@ -3,12 +3,13 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Syntax;
+using static SolveMethod;
 using static TokenKind;
 
 /// <summary>
 /// Parses a MiniZinc AST from the given stream of tokens
 /// </summary>
-public sealed class Parser
+public struct Parser
 {
     /// <summary>
     /// Operator Associativity
@@ -291,12 +292,12 @@ public sealed class Parser
         if (!Expect(KEYWORD_PREDICATE, out var start))
             return false;
 
-        var type = new TypeSyntax(start) { Var = true, Kind = TypeKind.Bool };
+        var type = new BaseTypeSyntax(start, TypeKind.TYPE_BOOL) { IsVar = true };
 
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, DeclareKind.Predicate, out var dec))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.DECLARE_PREDICATE, out var dec))
             return false;
 
         node = dec;
@@ -313,12 +314,12 @@ public sealed class Parser
         if (!Expect(KEYWORD_TEST, out var start))
             return false;
 
-        var type = new TypeSyntax(start) { Kind = TypeKind.Bool };
+        var type = new BaseTypeSyntax(start, TypeKind.TYPE_BOOL);
 
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, DeclareKind.Test, out var decl))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.DECLARE_TEST, out var decl))
             return false;
 
         node = decl;
@@ -344,7 +345,7 @@ public sealed class Parser
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, DeclareKind.Function, out var decl))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.DECLARE_FUNCTION, out var decl))
             return false;
 
         node = decl;
@@ -413,12 +414,12 @@ public sealed class Parser
         if (!Expect(KEYWORD_ANNOTATION, out var start))
             return false;
 
-        var type = new TypeSyntax(start) { Kind = TypeKind.Annotation };
+        var type = new BaseTypeSyntax(start, TypeKind.TYPE_ANNOTATION);
 
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, DeclareKind.Annotation, out var decl))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.DECLARE_ANNOTATION, out var decl))
             return false;
 
         ann = decl;
@@ -446,7 +447,7 @@ public sealed class Parser
         // Enum without assignments are valid
         if (!Skip(TOKEN_EQUAL))
         {
-            result = new DeclareStatement(start, DeclareKind.Enum, null, name)
+            result = new DeclareStatement(start, DeclareKind.DECLARE_ENUM, null, name)
             {
                 Annotations = anns
             };
@@ -456,7 +457,7 @@ public sealed class Parser
         if (!ParseEnumCases(out var cases))
             return false;
 
-        result = new DeclareStatement(start, DeclareKind.Enum, null, name)
+        result = new DeclareStatement(start, DeclareKind.DECLARE_ENUM, null, name)
         {
             Annotations = anns,
             Body = cases
@@ -609,24 +610,24 @@ public sealed class Parser
             return false;
 
         ExpressionSyntax? objective = null;
-        SolveMethod method = SolveMethod.Satisfy;
+        SolveMethod method = SOLVE_SATISFY;
         switch (_kind)
         {
             case KEYWORD_SATISFY:
                 Step();
-                method = SolveMethod.Satisfy;
+                method = SOLVE_SATISFY;
                 break;
 
             case KEYWORD_MINIMIZE:
                 Step();
-                method = SolveMethod.Minimize;
+                method = SOLVE_MINIMIZE;
                 if (!ParseExpr(out objective))
                     return false;
                 break;
 
             case KEYWORD_MAXIMIZE:
                 Step();
-                method = SolveMethod.Maximize;
+                method = SOLVE_MAXIMIZE;
                 if (!ParseExpr(out objective))
                     return false;
                 break;
@@ -685,7 +686,7 @@ public sealed class Parser
         TypeSyntax type;
         if (Skip(KEYWORD_ANY))
         {
-            type = new TypeSyntax(start) { Kind = TypeKind.Any };
+            type = new BaseTypeSyntax(start, TypeKind.TYPE_ANY);
         }
         else if (!ParseType(out type!))
         {
@@ -698,10 +699,10 @@ public sealed class Parser
         if (!ParseIdent(out var ident))
             return false;
 
-        if (!ParseDeclareTail(start, ident, type, DeclareKind.Value, out var dec))
+        if (!ParseDeclareTail(start, ident, type, DeclareKind.DECLARE_VALUE, out var dec))
             return false;
 
-        if (dec.Body is null && type.Kind is TypeKind.Any)
+        if (dec.Body is null && type.Kind is TypeKind.TYPE_ANY)
             return Expected("=");
 
         statement = dec;
@@ -2097,16 +2098,17 @@ public sealed class Parser
         }
 
         // Set literal
+        var elements = new List<ExpressionSyntax>();
         var set = new SetLiteralSyntax(start);
         result = set;
-        set.Elements.Add(element);
+        elements.Add(element);
         Skip(TOKEN_COMMA);
         while (_kind is not TOKEN_CLOSE_BRACE)
         {
             if (!ParseExpr(out var item))
                 return false;
 
-            set.Elements.Add(item);
+            elements.Add(item);
             if (!Skip(TOKEN_COMMA))
                 break;
         }
@@ -2372,7 +2374,7 @@ public sealed class Parser
             if (ident.Kind is TOKEN_IDENTIFIER_GENERIC or TOKEN_IDENTIFIER_GENERIC_SEQUENCE)
             {
                 Step();
-                type = new TypeSyntax(start) { Name = ident, Kind = TypeKind.Identifier };
+                type = new BaseTypeSyntax(start, TypeKind.TYPE_IDENT) { Name = ident };
                 return true;
             }
             else
@@ -2397,7 +2399,7 @@ public sealed class Parser
             if (!ParseBaseType(out type))
                 return false;
 
-            type = new SetTypeSyntax(start, type) { Var = var, Opt = opt };
+            type = new SetTypeSyntax(start, type) { IsVar = var, IsOpt = opt };
             return true;
         }
 
@@ -2406,27 +2408,27 @@ public sealed class Parser
         {
             case KEYWORD_INT:
                 Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Int };
+                type = new BaseTypeSyntax(start, TypeKind.TYPE_INT);
                 break;
 
             case KEYWORD_BOOL:
                 Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Bool };
+                type = new BaseTypeSyntax(start, TypeKind.TYPE_BOOL);
                 break;
 
             case KEYWORD_FLOAT:
                 Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Float };
+                type = new BaseTypeSyntax(start, TypeKind.TYPE_FLOAT);
                 break;
 
             case KEYWORD_STRING:
                 Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.String };
+                type = new BaseTypeSyntax(start, TypeKind.TYPE_STRING);
                 break;
 
             case KEYWORD_ANN:
                 Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Ann };
+                type = new BaseTypeSyntax(start, TypeKind.TYPE_ANN);
                 break;
 
             case KEYWORD_RECORD:
@@ -2441,12 +2443,12 @@ public sealed class Parser
 
             case TOKEN_IDENTIFIER_GENERIC:
                 Step();
-                type = new TypeSyntax(start) { Name = start, Kind = TypeKind.Identifier };
+                type = new BaseTypeSyntax(start, TypeKind.TYPE_IDENT) { Name = start };
                 break;
 
             case TOKEN_IDENTIFIER_GENERIC_SEQUENCE:
                 Step();
-                type = new TypeSyntax(start) { Kind = TypeKind.Identifier, Name = start };
+                type = new BaseTypeSyntax(start, TypeKind.TYPE_IDENT) { Name = start };
                 break;
 
             default:
@@ -2456,8 +2458,8 @@ public sealed class Parser
                 break;
         }
 
-        type.Var = var;
-        type.Opt = opt;
+        type.IsVar = var;
+        type.IsOpt = opt;
         return true;
     }
 
@@ -2495,7 +2497,7 @@ public sealed class Parser
         if (!ParseType(out var type))
             return false;
 
-        arr = new ArrayTypeSyntax(start, dims, type) { Kind = TypeKind.Array };
+        arr = new ArrayTypeSyntax(start, dims, type) { Kind = TypeKind.TYPE_ARRAY };
         return true;
     }
 

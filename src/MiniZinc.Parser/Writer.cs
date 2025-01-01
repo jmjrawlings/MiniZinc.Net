@@ -197,17 +197,17 @@ public sealed class Writer
                 WriteSpace();
                 switch (e.Method)
                 {
-                    case SolveMethod.Satisfy:
+                    case SolveMethod.SOLVE_SATISFY:
                         WriteString(SATISFY);
                         break;
-                    case SolveMethod.Maximize:
+                    case SolveMethod.SOLVE_MAXIMIZE:
                         WriteKeyword(MAXIMIZE);
                         Indent();
                         NewLine();
                         WriteExpr(e.Objective);
                         Dedent();
                         break;
-                    case SolveMethod.Minimize:
+                    case SolveMethod.SOLVE_MINIMIZE:
                         WriteKeyword(MINIMIZE);
                         Indent();
                         NewLine();
@@ -548,24 +548,24 @@ public sealed class Writer
     {
         switch (e.Kind)
         {
-            case DeclareKind.Function:
+            case DeclareKind.DECLARE_FUNCTION:
                 WriteKeyword(FUNCTION);
                 WriteType(e.Type!);
                 WriteChar(COLON);
                 break;
-            case DeclareKind.Annotation:
+            case DeclareKind.DECLARE_ANNOTATION:
                 WriteKeyword(ANNOTATION);
                 break;
-            case DeclareKind.Test:
+            case DeclareKind.DECLARE_TEST:
                 WriteKeyword(TEST);
                 break;
-            case DeclareKind.Predicate:
+            case DeclareKind.DECLARE_PREDICATE:
                 WriteKeyword(PREDICATE);
                 break;
-            case DeclareKind.Enum:
+            case DeclareKind.DECLARE_ENUM:
                 WriteKeyword(ENUM);
                 break;
-            case DeclareKind.TypeAlias:
+            case DeclareKind.DECLARE_TYPE:
                 WriteKeyword(TYPE);
                 break;
             default:
@@ -692,10 +692,10 @@ public sealed class Writer
 
     void WriteType(TypeSyntax type, int? prec = null)
     {
-        if (type.Var)
+        if (type.IsVar)
             WriteKeyword(VAR);
 
-        if (type.Opt)
+        if (type.IsOpt)
             WriteKeyword(OPT);
 
         switch (type)
@@ -742,35 +742,35 @@ public sealed class Writer
                 WriteChar(CLOSE_PAREN);
                 break;
 
-            case { Kind: TypeKind.Bool }:
+            case { Kind: TypeKind.TYPE_BOOL }:
                 WriteString(BOOL);
                 break;
 
-            case { Kind: TypeKind.Float }:
+            case { Kind: TypeKind.TYPE_FLOAT }:
                 WriteString(FLOAT);
                 break;
 
-            case { Kind: TypeKind.Int }:
+            case { Kind: TypeKind.TYPE_INT }:
                 WriteString(INT);
                 break;
 
-            case { Kind: TypeKind.String }:
+            case { Kind: TypeKind.TYPE_STRING }:
                 WriteString(STRING);
                 break;
 
-            case { Kind: TypeKind.Annotation }:
+            case { Kind: TypeKind.TYPE_ANNOTATION }:
                 WriteString(ANNOTATION);
                 break;
 
-            case { Kind: TypeKind.Ann }:
+            case { Kind: TypeKind.TYPE_ANN }:
                 WriteString(ANN);
                 break;
 
-            case { Kind: TypeKind.Any }:
+            case { Kind: TypeKind.TYPE_ANY }:
                 WriteString(ANY);
                 break;
 
-            case { Kind: TypeKind.Identifier }:
+            case { Kind: TypeKind.TYPE_IDENT }:
                 WriteToken(type.Name);
                 break;
 

@@ -1,12 +1,14 @@
 ﻿namespace MiniZinc.Parser.Syntax;
 
+using static TypeKind;
+
 /// <summary>
 /// A simple or complex type
 /// </summary>
 /// <mzn>var set of int</mzn>
 /// <mzn>bool</mzn>
 /// <mzn>array[X] of opt var float</mzn>
-public class TypeSyntax : SyntaxNode
+public abstract class TypeSyntax : SyntaxNode
 {
     /// <summary>
     /// A simple or complex type
@@ -14,19 +16,32 @@ public class TypeSyntax : SyntaxNode
     /// <mzn>var set of int</mzn>
     /// <mzn>bool</mzn>
     /// <mzn>array[X] of opt var float</mzn>
-    public TypeSyntax(in Token start)
+    protected TypeSyntax(in Token start)
         : base(start) { }
 
-    public TypeKind Kind { get; set; } = TypeKind.Any;
+    public TypeKind Kind { get; set; } = TYPE_ANY;
 
     /// TODO
     public Token Name { get; set; }
 
     /// True if the type is a variable (ie not a parameter)
-    public bool Var { get; set; }
+    public bool IsVar { get; set; }
 
     /// True if the type is optional
-    public bool Opt { get; set; }
+    public bool IsOpt { get; set; }
+}
+
+/// <summary>
+/// A simple/base type
+/// </summary>
+/// <mzn>class(a:int) ++ class(b: bool)</mzn>
+public sealed class BaseTypeSyntax : TypeSyntax
+{
+    public BaseTypeSyntax(in Token Start, in TypeKind kind)
+        : base(Start)
+    {
+        Kind = TYPE_COMPOSITE;
+    }
 }
 
 /// <summary>
@@ -41,7 +56,7 @@ public sealed class CompositeTypeSyntax : TypeSyntax
         : base(Start)
     {
         Types = types;
-        Kind = TypeKind.Composite;
+        Kind = TYPE_COMPOSITE;
     }
 }
 
@@ -53,7 +68,7 @@ public sealed class RecordTypeSyntax : TypeSyntax
         : base(start)
     {
         Fields = fields;
-        Kind = TypeKind.Record;
+        Kind = TYPE_RECORD;
     }
 }
 
@@ -65,7 +80,7 @@ public sealed class TupleTypeSyntax : TypeSyntax
         : base(Start)
     {
         Items = items;
-        Kind = TypeKind.Tuple;
+        Kind = TYPE_TUPLE;
     }
 }
 
@@ -77,7 +92,7 @@ public sealed class ExprTypeSyntax : TypeSyntax
         : base(Start)
     {
         Expr = expr;
-        Kind = TypeKind.Expr;
+        Kind = TYPE_EXPR;
     }
 }
 
@@ -113,7 +128,7 @@ public sealed class ListTypeSyntax : TypeSyntax
         : base(Start)
     {
         Items = type;
-        Kind = TypeKind.List;
+        Kind = TYPE_LIST;
     }
 }
 
@@ -127,6 +142,6 @@ public sealed class SetTypeSyntax : TypeSyntax
         : base(start)
     {
         Items = items;
-        Kind = TypeKind.Set;
+        Kind = TYPE_SET;
     }
 }

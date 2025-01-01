@@ -25,7 +25,7 @@ public class ParserUnitTests
     void test_parse_enum_item(string mzn)
     {
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
-        node.Kind.Should().Be(DeclareKind.Enum);
+        node.Kind.Should().Be(DeclareKind.DECLARE_ENUM);
         node.Body.Should().NotBeNull();
     }
 
@@ -273,7 +273,7 @@ public class ParserUnitTests
         var node = Parser.ParseStatement<DeclareStatement>(mzn);
         node.Name.ToString().Should().Be("xd");
         var type = (ExprTypeSyntax)node.Type;
-        type.Var.Should().BeTrue();
+        type.IsVar.Should().BeTrue();
         var range = (RangeLiteralSyntax)type.Expr;
         range.Lower.Should().BeOfType<IntLiteralSyntax>();
         range.Upper.Should().BeNull();
@@ -311,7 +311,7 @@ public class ParserUnitTests
     void test_annotation_declaration(string mzn)
     {
         var ann = Parser.ParseStatement<DeclareStatement>(mzn);
-        ann.Type.Kind.Should().Be(TypeKind.Annotation);
+        ann.Type.Kind.Should().Be(TypeKind.TYPE_ANNOTATION);
     }
 
     [Theory]
