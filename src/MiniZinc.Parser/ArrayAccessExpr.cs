@@ -1,11 +1,11 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class ArrayAccessExpr : Expr
+public sealed class ArrayAccessExpr : MiniZincExpr
 {
-    public readonly Expr Array;
-    public readonly List<Expr> Access;
+    public MiniZincExpr Array { get; }
+    public List<MiniZincExpr> Access { get; }
 
-    public ArrayAccessExpr(Expr array, List<Expr> access)
+    public ArrayAccessExpr(MiniZincExpr array, List<MiniZincExpr> access)
         : base(array.Start)
     {
         Array = array;

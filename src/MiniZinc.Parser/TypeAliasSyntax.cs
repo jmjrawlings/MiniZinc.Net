@@ -1,11 +1,11 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 /// <summary>
 /// Type Alias
 /// </summary>
 /// <mzn>type A = record(int: a, bool: b)</mzn>
 /// <mzn>type C = 1..100</mzn>
-public sealed class TypeAliasSyntax : Statement, INamedSyntax
+public sealed class TypeAliasSyntax : MiniZincItem, INamedSyntax
 {
     public Token Name { get; }
 

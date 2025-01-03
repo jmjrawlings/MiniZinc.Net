@@ -1,7 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
 using System.Text;
-using Syntax;
 using static TokenKind;
 
 /// <summary>
@@ -128,24 +127,32 @@ public sealed class Writer
             WriteSpace();
             WriteChar('=');
             WriteSpace();
-            WriteExpr(value as Expr);
+            WriteExpr(value as MiniZincExpr);
             EndStatement();
         }
     }
 
-    public void WriteSyntax(Syntax.Syntax? syntax)
+    public void WriteSyntax(IEnumerable<MiniZincSyntax>? syntii)
+    {
+        if (syntii is null)
+            return;
+        foreach (var syntax in syntii)
+            WriteSyntax(syntax);
+    }
+
+    public void WriteSyntax(MiniZincSyntax? syntax)
     {
         switch (syntax)
         {
             case null:
                 break;
 
-            case Expr expr:
+            case MiniZincExpr expr:
                 WriteExpr(expr);
                 break;
 
-            case Statement statement:
-                WriteStatement(statement);
+            case MiniZincItem statement:
+                WriteItem(statement);
                 break;
 
             case TypeSyntax type:
@@ -154,7 +161,7 @@ public sealed class Writer
         }
     }
 
-    public void WriteStatement(Statement? syntax)
+    public void WriteItem(MiniZincItem? syntax)
     {
         NewLine();
         switch (syntax)
@@ -162,14 +169,14 @@ public sealed class Writer
             case null:
                 return;
 
-            case IncludeStatement e:
+            case IncludeItem e:
                 WriteKeyword(INCLUDE);
                 WriteChar(DOUBLE_QUOTE);
                 WriteString(e.Path.StringValue);
                 WriteChar(DOUBLE_QUOTE);
                 break;
 
-            case DeclareStatement e:
+            case DeclareItem e:
                 WriteDeclare(e);
                 break;
 
@@ -182,7 +189,7 @@ public sealed class Writer
                 WriteType(e.Type);
                 break;
 
-            case ConstraintStatement e:
+            case ConstraintItem e:
                 WriteKeyword(CONSTRAINT);
                 Indent();
                 NewLine();
@@ -191,7 +198,7 @@ public sealed class Writer
                 Dedent();
                 break;
 
-            case SolveStatement e:
+            case SolveItem e:
                 WriteKeyword(SOLVE);
                 WriteAnnotations(e);
                 WriteSpace();
@@ -217,7 +224,7 @@ public sealed class Writer
                 }
                 break;
 
-            case AssignStatement e:
+            case AssignItem e:
                 WriteToken(e.Name);
                 WriteSpace();
                 WriteChar(EQUAL);
@@ -225,10 +232,10 @@ public sealed class Writer
                 WriteExpr(e.Expr);
                 break;
 
-            case OutputStatement e when _options.SkipOutput:
+            case OutputItem e when _options.SkipOutput:
                 break;
 
-            case OutputStatement e:
+            case OutputItem e:
                 WriteString(OUTPUT);
                 WriteSpace();
                 WriteExpr(e.Expr);
@@ -240,7 +247,7 @@ public sealed class Writer
         EndStatement();
     }
 
-    public void WriteExpr(Expr? expr, int? prec = null)
+    public void WriteExpr(MiniZincExpr? expr, int? prec = null)
     {
         switch (expr)
         {
@@ -367,7 +374,7 @@ public sealed class Writer
                 WriteChar(OPEN_BRACE);
                 if (e.Locals is { } locals)
                     foreach (var local in locals)
-                        WriteStatement((Statement)local);
+                        WriteItem((MiniZincItem)local);
 
                 WriteChar(CLOSE_BRACE);
                 WriteKeywordSpaced(IN);
@@ -544,7 +551,7 @@ public sealed class Writer
     //     }
     // }
 
-    private void WriteDeclare(DeclareStatement e)
+    private void WriteDeclare(DeclareItem e)
     {
         switch (e.Kind)
         {
@@ -591,7 +598,7 @@ public sealed class Writer
 
         WriteAnnotations(e);
 
-        if (e.Body is { } body)
+        if (e.Expr is { } body)
         {
             WriteSpace();
             WriteChar(EQUAL);
@@ -624,53 +631,6 @@ public sealed class Writer
                 WriteChar(COMMA);
         }
         WriteString("|]");
-    }
-
-    public void WriteModel(ModelSyntax e)
-    {
-        IEnumerable<Statement> statements;
-        if (_prettify)
-        {
-            var sorted = new List<Statement>(e.Statements);
-            sorted.Sort(_prettyPrintComparer);
-            statements = sorted;
-        }
-        else
-        {
-            statements = e.Statements;
-        }
-
-        foreach (var statement in statements)
-            WriteStatement(statement);
-
-        return;
-    }
-
-    static PrettyPrintNodeComparer _prettyPrintComparer = new();
-
-    /// <summary>
-    /// Used for ordering nodes for pretty printing
-    /// </summary>
-    class PrettyPrintNodeComparer : IComparer<Statement>
-    {
-        static int Order(Syntax.Syntax? node) =>
-            node switch
-            {
-                IncludeStatement => 0,
-                DeclareStatement => 1,
-                AssignStatement => 1,
-                ConstraintStatement => 2,
-                OutputStatement => 4,
-                SolveStatement => 3,
-                _ => 10
-            };
-
-        public int Compare(Statement? x, Statement? y)
-        {
-            int i = Order(x);
-            int j = Order(y);
-            return i.CompareTo(j);
-        }
     }
 
     private void WriteBinOp(BinOpExpr e, int? precedence = null)
@@ -980,7 +940,7 @@ public sealed class Writer
         }
     }
 
-    void WriteAnnotations(Syntax.Syntax node)
+    void WriteAnnotations(MiniZincSyntax node)
     {
         if (node.Annotations is not { Count: > 0 } anns)
             return;

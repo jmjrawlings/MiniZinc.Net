@@ -1,8 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-using Syntax;
-
-public sealed class BoolExpr : Expr
+public sealed class BoolExpr : MiniZincExpr
 {
     public bool Value { get; }
 

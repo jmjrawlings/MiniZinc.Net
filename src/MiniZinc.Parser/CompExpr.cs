@@ -1,11 +1,11 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 /// <summary>
 /// An array or set comprehension
 /// </summary>
-public sealed class CompExpr : Expr
+public sealed class CompExpr : MiniZincExpr
 {
-    public Expr Expr { get; }
+    public MiniZincExpr Expr { get; }
 
     public required List<GenExpr> Generators { get; set; }
 
@@ -14,7 +14,7 @@ public sealed class CompExpr : Expr
     /// <summary>
     /// An array or set comprehension
     /// </summary>
-    public CompExpr(in Token start, Expr expr)
+    public CompExpr(in Token start, MiniZincExpr expr)
         : base(start)
     {
         Expr = expr;

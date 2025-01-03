@@ -1,12 +1,12 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class CallExpr : Expr, INamedSyntax
+public sealed class CallExpr : MiniZincExpr, INamedSyntax
 {
     public Token Name { get; }
 
-    public IReadOnlyList<Expr>? Args { get; }
+    public IReadOnlyList<MiniZincExpr>? Args { get; }
 
-    public CallExpr(in Token name, IReadOnlyList<Expr>? args = null)
+    public CallExpr(in Token name, IReadOnlyList<MiniZincExpr>? args = null)
         : base(name)
     {
         Args = args;

@@ -1,16 +1,16 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class IfThenSyntax : Expr
+public sealed class IfThenSyntax : MiniZincExpr
 {
-    public Expr If { get; private set; }
+    public MiniZincExpr If { get; private set; }
 
-    public Expr? Then { get; private set; }
+    public MiniZincExpr? Then { get; private set; }
 
-    public Expr? Else { get; set; }
+    public MiniZincExpr? Else { get; set; }
 
-    public List<(Expr elseif, Expr then)>? ElseIfs { get; set; }
+    public List<(MiniZincExpr elseif, MiniZincExpr then)>? ElseIfs { get; set; }
 
-    public IfThenSyntax(in Token start, Expr ifCase, Expr? thenCase)
+    public IfThenSyntax(in Token start, MiniZincExpr ifCase, MiniZincExpr? thenCase)
         : base(start)
     {
         If = ifCase;

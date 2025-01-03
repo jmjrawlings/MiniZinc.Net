@@ -1,8 +1,8 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class TupleExpr : Expr
+public sealed class TupleExpr : MiniZincExpr
 {
-    public readonly List<Expr> Fields;
+    public readonly List<MiniZincExpr> Fields;
 
     public TupleExpr(in Token start)
         : base(start)

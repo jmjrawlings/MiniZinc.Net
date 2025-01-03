@@ -1,13 +1,11 @@
 ﻿namespace MiniZinc.Parser;
 
-using Syntax;
-
 public static class SyntaxExtensions
 {
     /// <summary>
     /// Write this node as a minizinc string
     /// </summary>
-    public static string Write(this Syntax.Syntax node, WriteOptions? options = null)
+    public static string Write(this MiniZincSyntax node, WriteOptions? options = null)
     {
         var writer = new Writer(options);
         writer.WriteSyntax(node);
@@ -19,12 +17,12 @@ public static class SyntaxExtensions
     /// Create a deep clone of this syntax node
     /// </summary>
     public static T Clone<T>(this T node)
-        where T : Syntax.Syntax
+        where T : MiniZincSyntax
     {
         var mzn = node.Write(WriteOptions.Minimal);
         var parser = new Parser(mzn);
         // TODO - optimised function for parsing a single node to avoid list allocation?
-        if (!parser.ParseStatement(out var statement))
+        if (!parser.ParseItem(out var statement))
             throw new Exception();
         if (statement is not T t)
             throw new Exception();
@@ -36,8 +34,8 @@ public static class SyntaxExtensions
     /// </summary>
     /// <param name="id">Name of the model variable</param>
     /// <exception cref="Exception">The variable does not exists or was not of the expected type</exception>
-    public static T Get<T>(this IReadOnlyDictionary<string, Expr> dict, string id)
-        where T : Expr
+    public static T Get<T>(this IReadOnlyDictionary<string, MiniZincExpr> dict, string id)
+        where T : MiniZincExpr
     {
         var data = dict[id];
         var value = (T)data;
@@ -45,12 +43,14 @@ public static class SyntaxExtensions
     }
 
     /// Try to get the solution assigned to the given variable
-    public static Expr? TryGet(this IReadOnlyDictionary<string, Expr> dict, string id) =>
-        dict.GetValueOrDefault(id);
+    public static MiniZincExpr? TryGet(
+        this IReadOnlyDictionary<string, MiniZincExpr> dict,
+        string id
+    ) => dict.GetValueOrDefault(id);
 
     /// Try to get the solution assigned to the given variable
-    public static T? TryGet<T>(this IReadOnlyDictionary<string, Expr> dict, string id)
-        where T : Expr
+    public static T? TryGet<T>(this IReadOnlyDictionary<string, MiniZincExpr> dict, string id)
+        where T : MiniZincExpr
     {
         if (!dict.TryGetValue(id, out var data))
             return null;

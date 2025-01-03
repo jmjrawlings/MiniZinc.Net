@@ -1,4 +1,4 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 using static TypeKind;
 
@@ -8,7 +8,7 @@ using static TypeKind;
 /// <mzn>var set of int</mzn>
 /// <mzn>bool</mzn>
 /// <mzn>array[X] of opt var float</mzn>
-public abstract class TypeSyntax : Syntax
+public abstract class TypeSyntax : MiniZincSyntax
 {
     /// <summary>
     /// A simple or complex type
@@ -40,7 +40,7 @@ public sealed class BaseTypeSyntax : TypeSyntax
     public BaseTypeSyntax(in Token Start, in TypeKind kind)
         : base(Start)
     {
-        Kind = TYPE_COMPOSITE;
+        Kind = kind;
     }
 }
 
@@ -52,7 +52,7 @@ public sealed class CompositeTypeSyntax : TypeSyntax
 {
     public IReadOnlyList<TypeSyntax> Types { get; }
 
-    public CompositeTypeSyntax(in Token Start, List<TypeSyntax> types)
+    public CompositeTypeSyntax(in Token Start, IReadOnlyList<TypeSyntax> types)
         : base(Start)
     {
         Types = types;
@@ -86,9 +86,9 @@ public sealed class TupleTypeSyntax : TypeSyntax
 
 public sealed class ExprTypeSyntax : TypeSyntax
 {
-    public Expr Expr { get; }
+    public MiniZincExpr Expr { get; }
 
-    public ExprTypeSyntax(in Token Start, Expr expr)
+    public ExprTypeSyntax(in Token Start, MiniZincExpr expr)
         : base(Start)
     {
         Expr = expr;

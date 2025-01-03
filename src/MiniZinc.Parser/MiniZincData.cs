@@ -4,7 +4,6 @@ using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using MiniZinc;
-using Syntax;
 
 /// <summary>
 /// Result of parsing minizinc data from a file (.dzn) or string.
@@ -14,12 +13,12 @@ using Syntax;
 /// contain assignments of the form `$name = $datum;`
 /// </remarks>
 [DebuggerDisplay("{SourceText}")]
-public sealed class MiniZincData(IReadOnlyDictionary<string, Expr>? dict = null)
-    : IEquatable<IReadOnlyDictionary<string, Expr>>,
-        IReadOnlyDictionary<string, Expr>
+public sealed class MiniZincData(IReadOnlyDictionary<string, MiniZincExpr>? dict = null)
+    : IEquatable<IReadOnlyDictionary<string, MiniZincExpr>>,
+        IReadOnlyDictionary<string, MiniZincExpr>
 {
-    private readonly IReadOnlyDictionary<string, Expr> _dict =
-        dict ?? new Dictionary<string, Expr>();
+    private readonly IReadOnlyDictionary<string, MiniZincExpr> _dict =
+        dict ?? new Dictionary<string, MiniZincExpr>();
 
     public string Write(WriteOptions? options = null)
     {
@@ -31,7 +30,7 @@ public sealed class MiniZincData(IReadOnlyDictionary<string, Expr>? dict = null)
 
     public string SourceText => Write(WriteOptions.Minimal);
 
-    public bool Equals(IReadOnlyDictionary<string, Expr>? other)
+    public bool Equals(IReadOnlyDictionary<string, MiniZincExpr>? other)
     {
         if (other is null)
             return false;
@@ -65,22 +64,23 @@ public sealed class MiniZincData(IReadOnlyDictionary<string, Expr>? dict = null)
         return true;
     }
 
-    public IEnumerator<KeyValuePair<string, Expr>> GetEnumerator() => _dict.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, MiniZincExpr>> GetEnumerator() => _dict.GetEnumerator();
 
-    public override bool Equals(object? obj) => Equals(obj as IReadOnlyDictionary<string, Expr>);
+    public override bool Equals(object? obj) =>
+        Equals(obj as IReadOnlyDictionary<string, MiniZincExpr>);
 
     public override int GetHashCode() => SourceText.GetHashCode();
 
-    public bool TryGetValue(string key, [NotNullWhen(true)] out Expr? value) =>
+    public bool TryGetValue(string key, [NotNullWhen(true)] out MiniZincExpr? value) =>
         _dict.TryGetValue(key, out value);
 
     public bool ContainsKey(string key) => _dict.ContainsKey(key);
 
-    public Expr this[string name] => _dict[name];
+    public MiniZincExpr this[string name] => _dict[name];
 
     public IEnumerable<string> Keys => _dict.Keys;
 
-    public IEnumerable<Expr> Values => _dict.Values;
+    public IEnumerable<MiniZincExpr> Values => _dict.Values;
 
     public int Count => _dict.Count;
 

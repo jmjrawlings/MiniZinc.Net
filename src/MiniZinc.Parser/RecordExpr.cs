@@ -1,9 +1,9 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class RecordExpr : Expr
+public sealed class RecordExpr : MiniZincExpr
 {
     public RecordExpr(in Token start)
         : base(start) { }
 
-    public List<(Token, Expr)> Fields { get; } = [];
+    public List<(Token, MiniZincExpr)> Fields { get; } = [];
 }

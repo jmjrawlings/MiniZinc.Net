@@ -1,15 +1,15 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 /// <summary>
 /// A statement lives at the top level of a MiniZinc model as
 /// opposed to expressions.
 /// </summary>
-public abstract class Statement : Syntax
+public abstract class MiniZincItem : MiniZincSyntax
 {
     /// <summary>
     /// A statement lives at the top level of a MiniZinc model as
     /// opposed to expressions.
     /// </summary>
-    protected Statement(in Token start)
+    protected MiniZincItem(in Token start)
         : base(start) { }
 }

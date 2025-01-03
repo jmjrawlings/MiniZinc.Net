@@ -1,7 +1,6 @@
 ﻿namespace MiniZinc.Tests;
 
 using Client;
-using Parser.Syntax;
 
 public class ClientUnitTests : TestBase, IClassFixture<ClientFixture>
 {

@@ -1,6 +1,6 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class FloatExpr : Expr
+public sealed class FloatExpr : MiniZincExpr
 {
     public decimal Value { get; }
 

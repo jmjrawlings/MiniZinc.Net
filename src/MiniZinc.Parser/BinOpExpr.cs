@@ -1,13 +1,13 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public class BinOpExpr : Expr
+public class BinOpExpr : MiniZincExpr
 {
-    public Expr Left { get; }
+    public MiniZincExpr Left { get; }
     public Token Infix { get; }
     public TokenKind Operator { get; }
-    public Expr Right { get; }
+    public MiniZincExpr Right { get; }
 
-    public BinOpExpr(Expr left, in Token infix, Expr right)
+    public BinOpExpr(MiniZincExpr left, in Token infix, MiniZincExpr right)
         : base(left.Start)
     {
         Left = left;
