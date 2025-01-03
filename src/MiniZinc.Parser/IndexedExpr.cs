@@ -1,11 +1,11 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class IndexedExpr : Expr
+public sealed class IndexedExpr : MiniZincExpr
 {
-    public readonly Expr Index;
-    public readonly Expr Value;
+    public readonly MiniZincExpr Index;
+    public readonly MiniZincExpr Value;
 
-    public IndexedExpr(Expr index, Expr value)
+    public IndexedExpr(MiniZincExpr index, MiniZincExpr value)
         : base(index.Start)
     {
         Index = index;

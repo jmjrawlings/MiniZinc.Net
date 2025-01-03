@@ -1,6 +1,6 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class GenExpr : Expr
+public sealed class GenExpr : MiniZincExpr
 {
     public GenExpr(in Token start, List<Token> names)
         : base(start)
@@ -10,7 +10,7 @@ public sealed class GenExpr : Expr
 
     public List<Token> Names { get; }
 
-    public required Expr From { get; set; }
+    public required MiniZincExpr From { get; set; }
 
-    public Expr? Where { get; set; }
+    public MiniZincExpr? Where { get; set; }
 }

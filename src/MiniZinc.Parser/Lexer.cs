@@ -119,8 +119,10 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 Step();
                 if (SkipReturn(RIGHT_CHEVRON, TOKEN_EMPTY))
                     break;
+
                 if (SkipReturn(EQUAL, TOKEN_LESS_THAN_EQUAL))
                     break;
+
                 if (Skip(DASH))
                 {
                     if (SkipReturn(RIGHT_CHEVRON, TOKEN_BI_IMPLICATION))
@@ -129,6 +131,20 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
                 }
 
+                if (Skip(DOT))
+                {
+                    if (Skip(DOT))
+                    {
+                        if (Skip(LEFT_CHEVRON))
+                            Return(TOKEN_RANGE_EXCLUSIVE);
+                        else
+                            Return(TOKEN_RANGE_LEFT_EXCLUSIVE);
+                        break;
+                    }
+
+                    Error(ERROR_UNEXPECTED_CHAR);
+                    break;
+                }
                 Return(TOKEN_LESS_THAN);
                 break;
             case RIGHT_CHEVRON:
@@ -145,12 +161,19 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
             case DOT:
                 Step();
-                if (SkipReturn(DOT, TOKEN_CLOSED_RANGE)) { }
+                if (Skip(DOT))
+                {
+                    if (Skip(LEFT_CHEVRON))
+                        Return(TOKEN_RANGE_RIGHT_EXCLUSIVE);
+                }
                 else if (IsDigit(_char))
+                {
                     LexTupleAccess();
+                }
                 else
+                {
                     LexRecordAccess();
-
+                }
                 break;
             case PLUS:
                 Step();

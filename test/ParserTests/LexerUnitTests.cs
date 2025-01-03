@@ -71,7 +71,7 @@ public class LexerUnitTests : TestBase
     [InlineData("1..10")]
     void test_range_ti(string mzn)
     {
-        TestTokens(mzn, TOKEN_INT_LITERAL, TOKEN_CLOSED_RANGE, TOKEN_INT_LITERAL);
+        TestTokens(mzn, TOKEN_INT_LITERAL, TOKEN_RANGE_INCLUSIVE, TOKEN_INT_LITERAL);
     }
 
     [Theory]
@@ -81,7 +81,7 @@ public class LexerUnitTests : TestBase
         TestTokens(
             mzn,
             TOKEN_FLOAT_LITERAL,
-            TOKEN_CLOSED_RANGE,
+            TOKEN_RANGE_INCLUSIVE,
             TOKEN_FLOAT_LITERAL,
             TOKEN_TUPLE_ACCESS
         );

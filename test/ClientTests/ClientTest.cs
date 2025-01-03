@@ -2,7 +2,6 @@
 
 using System.Text.Json.Nodes;
 using Command;
-using Parser.Syntax;
 
 public class ClientTest : TestBase, IClassFixture<ClientFixture>
 {
@@ -91,7 +90,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         var actual = result.Data;
         foreach (var dzn in solutions)
         {
-            var parsed = Parser.Parser.ParseDataString(dzn, out var expected);
+            var parsed = Parser.Parser.ParseDataFromString(dzn, out var expected);
             var ok = Check(expected, actual);
             switch (ok, allSolutions)
             {
@@ -148,7 +147,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
     /// <summary>
     /// Compare the solution against the json node
     /// </summary>
-    public bool Check(Expr expected, Expr actual)
+    public bool Check(MiniZincExpr expected, MiniZincExpr actual)
     {
         int i = 0;
         switch (expected, actual)

@@ -1,14 +1,14 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public abstract class Syntax : IEquatable<Syntax>
+public abstract class MiniZincSyntax : IEquatable<MiniZincSyntax>
 {
     /// The token at which this node started
-    public readonly Token Start;
+    public Token Start { get; }
 
     /// Any annotations added to this node
-    public List<Expr>? Annotations;
+    public List<MiniZincExpr>? Annotations { get; set; }
 
-    protected Syntax(in Token start)
+    protected MiniZincSyntax(Token start)
     {
         Start = start;
     }
@@ -21,12 +21,12 @@ public abstract class Syntax : IEquatable<Syntax>
             return false;
         if (ReferenceEquals(this, obj))
             return true;
-        return Equals(obj as Syntax);
+        return Equals(obj as MiniZincSyntax);
     }
 
     public override int GetHashCode() => SourceText.GetHashCode();
 
-    public bool Equals(Syntax? other)
+    public bool Equals(MiniZincSyntax? other)
     {
         if (ReferenceEquals(null, other))
             return false;
@@ -44,25 +44,25 @@ public abstract class Syntax : IEquatable<Syntax>
                 return a.Value == b.Value;
             case (EmptyExpr, EmptyExpr):
                 return true;
-            case (ConstraintStatement a, ConstraintStatement b):
+            case (ConstraintItem a, ConstraintItem b):
                 return a.Expr.Equals(b.Expr);
-            case (IncludeStatement a, IncludeStatement b):
+            case (IncludeItem a, IncludeItem b):
                 return a.Path.Equals(b.Path);
-            case (AssignStatement a, AssignStatement b):
+            case (AssignItem a, AssignItem b):
                 if (!a.Name.Equals(b.Name))
                     return false;
                 if (!a.Expr.Equals(b.Expr))
                     return false;
                 return true;
-            case (DeclareStatement a, DeclareStatement b):
+            case (DeclareItem a, DeclareItem b):
                 if (!a.Name.Equals(b.Name))
                     return false;
                 if (!Equals(a.Type, b.Type))
                     return false;
-                if (!Equals(a.Body, b.Body))
+                if (!Equals(a.Expr, b.Expr))
                     return false;
                 return true;
-            case (SolveStatement a, SolveStatement b):
+            case (SolveItem a, SolveItem b):
                 if (a.Method != b.Method)
                     return false;
                 if (!Equals(a.Objective, b.Objective))

@@ -5,7 +5,6 @@ using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.Diagnostics;
 using Parser;
-using Parser.Syntax;
 
 class Program
 {
@@ -77,12 +76,8 @@ class Program
     static void Minify(InvocationContext context, FileInfo file)
     {
         var console = context.Console;
-        var result = Parser.ParseModelFile(file, out var model);
-        if (!result.Ok)
-        {
-            console.Error.WriteLine(result.ErrorMessage!);
+        if (!Parser.ParseModelFromFile(file, out var model))
             return;
-        }
 
         var minified = model.Write(WriteOptions.Minimal);
         File.WriteAllText(file.FullName, minified);
@@ -105,13 +100,12 @@ class Program
     static void Format(InvocationContext context, FileInfo file)
     {
         var console = context.Console;
-        var result = Parser.ParseModelFile(file, out var model);
-        if (!result.Ok)
+        if (!Parser.ParseModelFromFile(file, out var model))
         {
-            console.Error.WriteLine(result.ErrorMessage!);
             context.ExitCode = 100;
             return;
         }
+
         var output = model.Write(WriteOptions.Pretty);
         File.WriteAllText(file.FullName, output);
         console.WriteLine(file.FullName);

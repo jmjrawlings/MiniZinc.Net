@@ -1,11 +1,11 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class RecordAccessExpr : Expr
+public sealed class RecordAccessExpr : MiniZincExpr
 {
-    public readonly Expr Expr;
+    public readonly MiniZincExpr Expr;
     public readonly Token Field;
 
-    public RecordAccessExpr(Expr expr, Token field)
+    public RecordAccessExpr(MiniZincExpr expr, Token field)
         : base(expr.Start)
     {
         Expr = expr;

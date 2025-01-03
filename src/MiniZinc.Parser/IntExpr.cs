@@ -1,8 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-using Syntax;
-
-public sealed class IntExpr : Expr
+public sealed class IntExpr : MiniZincExpr
 {
     public int Value { get; }
 

@@ -1,14 +1,14 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class TupleAccessExpr : Expr
+public sealed class TupleAccessExpr : MiniZincExpr
 {
-    public readonly Expr Expr;
+    public readonly MiniZincExpr Expr;
 
     public readonly Token Field;
 
     public int Index => Field.IntValue;
 
-    public TupleAccessExpr(Expr expr, Token field)
+    public TupleAccessExpr(MiniZincExpr expr, Token field)
         : base(expr.Start)
     {
         Expr = expr;

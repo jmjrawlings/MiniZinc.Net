@@ -1,3 +1,3 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 public interface ILetLocalSyntax { }

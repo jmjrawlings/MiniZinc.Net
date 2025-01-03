@@ -1,17 +1,17 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 /// <summary>
 /// solve maximize a;
 /// </summary>
-public sealed class SolveStatement : Statement
+public sealed class SolveItem : MiniZincItem
 {
     public SolveMethod Method { get; }
-    public Expr? Objective { get; }
+    public MiniZincExpr? Objective { get; }
 
     /// <summary>
     /// solve maximize a;
     /// </summary>
-    public SolveStatement(in Token start, SolveMethod method, Expr? objective = null)
+    public SolveItem(in Token start, SolveMethod method, MiniZincExpr? objective = null)
         : base(start)
     {
         Method = method;

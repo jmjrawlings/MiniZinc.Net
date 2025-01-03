@@ -1,10 +1,13 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public class ArrayExpr : Expr
+public class ArrayExpr : MiniZincExpr
 {
-    public ArrayExpr(in Token start)
-        : base(start) { }
+    public ArrayExpr(in Token start, IReadOnlyList<MiniZincExpr>? elements)
+        : base(start)
+    {
+        Elements = elements;
+    }
 
-    public List<Expr> Elements { get; } = [];
-    public int N => Elements.Count;
+    public IReadOnlyList<MiniZincExpr>? Elements { get; }
+    public int N => Elements?.Count ?? 0;
 }

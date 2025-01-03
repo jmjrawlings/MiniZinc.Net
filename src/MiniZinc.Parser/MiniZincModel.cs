@@ -3,32 +3,28 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Parser;
-using Parser.Syntax;
 using static Parser.Parser;
 using static Parser.SolveMethod;
 
 /// <summary>
-/// A MiniZinc model.
+/// MiniZinc semantic model derived from the raw <see cref="MiniZincItem"/>
+/// and <see cref="MiniZincExpr"/> parsed from MiniZinc files and strings.
 /// </summary>
-/// <remarks>
-/// This class extracts useful semantic information
-/// from <see cref="ModelSyntax"/> and <see cref="MiniZincData"/>
-/// </remarks>
 public sealed class MiniZincModel
 {
     public string Name { get; set; } = "";
 
-    private Dictionary<string, INamedSyntax> _bindings;
+    private Dictionary<string, MiniZincSyntax> _bindings;
 
-    private Dictionary<string, List<DeclareStatement>>? _overloads;
+    private Dictionary<string, List<DeclareItem>>? _overloads;
 
-    private List<ConstraintStatement>? _constraints;
+    private List<ConstraintItem>? _constraints;
 
-    private List<OutputStatement>? _outputs;
+    private List<OutputItem>? _outputs;
 
-    private List<IncludeStatement>? _includes;
+    private List<IncludeItem>? _includes;
 
-    private SolveStatement? _solve;
+    private SolveItem? _solve;
 
     private List<string>? _warnings;
 
@@ -42,18 +38,20 @@ public sealed class MiniZincModel
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
 
-    public IEnumerable<ConstraintStatement> Constraints =>
-        _constraints ?? Enumerable.Empty<ConstraintStatement>();
+    public IEnumerable<IncludeItem> Includes => _includes ?? Enumerable.Empty<IncludeItem>();
 
-    public IEnumerable<OutputStatement> Outputs => _outputs ?? Enumerable.Empty<OutputStatement>();
+    public IEnumerable<OutputItem> Outputs => _outputs ?? Enumerable.Empty<OutputItem>();
 
-    public IReadOnlyDictionary<string, INamedSyntax> Bindings => _bindings;
+    public IReadOnlyDictionary<string, MiniZincSyntax> Bindings => _bindings;
 
-    public SolveStatement? SolveStatement => _solve;
+    public IEnumerable<ConstraintItem> Constraints =>
+        _constraints ?? Enumerable.Empty<ConstraintItem>();
+
+    public SolveItem? SolveItem => _solve;
 
     public SolveMethod SolveMethod => _solve?.Method ?? SOLVE_SATISFY;
 
-    public Expr? Objective => _solve?.Objective;
+    public MiniZincExpr? Objective => _solve?.Objective;
 
     public IReadOnlyList<DirectoryInfo> SearchDirectories => _searchDirectories;
 
@@ -180,9 +178,9 @@ public sealed class MiniZincModel
     /// The constraint name if one was provided
     /// </returns>
     [return: NotNullIfNotNull(nameof(name))]
-    public string? AddConstraint(Expr expr, string? name = null)
+    public string? AddConstraint(MiniZincExpr expr, string? name = null)
     {
-        var con = new ConstraintStatement(default, expr);
+        var con = new ConstraintItem(default, expr);
         if (name is not null)
         {
             con.Annotations ??= [];
@@ -195,7 +193,7 @@ public sealed class MiniZincModel
     /// <summary>
     /// Add a constraint to the model
     /// </summary>
-    public void AddConstraint(ConstraintStatement constraint)
+    public void AddConstraint(ConstraintItem constraint)
     {
         AddSyntax(constraint);
     }
@@ -228,10 +226,10 @@ public sealed class MiniZincModel
     /// </summary>
     /// <example>model.Minimize("a+b")</example>
     /// <example>model.Minimize("makespan", "int_search(q, first_fail, indomain_min)")</example>
-    public SolveStatement Minimize(ReadOnlySpan<char> objective, params string[] annotations)
+    public SolveItem Minimize(ReadOnlySpan<char> objective, params string[] annotations)
     {
         var mzn = $"solve minimize {objective}{Annotations(annotations)};";
-        var obj = ParseStatement<SolveStatement>(mzn);
+        var obj = ParseItem<SolveItem>(mzn);
         SetObjective(obj);
         return obj;
     }
@@ -241,10 +239,10 @@ public sealed class MiniZincModel
     /// </summary>
     /// <example>model.Maximize("a+b")</example>
     /// <example>model.Maximize("makespan", "int_search(q, first_fail, indomain_min)")</example>
-    public SolveStatement Maximize(ReadOnlySpan<char> objective, params string[] annotations)
+    public SolveItem Maximize(ReadOnlySpan<char> objective, params string[] annotations)
     {
         var mzn = $"solve maximize {objective}{Annotations(annotations)};";
-        var obj = ParseStatement<SolveStatement>(mzn);
+        var obj = ParseItem<SolveItem>(mzn);
         SetObjective(obj);
         return obj;
     }
@@ -254,10 +252,10 @@ public sealed class MiniZincModel
     /// </summary>
     /// <example>model.Satisfy();</example>
     /// <example>model.Satisfy("int_search(q, first_fail, indomain_min)")</example>
-    public SolveStatement Satisfy(params string[] annotations)
+    public SolveItem Satisfy(params string[] annotations)
     {
         var mzn = $"solve satisfy{Annotations(annotations)};";
-        var obj = ParseStatement<SolveStatement>(mzn);
+        var obj = ParseItem<SolveItem>(mzn);
         SetObjective(obj);
         return obj;
     }
@@ -269,7 +267,7 @@ public sealed class MiniZincModel
     /// <seealso cref="Minimize"/>
     /// <seealso cref="Satisfy"/>
     /// </summary>
-    private void SetObjective(SolveStatement solve)
+    private void SetObjective(SolveItem solve)
     {
         _solve = solve;
     }
@@ -277,7 +275,7 @@ public sealed class MiniZincModel
     public void AddOutput(params string[] strings)
     {
         var mzn = $"output [{string.Join(',', strings)}]";
-        var output = ParseStatement<OutputStatement>(mzn);
+        var output = ParseItem<OutputItem>(mzn);
         AddSyntax(output);
     }
 
@@ -286,38 +284,49 @@ public sealed class MiniZincModel
         _outputs?.Clear();
     }
 
+    public void AddSyntax(IEnumerable<MiniZincSyntax>? syntii)
+    {
+        if (syntii is null)
+            return;
+
+        foreach (var syntax in syntii)
+        {
+            AddSyntax(syntax);
+        }
+    }
+
     /// <summary>
     /// Add the given syntax node to the model
     /// </summary>
-    public void AddSyntax(Syntax syntax)
+    public void AddSyntax(MiniZincSyntax? syntax)
     {
         switch (syntax)
         {
-            case SolveStatement solve:
+            case SolveItem solve:
                 if (_solve is not null)
                     Warning($"Existing solve statement `{_solve}` was overwritten with `{solve}`");
                 _solve = solve;
                 break;
 
-            case OutputStatement output:
+            case OutputItem output:
                 _outputs ??= [];
                 _outputs.Add(output);
                 break;
 
-            case ConstraintStatement node:
+            case ConstraintItem node:
                 _constraints ??= [];
                 _constraints.Add(node);
                 break;
 
             case TypeAliasSyntax alias:
-                var name = alias.Name.StringValue;
+                var name = alias.Name.StringValue!;
                 if (_bindings.TryGetValue(name, out var old))
                     Error($"Type alias name \"{name}\" conflicts with {old})");
                 _bindings.Add(name, alias);
                 break;
 
-            case AssignStatement assign:
-                name = assign.Name.StringValue;
+            case AssignItem assign:
+                name = assign.Name.StringValue!;
                 var expr = assign.Expr;
                 _bindings.TryGetValue(name, out old);
                 switch (old)
@@ -328,21 +337,28 @@ public sealed class MiniZincModel
                         break;
 
                     // Assignment to a variable that has only been declared
-                    case DeclareStatement { Body: null } declare:
+                    case DeclareItem { Expr: null } declare:
                         /* The easiest way to store the fully assigned variable
-                         * declaration here is to complete the intial declaration
-                         * using this expression by parsing the string concatentat.
+                         * declaration here is to complete the initial declaration
+                         * using this expression by parsing the string concat.
                          *
-                         * eg:
+                         * eg:                         *
                          * enum Dir;
                          * Dir = {A,B,C,D};
                          *
                          * becomes:
                          * enum Dir = {A, B, C, D};
+                         *
+                         * This also has the side effect of type-checking the full
+                         * declaration.
                          */
-                        var mzn = $"{declare.ToString()[..^1]} = {expr};";
-                        declare = ParseStatement<DeclareStatement>(mzn);
-                        _bindings[name] = declare;
+                        // var mzn = $"{declare.ToString()[..^1]} = {expr};";
+                        // declare = ParseStatement<DeclareStatement>(mzn);
+                        declare.Expr = expr;
+
+                        // Remove the old binding as it will get re-added
+                        _bindings.Remove(name);
+                        AddSyntax(declare);
                         break;
 
                     default:
@@ -351,35 +367,43 @@ public sealed class MiniZincModel
                 }
                 break;
 
-            case DeclareStatement declare:
-                name = declare.Name.StringValue;
+            case DeclareItem declare:
+                var type = declare.Type;
+                name = declare.Name.StringValue!;
                 _bindings.TryGetValue(name, out old);
                 switch (old)
                 {
+                    // No previous declaration
                     case null:
                         _bindings[name] = declare;
+                        TypeCheck(declare);
                         break;
 
-                    case AssignStatement assign when declare.Body is null:
-                        declare.Body = assign.Expr;
+                    // Undeclared assignment
+                    case AssignItem assign when declare.Expr is null:
+                        declare.Expr = assign.Expr;
                         _bindings[name] = declare;
+                        TypeCheck(declare);
                         break;
 
-                    case DeclareStatement oldDeclare:
+                    case DeclareItem oldDeclare:
                         var oldType = oldDeclare.Type?.ToString();
                         var newType = declare.Type?.ToString();
                         if (oldType != newType)
                             Warning(
-                                $"Function {name} overloaded with a differnt return type ({oldType} vs {newType})"
+                                $"Function {name} overloaded with a different return type ({oldType} vs {newType})"
                             );
 
-                        _overloads ??= new Dictionary<string, List<DeclareStatement>>();
+                        _overloads ??= new Dictionary<string, List<DeclareItem>>();
                         if (!_overloads.TryGetValue(name, out var overloads))
                         {
                             overloads = [];
                             _overloads[name] = overloads;
                         }
                         overloads.Add(declare);
+
+                        // Overloads do not replace the original binding
+                        TypeCheck(declare);
                         break;
 
                     default:
@@ -389,7 +413,7 @@ public sealed class MiniZincModel
 
                 break;
 
-            case IncludeStatement include:
+            case IncludeItem include:
                 var path = include.Path.StringValue;
                 var file = FindFile(path);
 
@@ -412,13 +436,25 @@ public sealed class MiniZincModel
                     }
                     else
                     {
-                        var result = ParseModelFile(file, out var model);
+                        var result = ParseStatementsFromFile(file, out var model);
                         result.EnsureOk();
-                        AddModel(model);
+                        AddSyntax(model);
                     }
                 }
                 break;
         }
+    }
+
+    private void TypeCheck(DeclareItem declare)
+    {
+        var type = declare.Type;
+        var expr = declare.Expr;
+
+        if (type is null)
+            return;
+
+        if (expr is null)
+            return;
     }
 
     /// <summary>
@@ -451,7 +487,7 @@ public sealed class MiniZincModel
         if (file is null)
             throw new FileNotFoundException(FileNotFoundMessage(path));
 
-        var result = ParseModelFile(file, out var model);
+        var result = ParseStatementsFromFile(file, out var model);
         result.EnsureOk();
 
         // Added models become a search directory
@@ -459,13 +495,7 @@ public sealed class MiniZincModel
             AddSearchPath(dir);
         _addedFiles ??= [];
         _addedFiles.Add(file);
-        AddModel(model);
-    }
-
-    public void AddModel(ModelSyntax model)
-    {
-        foreach (var statement in model.Statements)
-            AddSyntax(statement);
+        AddSyntax(model);
     }
 
     /// <inheritdoc cref="AddFile(string)"/>
@@ -503,15 +533,15 @@ public sealed class MiniZincModel
     /// </summary>
     public void Include(string path)
     {
-        var syntax = ParseStatement<IncludeStatement>($"include \"{path}\"");
+        var syntax = ParseItem<IncludeItem>($"include \"{path}\"");
         AddSyntax(syntax);
     }
 
     public void AddString(string mzn)
     {
-        var result = ParseModelString(mzn, out var model);
+        var result = ParseStatementsFromString(mzn, out var model);
         result.EnsureOk();
-        AddModel(model);
+        AddSyntax(model);
     }
 
     public void AddStrings(params string[] strings)
@@ -572,27 +602,26 @@ public sealed class MiniZincModel
 
         if (_includes is { } includes)
             foreach (var include in includes)
-                writer.WriteStatement(include);
+                writer.WriteItem(include);
 
         foreach (var syntax in _bindings.Values)
-            writer.WriteStatement((Statement)syntax);
+            writer.WriteItem((MiniZincItem)syntax);
 
         if (_overloads is { } dict)
-            foreach (var name in dict.Keys)
+            foreach (var (name, overloads) in dict)
             {
-                var overloads = dict[name];
-                foreach (var overload in overloads)
-                    writer.WriteStatement(overload);
+                foreach (var overload in overloads[1..])
+                    writer.WriteItem(overload);
             }
 
         foreach (var constraint in Constraints)
-            writer.WriteStatement(constraint);
+            writer.WriteItem(constraint);
 
         if (_solve is not null)
-            writer.WriteStatement(_solve);
+            writer.WriteItem(_solve);
 
-        // foreach (var output in Outputs)
-        //     writer.WriteSyntax(output);
+        foreach (var output in Outputs)
+            writer.WriteSyntax(output);
 
         var mzn = writer.ToString();
         return mzn;

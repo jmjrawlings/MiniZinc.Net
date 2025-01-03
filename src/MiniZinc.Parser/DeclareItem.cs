@@ -1,11 +1,11 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
 /// <summary>
 /// A variable
 /// </summary>
 /// <mzn>int: a = 10</mzn>
 /// <mzn>var int: a = 10</mzn>
-public sealed class DeclareStatement : Statement, ILetLocalSyntax, INamedSyntax
+public sealed class DeclareItem : MiniZincItem, ILetLocalSyntax, INamedSyntax
 {
     public Token Name { get; }
 
@@ -13,7 +13,7 @@ public sealed class DeclareStatement : Statement, ILetLocalSyntax, INamedSyntax
 
     public DeclareKind Kind { get; }
 
-    public Expr? Body { get; set; }
+    public MiniZincExpr? Expr { get; set; }
 
     /// Typed parameter list if this is a function-like declaration
     public List<ParameterSyntax>? Parameters { get; set; }
@@ -26,7 +26,7 @@ public sealed class DeclareStatement : Statement, ILetLocalSyntax, INamedSyntax
     /// </summary>
     /// <mzn>int: a = 10</mzn>
     /// <mzn>var int: a = 10</mzn>
-    public DeclareStatement(in Token start, DeclareKind kind, TypeSyntax? type, Token name)
+    public DeclareItem(in Token start, DeclareKind kind, TypeSyntax? type, Token name)
         : base(start)
     {
         Type = type;

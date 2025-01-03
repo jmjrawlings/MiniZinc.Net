@@ -1,8 +1,8 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class LetExpr : Expr
+public sealed class LetExpr : MiniZincExpr
 {
-    public LetExpr(in Token start, List<ILetLocalSyntax>? locals, Expr body)
+    public LetExpr(in Token start, List<ILetLocalSyntax>? locals, MiniZincExpr body)
         : base(start)
     {
         Locals = locals;
@@ -11,5 +11,5 @@ public sealed class LetExpr : Expr
 
     public List<ILetLocalSyntax>? Locals { get; }
 
-    public Expr Body { get; }
+    public MiniZincExpr Body { get; }
 }

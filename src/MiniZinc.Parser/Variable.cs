@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc;
 
-using Parser.Syntax;
+using Parser;
 using static Parser.Parser;
 
 /// <summary>

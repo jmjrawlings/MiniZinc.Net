@@ -1,12 +1,10 @@
 ﻿namespace MiniZinc.Parser;
 
-using Syntax;
-
 /// <summary>
 /// An empty value used for optional types
 /// </summary>
 /// <mzn>opt int: x = &lt;&gt;>;</mzn>
-public sealed class EmptyExpr : Expr
+public sealed class EmptyExpr : MiniZincExpr
 {
     /// <summary>
     /// An empty value used for optional types

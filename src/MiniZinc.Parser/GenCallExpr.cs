@@ -1,12 +1,12 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class GenCallExpr : Expr
+public sealed class GenCallExpr : MiniZincExpr
 {
-    public Expr Expr { get; }
+    public MiniZincExpr Expr { get; }
     public List<GenExpr> Generators { get; }
     public Token Name { get; }
 
-    public GenCallExpr(Token name, Expr expr, List<GenExpr> generators)
+    public GenCallExpr(Token name, MiniZincExpr expr, List<GenExpr> generators)
         : base(name)
     {
         Name = name;

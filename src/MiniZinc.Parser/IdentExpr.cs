@@ -1,6 +1,6 @@
-﻿namespace MiniZinc.Parser.Syntax;
+﻿namespace MiniZinc.Parser;
 
-public sealed class IdentExpr : Expr
+public sealed class IdentExpr : MiniZincExpr
 {
     public IdentExpr(in Token token)
         : base(token) { }
