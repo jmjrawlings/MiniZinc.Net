@@ -8,7 +8,7 @@ public sealed class ParserIntegrationTests
 {
 	private void TestParse(string path)
 	{
-		var result = Parser.ParseStatementsFromFile(path, out var model);
+		var result = Parser.ParseItemsFromFile(path, out var items);
 		result.Ok.Should().BeTrue();
 	}
 
