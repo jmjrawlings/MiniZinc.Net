@@ -165,6 +165,8 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 {
                     if (Skip(LEFT_CHEVRON))
                         Return(TOKEN_RANGE_RIGHT_EXCLUSIVE);
+                    else
+                        Return(TOKEN_RANGE_INCLUSIVE);
                 }
                 else if (IsDigit(_char))
                 {
@@ -742,6 +744,7 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// </summary>
     public static Token[] Lex(string s)
     {
+        // TODO - remove IEnumerable and just create the array ourselves
         var lexer = new Lexer(s);
         var tokens = lexer.ToArray();
         return tokens;

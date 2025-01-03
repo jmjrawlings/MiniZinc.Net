@@ -3,9 +3,10 @@
 public sealed class ArrayAccessExpr : MiniZincExpr
 {
     public MiniZincExpr Array { get; }
-    public List<MiniZincExpr> Access { get; }
 
-    public ArrayAccessExpr(MiniZincExpr array, List<MiniZincExpr> access)
+    public IReadOnlyList<MiniZincExpr> Access { get; }
+
+    public ArrayAccessExpr(MiniZincExpr array, IReadOnlyList<MiniZincExpr> access)
         : base(array.Start)
     {
         Array = array;

@@ -76,6 +76,15 @@ public struct Parser
         return true;
     }
 
+    private bool Skip(TokenKind kind, out Token token)
+    {
+        token = _current;
+        if (_kind != kind)
+            return false;
+        Step();
+        return true;
+    }
+
     /// Skip over the given token kind
     private bool Expect(TokenKind kind)
     {
@@ -152,7 +161,7 @@ public struct Parser
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    internal bool ParseStatements(out List<MiniZincItem>? statements)
+    internal bool ParseItems(out List<MiniZincItem>? statements)
     {
         statements = null;
         while (true)
@@ -800,9 +809,25 @@ public struct Parser
                 var access = new List<MiniZincExpr>();
                 while (_kind is not TOKEN_CLOSE_BRACKET)
                 {
-                    if (!ParseExpr(out var index))
+                    MiniZincExpr? index = null;
+
+                    // For array access only, the `..` token
+                    // can be used.  We explicitly allow this here instead
+                    // of in the general Expr parser.
+                    if (Skip(TOKEN_RANGE_INCLUSIVE, out var idx))
+                    {
+                        index = new SliceExpr(idx);
+                        access.Add(index);
+                    }
+                    else if (ParseExpr(out index))
+                    {
+                        access.Add(index);
+                    }
+                    else
+                    {
                         return false;
-                    access.Add(index);
+                    }
+
                     if (!Skip(TOKEN_COMMA))
                         break;
                 }
@@ -2719,12 +2744,12 @@ public struct Parser
     /// </summary>
     /// <example>Parser.ParseFile("model.mzn")</example>
     /// <example>Parser.ParseFile("data.dzn")</example>
-    public static ParseResult ParseStatementsFromFile(string path, out List<MiniZincItem>? model)
+    public static ParseResult ParseItemsFromFile(string path, out List<MiniZincItem>? items)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
         var parser = new Parser(mzn);
-        var ok = parser.ParseStatements(out model);
+        var ok = parser.ParseItems(out items);
         var elapsed = watch.Elapsed;
         var result = new ParseResult
         {
@@ -2749,11 +2774,11 @@ public struct Parser
     ///     constraint a /\ b;
     ///     """);
     /// </example>
-    public static ParseResult ParseStatementsFromString(string text, out List<MiniZincItem>? model)
+    public static ParseResult ParseItemsFromString(string text, out List<MiniZincItem>? model)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
-        var ok = parser.ParseStatements(out model);
+        var ok = parser.ParseItems(out model);
         var elapsed = watch.Elapsed;
         var result = new ParseResult
         {
@@ -2768,11 +2793,9 @@ public struct Parser
         return result;
     }
 
-    /// <inheritdoc cref="ParseModelFile(string,out MiniZinc.Parser.ModelSyntax)"/>
-    public static ParseResult ParseStatementsFromFile(
-        FileInfo file,
-        out List<MiniZincItem>? model
-    ) => ParseStatementsFromFile(file.FullName, out model);
+    /// <inheritdoc cref="ParseItemsFromFile(string,ref System.Collections.Generic.List{MiniZinc.Parser.MiniZincItem}?)"/>
+    public static ParseResult ParseItemsFromFile(FileInfo file, out List<MiniZincItem>? items) =>
+        ParseItemsFromFile(file.FullName, out items);
 
     /// <summary>
     /// Parse the given minizinc data file.

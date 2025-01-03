@@ -1,6 +1,6 @@
 ﻿namespace MiniZinc.Parser;
 
-public record ParseResult
+public readonly struct ParseResult
 {
     public required string? SourceFile { get; init; }
     public required string SourceText { get; init; }

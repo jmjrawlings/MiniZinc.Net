@@ -30,9 +30,9 @@ public sealed class MiniZincModel
 
     private List<DirectoryInfo> _searchDirectories;
 
-    private List<FileInfo>? _addedFiles;
+    private HashSet<string>? _addedFiles;
 
-    private HashSet<string>? _parsedFiles;
+    private List<MiniZincItem>? _items;
 
     // private bool _containsFloats;
 
@@ -68,6 +68,7 @@ public sealed class MiniZincModel
         _bindings = [];
         _searchDirectories = [];
         _overloads = null;
+        _items = null;
     }
 
     /// <summary>
@@ -414,12 +415,18 @@ public sealed class MiniZincModel
                 break;
 
             case IncludeItem include:
-                var path = include.Path.StringValue;
+                var path = include.Path.StringValue!;
                 var file = FindFile(path);
 
-                /* If we couldn't find the included file then for now
+                /*
+                If we couldn't find the included file then for now
                 just assume it's a stdlib file and let minizinc sort
-                it out */
+                it out.
+                
+                The correct behaviour would be to ignore files we know
+                to be part of the stdlib but I don't know quite how to
+                do this.
+                */
                 if (file is null)
                 {
                     Warning(FileNotFoundMessage(path));
@@ -428,18 +435,10 @@ public sealed class MiniZincModel
                 }
                 else
                 {
-                    _parsedFiles ??= [];
-                    if (!_parsedFiles.Add(file.FullName))
-                    {
-                        // TODO - should we just ignore this?
-                        Error($"Detected recursive include of \"{file.FullName}\"");
-                    }
-                    else
-                    {
-                        var result = ParseStatementsFromFile(file, out var model);
-                        result.EnsureOk();
-                        AddSyntax(model);
-                    }
+                    _addedFiles ??= [];
+                    if (_addedFiles.Add(file.FullName))
+                        AddFile(file);
+                    // The file could have already existed in the
                 }
                 break;
         }
@@ -487,15 +486,18 @@ public sealed class MiniZincModel
         if (file is null)
             throw new FileNotFoundException(FileNotFoundMessage(path));
 
-        var result = ParseStatementsFromFile(file, out var model);
+        _addedFiles ??= [];
+        if (!_addedFiles.Add(file.FullName))
+            return;
+
+        var result = ParseItemsFromFile(file, out var items);
         result.EnsureOk();
 
-        // Added models become a search directory
+        // Use the directory of the added file as another search path
         if (file.Directory is { } dir)
             AddSearchPath(dir);
-        _addedFiles ??= [];
-        _addedFiles.Add(file);
-        AddSyntax(model);
+
+        AddSyntax(items);
     }
 
     /// <inheritdoc cref="AddFile(string)"/>
@@ -539,9 +541,9 @@ public sealed class MiniZincModel
 
     public void AddString(string mzn)
     {
-        var result = ParseStatementsFromString(mzn, out var model);
+        var result = ParseItemsFromString(mzn, out var items);
         result.EnsureOk();
-        AddSyntax(model);
+        AddSyntax(items);
     }
 
     public void AddStrings(params string[] strings)
