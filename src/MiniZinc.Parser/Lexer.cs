@@ -7,7 +7,7 @@ using System.Globalization;
 using static Char;
 using static TokenKind;
 
-sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
+internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 {
     const char FWD_SLASH = '/';
     const char BACK_SLASH = '\\';
@@ -79,9 +79,11 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     public bool MoveNext()
     {
-        next:
         if (_fin)
             return false;
+
+        while (_char is TAB or NEWLINE or RETURN or SPACE)
+            Step();
 
         _startPos = _index;
         _startLine = _line;
@@ -89,9 +91,15 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _length = 1;
         switch (_char)
         {
+            case EOF:
+                Return(TOKEN_EOF);
+                _fin = true;
+                break;
+
             case PERCENT:
                 LexLineComment();
                 break;
+
             case FWD_SLASH:
                 Step();
                 if (Skip(STAR))
@@ -99,22 +107,27 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 else if (!SkipReturn(BACK_SLASH, TOKEN_CONJUNCTION))
                     Return(TOKEN_DIVIDE);
                 break;
+
             case BACK_SLASH:
                 Step();
                 if (!SkipReturn(FWD_SLASH, TOKEN_DISJUNCTION))
                     Return(TOKEN_BACKSLASH);
                 break;
+
             case STAR:
                 SkipReturn(TOKEN_TIMES);
                 break;
+
             case DELIMITER:
                 SkipReturn(TOKEN_EOL);
                 break;
+
             case EQUAL:
                 Step();
                 Skip(EQUAL);
                 Return(TOKEN_EQUAL);
                 break;
+
             case LEFT_CHEVRON:
                 Step();
                 if (SkipReturn(RIGHT_CHEVRON, TOKEN_EMPTY))
@@ -147,18 +160,22 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 }
                 Return(TOKEN_LESS_THAN);
                 break;
+
             case RIGHT_CHEVRON:
                 Step();
                 if (SkipReturn(EQUAL, TOKEN_GREATER_THAN_EQUAL))
                     break;
                 Return(TOKEN_GREATER_THAN);
                 break;
+
             case UP_CHEVRON:
                 SkipReturn(TOKEN_EXPONENT);
                 break;
+
             case PIPE:
                 SkipReturn(TOKEN_PIPE);
                 break;
+
             case DOT:
                 Step();
                 if (Skip(DOT))
@@ -177,18 +194,21 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     LexRecordAccess();
                 }
                 break;
+
             case PLUS:
                 Step();
                 if (SkipReturn(PLUS, TOKEN_PLUS_PLUS))
                     break;
                 Return(TOKEN_PLUS);
                 break;
+
             case DASH:
                 Step();
                 if (SkipReturn(RIGHT_CHEVRON, TOKEN_FORWARD_IMPLICATION))
                     break;
                 Return(TOKEN_MINUS);
                 break;
+
             case TILDE:
                 Step();
                 switch (_char)
@@ -209,44 +229,55 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                         Return(TOKEN_TILDE);
                         break;
                 }
-
                 break;
+
             case OPEN_BRACKET:
                 SkipReturn(TOKEN_OPEN_BRACKET);
                 break;
+
             case CLOSE_BRACKET:
                 SkipReturn(TOKEN_CLOSE_BRACKET);
                 break;
+
             case OPEN_PAREN:
                 SkipReturn(TOKEN_OPEN_PAREN);
                 break;
+
             case CLOSE_PAREN:
                 SkipReturn(TOKEN_CLOSE_PAREN);
                 break;
+
             case OPEN_BRACE:
                 SkipReturn(TOKEN_OPEN_BRACE);
                 break;
+
             case CLOSE_BRACE:
                 SkipReturn(TOKEN_CLOSE_BRACE);
                 break;
+
             case SINGLE_QUOTE:
                 LexQuotedIdentifier();
                 break;
+
             case DOUBLE_QUOTE:
                 LexStringLiteral();
                 break;
+
             case BACKTICK:
                 LexBacktickIdentifier();
                 break;
+
             case DOLLAR:
                 LexGenericIdentifier();
                 break;
+
             case COLON:
                 Step();
                 if (SkipReturn(COLON, TOKEN_COLON_COLON))
                     break;
                 Return(TOKEN_COLON);
                 break;
+
             case UNDERSCORE:
                 if (IsLetter(Peek))
                 {
@@ -257,28 +288,20 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 {
                     SkipReturn(TOKEN_UNDERSCORE);
                 }
-
                 break;
+
             case COMMA:
                 Step();
                 Return(TOKEN_COMMA);
                 break;
+
             case EXCLAMATION:
                 Step();
                 if (SkipReturn(EQUAL, TOKEN_NOT_EQUAL))
                     break;
                 Error(ERROR_UNEXPECTED_CHAR);
                 break;
-            case TAB:
-            case NEWLINE:
-            case RETURN:
-            case SPACE:
-                do
-                {
-                    Step();
-                } while (_char is TAB or NEWLINE or RETURN or SPACE);
 
-                goto next;
             default:
                 if (IsDigit(_char))
                 {
@@ -673,7 +696,6 @@ sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         else
         {
             _char = EOF;
-            _fin = true;
         }
     }
 

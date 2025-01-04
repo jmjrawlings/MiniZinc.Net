@@ -107,7 +107,8 @@ public class LexerUnitTests : TestBase
     {
         var mzn = @$" {'\r'}{'\t'}{'\n'} ";
         var tokens = Lexer.Lex(mzn).ToArray();
-        tokens.Should().BeEmpty();
+        tokens.Should().HaveCount(1);
+        tokens[0].Kind.Should().Be(TOKEN_EOF);
     }
 
     [Fact]
@@ -125,7 +126,7 @@ public class LexerUnitTests : TestBase
         var mzn = "\\([\"lala\" | i in 1..3 where b])";
         mzn = $"\"{mzn}\"";
         var tokens = Lexer.Lex(mzn).ToArray();
-        tokens.Should().HaveCount(1);
+        tokens.Should().HaveCount(2);
         tokens[0].Kind.Should().Be(TOKEN_STRING_LITERAL);
         tokens[0].StringValue.Should().Be("\\([\"lala\" | i in 1..3 where b])");
     }

@@ -99,6 +99,8 @@ public enum TokenKind : sbyte
     TOKEN_TILDE_TIMES,
     TOKEN_OPEN_BRACKET,
     TOKEN_CLOSE_BRACKET,
+    TOKEN_OPEN_ARRAY,
+    TOKEN_CLOSE_ARRAY,
     TOKEN_OPEN_PAREN,
     TOKEN_CLOSE_PAREN,
     TOKEN_OPEN_BRACE,
@@ -113,5 +115,5 @@ public enum TokenKind : sbyte
     TOKEN_PIPE,
     TOKEN_EMPTY,
     TOKEN_EOL,
-    TOKEN_EOF,
+    TOKEN_EOF
 }

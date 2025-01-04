@@ -13,7 +13,7 @@ public struct Parser
     /// <summary>
     /// Operator Associativity
     /// </summary>
-    public enum Assoc : byte
+    internal enum Assoc : byte
     {
         None = 1,
         Left,
@@ -23,8 +23,7 @@ public struct Parser
     private readonly Token[] _tokens;
     private readonly int _n;
     private string _sourceText;
-    private Token _current;
-    private TokenKind _kind;
+    private Token _token;
     private int _i;
     private string? _errorMessage;
     private string? _errorTrace;
@@ -41,19 +40,15 @@ public struct Parser
     /// Progress the parser
     private void Step()
     {
-        next:
-        if (_i >= _n)
+        while (_i < _n)
         {
-            _kind = TOKEN_EOF;
-            return;
+            _token = _tokens[_i++];
+            if (_token.Kind is not (TOKEN_LINE_COMMENT or TOKEN_BLOCK_COMMENT))
+                break;
         }
-
-        _current = _tokens[_i++];
-        _kind = _current.Kind;
-        if (_kind is TOKEN_LINE_COMMENT or TOKEN_BLOCK_COMMENT)
-            goto next;
     }
 
+    /// Return the next non-comment token after the current one
     private Token Peek()
     {
         for (int j = _i; j < _n; j++)
@@ -70,16 +65,63 @@ public struct Parser
     /// Progress the parser if the current token is of the given kind
     private bool Skip(TokenKind kind)
     {
-        if (_kind != kind)
+        if (_token.Kind != kind)
             return false;
+
         Step();
+        return true;
+    }
+
+    /// Progress the parser if the current token is of the given kind
+    private bool Skip(TokenKind a, TokenKind b)
+    {
+        if (_token.Kind != a)
+            return false;
+
+        Token next = Peek();
+        if (next.Kind != b)
+            return false;
+
+        Step();
+        Step();
+        return true;
+    }
+
+    /// Returns true if the next token is of the given time
+    private bool Peek(TokenKind kind)
+    {
+        int i = _i + 1;
+        if (i >= _n)
+            return false;
+
+        var next = _tokens[i];
+        if (next.Kind != kind)
+            return false;
+
+        return true;
+    }
+
+    /// Returns true if the next token is of the given time
+    private bool Peek(TokenKind kind1, TokenKind kind2)
+    {
+        int i = _i + 1;
+        int j = _i + 2;
+        if (j >= _n)
+            return false;
+
+        var next1 = _tokens[i];
+        var next2 = _tokens[j];
+        if (next1.Kind != kind1)
+            return false;
+        if (next2.Kind != kind2)
+            return false;
         return true;
     }
 
     private bool Skip(TokenKind kind, out Token token)
     {
-        token = _current;
-        if (_kind != kind)
+        token = _token;
+        if (_token.Kind != kind)
             return false;
         Step();
         return true;
@@ -88,8 +130,8 @@ public struct Parser
     /// Skip over the given token kind
     private bool Expect(TokenKind kind)
     {
-        if (_kind != kind)
-            return Expected($"a {kind} but encountered a {_current.Kind}");
+        if (_token.Kind != kind)
+            return Expected($"a {kind} but encountered a {_token.Kind}");
 
         Step();
         return true;
@@ -98,55 +140,19 @@ public struct Parser
     /// Skip over the given token kind
     private bool Expect(TokenKind kind, out Token token)
     {
-        if (_kind != kind)
-        {
-            token = default;
-            return Expected($"a {kind} but encountered a {_current.Kind}");
-        }
+        token = _token;
+        if (token.Kind != kind)
+            return Expected($"a {kind} but encountered a {_token.Kind}");
 
-        token = _current;
         Step();
         return true;
     }
 
-    private bool ParseInt(out Token token)
-    {
-        if (_kind is TOKEN_INT_LITERAL)
-        {
-            token = _current;
-            Step();
-            return true;
-        }
-        else
-        {
-            token = default;
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Read the current tokens string into the given variable
-    /// </summary>
-    private bool ParseString(out Token result, TokenKind kind = TOKEN_STRING_LITERAL)
-    {
-        if (_kind == kind)
-        {
-            result = _current;
-            Step();
-            return true;
-        }
-        else
-        {
-            result = default;
-            return false;
-        }
-    }
-
     private bool ParseIdent(out Token node)
     {
-        if (_kind is TOKEN_IDENTIFIER)
+        if (_token.Kind is TOKEN_IDENTIFIER)
         {
-            node = _current;
+            node = _token;
             Step();
             return true;
         }
@@ -184,7 +190,7 @@ public struct Parser
     internal bool ParseItem([NotNullWhen(true)] out MiniZincItem? statement)
     {
         statement = null;
-        switch (_kind)
+        switch (_token.Kind)
         {
             case KEYWORD_INCLUDE:
                 if (!ParseIncludeStatement(out statement))
@@ -259,7 +265,7 @@ public struct Parser
 
         while (true)
         {
-            if (_kind is TOKEN_EOF)
+            if (_token.Kind is TOKEN_EOF)
                 return true;
 
             if (!ParseIdent(out var ident))
@@ -382,7 +388,7 @@ public struct Parser
         Token? ann = null;
         List<ParameterSyntax>? parameters = null;
 
-        if (_kind is TOKEN_OPEN_PAREN)
+        if (_token.Kind is TOKEN_OPEN_PAREN)
         {
             if (!ParseParameters(out parameters))
                 return false;
@@ -598,7 +604,7 @@ public struct Parser
         if (!Expect(KEYWORD_INCLUDE, out var token))
             return false;
 
-        if (!ParseString(out var path))
+        if (!Expect(TOKEN_STRING_LITERAL, out var path))
             return false;
 
         node = new IncludeItem(token, path);
@@ -622,7 +628,7 @@ public struct Parser
 
         MiniZincExpr? objective = null;
         SolveMethod method = SOLVE_SATISFY;
-        switch (_kind)
+        switch (_token.Kind)
         {
             case KEYWORD_SATISFY:
                 Step();
@@ -681,9 +687,9 @@ public struct Parser
     internal bool ParseDeclareOrAssignStatement([NotNullWhen(true)] out MiniZincItem? statement)
     {
         statement = null;
-        var start = _current;
+        var start = _token;
 
-        if (_kind is TOKEN_IDENTIFIER && Peek().Kind is TOKEN_EQUAL)
+        if (_token.Kind is TOKEN_IDENTIFIER && Peek().Kind is TOKEN_EQUAL)
         {
             ParseIdent(out var name);
             Step();
@@ -730,9 +736,9 @@ public struct Parser
     internal bool ParseExprAtom([NotNullWhen(true)] out MiniZincExpr? expr)
     {
         expr = null;
-        var token = _current;
+        var token = _token;
 
-        switch (_kind)
+        switch (_token.Kind)
         {
             case TOKEN_INT_LITERAL:
                 Step();
@@ -806,8 +812,8 @@ public struct Parser
             if (Skip(TOKEN_OPEN_BRACKET))
             {
                 // Array access eg: `a[1,2]`
-                var access = new List<MiniZincExpr>();
-                while (_kind is not TOKEN_CLOSE_BRACKET)
+                var indices = new List<MiniZincExpr>();
+                while (_token.Kind is not TOKEN_CLOSE_BRACKET)
                 {
                     MiniZincExpr? index = null;
 
@@ -817,11 +823,11 @@ public struct Parser
                     if (Skip(TOKEN_RANGE_INCLUSIVE, out var idx))
                     {
                         index = new SliceExpr(idx);
-                        access.Add(index);
+                        indices.Add(index);
                     }
                     else if (ParseExpr(out index))
                     {
-                        access.Add(index);
+                        indices.Add(index);
                     }
                     else
                     {
@@ -832,18 +838,18 @@ public struct Parser
                         break;
                 }
 
-                expr = new ArrayAccessExpr(expr, access);
+                expr = new ArrayAccessExpr(expr, indices);
                 if (!Expect(TOKEN_CLOSE_BRACKET))
                     return false;
             }
-            else if (_kind is TOKEN_TUPLE_ACCESS)
+            else if (_token.Kind is TOKEN_TUPLE_ACCESS)
             {
-                expr = new TupleAccessExpr(expr, _current);
+                expr = new TupleAccessExpr(expr, _token);
                 Step();
             }
-            else if (_kind is TOKEN_RECORD_ACCESS)
+            else if (_token.Kind is TOKEN_RECORD_ACCESS)
             {
-                expr = new RecordAccessExpr(expr, _current);
+                expr = new RecordAccessExpr(expr, _token);
                 Step();
             }
             else
@@ -925,9 +931,9 @@ public struct Parser
     //     List<Datum>? values = null;
     //     DatumKind type = default;
     //     bool opt = false;
-    //     while (_kind is not TOKEN_CLOSE_BRACKET)
+    //     while (_token.Kind is not TOKEN_CLOSE_BRACKET)
     //     {
-    //         switch (_kind, type, opt)
+    //         switch (_token.Kind, type, opt)
     //         {
     //             // First value is <>
     //             case (TOKEN_EMPTY, DatumKind.Unknown, false):
@@ -1116,7 +1122,7 @@ public struct Parser
     //     List<decimal>? floats = null;
     //     List<Datum>? data = null;
     //
-    //     while (_kind is not TOKEN_CLOSE_BRACE)
+    //     while (_token.Kind is not TOKEN_CLOSE_BRACE)
     //     {
     //         var token = _current;
     //         Step();
@@ -1170,7 +1176,7 @@ public struct Parser
     // public bool ParseDatum([NotNullWhen(true)] out IMiniZincDatum? datum)
     // {
     //     datum = null;
-    //     switch (_kind)
+    //     switch (_token.Kind)
     //     {
     //         case TOKEN_OPEN_BRACE:
     //             if (!ParseSetDatum(out datum))
@@ -1243,7 +1249,7 @@ public struct Parser
     //     Step();
     //     value = null;
     //     List<Datum> values = [];
-    //     while (_kind is not TOKEN_CLOSE_PAREN)
+    //     while (_token.Kind is not TOKEN_CLOSE_PAREN)
     //     {
     //         if (!ParseDatum(out value))
     //             return false;
@@ -1269,7 +1275,7 @@ public struct Parser
     //     Dictionary<string, Datum> fields = [];
     //     value = new RecordDatum(fields);
     //
-    //     while (_kind is not TOKEN_CLOSE_PAREN)
+    //     while (_token.Kind is not TOKEN_CLOSE_PAREN)
     //     {
     //         if (!ParseIdent(out var field))
     //             return false;
@@ -1302,7 +1308,7 @@ public struct Parser
     /// <mzn>a + b + 100</mzn>
     /// <mzn>sum([1,2,3])</mzn>
     /// <mzn>arr[1] * arr[2]</mzn>
-    internal bool ParseExpr(
+    bool ParseExpr(
         [NotNullWhen(true)] out MiniZincExpr? expr,
         Assoc associativity = 0,
         short precedence = 0,
@@ -1310,7 +1316,7 @@ public struct Parser
     )
     {
         expr = null;
-        Token token = _current;
+        Token token = _token;
         TokenKind op = token.Kind;
         short prec = Precedence(op);
         Assoc assoc = Associativity(op);
@@ -1347,7 +1353,7 @@ public struct Parser
 
         while (true)
         {
-            token = _current;
+            token = _token;
             op = token.Kind;
             prec = Precedence(op);
             assoc = Associativity(op);
@@ -1539,7 +1545,7 @@ public struct Parser
     internal bool ParseIdentifierExpr([NotNullWhen(true)] out MiniZincExpr? result)
     {
         result = null;
-        var name = _current;
+        var name = _token;
         Step();
 
         // Simple identifier
@@ -1617,7 +1623,7 @@ public struct Parser
             if (isGen)
                 goto next;
 
-            if (_kind is not TOKEN_CLOSE_PAREN)
+            if (_token.Kind is not TOKEN_CLOSE_PAREN)
                 goto next;
         }
 
@@ -1632,7 +1638,7 @@ public struct Parser
         }
 
         // Could be a gencall if followed by (
-        if (!isGen && _kind is not TOKEN_OPEN_PAREN)
+        if (!isGen && _token.Kind is not TOKEN_OPEN_PAREN)
         {
             result = new CallExpr(name, exprs);
             return true;
@@ -1684,7 +1690,7 @@ public struct Parser
 
     private bool ParseGenerators([NotNullWhen(true)] out List<GenExpr>? generators)
     {
-        var start = _current;
+        var start = _token;
         generators = null;
 
         begin:
@@ -1692,9 +1698,9 @@ public struct Parser
         while (true)
         {
             Token name;
-            if (_kind is TOKEN_UNDERSCORE)
+            if (_token.Kind is TOKEN_UNDERSCORE)
             {
-                name = _current;
+                name = _token;
                 Step();
             }
             else if (!ParseIdent(out name))
@@ -1745,32 +1751,36 @@ public struct Parser
         if (!Expect(TOKEN_OPEN_BRACKET, out var start))
             return false;
 
-        if (_kind is TOKEN_CLOSE_BRACKET)
+        // Empty 1d Array
+        if (Skip(TOKEN_CLOSE_BRACKET))
         {
             result = new Array1dExpr(start, null);
-            return Expect(TOKEN_CLOSE_BRACKET);
         }
-
-        if (Skip(TOKEN_PIPE))
+        // Non-Empty 1d Array
+        else if (!Skip(TOKEN_PIPE))
         {
-            if (_kind is TOKEN_PIPE)
-            {
-                if (!Parse3dArrayLiteral(start, out var arr3d))
-                    return false;
-                result = arr3d;
-                return true;
-            }
-            else
-            {
-                if (!Parse2dArrayLiteral(start, out var arr2d))
-                    return false;
-                result = arr2d;
-                return true;
-            }
+            if (!Parse1dArrayLiteral(start, out result))
+                return false;
         }
-
-        if (!Parse1dArrayLiteral(start, out result))
-            return false;
+        // Empty 2d Array
+        else if (Skip(TOKEN_PIPE, TOKEN_CLOSE_BRACKET))
+        {
+            result = new Array2dExpr(start, null, null, 0, 0, false, false);
+        }
+        // Non-Empty 2d Array
+        else if (_token.Kind is not TOKEN_PIPE)
+        {
+            if (!Parse2dArrayLiteral(start, out var arr2d))
+                return false;
+            result = arr2d;
+        }
+        // 3d array
+        else
+        {
+            if (!Parse3dArrayLiteral(start, out var arr3d))
+                return false;
+            result = arr3d;
+        }
         return true;
     }
 
@@ -1921,7 +1931,7 @@ public struct Parser
         colIndexed = true;
         rowIndexed = true;
 
-        while (_kind is not TOKEN_PIPE)
+        while (_token.Kind is not TOKEN_PIPE)
         {
             j++;
 
@@ -1994,7 +2004,7 @@ public struct Parser
 
         parse_row_values:
         i++;
-        while (_kind is not TOKEN_PIPE)
+        while (_token.Kind is not TOKEN_PIPE)
         {
             if (!ParseExpr(out value))
                 goto err;
@@ -2026,6 +2036,7 @@ public struct Parser
         if (Skip(TOKEN_CLOSE_BRACKET))
             goto ok;
 
+        j = 0;
         if (rowIndexed)
             goto parse_row_index;
         else
@@ -2081,7 +2092,7 @@ public struct Parser
         j++;
         k = 0;
 
-        while (_kind is not TOKEN_PIPE)
+        while (_token.Kind is not TOKEN_PIPE)
         {
             if (!ParseExpr(out var expr))
                 goto err;
@@ -2137,7 +2148,7 @@ public struct Parser
             return false;
 
         // Empty Set
-        if (_kind is TOKEN_CLOSE_BRACE)
+        if (_token.Kind is TOKEN_CLOSE_BRACE)
         {
             result = new SetExpr(start, null);
             return Expect(TOKEN_CLOSE_BRACE);
@@ -2163,7 +2174,7 @@ public struct Parser
         result = set;
         elements.Add(element);
         Skip(TOKEN_COMMA);
-        while (_kind is not TOKEN_CLOSE_BRACE)
+        while (_token.Kind is not TOKEN_CLOSE_BRACE)
         {
             if (!ParseExpr(out var item))
                 return false;
@@ -2188,7 +2199,7 @@ public struct Parser
 
         List<ILetLocalSyntax>? locals = null;
 
-        while (_kind is not TOKEN_CLOSE_BRACE)
+        while (_token.Kind is not TOKEN_CLOSE_BRACE)
         {
             if (!ParseLetLocal(out var local))
                 return false;
@@ -2217,7 +2228,7 @@ public struct Parser
     private bool ParseLetLocal(out ILetLocalSyntax result)
     {
         result = null!;
-        if (_kind is KEYWORD_CONSTRAINT)
+        if (_token.Kind is KEYWORD_CONSTRAINT)
         {
             if (ParseConstraintStatement(out var con))
             {
@@ -2267,7 +2278,7 @@ public struct Parser
     private bool ParseIfElseExpr([NotNullWhen(true)] out MiniZincExpr? result)
     {
         result = null;
-        var start = _current;
+        var start = _token;
 
         if (!ParseIfThenCase(out var ifCase, out var thenCase, KEYWORD_IF))
             return false;
@@ -2360,7 +2371,7 @@ public struct Parser
         tuple.Fields.Add(expr);
         if (!Expect(TOKEN_COMMA))
             return false;
-        while (_kind is not TOKEN_CLOSE_PAREN)
+        while (_token.Kind is not TOKEN_CLOSE_PAREN)
         {
             if (!ParseExpr(out expr))
                 return false;
@@ -2386,9 +2397,9 @@ public struct Parser
             // Edge case where 'output' keyword can be used
             // in a non-keyword context, eg:
             // int : x :: output = 3;
-            if (_kind is KEYWORD_OUTPUT)
+            if (_token.Kind is KEYWORD_OUTPUT)
             {
-                ann = new IdentExpr(_current);
+                ann = new IdentExpr(_token);
                 Step();
             }
             else if (!ParseExprAtom(out ann))
@@ -2414,8 +2425,9 @@ public struct Parser
         annotations = null;
         while (Skip(TOKEN_COLON_COLON))
         {
-            if (!ParseString(out var ann))
+            if (!Expect(TOKEN_STRING_LITERAL, out var ann))
                 return false;
+
             annotations ??= [];
             annotations.Add(new StringExpr(ann));
         }
@@ -2426,11 +2438,11 @@ public struct Parser
     internal bool ParseBaseType([NotNullWhen(true)] out TypeSyntax? type)
     {
         type = null;
-        var start = _current;
+        var start = _token;
 
         if (Skip(KEYWORD_ANY))
         {
-            var ident = _current;
+            var ident = _token;
             if (ident.Kind is TOKEN_IDENTIFIER_GENERIC or TOKEN_IDENTIFIER_GENERIC_SEQUENCE)
             {
                 Step();
@@ -2463,8 +2475,8 @@ public struct Parser
             return true;
         }
 
-        start = _current;
-        switch (_kind)
+        start = _token;
+        switch (_token.Kind)
         {
             case KEYWORD_INT:
                 Step();
@@ -2575,7 +2587,7 @@ public struct Parser
             return false;
 
         List<TypeSyntax> items = [];
-        while (_kind is not TOKEN_CLOSE_PAREN)
+        while (_token.Kind is not TOKEN_CLOSE_PAREN)
         {
             if (!ParseType(out var ti))
                 return false;
@@ -2623,7 +2635,7 @@ public struct Parser
         TypeSyntax? type;
 
         parameters = [];
-        while (_kind is not TOKEN_CLOSE_PAREN)
+        while (_token.Kind is not TOKEN_CLOSE_PAREN)
         {
             if (!ParseType(out type))
                 return false;
@@ -2656,8 +2668,8 @@ public struct Parser
     internal bool ParseType([NotNullWhen(true)] out TypeSyntax? result)
     {
         result = default;
-        var start = _current;
-        switch (_kind)
+        var start = _token;
+        switch (_token.Kind)
         {
             case KEYWORD_ARRAY:
                 if (!ParseArrayType(out result))
@@ -2722,15 +2734,15 @@ public struct Parser
         if (_errorMessage is not null)
             return false;
 
-        _errorTrace = _sourceText[.._current.End];
+        _errorTrace = _sourceText[.._token.End];
         _errorTrace = $"""
             ---------------------------------------------
             {msg}
             ---------------------------------------------
-            Token {_kind}
-            Line {_current.Line}
-            Col {_current.Col}
-            Pos {_current.Start}
+            Token {_token.Kind}
+            Line {_token.Line}
+            Col {_token.Col}
+            Pos {_token.Start}
             ---------------------------------------------
             {_errorTrace}
             """;
@@ -2756,7 +2768,7 @@ public struct Parser
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
-            FinalToken = parser._current,
+            FinalToken = parser._token,
             Elapsed = elapsed,
             ErrorMessage = parser._errorMessage,
             ErrorTrace = parser._errorTrace
@@ -2785,7 +2797,7 @@ public struct Parser
             SourceFile = null,
             SourceText = text,
             Ok = ok,
-            FinalToken = parser._current,
+            FinalToken = parser._token,
             Elapsed = elapsed,
             ErrorMessage = parser._errorMessage,
             ErrorTrace = parser._errorTrace
@@ -2814,7 +2826,7 @@ public struct Parser
             SourceFile = path,
             SourceText = mzn,
             Ok = ok,
-            FinalToken = parser._current,
+            FinalToken = parser._token,
             Elapsed = elapsed,
             ErrorMessage = parser._errorMessage,
             ErrorTrace = parser._errorTrace
@@ -2874,7 +2886,7 @@ public struct Parser
             SourceFile = null,
             SourceText = text,
             Ok = ok,
-            FinalToken = parser._current,
+            FinalToken = parser._token,
             Elapsed = elapsed,
             ErrorMessage = parser._errorMessage,
             ErrorTrace = parser._errorTrace
@@ -2911,7 +2923,7 @@ public struct Parser
         if (!parser.ParseExpr(out var expr))
             throw new MiniZincParseException(
                 parser._errorMessage ?? "",
-                parser._current,
+                parser._token,
                 parser._errorTrace
             );
 
@@ -2919,7 +2931,7 @@ public struct Parser
         {
             throw new MiniZincParseException(
                 $"The parsed expression is of type {expr.GetType()} but expected {typeof(T)}",
-                parser._current
+                parser._token
             );
         }
 
@@ -2934,7 +2946,7 @@ public struct Parser
         if (!parser.ParseItem(out var statement))
             throw new MiniZincParseException(
                 parser._errorMessage ?? "",
-                parser._current,
+                parser._token,
                 parser._errorTrace
             );
 
@@ -2942,7 +2954,7 @@ public struct Parser
         {
             throw new MiniZincParseException(
                 $"The parsed statement is of type {statement.GetType()} but expected a {typeof(T)}",
-                parser._current
+                parser._token
             );
         }
 
@@ -2998,12 +3010,12 @@ public struct Parser
         var parser = new Parser(text);
         if (!parser.ParseExpr(out expression))
         {
-            location = parser._current;
+            location = parser._token;
             error = parser._errorMessage!;
             return false;
         }
 
-        location = parser._current;
+        location = parser._token;
         error = null;
         return true;
     }
