@@ -1,6 +1,4 @@
-﻿using MiniZinc.Parser;
-
-public sealed class WriterUnitTests
+﻿public sealed class WriterUnitTests
 {
     [Theory]
     [InlineData("var int: a = 2;")]

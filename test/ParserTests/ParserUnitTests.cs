@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using MiniZinc.Parser;
 using static MiniZinc.Parser.TokenKind;
 
 public class ParserUnitTests
