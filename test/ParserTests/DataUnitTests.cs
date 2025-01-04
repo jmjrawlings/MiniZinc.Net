@@ -1,6 +1,5 @@
 ﻿namespace MiniZinc.Tests;
 
-using Parser;
 using static Parser.Parser;
 
 public class DataUnitTests
