@@ -6,14 +6,14 @@ using MiniZinc.Build;
 
 public abstract class TestBuilder : CodeBuilder
 {
-    public readonly TestSpec Spec;
     public readonly string ClassName;
 
-    protected TestBuilder(string className, TestSpec spec)
+    protected TestBuilder(string className)
     {
         ClassName = className;
-        Spec = spec;
     }
+
+    public abstract string Build(TestSpec spec);
 
     protected void WriteMessage(object? msg = null)
     {
@@ -128,12 +128,5 @@ public abstract class TestBuilder : CodeBuilder
         }
 
         return info;
-    }
-
-    public void WriteTo(DirectoryInfo directory)
-    {
-        var file = directory.JoinFile($"{ClassName}.cs");
-        var source = ToString();
-        File.WriteAllText(file.FullName, source);
     }
 }

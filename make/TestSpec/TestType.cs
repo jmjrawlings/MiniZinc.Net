@@ -2,17 +2,17 @@
 
 public enum TestType
 {
-    Compile,
-    Satisfy,
-    AnySolution,
-    AllSolutions,
-    Optimise,
-    OutputModel,
-    Unsatisfiable,
-    Error,
-    AssertionError,
-    EvaluationError,
-    MiniZincError,
-    TypeError,
-    SyntaxError
+    TEST_COMPILE,
+    TEST_SATISFY,
+    TEST_ANY_SOLUTION,
+    TEST_ALL_SOLUTIONS,
+    TEST_OPTIMISE,
+    TEST_OUTPUT_MODEL,
+    TEST_UNSATISFIABLE,
+    TEST_ERROR,
+    TEST_ASSERTION_ERROR,
+    TEST_EVALULATION_ERROR,
+    TEST_MINZINC_ERROR,
+    TEST_TYPE_ERROR,
+    TEST_SYNTAX_ERROR
 }

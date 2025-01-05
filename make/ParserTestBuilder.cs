@@ -1,26 +1,30 @@
 ﻿namespace Make;
 
 using LibMiniZinc.Tests;
-using MiniZinc.Build;
+using static LibMiniZinc.Tests.TestType;
 
-public sealed class MakeParserTests : TestBuilder
+/// Generates parser integration tests
+public sealed class ParserTestBuilder : TestBuilder
 {
-    private MakeParserTests(TestSpec spec)
-        : base("ParserIntegrationTests", spec)
+    public ParserTestBuilder()
+        : base("ParserIntegrationTests") { }
+
+    public override string Build(TestSpec spec)
     {
         var files = new HashSet<string>();
-        foreach (var @case in spec.TestCases)
+        foreach (var tcase in spec.TestCases)
         {
-            if (@case.Type is TestType.Error or TestType.SyntaxError)
+            if (tcase.Type is TEST_ERROR or TEST_SYNTAX_ERROR)
                 continue;
 
-            files.Add(@case.Path);
+            files.Add(tcase.Path);
         }
-
-        Make(files);
+        Build(files);
+        var source = ToString();
+        return source;
     }
 
-    void Make(IEnumerable<string> files)
+    void Build(IEnumerable<string> files)
     {
         using (BlockComment())
         {
@@ -33,8 +37,8 @@ public sealed class MakeParserTests : TestBuilder
         Block($"public sealed class {ClassName}");
         using (Block("private void TestParse(string path)"))
         {
-            Var("result", "Parser.ParseModelFile(path, out var model)");
-            WriteLn("result.Ok.Should().BeTrue();");
+            Var("ok", "Parser.ParseModelFromFile(path, out var model)");
+            WriteLn("ok.Should().BeTrue();");
         }
 
         foreach (var path in files)
@@ -52,13 +56,5 @@ public sealed class MakeParserTests : TestBuilder
                 WriteLn("TestParse(path);");
             }
         }
-    }
-
-    public static async Task Run()
-    {
-        // var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-        // var builder = new MakeParserTests(spec);
-        // builder.WriteTo(Projects.ParserTests.Dir);
-        await Task.CompletedTask;
     }
 }
