@@ -5,8 +5,10 @@ using LibMiniZinc.Tests;
 
 public sealed class ClientTestsBuilder : TestBuilder
 {
-    public ClientTestsBuilder(string className, TestSpec spec)
-        : base(className, spec)
+    public ClientTestsBuilder()
+        : base("ClientIntegrationTests") { }
+
+    public override string Build(TestSpec spec)
     {
         using (BlockComment())
         {
@@ -18,12 +20,12 @@ public sealed class ClientTestsBuilder : TestBuilder
 
         WriteLn("#nullable enable");
         NewLine();
-        Block($"public class {className} : ClientTest");
+        Block($"public class {ClassName} : ClientTest");
         NewLine();
 
         using (
             Block(
-                $"public {className}(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)"
+                $"public {ClassName}(ITestOutputHelper output, ClientFixture fixture) : base(output, fixture)"
             )
         ) { }
 
@@ -34,11 +36,11 @@ public sealed class ClientTestsBuilder : TestBuilder
 
             var ok = testCase.Type switch
             {
-                TestType.Satisfy => true,
-                TestType.Optimise => true,
-                TestType.AnySolution => true,
-                TestType.AllSolutions => true,
-                TestType.Unsatisfiable => true,
+                TestType.TEST_SATISFY => true,
+                TestType.TEST_OPTIMISE => true,
+                TestType.TEST_ANY_SOLUTION => true,
+                TestType.TEST_ALL_SOLUTIONS => true,
+                TestType.TEST_UNSATISFIABLE => true,
                 _ => false
             };
 
@@ -53,19 +55,12 @@ public sealed class ClientTestsBuilder : TestBuilder
 
             WriteTest(info);
         }
+
+        var source = ToString();
+        return source;
     }
 
-    protected void WriteMessage(object? msg = null)
-    {
-        if (msg is null)
-            Call("_output.WriteLine", "\"\"");
-        else
-            Call("_output.WriteLine", msg.ToString()!);
-    }
-
-    protected void WriteSection() => WriteMessage("new string('-',80)");
-
-    protected void WriteTest(TestCaseInfo info)
+    void WriteTest(TestCaseInfo info)
     {
         IDisposable block;
         List<string> args = [$"path: \"{info.Path}\""];
@@ -136,41 +131,41 @@ public sealed class ClientTestsBuilder : TestBuilder
             args.Add($"error: \"{rgx}\"");
         }
 
-        if (info.Type is TestType.AllSolutions)
+        if (info.Type is TestType.TEST_ALL_SOLUTIONS)
             args.Add($"allSolutions: true");
 
         switch (info.Type)
         {
-            case TestType.Compile:
+            case TestType.TEST_COMPILE:
                 break;
-            case TestType.Satisfy:
+            case TestType.TEST_SATISFY:
                 args.Add("statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]");
                 break;
-            case TestType.AnySolution:
+            case TestType.TEST_ANY_SOLUTION:
                 args.Add("statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]");
                 break;
-            case TestType.AllSolutions:
+            case TestType.TEST_ALL_SOLUTIONS:
                 args.Add("statuses: [SolveStatus.Satisfied,SolveStatus.Optimal]");
                 break;
-            case TestType.Optimise:
+            case TestType.TEST_OPTIMISE:
                 args.Add("statuses: [SolveStatus.Optimal]");
                 break;
-            case TestType.OutputModel:
+            case TestType.TEST_OUTPUT_MODEL:
                 break;
-            case TestType.Unsatisfiable:
+            case TestType.TEST_UNSATISFIABLE:
                 args.Add("statuses: [SolveStatus.Unsatisfiable]");
                 break;
-            case TestType.Error:
+            case TestType.TEST_ERROR:
                 break;
-            case TestType.AssertionError:
+            case TestType.TEST_ASSERTION_ERROR:
                 break;
-            case TestType.EvaluationError:
+            case TestType.TEST_EVALULATION_ERROR:
                 break;
-            case TestType.MiniZincError:
+            case TestType.TEST_MINZINC_ERROR:
                 break;
-            case TestType.TypeError:
+            case TestType.TEST_TYPE_ERROR:
                 break;
-            case TestType.SyntaxError:
+            case TestType.TEST_SYNTAX_ERROR:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

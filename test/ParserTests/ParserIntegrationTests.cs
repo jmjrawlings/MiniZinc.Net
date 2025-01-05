@@ -8,8 +8,8 @@ public sealed class ParserIntegrationTests
 {
 	private void TestParse(string path)
 	{
-		var result = Parser.ParseItemsFromFile(path, out var items);
-		result.Ok.Should().BeTrue();
+		var ok = Parser.ParseModelFromFile(path, out var model);
+		ok.Should().BeTrue();
 	}
 
 
@@ -189,6 +189,22 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/compilation/maybe_partial_cv.mzn")]
+	public void test_parse_unit_compilation_maybe_partial_cv()
+	{
+		var path = "unit/compilation/maybe_partial_cv.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/compilation/most_specific_reif.mzn")]
+	public void test_parse_unit_compilation_most_specific_reif()
+	{
+		var path = "unit/compilation/most_specific_reif.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/compilation/multiple_neg.mzn")]
 	public void test_parse_unit_compilation_multiple_neg()
 	{
@@ -201,6 +217,14 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_compilation_optimization()
 	{
 		var path = "unit/compilation/optimization.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/compilation/optimize_unify.mzn")]
+	public void test_parse_unit_compilation_optimize_unify()
+	{
+		var path = "unit/compilation/optimize_unify.mzn";
 		TestParse(path);
 	}
 
@@ -233,6 +257,30 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_compilation_set2iter()
 	{
 		var path = "unit/compilation/set2iter.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/compilation/struct_lex.mzn")]
+	public void test_parse_unit_compilation_struct_lex()
+	{
+		var path = "unit/compilation/struct_lex.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/compilation/struct_table.mzn")]
+	public void test_parse_unit_compilation_struct_table()
+	{
+		var path = "unit/compilation/struct_table.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/compilation/struct_table_filter.mzn")]
+	public void test_parse_unit_compilation_struct_table_filter()
+	{
+		var path = "unit/compilation/struct_table_filter.mzn";
 		TestParse(path);
 	}
 
@@ -485,6 +533,14 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/general/comprehension_asg_gen_where.mzn")]
+	public void test_parse_unit_general_comprehension_asg_gen_where()
+	{
+		var path = "unit/general/comprehension_asg_gen_where.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/general/comprehension_cv_struct.mzn")]
 	public void test_parse_unit_general_comprehension_cv_struct()
 	{
@@ -509,6 +565,14 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/general/empty_enum_index_set_mismatch.mzn")]
+	public void test_parse_unit_general_empty_enum_index_set_mismatch()
+	{
+		var path = "unit/general/empty_enum_index_set_mismatch.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/general/empty_enum_sets.mzn")]
 	public void test_parse_unit_general_empty_enum_sets()
 	{
@@ -529,6 +593,46 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_general_enum_order()
 	{
 		var path = "unit/general/enum_order.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/general/enum_set_in_error.mzn")]
+	public void test_parse_unit_general_enum_set_in_error()
+	{
+		var path = "unit/general/enum_set_in_error.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/general/enum_set_subset_error.mzn")]
+	public void test_parse_unit_general_enum_set_subset_error()
+	{
+		var path = "unit/general/enum_set_subset_error.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/general/enum_set_superset_error.mzn")]
+	public void test_parse_unit_general_enum_set_superset_error()
+	{
+		var path = "unit/general/enum_set_superset_error.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/general/enum_set_to_ranges.mzn")]
+	public void test_parse_unit_general_enum_set_to_ranges()
+	{
+		var path = "unit/general/enum_set_to_ranges.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/general/eval_par_bool_bottom.mzn")]
+	public void test_parse_unit_general_eval_par_bool_bottom()
+	{
+		var path = "unit/general/eval_par_bool_bottom.mzn";
 		TestParse(path);
 	}
 
@@ -561,6 +665,14 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_general_iffall_bv()
 	{
 		var path = "unit/general/iffall_bv.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/general/indexed_var_comp.mzn")]
+	public void test_parse_unit_general_indexed_var_comp()
+	{
+		var path = "unit/general/indexed_var_comp.mzn";
 		TestParse(path);
 	}
 
@@ -645,6 +757,14 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/general/min_max_enum.mzn")]
+	public void test_parse_unit_general_min_max_enum()
+	{
+		var path = "unit/general/min_max_enum.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/general/missing_ozn_decl.mzn")]
 	public void test_parse_unit_general_missing_ozn_decl()
 	{
@@ -657,6 +777,14 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_general_mortgage()
 	{
 		var path = "unit/general/mortgage.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/general/multidim_array_concat.mzn")]
+	public void test_parse_unit_general_multidim_array_concat()
+	{
+		var path = "unit/general/multidim_array_concat.mzn";
 		TestParse(path);
 	}
 
@@ -1489,6 +1617,14 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_json_enum_escaping()
 	{
 		var path = "unit/json/enum_escaping.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/json/enum_int_coercion.mzn")]
+	public void test_parse_unit_json_enum_int_coercion()
+	{
+		var path = "unit/json/enum_int_coercion.mzn";
 		TestParse(path);
 	}
 
@@ -2565,14 +2701,6 @@ public sealed class ParserIntegrationTests
 	}
 
 
-	[Fact(DisplayName="unit/regression/bug202.mzn")]
-	public void test_parse_unit_regression_bug202()
-	{
-		var path = "unit/regression/bug202.mzn";
-		TestParse(path);
-	}
-
-
 	[Fact(DisplayName="unit/regression/bug212.mzn")]
 	public void test_parse_unit_regression_bug212()
 	{
@@ -2873,14 +3001,6 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_regression_bug70()
 	{
 		var path = "unit/regression/bug70.mzn";
-		TestParse(path);
-	}
-
-
-	[Fact(DisplayName="unit/regression/bug71_1.mzn")]
-	public void test_parse_unit_regression_bug71_1()
-	{
-		var path = "unit/regression/bug71_1.mzn";
 		TestParse(path);
 	}
 
@@ -3789,6 +3909,94 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/regression/github_818.mzn")]
+	public void test_parse_unit_regression_github_818()
+	{
+		var path = "unit/regression/github_818.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_821.mzn")]
+	public void test_parse_unit_regression_github_821()
+	{
+		var path = "unit/regression/github_821.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_822.mzn")]
+	public void test_parse_unit_regression_github_822()
+	{
+		var path = "unit/regression/github_822.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_823.mzn")]
+	public void test_parse_unit_regression_github_823()
+	{
+		var path = "unit/regression/github_823.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_826.mzn")]
+	public void test_parse_unit_regression_github_826()
+	{
+		var path = "unit/regression/github_826.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_828.mzn")]
+	public void test_parse_unit_regression_github_828()
+	{
+		var path = "unit/regression/github_828.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_832.mzn")]
+	public void test_parse_unit_regression_github_832()
+	{
+		var path = "unit/regression/github_832.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_842.mzn")]
+	public void test_parse_unit_regression_github_842()
+	{
+		var path = "unit/regression/github_842.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_844.mzn")]
+	public void test_parse_unit_regression_github_844()
+	{
+		var path = "unit/regression/github_844.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_845.mzn")]
+	public void test_parse_unit_regression_github_845()
+	{
+		var path = "unit/regression/github_845.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/github_848.mzn")]
+	public void test_parse_unit_regression_github_848()
+	{
+		var path = "unit/regression/github_848.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/regression/hundred_doors_unoptimized.mzn")]
 	public void test_parse_unit_regression_hundred_doors_unoptimized()
 	{
@@ -3873,6 +4081,14 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_regression_makepar_output()
 	{
 		var path = "unit/regression/makepar_output.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/regression/move_where_clause.mzn")]
+	public void test_parse_unit_regression_move_where_clause()
+	{
+		var path = "unit/regression/move_where_clause.mzn";
 		TestParse(path);
 	}
 
@@ -4605,6 +4821,22 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/types/array_of_tuple_of_var_opt_set.mzn")]
+	public void test_parse_unit_types_array_of_tuple_of_var_opt_set()
+	{
+		var path = "unit/types/array_of_tuple_of_var_opt_set.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/array_of_var_opt_set.mzn")]
+	public void test_parse_unit_types_array_of_var_opt_set()
+	{
+		var path = "unit/types/array_of_var_opt_set.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/types/array_var_opt_set_comprehension.mzn")]
 	public void test_parse_unit_types_array_var_opt_set_comprehension()
 	{
@@ -4677,6 +4909,14 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/types/if_then_else_nested_struct.mzn")]
+	public void test_parse_unit_types_if_then_else_nested_struct()
+	{
+		var path = "unit/types/if_then_else_nested_struct.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/types/if_then_else_struct.mzn")]
 	public void test_parse_unit_types_if_then_else_struct()
 	{
@@ -4729,6 +4969,14 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_types_opt_alias_tuple()
 	{
 		var path = "unit/types/opt_alias._tuple.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/opt_array_access_tuple.mzn")]
+	public void test_parse_unit_types_opt_array_access_tuple()
+	{
+		var path = "unit/types/opt_array_access_tuple.mzn";
 		TestParse(path);
 	}
 
@@ -5109,6 +5357,30 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/types/tuple_ite_error_ann.mzn")]
+	public void test_parse_unit_types_tuple_ite_error_ann()
+	{
+		var path = "unit/types/tuple_ite_error_ann.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/tuple_ite_error_float_set.mzn")]
+	public void test_parse_unit_types_tuple_ite_error_float_set()
+	{
+		var path = "unit/types/tuple_ite_error_float_set.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/tuple_ite_error_string.mzn")]
+	public void test_parse_unit_types_tuple_ite_error_string()
+	{
+		var path = "unit/types/tuple_ite_error_string.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/types/tuple_lit.mzn")]
 	public void test_parse_unit_types_tuple_lit()
 	{
@@ -5197,6 +5469,54 @@ public sealed class ParserIntegrationTests
 	}
 
 
+	[Fact(DisplayName="unit/types/var_array_access_ann.mzn")]
+	public void test_parse_unit_types_var_array_access_ann()
+	{
+		var path = "unit/types/var_array_access_ann.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/var_array_access_float_set.mzn")]
+	public void test_parse_unit_types_var_array_access_float_set()
+	{
+		var path = "unit/types/var_array_access_float_set.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/var_array_access_string.mzn")]
+	public void test_parse_unit_types_var_array_access_string()
+	{
+		var path = "unit/types/var_array_access_string.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/var_array_access_tuple_ann.mzn")]
+	public void test_parse_unit_types_var_array_access_tuple_ann()
+	{
+		var path = "unit/types/var_array_access_tuple_ann.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/var_array_access_tuple_float_set.mzn")]
+	public void test_parse_unit_types_var_array_access_tuple_float_set()
+	{
+		var path = "unit/types/var_array_access_tuple_float_set.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/var_array_access_tuple_string.mzn")]
+	public void test_parse_unit_types_var_array_access_tuple_string()
+	{
+		var path = "unit/types/var_array_access_tuple_string.mzn";
+		TestParse(path);
+	}
+
+
 	[Fact(DisplayName="unit/types/var_opt_set_if_then_else.mzn")]
 	public void test_parse_unit_types_var_opt_set_if_then_else()
 	{
@@ -5209,6 +5529,14 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_types_var_set_bool()
 	{
 		var path = "unit/types/var_set_bool.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/var_set_comprehension_tuple.mzn")]
+	public void test_parse_unit_types_var_set_comprehension_tuple()
+	{
+		var path = "unit/types/var_set_comprehension_tuple.mzn";
 		TestParse(path);
 	}
 
@@ -5249,6 +5577,14 @@ public sealed class ParserIntegrationTests
 	public void test_parse_unit_types_var_string_comprehension()
 	{
 		var path = "unit/types/var_string_comprehension.mzn";
+		TestParse(path);
+	}
+
+
+	[Fact(DisplayName="unit/types/var_where_comprehension_tuple.mzn")]
+	public void test_parse_unit_types_var_where_comprehension_tuple()
+	{
+		var path = "unit/types/var_where_comprehension_tuple.mzn";
 		TestParse(path);
 	}
 
