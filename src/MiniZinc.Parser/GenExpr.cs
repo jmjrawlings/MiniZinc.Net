@@ -1,16 +1,44 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class GenExpr : MiniZincExpr
+public abstract class GenExpr : MiniZincExpr
 {
-    public GenExpr(in Token start, List<Token> names)
+    public MiniZincExpr Source { get; }
+
+    public MiniZincExpr? Where { get; }
+
+    protected GenExpr(in Token start, MiniZincExpr source, MiniZincExpr? where)
         : base(start)
     {
-        Names = names;
+        Source = source;
+        Where = where;
     }
+}
 
-    public List<Token> Names { get; }
+/// Generator expr of type `$id$ in $source$ where $cond$`
+public sealed class GenYieldExpr : GenExpr
+{
+    public IReadOnlyList<Token> Ids { get; }
 
-    public required MiniZincExpr From { get; set; }
+    public GenYieldExpr(
+        in Token start,
+        IReadOnlyList<Token> ids,
+        MiniZincExpr source,
+        MiniZincExpr? where
+    )
+        : base(start, source, where)
+    {
+        Ids = ids;
+    }
+}
 
-    public MiniZincExpr? Where { get; set; }
+/// Generator expr of type `$id$ = $expr$`
+public sealed class GenAssignExpr : GenExpr
+{
+    public Token Id { get; }
+
+    public GenAssignExpr(in Token id, MiniZincExpr source, MiniZincExpr? where)
+        : base(id, source, where)
+    {
+        Id = id;
+    }
 }

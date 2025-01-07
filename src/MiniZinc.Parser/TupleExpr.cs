@@ -2,11 +2,11 @@
 
 public sealed class TupleExpr : MiniZincExpr
 {
-    public readonly List<MiniZincExpr> Fields;
+    public IReadOnlyList<MiniZincExpr> Fields { get; }
 
-    public TupleExpr(in Token start)
+    public TupleExpr(in Token start, IReadOnlyList<MiniZincExpr> fields)
         : base(start)
     {
-        Fields = [];
+        Fields = fields;
     }
 }

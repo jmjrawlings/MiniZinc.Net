@@ -57,11 +57,12 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private int _line;
     private int _col;
     private int _index;
+    private int _length;
     private int _startPos;
     private int _startLine;
     private int _startCol;
-    private int _length;
     private bool _fin;
+    private bool _err;
     private char _char;
     private Token _token;
     private TokenKind _kind;
@@ -72,14 +73,16 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _line = 1;
         _startString = 0;
         _index = -1;
+        _fin = false;
+        _err = false;
         _sourceText = sourceText;
-        _n = sourceText.Length - 1;
+        _n = sourceText.Length;
         Step();
     }
 
     public bool MoveNext()
     {
-        if (_fin)
+        if (_fin || _err)
             return false;
 
         while (_char is TAB or NEWLINE or RETURN or SPACE)
@@ -279,7 +282,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 break;
 
             case UNDERSCORE:
-                if (IsLetter(Peek))
+                if (IsLetter(Peek()))
                 {
                     var ident = LexIdentifier();
                     StringToken(_kind, ident);
@@ -426,6 +429,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private void Error(string msg)
     {
         _token = new Token(_kind = ERROR, _startLine, _startCol, _startPos, _length - 1, s: msg);
+        _err = true;
     }
 
     /// <summary>
@@ -455,7 +459,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     }
 
     /// <summary>
-    /// Attempt to parse a valid identifer into the string buffer.
+    /// Attempt to parse a valid identifier into the string buffer.
     /// This function will also check for reserved keywords.
     /// Upon exit:
     /// - `_string` will hold variable will be filled
@@ -466,7 +470,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         BeginString();
         if (_char is SINGLE_QUOTE)
         {
-            // Quoted identifer 'like this'
+            // Quoted identifier 'like this'
             quoted:
             Step();
             switch (_char)
@@ -474,7 +478,6 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 case SINGLE_QUOTE when _length > 2:
                     break;
                 case SINGLE_QUOTE:
-                case BACK_SLASH:
                 case RETURN:
                 case NEWLINE:
                 case EOF:
@@ -613,7 +616,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     {
         if (_char is '0')
         {
-            switch (Peek)
+            switch (Peek())
             {
                 case 'o':
                     LexOctalInt();
@@ -633,7 +636,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         } while (IsDigit(_char));
 
         // Peek needed because of range literals eg: `1..T`
-        if (_char is DOT && IsDigit(Peek))
+        if (_char is DOT && IsDigit(Peek()))
         {
             Step();
             Step();
@@ -679,7 +682,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
     void Step()
     {
-        if (++_index <= _n)
+        if (++_index < _n)
         {
             _char = _sourceText[_index];
             _length++;
@@ -699,7 +702,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
     }
 
-    private char Peek => _index < _n ? _sourceText[_index + 1] : EOF;
+    private char Peek()
+    {
+        int i = _index + 1;
+        if (i < _n)
+            return _sourceText[i];
+        else
+            return EOF;
+    }
 
     bool Skip(char c)
     {
@@ -764,17 +774,15 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// <summary>
     /// Lex the given string
     /// </summary>
-    public static Token[] Lex(string s)
+    public static bool LexString(string s, out Token[] tokens, out Token final)
     {
         // TODO - remove IEnumerable and just create the array ourselves
         var lexer = new Lexer(s);
-        var tokens = lexer.ToArray();
-        return tokens;
-    }
-
-    public void Reset()
-    {
-        throw new NotImplementedException();
+        tokens = lexer.ToArray();
+        final = lexer._token;
+        if (lexer._err)
+            return false;
+        return true;
     }
 
     object IEnumerator.Current => _token;
@@ -784,6 +792,11 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     public IEnumerator<Token> GetEnumerator() => this;
 
     IEnumerator IEnumerable.GetEnumerator() => this;
+
+    public void Reset()
+    {
+        throw new NotImplementedException();
+    }
 
     public void Dispose() { }
 }

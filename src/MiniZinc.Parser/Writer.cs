@@ -310,12 +310,21 @@ public sealed class Writer
                 WriteAnnotations(e);
                 break;
 
-            case CompExpr e:
-                WriteChar(e.IsSet ? OPEN_BRACE : OPEN_BRACKET);
+            case SetCompExpr e:
+                WriteChar(OPEN_BRACE);
                 WriteExpr(e.Expr);
                 WriteChar(PIPE);
                 WriteSep(e.Generators, WriteExpr);
-                WriteChar(e.IsSet ? CLOSE_BRACE : CLOSE_BRACKET);
+                WriteChar(CLOSE_BRACE);
+                WriteAnnotations(e);
+                break;
+
+            case ArrayCompExpr e:
+                WriteChar(OPEN_BRACKET);
+                WriteExpr(e.Expr);
+                WriteChar(PIPE);
+                WriteSep(e.Generators, WriteExpr);
+                WriteChar(CLOSE_BRACKET);
                 WriteAnnotations(e);
                 break;
 
@@ -407,7 +416,7 @@ public sealed class Writer
                 for (int i = 0; i < e.Fields.Count; i++)
                 {
                     var (name, body) = e.Fields[i];
-                    WriteToken(name);
+                    WriteExpr(name);
                     WriteChar(COLON);
                     WriteExpr(body);
                     if (i < e.Fields.Count - 1)
@@ -763,9 +772,23 @@ public sealed class Writer
 
     void WriteGenerator(GenExpr gen, int? precedence = null)
     {
-        WriteSep(gen.Names, (name, _) => WriteToken(name));
-        WriteKeywordSpaced(IN);
-        WriteExpr(gen.From);
+        switch (gen)
+        {
+            case GenAssignExpr ga:
+                WriteToken(ga.Id);
+                WriteSpace();
+                WriteChar(EQUAL);
+                WriteSpace();
+                WriteExpr(ga.Source);
+                break;
+
+            case GenYieldExpr gy:
+                WriteSep(gy.Ids, (token, _) => WriteToken(token));
+                WriteKeywordSpaced(IN);
+                WriteExpr(gy.Source);
+                break;
+        }
+
         if (gen.Where is { } cond)
         {
             WriteKeywordSpaced(WHERE);

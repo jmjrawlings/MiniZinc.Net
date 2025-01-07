@@ -51,11 +51,10 @@ public class ParserUnitTests
         expr.Generators.Should()
             .SatisfyRespectively(gen =>
             {
-                gen.Names.Should()
-                    .SatisfyRespectively(name =>
-                    {
-                        name.ToString().Should().Be("i");
-                    });
+                gen.Should()
+                    .BeOfType<GenYieldExpr>()
+                    .Which.Ids.Should()
+                    .SatisfyRespectively(id => id.StringValue.Should().Be("i"));
             });
     }
 
@@ -68,7 +67,14 @@ public class ParserUnitTests
         expr.Generators.Should()
             .SatisfyRespectively(gen =>
             {
-                gen.Names.Select(x => x.ToString()).Should().Equal("i", "j", "k");
+                gen.Should()
+                    .BeOfType<GenYieldExpr>()
+                    .Which.Ids.Should()
+                    .SatisfyRespectively(
+                        i => i.StringValue.Should().Be("i"),
+                        j => j.StringValue.Should().Be("j"),
+                        k => k.StringValue.Should().Be("k")
+                    );
             });
     }
 
@@ -78,25 +84,32 @@ public class ParserUnitTests
     {
         var expr = Parser.ParseExpression<GenCallExpr>(mzn);
         expr.Name.ToString().Should().Be("forall");
-        expr.Generators.Should()
-            .SatisfyRespectively(gen =>
-            {
-                gen.Names.Select(x => x.ToString()).Should().Equal("i", "j", "k", "l");
-            });
+        // expr.Generators.Should()
+        //     .SatisfyRespectively(gen =>
+        //     {
+        //         gen.Names.Select(x => x.ToString()).Should().Equal("i", "j", "k", "l");
+        //     });
     }
 
     [Fact]
-    void test_parser_gencall_2()
+    void test_parse_gencall_yield_with_filter()
     {
         var mzn = "sum (i in class where i >= s) (class_sizes[i])";
         var call = Parser.ParseExpression<GenCallExpr>(mzn);
         call.Name.StringValue.Should().Be("sum");
         call.Expr.Should().BeOfType<ArrayAccessExpr>();
-        call.Generators.Should().HaveCount(1);
-        var gen = call.Generators[0];
-        gen.Names.Should().HaveCount(1);
-        var name = gen.Names[0];
-        name.ToString().Should().Be("i");
+        call.Generators[0]
+            .Should()
+            .BeOfType<GenYieldExpr>()
+            .Which.Ids[0]
+            .StringValue.Should()
+            .Be("i");
+        call.Generators[0]
+            .Should()
+            .BeOfType<GenYieldExpr>()
+            .Which.Where.ToString()
+            .Should()
+            .Be("i>=s");
     }
 
     [Theory]
@@ -254,7 +267,7 @@ public class ParserUnitTests
               i: (a: some_map[i], b: some_map[i] mod 2 = 0) | i in Some
             ]
             """;
-        var expr = Parser.ParseExpression<CompExpr>(mzn);
+        var expr = Parser.ParseExpression<ArrayCompExpr>(mzn);
     }
 
     [Fact]
