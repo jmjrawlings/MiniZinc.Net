@@ -30,10 +30,12 @@ public struct Parser
 
     internal Parser(string sourceText)
     {
-        _tokens = Lexer.Lex(sourceText);
         _sourceText = sourceText;
-        _n = _tokens.Length;
-        _i = 0;
+        if (!Lexer.LexString(sourceText, out _tokens, out var final))
+            Error(final.StringValue);
+
+        _n = _tokens.Length - 1;
+        _i = -1;
         Step();
     }
 
@@ -42,16 +44,26 @@ public struct Parser
     {
         while (_i < _n)
         {
-            _token = _tokens[_i++];
+            _i++;
+            _token = _tokens[_i];
             if (_token.Kind is not (TOKEN_LINE_COMMENT or TOKEN_BLOCK_COMMENT))
                 break;
         }
     }
 
+    /// Backtrack to the given position and clear any error information
+    private void Backtrack(int pos)
+    {
+        _i = pos;
+        _token = _tokens[_i];
+        _errorMessage = null;
+        _errorTrace = null;
+    }
+
     /// Return the next non-comment token after the current one
     private Token Peek()
     {
-        for (int j = _i; j < _n; j++)
+        for (int j = _i + 1; j < _n; j++)
         {
             var token = _tokens[j];
             if (token.Kind is TOKEN_LINE_COMMENT or TOKEN_BLOCK_COMMENT)
@@ -101,29 +113,33 @@ public struct Parser
         return true;
     }
 
-    /// Returns true if the next token is of the given time
-    private bool Peek(TokenKind kind1, TokenKind kind2)
-    {
-        int i = _i + 1;
-        int j = _i + 2;
-        if (j >= _n)
-            return false;
-
-        var next1 = _tokens[i];
-        var next2 = _tokens[j];
-        if (next1.Kind != kind1)
-            return false;
-        if (next2.Kind != kind2)
-            return false;
-        return true;
-    }
-
     private bool Skip(TokenKind kind, out Token token)
     {
         token = _token;
         if (_token.Kind != kind)
             return false;
         Step();
+        return true;
+    }
+
+    private bool Skip(TokenKind a, TokenKind b, out Token first, out Token second)
+    {
+        int i = _i + 1;
+        int j = _i + 2;
+        if (j >= _n)
+        {
+            first = default;
+            second = default;
+            return false;
+        }
+
+        first = _tokens[i];
+        second = _tokens[j];
+        if (a != first.Kind)
+            return false;
+        if (b != second.Kind)
+            return false;
+
         return true;
     }
 
@@ -1555,7 +1571,7 @@ public struct Parser
             return true;
         }
 
-        // Function call without arguments
+        // Zero-arg function call
         if (Skip(TOKEN_CLOSE_PAREN))
         {
             result = new CallExpr(name);
@@ -1571,170 +1587,133 @@ public struct Parser
          * a generator tail expr or a boolean expr we can't
          * correctly identify call versus gen-call until
          * later on.
-         *
-         * Backtracking would make this trivial but I think that's
-         * more trouble than it's worth.
          */
-        var exprs = new List<MiniZincExpr>();
-        bool maybeGen = true;
-        bool isGen = false;
-        int i;
 
-        next:
-        if (!ParseExpr(out var expr))
-            return false;
+        int pos = _i;
 
-        switch (expr)
+        if (ParseGenerators(out var generators))
         {
-            // Identifier are valid in either call or gencall
-            case IdentExpr id:
-                exprs.Add(expr);
-                break;
+            if (!Expect(TOKEN_CLOSE_PAREN))
+                return false;
 
-            // `in` expressions involving identifiers could mean a gencall
-            case BinOpExpr { Operator: KEYWORD_IN, Left: IdentExpr id, Right: { } from }
-                when maybeGen:
-                if (!Skip(KEYWORD_WHERE))
-                {
-                    exprs.Add(expr);
-                    break;
-                }
+            if (!Skip(TOKEN_OPEN_PAREN))
+                goto call;
 
-                // The where indicates this definitely is a gencall
-                isGen = true;
-                if (!ParseExpr(out var where))
-                    return false;
+            if (!ParseExpr(out var expr))
+                return false;
 
-                expr = new GenExpr(expr.Start, [id.Name]) { From = from, Where = where };
-                exprs.Add(expr);
-                break;
+            result = new GenCallExpr(name, expr, generators);
 
-            default:
-                if (isGen)
-                    return Error($"Unexpected {expr} while parsing a gen-call");
-                if (maybeGen)
-                    maybeGen = false;
-                exprs.Add(expr);
-                break;
+            if (!Expect(TOKEN_CLOSE_PAREN))
+                return false;
+
+            return true;
         }
 
-        if (Skip(TOKEN_COMMA))
-        {
-            if (isGen)
-                goto next;
+        call:
+        Backtrack(pos);
+        List<MiniZincExpr> exprs = new();
 
-            if (_token.Kind is not TOKEN_CLOSE_PAREN)
-                goto next;
+        // First try to parse simple args
+        while (_token.Kind is not TOKEN_CLOSE_PAREN)
+        {
+            if (!ParseExpr(out var expr))
+                return false;
+
+            exprs.Add(expr);
+
+            if (!Skip(TOKEN_COMMA))
+                break;
         }
+        result = new CallExpr(name, exprs);
 
         if (!Expect(TOKEN_CLOSE_PAREN))
             return false;
 
-        // For sure it's just a call
-        if (!maybeGen)
-        {
-            result = new CallExpr(name, exprs);
-            return true;
-        }
-
-        // Could be a gencall if followed by (
-        if (!isGen && _token.Kind is not TOKEN_OPEN_PAREN)
-        {
-            result = new CallExpr(name, exprs);
-            return true;
-        }
-
-        if (!Expect(TOKEN_OPEN_PAREN))
-            return false;
-
-        if (!ParseExpr(out var yields))
-            return false;
-
-        if (!Expect(TOKEN_CLOSE_PAREN))
-            return false;
-
-        var generators = new List<GenExpr>();
-        var gencall = new GenCallExpr(name, yields, generators);
-
-        List<Token>? idents = null;
-        for (i = 0; i < exprs.Count; i++)
-        {
-            switch (exprs[i])
-            {
-                // Identifiers must be collected as they are part of generators
-                case IdentExpr id:
-                    idents ??= [];
-                    idents.Add(id.Name);
-                    break;
-                // Already created generators get added
-                case GenExpr g:
-                    if (idents is not null)
-                        g.Names.InsertRange(0, idents);
-                    idents = null;
-                    generators.Add(g);
-                    break;
-                // Binops are now known to be generators
-                case BinOpExpr binop:
-                    idents ??= [];
-                    idents.Add(((IdentExpr)binop.Left).Name);
-                    var gen = new GenExpr(default, idents) { From = binop.Right };
-                    generators.Add(gen);
-                    idents = null;
-                    break;
-            }
-        }
-
-        result = gencall;
         return true;
     }
 
     private bool ParseGenerators([NotNullWhen(true)] out List<GenExpr>? generators)
     {
-        var start = _token;
         generators = null;
+        var start = _token;
+        Token id;
 
-        begin:
-        var names = new List<Token>();
+        // accumulate generators
         while (true)
         {
-            Token name;
-            if (_token.Kind is TOKEN_UNDERSCORE)
+            List<Token> ids = new();
+            bool underscore = false;
+
+            // accumulate identifiers
+            while (true)
             {
-                name = _token;
-                Step();
+                if (Skip(TOKEN_IDENTIFIER, out id))
+                {
+                    ids.Add(id);
+                }
+                else if (Skip(TOKEN_UNDERSCORE, out id))
+                {
+                    underscore = true;
+                    ids.Add(id);
+                }
+                else
+                {
+                    return Expected("Identifier or underscore");
+                }
+
+                if (!Skip(TOKEN_COMMA))
+                    break;
             }
-            else if (!ParseIdent(out name))
+
+            int n = ids.Count;
+            GenExpr gen;
+            MiniZincExpr? where = null;
+            // `x,y,z in 1..3 where x > y`
+            if (Skip(KEYWORD_IN))
             {
-                return Error("Expected identifier in generator names");
+                if (n > 1 && underscore)
+                    return Error(
+                        "Wildcard identifier cannot be used inside a generator expression when part of a multi-variable unpacking, eg: `i,j,_ in 1..10`"
+                    );
+
+                if (!ParseExpr(out var source))
+                    return false;
+
+                if (Skip(KEYWORD_WHERE))
+                    if (!ParseExpr(out where))
+                        return false;
+                gen = new GenYieldExpr(start, ids, source, where);
             }
+            // `a=1`
+            else if (Skip(TOKEN_EQUAL))
+            {
+                if (n > 1 || underscore)
+                    return Error(
+                        "Assignments inside generator expression must take the form `$id$=$var`, eg: `a=1`."
+                    );
 
-            names.Add(name);
-            if (Skip(TOKEN_COMMA))
-                continue;
+                if (!ParseExpr(out var source))
+                    return false;
 
-            break;
-        }
+                if (Skip(KEYWORD_WHERE))
+                    if (!ParseExpr(out where))
+                        return false;
 
-        if (!Expect(KEYWORD_IN))
-            return false;
-
-        if (!ParseExpr(out var from))
-            return false;
-
-        var gen = new GenExpr(start, names) { From = from };
-
-        if (Skip(KEYWORD_WHERE))
-            if (!ParseExpr(out var where))
-                return false;
+                id = ids[0];
+                gen = new GenAssignExpr(id, source, where);
+            }
             else
-                gen.Where = where;
+            {
+                return Expected("IN or EQUALS");
+            }
 
-        generators ??= [];
-        generators.Add(gen);
+            generators ??= new();
+            generators.Add(gen);
 
-        if (Skip(TOKEN_COMMA))
-            goto begin;
-
+            if (!Skip(TOKEN_COMMA))
+                break;
+        }
         return true;
     }
 
@@ -1826,8 +1805,7 @@ public struct Parser
             if (!ParseGenerators(out var generators))
                 return false;
 
-            result = new CompExpr(start, element) { IsSet = false, Generators = generators };
-
+            result = new ArrayCompExpr(start, element, generators);
             return Expect(TOKEN_CLOSE_BRACKET);
         }
 
@@ -2148,14 +2126,14 @@ public struct Parser
             return false;
 
         // Empty Set
-        if (_token.Kind is TOKEN_CLOSE_BRACE)
+        if (Skip(TOKEN_CLOSE_BRACE))
         {
             result = new SetExpr(start, null);
-            return Expect(TOKEN_CLOSE_BRACE);
+            return true;
         }
 
         // Parse first expression
-        if (!ParseExpr(out var element))
+        if (!ParseExpr(out var expr))
             return false;
 
         // Set comprehension
@@ -2164,27 +2142,31 @@ public struct Parser
             if (!ParseGenerators(out var generators))
                 return false;
 
-            result = new CompExpr(start, element) { IsSet = true, Generators = generators };
-            return Expect(TOKEN_CLOSE_BRACE);
+            result = new SetCompExpr(start, expr, generators);
         }
-
         // Set literal
-        var elements = new List<MiniZincExpr>();
-        var set = new SetExpr(start, elements);
-        result = set;
-        elements.Add(element);
-        Skip(TOKEN_COMMA);
-        while (_token.Kind is not TOKEN_CLOSE_BRACE)
+        else
         {
-            if (!ParseExpr(out var item))
-                return false;
+            var elements = new List<MiniZincExpr>();
+            elements.Add(expr);
 
-            elements.Add(item);
-            if (!Skip(TOKEN_COMMA))
-                break;
+            while (Skip(TOKEN_COMMA))
+            {
+                if (_token.Kind is TOKEN_CLOSE_BRACE)
+                    break;
+
+                if (!ParseExpr(out expr))
+                    return false;
+
+                elements.Add(expr);
+            }
+            result = new SetExpr(start, elements);
         }
 
-        return Expect(TOKEN_CLOSE_BRACE);
+        if (!Expect(TOKEN_CLOSE_BRACE))
+            return false;
+
+        return true;
     }
 
     internal bool ParseLetExpr([NotNullWhen(true)] out MiniZincExpr? let)
@@ -2333,54 +2315,64 @@ public struct Parser
         // Record expr
         if (Skip(TOKEN_COLON))
         {
-            if (expr is not IdentExpr { Name: var name })
+            if (expr is not IdentExpr name)
                 return Expected("Identifier");
 
-            var record = new RecordExpr(start);
-            result = record;
             if (!ParseExpr(out expr))
                 return false;
 
+            var fields = new List<(IdentExpr, MiniZincExpr)>();
             var field = (name, expr);
-            record.Fields.Add(field);
+            fields.Add(field);
+            result = new RecordExpr(start, fields);
 
-            record_field:
-            if (!Skip(TOKEN_COMMA))
-                return Expect(TOKEN_CLOSE_PAREN);
+            while (Skip(TOKEN_COMMA))
+            {
+                if (_token.Kind is TOKEN_CLOSE_PAREN)
+                    break;
 
-            if (Skip(TOKEN_CLOSE_PAREN))
-                return true;
+                if (!ParseIdent(out var token))
+                    return false;
 
-            if (!ParseIdent(out name))
-                return false;
+                name = new IdentExpr(token);
 
-            if (!Expect(TOKEN_COLON))
-                return false;
+                if (!Expect(TOKEN_COLON))
+                    return false;
 
-            if (!ParseExpr(out expr))
-                return false;
+                if (!ParseExpr(out expr))
+                    return false;
 
-            field = (name, expr);
-            record.Fields.Add(field);
-            goto record_field;
+                field = (name, expr);
+                fields.Add(field);
+            }
         }
-
-        // Else must be a tuple
-        var tuple = new TupleExpr(start);
-        result = tuple;
-        tuple.Fields.Add(expr);
-        if (!Expect(TOKEN_COMMA))
-            return false;
-        while (_token.Kind is not TOKEN_CLOSE_PAREN)
+        else
         {
-            if (!ParseExpr(out expr))
-                return false;
-            tuple.Fields.Add(expr);
-            if (!Skip(TOKEN_COMMA))
-                break;
+            // Else must be a tuple
+            var fields = new List<MiniZincExpr>();
+            fields.Add(expr);
+            result = new TupleExpr(start, fields);
+
+            // 1-Element tuples must have a trailing comma
+            if (_token.Kind is not TOKEN_COMMA)
+                return Expected("Comma");
+
+            while (Skip(TOKEN_COMMA))
+            {
+                if (_token.Kind is TOKEN_CLOSE_PAREN)
+                    break;
+
+                if (!ParseExpr(out expr))
+                    return false;
+
+                fields.Add(expr);
+            }
         }
 
-        return Expect(TOKEN_CLOSE_PAREN);
+        if (!Expect(TOKEN_CLOSE_PAREN))
+            return false;
+
+        return true;
     }
 
     /// <summary>

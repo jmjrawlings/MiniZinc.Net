@@ -2,8 +2,11 @@
 
 public sealed class RecordExpr : MiniZincExpr
 {
-    public RecordExpr(in Token start)
-        : base(start) { }
+    public IReadOnlyList<(IdentExpr, MiniZincExpr)> Fields;
 
-    public List<(Token, MiniZincExpr)> Fields { get; } = [];
+    public RecordExpr(in Token start, IReadOnlyList<(IdentExpr, MiniZincExpr)> fields)
+        : base(start)
+    {
+        Fields = fields;
+    }
 }

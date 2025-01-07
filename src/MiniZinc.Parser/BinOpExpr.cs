@@ -15,4 +15,13 @@ public class BinOpExpr : MiniZincExpr
         Operator = infix.Kind;
         Right = right;
     }
+
+    public BinOpExpr(MiniZincExpr left, TokenKind op, MiniZincExpr right)
+        : base(left.Start)
+    {
+        Left = left;
+        Infix = default;
+        Operator = op;
+        Right = right;
+    }
 }
