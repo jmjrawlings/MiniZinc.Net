@@ -31,8 +31,8 @@ public struct Parser
     internal Parser(string sourceText)
     {
         _sourceText = sourceText;
-        if (!Lexer.LexString(sourceText, out _tokens, out var final))
-            Error(final.StringValue);
+        if (!Lexer.Lex(sourceText, out _tokens))
+            Error(_tokens[^1].StringValue);
 
         _n = _tokens.Length - 1;
         _i = -1;
@@ -183,7 +183,7 @@ public struct Parser
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    internal bool ParseItems(out List<MiniZincItem>? statements)
+    internal bool ParseItems(out List<MiniZincSyntax>? statements)
     {
         statements = null;
         while (true)
@@ -193,7 +193,6 @@ public struct Parser
 
             statements ??= [];
             statements.Add(statement);
-
             if (Skip(TOKEN_EOL) && !Skip(TOKEN_EOF))
                 continue;
             else if (!Expect(TOKEN_EOF))
@@ -2748,7 +2747,7 @@ public struct Parser
     /// </summary>
     /// <example>Parser.ParseFile("model.mzn")</example>
     /// <example>Parser.ParseFile("data.dzn")</example>
-    public static ParseResult ParseItemsFromFile(string path, out List<MiniZincItem>? items)
+    public static ParseResult ParseItemsFromFile(string path, out List<MiniZincSyntax>? items)
     {
         var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
@@ -2778,7 +2777,7 @@ public struct Parser
     ///     constraint a /\ b;
     ///     """);
     /// </example>
-    public static ParseResult ParseItemsFromString(string text, out List<MiniZincItem>? model)
+    public static ParseResult ParseItemsFromString(string text, out List<MiniZincSyntax>? model)
     {
         var watch = Stopwatch.StartNew();
         var parser = new Parser(text);
@@ -2798,7 +2797,7 @@ public struct Parser
     }
 
     /// <inheritdoc cref="ParseItemsFromFile(string,ref System.Collections.Generic.List{MiniZinc.Parser.MiniZincItem}?)"/>
-    public static ParseResult ParseItemsFromFile(FileInfo file, out List<MiniZincItem>? items) =>
+    public static ParseResult ParseItemsFromFile(FileInfo file, out List<MiniZincSyntax>? items) =>
         ParseItemsFromFile(file.FullName, out items);
 
     /// <summary>
@@ -2951,44 +2950,6 @@ public struct Parser
         }
 
         return result;
-    }
-
-    /// Try to parse a statement of the given type from text
-    public static bool TryParseStatement<T>(string text, [NotNullWhen(true)] out T? result)
-        where T : MiniZincItem
-    {
-        result = null;
-        var parser = new Parser(text);
-        if (!parser.ParseItem(out var statement))
-            return false;
-
-        if (statement is not T t)
-            return false;
-        result = t;
-        return true;
-    }
-
-    /// Parse an expression of the given type from text
-    public static bool TryParseExpr<T>(
-        string text,
-        [NotNullWhen(true)] out T? expression,
-        out Token location,
-        [NotNullWhen(false)] out string? error
-    )
-        where T : MiniZincExpr
-    {
-        expression = null;
-        if (!TryParseExpr(text, out var expr, out location, out error))
-            return false;
-
-        if (expr is not T t)
-        {
-            error = $"Expected type {typeof(T)} but got {expr.GetType()}";
-            return false;
-        }
-
-        expression = t;
-        return true;
     }
 
     public static bool TryParseExpr(

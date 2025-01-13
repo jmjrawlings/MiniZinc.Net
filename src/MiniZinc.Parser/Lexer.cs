@@ -7,7 +7,7 @@ using System.Globalization;
 using static Char;
 using static TokenKind;
 
-internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
+internal struct Lexer
 {
     const char FWD_SLASH = '/';
     const char BACK_SLASH = '\\';
@@ -52,11 +52,11 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     const string ERROR_INT_LITERAL = "Error int literal";
     const string ERROR_UNTERMINATED_BLOCK_COMMENT = "Unterminated block comment";
 
-    private string _sourceText;
-    private int _n;
+    private readonly string _sourceText;
     private int _line;
     private int _col;
     private int _index;
+    private int _outdex;
     private int _length;
     private int _startPos;
     private int _startLine;
@@ -64,9 +64,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private bool _fin;
     private bool _err;
     private char _char;
-    private Token _token;
     private TokenKind _kind;
     private int _startString;
+    private Token[] _tokens;
+    private readonly int _n;
 
     private Lexer(string sourceText)
     {
@@ -77,14 +78,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         _err = false;
         _sourceText = sourceText;
         _n = sourceText.Length;
-        Step();
+        _tokens = new Token[_sourceText.Length / 2];
+        while (!(_fin || _err))
+            MoveNext();
     }
 
-    public bool MoveNext()
+    public void MoveNext()
     {
-        if (_fin || _err)
-            return false;
-
         while (_char is TAB or NEWLINE or RETURN or SPACE)
             Step();
 
@@ -285,7 +285,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                 if (IsLetter(Peek()))
                 {
                     var ident = LexIdentifier();
-                    StringToken(_kind, ident);
+                    Return(_kind, s: ident);
                 }
                 else
                 {
@@ -316,19 +316,17 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     if (Keyword.Lookup.TryGetValue(ident, out _kind))
                         Return(_kind);
                     else
-                        StringToken(TOKEN_IDENTIFIER, ident);
+                        Return(TOKEN_IDENTIFIER, s: ident);
                 }
 
                 break;
         }
-
-        return true;
     }
 
     private void LexRecordAccess()
     {
         string ident = LexIdentifier();
-        StringToken(TOKEN_RECORD_ACCESS, ident);
+        Return(TOKEN_RECORD_ACCESS, s: ident);
     }
 
     private void LexTupleAccess()
@@ -341,13 +339,13 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         var span = ReadChars();
         int item = int.Parse(span);
-        IntToken(TOKEN_TUPLE_ACCESS, item);
+        Return(TOKEN_TUPLE_ACCESS, i: item);
     }
 
     private void LexQuotedIdentifier()
     {
-        string ident = LexIdentifier();
-        StringToken(_kind, ident);
+        string id = LexIdentifier();
+        Return(_kind, s: id);
     }
 
     /// <summary>
@@ -367,8 +365,8 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         while (IsLetterOrDigit(_char))
             Step();
 
-        var ident = ReadString();
-        StringToken(seq ? TOKEN_IDENTIFIER_GENERIC_SEQUENCE : TOKEN_IDENTIFIER_GENERIC, ident);
+        string id = ReadString();
+        Return(seq ? TOKEN_IDENTIFIER_GENERIC_SEQUENCE : TOKEN_IDENTIFIER_GENERIC, s: id);
     }
 
     /// <summary>
@@ -384,15 +382,15 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     private void LexBacktickIdentifier()
     {
         Step();
-        string ident = LexIdentifier();
+        string id = LexIdentifier();
         if (!Skip(BACKTICK))
             Error(ERROR_BACKTICK_IDENTIFIER);
         else if (_length <= 2)
             Error(ERROR_BACKTICK_IDENTIFIER);
-        else if (!IsLetter(ident[0]))
+        else if (!IsLetter(id[0]))
             Error(ERROR_BACKTICK_IDENTIFIER);
         else
-            StringToken(TOKEN_IDENTIFIER_INFIX, ident);
+            Return(TOKEN_IDENTIFIER_INFIX, s: id);
     }
 
     /// <summary>
@@ -419,7 +417,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         var comment = ReadString();
-        StringToken(TOKEN_BLOCK_COMMENT, comment);
+        Return(TOKEN_BLOCK_COMMENT, s: comment);
     }
 
     /// <summary>
@@ -428,8 +426,10 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// </summary>
     private void Error(string msg)
     {
-        _token = new Token(_kind = ERROR, _startLine, _startCol, _startPos, _length - 1, s: msg);
-        _err = true;
+        var token = new Token(_kind = ERROR, _startLine, _startCol, _startPos, _length - 1, s: msg);
+        if (_outdex >= _tokens.Length)
+            Array.Resize(ref _tokens, _tokens.Length * 2);
+        _tokens[_outdex++] = token;
     }
 
     /// <summary>
@@ -455,7 +455,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         }
 
         var comment = ReadString();
-        StringToken(TOKEN_LINE_COMMENT, comment);
+        Return(TOKEN_LINE_COMMENT, s: comment);
     }
 
     /// <summary>
@@ -529,7 +529,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
                     break;
                 case DOUBLE_QUOTE:
                     string lit = ReadString();
-                    StringToken(TOKEN_STRING_LITERAL, lit);
+                    Return(TOKEN_STRING_LITERAL, s: lit);
                     Step();
                     return;
                 case CLOSE_PAREN when inExpr:
@@ -578,7 +578,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
         var hex = ReadChars();
         if (int.TryParse(hex, NumberStyles.AllowHexSpecifier, null, out var i))
-            IntToken(TOKEN_INT_LITERAL, i);
+            Return(TOKEN_INT_LITERAL, i: i);
         else
             Error($"Could not parse \"{hex.ToString()}\" as an integer");
     }
@@ -600,7 +600,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         try
         {
             int i = Convert.ToInt32(oct, 8);
-            IntToken(TOKEN_INT_LITERAL, i);
+            Return(TOKEN_INT_LITERAL, i: i);
         }
         catch (Exception)
         {
@@ -652,7 +652,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
 
             var span = ReadChars();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
-                FloatToken(TOKEN_FLOAT_LITERAL, d);
+                Return(TOKEN_FLOAT_LITERAL, f: d);
             else
                 Error($"Could not parse \"{span}\" as a float");
         }
@@ -665,7 +665,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
             } while (IsDigit(_char));
             var span = ReadChars();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
-                FloatToken(TOKEN_FLOAT_LITERAL, d);
+                Return(TOKEN_FLOAT_LITERAL, f: d);
             else
                 Error($"Could not parse \"{span}\" as a float");
         }
@@ -673,7 +673,7 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         {
             var span = ReadChars();
             if (int.TryParse(span, NumberStyles.None, null, out var i))
-                IntToken(TOKEN_INT_LITERAL, i);
+                Return(TOKEN_INT_LITERAL, i: i);
             else
                 Error($"Could not parse \"{span}\" as an integer");
             return;
@@ -722,24 +722,20 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
         return false;
     }
 
-    private void Return(in TokenKind kind)
+    private void Return(in TokenKind kind, int i = default, string? s = null, decimal f = default)
     {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1);
-    }
+        if (_outdex >= _tokens.Length)
+            Array.Resize(ref _tokens, _tokens.Length * 2);
 
-    private void IntToken(in TokenKind kind, int i)
-    {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, i: i);
-    }
-
-    private void FloatToken(in TokenKind kind, decimal d)
-    {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, f: d);
-    }
-
-    private void StringToken(in TokenKind kind, string s)
-    {
-        _token = new Token(_kind = kind, _startLine, _startCol, _startPos, _length - 1, s: s);
+        ref Token token = ref _tokens[_outdex];
+        token.Kind = kind;
+        token.Line = _startLine;
+        token.Start = _startPos;
+        token.Col = _startCol;
+        token.Length = _length - 1;
+        token.FloatValue = f;
+        token.IntValue = i;
+        token.StringValue = s;
     }
 
     private bool SkipReturn(in char c, in TokenKind kind)
@@ -774,24 +770,14 @@ internal sealed class Lexer : IEnumerator<Token>, IEnumerable<Token>
     /// <summary>
     /// Lex the given string
     /// </summary>
-    public static bool LexString(string s, out Token[] tokens, out Token final)
+    public static bool Lex(string s, out Token[] tokens)
     {
-        // TODO - remove IEnumerable and just create the array ourselves
         var lexer = new Lexer(s);
-        tokens = lexer.ToArray();
-        final = lexer._token;
+        tokens = lexer._tokens[..(lexer._outdex - 1)];
         if (lexer._err)
             return false;
         return true;
     }
-
-    object IEnumerator.Current => _token;
-
-    Token IEnumerator<Token>.Current => _token;
-
-    public IEnumerator<Token> GetEnumerator() => this;
-
-    IEnumerator IEnumerable.GetEnumerator() => this;
 
     public void Reset()
     {
