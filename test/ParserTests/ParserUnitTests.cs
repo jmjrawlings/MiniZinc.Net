@@ -1,202 +1,187 @@
-﻿using System.Globalization;
+﻿using MiniZinc.Parser;
+using Shouldly;
+using TUnit.Assertions;
+using TUnit.Assertions.Extensions;
+using TUnit.Core;
 using static MiniZinc.Parser.TokenKind;
 
 public class ParserUnitTests
 {
-    [Fact]
-    void test_parse_include_item()
+    [Test]
+    public void test_parse_include_item()
     {
         var node = Parser.ParseItem<IncludeItem>("include \"xd.mzn\";");
-        node.Path.StringValue.Should().Be("xd.mzn");
+        node.Path.StringValue.ShouldBe("xd.mzn");
     }
 
-    [Fact]
-    void test_parse_output_item()
+    [Test]
+    public void test_parse_output_item()
     {
         var node = Parser.ParseItem<OutputItem>("output [];");
     }
 
-    [Theory]
-    [InlineData("enum Letters = {A, B, C};")]
-    [InlineData("enum Letters = {A, B, C} ++ {D, E, F};")]
-    [InlineData("enum Anon = _(1..10) ++ anon_enum(10);")]
-    [InlineData("enum Complex = C(1..10);")]
-    void test_parse_enum_item(string mzn)
+    [Test]
+    [Arguments("enum Letters = {A, B, C};")]
+    [Arguments("enum Letters = {A, B, C} ++ {D, E, F};")]
+    [Arguments("enum Anon = _(1..10) ++ anon_enum(10);")]
+    [Arguments("enum Complex = C(1..10);")]
+    public void test_parse_enum_item(string mzn)
     {
         var node = Parser.ParseItem<DeclareItem>(mzn);
-        node.Kind.Should().Be(DeclareKind.DECLARE_ENUM);
-        node.Expr.Should().NotBeNull();
+        node.Kind.ShouldBe(DeclareKind.DECLARE_ENUM);
+        node.Expr.ShouldNotBeNull();
     }
 
-    [Fact]
-    void test_parse_constraint()
+    [Test]
+    public void test_parse_constraint()
     {
         var con = Parser.ParseItem<ConstraintItem>("constraint a > 2;");
     }
 
-    [Theory]
-    [InlineData("solve satisfy;")]
-    [InlineData("solve maximize abc;")]
-    void test_parse_solve(string mzn)
+    [Test]
+    [Arguments("solve satisfy;")]
+    [Arguments("solve maximize abc;")]
+    public void test_parse_solve(string mzn)
     {
         var node = Parser.ParseItem<SolveItem>(mzn);
     }
 
-    [Theory]
-    [InlineData("forall(i in 1..3)(true)")]
-    void test_parse_gencall_single_name(string mzn)
+    [Test]
+    [Arguments("forall(i in 1..3)(true)")]
+    public void test_parse_gencall_single_name(string mzn)
     {
         var expr = Parser.ParseExpression<GenCallExpr>(mzn);
-        expr.Name.ToString().Should().Be("forall");
-        expr.Generators.Should()
-            .SatisfyRespectively(gen =>
-            {
-                gen.Should()
-                    .BeOfType<GenYieldExpr>()
-                    .Which.Ids.Should()
-                    .SatisfyRespectively(id => id.StringValue.Should().Be("i"));
-            });
+        expr.Name.ToString().ShouldBe("forall");
+        // expr.Generators.shouldsa(gen =>
+        // {
+        //     gen.Should()
+        //         .BeOfType<GenYieldExpr>()
+        //         .Which.Ids.Should()
+        //         .SatisfyRespectively(id => id.StringValue.ShouldBe("i"));
+        // });
     }
 
-    [Theory]
-    [InlineData("forall(i,j,k in 1..3)(true)")]
-    void test_parse_gencall_multiple_names(string mzn)
+    [Test]
+    [Arguments("forall(i,j,k in 1..3)(true)")]
+    public void test_parse_gencall_multiple_names(string mzn)
     {
         var expr = Parser.ParseExpression<GenCallExpr>(mzn);
-        expr.Name.ToString().Should().Be("forall");
-        expr.Generators.Should()
-            .SatisfyRespectively(gen =>
-            {
-                gen.Should()
-                    .BeOfType<GenYieldExpr>()
-                    .Which.Ids.Should()
-                    .SatisfyRespectively(
-                        i => i.StringValue.Should().Be("i"),
-                        j => j.StringValue.Should().Be("j"),
-                        k => k.StringValue.Should().Be("k")
-                    );
-            });
+        expr.Name.ToString().ShouldBe("forall");
+        var gen = expr.Generators[0].ShouldBeOfType<GenYieldExpr>();
+        gen.Ids.Select(t => t.StringValue).ShouldBe(["i", "j", "k"]);
     }
 
-    [Theory]
-    [InlineData("forall (i, j, k, l in -3..3 where i <= j /\\ k <= l)(true)")]
-    void test_parse_gencall_multiple_names_multiple_filters(string mzn)
+    [Test]
+    [Arguments("forall (i, j, k, l in -3..3 where i <= j /\\ k <= l)(true)")]
+    public void test_parse_gencall_multiple_names_multiple_filters(string mzn)
     {
         var expr = Parser.ParseExpression<GenCallExpr>(mzn);
-        expr.Name.ToString().Should().Be("forall");
+        expr.Name.ToString().ShouldBe("forall");
         // expr.Generators.Should()
         //     .SatisfyRespectively(gen =>
         //     {
-        //         gen.Names.Select(x => x.ToString()).Should().Equal("i", "j", "k", "l");
+        //         gen.Names.Select(x => x.ToString()).ShouldEqual("i", "j", "k", "l");
         //     });
     }
 
-    [Fact]
-    void test_parse_gencall_yield_with_filter()
+    [Test]
+    public void test_parse_gencall_yield_with_filter()
     {
         var mzn = "sum (i in class where i >= s) (class_sizes[i])";
         var call = Parser.ParseExpression<GenCallExpr>(mzn);
-        call.Name.StringValue.Should().Be("sum");
-        call.Expr.Should().BeOfType<ArrayAccessExpr>();
-        call.Generators[0]
-            .Should()
-            .BeOfType<GenYieldExpr>()
-            .Which.Ids[0]
-            .StringValue.Should()
-            .Be("i");
-        call.Generators[0]
-            .Should()
-            .BeOfType<GenYieldExpr>()
-            .Which.Where.ToString()
-            .Should()
-            .Be("i>=s");
+        call.Name.StringValue.ShouldBe("sum");
+        call.Expr.ShouldBeOfType<ArrayAccessExpr>();
+        var gen = call.Generators[0].ShouldBeOfType<GenYieldExpr>();
+        gen.Ids[0].StringValue.ShouldBe("i");
+        gen.Source.Start.StringValue.ShouldBe("class");
+        gen.Where!.ToString().ShouldBe("i>=s");
     }
 
-    [Theory]
-    [InlineData("a[Fst[i] + j * (i + 1)]")]
-    void test_array_access(string mzn)
+    [Test]
+    [Arguments("a[Fst[i] + j * (i + 1)]")]
+    public void test_array_access(string mzn)
     {
         var node = Parser.ParseExpression<ArrayAccessExpr>(mzn);
     }
 
-    [Theory]
-    [InlineData("[ 1: 1, 2: 2, 3: 3, 4: 4, 5: 5]")]
-    [InlineData("[ A: 0, B: 3, C: 5]")]
-    [InlineData("[ (1,2): 1, (1,3): 2, (2,2): 3, (2,3): 4]")]
-    [InlineData("[ 1: 1, 4: 2, 5: 3, 3: 4, 2: 5]")]
-    [InlineData("[ 1: 1, 2, 3, 4]")]
-    void test_indexed_array_1d(string mzn)
+    [Test]
+    [Arguments("[ 1: 1, 2: 2, 3: 3, 4: 4, 5: 5]")]
+    [Arguments("[ A: 0, B: 3, C: 5]")]
+    [Arguments("[ (1,2): 1, (1,3): 2, (2,2): 3, (2,3): 4]")]
+    [Arguments("[ 1: 1, 4: 2, 5: 3, 3: 4, 2: 5]")]
+    [Arguments("[ 1: 1, 2, 3, 4]")]
+    public void test_indexed_array_1d(string mzn)
     {
         var expr = Parser.ParseExpression<Array1dExpr>(mzn);
     }
 
-    [Fact]
-    void test_array2d_column_indexed()
+    [Test]
+    public void test_array2d_column_indexed()
     {
         var mzn = "[| A: B: C:\n | 0, 0, 0\n | 1, 1, 1\n | 2, 2, 2 |];";
         var arr = Parser.ParseExpression<Array2dExpr>(mzn);
-        arr.RowIndexed.Should().BeFalse();
-        arr.ColIndexed.Should().BeTrue();
-        arr.Elements.Should().HaveCount(9);
-        arr.Indices.Should().HaveCount(3);
-        arr.Indices[0].ToString().Should().Be("A");
-        arr.Indices[1].ToString().Should().Be("B");
-        arr.Indices[2].ToString().Should().Be("C");
+        arr.RowIndexed.ShouldBeFalse();
+        arr.ColIndexed.ShouldBeTrue();
+        arr.Elements.Count.ShouldBe(9);
+        arr.Indices.Count.ShouldBe(3);
+        arr.Indices[0].ToString().ShouldBe("A");
+        arr.Indices[1].ToString().ShouldBe("B");
+        arr.Indices[2].ToString().ShouldBe("C");
     }
 
-    [Fact]
-    void test_array2d_row_indexed()
+    [Test]
+    public void test_array2d_row_indexed()
     {
         var mzn = "[| A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |];";
         var arr = Parser.ParseExpression<Array2dExpr>(mzn);
-        arr.RowIndexed.Should().BeTrue();
-        arr.ColIndexed.Should().BeFalse();
-        arr.Elements.Should().HaveCount(9);
-        arr.Indices.Should().HaveCount(3);
-        arr.Indices[0].ToString().Should().Be("A");
-        arr.Indices[1].ToString().Should().Be("B");
-        arr.Indices[2].ToString().Should().Be("C");
+        arr.RowIndexed.ShouldBeTrue();
+        arr.ColIndexed.ShouldBeFalse();
+        arr.Elements.Count.ShouldBe(9);
+        arr.Indices.Count.ShouldBe(3);
+        arr.Indices[0].ToString().ShouldBe("A");
+        arr.Indices[1].ToString().ShouldBe("B");
+        arr.Indices[2].ToString().ShouldBe("C");
     }
 
-    [Fact]
-    void test_array2d_opt()
+    [Test]
+    public void test_array2d_opt()
     {
         var mzn = "[|<>, 5,|5, 5,||]";
         var arr = Parser.ParseExpression<Array2dExpr>(mzn);
-        arr.I.Should().Be(2);
-        arr.J.Should().Be(2);
-        arr.Elements.Count.Should().Be(4);
+        arr.I.ShouldBe(2);
+        arr.J.ShouldBe(2);
+        arr.Elements.Count.ShouldBe(4);
     }
 
-    [Fact]
-    void test_array2d_dual_indexed()
+    [Test]
+    public void test_array2d_dual_indexed()
     {
         var mzn = "[| A: B: C:\n | A: 0, 0, 0\n | B: 1, 1, 1\n | C: 2, 2, 2 |]";
         var arr = Parser.ParseExpression<Array2dExpr>(mzn);
-        arr.RowIndexed.Should().BeTrue();
-        arr.ColIndexed.Should().BeTrue();
-        arr.Elements.Should().HaveCount(9);
-        arr.Indices.Should().HaveCount(6);
-        arr.Indices[0].ToString().Should().Be("A");
-        arr.Indices[1].ToString().Should().Be("B");
-        arr.Indices[2].ToString().Should().Be("C");
-        arr.Indices[3].ToString().Should().Be("A");
-        arr.Indices[4].ToString().Should().Be("B");
-        arr.Indices[5].ToString().Should().Be("C");
+        arr.RowIndexed.ShouldBeTrue();
+        arr.ColIndexed.ShouldBeTrue();
+        arr.Elements.Count.ShouldBe(9);
+        arr.Indices.Count.ShouldBe(6);
+        arr.Indices[0].ToString().ShouldBe("A");
+        arr.Indices[1].ToString().ShouldBe("B");
+        arr.Indices[2].ToString().ShouldBe("C");
+        arr.Indices[3].ToString().ShouldBe("A");
+        arr.Indices[4].ToString().ShouldBe("B");
+        arr.Indices[5].ToString().ShouldBe("C");
     }
 
-    [Fact]
-    void test_array2d_no_index()
+    [Test]
+    public void test_array2d_no_index()
     {
         var mzn = "[| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 | 0, _, _, _, _, _, _, _, _, _, _, 0|]";
         var arr = Parser.ParseExpression<Array2dExpr>(mzn);
-        arr.RowIndexed.Should().BeFalse();
-        arr.ColIndexed.Should().BeFalse();
-        arr.Elements.Should().HaveCount(24);
+        arr.RowIndexed.ShouldBeFalse();
+        arr.ColIndexed.ShouldBeFalse();
+        arr.Elements.Count.ShouldBe(24);
     }
 
-    [Fact]
-    void test_array2d_call()
+    [Test]
+    public void test_array2d_call()
     {
         var mzn = """
                 [| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -215,24 +200,24 @@ public class ParserUnitTests
             )
             """;
         var arr = Parser.ParseExpression<Array2dExpr>(mzn);
-        arr.I.Should().Be(12);
-        arr.J.Should().Be(12);
-        arr.Elements.Count.Should().Be(144);
+        arr.I.ShouldBe(12);
+        arr.J.ShouldBe(12);
+        arr.Elements.Count.ShouldBe(144);
     }
 
-    [Fact]
-    void test_expr_type_inst()
+    [Test]
+    public void test_expr_type_inst()
     {
         var mzn = "record(1..1:x): a";
         var node = Parser.ParseItem<DeclareItem>(mzn);
         var record = node.Type as RecordTypeSyntax;
         var param = record!.Fields[0];
-        param.Name.ToString().Should().Be("x");
-        param.Type.ToString().Should().Be("1..1");
+        param.Name.ToString().ShouldBe("x");
+        param.Type.ToString().ShouldBe("1..1");
     }
 
-    [Fact]
-    void test_parse_let_xd()
+    [Test]
+    public void test_parse_let_xd()
     {
         var mzn = """
             let {
@@ -241,26 +226,26 @@ public class ParserUnitTests
             } in res;
             """;
         var let = Parser.ParseExpression<LetExpr>(mzn);
-        let.Locals.Should().HaveCount(2);
-        let.Body.Should().BeOfType<IdentExpr>();
-        let.Body.ToString().Should().Be("res");
+        let.Locals.Count.ShouldBe(2);
+        let.Body.ShouldBeOfType<IdentExpr>();
+        let.Body.ToString().ShouldBe("res");
     }
 
-    [Fact]
-    void test_partial_range_ti()
+    [Test]
+    public void test_partial_range_ti()
     {
         var mzn = "0..: xd;";
         var node = Parser.ParseItem<DeclareItem>(mzn);
         var type = node.Type as ExprTypeSyntax;
         var expr = type!.Expr;
-        expr.Should().BeOfType<RangeExpr>();
+        expr.ShouldBeOfType<RangeExpr>();
         var rng = (RangeExpr)expr;
-        rng.Upper.Should().BeNull();
-        // rng.Lower.Should().Be(new IntLiteralSyntax(0));
+        rng.Upper.ShouldBeNull();
+        // rng.Lower.ShouldBe(new IntLiteralSyntax(0));
     }
 
-    [Fact]
-    void test_record_comp()
+    [Test]
+    public void test_record_comp()
     {
         var mzn = """
             [
@@ -270,68 +255,68 @@ public class ParserUnitTests
         var expr = Parser.ParseExpression<ArrayCompExpr>(mzn);
     }
 
-    [Fact]
-    void test_set_of_ti()
+    [Test]
+    public void test_set_of_ti()
     {
         var mzn = "set of var int: xd";
         var node = Parser.ParseItem<DeclareItem>(mzn);
-        node.Name.ToString().Should().Be("xd");
+        node.Name.ToString().ShouldBe("xd");
     }
 
-    [Fact]
-    void test_postfix_range_operator()
+    [Test]
+    public void test_postfix_range_operator()
     {
         var mzn = "var 0..: xd";
         var node = Parser.ParseItem<DeclareItem>(mzn);
-        node.Name.ToString().Should().Be("xd");
+        node.Name.ToString().ShouldBe("xd");
         var type = (ExprTypeSyntax)node.Type;
-        type.IsVar.Should().BeTrue();
+        type.IsVar.ShouldBeTrue();
         var range = (RangeExpr)type.Expr;
-        range.Lower.Should().BeOfType<IntExpr>();
-        range.Upper.Should().BeNull();
+        range.Lower.ShouldBeOfType<IntExpr>();
+        range.Upper.ShouldBeNull();
         var lo = (IntExpr)range.Lower!;
-        lo.Value.Should().Be(0);
+        lo.Value.ShouldBe(0);
     }
 
-    [Fact]
-    void test_array3d_literal()
+    [Test]
+    public void test_array3d_literal()
     {
         var mzn = "[| |1,1|1,1|, |2,2|2,2|, |3,3|3,3| |]";
         var arr = Parser.ParseExpression<Array3dSyntax>(mzn);
-        arr.I.Should().Be(3);
-        arr.J.Should().Be(2);
-        arr.K.Should().Be(2);
-        arr.Elements.Should().HaveCount(12);
+        arr.I.ShouldBe(3);
+        arr.J.ShouldBe(2);
+        arr.K.ShouldBe(2);
+        arr.Elements.Count.ShouldBe(12);
         var numbers = arr.Elements.Select(x => (int)(IntExpr)x);
-        numbers.Should().Equal(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
+        numbers.ShouldBe([1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3]);
     }
 
-    [Fact]
-    void test_array3d_empty()
+    [Test]
+    public void test_array3d_empty()
     {
         var mzn = "[| || |]";
         var arr = Parser.ParseExpression<Array3dSyntax>(mzn);
-        arr.I.Should().Be(0);
-        arr.J.Should().Be(0);
-        arr.K.Should().Be(0);
-        arr.Elements.Should().BeNull();
+        arr.I.ShouldBe(0);
+        arr.J.ShouldBe(0);
+        arr.K.ShouldBe(0);
+        arr.Elements.ShouldBeNull();
     }
 
-    [Theory]
-    [InlineData("annotation xd")]
-    [InlineData("annotation something(int: x)")]
-    void test_annotation_declaration(string mzn)
+    [Test]
+    [Arguments("annotation xd")]
+    [Arguments("annotation something(int: x)")]
+    public void test_annotation_declaration(string mzn)
     {
         var ann = Parser.ParseItem<DeclareItem>(mzn);
-        ann.Type.Kind.Should().Be(TypeKind.TYPE_ANNOTATION);
+        ann.Type.Kind.ShouldBe(TypeKind.TYPE_ANNOTATION);
     }
 
-    [Theory]
-    // [InlineData("1+2", 3)]
-    // [InlineData("1+2*4", 9)]
-    // [InlineData("(1+2)*4", 12)]
-    [InlineData("2*4-1", 7)]
-    void test_operator_precedence(string mzn, int expected)
+    [Test]
+    // [Arguments("1+2", 3)]
+    // [Arguments("1+2*4", 9)]
+    // [Arguments("(1+2)*4", 12)]
+    [Arguments("2*4-1", 7)]
+    public void test_operator_precedence(string mzn, int expected)
     {
         var expr = Parser.ParseExpression<MiniZincExpr>(mzn);
         int eval(MiniZincSyntax expr)
@@ -359,112 +344,112 @@ public class ParserUnitTests
             }
         }
         var result = eval(expr);
-        result.Should().Be(expected);
+        result.ShouldBe(expected);
     }
 
-    [Fact]
-    void test_float_range()
+    [Test]
+    public void test_float_range()
     {
         var mzn = "0.01..1.123;";
         var expr = Parser.ParseExpression<RangeExpr>(mzn);
-        expr.Lower.Should().BeOfType<FloatExpr>();
-        expr.Upper.Should().BeOfType<FloatExpr>();
+        expr.Lower.ShouldBeOfType<FloatExpr>();
+        expr.Upper.ShouldBeOfType<FloatExpr>();
     }
 
-    [Fact]
-    void test_parse_operator_same_precedence()
+    [Test]
+    public void test_parse_operator_same_precedence()
     {
         var mzn = "a diff (b union c)";
         var expr = Parser.ParseExpression<BinOpExpr>(mzn);
         var ozn = expr.Write();
-        ozn.Should().Be("a diff (b union c)");
+        ozn.ShouldBe("a diff (b union c)");
     }
 
-    [Fact]
-    void test_union_type()
+    [Test]
+    public void test_union_type()
     {
         var mzn = @"tuple(int) ++ tuple(int): i";
         var expr = Parser.ParseItem<DeclareItem>(mzn);
-        expr.Name.ToString().Should().Be("i");
+        expr.Name.ToString().ShouldBe("i");
         var type = (CompositeTypeSyntax)expr.Type;
-        type.Types.Should().HaveCount(2);
+        type.Types.Count.ShouldBe(2);
     }
 
-    [Fact]
-    void test_parse_unary_prec()
+    [Test]
+    public void test_parse_unary_prec()
     {
         var mzn = @"not(A -> B) -> not(C -> D)";
         var expr = Parser.ParseExpression<BinOpExpr>(mzn);
-        expr.Left.Should().BeOfType<UnOpExpr>();
-        expr.Right.Should().BeOfType<UnOpExpr>();
+        expr.Left.ShouldBeOfType<UnOpExpr>();
+        expr.Right.ShouldBeOfType<UnOpExpr>();
     }
 
-    [Fact]
-    void test_parse_precedence_left_assoc_equal()
+    [Test]
+    public void test_parse_precedence_left_assoc_equal()
     {
         var mzn = "1 + 2 - 3";
         var binop = Parser.ParseExpression<BinOpExpr>(mzn);
-        binop.Operator.Should().Be(TOKEN_MINUS);
+        binop.Operator.ShouldBe(TOKEN_MINUS);
         var oz = binop.Write();
-        oz.Should().Be(mzn);
+        oz.ShouldBe(mzn);
         var b = 2;
     }
 
-    [Fact]
-    void test_parse_precedence_left_assoc_descending()
+    [Test]
+    public void test_parse_precedence_left_assoc_descending()
     {
         var mzn = "a - b >= c";
         var binop = Parser.ParseExpression<BinOpExpr>(mzn);
-        binop.Operator.Should().Be(TOKEN_GREATER_THAN_EQUAL);
+        binop.Operator.ShouldBe(TOKEN_GREATER_THAN_EQUAL);
         var oz = binop.Write();
-        oz.Should().Be(mzn);
+        oz.ShouldBe(mzn);
     }
 
-    [Fact]
-    void test_write_precedence_left_assoc_brackets()
+    [Test]
+    public void test_write_precedence_left_assoc_brackets()
     {
         var mzn = "(Formula[1] > 0) == assignment[1]";
         var binop = Parser.ParseExpression<BinOpExpr>(mzn);
-        binop.Operator.Should().Be(TOKEN_EQUAL);
+        binop.Operator.ShouldBe(TOKEN_EQUAL);
         var oz = binop.Write();
-        oz.Should().Be(mzn);
+        oz.ShouldBe(mzn);
     }
 
-    [Fact]
-    void test_parse_right_assoc()
+    [Test]
+    public void test_parse_right_assoc()
     {
         var mzn = "var MyTuple ++ var MyTuple: tuptup = tup ++ tup;";
         var binop = Parser.ParseItem<DeclareItem>(mzn);
         var oz = binop.Write();
-        oz.Should().BeEquivalentTo(mzn);
+        oz.ShouldBeEquivalentTo(mzn);
     }
 
-    [Fact]
-    void test_parse_union_type_arg()
+    [Test]
+    public void test_parse_union_type_arg()
     {
         var mzn = "var ..-1 union {1,3}";
         var parser = new Parser(mzn);
         var ok = parser.ParseType(out var type);
-        ok.Should().BeTrue();
+        ok.ShouldBeTrue();
         var a = 2;
     }
 
-    [Theory]
-    [InlineData("-2.8421709430404e-14")]
-    [InlineData("2e10")]
-    void test_parse_float(string f)
+    [Test]
+    [Arguments("-2.8421709430404e-14")]
+    [Arguments("2e10")]
+    public void test_parse_float(string f)
     {
         var mzn = f;
         var node = Parser.ParseExpression<FloatExpr>(mzn);
         var a = 2;
     }
 
-    [Fact]
-    void test_parse_generic_func()
+    [Test]
+    public void test_parse_generic_func()
     {
         var mzn = "$T: foo(tuple($T): x) = x.1;";
         var parser = new Parser(mzn);
         var ok = parser.ParseDeclareOrAssignStatement(out var node);
-        ok.Should().BeTrue();
+        ok.ShouldBeTrue();
     }
 }

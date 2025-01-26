@@ -38,7 +38,7 @@ public sealed class ParserTestBuilder : TestBuilder
         using (Block("private void TestParse(string path)"))
         {
             Var("ok", "Parser.ParseModelFromFile(path, out var model)");
-            WriteLn("ok.Should().BeTrue();");
+            WriteLn("ok.ShouldBeTrue();");
         }
 
         foreach (var path in files)

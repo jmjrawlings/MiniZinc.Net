@@ -1,60 +1,62 @@
-﻿public sealed class CommandTests : TestBase
+﻿using MiniZinc.Command;
+using TUnit.Assertions;
+using TUnit.Assertions.Extensions;
+using TUnit.Core;
+
+public class CommandTests
 {
-    [Theory]
-    [InlineData("-v")]
-    [InlineData("--okay")]
-    [InlineData("-a1")]
-    public void Parse_Flag_Only_Arg(string s)
+    [Test]
+    [Arguments("-v")]
+    [Arguments("--okay")]
+    [Arguments("-a1")]
+    public async Task Parse_Flag_Only_Arg(string s)
     {
         var arg = Arg.Parse(s).First();
-        arg.Value.Should().BeNull();
-        arg.ArgType.Should().Be(ArgType.FlagOnly);
-        arg.String.Should().Be(s);
+        await Assert.That(arg.Value).IsNull();
+        await Assert.That(arg.Value).IsNull();
+        await Assert.That(arg.ArgType).IsEqualTo(ArgType.FlagOnly);
+        await Assert.That(arg.String).IsEqualTo(s);
     }
 
-    [Theory]
-    [InlineData("-v 1")]
-    [InlineData("--okay \"two\"")]
-    [InlineData("-one=2")]
-    public void Parse_Flag_And_Value_Arg(string s)
+    [Test]
+    [Arguments("-v 1")]
+    [Arguments("--okay \"two\"")]
+    [Arguments("-one=2")]
+    public async Task Parse_Flag_And_Value_Arg(string s)
     {
         var arg = Arg.Parse(s).First();
-        Assert.NotNull(arg.Flag);
-        Assert.NotNull(arg.Value);
-        Assert.Equal(arg.String, s);
+        await Assert.That(arg.Flag).IsNotNull();
+        await Assert.That(arg.Value).IsNotNull();
+        await Assert.That(arg.String).IsEqualTo(s);
     }
 
-    [Fact]
-    public void Parse_Url_Flag()
+    [Test]
+    public async Task Parse_Url_Flag()
     {
         var url = @"https://github.com/MiniZinc/libminizinc.git";
         var arg = Arg.Parse(url).First();
-        Assert.Equal(arg.Value, url);
+        await Assert.That(arg.Value).IsEqualTo(url);
     }
 
-    [Theory]
-    [InlineData("x")]
-    [InlineData("123")]
-    [InlineData("\"asdfasdf asdf\"")]
-    public void Parse_Value_Only_Arg(string s)
+    [Test]
+    [Arguments("x")]
+    [Arguments("123")]
+    [Arguments("\"asdfasdf asdf\"")]
+    public async Task Parse_Value_Only_Arg(string s)
     {
         var arg = Arg.Parse(s).First();
-        arg.Flag.Should().BeNull();
-        arg.ArgType.Should().Be(ArgType.ValueOnly);
-        arg.Value.Should().Be(s);
+        await Assert.That(arg.Flag).IsNull();
+        await Assert.That(arg.ArgType).IsEqualTo(ArgType.ValueOnly);
+        await Assert.That(arg.Value).IsEqualTo(s);
     }
 
-    [Theory]
-    [InlineData("--output-json")]
-    public void Parse_Value_With_Dashes(string s)
+    [Test]
+    [Arguments("--output-json")]
+    public async Task Parse_Value_With_Dashes(string s)
     {
         var args = Arg.Parse(s).ToList();
-        args.Count.Should().Be(1);
-        var arg = args[0];
-        arg.ArgType.Should().Be(ArgType.FlagOnly);
-        arg.Flag.Should().Be(s);
+        await Assert.That(args.Count).IsEqualTo(1);
+        await Assert.That(args[0].ArgType).IsEqualTo(ArgType.FlagOnly);
+        await Assert.That(args[0].Flag).IsEqualTo(s);
     }
-
-    public CommandTests(ITestOutputHelper output)
-        : base(output) { }
 }

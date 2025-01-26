@@ -65,20 +65,19 @@ internal struct Lexer
     private bool _err;
     private char _char;
     private TokenKind _kind;
-    private int _startString;
     private Token[] _tokens;
     private readonly int _n;
 
     private Lexer(string sourceText)
     {
         _line = 1;
-        _startString = 0;
         _index = -1;
         _fin = false;
         _err = false;
         _sourceText = sourceText;
         _n = sourceText.Length;
-        _tokens = new Token[_sourceText.Length / 2];
+        _tokens = new Token[(_n + 1) / 2];
+        Step();
         while (!(_fin || _err))
             MoveNext();
     }
@@ -95,7 +94,7 @@ internal struct Lexer
         switch (_char)
         {
             case EOF:
-                Return(TOKEN_EOF);
+                Ok(TOKEN_EOF);
                 _fin = true;
                 break;
 
@@ -108,13 +107,13 @@ internal struct Lexer
                 if (Skip(STAR))
                     LexBlockComment();
                 else if (!SkipReturn(BACK_SLASH, TOKEN_CONJUNCTION))
-                    Return(TOKEN_DIVIDE);
+                    Ok(TOKEN_DIVIDE);
                 break;
 
             case BACK_SLASH:
                 Step();
                 if (!SkipReturn(FWD_SLASH, TOKEN_DISJUNCTION))
-                    Return(TOKEN_BACKSLASH);
+                    Ok(TOKEN_BACKSLASH);
                 break;
 
             case STAR:
@@ -128,7 +127,7 @@ internal struct Lexer
             case EQUAL:
                 Step();
                 Skip(EQUAL);
-                Return(TOKEN_EQUAL);
+                Ok(TOKEN_EQUAL);
                 break;
 
             case LEFT_CHEVRON:
@@ -143,7 +142,7 @@ internal struct Lexer
                 {
                     if (SkipReturn(RIGHT_CHEVRON, TOKEN_BI_IMPLICATION))
                         break;
-                    Return(TOKEN_REVERSE_IMPLICATION);
+                    Ok(TOKEN_REVERSE_IMPLICATION);
                     break;
                 }
 
@@ -152,23 +151,23 @@ internal struct Lexer
                     if (Skip(DOT))
                     {
                         if (Skip(LEFT_CHEVRON))
-                            Return(TOKEN_RANGE_EXCLUSIVE);
+                            Ok(TOKEN_RANGE_EXCLUSIVE);
                         else
-                            Return(TOKEN_RANGE_LEFT_EXCLUSIVE);
+                            Ok(TOKEN_RANGE_LEFT_EXCLUSIVE);
                         break;
                     }
 
                     Error(ERROR_UNEXPECTED_CHAR);
                     break;
                 }
-                Return(TOKEN_LESS_THAN);
+                Ok(TOKEN_LESS_THAN);
                 break;
 
             case RIGHT_CHEVRON:
                 Step();
                 if (SkipReturn(EQUAL, TOKEN_GREATER_THAN_EQUAL))
                     break;
-                Return(TOKEN_GREATER_THAN);
+                Ok(TOKEN_GREATER_THAN);
                 break;
 
             case UP_CHEVRON:
@@ -184,9 +183,9 @@ internal struct Lexer
                 if (Skip(DOT))
                 {
                     if (Skip(LEFT_CHEVRON))
-                        Return(TOKEN_RANGE_RIGHT_EXCLUSIVE);
+                        Ok(TOKEN_RANGE_RIGHT_EXCLUSIVE);
                     else
-                        Return(TOKEN_RANGE_INCLUSIVE);
+                        Ok(TOKEN_RANGE_INCLUSIVE);
                 }
                 else if (IsDigit(_char))
                 {
@@ -202,14 +201,14 @@ internal struct Lexer
                 Step();
                 if (SkipReturn(PLUS, TOKEN_PLUS_PLUS))
                     break;
-                Return(TOKEN_PLUS);
+                Ok(TOKEN_PLUS);
                 break;
 
             case DASH:
                 Step();
                 if (SkipReturn(RIGHT_CHEVRON, TOKEN_FORWARD_IMPLICATION))
                     break;
-                Return(TOKEN_MINUS);
+                Ok(TOKEN_MINUS);
                 break;
 
             case TILDE:
@@ -229,7 +228,7 @@ internal struct Lexer
                         SkipReturn(TOKEN_TILDE_EQUALS);
                         break;
                     default:
-                        Return(TOKEN_TILDE);
+                        Ok(TOKEN_TILDE);
                         break;
                 }
                 break;
@@ -278,14 +277,14 @@ internal struct Lexer
                 Step();
                 if (SkipReturn(COLON, TOKEN_COLON_COLON))
                     break;
-                Return(TOKEN_COLON);
+                Ok(TOKEN_COLON);
                 break;
 
             case UNDERSCORE:
                 if (IsLetter(Peek()))
                 {
                     var ident = LexIdentifier();
-                    Return(_kind, s: ident);
+                    Ok(_kind, s: ident);
                 }
                 else
                 {
@@ -295,7 +294,7 @@ internal struct Lexer
 
             case COMMA:
                 Step();
-                Return(TOKEN_COMMA);
+                Ok(TOKEN_COMMA);
                 break;
 
             case EXCLAMATION:
@@ -314,9 +313,9 @@ internal struct Lexer
                 {
                     string ident = LexIdentifier();
                     if (Keyword.Lookup.TryGetValue(ident, out _kind))
-                        Return(_kind);
+                        Ok(_kind);
                     else
-                        Return(TOKEN_IDENTIFIER, s: ident);
+                        Ok(TOKEN_IDENTIFIER, s: ident);
                 }
 
                 break;
@@ -326,7 +325,7 @@ internal struct Lexer
     private void LexRecordAccess()
     {
         string ident = LexIdentifier();
-        Return(TOKEN_RECORD_ACCESS, s: ident);
+        Ok(TOKEN_RECORD_ACCESS, s: ident);
     }
 
     private void LexTupleAccess()
@@ -339,13 +338,13 @@ internal struct Lexer
 
         var span = ReadChars();
         int item = int.Parse(span);
-        Return(TOKEN_TUPLE_ACCESS, i: item);
+        Ok(TOKEN_TUPLE_ACCESS, i: item);
     }
 
     private void LexQuotedIdentifier()
     {
         string id = LexIdentifier();
-        Return(_kind, s: id);
+        Ok(_kind, s: id);
     }
 
     /// <summary>
@@ -366,7 +365,7 @@ internal struct Lexer
             Step();
 
         string id = ReadString();
-        Return(seq ? TOKEN_IDENTIFIER_GENERIC_SEQUENCE : TOKEN_IDENTIFIER_GENERIC, s: id);
+        Ok(seq ? TOKEN_IDENTIFIER_GENERIC_SEQUENCE : TOKEN_IDENTIFIER_GENERIC, s: id);
     }
 
     /// <summary>
@@ -390,7 +389,7 @@ internal struct Lexer
         else if (!IsLetter(id[0]))
             Error(ERROR_BACKTICK_IDENTIFIER);
         else
-            Return(TOKEN_IDENTIFIER_INFIX, s: id);
+            Ok(TOKEN_IDENTIFIER_INFIX, s: id);
     }
 
     /// <summary>
@@ -417,7 +416,7 @@ internal struct Lexer
         }
 
         var comment = ReadString();
-        Return(TOKEN_BLOCK_COMMENT, s: comment);
+        Ok(TOKEN_BLOCK_COMMENT, s: comment);
     }
 
     /// <summary>
@@ -455,7 +454,7 @@ internal struct Lexer
         }
 
         var comment = ReadString();
-        Return(TOKEN_LINE_COMMENT, s: comment);
+        Ok(TOKEN_LINE_COMMENT, s: comment);
     }
 
     /// <summary>
@@ -529,7 +528,7 @@ internal struct Lexer
                     break;
                 case DOUBLE_QUOTE:
                     string lit = ReadString();
-                    Return(TOKEN_STRING_LITERAL, s: lit);
+                    Ok(TOKEN_STRING_LITERAL, s: lit);
                     Step();
                     return;
                 case CLOSE_PAREN when inExpr:
@@ -578,7 +577,7 @@ internal struct Lexer
 
         var hex = ReadChars();
         if (int.TryParse(hex, NumberStyles.AllowHexSpecifier, null, out var i))
-            Return(TOKEN_INT_LITERAL, i: i);
+            Ok(TOKEN_INT_LITERAL, i: i);
         else
             Error($"Could not parse \"{hex.ToString()}\" as an integer");
     }
@@ -600,7 +599,7 @@ internal struct Lexer
         try
         {
             int i = Convert.ToInt32(oct, 8);
-            Return(TOKEN_INT_LITERAL, i: i);
+            Ok(TOKEN_INT_LITERAL, i: i);
         }
         catch (Exception)
         {
@@ -652,7 +651,7 @@ internal struct Lexer
 
             var span = ReadChars();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
-                Return(TOKEN_FLOAT_LITERAL, f: d);
+                Ok(TOKEN_FLOAT_LITERAL, f: d);
             else
                 Error($"Could not parse \"{span}\" as a float");
         }
@@ -665,7 +664,7 @@ internal struct Lexer
             } while (IsDigit(_char));
             var span = ReadChars();
             if (decimal.TryParse(span, NumberStyles.Float, null, out var d))
-                Return(TOKEN_FLOAT_LITERAL, f: d);
+                Ok(TOKEN_FLOAT_LITERAL, f: d);
             else
                 Error($"Could not parse \"{span}\" as a float");
         }
@@ -673,7 +672,7 @@ internal struct Lexer
         {
             var span = ReadChars();
             if (int.TryParse(span, NumberStyles.None, null, out var i))
-                Return(TOKEN_INT_LITERAL, i: i);
+                Ok(TOKEN_INT_LITERAL, i: i);
             else
                 Error($"Could not parse \"{span}\" as an integer");
             return;
@@ -722,12 +721,12 @@ internal struct Lexer
         return false;
     }
 
-    private void Return(in TokenKind kind, int i = default, string? s = null, decimal f = default)
+    private void Ok(in TokenKind kind, int i = default, string? s = null, decimal f = default)
     {
         if (_outdex >= _tokens.Length)
             Array.Resize(ref _tokens, _tokens.Length * 2);
 
-        ref Token token = ref _tokens[_outdex];
+        ref Token token = ref _tokens[_outdex++];
         token.Kind = kind;
         token.Line = _startLine;
         token.Start = _startPos;
@@ -744,27 +743,27 @@ internal struct Lexer
             return false;
 
         Step();
-        Return(kind);
+        Ok(kind);
         return true;
     }
 
     private void SkipReturn(in TokenKind kind)
     {
-        Return(kind);
+        Ok(kind);
         Step();
     }
 
     void BeginString()
     {
-        _startString = _index;
+        _startPos = _index;
     }
 
-    string ReadString() => _sourceText.Substring(_startString, _index - _startString);
+    string ReadString() => _sourceText.Substring(_startPos, _index - _startPos);
 
 #if NETSTANDARD2_0
     string ReadChars() => ReadString();
 #else
-    ReadOnlySpan<char> ReadChars() => _sourceText.AsSpan(_startString, _index - _startString);
+    ReadOnlySpan<char> ReadChars() => _sourceText.AsSpan(_startPos, _index - _startPos);
 #endif
 
     /// <summary>
@@ -773,7 +772,7 @@ internal struct Lexer
     public static bool Lex(string s, out Token[] tokens)
     {
         var lexer = new Lexer(s);
-        tokens = lexer._tokens[..(lexer._outdex - 1)];
+        tokens = lexer._tokens[..(lexer._outdex)];
         if (lexer._err)
             return false;
         return true;

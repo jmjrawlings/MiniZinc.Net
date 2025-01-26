@@ -1,25 +1,34 @@
-﻿public sealed class ProcessTests : TestBase
+﻿using MiniZinc.Command;
+using MiniZinc.Core;
+using TUnit.Assertions;
+using TUnit.Assertions.Extensions;
+using TUnit.Core;
+
+public class ProcessTests
 {
-    [Fact]
-    public async void Command_Runs()
+    [Test]
+    public async Task Command_Runs()
     {
         var cmd = new Command("minizinc", "--version");
         var result = await cmd.Run();
-        result.Status.Should().Be(ProcessStatus.Ok);
+        await Assert.That(result.Status).IsEqualTo(ProcessStatus.Ok);
     }
 
-    [Fact]
-    public async void Command_Listens()
+    [Test]
+    public async Task Command_Listens()
     {
         var cmd = new Command("minizinc", "--version");
+        string output = "";
         await foreach (var msg in cmd.Watch())
         {
-            WriteLn("{0}", msg.Content);
+            output = msg.Content;
         }
+
+        await Assert.That(output).IsNotEmpty();
     }
 
-    [Fact]
-    public async void Solve_NQueens_With_Timeout()
+    [Test]
+    public async Task Solve_NQueens_With_Timeout()
     {
         var model = """
             int: n = 15;
@@ -35,18 +44,17 @@
             satisfy;
             """;
         var tmp = Path.GetTempPath().ToDirectory().JoinFile("nqueens.mzn");
-        File.WriteAllText(tmp.FullName, model);
+        await File.WriteAllTextAsync(tmp.FullName, model);
         var cmd = new Command("minizinc", "-a", "--json-stream", tmp.FullName);
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
         var proc = new CommandRunner(cmd);
+        ProcessMessage result = default;
         await foreach (var msg in proc.Watch(cts.Token))
         {
-            WriteLn("{0}", msg.EventType);
+            Console.WriteLine(msg.EventType);
+            result = msg;
             if (msg.Content is { } data)
-                WriteLn(data);
+                Console.WriteLine(data);
         }
     }
-
-    public ProcessTests(ITestOutputHelper output)
-        : base(output) { }
 }
