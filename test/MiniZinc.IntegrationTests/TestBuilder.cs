@@ -2,7 +2,6 @@
 using System.Text.Json.Nodes;
 using LibMiniZinc.Tests;
 using Make;
-using MiniZinc.Build;
 
 public abstract class TestBuilder : CodeBuilder
 {

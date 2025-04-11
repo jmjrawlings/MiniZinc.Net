@@ -19,10 +19,12 @@ public sealed partial class MiniZincClient
     private readonly Dictionary<string, Solver> _solverLookup;
     private readonly Command _command;
 
-    private MiniZincClient(FileInfo exe)
+    public MiniZincClient(string path)
     {
-        _exe = exe;
-        _home = exe.Directory!;
+        _exe = new FileInfo(path);
+        if (!_exe.Exists)
+            throw new FileNotFoundException(path);
+        _home = _exe.Directory!;
         _command = new Command($"\"{_exe.FullName}\"");
         _version = GetVersion();
         _solvers = GetSolvers();
@@ -49,6 +51,13 @@ public sealed partial class MiniZincClient
     /// </summary>
     public Version Version => _version;
 
+    public static MiniZincClient Autodetect()
+    {
+        var path = FindMiniZincExecutableAsync().Result;
+        var client = new MiniZincClient(path);
+        return client;
+    }
+
     /// <summary>
     /// Get the installed solver corresponding to the given key
     /// where key can be:
@@ -63,7 +72,7 @@ public sealed partial class MiniZincClient
     /// </summary>
     public MiniZincProcess Solve(
         MiniZincModel model,
-        SolveOptions? options = default,
+        MiniZincOptions? options = default,
         CancellationToken token = default
     )
     {
@@ -77,7 +86,7 @@ public sealed partial class MiniZincClient
     /// </summary>
     public MiniZincProcess Solve(
         string modelString,
-        SolveOptions? options = default,
+        MiniZincOptions? options = default,
         CancellationToken token = default
     )
     {
@@ -145,46 +154,11 @@ public sealed partial class MiniZincClient
         return path;
     }
 
-    /// <summary>
-    /// Find the location of the minizinc executable
-    /// on the current system.
-    /// </summary>
-    /// <returns>Path to the `minizinc` executable if found</returns>
-    public static string? FindMiniZincExecutable()
-    {
-        var exe = FindMiniZincExecutableAsync().Result;
-        return exe;
-    }
-
-    /// <summary>
-    /// Create a client for the given minizinc executable.
-    /// If no path is provided, attempt to search for installed exe
-    /// </summary>
-    /// <param name="exe">Filepath of the minizinc executable</param>
-    public static MiniZincClient Create(string? exe = null)
-    {
-        exe ??= FindMiniZincExecutable();
-        Guard.IsNotNull(exe);
-        var client = Create(new FileInfo(exe));
-        return client;
-    }
-
-    /// <summary>
-    /// Create a client for the given MiniZinc executable
-    /// </summary>
-    /// <param name="exe">The minizinc executable</param>
-    public static MiniZincClient Create(FileInfo exe)
-    {
-        Guard.IsTrue(exe.Exists);
-        var client = new MiniZincClient(exe);
-        return client;
-    }
+    [GeneratedRegex(@"MiniZinc to FlatZinc converter, version (\d).(\d).(\d), build (\d*)")]
+    private static partial Regex VersionRegex();
 
     public override string ToString()
     {
-        return $"MiniZinc Client (\"{_exe}\")";
+        return $"MiniZinc {_version} (\"{_exe}\")";
     }
-
-    [GeneratedRegex(@"MiniZinc to FlatZinc converter, version (\d).(\d).(\d), build (\d*)")]
-    private static partial Regex VersionRegex();
 }

@@ -1,4 +1,4 @@
-﻿namespace Make;
+﻿namespace LibMiniZinc.Tests;
 
 using System.Text;
 

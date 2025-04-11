@@ -5,9 +5,9 @@ public static class Projects
     public static Project MiniZinc => Lookup("MiniZinc.Net");
     public static Project Parser => Lookup("MiniZinc.Parser");
     public static Project Build => Lookup("Make");
-    public static Project ParserTests => Lookup("ParserTests");
+    public static Project ParserTests => Lookup("MiniZinc.IntegrationTests");
     public static Project ClientTests => Lookup("ClientTests");
-    public static Project ProcessTests => Lookup("ProcessTests");
+    public static Project ProcessTests => Lookup("MiniZinc.UnitTests");
     private static readonly Dictionary<string, Project> _cache = new();
 
     public static Project Lookup(string name)

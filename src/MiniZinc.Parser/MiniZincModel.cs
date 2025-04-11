@@ -32,8 +32,6 @@ public sealed class MiniZincModel
 
     private HashSet<string>? _addedFiles;
 
-    private List<MiniZincItem>? _items;
-
     // private bool _containsFloats;
 
     public IEnumerable<string> Warnings => _warnings ?? Enumerable.Empty<string>();
@@ -68,7 +66,6 @@ public sealed class MiniZincModel
         _bindings = [];
         _searchDirectories = [];
         _overloads = null;
-        _items = null;
     }
 
     /// <summary>

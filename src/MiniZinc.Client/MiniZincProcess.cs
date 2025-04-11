@@ -11,7 +11,7 @@ using Parser;
 public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
 {
     public readonly MiniZincModel Model;
-    public readonly SolveOptions? Options;
+    public readonly MiniZincOptions? Options;
     public readonly Command Command;
     public readonly string CommandString;
     private readonly CancellationToken _cancellation;
@@ -45,7 +45,7 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
     internal MiniZincProcess(
         MiniZincClient client,
         MiniZincModel model,
-        SolveOptions? options = null,
+        MiniZincOptions? options = null,
         CancellationToken cancellation = default
     )
     {

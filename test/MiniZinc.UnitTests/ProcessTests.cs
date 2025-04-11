@@ -1,33 +1,39 @@
 ﻿using MiniZinc.Command;
 using MiniZinc.Core;
-using TUnit.Assertions;
-using TUnit.Assertions.Extensions;
-using TUnit.Core;
+using Shouldly;
+using Xunit;
+using Xunit.Abstractions;
 
 public class ProcessTests
 {
-    [Test]
+    private readonly ITestOutputHelper _out;
+
+    public ProcessTests(ITestOutputHelper @out)
+    {
+        _out = @out;
+    }
+
+    [Fact]
     public async Task Command_Runs()
     {
         var cmd = new Command("minizinc", "--version");
         var result = await cmd.Run();
-        await Assert.That(result.Status).IsEqualTo(ProcessStatus.Ok);
+        result.Status.ShouldBe(ProcessStatus.Ok);
     }
 
-    [Test]
+    [Fact]
     public async Task Command_Listens()
     {
         var cmd = new Command("minizinc", "--version");
-        string output = "";
+        string? output = null;
         await foreach (var msg in cmd.Watch())
-        {
-            output = msg.Content;
-        }
+            output ??= msg.Content;
 
-        await Assert.That(output).IsNotEmpty();
+        _out.WriteLine(output);
+        output.ShouldNotBeEmpty();
     }
 
-    [Test]
+    [Fact]
     public async Task Solve_NQueens_With_Timeout()
     {
         var model = """
@@ -47,14 +53,13 @@ public class ProcessTests
         await File.WriteAllTextAsync(tmp.FullName, model);
         var cmd = new Command("minizinc", "-a", "--json-stream", tmp.FullName);
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var proc = new CommandRunner(cmd);
         ProcessMessage result = default;
-        await foreach (var msg in proc.Watch(cts.Token))
+        await foreach (var msg in cmd.Watch(cts.Token))
         {
-            Console.WriteLine(msg.EventType);
+            _out.WriteLine(msg.EventType.ToString());
             result = msg;
             if (msg.Content is { } data)
-                Console.WriteLine(data);
+                _out.WriteLine(data);
         }
     }
 }

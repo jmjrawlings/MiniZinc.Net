@@ -1,10 +1,9 @@
-﻿namespace Make;
+﻿namespace LibMiniZinc.Tests;
 
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using LibMiniZinc.Tests;
-using MiniZinc.Build;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -30,21 +29,26 @@ enum YamlTag
     AnonEnum
 }
 
-public sealed class LibMiniZincTestParser : IYamlTypeConverter
+public sealed class TestParser : IYamlTypeConverter
 {
     const string TAG = "__tag__";
     const string VAL = "__val__";
     private IParser _parser = null!;
     public readonly FileInfo? SpecFile;
 
-    public LibMiniZincTestParser(FileInfo? file)
+    public TestParser(FileInfo? file)
     {
         SpecFile = file;
     }
 
     public bool Accepts(Type type) => true;
 
-    public object? ReadYaml(IParser parser, Type type)
+    public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
     {
         _parser = parser;
         var node = ParseNode((NodeEvent)_parser.Current!);
@@ -296,7 +300,7 @@ public sealed class LibMiniZincTestParser : IYamlTypeConverter
 
     public static TestSpec ParseTestsFromFile(FileInfo file)
     {
-        var parser = new LibMiniZincTestParser(file);
+        var parser = new TestParser(file);
         var deserializer = new DeserializerBuilder()
             .WithTagMapping("!Test", typeof(object))
             .WithTypeConverter(parser)
@@ -308,7 +312,7 @@ public sealed class LibMiniZincTestParser : IYamlTypeConverter
 
     private static TestCase? ParseTestFromString(string yaml)
     {
-        var parser = new LibMiniZincTestParser(null);
+        var parser = new TestParser(null);
         var deserializer = new DeserializerBuilder()
             .WithTagMapping("!Test", typeof(object))
             .WithTypeConverter(parser)

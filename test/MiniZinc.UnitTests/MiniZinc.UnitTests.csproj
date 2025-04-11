@@ -6,12 +6,16 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\src\MiniZinc.Client\MiniZinc.Client.csproj" />
     <ProjectReference Include="..\..\src\MiniZinc.Command\MiniZinc.Command.csproj" />
     <ProjectReference Include="..\..\src\MiniZinc.Core\MiniZinc.Core.csproj" />
+    <ProjectReference Include="..\..\src\MiniZinc.Parser\MiniZinc.Parser.csproj" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="TUnit" Version="0.7.9" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25107-01" />
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
   </ItemGroup>
 
 </Project>

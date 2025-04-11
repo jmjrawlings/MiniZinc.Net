@@ -1,30 +1,26 @@
 ﻿using System.CommandLine;
 using CommunityToolkit.Diagnostics;
-using CommunityToolkit.Diagnostics;
-using LibMiniZinc.Tests;
-using Make;
-using MiniZinc.Build;
 using MiniZinc.Build;
 using MiniZinc.Command;
 using Cmd = MiniZinc.Command.Command;
 using Command = System.CommandLine.Command;
 
-TestSpec LoadSpec()
-{
-    var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-    var files = spec.TestCases.GroupBy(c => c.Path);
-    foreach (var group in files)
-    {
-        int i = 1;
-        var g = group.ToList();
-        foreach (var testCase in group)
-        {
-            testCase.Sequence = i++;
-        }
-    }
-
-    return spec;
-}
+// TestSpec LoadSpec()
+// {
+//     var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
+//     var files = spec.TestCases.GroupBy(c => c.Path);
+//     foreach (var group in files)
+//     {
+//         int i = 1;
+//         var g = group.ToList();
+//         foreach (var testCase in group)
+//         {
+//             testCase.Sequence = i++;
+//         }
+//     }
+//
+//     return spec;
+// }
 
 var root = new RootCommand("MiniZinc.NET build options");
 
@@ -61,50 +57,50 @@ Add(
     }
 );
 
-Add(
-    "--parse-libminizinc-tests",
-    "Generate test cases from the libminizinc test spec",
-    () =>
-    {
-        Console.WriteLine("Parsing libminiznc test suite");
-        FileInfo input = Repo.TestSpecYaml;
-        FileInfo output = Repo.TestSpecJson;
+// Add(
+//     "--parse-libminizinc-tests",
+//     "Generate test cases from the libminizinc test spec",
+//     () =>
+//     {
+//         Console.WriteLine("Parsing libminiznc test suite");
+//         FileInfo input = Repo.TestSpecYaml;
+//         FileInfo output = Repo.TestSpecJson;
+//
+//         Console.WriteLine($"Parsing {input.FullName}");
+//         var spec = LibMiniZincTestParser.ParseTestsFromFile(input);
+//         Console.WriteLine($"Writing to {output.FullName}");
+//         TestSpec.ToJsonFile(spec, output);
+//         return Task.CompletedTask;
+//     }
+// );
 
-        Console.WriteLine($"Parsing {input.FullName}");
-        var spec = LibMiniZincTestParser.ParseTestsFromFile(input);
-        Console.WriteLine($"Writing to {output.FullName}");
-        TestSpec.ToJsonFile(spec, output);
-        return Task.CompletedTask;
-    }
-);
-
-Add(
-    "--make-parser-tests",
-    "Generate parser tests",
-    async () =>
-    {
-        var spec = LoadSpec();
-        var builder = new ParserTestBuilder();
-        var source = builder.Build(spec);
-        var file = Repo.TestDir.JoinFile($"{builder.ClassName}.cs");
-        await File.WriteAllTextAsync(file.FullName, source);
-        await Task.CompletedTask;
-    }
-);
-
-Add(
-    "--make-client-tests",
-    "Generate client tests",
-    async () =>
-    {
-        var spec = LoadSpec();
-        var builder = new ClientTestsBuilder();
-        var source = builder.Build(spec);
-        var file = Repo.TestDir.JoinFile($"{builder.ClassName}.cs");
-        await File.WriteAllTextAsync(file.FullName, source);
-        await Task.CompletedTask;
-    }
-);
+// Add(
+//     "--make-parser-tests",
+//     "Generate parser tests",
+//     async () =>
+//     {
+//         var spec = LoadSpec();
+//         var builder = new ParserTestBuilder();
+//         var source = builder.Build(spec);
+//         var file = Repo
+//             .TestDir.JoinDir("MiniZinc.IntegrationTests")
+//             .JoinFile($"{builder.ClassName}.cs");
+//         await File.WriteAllTextAsync(file.FullName, source);
+//     }
+// );
+//
+// Add(
+//     "--make-client-tests",
+//     "Generate client tests",
+//     async () =>
+//     {
+//         var spec = LoadSpec();
+//         var builder = new ClientTestsBuilder();
+//         var source = builder.Build(spec);
+//         var file = Repo.TestDir.JoinDir("ClientTests").JoinFile($"{builder.ClassName}.cs");
+//         await File.WriteAllTextAsync(file.FullName, source);
+//     }
+// );
 
 var result = await root.InvokeAsync(args);
 return result;

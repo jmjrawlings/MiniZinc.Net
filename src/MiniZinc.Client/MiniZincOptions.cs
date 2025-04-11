@@ -2,7 +2,7 @@
 
 using Command;
 
-public readonly struct SolveOptions
+public readonly struct MiniZincOptions
 {
     /// <summary>
     /// Id of the desired solver
@@ -27,7 +27,7 @@ public readonly struct SolveOptions
     /// </summary>
     public string? OutputFolder { get; }
 
-    public SolveOptions(
+    public MiniZincOptions(
         string? solverId = null,
         Arg[]? args = null,
         string? outputFolder = null,
@@ -49,29 +49,29 @@ public readonly struct SolveOptions
     /// <param name="outputFolder"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
-    public static SolveOptions Create(
+    public static MiniZincOptions Create(
         string? solverId = null,
         Arg[]? args = null,
         string? outputFolder = null,
         TimeSpan? timeout = null
     ) => new(solverId, args, outputFolder, timeout);
 
-    public SolveOptions WithTimeout(TimeSpan timeout) =>
+    public MiniZincOptions WithTimeout(TimeSpan timeout) =>
         new(SolverId, Arguments, OutputFolder, timeout);
 
-    public SolveOptions WithNoTimeout() => new(SolverId, Arguments, OutputFolder, null);
+    public MiniZincOptions WithNoTimeout() => new(SolverId, Arguments, OutputFolder, null);
 
-    public SolveOptions WithOutputFolder(string path) => new(SolverId, Arguments, path, Timeout);
+    public MiniZincOptions WithOutputFolder(string path) => new(SolverId, Arguments, path, Timeout);
 
-    public SolveOptions WithSolver(string solverId) =>
+    public MiniZincOptions WithSolver(string solverId) =>
         new(solverId, Arguments, OutputFolder, Timeout);
 
-    public SolveOptions WithSolver(Solver solver) =>
+    public MiniZincOptions WithSolver(Solver solver) =>
         new(solver.Id, Arguments, OutputFolder, Timeout);
 
-    public SolveOptions WithArgs(params string[] args)
+    public MiniZincOptions WithArgs(params string[] args)
     {
-        var opts = new SolveOptions(SolverId, Args.Parse(args), OutputFolder, Timeout);
+        var opts = new MiniZincOptions(SolverId, Args.Parse(args), OutputFolder, Timeout);
         return opts;
     }
 
@@ -80,17 +80,17 @@ public readonly struct SolveOptions
     /// </summary>
     /// <param name="args"></param>
     /// <returns></returns>
-    public SolveOptions AddArgs(params string[] args) => AddArgs(Args.Parse(args));
+    public MiniZincOptions AddArgs(params string[] args) => AddArgs(Args.Parse(args));
 
     /// <summary>
     /// Return a new SolveOptions with the given arguments added
     /// </summary>
     /// <param name="args"></param>
     /// <returns></returns>
-    public SolveOptions AddArgs(params Arg[] args)
+    public MiniZincOptions AddArgs(params Arg[] args)
     {
         var args_ = Args.Concat(Arguments, args);
-        var opts = new SolveOptions(SolverId, args_, OutputFolder, Timeout);
+        var opts = new MiniZincOptions(SolverId, args_, OutputFolder, Timeout);
         return opts;
     }
 
@@ -99,5 +99,5 @@ public readonly struct SolveOptions
     /// </summary>
     /// <param name="args"></param>
     /// <returns></returns>
-    public SolveOptions AddArgs(IEnumerable<string> args) => AddArgs(args.ToArray());
+    public MiniZincOptions AddArgs(IEnumerable<string> args) => AddArgs(args.ToArray());
 }

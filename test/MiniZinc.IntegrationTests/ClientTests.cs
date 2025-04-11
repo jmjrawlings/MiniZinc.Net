@@ -1,19 +1,23 @@
-﻿namespace MiniZinc.Tests;
+﻿using System.Text.Json.Nodes;
+using MiniZinc;
+using MiniZinc.Client;
+using MiniZinc.Command;
+using MiniZinc.Core;
+using MiniZinc.Parser;
+using Shouldly;
+using TUnit;
+using static System.Console;
 
-using System.Text.Json.Nodes;
-using Command;
-
-public class ClientTest : TestBase, IClassFixture<ClientFixture>
+public abstract class ClientTests
 {
-    protected readonly MiniZincClient MiniZinc;
+    private readonly MiniZincClient Client;
 
-    public ClientTest(ITestOutputHelper output, ClientFixture fixture)
-        : base(output)
+    public ClientTests()
     {
-        MiniZinc = fixture.MiniZinc;
+        Client = MiniZincClient.Autodetect();
     }
 
-    protected async Task Test(
+    protected async Task RunTest(
         string path,
         string solver,
         List<string>? solutions = null,
@@ -23,12 +27,11 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         List<SolveStatus>? statuses = null
     )
     {
-        WriteLn(path);
-        WriteSection();
+        WriteLine($"Test model: {path}");
+        WriteLine("--------------------------------------");
         var source = await File.ReadAllTextAsync(path);
-        WriteLn(source);
-        WriteSection();
-        WriteLn();
+        WriteLine(source);
+        WriteLine("--------------------------------------");
 
         MiniZincModel? model;
         try
@@ -38,15 +41,18 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         catch (Exception exn)
         {
             model = null;
-            error.Should().NotBeNull(exn.Message);
+            error.ShouldNotBeNull(exn.Message);
             return;
         }
 
         var mzn = model.Write();
-        WriteLn(mzn);
-        WriteSection();
 
-        var options = SolveOptions.Create(solverId: solver);
+        WriteLine($"Parsed model: ");
+        WriteLine("--------------------------------------");
+        WriteLine(mzn);
+        WriteLine("--------------------------------------");
+
+        var options = MiniZincOptions.Create(solverId: solver);
 
         if (args is not null)
         {
@@ -72,15 +78,16 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
             }
         }
 
-        var result = await MiniZinc.Solve(model, options);
-        WriteLn(result.Command);
+        var result = await Client.Solve(model, options);
+        WriteLine("Solving model:");
+        WriteLine(result.Command);
 
         if (statuses is { Count: > 0 })
-            result.Status.Should().BeOneOf(statuses);
+            result.Status.ShouldBeOneOf(statuses.ToArray());
 
         if (error is not null)
         {
-            result.IsError.Should().BeTrue();
+            result.IsError.ShouldBeTrue();
             return;
         }
 
@@ -90,7 +97,7 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
         var actual = result.Data;
         foreach (var dzn in solutions)
         {
-            var parsed = Parser.Parser.ParseDataFromString(dzn, out var expected);
+            var parsed = Parser.ParseDataFromString(dzn, out var expected);
             var ok = Check(expected, actual);
             switch (ok, allSolutions)
             {
@@ -121,14 +128,14 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
 
             if (!Check(expectedVar, actualVar))
             {
-                WriteLn();
-                WriteLn("While comparing expected solution:");
-                WriteLn($"{expectedVar.Write()}");
-                WriteLn();
-                WriteLn("And actual solution:");
-                WriteLn($"{actualVar.Write()}");
-                WriteLn();
-                WriteSection();
+                // WriteLn();
+                // WriteLn("While comparing expected solution:");
+                // WriteLn($"{expectedVar.Write()}");
+                // WriteLn();
+                // WriteLn("And actual solution:");
+                // WriteLn($"{actualVar.Write()}");
+                // WriteLn();
+                // WriteSection();
                 return false;
             }
         }
@@ -205,17 +212,5 @@ public class ClientTest : TestBase, IClassFixture<ClientFixture>
             else
                 yield return node;
         }
-    }
-
-    public bool Error(string msg)
-    {
-        WriteLn(msg);
-        return false;
-    }
-
-    public bool Error(object expected, object actual)
-    {
-        WriteLn($"Expected {expected} but got {actual}");
-        return false;
     }
 }

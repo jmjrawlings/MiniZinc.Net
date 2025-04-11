@@ -1,15 +1,13 @@
 ﻿using MiniZinc.Parser;
 using Shouldly;
-using TUnit.Assertions;
-using TUnit.Assertions.Extensions;
-using TUnit.Core;
+using Xunit;
 
 public sealed class WriterUnitTests
 {
-    [Test]
-    [Arguments("var int: a = 2;")]
-    [Arguments("var bool: b = [1,2,3];")]
-    [Arguments("solve satisfy   ;")]
+    [Theory]
+    [InlineData("var int: a = 2;")]
+    [InlineData("var bool: b = [1,2,3];")]
+    [InlineData("solve satisfy   ;")]
     public void test_write_minified(string input)
     {
         var ok = Parser.ParseModelFromString(input, out var model);
@@ -19,7 +17,7 @@ public sealed class WriterUnitTests
         var a = 2;
     }
 
-    [Test]
+    [Fact]
     public void test_write_pretty()
     {
         var input = """
@@ -40,11 +38,11 @@ public sealed class WriterUnitTests
         output.ShouldBe(expected);
     }
 
-    [Test]
-    [Arguments("""a <-> (b \/ c)""", """a <-> b \/ c""")]
-    [Arguments("""(a <-> b) \/ c""", """(a <-> b) \/ c""")]
-    [Arguments("""a <-> b \/ c""", """a <-> b \/ c""")]
-    [Arguments("""2 * i""", """2 * i""")]
+    [Theory]
+    [InlineData("""a <-> (b \/ c)""", """a <-> b \/ c""")]
+    [InlineData("""(a <-> b) \/ c""", """(a <-> b) \/ c""")]
+    [InlineData("""a <-> b \/ c""", """a <-> b \/ c""")]
+    [InlineData("""2 * i""", """2 * i""")]
     public void test_write_precedence(string input, string expected)
     {
         var expr = Parser.ParseExpression<BinOpExpr>(input)!;
@@ -52,8 +50,8 @@ public sealed class WriterUnitTests
         output.ShouldBe(expected);
     }
 
-    [Test]
-    [Arguments("""{A} ++ {B} ++ {C}""", """{A} ++ {B} ++ {C}""")]
+    [Theory]
+    [InlineData("""{A} ++ {B} ++ {C}""", """{A} ++ {B} ++ {C}""")]
     public void test_write_precedence_right_assoc(string input, string expected)
     {
         var expr = Parser.ParseExpression<BinOpExpr>(input)!;
