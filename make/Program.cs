@@ -51,7 +51,7 @@ Add(
         await Git("checkout", "master");
 
         var sourceDir = cloneDir.JoinDir("tests", "spec").EnsureExists();
-        var targetDir = Repo.LibMiniZincDir.CreateOrClear();
+        var targetDir = Directory.CreateTempSubdirectory();
         Console.WriteLine($"Copying tests to {targetDir}");
         sourceDir.CopyContentsTo(targetDir);
     }

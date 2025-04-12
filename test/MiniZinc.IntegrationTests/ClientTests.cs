@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Nodes;
+using LibMiniZinc.Tests;
 using MiniZinc;
 using MiniZinc.Client;
 using MiniZinc.Command;
@@ -8,13 +9,22 @@ using Shouldly;
 using TUnit;
 using static System.Console;
 
-public abstract class ClientTests
+public sealed class ClientTests
 {
     private readonly MiniZincClient Client;
 
     public ClientTests()
     {
         Client = MiniZincClient.Autodetect();
+    }
+
+    [Test]
+    public async Task TestParseTests()
+    {
+        var source = "./spec/suites.yml".ToFile();
+        var suite = TestParser.ParseTestsFromFile(source);
+        suite.TestCases.ShouldNotBeEmpty();
+        suite.TestSuites.ShouldNotBeEmpty();
     }
 
     protected async Task RunTest(
@@ -61,11 +71,9 @@ public abstract class ClientTests
                 var arg = Arg.Parse(argString).First();
                 if (arg.Value is { } value)
                 {
-                    var argFile = Path.Join(
-                            Directory.GetCurrentDirectory(),
-                            value.Replace("\"", "")
-                        )
-                        .ToFile();
+                    var argFile = FileSystemExtensions.ToFile(
+                        Path.Join(Directory.GetCurrentDirectory(), value.Replace("\"", ""))
+                    );
                     if (argFile.Exists)
                         options = options.AddArgs($"{arg.Flag} \"{argFile.FullName}\"");
                     else
