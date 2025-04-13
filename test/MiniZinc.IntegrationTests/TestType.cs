@@ -1,4 +1,4 @@
-﻿namespace LibMiniZinc.Tests;
+﻿namespace MiniZinc.Tests;
 
 public enum TestType
 {

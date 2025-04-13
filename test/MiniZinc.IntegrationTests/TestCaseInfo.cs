@@ -1,6 +1,4 @@
-﻿namespace Make;
-
-using LibMiniZinc.Tests;
+﻿namespace MiniZinc.Tests;
 
 /// <summary>
 /// Extends the <see cref="TestCase"/> with post processed

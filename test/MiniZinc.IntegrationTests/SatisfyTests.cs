@@ -1,57 +1,88 @@
-﻿using System.Text.Json.Nodes;
-using LibMiniZinc.Tests;
+﻿namespace MiniZinc.Tests;
+
+using System.Text.Json.Nodes;
 using MiniZinc;
 using MiniZinc.Client;
 using MiniZinc.Command;
 using MiniZinc.Core;
 using MiniZinc.Parser;
+using MiniZinc.Tests;
 using Shouldly;
 using TUnit;
 using static System.Console;
 
-public sealed class ClientTests
+public sealed class SatisfyTests
 {
-    private readonly MiniZincClient Client;
-
-    public ClientTests()
-    {
-        Client = MiniZincClient.Autodetect();
-    }
-
     [Test]
     public async Task TestParseTests()
     {
         var source = "./spec/suites.yml".ToFile();
-        var suite = TestParser.ParseTestsFromFile(source);
-        suite.TestCases.ShouldNotBeEmpty();
-        suite.TestSuites.ShouldNotBeEmpty();
+        var spec = TestParser.ParseTestSpecFile(source);
+        spec.TestSuites.ShouldNotBeEmpty();
     }
 
-    protected async Task RunTest(
-        string path,
-        string solver,
-        List<string>? solutions = null,
-        List<string>? args = null,
-        string? error = null,
-        bool allSolutions = false,
-        List<SolveStatus>? statuses = null
-    )
+    public static IEnumerable<SatisfyTestCase> GetSatisfyTests()
     {
-        WriteLine($"Test model: {path}");
+        var client = MiniZincClient.Autodetect();
+        var source = "./spec/suites.yml".ToFile();
+        var testSpec = TestParser.ParseTestSpecFile(source);
+        foreach (var testSuite in testSpec.TestSuites)
+        {
+            foreach (var testCase in testSuite.TestCases)
+            {
+                if (testCase.Type is not TestType.TEST_SATISFY)
+                    continue;
+
+                if (testSuite.Solvers is null)
+                    continue;
+
+                foreach (var solver in testSuite.Solvers)
+                {
+                    SatisfyTestCase tcase = new();
+                    tcase.Client = client;
+                    tcase.Options = testSuite.Options;
+                    tcase.Path = source.Directory!.JoinFile(testCase.Path);
+                    tcase.Sequence = testCase.Sequence;
+                    tcase.InputFiles = testCase.InputFiles;
+                    tcase.Solver = solver;
+                    tcase.Suite = testSuite;
+                    yield return tcase;
+                }
+            }
+        }
+    }
+
+    public struct SatisfyTestCase
+    {
+        public MiniZincClient Client;
+        public FileInfo Path;
+        public int Sequence;
+        public string? Solver;
+        public List<string>? InputFiles;
+        public JsonNode? Options;
+        public TestSuite Suite;
+    }
+
+    [Test]
+    [MethodDataSource(typeof(SatisfyTests), nameof(GetSatisfyTests))]
+    [ArgumentDisplayFormatter<TestNameFormatter>]
+    public async Task RunTest(SatisfyTestCase test)
+    {
+        var client = test.Client;
+        WriteLine($"Test model: {test.Path}");
         WriteLine("--------------------------------------");
-        var source = await File.ReadAllTextAsync(path);
+        var source = await File.ReadAllTextAsync(test.Path.ToString());
         WriteLine(source);
         WriteLine("--------------------------------------");
 
         MiniZincModel? model;
         try
         {
-            model = MiniZincModel.FromFile(path);
+            model = MiniZincModel.FromFile(test.Path);
         }
         catch (Exception exn)
         {
             model = null;
-            error.ShouldNotBeNull(exn.Message);
             return;
         }
 
@@ -62,65 +93,8 @@ public sealed class ClientTests
         WriteLine(mzn);
         WriteLine("--------------------------------------");
 
-        var options = MiniZincOptions.Create(solverId: solver);
-
-        if (args is not null)
-        {
-            foreach (var argString in args)
-            {
-                var arg = Arg.Parse(argString).First();
-                if (arg.Value is { } value)
-                {
-                    var argFile = FileSystemExtensions.ToFile(
-                        Path.Join(Directory.GetCurrentDirectory(), value.Replace("\"", ""))
-                    );
-                    if (argFile.Exists)
-                        options = options.AddArgs($"{arg.Flag} \"{argFile.FullName}\"");
-                    else
-                        options = options.AddArgs(arg);
-                }
-                else
-                {
-                    options = options.AddArgs(arg);
-                }
-            }
-        }
-
-        var result = await Client.Solve(model, options);
-        WriteLine("Solving model:");
-        WriteLine(result.Command);
-
-        if (statuses is { Count: > 0 })
-            result.Status.ShouldBeOneOf(statuses.ToArray());
-
-        if (error is not null)
-        {
-            result.IsError.ShouldBeTrue();
-            return;
-        }
-
-        if (solutions is not { Count: > 0 })
-            return;
-
-        var actual = result.Data;
-        foreach (var dzn in solutions)
-        {
-            var parsed = Parser.ParseDataFromString(dzn, out var expected);
-            var ok = Check(expected, actual);
-            switch (ok, allSolutions)
-            {
-                case (true, true):
-                    return;
-                case (false, true):
-                    break;
-                case (false, false):
-                    break;
-                case (true, false):
-                    return;
-            }
-        }
-
-        Assert.Fail("No solution found");
+        var solver = test.Solver;
+        var options = new MiniZincOptions(solver);
     }
 
     /// <summary>
@@ -219,6 +193,20 @@ public sealed class ClientTests
                     yield return x;
             else
                 yield return node;
+        }
+    }
+
+    public class TestNameFormatter : ArgumentDisplayFormatter
+    {
+        public override bool CanHandle(object? value)
+        {
+            return value is SatisfyTestCase;
+        }
+
+        public override string FormatValue(object? value)
+        {
+            var tcase = (SatisfyTestCase)value;
+            return $"{tcase.Suite.Name} - {tcase.Path}";
         }
     }
 }

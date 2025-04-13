@@ -561,7 +561,7 @@ public sealed class MiniZincModel
     /// <inheritdoc cref="AddSearchPath(System.IO.DirectoryInfo)"/>
     public void AddSearchPath(string directory) => AddSearchPath(new DirectoryInfo(directory));
 
-    public static MiniZincModel FromString(string mzn)
+    public static MiniZincModel ParseString(string mzn)
     {
         var model = new MiniZincModel();
         model.AddString(mzn);

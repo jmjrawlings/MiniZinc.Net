@@ -9,23 +9,23 @@ public readonly struct MiniZincOptions
     /// </summary>
     /// <example>gecode</example>
     /// <example>highs</example>
-    public string? SolverId { get; }
+    public readonly string? SolverId;
 
     /// <summary>
     /// If given, stops the solver after the given time
     /// </summary>
     /// <remarks>This value is passed through to minizinc via the --timeout command</remarks>
-    public TimeSpan? Timeout { get; }
+    public readonly TimeSpan? Timeout;
 
     /// <summary>
     /// Extra arguments to pass to the command line
     /// </summary>
-    public Arg[] Arguments { get; }
+    public readonly Arg[]? Arguments;
 
     /// <summary>
     /// A folder to write outputs
     /// </summary>
-    public string? OutputFolder { get; }
+    public readonly string? OutputFolder;
 
     public MiniZincOptions(
         string? solverId = null,
@@ -37,7 +37,7 @@ public readonly struct MiniZincOptions
         SolverId = solverId;
         OutputFolder = outputFolder;
         Timeout = timeout;
-        Arguments = args ?? [];
+        Arguments = args;
     }
 
     /// <summary>

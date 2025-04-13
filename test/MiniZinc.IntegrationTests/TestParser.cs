@@ -1,9 +1,8 @@
-﻿namespace LibMiniZinc.Tests;
+﻿namespace MiniZinc.Tests;
 
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using LibMiniZinc.Tests;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -87,13 +86,15 @@ public sealed class TestParser : IYamlTypeConverter
         var solvers =
             suiteNode["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList() ?? [];
         var includes = suiteNode["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
+        var testCases = new List<TestCase>();
         var testSuite = new TestSuite
         {
             Name = suiteName,
             Strict = strict,
             Options = options,
             IncludeGlobs = includes,
-            Solvers = solvers
+            Solvers = solvers,
+            TestCases = testCases
         };
         var dir = specFile.Directory!;
         foreach (var glob in testSuite.IncludeGlobs)
@@ -113,7 +114,7 @@ public sealed class TestParser : IYamlTypeConverter
                         continue;
 
                     testCase.Path = relativePath;
-                    testSpec.TestCases.Add(testCase);
+                    testCases.Add(testCase);
                 }
             }
         }
@@ -298,7 +299,7 @@ public sealed class TestParser : IYamlTypeConverter
 
     public void WriteYaml(IEmitter emitter, object? value, Type type) { }
 
-    public static TestSpec ParseTestsFromFile(FileInfo file)
+    public static TestSpec ParseTestSpecFile(FileInfo file)
     {
         var parser = new TestParser(file);
         var deserializer = new DeserializerBuilder()

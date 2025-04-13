@@ -1,4 +1,4 @@
-﻿namespace LibMiniZinc.Tests;
+﻿namespace MiniZinc.Tests;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -7,7 +7,8 @@ public sealed record TestSpec
 {
     public List<TestSuite> TestSuites { get; set; } = [];
 
-    public List<TestCase> TestCases { get; set; } = [];
+    //
+    // public List<TestCase> TestCases { get; set; } = [];
 
     public static string ToJsonString(TestSpec spec)
     {

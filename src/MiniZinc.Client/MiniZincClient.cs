@@ -90,7 +90,7 @@ public sealed partial class MiniZincClient
         CancellationToken token = default
     )
     {
-        var model = MiniZincModel.FromString(modelString);
+        var model = MiniZincModel.ParseString(modelString);
         var process = new MiniZincProcess(this, model, options, token);
         return process;
     }

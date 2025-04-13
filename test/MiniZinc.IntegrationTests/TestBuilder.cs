@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
+﻿namespace MiniZinc.Tests;
+
+using System.Text.Json;
 using System.Text.Json.Nodes;
-using LibMiniZinc.Tests;
-using Make;
 
 public abstract class TestBuilder : CodeBuilder
 {

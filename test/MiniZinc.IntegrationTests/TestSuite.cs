@@ -1,18 +1,20 @@
-﻿namespace LibMiniZinc.Tests;
+﻿namespace MiniZinc.Tests;
 
 using System.Text.Json.Nodes;
 
-public sealed record TestSuite
+public sealed class TestSuite
 {
-    public string Name { get; set; }
+    public required string Name { get; init; }
 
-    public bool? Strict { get; set; }
+    public required bool? Strict { get; init; }
 
-    public JsonObject? Options { get; set; }
+    public required JsonObject? Options { get; init; }
 
-    public List<string>? Solvers { get; set; }
+    public required IReadOnlyList<string>? Solvers { get; init; }
 
-    public List<string> IncludeGlobs { get; set; }
+    public required IReadOnlyList<TestCase> TestCases { get; init; }
+
+    public required IReadOnlyList<string> IncludeGlobs { get; init; }
 
     public override string ToString() => $"<{Name}>";
 }
