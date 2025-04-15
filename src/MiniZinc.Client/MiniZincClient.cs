@@ -15,8 +15,8 @@ public sealed partial class MiniZincClient
     private readonly FileInfo _exe;
     private readonly DirectoryInfo _home;
     private readonly Version _version;
-    private readonly IReadOnlyList<Solver> _solvers;
-    private readonly Dictionary<string, Solver> _solverLookup;
+    private readonly IReadOnlyList<MiniZincSolver> _solvers;
+    private readonly Dictionary<string, MiniZincSolver> _solverLookup;
     private readonly Command _command;
 
     public MiniZincClient(string path)
@@ -28,7 +28,7 @@ public sealed partial class MiniZincClient
         _command = new Command($"\"{_exe.FullName}\"");
         _version = GetVersion();
         _solvers = GetSolvers();
-        _solverLookup = new Dictionary<string, Solver>();
+        _solverLookup = new Dictionary<string, MiniZincSolver>();
         foreach (var solver in _solvers)
         {
             _solverLookup[solver.Id.ToLower()] = solver;
@@ -54,6 +54,9 @@ public sealed partial class MiniZincClient
     public static MiniZincClient Autodetect()
     {
         var path = FindMiniZincExecutableAsync().Result;
+        if (path is null)
+            throw new FileNotFoundException($"Could not autodetect the MiniZinc executable");
+
         var client = new MiniZincClient(path);
         return client;
     }
@@ -64,7 +67,7 @@ public sealed partial class MiniZincClient
     /// - a solver id (eg: org.minizinc.mip.highs)
     /// - a solver name (eg: coin-bc)
     /// </summary>
-    public Solver GetSolver(string key) => _solverLookup[key.ToLower()];
+    public MiniZincSolver GetSolver(string key) => _solverLookup[key.ToLower()];
 
     /// <summary>
     /// Solve the given model, returning the best
@@ -72,11 +75,11 @@ public sealed partial class MiniZincClient
     /// </summary>
     public MiniZincProcess Solve(
         MiniZincModel model,
-        MiniZincOptions? options = default,
-        CancellationToken token = default
+        string? solverId = null,
+        string? outputFolder = null
     )
     {
-        var process = new MiniZincProcess(this, model, options, token);
+        var process = new MiniZincProcess(this, model, solverId, outputFolder);
         return process;
     }
 
@@ -86,12 +89,12 @@ public sealed partial class MiniZincClient
     /// </summary>
     public MiniZincProcess Solve(
         string modelString,
-        MiniZincOptions? options = default,
-        CancellationToken token = default
+        string? solverId = null,
+        string? outputFolder = null
     )
     {
         var model = MiniZincModel.ParseString(modelString);
-        var process = new MiniZincProcess(this, model, options, token);
+        var process = new MiniZincProcess(this, model, solverId, outputFolder);
         return process;
     }
 
@@ -99,12 +102,12 @@ public sealed partial class MiniZincClient
     /// Get all installed solvers by running the --solvers-json
     /// command.
     /// </summary>
-    public IReadOnlyList<Solver> GetSolvers()
+    private List<MiniZincSolver> GetSolvers()
     {
         var result = Command("--solvers-json").Run().Result;
         Guard.IsEqualTo(result.ExitCode, 0);
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var solvers = JsonSerializer.Deserialize<List<Solver>>(result.StdOut, options)!;
+        var solvers = JsonSerializer.Deserialize<List<MiniZincSolver>>(result.StdOut, options)!;
         return solvers;
     }
 

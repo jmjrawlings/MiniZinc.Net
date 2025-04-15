@@ -1,14 +1,13 @@
 ﻿using MiniZinc.Command;
 using Shouldly;
-using Xunit;
-using Xunit.Abstractions;
+using TUnit;
 
 public class CommandTests
 {
-    [Theory]
-    [InlineData("-v")]
-    [InlineData("--okay")]
-    [InlineData("-a1")]
+    [Test]
+    [Arguments("-v")]
+    [Arguments("--okay")]
+    [Arguments("-a1")]
     public void Parse_Flag_Only_Arg(string s)
     {
         var arg = Arg.Parse(s).First();
@@ -18,10 +17,10 @@ public class CommandTests
         arg.String.ShouldBe(s);
     }
 
-    [Theory]
-    [InlineData("-v 1")]
-    [InlineData("--okay \"two\"")]
-    [InlineData("-one=2")]
+    [Test]
+    [Arguments("-v 1")]
+    [Arguments("--okay \"two\"")]
+    [Arguments("-one=2")]
     public void Parse_Flag_And_Value_Arg(string s)
     {
         var arg = Arg.Parse(s).First();
@@ -30,7 +29,7 @@ public class CommandTests
         arg.String.ShouldBe(s);
     }
 
-    [Fact]
+    [Test]
     public void Parse_Url_Flag()
     {
         var url = @"https://github.com/MiniZinc/libminizinc.git";
@@ -38,10 +37,10 @@ public class CommandTests
         arg.Value.ShouldBe(url);
     }
 
-    [Theory]
-    [InlineData("x")]
-    [InlineData("123")]
-    [InlineData("\"asdfasdf asdf\"")]
+    [Test]
+    [Arguments("x")]
+    [Arguments("123")]
+    [Arguments("\"asdfasdf asdf\"")]
     public void Parse_Value_Only_Arg(string s)
     {
         var arg = Arg.Parse(s).First();
@@ -50,8 +49,8 @@ public class CommandTests
         arg.Value.ShouldBe(s);
     }
 
-    [Theory]
-    [InlineData("--output-json")]
+    [Test]
+    [Arguments("--output-json")]
     public void Parse_Value_With_Dashes(string s)
     {
         var args = Arg.Parse(s).ToList();

@@ -8,26 +8,23 @@ using Command;
 using Core;
 using Parser;
 
-public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
+public sealed class MiniZincProcess
 {
     public readonly MiniZincModel Model;
-    public readonly MiniZincOptions? Options;
     public readonly Command Command;
     public readonly string CommandString;
-    private readonly CancellationToken _cancellation;
-    public readonly Solver Solver;
-    public readonly string SolverId;
+    public readonly MiniZincSolver MiniZincSolver;
+    public readonly string? SolverId;
     public readonly string ModelText;
-    public readonly DirectoryInfo ModelFolder;
+    public readonly DirectoryInfo Directory;
     public readonly FileInfo ModelFile;
-    public readonly string ModelPath;
+    public readonly Arg[]? ExtraArgs;
     private readonly MiniZincClient _client;
     private readonly Process _process;
     private readonly Stopwatch _watch;
     private readonly ProcessStartInfo _startInfo;
     private readonly Channel<MiniZincResult> _channel;
-    private readonly Task _task;
-    private readonly List<string> _warnings;
+    private List<string>? _warnings;
     private TimePeriod _totalTime;
     private TimePeriod _iterationTime;
     private int _iteration;
@@ -36,66 +33,47 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
     private string? _dataString;
     private int? _exitCode;
     private ProcessStatus _processStatus;
-    private readonly TaskCompletionSource<MiniZincResult> _completion;
+    private readonly TaskCompletionSource<MiniZincResult> _result;
     private Dictionary<string, object>? _statistics;
     private MiniZincResult? _current;
-    private readonly IAsyncEnumerator<MiniZincResult> _asyncEnumerator;
     public int ProcessId { get; private set; }
 
     internal MiniZincProcess(
         MiniZincClient client,
         MiniZincModel model,
-        MiniZincOptions? options = null,
-        CancellationToken cancellation = default
+        string? solverId = null,
+        string? directory = null,
+        Arg[]? args = null
     )
     {
         _client = client;
         Model = model;
-        Options = options;
-        _cancellation = cancellation;
-        _completion = new TaskCompletionSource<MiniZincResult>();
-        _warnings = [];
+        _result = new TaskCompletionSource<MiniZincResult>();
         _data = new MiniZincData();
-
         ModelText = model.Write();
-        SolverId = options?.SolverId ?? Solver.Gecode;
-        Solver = _client.GetSolver(SolverId);
-        ModelFolder = new DirectoryInfo(options?.OutputFolder ?? Path.GetTempPath());
-        ModelFile = ModelFolder.JoinFile(Path.ChangeExtension(Path.GetTempFileName(), ".mzn"));
-        ModelPath = ModelFile.FullName;
-        File.WriteAllText(ModelPath, ModelText);
-        Command = _client.Command("--solver", Solver.Id, "--json-stream", "--output-objective");
-        var timeout = options?.Timeout;
-        if (options?.Arguments is { } args)
+        Directory = new DirectoryInfo(directory ?? Path.GetTempPath());
+        ModelFile = Directory.JoinFile(Path.ChangeExtension(Path.GetTempFileName(), ".mzn"));
+        File.WriteAllText(ModelFile.FullName, ModelText);
+        Command = _client.Command("--json-stream", "--output-objective");
+        ExtraArgs = args;
+        SolverId = solverId;
+
+        if (ExtraArgs is not null)
         {
-            foreach (var arg in args)
-            {
-                switch (arg.Flag)
-                {
-                    case null:
-                        break;
-                    case "timeout":
-                        if (timeout.HasValue)
-                            Warn("Discarding command line arg \"timeout\"");
-                        else if (arg.Value is not { } val)
-                            break;
-                        else
-                            timeout = TimeSpan.FromMilliseconds(int.Parse(val));
-                        break;
-                    case "solver":
-                        Warn("Discarding command line arg \"solver\"");
-                        break;
-                    default:
-                        Command = Command.AddArgs(arg);
-                        break;
-                }
-            }
+            Command = Command.AddArgs(ExtraArgs);
+            foreach (var arg in ExtraArgs)
+                if (arg.Flag?.Equals("solver") ?? false)
+                    if (SolverId is not null)
+                        throw new ArgumentException(
+                            $"Solver was provided both as an argument and command line"
+                        );
+                    else
+                        SolverId = arg.Value;
         }
 
-        if (timeout.HasValue)
-            Command = Command.AddArgs("--time-limit", timeout.Value.TotalMilliseconds.ToString());
-
-        Command = Command.AddArgs(ModelPath);
+        SolverId ??= MiniZincSolver.GECODE;
+        MiniZincSolver = _client.GetSolver(SolverId);
+        Command = Command.AddArgs(ModelFile.FullName);
         CommandString = Command.ToString();
 
         _watch = Stopwatch.StartNew();
@@ -112,9 +90,8 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
         };
 
         if (Command.WorkingDirectory is { } path)
-        {
             _startInfo.WorkingDirectory = path;
-        }
+
         _process = new Process();
         _process.StartInfo = _startInfo;
         _processStatus = ProcessStatus.Idle;
@@ -126,8 +103,26 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
                 AllowSynchronousContinuations = true
             }
         );
-        _asyncEnumerator = _channel.Reader.ReadAllAsync(_cancellation).GetAsyncEnumerator();
-        _task = Task.Factory.StartNew(Start);
+    }
+
+    /// Starts the process and returns the last solution provided by the solver
+    public async Task<MiniZincResult> Solution(CancellationToken token = default)
+    {
+        await Task.Run(Start, token);
+        var result = await _result.Task;
+        return result;
+    }
+
+    public async IAsyncEnumerable<MiniZincResult> Solutions(
+        [EnumeratorCancellation] CancellationToken token = default
+    )
+    {
+        var task = Task.Run(Start, token);
+        await foreach (MiniZincResult solution in _channel.Reader.ReadAllAsync(token))
+        {
+            yield return solution;
+        }
+        await task;
     }
 
     /// Start the process and wait for it to exit
@@ -194,7 +189,7 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
         }
         _channel.Writer.TryWrite(_current);
         _channel.Writer.Complete();
-        _completion.SetResult(_current);
+        _result.SetResult(_current);
     }
 
     private void OnStatisticsOutput(StatisticsOutput o)
@@ -267,7 +262,7 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
 
     private void OnWarningOutput(WarningOutput o)
     {
-        _warnings.Add(o.Message);
+        Warn(o.Message);
     }
 
     private void OnErrorOutput(ErrorOutput o)
@@ -349,33 +344,15 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
             _current = Result(error: $"MiniZinc exited without producing a result");
             _channel.Writer.TryWrite(_current);
             _channel.Writer.TryComplete();
-            _completion.SetResult(_current);
+            _result.SetResult(_current);
         }
     }
 
     void Warn(string msg)
     {
+        _warnings ??= [];
         _warnings.Add(msg);
     }
-
-    public TaskAwaiter<MiniZincResult> GetAwaiter() => _completion.Task.GetAwaiter();
-
-    IAsyncEnumerator<MiniZincResult> IAsyncEnumerable<MiniZincResult>.GetAsyncEnumerator(
-        CancellationToken cancellationToken = new CancellationToken()
-    ) => _asyncEnumerator;
-
-    public async ValueTask DisposeAsync()
-    {
-        Stop();
-        await ValueTask.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        Stop();
-    }
-
-    public override string ToString() => CommandString;
 
     private MiniZincResult Result(
         in MiniZincExpr? objectiveValue = null,
@@ -405,4 +382,17 @@ public sealed class MiniZincProcess : IAsyncEnumerable<MiniZincResult>
         };
         return result;
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        Stop();
+        await ValueTask.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        Stop();
+    }
+
+    public override string ToString() => CommandString;
 }

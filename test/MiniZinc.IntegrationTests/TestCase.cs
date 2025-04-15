@@ -7,8 +7,10 @@ using Client;
 [DebuggerDisplay("{Path}")]
 public record TestCase
 {
+    public string Slug { get; set; }
+
     /// Path of the test case relative to the test spec dir
-    public string Path { get; set; }
+    public FileInfo File { get; set; }
 
     /// Sequence of this test from 1..n in the same file
     public int Sequence { get; set; }
@@ -36,6 +38,4 @@ public record TestCase
 
     /// If present, the error message should match this regex
     public string? ErrorRegex { get; set; }
-
-    public override string ToString() => $"<{Path}>";
 }

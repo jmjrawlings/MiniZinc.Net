@@ -1,6 +1,6 @@
 ﻿using MiniZinc.Parser;
 using Shouldly;
-using Xunit;
+using TUnit;
 using static MiniZinc.Parser.TokenKind;
 
 public sealed class LexerUnitTests
@@ -16,17 +16,17 @@ public sealed class LexerUnitTests
         }
     }
 
-    [Theory]
-    [InlineData("a")]
-    [InlineData("B")]
-    [InlineData("_A_NAME")]
-    [InlineData("aN4m3w1thnumb3r5")]
+    [Test]
+    [Arguments("a")]
+    [Arguments("B")]
+    [Arguments("_A_NAME")]
+    [Arguments("aN4m3w1thnumb3r5")]
     public void Test_identifer(string mzn)
     {
         TestTokens(mzn, TOKEN_IDENTIFIER);
     }
 
-    [Fact]
+    [Test]
     public void Test_keywords()
     {
         TestTokens(
@@ -39,20 +39,20 @@ public sealed class LexerUnitTests
         );
     }
 
-    [Theory]
-    [InlineData(""" "abc" """)]
-    [InlineData(""" "Escaped \'quotes\' " """)]
-    [InlineData(""" "Escaped \"quotes\" " """)]
+    [Test]
+    [Arguments(""" "abc" """)]
+    [Arguments(""" "Escaped \'quotes\' " """)]
+    [Arguments(""" "Escaped \"quotes\" " """)]
     public void test_string_literal(string mzn)
     {
         TestTokens(mzn, TOKEN_STRING_LITERAL);
     }
 
-    [Theory]
-    [InlineData("1", 1)]
-    [InlineData("100", 100)]
-    [InlineData("0x124bce", 1199054)]
-    [InlineData("0o3123", 1619)]
+    [Test]
+    [Arguments("1", 1)]
+    [Arguments("100", 100)]
+    [Arguments("0x124bce", 1199054)]
+    [Arguments("0o3123", 1619)]
     public void test_int(string mzn, int i)
     {
         Lexer.Lex(mzn, out var tokens);
@@ -61,9 +61,9 @@ public sealed class LexerUnitTests
         token.IntValue.ShouldBe(i);
     }
 
-    [Theory]
-    [InlineData("1.123.1", 1.123)]
-    [InlineData("100.0043", 100.0043)]
+    [Test]
+    [Arguments("1.123.1", 1.123)]
+    [Arguments("100.0043", 100.0043)]
     public void test_float(string mzn, decimal d)
     {
         Lexer.Lex(mzn, out var tokens);
@@ -72,15 +72,15 @@ public sealed class LexerUnitTests
         token.FloatValue.ShouldBe(d);
     }
 
-    [Theory]
-    [InlineData("1..10")]
+    [Test]
+    [Arguments("1..10")]
     public void test_range_ti(string mzn)
     {
         TestTokens(mzn, TOKEN_INT_LITERAL, TOKEN_RANGE_INCLUSIVE, TOKEN_INT_LITERAL);
     }
 
-    [Theory]
-    [InlineData("1.1..1.2.0")]
+    [Test]
+    [Arguments("1.1..1.2.0")]
     public void test_dot_access(string mzn)
     {
         TestTokens(
@@ -92,15 +92,15 @@ public sealed class LexerUnitTests
         );
     }
 
-    [Theory]
-    [InlineData("<", TOKEN_LESS_THAN)]
-    [InlineData("<=", TOKEN_LESS_THAN_EQUAL)]
-    [InlineData("==", TOKEN_EQUAL)]
-    [InlineData("=", TOKEN_EQUAL)]
-    [InlineData(">=", TOKEN_GREATER_THAN_EQUAL)]
-    [InlineData(">", TOKEN_GREATER_THAN)]
-    [InlineData("<>", TOKEN_EMPTY)]
-    [InlineData("_", TOKEN_UNDERSCORE)]
+    [Test]
+    [Arguments("<", TOKEN_LESS_THAN)]
+    [Arguments("<=", TOKEN_LESS_THAN_EQUAL)]
+    [Arguments("==", TOKEN_EQUAL)]
+    [Arguments("=", TOKEN_EQUAL)]
+    [Arguments(">=", TOKEN_GREATER_THAN_EQUAL)]
+    [Arguments(">", TOKEN_GREATER_THAN)]
+    [Arguments("<>", TOKEN_EMPTY)]
+    [Arguments("_", TOKEN_UNDERSCORE)]
     public void test_literals(string mzn, TokenKind tokenKind)
     {
         Lexer.Lex(mzn, out var tokens);
@@ -108,7 +108,7 @@ public sealed class LexerUnitTests
         token.Kind.ShouldBe(tokenKind);
     }
 
-    [Fact]
+    [Test]
     public void test_whitespace()
     {
         var mzn = @$" {'\r'}{'\t'}{'\n'} ";
@@ -118,7 +118,7 @@ public sealed class LexerUnitTests
         tokens[0].Kind.ShouldBe(TOKEN_EOF);
     }
 
-    [Fact]
+    [Test]
     public void xd()
     {
         var s =
@@ -126,7 +126,7 @@ public sealed class LexerUnitTests
         Lexer.Lex(s, out var tokens);
     }
 
-    [Fact]
+    [Test]
     public void test_string_interp()
     {
         var mzn = "\\([\"lala\" | i in 1..3 where b])";

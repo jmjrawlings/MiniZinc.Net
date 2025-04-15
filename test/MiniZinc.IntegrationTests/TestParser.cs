@@ -83,8 +83,7 @@ public sealed class TestParser : IYamlTypeConverter
     {
         var strict = suiteNode["strict"]?.GetValue<bool>();
         var options = suiteNode["options"]?.AsObject();
-        var solvers =
-            suiteNode["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList() ?? [];
+        var solvers = suiteNode["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList();
         var includes = suiteNode["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
         var testCases = new List<TestCase>();
         var testSuite = new TestSuite
@@ -104,8 +103,7 @@ public sealed class TestParser : IYamlTypeConverter
                 if (file.Extension != ".mzn")
                     continue;
 
-                var relativePath = Path.GetRelativePath(dir.FullName, file.FullName)
-                    .Replace('\\', '/');
+                var slug = Path.GetRelativePath(dir.FullName, file.FullName).Replace('\\', '/');
 
                 foreach (var yaml in ExtractTestCaseYaml(file))
                 {
@@ -113,7 +111,8 @@ public sealed class TestParser : IYamlTypeConverter
                     if (testCase is null)
                         continue;
 
-                    testCase.Path = relativePath;
+                    testCase.Slug = slug;
+                    testCase.File = file;
                     testCases.Add(testCase);
                 }
             }
@@ -140,7 +139,7 @@ public sealed class TestParser : IYamlTypeConverter
             "compile" => TestType.TEST_COMPILE,
             "output-model" => TestType.TEST_OUTPUT_MODEL,
             _ when allSolutions => TestType.TEST_ALL_SOLUTIONS,
-            _ => TestType.TEST_SATISFY
+            _ => default
         };
         ParseExpectedSolution(testCase, expected);
         return testCase;
@@ -349,19 +348,19 @@ public sealed class TestParser : IYamlTypeConverter
                         }
                         break;
 
-                    case (YamlTag.Solution, JsonObject sol, "OPTIMAL_SOLUTION"):
-                        dzn = ParseSolution(sol);
-                        testCase.Type = TestType.TEST_OPTIMISE;
-                        if (dzn is not null)
-                        {
-                            testCase.Solutions ??= [];
-                            testCase.Solutions.Add(dzn);
-                        }
-                        break;
+                    // case (YamlTag.Solution, JsonObject sol, "OPTIMAL_SOLUTION"):
+                    //     dzn = ParseSolution(sol);
+                    //     testCase.Type = TestType.TEST_OPTIMISE;
+                    //     if (dzn is not null)
+                    //     {
+                    //         testCase.Solutions ??= [];
+                    //         testCase.Solutions.Add(dzn);
+                    //     }
+                    //     break;
 
                     case (YamlTag.Solution, JsonObject sol, _):
                         dzn = ParseSolution(sol);
-                        testCase.Type = TestType.TEST_SATISFY;
+                        // testCase.Type = TestType.TEST_SATISFY;
                         if (dzn is not null)
                         {
                             testCase.Solutions ??= [];

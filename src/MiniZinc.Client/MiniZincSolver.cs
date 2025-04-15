@@ -5,11 +5,11 @@ using System.Text.Json.Nodes;
 /// <summary>
 /// Solver info as provided by `minizinc --solvers`
 /// </summary>
-public sealed record Solver
+public sealed class MiniZincSolver
 {
-    public const string Gecode = "gecode";
+    public const string GECODE = "gecode";
 
-    public const string Chuffed = "chuffed";
+    public const string CHUFFED = "chuffed";
 
     public required string Id { get; init; }
     public required string Name { get; init; }

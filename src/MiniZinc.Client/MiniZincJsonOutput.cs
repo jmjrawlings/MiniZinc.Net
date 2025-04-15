@@ -16,7 +16,7 @@ using System.Text.Json.Serialization;
 [JsonDerivedType(typeof(ErrorOutput), typeDiscriminator: "error")]
 [JsonDerivedType(typeof(WarningOutput), typeDiscriminator: "warning")]
 [JsonDerivedType(typeof(StatusOutput), typeDiscriminator: "status")]
-internal record JsonOutput
+internal class JsonOutput
 {
     public static readonly JsonSerializerOptions JsonSerializerOptions;
 
@@ -35,14 +35,14 @@ internal record JsonOutput
     }
 }
 
-internal sealed record WarningOutput : ErrorOutput { }
+internal sealed class WarningOutput : ErrorOutput { }
 
-internal sealed record StatisticsOutput : JsonOutput
+internal sealed class StatisticsOutput : JsonOutput
 {
     public required JsonObject Statistics { get; init; }
 }
 
-internal sealed record TraceOutput : JsonOutput
+internal sealed class TraceOutput : JsonOutput
 {
     public string Section { get; init; } = string.Empty;
 
@@ -58,13 +58,13 @@ internal sealed record MiniZincErrorLocationMessage
     public int LastColumn { get; init; }
 }
 
-internal sealed record CommentOutput : JsonOutput
+internal sealed class CommentOutput : JsonOutput
 {
     [JsonPropertyName("comment")]
     public required string Comment { get; init; }
 }
 
-internal record ErrorOutput : JsonOutput
+internal class ErrorOutput : JsonOutput
 {
     [JsonPropertyName("what")]
     public string Kind { get; init; } = string.Empty;
@@ -90,7 +90,7 @@ internal sealed record MiniZincErrorStack
 /// the solver.
 /// "https://www.minizinc.org/doc-latest/en/json-stream.html"
 /// </summary>
-internal sealed record SolutionOutput : JsonOutput
+internal sealed class SolutionOutput : JsonOutput
 {
     public required Dictionary<string, object> Output { get; init; }
 
@@ -99,7 +99,7 @@ internal sealed record SolutionOutput : JsonOutput
     public List<string>? Sections { get; init; }
 }
 
-internal sealed record StatusOutput : JsonOutput
+internal sealed class StatusOutput : JsonOutput
 {
     public required string Status { get; init; }
 

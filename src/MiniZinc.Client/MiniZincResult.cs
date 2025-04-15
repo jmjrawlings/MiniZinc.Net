@@ -7,7 +7,7 @@ using Parser;
 /// An intermediate or final result from using MiniZinc
 /// to solve a Model
 /// </summary>
-public sealed record MiniZincResult
+public sealed class MiniZincResult
 {
     /// <summary>
     /// The full command passed to minizinc

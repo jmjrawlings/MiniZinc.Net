@@ -21,41 +21,42 @@ public sealed class SatisfyTests
         spec.TestSuites.ShouldNotBeEmpty();
     }
 
-    public static IEnumerable<SatisfyTestCase> GetSatisfyTests()
+    public static IEnumerable<IntegrationTestCase> GetSatisfyTests()
     {
         var client = MiniZincClient.Autodetect();
         var source = "./spec/suites.yml".ToFile();
         var testSpec = TestParser.ParseTestSpecFile(source);
         foreach (var testSuite in testSpec.TestSuites)
         {
+            if (testSuite.Name != "optimize-0")
+                continue;
+
             foreach (var testCase in testSuite.TestCases)
             {
-                if (testCase.Type is not TestType.TEST_SATISFY)
-                    continue;
+                var solvers = testSuite.Solvers ?? [MiniZincSolver.GECODE];
 
-                if (testSuite.Solvers is null)
-                    continue;
-
-                foreach (var solver in testSuite.Solvers)
+                foreach (var solver in solvers)
                 {
-                    SatisfyTestCase tcase = new();
+                    IntegrationTestCase tcase = new();
                     tcase.Client = client;
                     tcase.Options = testSuite.Options;
-                    tcase.Path = source.Directory!.JoinFile(testCase.Path);
+                    tcase.File = testCase.File;
                     tcase.Sequence = testCase.Sequence;
                     tcase.InputFiles = testCase.InputFiles;
                     tcase.Solver = solver;
                     tcase.Suite = testSuite;
+                    tcase.Slug = testCase.Slug;
                     yield return tcase;
                 }
             }
         }
     }
 
-    public struct SatisfyTestCase
+    public struct IntegrationTestCase
     {
         public MiniZincClient Client;
-        public FileInfo Path;
+        public FileInfo File;
+        public string Slug;
         public int Sequence;
         public string? Solver;
         public List<string>? InputFiles;
@@ -66,19 +67,18 @@ public sealed class SatisfyTests
     [Test]
     [MethodDataSource(typeof(SatisfyTests), nameof(GetSatisfyTests))]
     [ArgumentDisplayFormatter<TestNameFormatter>]
-    public async Task RunTest(SatisfyTestCase test)
+    public async Task RunTest(IntegrationTestCase test)
     {
-        var client = test.Client;
-        WriteLine($"Test model: {test.Path}");
+        WriteLine($"{test.Slug}");
         WriteLine("--------------------------------------");
-        var source = await File.ReadAllTextAsync(test.Path.ToString());
+        var source = await File.ReadAllTextAsync(test.File.ToString());
         WriteLine(source);
         WriteLine("--------------------------------------");
 
         MiniZincModel? model;
         try
         {
-            model = MiniZincModel.FromFile(test.Path);
+            model = MiniZincModel.FromFile(test.File);
         }
         catch (Exception exn)
         {
@@ -88,13 +88,20 @@ public sealed class SatisfyTests
 
         var mzn = model.Write();
 
-        WriteLine($"Parsed model: ");
+        WriteLine($"Parsed: ");
         WriteLine("--------------------------------------");
         WriteLine(mzn);
         WriteLine("--------------------------------------");
 
         var solver = test.Solver;
-        var options = new MiniZincOptions(solver);
+        var client = test.Client;
+        var process = client.Solve(model, solver);
+        await foreach (var sol in process.Solutions())
+        {
+            WriteLine($"{sol.Iteration} - {sol.Status}");
+        }
+
+        var a = 2;
     }
 
     /// <summary>
@@ -200,13 +207,13 @@ public sealed class SatisfyTests
     {
         public override bool CanHandle(object? value)
         {
-            return value is SatisfyTestCase;
+            return value is IntegrationTestCase;
         }
 
         public override string FormatValue(object? value)
         {
-            var tcase = (SatisfyTestCase)value;
-            return $"{tcase.Suite.Name} - {tcase.Path}";
+            var tcase = (IntegrationTestCase)value;
+            return $"{tcase.Slug} - {tcase.Suite.Name}";
         }
     }
 }

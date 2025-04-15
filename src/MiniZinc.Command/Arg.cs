@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 /// <summary>
 /// A command line argument
 /// </summary>
-public readonly partial record struct Arg
+public readonly partial struct Arg
 {
     /// <summary>
     /// eg: --output, -a
@@ -26,7 +26,7 @@ public readonly partial record struct Arg
     /// <summary>
     /// The full string
     /// </summary>
-    public readonly String String;
+    public readonly string String;
 
     /// <summary>
     /// Create an Arg from a flag, value, or both
@@ -64,29 +64,8 @@ public readonly partial record struct Arg
     /// </summary>
     const string RegexPattern = """(-{1,2}[a-zA-Z][a-zA-Z0-9_-]*)?\s*(=)?\s*("[^"]*"|[^\s]+)?""";
 
-    internal static Arg FromMatch(Match m)
-    {
-        Group g;
-        g = m.Groups[1];
-        var flag = g.Success ? g.Value : null;
-
-        g = m.Groups[2];
-        var eq = g.Success;
-
-        g = m.Groups[3];
-        var value = g.Success ? g.Value : null;
-        var arg = new Arg(flag, value, eq);
-        return arg;
-    }
-
     [GeneratedRegex(RegexPattern)]
     internal static partial Regex Regex();
-
-    ///
-    public override string ToString()
-    {
-        return String;
-    }
 
     /// <summary>
     /// Parse args from the given string
@@ -99,10 +78,26 @@ public readonly partial record struct Arg
         {
             if (m.Length <= 0)
                 continue;
-            var arg = FromMatch(m);
+
+            Group g;
+            g = m.Groups[1];
+            var flag = g.Success ? g.Value : null;
+
+            g = m.Groups[2];
+            var eq = g.Success;
+
+            g = m.Groups[3];
+            var value = g.Success ? g.Value : null;
+            var arg = new Arg(flag, value, eq);
             yield return arg;
         }
     }
 
     public static implicit operator string(Arg a) => a.String;
+
+    ///
+    public override string ToString()
+    {
+        return String;
+    }
 }
