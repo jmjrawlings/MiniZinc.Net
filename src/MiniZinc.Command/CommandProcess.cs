@@ -1,10 +1,11 @@
 ﻿namespace MiniZinc.Command;
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
 
-public sealed class CommandRunner : IDisposable
+public sealed class CommandProcess
 {
     /// The originating command
     private readonly Command _command;
@@ -39,12 +40,10 @@ public sealed class CommandRunner : IDisposable
     /// If iterating, a channel to implement AsyncEnumerable
     private Channel<ProcessMessage>? _channel;
 
-    private IAsyncEnumerable<ProcessMessage>? _events;
-
     /// <summary>
     /// Create a process from the given command
     /// </summary>
-    internal CommandRunner(in Command command)
+    internal CommandProcess(in Command command)
     {
         _watch = new Stopwatch();
         _startInfo = new ProcessStartInfo
@@ -130,11 +129,10 @@ public sealed class CommandRunner : IDisposable
     /// Start the process and consume events until it
     /// terminates
     /// </summary>
-    internal IAsyncEnumerable<ProcessMessage> Watch(CancellationToken cancellation = default)
+    internal async IAsyncEnumerable<ProcessMessage> Watch(
+        [EnumeratorCancellation] CancellationToken cancellation = default
+    )
     {
-        if (_events is not null)
-            return _events;
-
         if (_status is not ProcessStatus.Idle)
             throw new InvalidOperationException();
 
@@ -150,12 +148,10 @@ public sealed class CommandRunner : IDisposable
                 AllowSynchronousContinuations = true
             }
         );
-        _events = _channel.Reader.ReadAllAsync();
         _watch.Start();
         _process.Start();
         _process.BeginOutputReadLine();
         _process.BeginErrorReadLine();
-
         _processId = _process.Id;
         _current = new ProcessMessage
         {
@@ -169,7 +165,8 @@ public sealed class CommandRunner : IDisposable
         else
             cancellation.Register(Stop, useSynchronizationContext: false);
 
-        return _events;
+        await foreach (var msg in _channel.Reader.ReadAllAsync(cancellation))
+            yield return msg;
     }
 
     private void Stop()
@@ -190,14 +187,11 @@ public sealed class CommandRunner : IDisposable
 
     private void OnOutput(object _, DataReceivedEventArgs e)
     {
-        if (e.Data is not { } data)
-            return;
-
         var elapsed = _elapsed;
         var msg = new ProcessMessage
         {
             ProcessId = _processId,
-            Content = data,
+            Content = e.Data,
             EventType = ProcessEventType.StdOut,
             TimeStamp = _startTime + elapsed
         };
@@ -207,9 +201,6 @@ public sealed class CommandRunner : IDisposable
 
     private void OnError(object _, DataReceivedEventArgs e)
     {
-        if (e.Data is not { } data)
-            return;
-
         var elapsed = _elapsed;
         var msg = new ProcessMessage
         {

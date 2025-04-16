@@ -13,7 +13,7 @@ public sealed class MiniZincProcess
     public readonly MiniZincModel Model;
     public readonly Command Command;
     public readonly string CommandString;
-    public readonly MiniZincSolver MiniZincSolver;
+    public readonly MiniZincSolver Solver;
     public readonly string? SolverId;
     public readonly string ModelText;
     public readonly DirectoryInfo Directory;
@@ -72,7 +72,7 @@ public sealed class MiniZincProcess
         }
 
         SolverId ??= MiniZincSolver.GECODE;
-        MiniZincSolver = _client.GetSolver(SolverId);
+        Solver = _client.GetSolver(SolverId);
         Command = Command.AddArgs(ModelFile.FullName);
         CommandString = Command.ToString();
 

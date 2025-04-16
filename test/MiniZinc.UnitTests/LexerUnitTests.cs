@@ -1,6 +1,4 @@
 ﻿using MiniZinc.Parser;
-using Shouldly;
-using TUnit;
 using static MiniZinc.Parser.TokenKind;
 
 public sealed class LexerUnitTests

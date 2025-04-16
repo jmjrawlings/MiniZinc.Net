@@ -69,23 +69,13 @@ public readonly struct Command
     public Command WithWorkingDirectory(DirectoryInfo dir) =>
         new Command(Exe, Arguments, dir.FullName);
 
-    public override string ToString()
-    {
-        string s;
-        if (Arguments.Length is 0)
-            s = Exe;
-        else
-            s = $"{Exe} {string.Join(' ', Arguments)}";
-        return s;
-    }
-
     public async Task<ProcessResult> Run(
         bool captureStdout = true,
         bool captureStderr = true,
         CancellationToken cancellation = default
     )
     {
-        using var proc = new CommandRunner(this);
+        var proc = new CommandProcess(this);
         var result = await proc.Run(
             captureStdErr: captureStderr,
             captureStdOut: captureStdout,
@@ -98,8 +88,18 @@ public readonly struct Command
         [EnumeratorCancellation] CancellationToken cancellation = default
     )
     {
-        using var proc = new CommandRunner(this);
+        var proc = new CommandProcess(this);
         await foreach (var msg in proc.Watch(cancellation))
             yield return msg;
+    }
+
+    public override string ToString()
+    {
+        string cmd;
+        if (Arguments.Length is 0)
+            cmd = Exe;
+        else
+            cmd = $"{Exe} {string.Join(' ', Arguments)}";
+        return cmd;
     }
 }

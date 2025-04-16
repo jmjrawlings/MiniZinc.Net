@@ -1,8 +1,6 @@
 ﻿using MiniZinc;
 using MiniZinc.Client;
 using MiniZinc.Parser;
-using Shouldly;
-using TUnit;
 
 public sealed class ManualClientTests
 {

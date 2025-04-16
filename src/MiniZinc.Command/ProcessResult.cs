@@ -3,7 +3,7 @@
 /// <summary>
 /// The result of running a Process
 /// </summary>
-public readonly record struct ProcessResult
+public readonly struct ProcessResult
 {
     /// The command that was run
     public required string Command { get; init; }

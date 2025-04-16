@@ -3,7 +3,7 @@
 /// <summary>
 /// Message streamed
 /// </summary>
-public readonly record struct ProcessMessage
+public readonly struct ProcessMessage
 {
     /// Time this message was created
     public required int ProcessId { get; init; }
@@ -15,5 +15,5 @@ public readonly record struct ProcessMessage
     public required ProcessEventType EventType { get; init; }
 
     /// The string content of the message
-    public string Content { get; init; }
+    public string? Content { get; init; }
 }

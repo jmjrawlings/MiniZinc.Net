@@ -1,6 +1,4 @@
 ﻿using MiniZinc.Parser;
-using Shouldly;
-using TUnit;
 
 public sealed class WriterUnitTests
 {

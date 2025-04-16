@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25107-01" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
-    <PackageReference Include="TUnit" Version="0.19.64" />
+    <PackageReference Include="TUnit" Version="0.19.82" />
   </ItemGroup>
 
 </Project>
