@@ -165,7 +165,7 @@ public sealed class CommandProcess
         else
             cancellation.Register(Stop, useSynchronizationContext: false);
 
-        await foreach (var msg in _channel.Reader.ReadAllAsync(cancellation))
+        await foreach (var msg in _channel.Reader.ReadAllAsync())
             yield return msg;
     }
 

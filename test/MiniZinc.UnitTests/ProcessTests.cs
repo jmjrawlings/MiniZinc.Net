@@ -13,7 +13,7 @@ public class ProcessTests
     }
 
     [Test]
-    public async Task test_command_listens()
+    public async Task test_command_watch()
     {
         var cmd = new Command("minizinc", "--version");
         string? output = null;
@@ -39,15 +39,20 @@ public class ProcessTests
             """;
         var tmp = Path.GetTempPath().ToDirectory().JoinFile("nqueens.mzn");
         await File.WriteAllTextAsync(tmp.FullName, model);
-        var cmd = new Command("minizinc", "-a", "--json-stream", tmp.FullName);
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        ProcessMessage result = default;
+        var cmd = new Command(
+            "minizinc",
+            "--solver Gecode",
+            "--all-solutions",
+            "--json-stream",
+            tmp.FullName
+        );
+        var timeout = TimeSpan.FromSeconds(1);
+        var cts = new CancellationTokenSource(timeout);
         await foreach (var msg in cmd.Watch(cts.Token))
         {
-            WriteLine(msg.EventType.ToString());
-            result = msg;
-            if (msg.Content is { } data)
-                WriteLine(data);
+            WriteLine($"{msg.ProcessId} - {msg.TimeStamp} - {msg.EventType}");
+            WriteLine(msg.Content);
+            WriteLine("------------------------------------");
         }
     }
 }
