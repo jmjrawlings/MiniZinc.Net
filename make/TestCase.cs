@@ -2,7 +2,6 @@ namespace MiniZinc.Tests;
 
 using System.Diagnostics;
 using System.Text.Json.Nodes;
-using Client;
 
 [DebuggerDisplay("{Path}")]
 public record TestCase
