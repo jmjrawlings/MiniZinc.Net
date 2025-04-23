@@ -1,11 +1,12 @@
 ﻿namespace MiniZinc.Command;
 
 using System.Runtime.CompilerServices;
+using System.Text;
 
 /// <summary>
 /// A shell command
 /// </summary>
-public readonly struct Command
+public struct Command
 {
     /// <summary>
     /// The executable to call, eg: "git"
@@ -15,59 +16,53 @@ public readonly struct Command
     /// <summary>
     /// Arguments parsed by <see cref="Args.Parse"/>
     /// </summary>
-    public readonly Arg[] Arguments;
+    public readonly Args Arguments;
 
     /// <summary>
     /// Directory where the command should be run
     /// </summary>
-    public readonly string? WorkingDirectory;
+    public string? WorkingDirectory;
 
-    public Command(string exe, Arg[]? args = null, string? workingDirectory = null)
+    public Command(string exe, params string[] args)
     {
         if (string.IsNullOrEmpty(exe))
             throw new ArgumentNullException(exe);
         Exe = exe;
-        Arguments = args ?? [];
-        WorkingDirectory = workingDirectory;
+        Arguments = Args.Parse(args);
     }
 
-    public Command(string exe, params string[] args)
-        : this(exe, Args.Parse(args)) { }
+    public Command(string exe, Args args)
+    {
+        if (string.IsNullOrEmpty(exe))
+            throw new ArgumentNullException(exe);
+        Exe = exe;
+        Arguments = args;
+    }
+
+    public Command(string exe)
+    {
+        if (string.IsNullOrEmpty(exe))
+            throw new ArgumentNullException(exe);
+        Exe = exe;
+        Arguments = Args.Empty;
+    }
 
     /// <summary>
     /// Create a new command with the given args added
     /// </summary>
     /// <example>new Command("git").Add("checkout","-b","develop")</example>
-    public Command AddArgs(params string[] args) => AddArgs(Args.Parse(args));
+    public void AddArgs(params string[] args)
+    {
+        Arguments.Add(args);
+    }
 
     /// <summary>
     /// Create a new command with the given args appended
     /// </summary>
-    public Command AddArgs(Arg[] args)
+    public void AddArgs(Args args)
     {
-        var arguments = Args.Concat(Arguments, args);
-        var cmd = new Command(Exe, arguments);
-        return cmd;
+        Arguments.Add(args);
     }
-
-    /// <summary>
-    /// Returns a new command for this Exe and the given Args
-    /// </summary>
-    /// <example>new Command("git", "-v").WithArgs("--help") // "git --help")</example>
-    public Command WithArgs(params string[] args) => AddArgs(Args.Parse(args));
-
-    /// <summary>
-    /// Returns a new command with the given working directory
-    /// </summary>
-    /// <example>new Command("ls").WithWorkingDirectory("/usr/local/bin")</example>
-    public Command WithWorkingDirectory(string path) => new Command(Exe, Arguments, path);
-
-    /// <summary>
-    /// Returns a new command with the given working directory
-    /// </summary>
-    /// <example>new Command("ls").WithWorkingDirectory("/usr/local/bin")</example>
-    public Command WithWorkingDirectory(DirectoryInfo dir) =>
-        new Command(Exe, Arguments, dir.FullName);
 
     public async Task<ProcessResult> Run(
         bool captureStdout = true,
@@ -95,11 +90,15 @@ public readonly struct Command
 
     public override string ToString()
     {
-        string cmd;
-        if (Arguments.Length is 0)
-            cmd = Exe;
-        else
-            cmd = $"{Exe} {string.Join(' ', Arguments)}";
+        var sb = new StringBuilder();
+        sb.Append(Exe);
+        foreach (var arg in Arguments.Values)
+        {
+            sb.Append(' ');
+            sb.Append(arg);
+        }
+
+        var cmd = sb.ToString();
         return cmd;
     }
 }

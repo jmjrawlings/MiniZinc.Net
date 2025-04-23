@@ -1,28 +1,47 @@
 ﻿namespace MiniZinc.Command;
 
-public static class Args
+using System.Collections;
+
+public sealed class Args
 {
+    private List<Arg>? _args;
+
+    public static Args Empty => new Args();
+
+    public int Count => _args?.Count ?? 0;
+
+    public IEnumerable<Arg> Values => _args ?? Enumerable.Empty<Arg>();
+
+    public void Add(params string[] args)
+    {
+        foreach (var arg in args)
+        {
+            foreach (var a in Arg.Parse(arg))
+            {
+                _args ??= new List<Arg>();
+                _args.Add(a);
+            }
+        }
+    }
+
+    public void Add(Args args)
+    {
+        foreach (var arg in args.Values)
+        {
+            _args ??= new List<Arg>();
+            _args.Add(arg);
+        }
+    }
+
     /// <summary>
     /// Parse args from the given parameters
     /// </summary>
-    public static Arg[] Parse(params string[]? args)
+    public static Args Parse(params string[] strings)
     {
-        if (args is null)
-            return [];
-
-        var arguments = string.Join(' ', args);
-        var array = Arg.Parse(arguments).ToArray();
-        return array;
+        var args = new Args();
+        args.Add(strings);
+        return args;
     }
 
-    /// <summary>
-    /// Concatenate two args
-    /// </summary>
-    public static Arg[] Concat(Arg[] arr1, Arg[] arr2)
-    {
-        var arr3 = new Arg[arr1.Length + arr2.Length];
-        arr1.CopyTo(arr3, 0);
-        arr2.CopyTo(arr3, arr1.Length);
-        return arr3;
-    }
+    public override string ToString() => string.Join(" ", Values);
 }

@@ -432,10 +432,7 @@ public sealed class MiniZincModel
                 }
                 else
                 {
-                    _addedFiles ??= [];
-                    if (_addedFiles.Add(file.FullName))
-                        AddFile(file);
-                    // The file could have already existed in the
+                    AddFile(file);
                 }
                 break;
         }

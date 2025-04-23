@@ -7,13 +7,11 @@ using Client;
 [DebuggerDisplay("{Path}")]
 public record TestCase
 {
-    public string Slug { get; set; }
+    /// Name of the test suite this belongs to
+    public string Suite { get; set; }
 
     /// Path of the test case relative to the test spec dir
-    public FileInfo File { get; set; }
-
-    /// Sequence of this test from 1..n in the same file
-    public int Sequence { get; set; }
+    public string Path { get; set; }
 
     /// Solvers for run the test on
     public List<string>? Solvers { get; set; }
@@ -21,11 +19,13 @@ public record TestCase
     /// Any additional input files (eg: json data)
     public List<string>? InputFiles { get; set; }
 
-    /// Solver flags to pass through
-    public JsonNode? Options { get; set; }
+    /// Extra options
+    public JsonObject? Options { get; set; }
 
     /// Enumeration of test type
     public TestType Type { get; set; }
+
+    public string? Args { get; set; }
 
     /// All solutions, present if Type == AllSolutions or AnySolution
     public List<string>? Solutions { get; set; }

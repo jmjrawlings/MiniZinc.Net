@@ -3,6 +3,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Command;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -64,82 +65,154 @@ public sealed class TestParser : IYamlTypeConverter
 
     private TestSpec ParseTestSpec(FileInfo specFile, JsonObject node)
     {
-        var testSpec = new TestSpec();
+        var spec = new TestSpec();
         foreach (var kv in node)
         {
-            var name = kv.Key;
-            var map = kv.Value!.AsObject();
-            ParseTestSuite(specFile, testSpec, name, map);
+            var suiteName = kv.Key;
+            var suiteJson = kv.Value!.AsObject();
+            ParseTestSuite(specFile, spec, suiteName, suiteJson);
         }
-        return testSpec;
+        return spec;
     }
 
     private void ParseTestSuite(
         FileInfo specFile,
-        TestSpec testSpec,
+        TestSpec spec,
         string suiteName,
         JsonObject suiteNode
     )
     {
-        var strict = suiteNode["strict"]?.GetValue<bool>();
+        // var strict = suiteNode["strict"]?.GetValue<bool>();
         var options = suiteNode["options"]?.AsObject();
         var solvers = suiteNode["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList();
-        var includes = suiteNode["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
-        var testCases = new List<TestCase>();
-        var testSuite = new TestSuite
-        {
-            Name = suiteName,
-            Strict = strict,
-            Options = options,
-            IncludeGlobs = includes,
-            Solvers = solvers,
-            TestCases = testCases
-        };
+        var globs = suiteNode["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
         var dir = specFile.Directory!;
-        foreach (var glob in testSuite.IncludeGlobs)
+
+        foreach (var glob in globs)
         {
             foreach (var file in dir.EnumerateFiles(glob, SearchOption.AllDirectories))
             {
                 if (file.Extension != ".mzn")
                     continue;
 
-                var slug = Path.GetRelativePath(dir.FullName, file.FullName).Replace('\\', '/');
+                var path = Path.GetRelativePath(dir.FullName, file.FullName).Replace('\\', '/');
 
-                foreach (var yaml in ExtractTestCaseYaml(file))
+                foreach (var yaml in GetTestCaseYaml(file))
                 {
-                    var testCase = ParseTestFromString(yaml);
+                    var testCase = ParseTestCase(yaml);
                     if (testCase is null)
                         continue;
 
-                    testCase.Slug = slug;
-                    testCase.File = file;
-                    testCases.Add(testCase);
+                    testCase.Path = path;
+                    testCase.Suite = suiteName;
+                    var opts = testCase.Options;
+                    if (options is not null)
+                    {
+                        foreach (var kv in options)
+                        {
+                            opts ??= new();
+                            opts[kv.Key] = kv.Value.DeepClone();
+                        }
+                    }
+                    ParseOptions(ref opts, out bool? allSolutions, out var args);
+                    testCase.Options = opts;
+                    testCase.Args = args?.ToString();
+                    testCase.Solvers = solvers;
+                    if (allSolutions is true)
+                        testCase.Type = TestType.TEST_ALL_SOLUTIONS;
+                    spec.TestCases ??= [];
+                    spec.TestCases.Add(testCase);
                 }
             }
         }
-        testSpec.TestSuites.Add(testSuite);
+    }
+
+    private void ParseOptions(ref JsonObject? node, out bool? allSolutions, out Args? args)
+    {
+        /*
+            time_limit: Optional[timedelta] = None,
+            nr_solutions: Optional[int] = None,
+            processes: Optional[int] = None,
+            random_seed: Optional[int] = None,
+            all_solutions: bool = False,
+            intermediate_solutions: Optional[bool] = None,
+            free_search: bool = False,
+            optimisation_level: Optional[int] = None,
+            timeout: Optional[timedelta] = None
+         */
+        allSolutions = null;
+        args = null;
+        if (node is null)
+            return;
+
+        var map = node.AsObject();
+        if (map.Count is 0)
+        {
+            node = null;
+            return;
+        }
+
+        args = Args.Empty;
+        var items = map.ToArray();
+        foreach (var kv in items)
+        {
+            var flag = kv.Key;
+            var value = kv.Value;
+            var kind = value?.GetValueKind() ?? default;
+            switch (flag)
+            {
+                case "all_solutions":
+                    allSolutions = value!.GetValue<bool>();
+                    map.Remove(flag);
+                    break;
+                case "time_limit":
+                    args.Add($"--time-limit {value}");
+                    map.Remove(flag);
+                    break;
+                case var x when x.StartsWith('-') && kind is JsonValueKind.True:
+                    args.Add($"{flag}");
+                    map.Remove(flag);
+                    break;
+                case var x when kind is JsonValueKind.True:
+                    args.Add($"--{flag}");
+                    map.Remove(flag);
+                    break;
+                default:
+                    if (flag.StartsWith('-'))
+                        args.Add($"{flag} {value}");
+                    else
+                        args.Add($"--{flag} {value}");
+
+                    map.Remove(flag);
+                    break;
+            }
+        }
+
+        if (map.Count is 0)
+            node = null;
+
+        if (args.Count is 0)
+            args = null;
     }
 
     private TestCase ParseTestCase(JsonObject node)
     {
         var solvers = node["solvers"]?.ToNonEmptyList<string>();
-        var options = (node["solve_options"] ?? node["options"])?.AsObject();
-        var allSolutions = options?.Pop("all_solutions").TryGetValue<bool>() ?? false;
         var test_type = node["type"]?.GetValue<string>();
         var inputFiles = node["extra_files"]?.ToNonEmptyList<string>();
         var expected = node["expected"];
+        var options = node["options"]?.AsObject();
         var testCase = new TestCase
         {
             Solvers = solvers,
-            Options = options?.Count > 0 ? options : null,
-            InputFiles = inputFiles
+            InputFiles = inputFiles,
+            Options = options,
         };
         testCase.Type = test_type switch
         {
             "compile" => TestType.TEST_COMPILE,
             "output-model" => TestType.TEST_OUTPUT_MODEL,
-            _ when allSolutions => TestType.TEST_ALL_SOLUTIONS,
-            _ => default
+            _ => TestType.TEST_SOLVE,
         };
         ParseExpectedSolution(testCase, expected);
         return testCase;
@@ -310,7 +383,7 @@ public sealed class TestParser : IYamlTypeConverter
         return spec;
     }
 
-    private static TestCase? ParseTestFromString(string yaml)
+    public static TestCase? ParseTestCase(string yaml)
     {
         var parser = new TestParser(null);
         var deserializer = new DeserializerBuilder()
@@ -517,7 +590,7 @@ public sealed class TestParser : IYamlTypeConverter
     }
 
     /// Parse yaml contained within the test file comments
-    public static IEnumerable<string> ExtractTestCaseYaml(FileInfo file)
+    public static IEnumerable<string> GetTestCaseYaml(FileInfo file)
     {
         var sb = new StringBuilder();
         using var stream = file.OpenRead();

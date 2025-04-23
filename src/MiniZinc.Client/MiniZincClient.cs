@@ -1,10 +1,15 @@
 ﻿namespace MiniZinc.Client;
 
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 using Command;
 using Core;
+using Parser;
 
 /// <summary>
 /// Executes commands and solves models against
@@ -17,7 +22,6 @@ public sealed partial class MiniZincClient
     private readonly Version _version;
     private readonly IReadOnlyList<MiniZincSolver> _solvers;
     private readonly Dictionary<string, MiniZincSolver> _solverLookup;
-    private readonly Command _command;
 
     public MiniZincClient(string path)
     {
@@ -25,7 +29,6 @@ public sealed partial class MiniZincClient
         if (!_exe.Exists)
             throw new FileNotFoundException(path);
         _home = _exe.Directory!;
-        _command = new Command($"\"{_exe.FullName}\"");
         _version = GetVersion();
         _solvers = GetSolvers();
         _solverLookup = new Dictionary<string, MiniZincSolver>();
@@ -70,35 +73,6 @@ public sealed partial class MiniZincClient
     public MiniZincSolver GetSolver(string key) => _solverLookup[key.ToLower()];
 
     /// <summary>
-    /// Solve the given model, returning the best
-    /// solution found or an error if it occured
-    /// </summary>
-    public MiniZincProcess Solve(
-        MiniZincModel model,
-        string? solverId = null,
-        string? outputFolder = null
-    )
-    {
-        var process = new MiniZincProcess(this, model, solverId, outputFolder);
-        return process;
-    }
-
-    /// <summary>
-    /// Solve the given minizinc model string, returning the best
-    /// solution found or an error if it occured
-    /// </summary>
-    public MiniZincProcess Solve(
-        string modelString,
-        string? solverId = null,
-        string? outputFolder = null
-    )
-    {
-        var model = MiniZincModel.ParseString(modelString);
-        var process = new MiniZincProcess(this, model, solverId, outputFolder);
-        return process;
-    }
-
-    /// <summary>
     /// Get all installed solvers by running the --solvers-json
     /// command.
     /// </summary>
@@ -130,7 +104,8 @@ public sealed partial class MiniZincClient
     /// </summary>
     public Command Command(params string[] args)
     {
-        var cmd = _command.AddArgs(args);
+        var cmd = new Command($"\"{_exe.FullName}\"");
+        cmd.AddArgs(args);
         return cmd;
     }
 
@@ -155,6 +130,312 @@ public sealed partial class MiniZincClient
         }
 
         return path;
+    }
+
+    public async Task<MiniZincMessage> Solution(
+        MiniZincModel model,
+        CancellationToken token = default,
+        string? solverId = null,
+        string? directory = null,
+        params string[] args
+    )
+    {
+        MiniZincMessage? msg = null;
+        await foreach (var message in Solve(model, token, solverId, directory, args))
+        {
+            msg = message;
+        }
+
+        if (msg is null)
+            throw new Exception($"No message returned");
+
+        return msg;
+    }
+
+    public async IAsyncEnumerable<MiniZincMessage> Solve(
+        MiniZincModel model,
+        [EnumeratorCancellation] CancellationToken token = default,
+        string? solverId = null,
+        string? directory = null,
+        params string[] args
+    )
+    {
+        if (token.IsCancellationRequested)
+        {
+            yield return new MiniZincMessage
+            {
+                Command = "",
+                ProcessId = 0,
+                Solver = null,
+                TimeStamp = DateTimeOffset.Now,
+                Status = SolveStatus.Cancelled
+            };
+            yield break;
+        }
+
+        directory ??= Path.GetTempPath();
+        string modelString = model.Write();
+        string modelFile = Path.Join(
+            directory,
+            $"{Path.GetFileNameWithoutExtension(Path.GetTempFileName())}.mzn"
+        );
+
+        await File.WriteAllTextAsync(modelFile, modelString, token);
+        var command = Command();
+        command.AddArgs(args);
+        foreach (var arg in command.Arguments.Values)
+            if (arg.Flag?.Equals("solver") ?? false)
+                if (solverId is not null)
+                    throw new ArgumentException(
+                        $"Solver was provided both as an argument and command line"
+                    );
+                else
+                    solverId = arg.Value;
+        command.AddArgs("--json-stream", "--output-objective", "--statistics");
+        solverId ??= MiniZincSolver.GECODE;
+        var solver = GetSolver(solverId);
+        command.AddArgs(modelFile);
+        var commandString = command.ToString();
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = command.Exe,
+            Arguments = string.Join(' ', command.Arguments),
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true
+        };
+
+        if (command.WorkingDirectory is { } path)
+            startInfo.WorkingDirectory = path;
+
+        Channel<MiniZincMessage> channel = Channel.CreateUnbounded<MiniZincMessage>(
+            new UnboundedChannelOptions
+            {
+                SingleWriter = true,
+                SingleReader = true,
+                AllowSynchronousContinuations = true
+            }
+        );
+
+        Task processTask = Task.Run(async () =>
+        {
+            using Process process = new Process();
+            process.StartInfo = startInfo;
+            Dictionary<string, object>? statistics = null;
+            List<string>? warnings = null;
+            int iteration = 0;
+            DateTimeOffset startTime = DateTimeOffset.Now;
+            DateTimeOffset lastTime = DateTimeOffset.Now;
+            DateTimeOffset endTime = DateTimeOffset.Now;
+            TimeSpan iterTime = TimeSpan.Zero;
+            TimeSpan totalTime = TimeSpan.Zero;
+            token.Register(() =>
+            {
+                if (!process.HasExited)
+                    process.Kill();
+            });
+            MiniZincMessage msg = new MiniZincMessage
+            {
+                Command = commandString,
+                Model = modelString,
+                Solver = solver,
+                TimeStamp = startTime
+            };
+
+            try
+            {
+                process.Start();
+
+                msg = msg with { ProcessId = process.Id };
+
+                while (await process.StandardOutput.ReadLineAsync(token) is { } line)
+                {
+                    endTime = DateTimeOffset.Now;
+                    iterTime = endTime - lastTime;
+                    totalTime = endTime - startTime;
+                    lastTime = endTime;
+                    JsonOutput output = JsonOutput.Deserialize(line);
+                    switch (output)
+                    {
+                        case StatusOutput o:
+                            msg = msg with
+                            {
+                                TimeStamp = endTime,
+                                TotalTime = totalTime,
+                                Status = o.Status switch
+                                {
+                                    "ALL_SOLUTIONS" => SolveStatus.AllSolutions,
+                                    "OPTIMAL_SOLUTION" => SolveStatus.Optimal,
+                                    "UNSATISFIABLE" => SolveStatus.Unsatisfiable,
+                                    "UNBOUNDED" => SolveStatus.Unbounded,
+                                    "UNSAT_OR_UNBOUNDED" => SolveStatus.UnsatOrUnbounded,
+                                    "ERROR" => SolveStatus.Error,
+                                    _ => SolveStatus.Timeout
+                                },
+                                IterationTime = iterTime,
+                                Iteration = iteration
+                            };
+                            channel.Writer.TryWrite(msg);
+                            break;
+
+                        case WarningOutput o:
+                            warnings ??= [];
+                            warnings.Add(o.Message);
+                            break;
+
+                        case ErrorOutput o:
+                            msg = msg with
+                            {
+                                TimeStamp = endTime,
+                                TotalTime = totalTime,
+                                Status = o.Kind switch
+                                {
+                                    "SyntaxError" => SolveStatus.SyntaxError,
+                                    "TypeError" => SolveStatus.TypeError,
+                                    "AssertionError" => SolveStatus.AssertionError,
+                                    "EvaluationError" => SolveStatus.EvaluationError,
+                                    _ => SolveStatus.Error
+                                },
+                                IterationTime = iterTime,
+                                Iteration = iteration,
+                                Error = o.Message
+                            };
+                            channel.Writer.TryWrite(msg);
+                            break;
+
+                        case SolutionOutput o:
+
+                            string? dzn = null;
+                            if (o.Sections is { } sections)
+                            {
+                                foreach (var section in sections)
+                                {
+                                    if (section is "dzn")
+                                        dzn = o.Output[section].ToString();
+                                }
+                            }
+
+                            if (dzn is null)
+                                break;
+
+                            iteration++;
+                            var parsed = Parser.ParseDataFromString(dzn, out var data);
+                            if (!parsed.Ok)
+                            {
+                                msg = msg with
+                                {
+                                    TimeStamp = endTime,
+                                    TotalTime = totalTime,
+                                    Status = SolveStatus.Error,
+                                    IterationTime = iterTime,
+                                    Iteration = iteration,
+                                    Error = parsed.ErrorTrace
+                                };
+                                channel.Writer.TryWrite(msg);
+                            }
+                            else
+                            {
+                                data.Remove("_objective", out var objective);
+                                msg = msg with
+                                {
+                                    TimeStamp = endTime,
+                                    TotalTime = totalTime,
+                                    Status = SolveStatus.Satisfied,
+                                    IterationTime = iterTime,
+                                    Iteration = iteration,
+                                    Objective = objective,
+                                    Data = data
+                                };
+                                channel.Writer.TryWrite(msg);
+                            }
+                            break;
+
+                        case StatisticsOutput o:
+                            statistics ??= new Dictionary<string, object>();
+                            foreach (KeyValuePair<string, JsonNode?> kv in o.Statistics)
+                            {
+                                var name = kv.Key;
+                                var value = kv.Value!.AsValue();
+                                object? stat = null;
+                                if (value.TryGetValue<int>(out var i))
+                                    stat = i;
+                                else if (value.TryGetValue<bool>(out var b))
+                                    stat = b;
+                                else if (value.TryGetValue<float>(out var f))
+                                    stat = f;
+                                else if (value.TryGetValue<string>(out var s))
+                                    stat = s;
+                                if (stat is null)
+                                    continue;
+                                statistics.Add(name, stat);
+                                msg = msg with { Statistics = statistics };
+                            }
+
+                            break;
+
+                        case CommentOutput _:
+                            break;
+                    }
+                }
+
+                string stderr = await process.StandardError.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                int exitCode = process.ExitCode;
+
+                if (!string.IsNullOrEmpty(stderr) || exitCode > 0)
+                {
+                    if (!msg.IsError)
+                    {
+                        msg = msg with { Error = stderr, Status = SolveStatus.Error };
+                        channel.Writer.TryWrite(msg);
+                    }
+                }
+            }
+            catch (OperationCanceledException exn)
+            {
+                if (!process.HasExited)
+                    process.Kill();
+                msg = msg with { Status = SolveStatus.Cancelled };
+                channel.Writer.TryWrite(msg);
+            }
+            catch (Exception exn)
+            {
+                if (!process.HasExited)
+                    process.Kill();
+                msg = msg with { Status = SolveStatus.Error, Error = exn.Message };
+                channel.Writer.TryWrite(msg);
+            }
+            finally
+            {
+                channel.Writer.Complete();
+            }
+        });
+
+        await foreach (var message in channel.Reader.ReadAllAsync())
+        {
+            yield return message;
+        }
+
+        try
+        {
+            await processTask;
+        }
+        finally
+        {
+            if (File.Exists(modelFile))
+            {
+                try
+                {
+                    File.Delete(modelFile);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error deleting temporary model file: {ex}");
+                }
+            }
+        }
     }
 
     [GeneratedRegex(@"MiniZinc to FlatZinc converter, version (\d).(\d).(\d), build (\d*)")]

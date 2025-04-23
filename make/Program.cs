@@ -38,7 +38,8 @@ Add(
 
         async Task Git(params string[] args)
         {
-            var cmd = new Cmd("git", args).WithWorkingDirectory(cloneDir);
+            var cmd = new Cmd("git", args);
+            cmd.WorkingDirectory = cloneDir.FullName;
             Console.WriteLine(cmd);
             var result = await cmd.Run();
             Guard.IsEqualTo((int)result.Status, (int)ProcessStatus.Ok);

@@ -14,5 +14,6 @@ public enum SolveStatus : short
     SyntaxError,
     TypeError,
     AssertionError,
-    EvaluationError
+    EvaluationError,
+    Cancelled
 }

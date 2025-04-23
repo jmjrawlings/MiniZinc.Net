@@ -1,20 +1,20 @@
-﻿namespace MiniZinc.Tests;
-
-using System.Text.Json.Nodes;
-
-public sealed class TestSuite
-{
-    public required string Name { get; init; }
-
-    public required bool? Strict { get; init; }
-
-    public required JsonObject? Options { get; init; }
-
-    public required IReadOnlyList<string>? Solvers { get; init; }
-
-    public required IReadOnlyList<TestCase> TestCases { get; init; }
-
-    public required IReadOnlyList<string> IncludeGlobs { get; init; }
-
-    public override string ToString() => $"<{Name}>";
-}
+﻿// namespace MiniZinc.Tests;
+//
+// using System.Text.Json.Nodes;
+//
+// public sealed class TestSuite
+// {
+//     public string Name { get; set; }
+//
+//     public bool? Strict { get; set; }
+//
+//     public JsonObject? Options { get; set; }
+//
+//     public List<string>? Solvers { get; set; }
+//
+//     public List<TestCase> TestCases { get; set; }
+//
+//     public List<string> IncludeGlobs { get; set; }
+//
+//     public override string ToString() => $"<{Name}>";
+// }

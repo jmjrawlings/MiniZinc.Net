@@ -13,41 +13,32 @@ using static System.Console;
 
 public sealed class SatisfyTests
 {
-    [Test]
-    public async Task TestParseTests()
-    {
-        var source = "./spec/suites.yml".ToFile();
-        var spec = TestParser.ParseTestSpecFile(source);
-        spec.TestSuites.ShouldNotBeEmpty();
-    }
+    private static CancellationTokenSource _cts = new CancellationTokenSource();
 
     public static IEnumerable<IntegrationTestCase> GetSatisfyTests()
     {
         var client = MiniZincClient.Autodetect();
-        var source = "./spec/suites.yml".ToFile();
-        var testSpec = TestParser.ParseTestSpecFile(source);
-        foreach (var testSuite in testSpec.TestSuites)
+        var source = "spec.json".ToFile();
+        var testSpec = TestSpec.FromJsonFile(source);
+        foreach (var testCase in testSpec.TestCases)
         {
-            if (testSuite.Name != "optimize-0")
+            if (testCase.Suite != "optimize-0")
                 continue;
 
-            foreach (var testCase in testSuite.TestCases)
-            {
-                var solvers = testSuite.Solvers ?? [MiniZincSolver.GECODE];
+            var solvers = testCase.Solvers ?? [MiniZincSolver.GECODE];
 
-                foreach (var solver in solvers)
-                {
-                    IntegrationTestCase tcase = new();
-                    tcase.Client = client;
-                    tcase.Options = testSuite.Options;
-                    tcase.File = testCase.File;
-                    tcase.Sequence = testCase.Sequence;
-                    tcase.InputFiles = testCase.InputFiles;
-                    tcase.Solver = solver;
-                    tcase.Suite = testSuite;
-                    tcase.Slug = testCase.Slug;
-                    yield return tcase;
-                }
+            foreach (var solver in solvers)
+            {
+                IntegrationTestCase tcase = new();
+                tcase.Client = client;
+                tcase.Name = $"{testCase.Path} {testCase.Suite}";
+                tcase.Options = testCase.Options;
+                tcase.File = "spec".ToDirectory().JoinFile(testCase.Path);
+                tcase.InputFiles = testCase.InputFiles;
+                tcase.Solver = solver;
+                // tcase.Suite = testCase.s;
+                tcase.Path = testCase.Path;
+                yield return tcase;
             }
         }
     }
@@ -56,12 +47,12 @@ public sealed class SatisfyTests
     {
         public MiniZincClient Client;
         public FileInfo File;
-        public string Slug;
+        public string Path;
+        public string Name;
         public int Sequence;
         public string? Solver;
         public List<string>? InputFiles;
         public JsonNode? Options;
-        public TestSuite Suite;
     }
 
     [Test]
@@ -69,11 +60,11 @@ public sealed class SatisfyTests
     [ArgumentDisplayFormatter<TestNameFormatter>]
     public async Task RunTest(IntegrationTestCase test)
     {
-        WriteLine($"{test.Slug}");
+        WriteLine($"{test.Path}");
         WriteLine("--------------------------------------");
         var source = await File.ReadAllTextAsync(test.File.ToString());
-        WriteLine(source);
-        WriteLine("--------------------------------------");
+        // WriteLine(source);
+        // WriteLine("--------------------------------------");
 
         MiniZincModel? model;
         try
@@ -87,18 +78,18 @@ public sealed class SatisfyTests
         }
 
         var mzn = model.Write();
-
-        WriteLine($"Parsed: ");
-        WriteLine("--------------------------------------");
         WriteLine(mzn);
         WriteLine("--------------------------------------");
 
         var solver = test.Solver;
         var client = test.Client;
-        var process = client.Solve(model, solver);
-        await foreach (var sol in process.Solutions())
+        WriteLine("--------------------------------------");
+
+        await foreach (var sol in client.Solve(model, _cts.Token, solver))
         {
             WriteLine($"{sol.Iteration} - {sol.Status}");
+            if (sol.Error is not null)
+                WriteLine(sol.Error);
         }
 
         var a = 2;
@@ -213,7 +204,7 @@ public sealed class SatisfyTests
         public override string FormatValue(object? value)
         {
             var tcase = (IntegrationTestCase)value;
-            return $"{tcase.Slug} - {tcase.Suite.Name}";
+            return tcase.Name;
         }
     }
 }

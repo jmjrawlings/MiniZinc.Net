@@ -73,7 +73,7 @@ public readonly partial struct Arg
     public static IEnumerable<Arg> Parse(string s)
     {
         var regex = Regex();
-        var matches = regex.Matches(s);
+        var matches = regex.Matches(s.Trim());
         foreach (Match m in matches)
         {
             if (m.Length <= 0)

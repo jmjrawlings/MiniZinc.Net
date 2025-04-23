@@ -2,13 +2,11 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Core;
 
 public sealed record TestSpec
 {
-    public List<TestSuite> TestSuites { get; set; } = [];
-
-    //
-    // public List<TestCase> TestCases { get; set; } = [];
+    public List<TestCase> TestCases { get; set; } = [];
 
     public static string ToJsonString(TestSpec spec)
     {
@@ -26,6 +24,7 @@ public sealed record TestSpec
 
             var options = new JsonSerializerOptions
             {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower,
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
                 WriteIndented = true
@@ -37,9 +36,11 @@ public sealed record TestSpec
         }
     }
 
-    public static void ToJsonFile(TestSpec spec, FileInfo file)
+    public void ToJsonFile(string path) => ToJsonFile(path.ToFile());
+
+    public void ToJsonFile(FileInfo file)
     {
-        var json = ToJsonString(spec);
+        var json = ToJsonString(this);
         File.WriteAllText(file.FullName, json);
     }
 
