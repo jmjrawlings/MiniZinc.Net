@@ -7,7 +7,7 @@ using System.Globalization;
 using static Char;
 using static TokenKind;
 
-internal struct Lexer
+internal ref struct Lexer
 {
     const char FWD_SLASH = '/';
     const char BACK_SLASH = '\\';
@@ -77,9 +77,6 @@ internal struct Lexer
         _sourceText = sourceText;
         _n = sourceText.Length;
         _tokens = new Token[(_n + 1) / 2];
-        Step();
-        while (!(_fin || _err))
-            MoveNext();
     }
 
     public void MoveNext()
@@ -771,7 +768,30 @@ internal struct Lexer
     /// </summary>
     public static bool Lex(string s, out Token[] tokens)
     {
+        if (string.IsNullOrWhiteSpace(s))
+        {
+            tokens = new Token[]
+            {
+                new Token()
+                {
+                    Kind = TOKEN_EOF,
+                    Line = 1,
+                    Col = 1,
+                    Start = 0,
+                    Length = 1,
+                    IntValue = default,
+                    StringValue = default,
+                    FloatValue = default,
+                }
+            };
+            return true;
+        }
+
         var lexer = new Lexer(s);
+        lexer.Step();
+        while (!(lexer._fin || lexer._err))
+            lexer.MoveNext();
+
         tokens = lexer._tokens[..(lexer._outdex)];
         if (lexer._err)
             return false;

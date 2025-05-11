@@ -143,7 +143,7 @@ public sealed class ManualClientTests
 
         var timeout = TimeSpan.FromSeconds(1);
         var cts = new CancellationTokenSource(timeout);
-        var msg = await Client.Solution(model, cts.Token);
+        var msg = await Client.Solution(model, "gecode", cts.Token);
         msg.Status.ShouldBe(SolveStatus.Cancelled);
     }
 
@@ -164,7 +164,7 @@ public sealed class ManualClientTests
             """
         );
         var cnc = new CancellationToken(true);
-        var msg = await Client.Solution(model, cnc);
+        var msg = await Client.Solution(model, null, cnc);
         msg.Status.ShouldBe(SolveStatus.Cancelled);
     }
 
@@ -193,8 +193,7 @@ public sealed class ManualClientTests
         var msg = await Client.Solution(
             model,
             default,
-            null,
-            null,
+            default,
             "--restart=constant",
             "--restart-base=100"
         );

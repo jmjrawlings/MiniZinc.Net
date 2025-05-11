@@ -1,0 +1,2 @@
+test: !Suite
+  includes: ['unit/json/coerce_set.mzn']

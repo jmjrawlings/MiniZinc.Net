@@ -134,14 +134,13 @@ public sealed partial class MiniZincClient
 
     public async Task<MiniZincMessage> Solution(
         MiniZincModel model,
+        string? solver = null,
         CancellationToken token = default,
-        string? solverId = null,
-        string? directory = null,
-        params string[] args
+        params string?[] args
     )
     {
         MiniZincMessage? msg = null;
-        await foreach (var message in Solve(model, token, solverId, directory, args))
+        await foreach (var message in Solve(model, solver, token, args))
         {
             msg = message;
         }
@@ -154,10 +153,9 @@ public sealed partial class MiniZincClient
 
     public async IAsyncEnumerable<MiniZincMessage> Solve(
         MiniZincModel model,
+        string? solver = null,
         [EnumeratorCancellation] CancellationToken token = default,
-        string? solverId = null,
-        string? directory = null,
-        params string[] args
+        params string?[] args
     )
     {
         if (token.IsCancellationRequested)
@@ -173,7 +171,7 @@ public sealed partial class MiniZincClient
             yield break;
         }
 
-        directory ??= Path.GetTempPath();
+        var directory = Path.GetTempPath();
         string modelString = model.Write();
         string modelFile = Path.Join(
             directory,
@@ -185,16 +183,17 @@ public sealed partial class MiniZincClient
         command.AddArgs(args);
         foreach (var arg in command.Arguments.Values)
             if (arg.Flag?.Equals("solver") ?? false)
-                if (solverId is not null)
+                if (solver is not null)
                     throw new ArgumentException(
                         $"Solver was provided both as an argument and command line"
                     );
                 else
-                    solverId = arg.Value;
+                    solver = arg.Value;
         command.AddArgs("--json-stream", "--output-objective", "--statistics");
-        solverId ??= MiniZincSolver.GECODE;
-        var solver = GetSolver(solverId);
+        solver ??= MiniZincSolver.GECODE;
+        var solverInfo = GetSolver(solver);
         command.AddArgs(modelFile);
+        command.AddArgs($"--solver {solverInfo.Id}");
         var commandString = command.ToString();
 
         var startInfo = new ProcessStartInfo
@@ -240,7 +239,7 @@ public sealed partial class MiniZincClient
             {
                 Command = commandString,
                 Model = modelString,
-                Solver = solver,
+                Solver = solverInfo,
                 TimeStamp = startTime
             };
 
@@ -308,21 +307,45 @@ public sealed partial class MiniZincClient
                         case SolutionOutput o:
 
                             string? dzn = null;
+                            string? raw = null;
                             if (o.Sections is { } sections)
                             {
                                 foreach (var section in sections)
                                 {
-                                    if (section is "dzn")
-                                        dzn = o.Output[section].ToString();
+                                    switch (section)
+                                    {
+                                        case "dzn":
+                                            dzn = o.Output[section].ToString();
+                                            break;
+                                        case "raw":
+                                            raw = o.Output[section].ToString();
+                                            break;
+                                    }
                                 }
                             }
 
-                            if (dzn is null)
-                                break;
-
                             iteration++;
-                            var parsed = Parser.ParseDataFromString(dzn, out var data);
-                            if (!parsed.Ok)
+                            if (dzn is null)
+                            {
+                                msg = msg with
+                                {
+                                    TimeStamp = endTime,
+                                    TotalTime = totalTime,
+                                    Status = SolveStatus.Satisfied,
+                                    IterationTime = iterTime,
+                                    Iteration = iteration,
+                                    Output = raw
+                                };
+                            }
+                            else if (
+                                !Parser.TryParseDataString(
+                                    dzn,
+                                    out var data,
+                                    out var err,
+                                    out var trace,
+                                    out var token
+                                )
+                            )
                             {
                                 msg = msg with
                                 {
@@ -331,9 +354,9 @@ public sealed partial class MiniZincClient
                                     Status = SolveStatus.Error,
                                     IterationTime = iterTime,
                                     Iteration = iteration,
-                                    Error = parsed.ErrorTrace
+                                    Error = trace,
+                                    Output = raw
                                 };
-                                channel.Writer.TryWrite(msg);
                             }
                             else
                             {
@@ -346,10 +369,11 @@ public sealed partial class MiniZincClient
                                     IterationTime = iterTime,
                                     Iteration = iteration,
                                     Objective = objective,
-                                    Data = data
+                                    Data = data,
+                                    Output = raw
                                 };
-                                channel.Writer.TryWrite(msg);
                             }
+                            channel.Writer.TryWrite(msg);
                             break;
 
                         case StatisticsOutput o:
@@ -369,7 +393,7 @@ public sealed partial class MiniZincClient
                                     stat = s;
                                 if (stat is null)
                                     continue;
-                                statistics.Add(name, stat);
+                                statistics[name] = stat;
                                 msg = msg with { Statistics = statistics };
                             }
 

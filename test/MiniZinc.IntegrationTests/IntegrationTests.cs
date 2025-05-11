@@ -11,65 +11,73 @@ using Shouldly;
 using TUnit;
 using static System.Console;
 
-public sealed class SatisfyTests
+public abstract class IntegrationTests
 {
     private static CancellationTokenSource _cts = new CancellationTokenSource();
+    private static MiniZincClient _client = MiniZincClient.Autodetect();
 
-    public static IEnumerable<IntegrationTestCase> GetSatisfyTests()
+    public async Task RunSolveTest(string slug, string solver, string? args, string? output)
     {
-        var client = MiniZincClient.Autodetect();
-        var source = "spec.json".ToFile();
-        var testSpec = TestSpec.FromJsonFile(source);
-        foreach (var testCase in testSpec.TestCases)
-        {
-            if (testCase.Suite != "optimize-0")
-                continue;
-
-            var solvers = testCase.Solvers ?? [MiniZincSolver.GECODE];
-
-            foreach (var solver in solvers)
-            {
-                IntegrationTestCase tcase = new();
-                tcase.Client = client;
-                tcase.Name = $"{testCase.Path} {testCase.Suite}";
-                tcase.Options = testCase.Options;
-                tcase.File = "spec".ToDirectory().JoinFile(testCase.Path);
-                tcase.InputFiles = testCase.InputFiles;
-                tcase.Solver = solver;
-                // tcase.Suite = testCase.s;
-                tcase.Path = testCase.Path;
-                yield return tcase;
-            }
-        }
-    }
-
-    public struct IntegrationTestCase
-    {
-        public MiniZincClient Client;
-        public FileInfo File;
-        public string Path;
-        public string Name;
-        public int Sequence;
-        public string? Solver;
-        public List<string>? InputFiles;
-        public JsonNode? Options;
-    }
-
-    [Test]
-    [MethodDataSource(typeof(SatisfyTests), nameof(GetSatisfyTests))]
-    [ArgumentDisplayFormatter<TestNameFormatter>]
-    public async Task RunTest(IntegrationTestCase test)
-    {
-        WriteLine($"{test.Path}");
+        string path = $"spec/{slug}";
+        FileInfo file = new FileInfo(path);
+        WriteLine($"{path}");
         WriteLine("--------------------------------------");
-        var source = await File.ReadAllTextAsync(test.File.ToString());
-        // WriteLine(source);
-        // WriteLine("--------------------------------------");
+        string source = await File.ReadAllTextAsync(path);
+        MiniZincModel model = MiniZincModel.FromFile(path);
+        model.ClearOutput();
+
+        string mzn = model.Write();
+        WriteLine(mzn);
+        WriteLine("--------------------------------------");
+        var result = await _client.Solution(model, solver, _cts.Token, args);
+        result.IsSolution.ShouldBeTrue();
+
+        // Test case has no expected output
+        if (output is null)
+            return;
+
+        // If we cannot parse the test case dzn then ignore (for now)
+        if (
+            !Parser.TryParseDataString(
+                output,
+                out var expected,
+                out var err,
+                out var trace,
+                out var token
+            )
+        )
+        {
+            WriteLine($"Could not parse test case output:\n{output}");
+            return;
+        }
+
+        if (result.Data is not { } actual)
+            return;
+
+        actual.ShouldBe(expected);
+
+        var a = 2;
+    }
+
+    public async Task RunTest(
+        string slug,
+        TestType ttype,
+        string? solver,
+        string? args,
+        string? solutions,
+        string? errorMessage,
+        string? errorRegex
+    )
+    {
+        string path = $"spec/{slug}";
+        WriteLine($"{path}");
+        WriteLine("--------------------------------------");
+        var source = await File.ReadAllTextAsync(path);
 
         MiniZincModel? model;
         try
         {
-            model = MiniZincModel.FromFile(test.File);
+            model = MiniZincModel.FromFile(path);
         }
         catch (Exception exn)
         {
@@ -81,11 +89,7 @@ public sealed class SatisfyTests
         WriteLine(mzn);
         WriteLine("--------------------------------------");
 
-        var solver = test.Solver;
-        var client = test.Client;
-        WriteLine("--------------------------------------");
-
-        await foreach (var sol in client.Solve(model, _cts.Token, solver))
+        await foreach (var sol in _client.Solve(model, solver, _cts.Token))
         {
             WriteLine($"{sol.Iteration} - {sol.Status}");
             if (sol.Error is not null)
@@ -194,17 +198,17 @@ public sealed class SatisfyTests
         }
     }
 
-    public class TestNameFormatter : ArgumentDisplayFormatter
-    {
-        public override bool CanHandle(object? value)
-        {
-            return value is IntegrationTestCase;
-        }
-
-        public override string FormatValue(object? value)
-        {
-            var tcase = (IntegrationTestCase)value;
-            return tcase.Name;
-        }
-    }
+    // public class TestNameFormatter : ArgumentDisplayFormatter
+    // {
+    //     public override bool CanHandle(object? value)
+    //     {
+    //         return value is IntegrationTestCase;
+    //     }
+    //
+    //     public override string FormatValue(object? value)
+    //     {
+    //         var tcase = (IntegrationTestCase)value;
+    //         return tcase.Name;
+    //     }
+    // }
 }

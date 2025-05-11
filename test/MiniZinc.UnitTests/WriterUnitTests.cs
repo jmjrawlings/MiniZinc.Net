@@ -8,8 +8,7 @@ public sealed class WriterUnitTests
     [Arguments("solve satisfy   ;")]
     public void test_write_minified(string input)
     {
-        var ok = Parser.ParseModelFromString(input, out var model);
-        ok.ShouldBeTrue("Text s  hould parse");
+        var model = Parser.ParseModelString(input);
         var options = new WriteOptions { Minify = true };
         var output = model.Write(options);
         var a = 2;
@@ -29,8 +28,7 @@ public sealed class WriterUnitTests
         var expected =
             """include "b.mzn";include "a.mzn";var int:a;solve maximize a;output["\(a)"];""";
 
-        var ok = Parser.ParseModelFromString(input, out var model);
-        ok.ShouldBeTrue("Text should parse");
+        var model = Parser.ParseModelString(input);
         var opts = new WriteOptions { Prettify = true, Minify = true };
         var output = model.Write(opts);
         output.ShouldBe(expected);

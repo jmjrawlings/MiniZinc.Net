@@ -6,24 +6,27 @@ using System.Text.Json.Nodes;
 [DebuggerDisplay("{Path}")]
 public record TestCase
 {
-    /// Name of the test suite this belongs to
     public string Suite { get; set; }
 
     /// Path of the test case relative to the test spec dir
     public string Path { get; set; }
 
-    /// Solvers for run the test on
+    /// Enumeration of test type
+    public TestType Type { get; set; }
+
+    /// Solvers to use
     public List<string>? Solvers { get; set; }
 
+    /// Solvers to check against (for Type.CheckAgainst)
+    public List<string>? CheckAgainst { get; set; }
+
     /// Any additional input files (eg: json data)
-    public List<string>? InputFiles { get; set; }
+    public List<string>? ExtraFiles { get; set; }
 
     /// Extra options
     public JsonObject? Options { get; set; }
 
-    /// Enumeration of test type
-    public TestType Type { get; set; }
-
+    /// Command line args
     public string? Args { get; set; }
 
     /// All solutions, present if Type == AllSolutions or AnySolution

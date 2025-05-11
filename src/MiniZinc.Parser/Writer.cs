@@ -463,6 +463,11 @@ public sealed class Writer
                 }
                 break;
 
+            case SliceExpr:
+                WriteChar(DOT);
+                WriteChar(DOT);
+                break;
+
             // case IndexAndNode e:
             //     WriteExpr(e.Index);
             //     WriteChar(COLON);
@@ -841,6 +846,13 @@ public sealed class Writer
     {
         WriteChar(OPEN_BRACKET);
         WriteChar(PIPE);
+        if (arr.I is 0)
+        {
+            WriteChar(PIPE);
+            WriteChar(CLOSE_BRACKET);
+            return;
+        }
+
         switch (arr.RowIndexed, arr.ColIndexed)
         {
             case (false, false):

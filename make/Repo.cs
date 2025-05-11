@@ -108,5 +108,5 @@ public static class Repo
     public static DirectoryInfo BuildDir => SolutionDir.JoinDir("build");
     public static DirectoryInfo TestSpecDir => IntegrationTestsDir.JoinDir("spec");
     public static FileInfo TestSpecYaml => TestSpecDir.JoinFile("suites.yml");
-    public static FileInfo TestSpecJson => TestDir.JoinFile("suites.json");
+    public static FileInfo TestSpecJson => IntegrationTestsDir.JoinFile("spec.json");
 }

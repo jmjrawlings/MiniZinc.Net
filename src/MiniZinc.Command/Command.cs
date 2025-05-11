@@ -51,7 +51,7 @@ public struct Command
     /// Create a new command with the given args added
     /// </summary>
     /// <example>new Command("git").Add("checkout","-b","develop")</example>
-    public void AddArgs(params string[] args)
+    public void AddArgs(params string?[] args)
     {
         Arguments.Add(args);
     }

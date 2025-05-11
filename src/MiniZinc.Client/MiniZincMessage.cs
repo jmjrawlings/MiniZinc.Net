@@ -61,6 +61,11 @@ public sealed record MiniZincMessage
     /// </summary>
     public MiniZincData? Data { get; init; }
 
+    /// <summary>
+    /// The raw output string
+    /// </summary>
+    public string? Output { get; init; }
+
     // /// <summary>
     // /// Items from the output section
     // /// </summary>
@@ -117,7 +122,7 @@ public sealed record MiniZincMessage
     /// </summary>
     public double? RelativeIterationGap { get; init; }
 
-    public bool IsSuccess => !IsError;
+    public bool IsSolution => !IsError;
 
     public bool IsError =>
         Status switch

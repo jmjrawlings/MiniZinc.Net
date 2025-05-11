@@ -12,10 +12,13 @@ public sealed class Args
 
     public IEnumerable<Arg> Values => _args ?? Enumerable.Empty<Arg>();
 
-    public void Add(params string[] args)
+    public void Add(params string?[] args)
     {
         foreach (var arg in args)
         {
+            if (arg is null)
+                continue;
+
             foreach (var a in Arg.Parse(arg))
             {
                 _args ??= new List<Arg>();

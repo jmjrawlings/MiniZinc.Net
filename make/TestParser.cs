@@ -1,5 +1,6 @@
 ﻿namespace MiniZinc.Tests;
 
+using System.Collections.Immutable;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -57,7 +58,7 @@ public sealed class TestParser : IYamlTypeConverter
             case JsonObject obj when SpecFile is not null:
                 return ParseTestSpec(SpecFile, obj);
             case JsonObject obj:
-                return ParseTestCase(obj);
+                return ParseTestCaseYaml(obj);
             default:
                 return null;
         }
@@ -83,33 +84,44 @@ public sealed class TestParser : IYamlTypeConverter
     )
     {
         // var strict = suiteNode["strict"]?.GetValue<bool>();
-        var options = suiteNode["options"]?.AsObject();
-        var solvers = suiteNode["solvers"]?.AsArray().Select(x => x!.GetValue<string>()).ToList();
-        var globs = suiteNode["includes"]!.AsArray().Select(x => x!.GetValue<string>()).ToList();
-        var dir = specFile.Directory!;
+        var suiteOptions = suiteNode["options"]?.AsObject();
+        var suiteSolvers = suiteNode["solvers"]
+            ?.AsArray()
+            .Select(x => x!.GetValue<string>())
+            .ToList();
+        var suiteGlobs = suiteNode["includes"]!
+            .AsArray()
+            .Select(x => x!.GetValue<string>())
+            .ToList();
+        var specDir = specFile.Directory!;
 
-        foreach (var glob in globs)
+        foreach (var glob in suiteGlobs)
         {
-            foreach (var file in dir.EnumerateFiles(glob, SearchOption.AllDirectories))
+            foreach (var file in specDir.EnumerateFiles(glob, SearchOption.AllDirectories))
             {
                 if (file.Extension != ".mzn")
                     continue;
 
-                var path = Path.GetRelativePath(dir.FullName, file.FullName).Replace('\\', '/');
+                var path = Path.GetRelativePath(specDir.FullName, file.FullName).Replace('\\', '/');
 
-                foreach (var yaml in GetTestCaseYaml(file))
+                foreach (var testCasesYaml in GetTestCaseYaml(file))
                 {
-                    var testCase = ParseTestCase(yaml);
+                    var testCase = ParseTestCaseYaml(testCasesYaml);
                     if (testCase is null)
                         continue;
 
                     testCase.Path = path;
                     testCase.Suite = suiteName;
                     var opts = testCase.Options;
-                    if (options is not null)
+                    var solvers = (testCase.Solvers ?? suiteSolvers ?? []).ToImmutableArray();
+
+                    if (suiteOptions is not null)
                     {
-                        foreach (var kv in options)
+                        foreach (var kv in suiteOptions)
                         {
+                            if (opts?.ContainsKey(kv.Key) ?? false)
+                                continue;
+
                             opts ??= new();
                             opts[kv.Key] = kv.Value.DeepClone();
                         }
@@ -117,10 +129,20 @@ public sealed class TestParser : IYamlTypeConverter
                     ParseOptions(ref opts, out bool? allSolutions, out var args);
                     testCase.Options = opts;
                     testCase.Args = args?.ToString();
-                    testCase.Solvers = solvers;
                     if (allSolutions is true)
-                        testCase.Type = TestType.TEST_ALL_SOLUTIONS;
+                        testCase.Type = TestType.ALL_SOLUTIONS;
+
                     spec.TestCases ??= [];
+
+                    if (solvers.Length > 0)
+                    {
+                        testCase.Solvers = [];
+                        testCase.Solvers.AddRange(solvers);
+                    }
+
+                    if (testCase.Type is TestType.SOLVE && testCase.Solutions is { Count: > 1 })
+                        testCase.Type = TestType.ANY_SOLUTION;
+
                     spec.TestCases.Add(testCase);
                 }
             }
@@ -195,26 +217,23 @@ public sealed class TestParser : IYamlTypeConverter
             args = null;
     }
 
-    private TestCase ParseTestCase(JsonObject node)
+    private TestCase ParseTestCaseYaml(JsonObject node)
     {
         var solvers = node["solvers"]?.ToNonEmptyList<string>();
         var test_type = node["type"]?.GetValue<string>();
         var inputFiles = node["extra_files"]?.ToNonEmptyList<string>();
         var expected = node["expected"];
         var options = node["options"]?.AsObject();
-        var testCase = new TestCase
-        {
-            Solvers = solvers,
-            InputFiles = inputFiles,
-            Options = options,
-        };
+        var testCase = new TestCase { ExtraFiles = inputFiles, Options = options, };
+        var against = node["check_against"]?.ToNonEmptyList<string>();
+        testCase.Solvers = solvers;
         testCase.Type = test_type switch
         {
-            "compile" => TestType.TEST_COMPILE,
-            "output-model" => TestType.TEST_OUTPUT_MODEL,
-            _ => TestType.TEST_SOLVE,
+            "compile" => TestType.COMPILE,
+            "output-model" => TestType.OUTPUT_MODEL,
+            _ => TestType.SOLVE,
         };
-        ParseExpectedSolution(testCase, expected);
+        ParseExpectedSolution(testCase, expected, against);
         return testCase;
     }
 
@@ -287,7 +306,9 @@ public sealed class TestParser : IYamlTypeConverter
         else if (int.TryParse(value, out var i))
             return i;
         else
+        {
             return value;
+        }
     }
 
     private YamlTag? GetTag(NodeEvent e)
@@ -383,7 +404,7 @@ public sealed class TestParser : IYamlTypeConverter
         return spec;
     }
 
-    public static TestCase? ParseTestCase(string yaml)
+    public static TestCase? ParseTestCaseYaml(string yaml)
     {
         var parser = new TestParser(null);
         var deserializer = new DeserializerBuilder()
@@ -394,9 +415,14 @@ public sealed class TestParser : IYamlTypeConverter
         return testCase;
     }
 
-    private void ParseExpectedSolution(TestCase testCase, JsonNode? expected)
+    private void ParseExpectedSolution(
+        TestCase testCase,
+        JsonNode? expected,
+        List<string>? checkAgainst
+    )
     {
         string? dzn = null;
+        bool output = false;
         var tag = GetTag(expected);
         switch (expected, tag)
         {
@@ -407,44 +433,39 @@ public sealed class TestParser : IYamlTypeConverter
                 switch (solTag, solNode, status)
                 {
                     case (_, _, "UNSATISFIABLE"):
-                        testCase.Type = TestType.TEST_UNSATISFIABLE;
+                        testCase.Type = TestType.UNSATISFIABLE;
                         break;
 
                     case (_, JsonArray array, "ALL_SOLUTIONS"):
-                        testCase.Type = TestType.TEST_ALL_SOLUTIONS;
+                        testCase.Type = TestType.ALL_SOLUTIONS;
                         testCase.Solutions ??= [];
                         foreach (var sol in array)
                         {
-                            dzn = ParseSolution(sol?.AsObject());
+                            (dzn, output) = ParseSolution(sol?.AsObject());
                             testCase.Solutions ??= [];
                             testCase.Solutions.Add(dzn);
                         }
                         break;
 
-                    // case (YamlTag.Solution, JsonObject sol, "OPTIMAL_SOLUTION"):
-                    //     dzn = ParseSolution(sol);
-                    //     testCase.Type = TestType.TEST_OPTIMISE;
-                    //     if (dzn is not null)
-                    //     {
-                    //         testCase.Solutions ??= [];
-                    //         testCase.Solutions.Add(dzn);
-                    //     }
-                    //     break;
+                    case (_, _, _) when checkAgainst is not null:
+                        testCase.Type = TestType.CHECK_AGAINST;
+                        testCase.CheckAgainst = checkAgainst;
+                        break;
 
                     case (YamlTag.Solution, JsonObject sol, _):
-                        dzn = ParseSolution(sol);
-                        // testCase.Type = TestType.TEST_SATISFY;
-                        if (dzn is not null)
-                        {
-                            testCase.Solutions ??= [];
-                            testCase.Solutions.Add(dzn);
-                        }
+                        (dzn, output) = ParseSolution(sol);
+
+                        if (output)
+                            testCase.Type = TestType.OUTPUT;
+
+                        testCase.Solutions ??= [];
+                        testCase.Solutions.Add(dzn);
                         break;
 
                     case (YamlTag.SolutionSet, JsonArray set, _):
                         foreach (var sol in set)
                         {
-                            dzn = ParseSolution(sol.AsObject());
+                            (dzn, output) = ParseSolution(sol.AsObject());
                             if (dzn is not null)
                             {
                                 testCase.Solutions ??= [];
@@ -456,13 +477,13 @@ public sealed class TestParser : IYamlTypeConverter
                 break;
 
             case (_, YamlTag.FlatZinc):
-                testCase.Type = TestType.TEST_COMPILE;
+                testCase.Type = TestType.COMPILE;
                 testCase.OutputFiles ??= [];
                 testCase.OutputFiles.Add(expected[VAL]!.ToString());
                 break;
 
             case (_, YamlTag.OutputModel):
-                testCase.Type = TestType.TEST_OUTPUT_MODEL;
+                testCase.Type = TestType.OUTPUT_MODEL;
                 testCase.OutputFiles ??= [];
                 testCase.OutputFiles.Add(expected[VAL]!.ToString());
                 break;
@@ -472,40 +493,48 @@ public sealed class TestParser : IYamlTypeConverter
                 testCase.ErrorMessage = expected.TryGetValue<string>("message");
                 testCase.Type = expected.TryGetValue<string>("type") switch
                 {
-                    "AssertionError" => TestType.TEST_ASSERTION_ERROR,
-                    "EvaluationError" => TestType.TEST_EVALULATION_ERROR,
-                    "MiniZincError" => TestType.TEST_MINZINC_ERROR,
-                    "TypeError" => TestType.TEST_TYPE_ERROR,
-                    "SyntaxError" => TestType.TEST_SYNTAX_ERROR,
-                    _ => TestType.TEST_ERROR
+                    "AssertionError" => TestType.ASSERTION_ERROR,
+                    "EvaluationError" => TestType.EVALUATION_ERROR,
+                    "MiniZincError" => TestType.MINIZINC_ERROR,
+                    "TypeError" => TestType.TYPE_ERROR,
+                    "SyntaxError" => TestType.SYNTAX_ERROR,
+                    _ => TestType.ERROR
                 };
                 break;
             case (JsonArray results, _):
                 foreach (var result in results)
-                    ParseExpectedSolution(testCase, result);
+                    ParseExpectedSolution(testCase, result, checkAgainst);
                 break;
             default:
                 throw new Exception();
         }
     }
 
-    private static string? ParseSolution(JsonObject? solution)
+    private static (string?, bool) ParseSolution(JsonObject? solution)
     {
         if (solution is not { Count: > 0 })
-            return null;
+            return (null, false);
 
         var tag = GetTag(solution);
         string dzn;
+        bool output = false;
         var sb = new StringBuilder();
         foreach (var (name, node) in solution)
         {
+            if (name == "_output_item")
+            {
+                ParseVariable(node, sb);
+                output = true;
+                break;
+            }
+
             sb.Append(name);
             sb.Append('=');
             ParseVariable(node, sb);
             sb.Append(';');
         }
         dzn = sb.ToString();
-        return dzn;
+        return (dzn, output);
     }
 
     private static void ParseVariable(JsonNode? node, StringBuilder sb, bool nested = false)
@@ -532,7 +561,8 @@ public sealed class TestParser : IYamlTypeConverter
                 ParseVariableArray(array, sb, nested);
                 break;
             case JsonValue val when val.GetValueKind() is JsonValueKind.String:
-                sb.Append(val);
+                var x = $"\"{val}\"";
+                sb.Append(x);
                 break;
             default:
                 sb.Append(node);

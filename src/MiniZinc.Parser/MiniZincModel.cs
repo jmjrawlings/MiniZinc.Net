@@ -277,7 +277,7 @@ public sealed class MiniZincModel
         AddSyntax(output);
     }
 
-    public void ClearOutputs()
+    public void ClearOutput()
     {
         _outputs?.Clear();
     }
@@ -484,8 +484,14 @@ public sealed class MiniZincModel
         if (!_addedFiles.Add(file.FullName))
             return;
 
-        var result = ParseItemsFromFile(file, out var items);
-        result.EnsureOk();
+        var result = TryParseItemsFromFile(
+            file.FullName,
+            out var items,
+            out _,
+            out _,
+            out _,
+            out _
+        );
 
         // Use the directory of the added file as another search path
         if (file.Directory is { } dir)
@@ -535,8 +541,7 @@ public sealed class MiniZincModel
 
     public void AddString(string mzn)
     {
-        var result = ParseItemsFromString(mzn, out var items);
-        result.EnsureOk();
+        var items = ParseItemsFromString(mzn);
         AddSyntax(items);
     }
 
@@ -550,10 +555,17 @@ public sealed class MiniZincModel
     /// Add the directory as a place to search for models
     /// referenced by the minizinc `include` statement.
     /// </summary>
-    public void AddSearchPath(DirectoryInfo directory)
+    public void AddSearchPath(DirectoryInfo? directory)
     {
-        _searchDirectories.Add(directory);
+        if (directory is not null)
+            _searchDirectories.Add(directory);
     }
+
+    /// <summary>
+    /// Add the directory as a place to search for models
+    /// referenced by the minizinc `include` statement.
+    /// </summary>
+    public void AddSearchPath(FileInfo? file) => AddSearchPath(file?.Directory);
 
     /// <inheritdoc cref="AddSearchPath(System.IO.DirectoryInfo)"/>
     public void AddSearchPath(string directory) => AddSearchPath(new DirectoryInfo(directory));
