@@ -222,7 +222,7 @@ public sealed partial class MiniZincClient
         {
             using Process process = new Process();
             process.StartInfo = startInfo;
-            Dictionary<string, object>? statistics = null;
+            Dictionary<string, JsonValue>? statistics = null;
             List<string>? warnings = null;
             int iteration = 0;
             DateTimeOffset startTime = DateTimeOffset.Now;
@@ -377,23 +377,12 @@ public sealed partial class MiniZincClient
                             break;
 
                         case StatisticsOutput o:
-                            statistics ??= new Dictionary<string, object>();
+                            statistics ??= new Dictionary<string, JsonValue>();
                             foreach (KeyValuePair<string, JsonNode?> kv in o.Statistics)
                             {
                                 var name = kv.Key;
                                 var value = kv.Value!.AsValue();
-                                object? stat = null;
-                                if (value.TryGetValue<int>(out var i))
-                                    stat = i;
-                                else if (value.TryGetValue<bool>(out var b))
-                                    stat = b;
-                                else if (value.TryGetValue<float>(out var f))
-                                    stat = f;
-                                else if (value.TryGetValue<string>(out var s))
-                                    stat = s;
-                                if (stat is null)
-                                    continue;
-                                statistics[name] = stat;
+                                statistics[name] = value;
                                 msg = msg with { Statistics = statistics };
                             }
 

@@ -1,5 +1,6 @@
 ﻿namespace MiniZinc.Client;
 
+using System.Text.Json.Nodes;
 using Core;
 using Parser;
 
@@ -74,7 +75,7 @@ public sealed record MiniZincMessage
     /// <summary>
     /// Statistics returned by the solver if requested
     /// </summary>
-    public IReadOnlyDictionary<string, object>? Statistics { get; init; }
+    public IReadOnlyDictionary<string, JsonValue>? Statistics { get; init; }
 
     /// <summary>
     /// Any warnings returned by the solver
