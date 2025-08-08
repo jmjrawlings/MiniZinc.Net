@@ -136,8 +136,8 @@ public sealed class ManualClientTests
             constraint alldifferent([ q[i] + i | i in 1..n]); % distinct diagonals
             constraint alldifferent([ q[i] - i | i in 1..n]); % upwards+downwards
             % search
-            solve :: int_search(q, first_fail, indomain_min)
-            satisfy;
+            solve :: int_search(q, first_fail, indomain_min) 
+                minimize sum(q);
             """
         );
 
@@ -190,13 +190,7 @@ public sealed class ManualClientTests
             var 1..2: a;
             """
         );
-        var msg = await Client.Solution(
-            model,
-            default,
-            default,
-            "--restart=constant",
-            "--restart-base=100"
-        );
+        var msg = await Client.Solution(model, default, default, "--no-optimize");
 
         msg.Status.ShouldBe(SolveStatus.Satisfied);
     }

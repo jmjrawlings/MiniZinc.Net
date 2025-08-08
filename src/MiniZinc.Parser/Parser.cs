@@ -1716,13 +1716,7 @@ public ref struct Parser
         return true;
     }
 
-    /// <summary>
-    /// Parse anything that starts with a '[', which will
-    /// be an array or array comprehension
-    /// </summary>
-    /// <mzn>[1,2,3]</mzn>
-    /// <mzn>[ x | x in [a,b,c]]</mzn>
-    internal bool ParseBracketExpr([NotNullWhen(true)] out MiniZincExpr? result)
+    bool ParseBracketExpr([NotNullWhen(true)] out MiniZincExpr? result)
     {
         result = null;
 

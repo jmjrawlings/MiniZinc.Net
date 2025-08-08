@@ -768,25 +768,6 @@ internal ref struct Lexer
     /// </summary>
     public static bool Lex(string s, out Token[] tokens)
     {
-        if (string.IsNullOrWhiteSpace(s))
-        {
-            tokens = new Token[]
-            {
-                new Token()
-                {
-                    Kind = TOKEN_EOF,
-                    Line = 1,
-                    Col = 1,
-                    Start = 0,
-                    Length = 1,
-                    IntValue = default,
-                    StringValue = default,
-                    FloatValue = default,
-                }
-            };
-            return true;
-        }
-
         var lexer = new Lexer(s);
         lexer.Step();
         while (!(lexer._fin || lexer._err))
