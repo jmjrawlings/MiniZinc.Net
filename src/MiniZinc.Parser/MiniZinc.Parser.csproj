@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ParserTests" />
+        <InternalsVisibleTo Include="MiniZinc.UnitTests" />
     </ItemGroup>
 
     <ItemGroup>

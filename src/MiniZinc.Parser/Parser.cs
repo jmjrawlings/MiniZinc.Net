@@ -8,7 +8,7 @@ using static TokenKind;
 /// <summary>
 /// Parses a MiniZinc AST from the given stream of tokens
 /// </summary>
-public struct Parser
+public ref struct Parser
 {
     /// <summary>
     /// Operator Associativity
@@ -31,8 +31,8 @@ public struct Parser
     internal Parser(string sourceText)
     {
         _sourceText = sourceText;
-        if (!Lexer.LexString(sourceText, out _tokens, out var final))
-            Error(final.StringValue);
+        if (!Lexer.Lex(sourceText, out _tokens))
+            Error(_tokens[^1].StringValue);
 
         _n = _tokens.Length - 1;
         _i = -1;
@@ -183,7 +183,7 @@ public struct Parser
     /// Parse a model
     /// </summary>
     /// <mzn>var 1..10: a; var 10..20: b; constraint a = b;</mzn>
-    internal bool ParseItems(out List<MiniZincItem>? statements)
+    internal bool ParseItems(out List<MiniZincSyntax>? statements)
     {
         statements = null;
         while (true)
@@ -193,7 +193,6 @@ public struct Parser
 
             statements ??= [];
             statements.Add(statement);
-
             if (Skip(TOKEN_EOL) && !Skip(TOKEN_EOF))
                 continue;
             else if (!Expect(TOKEN_EOF))
@@ -1625,7 +1624,21 @@ public struct Parser
             if (!Skip(TOKEN_COMMA))
                 break;
         }
-        result = new CallExpr(name, exprs);
+
+        // Some manual call handling
+        switch (name.StringValue)
+        {
+            // case "array2d":
+            //     result = new Array2dExpr(name, exprs, null,)
+            //     break;
+            //
+            // case "array3d":
+            //     result = new CallExpr(name, exprs);
+            //     break;
+            default:
+                result = new CallExpr(name, exprs);
+                break;
+        }
 
         if (!Expect(TOKEN_CLOSE_PAREN))
             return false;
@@ -1717,13 +1730,7 @@ public struct Parser
         return true;
     }
 
-    /// <summary>
-    /// Parse anything that starts with a '[', which will
-    /// be an array or array comprehension
-    /// </summary>
-    /// <mzn>[1,2,3]</mzn>
-    /// <mzn>[ x | x in [a,b,c]]</mzn>
-    internal bool ParseBracketExpr([NotNullWhen(true)] out MiniZincExpr? result)
+    bool ParseBracketExpr([NotNullWhen(true)] out MiniZincExpr? result)
     {
         result = null;
 
@@ -2040,7 +2047,7 @@ public struct Parser
      * `[| |1,1|1,1|, |2,2|2,2|, |3,3|3,3| |]`
      *
      */
-    private bool Parse3dArrayLiteral(in Token start, out Array3dSyntax arr)
+    private bool Parse3dArrayLiteral(in Token start, out Array3dExpr arr)
     {
         List<MiniZincExpr>? elements = null;
         int i = 0;
@@ -2098,14 +2105,14 @@ public struct Parser
             goto err;
 
         ok:
-        arr = new Array3dSyntax(start, elements);
+        arr = new Array3dExpr(start, elements);
         arr.I = i;
         arr.J = j;
         arr.K = k;
         return true;
 
         err:
-        arr = new Array3dSyntax(start, elements);
+        arr = new Array3dExpr(start, elements);
         arr.I = i;
         arr.J = j;
         arr.K = k;
@@ -2743,29 +2750,63 @@ public struct Parser
         return false;
     }
 
+    public static List<MiniZincSyntax>? ParseItemsFromFile(string path)
+    {
+        if (
+            !TryParseItemsFromFile(
+                path,
+                out var items,
+                out var err,
+                out var trace,
+                out var token,
+                out _
+            )
+        )
+            throw new MiniZincParseException(err, token, trace);
+
+        return items;
+    }
+
+    public static List<MiniZincSyntax>? ParseItemsFromString(string mzn)
+    {
+        if (
+            !TryParseItemsFromString(
+                mzn,
+                out var items,
+                out var err,
+                out var trace,
+                out var token,
+                out _
+            )
+        )
+            throw new MiniZincParseException(err, token, trace);
+        return items;
+    }
+
     /// <summary>
     /// Parse the given minizinc model or data file
     /// </summary>
     /// <example>Parser.ParseFile("model.mzn")</example>
     /// <example>Parser.ParseFile("data.dzn")</example>
-    public static ParseResult ParseItemsFromFile(string path, out List<MiniZincItem>? items)
+    public static bool TryParseItemsFromFile(
+        string path,
+        out List<MiniZincSyntax>? items,
+        out string? errorMessage,
+        out string? errorTrace,
+        out Token finalToken,
+        out TimeSpan elapsed
+    )
     {
-        var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
-        var parser = new Parser(mzn);
-        var ok = parser.ParseItems(out items);
-        var elapsed = watch.Elapsed;
-        var result = new ParseResult
-        {
-            SourceFile = path,
-            SourceText = mzn,
-            Ok = ok,
-            FinalToken = parser._token,
-            Elapsed = elapsed,
-            ErrorMessage = parser._errorMessage,
-            ErrorTrace = parser._errorTrace
-        };
-        return result;
+        var ok = TryParseItemsFromString(
+            mzn,
+            out items,
+            out errorMessage,
+            out errorTrace,
+            out finalToken,
+            out elapsed
+        );
+        return ok;
     }
 
     /// <summary>
@@ -2778,52 +2819,82 @@ public struct Parser
     ///     constraint a /\ b;
     ///     """);
     /// </example>
-    public static ParseResult ParseItemsFromString(string text, out List<MiniZincItem>? model)
+    public static bool TryParseItemsFromString(
+        string mzn,
+        out List<MiniZincSyntax>? items,
+        out string? errorMessage,
+        out string? errorTrace,
+        out Token finalToken,
+        out TimeSpan elapsed
+    )
     {
-        var watch = Stopwatch.StartNew();
-        var parser = new Parser(text);
-        var ok = parser.ParseItems(out model);
-        var elapsed = watch.Elapsed;
-        var result = new ParseResult
-        {
-            SourceFile = null,
-            SourceText = text,
-            Ok = ok,
-            FinalToken = parser._token,
-            Elapsed = elapsed,
-            ErrorMessage = parser._errorMessage,
-            ErrorTrace = parser._errorTrace
-        };
-        return result;
+        var start = Stopwatch.GetTimestamp();
+        var parser = new Parser(mzn);
+        var ok = parser.ParseItems(out items);
+        elapsed = TimeSpan.FromMilliseconds(Stopwatch.GetTimestamp() - start);
+        finalToken = parser._token;
+        errorMessage = parser._errorMessage;
+        errorTrace = parser._errorTrace;
+        return ok;
     }
-
-    /// <inheritdoc cref="ParseItemsFromFile(string,ref System.Collections.Generic.List{MiniZinc.Parser.MiniZincItem}?)"/>
-    public static ParseResult ParseItemsFromFile(FileInfo file, out List<MiniZincItem>? items) =>
-        ParseItemsFromFile(file.FullName, out items);
 
     /// <summary>
     /// Parse the given minizinc data file.
     /// Data files only allow assignments eg: `a = 10;`
     /// </summary>
     /// <example>Parser.ParseDataFile("data.dzn")</example>
-    public static ParseResult ParseDataFromFile(string path, out MiniZincData data)
+    public static bool TryParseDataFile(
+        string path,
+        [NotNullWhen(true)] out MiniZincData? data,
+        out string? errorMessage,
+        out string? errorTrace,
+        out Token finalToken
+    )
     {
-        var watch = Stopwatch.StartNew();
         var mzn = File.ReadAllText(path);
+        var ok = TryParseDataString(
+            mzn,
+            out data,
+            out errorMessage,
+            out errorTrace,
+            out finalToken
+        );
+        return ok;
+    }
+
+    /// <summary>
+    /// Parse the given minizinc data file.
+    /// Data files only allow assignments eg: `a = 10;`
+    /// </summary>
+    /// <example>Parser.ParseDataFile("data.dzn")</example>
+    public static bool TryParseDataString(
+        string mzn,
+        [NotNullWhen(true)] out MiniZincData? data,
+        out string? errorMessage,
+        out string? errorTrace,
+        out Token finalToken
+    )
+    {
         var parser = new Parser(mzn);
         var ok = parser.ParseData(out data);
-        var elapsed = watch.Elapsed;
-        var result = new ParseResult
-        {
-            SourceFile = path,
-            SourceText = mzn,
-            Ok = ok,
-            FinalToken = parser._token,
-            Elapsed = elapsed,
-            ErrorMessage = parser._errorMessage,
-            ErrorTrace = parser._errorTrace
-        };
-        return result;
+        finalToken = parser._token;
+        errorMessage = parser._errorMessage;
+        errorTrace = parser._errorTrace;
+        return ok;
+    }
+
+    public static MiniZincData ParseDataFile(string path)
+    {
+        var mzn = File.ReadAllText(path);
+        var data = ParseDataString(mzn);
+        return data;
+    }
+
+    public static MiniZincData ParseDataString(string mzn)
+    {
+        if (!TryParseDataString(mzn, out var data, out var error, out var trace, out var token))
+            throw new MiniZincParseException(error, token, trace);
+        return data;
     }
 
     /// <summary>
@@ -2860,52 +2931,21 @@ public struct Parser
     //     return true;
     // }
 
-    /// <summary>
-    /// Parse the given minizinc data string.
-    /// Data strings only allow assignments eg: `a = 10;`
-    /// </summary>
-    /// <example>
-    /// Parser.ParseDataString("a = 10; b=true;");
-    /// </example>
-    public static ParseResult ParseDataFromString(string text, out MiniZincData data)
+    public static MiniZincModel ParseModelString(string mzn)
     {
-        var watch = Stopwatch.StartNew();
-        var parser = new Parser(text);
-        var ok = parser.ParseData(out data);
-        var elapsed = watch.Elapsed;
-        var result = new ParseResult
-        {
-            SourceFile = null,
-            SourceText = text,
-            Ok = ok,
-            FinalToken = parser._token,
-            Elapsed = elapsed,
-            ErrorMessage = parser._errorMessage,
-            ErrorTrace = parser._errorTrace
-        };
-        return result;
-    }
-
-    /// <inheritdoc cref="ParseDataFromFile(string, out MiniZincData)"/>
-    public static ParseResult ParseDataFromFile(FileInfo file, out MiniZincData data) =>
-        ParseDataFromFile(file.FullName, out data);
-
-    public static bool ParseModelFromString(string mzn, out MiniZincModel model)
-    {
-        model = new MiniZincModel();
+        var model = new MiniZincModel();
         model.AddString(mzn);
-        return true;
+        return model;
     }
 
-    public static bool ParseModelFromFile(string path, out MiniZincModel model)
+    public static MiniZincModel ParseModelFile(string path)
     {
-        model = new MiniZincModel();
+        var model = new MiniZincModel();
         model.AddFile(path);
-        return true;
+        return model;
     }
 
-    public static bool ParseModelFromFile(FileInfo file, out MiniZincModel model) =>
-        ParseModelFromFile(file.FullName, out model);
+    public static MiniZincModel ParseModelFile(FileInfo file) => ParseModelFile(file.FullName);
 
     /// Parse an expression of the given type from text
     public static T ParseExpression<T>(string text)
@@ -2951,44 +2991,6 @@ public struct Parser
         }
 
         return result;
-    }
-
-    /// Try to parse a statement of the given type from text
-    public static bool TryParseStatement<T>(string text, [NotNullWhen(true)] out T? result)
-        where T : MiniZincItem
-    {
-        result = null;
-        var parser = new Parser(text);
-        if (!parser.ParseItem(out var statement))
-            return false;
-
-        if (statement is not T t)
-            return false;
-        result = t;
-        return true;
-    }
-
-    /// Parse an expression of the given type from text
-    public static bool TryParseExpr<T>(
-        string text,
-        [NotNullWhen(true)] out T? expression,
-        out Token location,
-        [NotNullWhen(false)] out string? error
-    )
-        where T : MiniZincExpr
-    {
-        expression = null;
-        if (!TryParseExpr(text, out var expr, out location, out error))
-            return false;
-
-        if (expr is not T t)
-        {
-            error = $"Expected type {typeof(T)} but got {expr.GetType()}";
-            return false;
-        }
-
-        expression = t;
-        return true;
     }
 
     public static bool TryParseExpr(

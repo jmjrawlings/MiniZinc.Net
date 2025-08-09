@@ -76,9 +76,7 @@ class Program
     static void Minify(InvocationContext context, FileInfo file)
     {
         var console = context.Console;
-        if (!Parser.ParseModelFromFile(file, out var model))
-            return;
-
+        var model = Parser.ParseModelFile(file);
         var minified = model.Write(WriteOptions.Minimal);
         File.WriteAllText(file.FullName, minified);
         console.WriteLine(file.FullName);
@@ -100,12 +98,7 @@ class Program
     static void Format(InvocationContext context, FileInfo file)
     {
         var console = context.Console;
-        if (!Parser.ParseModelFromFile(file, out var model))
-        {
-            context.ExitCode = 100;
-            return;
-        }
-
+        var model = Parser.ParseModelFile(file);
         var output = model.Write(WriteOptions.Pretty);
         File.WriteAllText(file.FullName, output);
         console.WriteLine(file.FullName);

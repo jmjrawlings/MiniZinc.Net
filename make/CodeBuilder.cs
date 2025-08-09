@@ -1,5 +1,6 @@
 ﻿namespace Make;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 /// <summary>
@@ -135,14 +136,14 @@ public class CodeBuilder
             WriteLn($"return {s};");
     }
 
-    protected void Attribute(string name, params string[] args)
+    protected void Attribute(string name, params string?[] args)
     {
         Write('[');
         Append(name);
         if (args.Length > 0)
         {
             Append('(');
-            Append(string.Join(", ", args));
+            Append(string.Join(", ", args.Select(a => a ?? "null")));
             Append(')');
         }
         Append(']');
@@ -163,15 +164,22 @@ public class CodeBuilder
     {
         Write(name);
         Append('(');
-        Append(args);
+        Append(string.Join(", ", args));
         Append(')');
         Append(';');
         NewLine();
     }
 
-    public string Quote(string s) => $"\"{s}\"";
+    public static string Quote([NotNullIfNotNull("s")] string? s)
+    {
+        if (s is null)
+            return "null";
+        string x = s.Replace("\\", "");
+        x = $"\"{x}\"";
+        return x;
+    }
 
-    public string TripleQuote(string s) => $"\"\"\"{s.Replace("\n", "")}\"\"\"";
+    public static string TripleQuote(string s) => $"\"\"\"{s.Replace("\n", "")}\"\"\"";
 
     public void Var(string? name, string? value)
     {
@@ -192,6 +200,15 @@ public class CodeBuilder
         Append('=');
         Space();
         Append(value);
+        Append(';');
+        NewLine();
+    }
+
+    public void Declare(string? type, string? name)
+    {
+        Write(type);
+        Spaces();
+        Append(name);
         Append(';');
         NewLine();
     }

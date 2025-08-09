@@ -1,0 +1,19 @@
+﻿namespace MiniZinc.Tests;
+
+public enum TestType
+{
+    SOLVE,
+    COMPILE,
+    OUTPUT_MODEL,
+    CHECK_AGAINST,
+    ALL_SOLUTIONS,
+    ANY_SOLUTION,
+    UNSATISFIABLE,
+    ERROR,
+    ASSERTION_ERROR,
+    EVALUATION_ERROR,
+    MINIZINC_ERROR,
+    TYPE_ERROR,
+    SYNTAX_ERROR,
+    OUTPUT
+}

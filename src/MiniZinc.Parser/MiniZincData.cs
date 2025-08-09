@@ -13,12 +13,23 @@ using MiniZinc;
 /// contain assignments of the form `$name = $datum;`
 /// </remarks>
 [DebuggerDisplay("{SourceText}")]
-public sealed class MiniZincData(IReadOnlyDictionary<string, MiniZincExpr>? dict = null)
-    : IEquatable<IReadOnlyDictionary<string, MiniZincExpr>>,
-        IReadOnlyDictionary<string, MiniZincExpr>
+public sealed class MiniZincData
+    : IEquatable<IDictionary<string, MiniZincExpr>>,
+        IDictionary<string, MiniZincExpr>
 {
-    private readonly IReadOnlyDictionary<string, MiniZincExpr> _dict =
-        dict ?? new Dictionary<string, MiniZincExpr>();
+    private readonly IDictionary<string, MiniZincExpr> _data;
+
+    /// <summary>
+    /// Result of parsing minizinc data from a file (.dzn) or string.
+    /// </summary>
+    /// <remarks>
+    /// This is different from a <see cref="MiniZincModel"/> in that it can only
+    /// contain assignments of the form `$name = $datum;`
+    /// </remarks>
+    public MiniZincData(IDictionary<string, MiniZincExpr>? data = null)
+    {
+        _data = data ?? new Dictionary<string, MiniZincExpr>();
+    }
 
     public string Write(WriteOptions? options = null)
     {
@@ -30,7 +41,7 @@ public sealed class MiniZincData(IReadOnlyDictionary<string, MiniZincExpr>? dict
 
     public string SourceText => Write(WriteOptions.Minimal);
 
-    public bool Equals(IReadOnlyDictionary<string, MiniZincExpr>? other)
+    public bool Equals(IDictionary<string, MiniZincExpr>? other)
     {
         if (other is null)
             return false;
@@ -39,7 +50,7 @@ public sealed class MiniZincData(IReadOnlyDictionary<string, MiniZincExpr>? dict
             return true;
 
         // TODO - faster/better
-        foreach (var kv in _dict)
+        foreach (var kv in _data)
         {
             var name = kv.Key;
             var a = kv.Value;
@@ -57,34 +68,93 @@ public sealed class MiniZincData(IReadOnlyDictionary<string, MiniZincExpr>? dict
         foreach (var kv in other)
         {
             var name = kv.Key;
-            if (!_dict.ContainsKey(name))
+            if (!_data.ContainsKey(name))
                 return false;
         }
 
         return true;
     }
 
-    public IEnumerator<KeyValuePair<string, MiniZincExpr>> GetEnumerator() => _dict.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, MiniZincExpr>> GetEnumerator() => _data.GetEnumerator();
 
-    public override bool Equals(object? obj) =>
-        Equals(obj as IReadOnlyDictionary<string, MiniZincExpr>);
+    public override bool Equals(object? obj) => Equals(obj as IDictionary<string, MiniZincExpr>);
 
     public override int GetHashCode() => SourceText.GetHashCode();
 
-    public bool TryGetValue(string key, [NotNullWhen(true)] out MiniZincExpr? value) =>
-        _dict.TryGetValue(key, out value);
+    public void Add(string key, MiniZincExpr value)
+    {
+        _data.Add(key, value);
+    }
 
-    public bool ContainsKey(string key) => _dict.ContainsKey(key);
+    public bool ContainsKey(string key)
+    {
+        return _data.ContainsKey(key);
+    }
 
-    public MiniZincExpr this[string name] => _dict[name];
+    public bool Remove(string key)
+    {
+        return _data.Remove(key);
+    }
 
-    public IEnumerable<string> Keys => _dict.Keys;
+    public bool TryGetValue(string key, [MaybeNullWhen(false)] out MiniZincExpr value)
+    {
+        return _data.TryGetValue(key, out value);
+    }
 
-    public IEnumerable<MiniZincExpr> Values => _dict.Values;
+    public T Get<T>(string key)
+    {
+        if (!_data.TryGetValue(key, out var expr))
+            throw new KeyNotFoundException($"Data did not contain an entry for \"{key}\".");
 
-    public int Count => _dict.Count;
+        if (expr is not T datum)
+            throw new InvalidCastException($"Could not cast \"{key}\" from {expr} to {nameof(T)}.");
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        return datum;
+    }
+
+    public MiniZincExpr this[string name]
+    {
+        get => _data[name];
+        set => throw new NotImplementedException();
+    }
+
+    public ICollection<string> Keys => _data.Keys;
+
+    public ICollection<MiniZincExpr> Values => _data.Values;
 
     public override string ToString() => SourceText;
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)_data).GetEnumerator();
+    }
+
+    public void Add(KeyValuePair<string, MiniZincExpr> item)
+    {
+        _data.Add(item);
+    }
+
+    public void Clear()
+    {
+        _data.Clear();
+    }
+
+    public bool Contains(KeyValuePair<string, MiniZincExpr> item)
+    {
+        return _data.Contains(item);
+    }
+
+    public void CopyTo(KeyValuePair<string, MiniZincExpr>[] array, int arrayIndex)
+    {
+        _data.CopyTo(array, arrayIndex);
+    }
+
+    public bool Remove(KeyValuePair<string, MiniZincExpr> item)
+    {
+        return _data.Remove(item);
+    }
+
+    public int Count => _data.Count;
+
+    public bool IsReadOnly => _data.IsReadOnly;
 }
