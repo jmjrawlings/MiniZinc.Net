@@ -30,7 +30,7 @@ public abstract class IntegrationTests
         WriteLine(mzn);
         WriteLine("--------------------------------------");
         var result = await _client.Solution(model, solver, _cts.Token, args);
-        result.IsSolution.ShouldBeTrue();
+        result.IsSolution.ShouldBeTrue(result.Error);
 
         // Test case has no expected output
         if (output is null)

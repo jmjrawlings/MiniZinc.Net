@@ -48,22 +48,22 @@ public sealed class ClientTestsBuilder : CodeBuilder
         }
 
         WriteLn("#nullable enable");
-        NameSpace("MiniZinc.Tests");
+        WriteLn("namespace MiniZinc.Tests;");
         NewLine();
         Attribute("NotInParallel");
         Block($"public class {ClassName} : IntegrationTests");
         NewLine();
 
-        var testsByFile = Tests.GroupBy(tc => tc.Path).ToArray();
-        foreach (var kv in testsByFile)
+        var testsByPath = Tests.GroupBy(tc => tc.Path).ToArray();
+        foreach (var kv in testsByPath)
         {
             var path = kv.Key;
-            var cases = kv.ToArray();
+            var testCases = kv.ToArray();
 
             switch (Type)
             {
                 case TestType.SOLVE:
-                    WriteSolveTest(path, cases);
+                    WriteSolveTest(path, testCases);
                     break;
                 // case TestType.COMPILE:
                 //     WriteCompileTest();
@@ -114,28 +114,28 @@ public sealed class ClientTestsBuilder : CodeBuilder
             _ => ("gecode", true)
         };
 
-    private void WriteSolveTest(string slug, TestCase[] cases)
+    private void WriteSolveTest(string testSlug, TestCase[] testCases)
     {
-        var qslug = Quote(slug);
+        var qslug = Quote(testSlug);
         int i = 0;
 
-        foreach (var tcase in cases)
+        foreach (TestCase testCase in testCases)
         {
-            string qargs = Quote(tcase.Args);
-            string qsolution = tcase.Solutions switch
+            string qargs = Quote(testCase.Args);
+            string qsolution = testCase.Solutions switch
             {
-                { Count: 1 } => QuoteSolution(tcase.Solutions[0]),
+                { Count: 1 } => QuoteSolution(testCase.Solutions[0]),
                 null => "null",
                 _ => throw new Exception()
             };
 
-            if (tcase.Solvers is not { Count: > 0 } solvers)
+            if (testCase.Solvers is not { Count: > 0 } solvers)
                 solvers = ["gecode"];
 
-            if (tcase.ExtraFiles is not { Count: > 0 } extras)
+            if (testCase.ExtraFiles is not { Count: > 0 } extras)
                 extras = [null];
 
-            var testName = GetTestName(slug);
+            var testName = GetTestName(testSlug);
 
             foreach (var tsolver in solvers)
             {
@@ -145,6 +145,10 @@ public sealed class ClientTestsBuilder : CodeBuilder
                 {
                     var qextra = Quote(extra);
                     Attribute("Test");
+                    Attribute(
+                        "DisplayName",
+                        Quote($"{testSlug} {solver} {qargs.Replace("\"", "")}")
+                    );
                     using var _ = Function($"public async Task {testName}_{++i}");
                     Declare("string", "solver", qsolver);
                     Declare("string?", "args", qargs);

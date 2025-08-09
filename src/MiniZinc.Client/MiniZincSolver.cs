@@ -52,3 +52,14 @@ public sealed class MiniZincSolver
 
     public override string ToString() => $"{Name}  v{Version}";
 }
+
+// public sealed class SolverFlag
+// {
+//     public string Arg { get; }
+//
+//     public string Description { get; }
+//
+//     public string Type { get; }
+//
+//     public string? DefaultValue { get; }
+// }
