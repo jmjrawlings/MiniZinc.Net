@@ -116,7 +116,6 @@ public sealed class ClientTestsBuilder : CodeBuilder
 
     private void WriteSolveTest(string slug, TestCase[] cases)
     {
-        Attribute("Test");
         var qslug = Quote(slug);
         int i = 0;
 
@@ -145,6 +144,7 @@ public sealed class ClientTestsBuilder : CodeBuilder
                 foreach (string? extra in extras)
                 {
                     var qextra = Quote(extra);
+                    Attribute("Test");
                     using var _ = Function($"public async Task {testName}_{++i}");
                     Declare("string", "solver", qsolver);
                     Declare("string?", "args", qargs);

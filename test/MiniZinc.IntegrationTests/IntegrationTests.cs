@@ -40,7 +40,7 @@ public abstract class IntegrationTests
         if (
             !Parser.TryParseDataString(
                 output,
-                out var expected,
+                out var expectedData,
                 out var err,
                 out var trace,
                 out var token
@@ -51,12 +51,10 @@ public abstract class IntegrationTests
             return;
         }
 
-        if (result.Data is not { } actual)
+        if (result.Data is not { } actualData)
             return;
 
-        actual.ShouldBe(expected);
-
-        var a = 2;
+        Check(expectedData, actualData).ShouldBeTrue();
     }
 
     public async Task RunTest(
@@ -99,92 +97,136 @@ public abstract class IntegrationTests
         var a = 2;
     }
 
-    /// <summary>
     /// Compare the solution data against the expected solution json
-    /// </summary>
-    public bool Check(MiniZincData expectedData, MiniZincData actualData)
+    public bool Check(MiniZincData expected, MiniZincData actual)
     {
-        foreach (var name in expectedData.Keys)
+        foreach (var name in expected.Keys)
         {
-            var expectedVar = expectedData[name];
-            if (!actualData.TryGetValue(name, out var actualVar))
+            var evar = expected[name];
+            if (!actual.TryGetValue(name, out var avar))
                 continue;
 
-            if (!Check(expectedVar, actualVar))
+            if (!Check(evar, avar))
             {
-                // WriteLn();
-                // WriteLn("While comparing expected solution:");
-                // WriteLn($"{expectedVar.Write()}");
-                // WriteLn();
-                // WriteLn("And actual solution:");
-                // WriteLn($"{actualVar.Write()}");
-                // WriteLn();
-                // WriteSection();
+                WriteLine();
+                WriteLine("While comparing expected solution:");
+                WriteLine($"{evar.Write()}");
+                WriteLine();
+                WriteLine("And actual solution:");
+                WriteLine($"{avar.Write()}");
                 return false;
             }
         }
         return true;
     }
 
-    // public bool Check(int a, int b) => a == b;
-    //
-    // public bool Check(decimal a, decimal b)
-    // {
-    //     var ra = Math.Round(a, 4);
-    //     var rb = Math.Round(b, 4);
-    //     return ra == rb;
-    // }
-
-    /// <summary>
     /// Compare the solution against the json node
-    /// </summary>
-    public bool Check(MiniZincExpr expected, MiniZincExpr actual)
+    public static bool Check(MiniZincExpr exp, MiniZincExpr act)
     {
         int i = 0;
-        switch (expected, actual)
+        switch (exp, act)
         {
+            case (IntExpr e, IntExpr a):
+                return e.Value == a.Value;
+
+            case (IntExpr e, FloatExpr a):
+                return e.Value == a.Value;
+
+            case (FloatExpr e, FloatExpr a):
+                return e.Value == a.Value;
+
+            case (FloatExpr e, IntExpr a):
+                return e.Value == a.Value;
+
+            case (BoolExpr a, BoolExpr b):
+                return a.Value == b.Value;
+
+            case (StringExpr a, StringExpr b):
+                return a.Value == b.Value;
+
+            case (TupleExpr a, TupleExpr b):
+                return CheckSeq(a.Fields, b.Fields);
+
+            case (TupleExpr a, Array1dExpr b):
+                return CheckSeq(a.Fields, b.Elements);
+
+            case (Array1dExpr a, TupleExpr b):
+                return CheckSeq(a.Elements, b.Fields);
+
+            case (Array1dExpr a, Array1dExpr b):
+                return CheckSeq(a.Elements, b.Elements);
+
+            case (Array1dExpr a, Array2dExpr b):
+                return CheckSeq(a.Elements, b.Elements);
+
+            case (Array1dExpr a, Array3dExpr b):
+                return CheckSeq(a.Elements, b.Elements);
+
+            case (Array1dExpr a, CallExpr { Name: { StringValue: "array3d" } } b):
+                return Check(a, b.Args[3]);
+
+            case (Array1dExpr a, CallExpr { Name: { StringValue: "array2d" } } b):
+                return Check(a, b.Args[2]);
+
+            case (SetExpr a, SetExpr b):
+                return CheckSeq(a.Elements, b.Elements);
+
+            case (RecordExpr a, RecordExpr b):
+                return CheckRecord(a, b);
+
+            case (IndexedExpr a, IndexedExpr b):
+                return Check(a.Index, b.Index) && Check(a.Value, b.Value);
+
+            case (var a, IndexedExpr b):
+                return Check(a, b.Value);
+
             default:
-                var expectedMzn = expected.Write(WriteOptions.Minimal);
-                var actualMzn = expected.Write(WriteOptions.Minimal);
-                if (!expectedMzn.Equals(actualMzn))
-                    return false;
-                break;
+                return false;
         }
 
         return true;
     }
 
-    // private bool Check(SetExpr set, RangeExpr range)
-    // {
-    //     switch (set.Elements)
-    //     {
-    //         case []:
-    //             return false;
-    //
-    //         case [var e]:
-    //             if (!e.Equals(range.Lower))
-    //                 return false;
-    //             if (!e.Equals(range.Upper))
-    //                 return false;
-    //             return true;
-    //
-    //         case var elements:
-    //             int min = (range.Lower as IntExpr).Value;
-    //             int max = (range.Upper as IntExpr).Value;
-    //             for (int i = min; i <= max; i++)
-    //             {
-    //                 var e = elements[i];
-    //                 if (e is not IntExpr il)
-    //                     return false;
-    //                 if (il.Value != i)
-    //                     return false;
-    //             }
-    //
-    //             return true;
-    //         default:
-    //             break;
-    //     }
-    // }
+    public static bool CheckRecord(RecordExpr a, RecordExpr b)
+    {
+        if (a.Fields.Count != b.Fields.Count)
+            return false;
+
+        foreach (var (akey, aval) in a.Fields)
+        {
+            bool found = false;
+            foreach (var (bkey, bval) in b.Fields)
+            {
+                if (akey.Equals(bkey))
+                {
+                    found = true;
+                    if (!Check(aval, bval))
+                        return false;
+                }
+
+                if (found)
+                    break;
+            }
+        }
+
+        return true;
+    }
+
+    public static bool CheckSeq(IReadOnlyList<MiniZincExpr> a, IReadOnlyList<MiniZincExpr> b)
+    {
+        if (a.Count != b.Count)
+            return false;
+
+        for (int i = 0; i < a.Count; i++)
+        {
+            var ia = a[i];
+            var ib = b[i];
+            if (!Check(ia, ib))
+                return false;
+        }
+
+        return true;
+    }
 
     private IEnumerable<JsonNode?> Flatten(JsonArray arr)
     {
@@ -197,18 +239,4 @@ public abstract class IntegrationTests
                 yield return node;
         }
     }
-
-    // public class TestNameFormatter : ArgumentDisplayFormatter
-    // {
-    //     public override bool CanHandle(object? value)
-    //     {
-    //         return value is IntegrationTestCase;
-    //     }
-    //
-    //     public override string FormatValue(object? value)
-    //     {
-    //         var tcase = (IntegrationTestCase)value;
-    //         return tcase.Name;
-    //     }
-    // }
 }

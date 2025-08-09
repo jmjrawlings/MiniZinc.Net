@@ -325,7 +325,7 @@ public sealed partial class MiniZincClient
                             }
 
                             iteration++;
-                            if (dzn is null)
+                            if (string.IsNullOrWhiteSpace(dzn))
                             {
                                 msg = msg with
                                 {

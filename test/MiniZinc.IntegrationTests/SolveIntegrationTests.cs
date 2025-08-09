@@ -13,4390 +13,6 @@ namespace MiniZinc.Tests
 	{
 
 		[Test]
-		public async Task test_unit_compilation_annotate_bool_literal_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/compilation/annotate_bool_literal.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_assert_dbg_ignore_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/compilation/assert_dbg_ignore.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_cv_domain_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """xs=[3,3,3,3,3];y=15;""";
-			await RunSolveTest("unit/compilation/cv_domain.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_debug_mode_false_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=false;""";
-			await RunSolveTest("unit/compilation/debug_mode_false.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_debug_mode_true_1()
-		{
-			string solver = "gecode";
-			string? args = "--debug";
-			string? solution = """b=true;""";
-			await RunSolveTest("unit/compilation/debug_mode_true.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_has_ann_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;""";
-			await RunSolveTest("unit/compilation/has_ann.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_if_then_no_else_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;s="";x=[];y=[];""";
-			await RunSolveTest("unit/compilation/if_then_no_else.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_maybe_partial_cv_1()
-		{
-			string solver = "gecode";
-			string? args = "-Werror";
-			string? solution = null;
-			await RunSolveTest("unit/compilation/maybe_partial_cv.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_optimize_unify_1()
-		{
-			string solver = "gecode";
-			string? args = "-O2";
-			string? solution = """x=false;z=0;obj=0;""";
-			await RunSolveTest("unit/compilation/optimize_unify.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_op_precedences_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/compilation/op_precedences.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_par_arg_out_of_bounds_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/compilation/par_arg_out_of_bounds.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_poly_overload_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/compilation/poly_overload.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_set2iter_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="2..3";y="4..5";""";
-			await RunSolveTest("unit/compilation/set2iter.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_compilation_set2iter_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="2..3";y="4..5";""";
-			await RunSolveTest("unit/compilation/set2iter.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_test_bug_enum_constr_in_dom_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/compilation/test_bug_enum_constr_in_dom.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_compilation_tuple_with_any_in_let_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/compilation/tuple_with_any_in_let.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/division/test_div1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div10_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=1;""";
-			await RunSolveTest("unit/division/test_div10.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_division_test_div10_2()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """y=1;""";
-			await RunSolveTest("unit/division/test_div10.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_division_test_div10_3()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=1;""";
-			await RunSolveTest("unit/division/test_div10.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div12_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """aCostSupport=0;mdl8_Z=0;""";
-			await RunSolveTest("unit/division/test_div12.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=0;""";
-			await RunSolveTest("unit/division/test_div2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div3_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """i=4;""";
-			await RunSolveTest("unit/division/test_div3.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div4_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/division/test_div4.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div6_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=0;""";
-			await RunSolveTest("unit/division/test_div6.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div7_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=1;""";
-			await RunSolveTest("unit/division/test_div7.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div9_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=1;""";
-			await RunSolveTest("unit/division/test_div9.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_div_mod_bounds_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=20;y=-3;z=-6;zbnd=[-20,20];zfbnd=[0.15,1.333333333333333];zif=-6.666666666666667;tf=1.0;tfbnd=[0.1125,8.888888888888889];zmbnd=[0,6];zm2lb=0;""";
-			await RunSolveTest("unit/division/test_div_mod_bounds.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_division_test_div_mod_bounds_2()
-		{
-			string solver = "gurobi";
-			string? args = null;
-			string? solution = """x=20;y=-3;z=-6;zbnd=[-20,20];zfbnd=[0.15,1.333333333333333];zif=-6.666666666666667;tf=1.0;tfbnd=[0.1125,8.888888888888889];zmbnd=[0,6];zm2lb=0;""";
-			await RunSolveTest("unit/division/test_div_mod_bounds.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_division_test_div_mod_bounds_3()
-		{
-			string solver = "scip";
-			string? args = null;
-			string? solution = """x=20;y=-3;z=-6;zbnd=[-20,20];zfbnd=[0.15,1.333333333333333];zif=-6.666666666666667;tf=1.0;tfbnd=[0.1125,8.888888888888889];zmbnd=[0,6];zm2lb=0;""";
-			await RunSolveTest("unit/division/test_div_mod_bounds.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_fldiv_01_1()
-		{
-			string solver = "gurobi";
-			string? args = null;
-			string? solution = """x=0.3;y=2.0;""";
-			await RunSolveTest("unit/division/test_fldiv_01.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_division_test_fldiv_01_2()
-		{
-			string solver = "scip";
-			string? args = null;
-			string? solution = """x=0.3;y=2.0;""";
-			await RunSolveTest("unit/division/test_fldiv_01.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_division_test_fldiv_02_1()
-		{
-			string solver = "gurobi";
-			string? args = null;
-			string? solution = """x=2.0;y=1.5;z=1.5;""";
-			await RunSolveTest("unit/division/test_fldiv_02.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_division_test_fldiv_02_2()
-		{
-			string solver = "scip";
-			string? args = null;
-			string? solution = """x=2.0;y=1.5;z=1.5;""";
-			await RunSolveTest("unit/division/test_fldiv_02.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_annotated_expression_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=3;""";
-			await RunSolveTest("unit/general/annotated_expression_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_array_param_non_array_return_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1];""";
-			await RunSolveTest("unit/general/array_param_non_array_return.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_array_union_intersect_enum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["{A}","{B}","{C}"];""";
-			await RunSolveTest("unit/general/array_union_intersect_enum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_assert_good_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=10;""";
-			await RunSolveTest("unit/general/assert_good.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_auto_par_function_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/general/auto_par_function.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_bin_pack_multiobj_1()
-		{
-			string solver = "gurobi";
-			string? args = null;
-			string? solution = """load=[3,8,10];""";
-			await RunSolveTest("unit/general/bin_pack_multiobj.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_builtins_arg_max_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """bool_output=3;int_output=1;float_output=2;indexed_output=4;enumed_output="TWO";""";
-			await RunSolveTest("unit/general/builtins_arg_max.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_builtins_debug_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """assert_par_int=1;assert_var_int=2;assert_par_opt_int=3;assert_var_opt_int=4;assert_array_of_par_int=[1];assert_array_of_var_int=[2];assert_array_of_par_opt_int=[3];assert_array_of_var_opt_int=[4];trace_par_int=1;trace_var_int=2;trace_par_opt_int=3;trace_var_opt_int=4;trace_array_of_par_int=[1];trace_array_of_var_int=[2];trace_array_of_par_opt_int=[3];trace_array_of_var_opt_int=[4];logstream="trace_logstream_par_inttrace_logstream_var_inttrace_logstream_par_opt_inttrace_logstream_var_opt_inttrace_logstream_array_of_par_inttrace_logstream_array_of_var_inttrace_logstream_array_of_par_opt_inttrace_logstream_array_of_var_opt_int";""";
-			await RunSolveTest("unit/general/builtins_debug.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_comprehension_asg_gen_where_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[2];y=[1];""";
-			await RunSolveTest("unit/general/comprehension_asg_gen_where.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_comprehension_cv_struct_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;z=[<>];""";
-			await RunSolveTest("unit/general/comprehension_cv_struct.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_comprehension_var_ub_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/general/comprehension_var_ub.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_empty_enum_sets_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """s1="{}";s2="{}";s3="{}";s4="{}";s5="{}";s6="{}";s7="{}";s8="{}";""";
-			await RunSolveTest("unit/general/empty_enum_sets.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_enum_order_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/enum_order.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_enum_set_to_ranges_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["P","Q","S","S"];""";
-			await RunSolveTest("unit/general/enum_set_to_ranges.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_eval_par_bool_bottom_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=false;""";
-			await RunSolveTest("unit/general/eval_par_bool_bottom.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_eval_par_opt_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=<>;""";
-			await RunSolveTest("unit/general/eval_par_opt_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_explicit_enum2int_1()
-		{
-			string solver = "gecode";
-			string? args = "-Werror";
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/general/explicit_enum2int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_fix_struct_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=(a:[1],b:1,);y=(a:[1],b:1,);""";
-			await RunSolveTest("unit/general/fix_struct.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_fn_par_array_undefined_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[2];""";
-			await RunSolveTest("unit/general/fn_par_array_undefined.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_ids_in_type_insts_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/ids_in_type_insts.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_indexed_var_comp_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,2,3];""";
-			await RunSolveTest("unit/general/indexed_var_comp.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_infinite_domain_bind_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=10;""";
-			await RunSolveTest("unit/general/infinite_domain_bind.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_json_ignore_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """_checker="data_2 = 2;";data_1=1;""";
-			await RunSolveTest("unit/general/json_ignore.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_json_ignore_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """_checker="data_2 = 2;";data_1=1;""";
-			await RunSolveTest("unit/general/json_ignore.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_md_exists_1()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """b=true;bs=[true,true,false,false,false,false,false,false];""";
-			await RunSolveTest("unit/general/md_exists.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_md_forall_1()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """b=true;bs=[true,true,true,true,true,true,true,true];""";
-			await RunSolveTest("unit/general/md_forall.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_md_forall_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;bs=[true,true,true,true,true,true,true,true];""";
-			await RunSolveTest("unit/general/md_forall.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_md_iffall_1()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """b=false;bs=[false,false,false,false,false,false,false,false];""";
-			await RunSolveTest("unit/general/md_iffall.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_md_sum_float_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=55.0;""";
-			await RunSolveTest("unit/general/md_sum_float.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_min_max_enum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x1=1;x2=5;x3=2;x4=4;x5=<>;x6=<>;y1="A";y2="C";y3="A";y4="C";y6=<>;y7=<>;a1=[1,2];a2=1;a3=2;a4=[<>,1,2];a5=1;a6=2;a7=[<>];a8=<>;a9=<>;b1=["A","C"];b2="A";b3="C";b4=[<>,"A","C"];b5="A";b6="C";b7=[<>];b8=<>;b9=<>;""";
-			await RunSolveTest("unit/general/min_max_enum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_missing_ozn_decl_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """I1=7;B2=true;B3=true;""";
-			await RunSolveTest("unit/general/missing_ozn_decl.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mortgage_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """P=373.0277986476333;mortgage=[260.3305785123967,136.3636363636363,0.0];""";
-			await RunSolveTest("unit/general/mortgage.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_mortgage_2()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """P=373.0277986476333;mortgage=[260.3305785123967,136.3636363636363,0.0];""";
-			await RunSolveTest("unit/general/mortgage.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_mortgage_3()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """P=373.0277986476333;mortgage=[260.3305785123967,136.3636363636363,0.0];""";
-			await RunSolveTest("unit/general/mortgage.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_multidim_array_concat_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=[1,2,3];b=[1,2,3,4,5,6];c=[1,2,3,4,5,6,7,8,9,10,11,12];d=[1,2,3,4,5,6,7,8,9,10,11,12];e=[1,2,3,4,5,6,7,8,9,10,11,12];f=[1,2,3,4,5,6,7,8,9,10,11,12];x=[1,2,3];y=[4,5,6,7,8,9];z=[1,2,3,4,5,6,7,8,9];""";
-			await RunSolveTest("unit/general/multidim_array_concat.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_implicit1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,1,1];""";
-			await RunSolveTest("unit/general/mzn-implicit1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_implicit2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """ia="1..3";ib="2..5";""";
-			await RunSolveTest("unit/general/mzn-implicit2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_implicit3_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """ax="1..2";bx="1..2";""";
-			await RunSolveTest("unit/general/mzn-implicit3.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_implicit5_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,1,1,1];""";
-			await RunSolveTest("unit/general/mzn-implicit5.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_implicit6_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,1,1,1];ix="3..4";""";
-			await RunSolveTest("unit/general/mzn-implicit6.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_implicit7_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[];""";
-			await RunSolveTest("unit/general/mzn-implicit7.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_implicit8_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,1,1,1,1,1,1,1];y=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];z=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];""";
-			await RunSolveTest("unit/general/mzn-implicit8.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_div_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/mzn_div.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_mzn_mod_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/mzn_mod.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_nosets_empty_1()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """x="{}";""";
-			await RunSolveTest("unit/general/nosets_empty.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_nosets_empty_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="{}";""";
-			await RunSolveTest("unit/general/nosets_empty.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_overload_bottom_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="{}";""";
-			await RunSolveTest("unit/general/overload_bottom.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_pow_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/pow_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_pow_4_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/pow_4.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_pow_bounds_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/pow_bounds.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_quoted_id_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """hello!=1;""";
-			await RunSolveTest("unit/general/quoted_id_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_quoted_id_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/general/quoted_id_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_range_var_enum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x_to_y="{A,B,C}";""";
-			await RunSolveTest("unit/general/range_var_enum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_set_function_enum_types_1()
-		{
-			string solver = "gecode";
-			string? args = "-Werror";
-			string? solution = null;
-			await RunSolveTest("unit/general/set_function_enum_types.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_slice_array_of_array_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=[1,2,3];""";
-			await RunSolveTest("unit/general/slice_array_of_array.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_string_length_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/string_length.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_string_split_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/string_split.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_struct_flat_cv_path_1()
-		{
-			string solver = "gecode";
-			string? args = "--keep-paths";
-			string? solution = """a=2;b=1;c=[1,2,3,4];""";
-			await RunSolveTest("unit/general/struct_flat_cv_path.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_search1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=3;y=8;""";
-			await RunSolveTest("unit/general/test-search1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_test_search1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=3;y=8;""";
-			await RunSolveTest("unit/general/test-search1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_test_search1_3()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """x=3;y=8;""";
-			await RunSolveTest("unit/general/test-search1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_array1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """i=4;""";
-			await RunSolveTest("unit/general/test_array1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_array1and2d_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=[1,2,3,4];""";
-			await RunSolveTest("unit/general/test_array1and2d.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_array2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """i=4;""";
-			await RunSolveTest("unit/general/test_array2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_array_as_generator_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/test_array_as_generator.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_bad_lb_ub_dom_bad_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/test_bad_lb_ub_dom-bad.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_empty_enum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/general/test_empty_enum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_is_fixed_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/test_is_fixed.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_lb_ub_array_int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """test_1=1;test_2=3;""";
-			await RunSolveTest("unit/general/test_lb_ub_array_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_lb_ub_dom_int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """test_1=3;test_2=3;test_3=1;test_4=10;""";
-			await RunSolveTest("unit/general/test_lb_ub_dom_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_lb_ub_float_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """test_1=3.0;test_2=3.0;test_3=1.0;test_4=10.0;""";
-			await RunSolveTest("unit/general/test_lb_ub_float.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_let_complex_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,3,5,7,9];y=[1,3,5,8,9];""";
-			await RunSolveTest("unit/general/test_let_complex.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_let_simple_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=42;""";
-			await RunSolveTest("unit/general/test_let_simple.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_mod_bounds_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b="0..2";c="-2..2";d="-2..0";""";
-			await RunSolveTest("unit/general/test_mod_bounds.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_same_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """if5_5=1;if5f_5=0;if5_4=0;if5f_5f=1;if2_set2_4=0;ifTwoVars=0;ifTwoOptVars=0;ifEqualInitVars=1;ifEqualChainInitVars=1;ifOneVar=1;ifOneOptVar=1;""";
-			await RunSolveTest("unit/general/test_same.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_test_same_2()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """if5_5=1;if5f_5=0;if5_4=0;if5f_5f=1;if2_set2_4=0;ifTwoVars=0;ifTwoOptVars=0;ifEqualInitVars=1;ifEqualChainInitVars=1;ifOneVar=1;ifOneOptVar=1;""";
-			await RunSolveTest("unit/general/test_same.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_test_same_3()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """if5_5=1;if5f_5=0;if5_4=0;if5f_5f=1;if2_set2_4=0;ifTwoVars=0;ifTwoOptVars=0;ifEqualInitVars=1;ifEqualChainInitVars=1;ifOneVar=1;ifOneOptVar=1;""";
-			await RunSolveTest("unit/general/test_same.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_set_inequality_par_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/test_set_inequality_par.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_set_lt_2_1()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """sets=["{}","{1}","1..2","1..3","{1,3}","{2}","2..3","{3}"];""";
-			await RunSolveTest("unit/general/test_set_lt_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_set_lt_3_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y="{1,4}";""";
-			await RunSolveTest("unit/general/test_set_lt_3.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_test_set_lt_3_2()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """y="{1,4}";""";
-			await RunSolveTest("unit/general/test_set_lt_3.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_test_set_lt_3_3()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y="{1,4}";""";
-			await RunSolveTest("unit/general/test_set_lt_3.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_string_cmp_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """xs=[1,2,3,1,2,3];""";
-			await RunSolveTest("unit/general/test_string_cmp.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_times_int_float_eq_1()
-		{
-			string solver = "gurobi";
-			string? args = "-D QuadrFloat=true;QuadrIntCard=0";
-			string? solution = """objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;""";
-			await RunSolveTest("unit/general/test_times_int_float_eq.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_test_times_int_float_eq_2()
-		{
-			string solver = "scip";
-			string? args = "-D QuadrFloat=true;QuadrIntCard=0";
-			string? solution = """objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;""";
-			await RunSolveTest("unit/general/test_times_int_float_eq.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_times_int_float_eq__defaultopt_1()
-		{
-			string solver = "gurobi";
-			string? args = null;
-			string? solution = """objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;""";
-			await RunSolveTest("unit/general/test_times_int_float_eq__defaultopt.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_general_test_times_int_float_eq__defaultopt_2()
-		{
-			string solver = "scip";
-			string? args = null;
-			string? solution = """objective=-5;x=5;y=6;z=30;xf=5.0;yf=6.0;""";
-			await RunSolveTest("unit/general/test_times_int_float_eq__defaultopt.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_to_enum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """par_int="b";var_int="c";array_of_int=["a","b","c"];array_of_var_int=["a","b","c"];array_of_set_of_int=["{a}","{a,b}","{a,b,c}"];array_of_var_set_of_int=["{a}","{a,b}","{a,b,c}"];set_of_int="{a,b,c}";var_set_of_int="{a,b,c}";""";
-			await RunSolveTest("unit/general/test_to_enum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_var_array_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=[true,false,false];""";
-			await RunSolveTest("unit/general/test_var_array.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_var_array_access_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """i=1;x=1;y="{1}";""";
-			await RunSolveTest("unit/general/test_var_array_access.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_test_var_set_assignment_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=["{1}","2..3","4..5"];""";
-			await RunSolveTest("unit/general/test_var_set_assignment.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_unicode_file_name_μ_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/general/unicode_file_name_μ.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_general_unify_and_remove_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=<>;y=0;""";
-			await RunSolveTest("unit/general/unify_and_remove.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_typecheck_globals_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/globals/typecheck_globals.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_globals_typecheck_globals_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/globals/typecheck_globals.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_globals_typecheck_globals_3()
-		{
-			string solver = "gecode_presolver";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/globals/typecheck_globals.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_globals_typecheck_globals_4()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/globals/typecheck_globals.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_anon_enum_json_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=Foo(1);y=Foo(2);""";
-			await RunSolveTest("unit/json/anon_enum_json.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_coerce_enum_str_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/json/coerce_enum_str.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_coerce_indices_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/json/coerce_indices.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_coerce_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """s="{1,2,3}";""";
-			await RunSolveTest("unit/json/coerce_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_enum_array_xd_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/json/enum_array_xd.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_enum_constructor_basic_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=F("A");""";
-			await RunSolveTest("unit/json/enum_constructor_basic.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_enum_constructor_basic_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=F("A");""";
-			await RunSolveTest("unit/json/enum_constructor_basic_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_enum_constructor_int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=Foo(2);""";
-			await RunSolveTest("unit/json/enum_constructor_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_enum_constructor_nested_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=G(F("A"));""";
-			await RunSolveTest("unit/json/enum_constructor_nested.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_enum_escaping_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="\"";""";
-			await RunSolveTest("unit/json/enum_escaping.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_enum_int_coercion_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """t=[1,2,3];""";
-			await RunSolveTest("unit/json/enum_int_coercion.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_float_json_exponent_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="2.0e-05";y=1500.0;""";
-			await RunSolveTest("unit/json/float_json_exponent.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_json_array2d_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/json/json_array2d_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_json_enum_def_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """w="A";x="D";y="G";z="J";""";
-			await RunSolveTest("unit/json/json_enum_def.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_json_input_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """int_set="{1,2,4,5,7,9}";float_set="{1.0,2.0}";array_1d_float=[1.0,2.0,3.0];array_2d_bool=[true];array_3d_int=[1,2,3,4,5,6,7,8];array_opt_float=[1.5,<>];x=1;y=2.0;z=true;o=<>;""";
-			await RunSolveTest("unit/json/json_input_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_json_input_multidim_enum_str_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["A","B","C","D"];""";
-			await RunSolveTest("unit/json/json_input_multidim_enum_str.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_json_input_str_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """s="abcd";ss=["abc","def","ghi"];""";
-			await RunSolveTest("unit/json/json_input_str.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_json_unicode_escapes_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a="A";mu="μ";arrow="↑";clef="𝄞";""";
-			await RunSolveTest("unit/json/json_unicode_escapes.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_mult_dim_enum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """use_e=["A","B","B","C"];""";
-			await RunSolveTest("unit/json/mult_dim_enum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_record_json_input_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/json/record_json_input.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_json_tuple_json_input_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/json/tuple_json_input.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_complete_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=3;""";
-			await RunSolveTest("unit/on_restart/complete.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_on_restart_complete_2()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=3;""";
-			await RunSolveTest("unit/on_restart/complete.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_last_val_bool_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=4;y=true;""";
-			await RunSolveTest("unit/on_restart/last_val_bool.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_on_restart_last_val_bool_2()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=4;y=true;""";
-			await RunSolveTest("unit/on_restart/last_val_bool.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_last_val_float_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=4;y=0.85;""";
-			await RunSolveTest("unit/on_restart/last_val_float.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_last_val_int_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=4;y=3;""";
-			await RunSolveTest("unit/on_restart/last_val_int.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_on_restart_last_val_int_2()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=4;y=3;""";
-			await RunSolveTest("unit/on_restart/last_val_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_last_val_set_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=4;y="{1,2,4,8}";""";
-			await RunSolveTest("unit/on_restart/last_val_set.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_on_restart_last_val_set_2()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=4;y="{1,2,4,8}";""";
-			await RunSolveTest("unit/on_restart/last_val_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_sol_bool_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=3;is_even=false;y=true;""";
-			await RunSolveTest("unit/on_restart/sol_bool.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_on_restart_sol_bool_2()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=3;is_even=false;y=true;""";
-			await RunSolveTest("unit/on_restart/sol_bool.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_sol_float_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=3;y=2.0;""";
-			await RunSolveTest("unit/on_restart/sol_float.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_sol_int_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=3;y=2;""";
-			await RunSolveTest("unit/on_restart/sol_int.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_on_restart_sol_int_2()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x=3;y=2;""";
-			await RunSolveTest("unit/on_restart/sol_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_on_restart_sol_set_1()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x="{}";y="{1}";""";
-			await RunSolveTest("unit/on_restart/sol_set.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_on_restart_sol_set_2()
-		{
-			string solver = "gecode";
-			string? args = "--restart constant --restart-base 100";
-			string? solution = """x="{}";y="{1}";""";
-			await RunSolveTest("unit/on_restart/sol_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_bind_absent_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=<>;y=<>;""";
-			await RunSolveTest("unit/optional/bind_absent.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_comprehension_of_absent_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[<>,<>,<>];""";
-			await RunSolveTest("unit/optional/comprehension_of_absent_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_comprehension_of_absent_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[<>,<>,<>];""";
-			await RunSolveTest("unit/optional/comprehension_of_absent_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_conj_absent_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/optional/conj_absent_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_conj_absent_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/optional/conj_absent_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_fn_return_array_absent_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[<>];""";
-			await RunSolveTest("unit/optional/fn_return_array_absent.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_opt_array_access_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/optional/opt_array_access.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_opt_array_access_absent_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/optional/opt_array_access_absent.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_opt_array_access_absent_empty_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[];i=<>;y=<>;""";
-			await RunSolveTest("unit/optional/opt_array_access_absent_empty.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_opt_string_comprehension_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[<>];""";
-			await RunSolveTest("unit/optional/opt_string_comprehension.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_opt_top_absent_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=true;a=true;b=true;c=true;p=true;""";
-			await RunSolveTest("unit/optional/opt_top_absent.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_opt_binop_flatten_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """z=5;""";
-			await RunSolveTest("unit/optional/test-opt-binop-flatten.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_opt_bool_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """conjunction=[true,false,true,false,false,false,true,false,true];disjunction=[false,false,true,false,false,true,true,true,true];negation=[<>,true,false];""";
-			await RunSolveTest("unit/optional/test-opt-bool-1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_opt_compute_bounds_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """z=10;""";
-			await RunSolveTest("unit/optional/test-opt-compute-bounds.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_opt_float_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """addn=[0.0,-2.0,-1.0,0.0,1.0,2.0,-2.0,-4.0,-3.0,-2.0,-1.0,0.0,-1.0,-3.0,-2.0,-1.0,0.0,1.0,0.0,-2.0,-1.0,0.0,1.0,2.0,1.0,-1.0,0.0,1.0,2.0,3.0,2.0,0.0,1.0,2.0,3.0,4.0];subn=[<>,<>,<>,<>,<>,<>,-2.0,0.0,-1.0,-2.0,-3.0,-4.0,-1.0,1.0,0.0,-1.0,-2.0,-3.0,0.0,2.0,1.0,0.0,-1.0,-2.0,1.0,3.0,2.0,1.0,0.0,-1.0,2.0,4.0,3.0,2.0,1.0,0.0];prod=[1.0,-2.0,-1.0,0.0,1.0,2.0,-2.0,4.0,2.0,0.0,-2.0,-4.0,-1.0,2.0,1.0,0.0,-1.0,-2.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,-2.0,-1.0,0.0,1.0,2.0,2.0,-4.0,-2.0,0.0,2.0,4.0];divn=[<>,<>,<>,<>,<>,-2.0,1.0,2.0,-2.0,-1.0,-1.0,0.5,1.0,-1.0,-0.5,1.0,-0.5,-1.0,1.0,0.5,2.0,-1.0,-2.0,2.0,1.0];gt=[true,true,true,true,false,false,true,true,false];ge=[true,true,true,true,true,false,true,true,true];lt=[true,true,true,true,false,true,true,false,false];le=[true,true,true,true,true,true,true,false,true];""";
-			await RunSolveTest("unit/optional/test-opt-float-2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_opt_int_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """addn=[0,-2,-1,0,1,2,-2,-4,-3,-2,-1,0,-1,-3,-2,-1,0,1,0,-2,-1,0,1,2,1,-1,0,1,2,3,2,0,1,2,3,4];subn=[<>,<>,<>,<>,<>,<>,-2,0,-1,-2,-3,-4,-1,1,0,-1,-2,-3,0,2,1,0,-1,-2,1,3,2,1,0,-1,2,4,3,2,1,0];prod=[1,-2,-1,0,1,2,-2,4,2,0,-2,-4,-1,2,1,0,-1,-2,0,0,0,0,0,0,1,-2,-1,0,1,2,2,-4,-2,0,2,4];divn=[<>,<>,<>,<>,<>,-2,1,2,-2,-1,-1,0,1,-1,0,1,0,-1,1,0,2,-1,-2,2,1];gt=[true,true,true,true,false,false,true,true,false];ge=[true,true,true,true,true,false,true,true,true];lt=[true,true,true,true,false,true,true,false,false];le=[true,true,true,true,true,true,true,false,true];""";
-			await RunSolveTest("unit/optional/test-opt-int-1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_count_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """i=0;x="6..10";""";
-			await RunSolveTest("unit/optional/test_count_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_deopt_absent_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;""";
-			await RunSolveTest("unit/optional/test_deopt_absent.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_opt_comprehension_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """z=[false,false,false];""";
-			await RunSolveTest("unit/optional/test_opt_comprehension.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_opt_max_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=3;""";
-			await RunSolveTest("unit/optional/test_opt_max.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_optional_test_opt_min_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=1;""";
-			await RunSolveTest("unit/optional/test_opt_min.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_ctx_ann_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """c=5;""";
-			await RunSolveTest("unit/output/ctx_ann.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_json_ann_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="promise_total";y="expression_name("test")";""";
-			await RunSolveTest("unit/output/json_ann.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_no_output_reverse_mapped_var_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=0;""";
-			await RunSolveTest("unit/output/no_output_reverse_mapped_var.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_output_annotations_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=4;y=1;z=1;""";
-			await RunSolveTest("unit/output/output_annotations_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_output_annotations_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x@10.3-24=1;""";
-			await RunSolveTest("unit/output/output_annotations_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_output_annotations_3_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """objective=6;x@15.3-23|i=1@14.23|sum@14.18-16.7|=@14.12-16.7=1;x@15.3-23|i=2@14.23|sum@14.18-16.7|=@14.12-16.7=2;x@15.3-23|i=3@14.23|sum@14.18-16.7|=@14.12-16.7=3;""";
-			await RunSolveTest("unit/output/output_annotations_3.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_output_annotations_4_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=9;y@11.3-24|foo@15.12-17=10;""";
-			await RunSolveTest("unit/output/output_annotations_4.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_show_float_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=["{}","4.0..infinity","{2.0,3.0}","2.0..2.0 union 3.0..3.0 union 4.0..infinity","-1.0..1.0","-1.0..1.0 union 4.0..infinity","-1.0..1.0 union 2.0..2.0 union 3.0..3.0","-1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity","{-3.0,-2.0}","-3.0..-3.0 union -2.0..-2.0 union 4.0..infinity","{-3.0,-2.0,2.0,3.0}","-3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity","-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0","-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 4.0..infinity","-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0","-3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity","-infinity..-4.0","-infinity..-4.0 union 4.0..infinity","-infinity..-4.0 union 2.0..2.0 union 3.0..3.0","-infinity..-4.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity","-infinity..-4.0 union -1.0..1.0","-infinity..-4.0 union -1.0..1.0 union 4.0..infinity","-infinity..-4.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0","-infinity..-4.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity","-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0","-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 4.0..infinity","-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0","-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity","-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0","-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 4.0..infinity","-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0","-infinity..-4.0 union -3.0..-3.0 union -2.0..-2.0 union -1.0..1.0 union 2.0..2.0 union 3.0..3.0 union 4.0..infinity"];""";
-			await RunSolveTest("unit/output/show_float_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_show_int_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=["{}","7..infinity","{3,5}","{3,5} union 7..infinity","-1..1","{-1,0,1} union 7..infinity","{-1,0,1,3,5}","{-1,0,1,3,5} union 7..infinity","{-5,-3}","{-5,-3} union 7..infinity","{-5,-3,3,5}","{-5,-3,3,5} union 7..infinity","{-5,-3,-1,0,1}","{-5,-3,-1,0,1} union 7..infinity","{-5,-3,-1,0,1,3,5}","{-5,-3,-1,0,1,3,5} union 7..infinity","-infinity..-7","-infinity..-7 union {} union 7..infinity","-infinity..-7 union {3,5}","-infinity..-7 union {3,5} union 7..infinity","-infinity..-7 union {-1,0,1}","-infinity..-7 union {-1,0,1} union 7..infinity","-infinity..-7 union {-1,0,1,3,5}","-infinity..-7 union {-1,0,1,3,5} union 7..infinity","-infinity..-7 union {-5,-3}","-infinity..-7 union {-5,-3} union 7..infinity","-infinity..-7 union {-5,-3,3,5}","-infinity..-7 union {-5,-3,3,5} union 7..infinity","-infinity..-7 union {-5,-3,-1,0,1}","-infinity..-7 union {-5,-3,-1,0,1} union 7..infinity","-infinity..-7 union {-5,-3,-1,0,1,3,5}","-infinity..-7 union {-5,-3,-1,0,1,3,5} union 7..infinity"];""";
-			await RunSolveTest("unit/output/show_int_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_very_empty_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[];""";
-			await RunSolveTest("unit/output/very_empty.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_output_very_empty_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[];""";
-			await RunSolveTest("unit/output/very_empty_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_param_file_param_file_array_1()
-		{
-			string solver = "gecode";
-			string? args = "--param-file ./spec/unit/param_file/param_file_array.json";
-			string? solution = """x=true;y=false;""";
-			await RunSolveTest("unit/param_file/param_file_array.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_param_file_param_file_resolution_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;y=2;""";
-			await RunSolveTest("unit/param_file/param_file_resolution.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_absent_id_crash_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """z=[<>,<>];""";
-			await RunSolveTest("unit/regression/absent_id_crash.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_array_var_set_element_nosets_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;y=["1..3","{}","{1}"];z="1..3";""";
-			await RunSolveTest("unit/regression/array_var_set_element_nosets.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_array_var_set_element_nosets_2()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """x=1;y=["1..3","{}","{1}"];z="1..3";""";
-			await RunSolveTest("unit/regression/array_var_set_element_nosets.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_array_var_set_element_nosets_3()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;y=["1..3","{}","{1}"];z="1..3";""";
-			await RunSolveTest("unit/regression/array_var_set_element_nosets.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_assign_reverse_map_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=2;""";
-			await RunSolveTest("unit/regression/assign_reverse_map.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_big_array_lit_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/big_array_lit.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_binop_mult_gclock_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/binop_mult_gclock.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bool2float_let_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/bool2float_let.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bounds_for_linear_01_max_0_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_max_0.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_max_0_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_max_0.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_max_0_3()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_max_0.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_max_0_4()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_max_0.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bounds_for_linear_01_max_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_max_1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_max_1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_max_1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_max_1_3()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_max_1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_max_1_4()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_max_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bounds_for_linear_01_min_0_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_min_0.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_min_0_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_min_0.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_min_0_3()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_min_0.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_min_0_4()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_min_0.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bounds_for_linear_01_min_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_min_1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_min_1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_min_1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_min_1_3()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_min_1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bounds_for_linear_01_min_1_4()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/bounds_for_linear_01_min_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug212_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/bug212.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bug212_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/bug212.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug222_1()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """K=11;""";
-			await RunSolveTest("unit/regression/bug222.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bug222_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """K=11;""";
-			await RunSolveTest("unit/regression/bug222.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug256_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/bug256.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug256b_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["{}","{}","{}"];""";
-			await RunSolveTest("unit/regression/bug256b.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug287_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,2];""";
-			await RunSolveTest("unit/regression/bug287.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug290_orig_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;""";
-			await RunSolveTest("unit/regression/bug290_orig.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug290_simple_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;""";
-			await RunSolveTest("unit/regression/bug290_simple.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug312_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """objective=1;var1=1;var2=2;var3=1;var4=1;""";
-			await RunSolveTest("unit/regression/bug312.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug335_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """sokPosns=[14,13,8,7,8,9,4,5,10,1,1,1];stime=9;""";
-			await RunSolveTest("unit/regression/bug335.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug337_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[false,false];y=0;""";
-			await RunSolveTest("unit/regression/bug337.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug380_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];d=[3,3,3,3];""";
-			await RunSolveTest("unit/regression/bug380.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_bug380_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];d=[3,3,3,3];""";
-			await RunSolveTest("unit/regression/bug380.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug45_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """i=1;""";
-			await RunSolveTest("unit/regression/bug45.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug52_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x1d1=3;x1d9=10;""";
-			await RunSolveTest("unit/regression/bug52.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug532_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=0;""";
-			await RunSolveTest("unit/regression/bug532.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug534_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[,];""";
-			await RunSolveTest("unit/regression/bug534.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug536_1()
-		{
-			string solver = "gecode";
-			string? args = "-O2";
-			string? solution = """x=[1];""";
-			await RunSolveTest("unit/regression/bug536.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug552_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[2.0];""";
-			await RunSolveTest("unit/regression/bug552.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug565_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=true;""";
-			await RunSolveTest("unit/regression/bug565.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug635_1()
-		{
-			string solver = "gecode";
-			string? args = "-O2";
-			string? solution = null;
-			await RunSolveTest("unit/regression/bug635.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug70_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/bug70.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug71_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bug71_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug85_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """mark=[0,1,3];objective=3;""";
-			await RunSolveTest("unit/regression/bug85.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug_08_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """objective=-2;x=2;""";
-			await RunSolveTest("unit/regression/bug_08.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug_empty_enum_extension_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """as=[z("z2"),z("z1"),x("x2"),x("x1")];""";
-			await RunSolveTest("unit/regression/bug_empty_enum_extension.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_bug_opt_polymorphic_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/bug_opt_polymorphic.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_cardinality_atmost_partition_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """nvar=2;partitions=["{1,3}","{4}","{2,6}"];variables=[2,3,7,1,6,0];""";
-			await RunSolveTest("unit/regression/cardinality_atmost_partition.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_card_flatten_lb_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """objective=0;x="{}";y=0;""";
-			await RunSolveTest("unit/regression/card_flatten_lb.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_change_partition_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """nchange=2;partitions=["{1,3}","{4}","{2,6}"];variables=[6,6,2,1,3,3,1,6,2,2,2];""";
-			await RunSolveTest("unit/regression/change_partition.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_checker_mzn_check_var_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """_checker="Ok";""";
-			await RunSolveTest("unit/regression/checker_mzn_check_var.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_checker_opt_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """_checker="y = 20;";""";
-			await RunSolveTest("unit/regression/checker_opt.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_checker_params_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """_checker="yay!";""";
-			await RunSolveTest("unit/regression/checker_params.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_checker_same_var_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """_checker="x = 10;";objective=5;""";
-			await RunSolveTest("unit/regression/checker_same_var.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_check_dom_float_array_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/check_dom_float_array.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_coerce_set_to_array_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1.0;""";
-			await RunSolveTest("unit/regression/coerce_set_to_array_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_coercion_par_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,<>];y=[1.0,<>];z=[0.0,<>];""";
-			await RunSolveTest("unit/regression/coercion_par.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_comprehension_where_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/comprehension_where.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_comp_in_empty_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/comp_in_empty_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_constructor_of_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=C(2);""";
-			await RunSolveTest("unit/regression/constructor_of_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_decision_tree_binary_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """node_used=[3,4,6,9,11,13,15,8,9,10,11,12,13,14,15];x=[6,2,6,2,4,6,8,1,2,3,4,5,6,7,8];""";
-			await RunSolveTest("unit/regression/decision_tree_binary.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_decision_tree_binary_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """node_used=[3,4,6,9,11,13,15,8,9,10,11,12,13,14,15];x=[6,2,6,2,4,6,8,1,2,3,4,5,6,7,8];""";
-			await RunSolveTest("unit/regression/decision_tree_binary.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_dim_1_struct_merge_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/dim_1_struct_merge.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_empty_array1d_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[];""";
-			await RunSolveTest("unit/regression/empty-array1d.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_enigma_1568_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """D=6;E=5;L=3;O=9;ODD=966;P=1;PUZZLE=102235;U=0;Z=2;num1=161;num2=635;num3=805;num4=483;x=[9,6,1,0,2,3,5];""";
-			await RunSolveTest("unit/regression/enigma_1568.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_flatten_comp_in_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[true];""";
-			await RunSolveTest("unit/regression/flatten_comp_in.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_flat_cv_call_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """objective=4;a=[0,0,2,2];rem=2;""";
-			await RunSolveTest("unit/regression/flat_cv_call.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_flat_cv_let_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """objective=4;a=[0,0,2,2];num=4;""";
-			await RunSolveTest("unit/regression/flat_cv_let.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_flipstrip_simple_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """f1=1;""";
-			await RunSolveTest("unit/regression/flipstrip_simple.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_float_card_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """xc=3;zc=1;bc=1;""";
-			await RunSolveTest("unit/regression/float_card.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_follow_id_absent_crash_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=<>;""";
-			await RunSolveTest("unit/regression/follow_id_absent_crash.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_639_part2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/github_639_part2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_644_b_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=[<>];b=[1];""";
-			await RunSolveTest("unit/regression/github_644_b.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_644_c_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[1];x=1;""";
-			await RunSolveTest("unit/regression/github_644_c.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_644_d_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """value=<>;""";
-			await RunSolveTest("unit/regression/github_644_d.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_644_e_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=<>;y=<>;z=<>;p=3;q=1;r=4;""";
-			await RunSolveTest("unit/regression/github_644_e.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_646_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/github_646.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_661_part2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;y=2;""";
-			await RunSolveTest("unit/regression/github_661_part2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_664_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="{1}";""";
-			await RunSolveTest("unit/regression/github_664.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_667_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[false];""";
-			await RunSolveTest("unit/regression/github_667.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_github_667_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[false];""";
-			await RunSolveTest("unit/regression/github_667.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_github_667_3()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[false];""";
-			await RunSolveTest("unit/regression/github_667.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_670_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/github_670.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_671_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[true];""";
-			await RunSolveTest("unit/regression/github_671.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_674_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[true,false];ns=[false,false,false,false,false,false,false,false,false,true,false];es=[false,false,false,false,false,false,false,false,false,false,false];""";
-			await RunSolveTest("unit/regression/github_674.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_github_674_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[true,false];ns=[false,false,false,false,false,false,false,false,false,true,false];es=[false,false,false,false,false,false,false,false,false,false,false];""";
-			await RunSolveTest("unit/regression/github_674.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_github_674_3()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[true,false];ns=[false,false,false,false,false,false,false,false,false,true,false];es=[false,false,false,false,false,false,false,false,false,false,false];""";
-			await RunSolveTest("unit/regression/github_674.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_675a_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """t=[false];""";
-			await RunSolveTest("unit/regression/github_675a.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_675b_1()
-		{
-			string solver = "gecode";
-			string? args = "--keep-paths";
-			string? solution = null;
-			await RunSolveTest("unit/regression/github_675b.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_681_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """arr=[true];""";
-			await RunSolveTest("unit/regression/github_681.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_687_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """r=(x:0,);""";
-			await RunSolveTest("unit/regression/github_687.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_693_part1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """c=true;""";
-			await RunSolveTest("unit/regression/github_693_part1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_693_part2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["{}","{2}","{1}","1..2"];""";
-			await RunSolveTest("unit/regression/github_693_part2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_700_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """c="{1}";d="1..2";""";
-			await RunSolveTest("unit/regression/github_700.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_726_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/github_726.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_732_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """sts=[(x:0,),(x:1,)];""";
-			await RunSolveTest("unit/regression/github_732.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_747_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[<>,<>];""";
-			await RunSolveTest("unit/regression/github_747.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_752_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/github_752.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_758_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[true];""";
-			await RunSolveTest("unit/regression/github_758.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_github_758_2()
-		{
-			string solver = "gecode";
-			string? args = "-O0";
-			string? solution = """x=[true];""";
-			await RunSolveTest("unit/regression/github_758.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_761_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/github_761.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_776_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=A(1);""";
-			await RunSolveTest("unit/regression/github_776.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_778_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/github_778.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_783_1()
-		{
-			string solver = "gecode";
-			string? args = "-O2";
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/github_783.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_803_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """BV0=false;IV0=0;""";
-			await RunSolveTest("unit/regression/github_803.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_805_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/github_805.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_806_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/github_806.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_807_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """bar=[1];""";
-			await RunSolveTest("unit/regression/github_807.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_809_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """bar=<>;biz="{B}";""";
-			await RunSolveTest("unit/regression/github_809.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_813_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=true;b=false;""";
-			await RunSolveTest("unit/regression/github_813.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_818_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[<>,"{1}"];""";
-			await RunSolveTest("unit/regression/github_818.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_821_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["B","A"];""";
-			await RunSolveTest("unit/regression/github_821.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_822_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """i64_min=-9223372036854775808;i64_max=9223372036854775807;""";
-			await RunSolveTest("unit/regression/github_822.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_823_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """dzn_str="('x + \': 1)";json_str="{"x + \\": 1}";""";
-			await RunSolveTest("unit/regression/github_823.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_826_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """v=[false];""";
-			await RunSolveTest("unit/regression/github_826.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_842_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/github_842.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_844_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[];y=[];""";
-			await RunSolveTest("unit/regression/github_844.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_848_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/github_848.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_865_1()
-		{
-			string solver = "gecode";
-			string? args = "-G std";
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/github_865.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_879_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/github_879.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_github_887_1()
-		{
-			string solver = "gecode";
-			string? args = "-Werror";
-			string? solution = null;
-			await RunSolveTest("unit/regression/github_887.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_hundred_doors_unoptimized_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """s="{1,4,9,16,25,36,49,64,81,100}";x=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,0,0,1,0,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,0,1,1,1,1,1,0,1,0,1,1,0,1,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,0,1,0,1,1,1,0,1,1,1,1,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,0,1,0,0,1,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,0,0,0,0,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,1,0,1,0,1,1,0,0,1,1,0,0,1,1,1,0,1,1,0,0,1,0,0,0,1,0,0,0,0,1,1,1,0,1,0,0,0,1,1,1,0,0,1,0,0,1,0,0,0,0,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,0,1,1,0,0,1,0,0,1,0,1,0,1,0,0,0,1,1,0,0,1,0,1,0,1,1,0,0,1,1,0,0,1,0,0,0,0,0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,0,0,1,0,1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,0,1,0,1,1,1,0,1,0,0,1,0,1,0,0,0,0,0,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,1,1,1,0,1,0,0,1,0,0,0,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1,1,1,1,0,0,1,0,0,0,0,1,1,1,0,1,0,0,1,1,1,0,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,0,1,0,1,0,1,0,0,0,0,0,1,1,0,1,0,0,0,0,1,1,1,1,1,0,0,1,0,0,0,0,1,0,0,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,0,1,1,1,1,1,0,0,1,1,1,0,0,0,0,1,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,0,1,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,0,0,0,0,1,1,1,1,0,0,1,0,1,0,0,0,1,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,1,1,1,1,0,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,0,1,0,1,0,0,0,0,1,1,0,1,1,0,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,1,1,0,1,0,1,0,0,1,1,0,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,1,0,0,1,1,1,1,1,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,0,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,1,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];""";
-			await RunSolveTest("unit/regression/hundred_doors_unoptimized.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_int_times_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/int_times.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_in_array_eval_error_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1];y=true;""";
-			await RunSolveTest("unit/regression/in_array_eval_error.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_is_fixed_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=true;""";
-			await RunSolveTest("unit/regression/is_fixed.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_is_fixed_comp_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """len=1;""";
-			await RunSolveTest("unit/regression/is_fixed_comp.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_lb_ub_dom_array_opt_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """l=1;u=2;d="1..2";""";
-			await RunSolveTest("unit/regression/lb_ub_dom_array_opt.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_let_domain_from_generator_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/let_domain_from_generator.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_move_where_clause_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/move_where_clause.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_multi_goal_hierarchy_error_1()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/multi_goal_hierarchy_error.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_nested_clause_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=2;y=[false,false];""";
-			await RunSolveTest("unit/regression/nested_clause.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_non_pos_pow_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=2;""";
-			await RunSolveTest("unit/regression/non_pos_pow.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_nosets_369_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/nosets_369.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_nosets_set_search_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="1..3";""";
-			await RunSolveTest("unit/regression/nosets_set_search.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_nosets_set_search_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="1..3";""";
-			await RunSolveTest("unit/regression/nosets_set_search.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_no_macro_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=4;r=true;""";
-			await RunSolveTest("unit/regression/no_macro.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_opt_minmax_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """xmax=10;xmin=1;ymax=10.0;ymin=1.0;""";
-			await RunSolveTest("unit/regression/opt_minmax.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_output_2d_array_enum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/output_2d_array_enum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_overloading_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b1=false;b2=true;""";
-			await RunSolveTest("unit/regression/overloading.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_parse_assignments_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """_checker="Ok";""";
-			await RunSolveTest("unit/regression/parse_assignments.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_par_opt_dom_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/regression/par_opt_dom.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_par_opt_equal_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=true;b=false;c=true;""";
-			await RunSolveTest("unit/regression/par_opt_equal.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_pred_param_r7550_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """end=53;objective=53;s=[0,0,0,4,7,7,6,8,12,8,6,4,14,19,12,12,13,18,8,11,14,18,19,4,16,10,20,9,14,6,24,26,21,16,9,21,24,28,31,22,24,11,25,16,30,26,38,25,25,30,33,36,39,34,33,47,25,44,50,38];""";
-			await RunSolveTest("unit/regression/pred_param_r7550.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_regression_pred_param_r7550_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """end=53;objective=53;s=[0,0,0,4,7,7,6,8,12,8,6,4,14,19,12,12,13,18,8,11,14,18,19,4,16,10,20,9,14,6,24,26,21,16,9,21,24,28,31,22,24,11,25,16,30,26,38,25,25,30,33,36,39,34,33,47,25,44,50,38];""";
-			await RunSolveTest("unit/regression/pred_param_r7550.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_round_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=4;""";
-			await RunSolveTest("unit/regression/round.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_seq_search_bug_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """evedays=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];flatroster=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];morndays=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];restdays=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];roster=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];""";
-			await RunSolveTest("unit/regression/seq_search_bug.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_set_inequality_par_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/set_inequality_par.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_string_test_arg_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=4;""";
-			await RunSolveTest("unit/regression/string-test-arg.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bool2int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;x=1;""";
-			await RunSolveTest("unit/regression/test_bool2int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug45_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """i=1;""";
-			await RunSolveTest("unit/regression/test_bug45.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug53_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug53.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug54_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=7;y=1;z=7;""";
-			await RunSolveTest("unit/regression/test_bug54.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug55_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/test_bug55.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug57_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug57.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug65_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug65.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug66_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """s1="{1}";s2="1..2";""";
-			await RunSolveTest("unit/regression/test_bug66.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug70_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """killed=1;eFailureModes=1;""";
-			await RunSolveTest("unit/regression/test_bug70.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug71_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug71.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug72_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="{1}";b=true;""";
-			await RunSolveTest("unit/regression/test_bug72.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_129_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug_129.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_476_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=1;c=true;""";
-			await RunSolveTest("unit/regression/test_bug_476.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_494_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x1=1;x2=[0];""";
-			await RunSolveTest("unit/regression/test_bug_494.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_521_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=0;""";
-			await RunSolveTest("unit/regression/test_bug_521.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_527_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/regression/test_bug_527.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_588_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=2;y=1;z=1;""";
-			await RunSolveTest("unit/regression/test_bug_588.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_637_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug_637.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_851_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug_851.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_859_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug_859.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_860_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug_860.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_864_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_bug_864.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_array_sum_bounds_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """C=[0,0,0];y=0;""";
-			await RunSolveTest("unit/regression/test_bug_array_sum_bounds.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_bug_ite_array_eq_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;x=[false,false,false];""";
-			await RunSolveTest("unit/regression/test_bug_ite_array_eq.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_equality_of_indirect_annotations_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_equality_of_indirect_annotations.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_opt_exists_forall_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_opt_exists_forall.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_output_array_of_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/test_output_array_of_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_test_slice_1d_array_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """xs=[2,3];""";
-			await RunSolveTest("unit/regression/test_slice_1d_array.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_type_specialise_array_return_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """y=5;""";
-			await RunSolveTest("unit/regression/type_specialise_array_return.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_var_bool_comp_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[2,1];""";
-			await RunSolveTest("unit/regression/var_bool_comp.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_warm_start_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/regression/warm_start.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_where_forall_bug_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=true;""";
-			await RunSolveTest("unit/regression/where-forall-bug.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_regression_xor_mixed_context_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,0,1];""";
-			await RunSolveTest("unit/regression/xor_mixed_context.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_int_choice_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_choice_1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_int_choice_1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_choice_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_int_choice_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[8,4,1,3,6,2,7,5];""";
-			await RunSolveTest("unit/search/int_choice_2.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_int_choice_2_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[8,4,1,3,6,2,7,5];""";
-			await RunSolveTest("unit/search/int_choice_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_int_choice_6_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_choice_6.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_int_choice_6_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_choice_6.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_int_var_select_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_var_select_1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_int_var_select_1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_var_select_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_int_var_select_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_var_select_2.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_int_var_select_2_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_var_select_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_int_var_select_6_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_var_select_6.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_int_var_select_6_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """q=[1,5,8,6,3,7,2,4];""";
-			await RunSolveTest("unit/search/int_var_select_6.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_test_ff1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=3;y=8;""";
-			await RunSolveTest("unit/search/test-ff1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_test_ff1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=3;y=8;""";
-			await RunSolveTest("unit/search/test-ff1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_test_ff2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=5;y=1;""";
-			await RunSolveTest("unit/search/test-ff2.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_test_ff2_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=5;y=1;""";
-			await RunSolveTest("unit/search/test-ff2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_test_ff3_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=5;y=1;z=1;w=3;""";
-			await RunSolveTest("unit/search/test-ff3.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_test_ff3_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=5;y=1;z=1;w=3;""";
-			await RunSolveTest("unit/search/test-ff3.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_test_large1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=5;y=8;""";
-			await RunSolveTest("unit/search/test-large1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_test_large1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=6;y=7;""";
-			await RunSolveTest("unit/search/test-large1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_test_med1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=5;y=6;""";
-			await RunSolveTest("unit/search/test-med1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_test_med1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=5;y=6;""";
-			await RunSolveTest("unit/search/test-med1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_search_test_small1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=9;y=2;""";
-			await RunSolveTest("unit/search/test-small1.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_search_test_small1_2()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=9;y=2;""";
-			await RunSolveTest("unit/search/test-small1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_alias_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=3;y=[<>,1];tup=[2,true];tuptup=[2,true,2,true];""";
-			await RunSolveTest("unit/types/alias.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_alias_call_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/types/alias_call.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_array_of_array_alias_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,2,3,4,5,6,7,8,9];""";
-			await RunSolveTest("unit/types/array_of_array_alias.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_common_struct_bottom_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,];y=[(a:[(a:1,)],),(a:[],)];""";
-			await RunSolveTest("unit/types/common_struct_bottom.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_comprehension_type_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["A","A","A","A"];""";
-			await RunSolveTest("unit/types/comprehension_type.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_cv_comprehension_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/types/cv_comprehension.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_enum_decl_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """__val__="";""";
-			await RunSolveTest("unit/types/enum_decl.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_enum_refl_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x="{}";ubx="{a,b,c}";y="a";lby="a";uby="c";domy="{a,b,c}";""";
-			await RunSolveTest("unit/types/enum_refl.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_github_647_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """b=1;""";
-			await RunSolveTest("unit/types/github_647.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_if_then_else_bottom_struct_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[];""";
-			await RunSolveTest("unit/types/if_then_else_bottom_struct.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_if_then_else_struct_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """t=[<>,<>];b=false;u=[0,0];""";
-			await RunSolveTest("unit/types/if_then_else_struct.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_non_contig_enum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=S(6);""";
-			await RunSolveTest("unit/types/non_contig_enum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_opt_alias_int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=<>;""";
-			await RunSolveTest("unit/types/opt_alias._int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_overload_inst_tuple_return_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/types/overload_inst_tuple_return.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_par_struct_tiid_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/types/par_struct_tiid.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_record_binop_par_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;merge1=(x:1,y:2.0,z:true,);""";
-			await RunSolveTest("unit/types/record_binop_par.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_record_binop_var_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """eqA=(a:2,b:true,);nq=(a:3,b:true,);leA=(x:2,y:4,);lqA=(x:2,y:4,);arrin=(a:3,b:5.0,);merge1=(a:2,b:true,x:2,y:4,);""";
-			await RunSolveTest("unit/types/record_binop_var.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_record_comprehensions_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """simple=[(x:2,y:true,),(x:1,y:false,),(x:0,y:true,),(x:1,y:false,),(x:2,y:true,)];indexed=[(a:4,b:true,),(a:6,b:true,),(a:8,b:true,),(a:9,b:false,),(a:11,b:false,)];""";
-			await RunSolveTest("unit/types/record_comprehensions.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_record_in_checker_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """_checker="{"x": 1}";""";
-			await RunSolveTest("unit/types/record_in_checker.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_record_nested_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/types/record_nested.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_record_subtyping_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """single=(a:1,);double=(a:1.0,b:[1,2,3],);tupId=(x:1,y:0.0,);tupExpr=(a:-5.0,b:0,);arr1=[(a:5,b:1.0,),(a:1,b:-1.0,)];arr2=[(a:0,b:1,),(a:0,b:1,)];arrId=[(a:0.0,b:1.0,),(a:0.0,b:1.0,)];arrExpr=[(a:1.0,b:0.0,),(a:2.0,b:1.0,),(a:3.0,b:0.0,)];""";
-			await RunSolveTest("unit/types/record_subtyping.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_record_var_element_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """idx="iE";selected=(a:6,b:(c:3,d:3,),);""";
-			await RunSolveTest("unit/types/record_var_element.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_record_var_ite_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """tups=[(x:12,y:false,),(x:10,y:true,),(x:11,y:false,)];""";
-			await RunSolveTest("unit/types/record_var_ite.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_specialise_large_struct_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """t=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];u=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];""";
-			await RunSolveTest("unit/types/specialise_large_struct.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_array_coercion_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """mzn_enum_X=["A",,"B",,"G",0,"1..3"];""";
-			await RunSolveTest("unit/types/struct_array_coercion.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_domain_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=false;""";
-			await RunSolveTest("unit/types/struct_domain_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_domain_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=false;""";
-			await RunSolveTest("unit/types/struct_domain_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_domain_3_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=false;""";
-			await RunSolveTest("unit/types/struct_domain_3.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_domain_4_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """a=false;""";
-			await RunSolveTest("unit/types/struct_domain_4.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_member_paths_1()
-		{
-			string solver = "gecode";
-			string? args = "--keep-paths";
-			string? solution = """a=[(o:1,s:<>,)];""";
-			await RunSolveTest("unit/types/struct_member_paths.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_opt_supertype_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/types/struct_opt_supertype.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_par_function_version_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """p=true;a=false;b=true;c=false;""";
-			await RunSolveTest("unit/types/struct_par_function_version.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_return_ti_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=false;""";
-			await RunSolveTest("unit/types/struct_return_ti_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_return_ti_2_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=false;""";
-			await RunSolveTest("unit/types/struct_return_ti_2.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_struct_specialise_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """foo_int=1;foo_str="test";foo_enum="B";bar_int=2;bar_str="pred";bar_enum="C";baz_tup=[3,"func"];baz_rec=(x:"B",);""";
-			await RunSolveTest("unit/types/struct_specialise.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_test_enum_constr_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/types/test_enum_constr_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_binop_par_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """eq1=true;eq0=false;nq1=true;nq0=false;in1=true;in0=false;le1=true;le0=false;lq1=true;lq0=false;con1=[1,2.0,true];""";
-			await RunSolveTest("unit/types/tuple_binop_par.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_binop_var_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """eqA=[2,true];nq=[3,true];leA=[2,4];lqA=[2,4];arrin=[3,5.0];con1=[2,true,3,true];""";
-			await RunSolveTest("unit/types/tuple_binop_var.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_comprehensions_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """simple=[2,true,1,false,0,true,1,false,2,true];indexed=[4,true,6,true,8,true,9,false,11,false];""";
-			await RunSolveTest("unit/types/tuple_comprehensions.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_int_set_of_int_specialisation_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """f=true;""";
-			await RunSolveTest("unit/types/tuple_int_set_of_int_specialisation.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_lit_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """single=[1];double=[false,-1];triple=[1,false,200.0];square=[1,"one",-2,"two"];""";
-			await RunSolveTest("unit/types/tuple_lit.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_mkpar_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;y=3;""";
-			await RunSolveTest("unit/types/tuple_mkpar.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_subtyping_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """single=[1];double=[1.0,1,2,3];tupId=[1,0.0];tupExpr=[-5.0,0];arr1=[5,1.0,1,-1.0];arr2=[1,0,1,0];arrId=[1.0,0.0,1.0,0.0];arrExpr=[1.0,0.0,2.0,1.0,3.0,0.0];""";
-			await RunSolveTest("unit/types/tuple_subtyping.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_var_element_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """idx="iE";selected=[6,3,3];""";
-			await RunSolveTest("unit/types/tuple_var_element.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_tuple_var_ite_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """tups=[12,false,10,true,11,false];""";
-			await RunSolveTest("unit/types/tuple_var_ite.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_type_specialise_param_arrays_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = null;
-			await RunSolveTest("unit/types/type_specialise_param_arrays.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_types_type_specialise_struct_domain_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[(a:["A"],),(a:["B"],),(a:["C"],)];""";
-			await RunSolveTest("unit/types/type_specialise_struct_domain.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_alldifferent_globals_alldiff_set_nosets_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """alldiff_avsi2=["{}","{1}","1..2","1..3","{1,3}","{2}","2..3","{3}"];""";
-			await RunSolveTest("unit/globals/alldifferent/globals_alldiff_set_nosets.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_alldifferent_globals_all_different_int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """alldiff_avi1=[1,2,3,4,5];""";
-			await RunSolveTest("unit/globals/alldifferent/globals_all_different_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_alldifferent_globals_all_different_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """alldiff_avsi2=["{}","{3}","{2}","2..3","{1}","{1,3}","1..2","1..3"];""";
-			await RunSolveTest("unit/globals/alldifferent/globals_all_different_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_all_equal_globals_all_equal_int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[5,5,5,5,5,5,5,5,5,5];""";
-			await RunSolveTest("unit/globals/all_equal/globals_all_equal_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_all_equal_globals_all_equal_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["1..2","1..2","1..2","1..2","1..2","1..2","1..2","1..2","1..2","1..2"];""";
-			await RunSolveTest("unit/globals/all_equal/globals_all_equal_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_among_globals_among_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """among_avi1=[4,5,5,6,6,6,7,7,7,7];among_avi2=[4,5,5,6,6,6,7,7,8,8];among_vi=7;""";
-			await RunSolveTest("unit/globals/among/globals_among.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_atleast_globals_at_least_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """atlm_avi=[4,5,5,6,6,6,6,6,8,8];exact_avi=[4,5,5,6,6,6,6,6,8,8];""";
-			await RunSolveTest("unit/globals/atleast/globals_at_least.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_count_globals_count_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """count_avi1=[7,8,8,9,9,9,8,8];count_avi2=[7,8,9,3,0,0,9,9];count_avi3=[7,8,8,9,9,9,0,8];count_avi4=[0,0,0,0,0,0,0,0];count_vi1=9;count_vi2=3;count_vi3=8;""";
-			await RunSolveTest("unit/globals/count/globals_count.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_cumulative_globals_cumulative_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """cum_bound=6;""";
-			await RunSolveTest("unit/globals/cumulative/globals_cumulative.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_cumulatives_globals_cumulatives_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """makespan=11;""";
-			await RunSolveTest("unit/globals/cumulatives/globals_cumulatives.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_globals_cumulatives_globals_cumulatives_2()
-		{
-			string solver = "gecode";
-			string? args = "-G std";
-			string? solution = """makespan=11;""";
-			await RunSolveTest("unit/globals/cumulatives/globals_cumulatives.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_globals_cumulatives_globals_cumulatives_3()
-		{
-			string solver = "gecode";
-			string? args = "-G std";
-			string? solution = """makespan=11;""";
-			await RunSolveTest("unit/globals/cumulatives/globals_cumulatives.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_disjoint_globals_disjoint_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """disj_s2="4..5";""";
-			await RunSolveTest("unit/globals/disjoint/globals_disjoint.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_distribute_globals_distribute_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """dist_base=[6,7,6,8,6,9,6];dist_card=[4,1,1,1];dist_value=[6,7,8,9];""";
-			await RunSolveTest("unit/globals/distribute/globals_distribute.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_global_cardinality_globals_global_cardinality_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """gcc_c=[5,1,2,1];gcc_x=[6,7,6,8,6,9,6,8,6];gcc_c_zero=[0,0,0,0];""";
-			await RunSolveTest("unit/globals/global_cardinality/globals_global_cardinality.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_global_cardinality_closed_globals_global_cardinality_closed_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """gcc_c=[5,1,2,1];gcc_x=[6,7,6,8,6,9,6,8,6];""";
-			await RunSolveTest("unit/globals/global_cardinality_closed/globals_global_cardinality_closed.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_increasing_globals_strictly_increasing_opt_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """xs=[1,<>,2];""";
-			await RunSolveTest("unit/globals/increasing/globals_strictly_increasing_opt.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_int_set_channel_globals_int_set_channel_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """chan_avi=[1,2,3,5,4,2,1,3,2];chan_avsi=["{1,7}","{2,6,9}","{3,8}","{5}","{4}"];""";
-			await RunSolveTest("unit/globals/int_set_channel/globals_int_set_channel.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_lex_chain_globals_lex_chain_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """lex_members_int=[6,0,0];lex_members_bool=[false];""";
-			await RunSolveTest("unit/globals/lex_chain/globals_lex_chain.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_lex_chain_globals_lex_chain__orbitope_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """lex_members_int=[1,0,1];lex_members_bool=[false,false];""";
-			await RunSolveTest("unit/globals/lex_chain/globals_lex_chain__orbitope.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_globals_lex_chain_globals_lex_chain__orbitope_2()
-		{
-			string solver = "coin-bc";
-			string? args = null;
-			string? solution = """lex_members_int=[1,0,1];lex_members_bool=[false,false];""";
-			await RunSolveTest("unit/globals/lex_chain/globals_lex_chain__orbitope.mzn",solver,args,solution);
-		}
-
-		public async Task test_unit_globals_lex_chain_globals_lex_chain__orbitope_3()
-		{
-			string solver = "scip";
-			string? args = null;
-			string? solution = """lex_members_int=[1,0,1];lex_members_bool=[false,false];""";
-			await RunSolveTest("unit/globals/lex_chain/globals_lex_chain__orbitope.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_lex_lesseq_globals_lex_lesseq_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """lexeq_avi1=[1,3,5,7,9];lexeq_avi2=[1,3,5,7,9];""";
-			await RunSolveTest("unit/globals/lex_lesseq/globals_lex_lesseq.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_link_set_to_booleans_globals_link_set_to_booleans_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """link_avb=[false,true,false,true,true];link_vsi="{1,4}";""";
-			await RunSolveTest("unit/globals/link_set_to_booleans/globals_link_set_to_booleans.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_maximum_globals_maximum_int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """max_vi1=9;max_vi2=9;""";
-			await RunSolveTest("unit/globals/maximum/globals_maximum_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_minimum_globals_minimum_int_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """min_vi1=0;min_vi2=0;""";
-			await RunSolveTest("unit/globals/minimum/globals_minimum_int.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_nvalue_nvalue_total_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """l1=1;""";
-			await RunSolveTest("unit/globals/nvalue/nvalue_total.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_partition_set_globals_partition_set_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """partset_avsi=["{1,3,5}","{2,6,7,8,10}","{}","{4,9}"];""";
-			await RunSolveTest("unit/globals/partition_set/globals_partition_set.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_regular_globals_regular_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """reg_input=[1,2,3,3,3,2,1];reg_input2=[1,2,3,3,3,3,3,3,3,2,1];""";
-			await RunSolveTest("unit/globals/regular/globals_regular.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_regular_globals_regular_regex_1_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[1,2,2,4];""";
-			await RunSolveTest("unit/globals/regular/globals_regular_regex_1.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_regular_globals_regular_regex_6_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=["A","B","A","C","A","D","A"];""";
-			await RunSolveTest("unit/globals/regular/globals_regular_regex_6.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_roots_test_roots_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=1;""";
-			await RunSolveTest("unit/globals/roots/test_roots.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_roots_test_roots3_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """x=[5,5,5];""";
-			await RunSolveTest("unit/globals/roots/test_roots3.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_sliding_sum_globals_sliding_sum_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """seq_avi=[-99,0,99,-99,0,99,-99];""";
-			await RunSolveTest("unit/globals/sliding_sum/globals_sliding_sum.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_sort_globals_sort_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """sort_avi=[1,2,3,3,5,5,8];""";
-			await RunSolveTest("unit/globals/sort/globals_sort.mzn",solver,args,solution);
-		}
-
-		[Test]
-		public async Task test_unit_globals_sum_pred_globals_sum_pred_1()
-		{
-			string solver = "gecode";
-			string? args = null;
-			string? solution = """sum_s=13;""";
-			await RunSolveTest("unit/globals/sum_pred/globals_sum_pred.mzn",solver,args,solution);
-		}
-
-		[Test]
 		public async Task test_examples_alpha_1()
 		{
 			string solver = "gecode";
@@ -4405,6 +21,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/alpha.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_alpha_2()
 		{
 			string solver = "gecode";
@@ -4413,6 +30,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/alpha.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_alpha_3()
 		{
 			string solver = "gecode";
@@ -4421,6 +39,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/alpha.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_alpha_4()
 		{
 			string solver = "coin-bc";
@@ -4429,6 +48,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/alpha.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_alpha_5()
 		{
 			string solver = "gecode";
@@ -4437,6 +57,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/alpha.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_alpha_6()
 		{
 			string solver = "gecode";
@@ -4454,6 +75,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships10.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships10_2()
 		{
 			string solver = "gecode";
@@ -4462,6 +84,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships10.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships10_3()
 		{
 			string solver = "gecode";
@@ -4470,6 +93,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships10.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships10_4()
 		{
 			string solver = "coin-bc";
@@ -4478,6 +102,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships10.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships10_5()
 		{
 			string solver = "gecode";
@@ -4486,6 +111,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships10.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships10_6()
 		{
 			string solver = "gecode";
@@ -4503,6 +129,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_1_2()
 		{
 			string solver = "gecode";
@@ -4511,6 +138,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_1_3()
 		{
 			string solver = "gecode";
@@ -4519,6 +147,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_1_4()
 		{
 			string solver = "coin-bc";
@@ -4527,6 +156,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_1_5()
 		{
 			string solver = "gecode";
@@ -4535,6 +165,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_1_6()
 		{
 			string solver = "gecode";
@@ -4552,6 +183,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_3_2()
 		{
 			string solver = "gecode";
@@ -4560,6 +192,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_3_3()
 		{
 			string solver = "gecode";
@@ -4568,6 +201,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_3_4()
 		{
 			string solver = "coin-bc";
@@ -4576,6 +210,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_3_5()
 		{
 			string solver = "gecode";
@@ -4584,6 +219,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_3_6()
 		{
 			string solver = "gecode";
@@ -4601,6 +237,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_5_2()
 		{
 			string solver = "gecode";
@@ -4609,6 +246,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_5_3()
 		{
 			string solver = "gecode";
@@ -4617,6 +255,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_5_4()
 		{
 			string solver = "coin-bc";
@@ -4625,6 +264,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_5_5()
 		{
 			string solver = "gecode";
@@ -4633,6 +273,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_5_6()
 		{
 			string solver = "gecode";
@@ -4650,6 +291,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_9.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_9_2()
 		{
 			string solver = "gecode";
@@ -4658,6 +300,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_9.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_9_3()
 		{
 			string solver = "gecode";
@@ -4666,6 +309,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_9.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_9_4()
 		{
 			string solver = "coin-bc";
@@ -4674,6 +318,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_9.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_9_5()
 		{
 			string solver = "gecode";
@@ -4682,6 +327,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/battleships_9.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_battleships_9_6()
 		{
 			string solver = "gecode";
@@ -4699,6 +345,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_1_2()
 		{
 			string solver = "gecode";
@@ -4707,6 +354,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_1_3()
 		{
 			string solver = "gecode";
@@ -4715,6 +363,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_1_4()
 		{
 			string solver = "coin-bc";
@@ -4723,6 +372,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_1_5()
 		{
 			string solver = "gecode";
@@ -4731,6 +381,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_1_6()
 		{
 			string solver = "gecode";
@@ -4748,6 +399,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_2_2()
 		{
 			string solver = "gecode";
@@ -4756,6 +408,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_2_3()
 		{
 			string solver = "gecode";
@@ -4764,6 +417,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_2_4()
 		{
 			string solver = "coin-bc";
@@ -4772,6 +426,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_2_5()
 		{
 			string solver = "gecode";
@@ -4780,6 +435,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/blocksworld_instance_2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_blocksworld_instance_2_6()
 		{
 			string solver = "gecode";
@@ -4797,6 +453,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/eq20.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_eq20_2()
 		{
 			string solver = "gecode";
@@ -4805,6 +462,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/eq20.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_eq20_3()
 		{
 			string solver = "gecode";
@@ -4813,6 +471,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/eq20.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_eq20_4()
 		{
 			string solver = "coin-bc";
@@ -4821,6 +480,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/eq20.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_eq20_5()
 		{
 			string solver = "gecode";
@@ -4829,6 +489,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/eq20.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_eq20_6()
 		{
 			string solver = "gecode";
@@ -4846,6 +507,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_2()
 		{
 			string solver = "coin-bc";
@@ -4854,6 +516,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_3()
 		{
 			string solver = "gecode";
@@ -4862,6 +525,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_4()
 		{
 			string solver = "gecode";
@@ -4870,6 +534,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_5()
 		{
 			string solver = "coin-bc";
@@ -4878,6 +543,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_6()
 		{
 			string solver = "gecode";
@@ -4886,6 +552,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_7()
 		{
 			string solver = "gecode";
@@ -4894,6 +561,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_8()
 		{
 			string solver = "coin-bc";
@@ -4902,6 +570,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_9()
 		{
 			string solver = "gecode";
@@ -4910,6 +579,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_10()
 		{
 			string solver = "gecode";
@@ -4918,6 +588,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_11()
 		{
 			string solver = "coin-bc";
@@ -4926,6 +597,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_12()
 		{
 			string solver = "gecode";
@@ -4934,6 +606,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_13()
 		{
 			string solver = "gecode";
@@ -4942,6 +615,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_14()
 		{
 			string solver = "coin-bc";
@@ -4950,6 +624,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_15()
 		{
 			string solver = "gecode";
@@ -4958,6 +633,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_16()
 		{
 			string solver = "gecode";
@@ -4966,6 +642,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_17()
 		{
 			string solver = "coin-bc";
@@ -4974,6 +651,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/factory_planning_instance.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_factory_planning_instance_18()
 		{
 			string solver = "gecode";
@@ -4991,6 +669,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/golomb.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_golomb_2()
 		{
 			string solver = "gecode";
@@ -4999,6 +678,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/golomb.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_golomb_3()
 		{
 			string solver = "gecode";
@@ -5007,6 +687,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/golomb.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_golomb_4()
 		{
 			string solver = "coin-bc";
@@ -5015,6 +696,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/golomb.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_golomb_5()
 		{
 			string solver = "gecode";
@@ -5023,6 +705,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/golomb.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_golomb_6()
 		{
 			string solver = "gecode";
@@ -5040,6 +723,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/halfreif.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_halfreif_2()
 		{
 			string solver = "gecode";
@@ -5048,6 +732,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/halfreif.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_halfreif_3()
 		{
 			string solver = "gecode";
@@ -5056,6 +741,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/halfreif.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_halfreif_4()
 		{
 			string solver = "coin-bc";
@@ -5064,6 +750,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/halfreif.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_halfreif_5()
 		{
 			string solver = "gecode";
@@ -5072,6 +759,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/halfreif.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_halfreif_6()
 		{
 			string solver = "gecode";
@@ -5089,6 +777,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_2()
 		{
 			string solver = "gecode";
@@ -5097,6 +786,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_3()
 		{
 			string solver = "gecode";
@@ -5105,6 +795,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_4()
 		{
 			string solver = "gecode";
@@ -5113,6 +804,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_5()
 		{
 			string solver = "gecode";
@@ -5121,6 +813,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_6()
 		{
 			string solver = "gecode";
@@ -5129,6 +822,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_7()
 		{
 			string solver = "gecode";
@@ -5137,6 +831,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_8()
 		{
 			string solver = "gecode";
@@ -5145,6 +840,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_9()
 		{
 			string solver = "gecode";
@@ -5153,6 +849,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_10()
 		{
 			string solver = "gecode";
@@ -5161,6 +858,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_11()
 		{
 			string solver = "gecode";
@@ -5169,6 +867,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/knights.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_knights_12()
 		{
 			string solver = "gecode";
@@ -5186,6 +885,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/multidimknapsack_simple.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_multidimknapsack_simple_2()
 		{
 			string solver = "gecode";
@@ -5194,6 +894,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/multidimknapsack_simple.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_multidimknapsack_simple_3()
 		{
 			string solver = "gecode";
@@ -5202,6 +903,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/multidimknapsack_simple.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_multidimknapsack_simple_4()
 		{
 			string solver = "coin-bc";
@@ -5210,6 +912,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/multidimknapsack_simple.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_multidimknapsack_simple_5()
 		{
 			string solver = "gecode";
@@ -5218,6 +921,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/multidimknapsack_simple.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_multidimknapsack_simple_6()
 		{
 			string solver = "gecode";
@@ -5235,6 +939,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_2()
 		{
 			string solver = "gecode";
@@ -5243,6 +948,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_3()
 		{
 			string solver = "gecode";
@@ -5251,6 +957,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_4()
 		{
 			string solver = "gecode";
@@ -5259,6 +966,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_5()
 		{
 			string solver = "gecode";
@@ -5267,6 +975,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_6()
 		{
 			string solver = "gecode";
@@ -5275,6 +984,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_7()
 		{
 			string solver = "gecode";
@@ -5283,6 +993,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_8()
 		{
 			string solver = "gecode";
@@ -5291,6 +1002,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_9()
 		{
 			string solver = "gecode";
@@ -5299,6 +1011,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_10()
 		{
 			string solver = "gecode";
@@ -5307,6 +1020,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_11()
 		{
 			string solver = "gecode";
@@ -5315,6 +1029,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/packing.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_packing_12()
 		{
 			string solver = "gecode";
@@ -5332,6 +1047,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq_2()
 		{
 			string solver = "gecode";
@@ -5340,6 +1056,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq_3()
 		{
 			string solver = "gecode";
@@ -5348,6 +1065,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq_4()
 		{
 			string solver = "coin-bc";
@@ -5356,6 +1074,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq_5()
 		{
 			string solver = "gecode";
@@ -5364,6 +1083,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq_6()
 		{
 			string solver = "gecode";
@@ -5381,6 +1101,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq2_2()
 		{
 			string solver = "gecode";
@@ -5389,6 +1110,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq2_3()
 		{
 			string solver = "gecode";
@@ -5397,6 +1119,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq2_4()
 		{
 			string solver = "coin-bc";
@@ -5405,6 +1128,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq2_5()
 		{
 			string solver = "gecode";
@@ -5413,6 +1137,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/perfsq2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_perfsq2_6()
 		{
 			string solver = "gecode";
@@ -5430,6 +1155,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_fd.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_fd_2()
 		{
 			string solver = "gecode";
@@ -5438,6 +1164,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_fd.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_fd_3()
 		{
 			string solver = "gecode";
@@ -5446,6 +1173,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_fd.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_fd_4()
 		{
 			string solver = "coin-bc";
@@ -5454,6 +1182,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_fd.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_fd_5()
 		{
 			string solver = "gecode";
@@ -5462,6 +1191,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_fd.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_fd_6()
 		{
 			string solver = "gecode";
@@ -5479,6 +1209,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_lp.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_lp_2()
 		{
 			string solver = "gecode";
@@ -5487,6 +1218,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_lp.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_lp_3()
 		{
 			string solver = "gecode";
@@ -5495,6 +1227,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_lp.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_lp_4()
 		{
 			string solver = "coin-bc";
@@ -5503,6 +1236,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_lp.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_lp_5()
 		{
 			string solver = "gecode";
@@ -5511,6 +1245,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/product_lp.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_product_lp_6()
 		{
 			string solver = "gecode";
@@ -5528,6 +1263,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/quasigroup_qg5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_quasigroup_qg5_2()
 		{
 			string solver = "gecode";
@@ -5536,6 +1272,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/quasigroup_qg5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_quasigroup_qg5_3()
 		{
 			string solver = "gecode";
@@ -5544,6 +1281,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/quasigroup_qg5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_quasigroup_qg5_4()
 		{
 			string solver = "coin-bc";
@@ -5552,6 +1290,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/quasigroup_qg5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_quasigroup_qg5_5()
 		{
 			string solver = "gecode";
@@ -5560,6 +1299,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/quasigroup_qg5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_quasigroup_qg5_6()
 		{
 			string solver = "gecode";
@@ -5577,6 +1317,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_2()
 		{
 			string solver = "gecode";
@@ -5585,6 +1326,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_3()
 		{
 			string solver = "gecode";
@@ -5593,6 +1335,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_4()
 		{
 			string solver = "gecode";
@@ -5601,6 +1344,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_5()
 		{
 			string solver = "gecode";
@@ -5609,6 +1353,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_6()
 		{
 			string solver = "gecode";
@@ -5617,6 +1362,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_7()
 		{
 			string solver = "gecode";
@@ -5625,6 +1371,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_8()
 		{
 			string solver = "gecode";
@@ -5633,6 +1380,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_9()
 		{
 			string solver = "gecode";
@@ -5641,6 +1389,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_10()
 		{
 			string solver = "gecode";
@@ -5649,6 +1398,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_11()
 		{
 			string solver = "gecode";
@@ -5657,6 +1407,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/radiation.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_radiation_12()
 		{
 			string solver = "gecode";
@@ -5674,6 +1425,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/simple_sat.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_simple_sat_2()
 		{
 			string solver = "gecode";
@@ -5682,6 +1434,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/simple_sat.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_simple_sat_3()
 		{
 			string solver = "gecode";
@@ -5690,6 +1443,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/simple_sat.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_simple_sat_4()
 		{
 			string solver = "coin-bc";
@@ -5698,6 +1452,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/simple_sat.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_simple_sat_5()
 		{
 			string solver = "gecode";
@@ -5706,6 +1461,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/simple_sat.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_simple_sat_6()
 		{
 			string solver = "gecode";
@@ -5723,6 +1479,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/singHoist2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_singHoist2_2()
 		{
 			string solver = "gecode";
@@ -5731,6 +1488,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/singHoist2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_singHoist2_3()
 		{
 			string solver = "gecode";
@@ -5739,6 +1497,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/singHoist2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_singHoist2_4()
 		{
 			string solver = "coin-bc";
@@ -5747,6 +1506,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/singHoist2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_singHoist2_5()
 		{
 			string solver = "gecode";
@@ -5755,6 +1515,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/singHoist2.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_singHoist2_6()
 		{
 			string solver = "gecode";
@@ -5772,6 +1533,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/sudoku.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_sudoku_2()
 		{
 			string solver = "gecode";
@@ -5780,6 +1542,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/sudoku.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_sudoku_3()
 		{
 			string solver = "gecode";
@@ -5788,6 +1551,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/sudoku.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_sudoku_4()
 		{
 			string solver = "coin-bc";
@@ -5796,6 +1560,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/sudoku.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_sudoku_5()
 		{
 			string solver = "gecode";
@@ -5804,6 +1569,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/sudoku.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_sudoku_6()
 		{
 			string solver = "gecode";
@@ -5821,6 +1587,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_2()
 		{
 			string solver = "gecode";
@@ -5829,6 +1596,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_3()
 		{
 			string solver = "gecode";
@@ -5837,6 +1605,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_4()
 		{
 			string solver = "gecode";
@@ -5845,6 +1614,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_5()
 		{
 			string solver = "gecode";
@@ -5853,6 +1623,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_6()
 		{
 			string solver = "gecode";
@@ -5861,6 +1632,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_7()
 		{
 			string solver = "gecode";
@@ -5869,6 +1641,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_8()
 		{
 			string solver = "gecode";
@@ -5877,6 +1650,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_9()
 		{
 			string solver = "gecode";
@@ -5885,6 +1659,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_10()
 		{
 			string solver = "gecode";
@@ -5893,6 +1668,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_11()
 		{
 			string solver = "gecode";
@@ -5901,6 +1677,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/template_design.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_template_design_12()
 		{
 			string solver = "gecode";
@@ -5918,6 +1695,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_1_2()
 		{
 			string solver = "gecode";
@@ -5926,6 +1704,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_1_3()
 		{
 			string solver = "gecode";
@@ -5934,6 +1713,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_1_4()
 		{
 			string solver = "coin-bc";
@@ -5942,6 +1722,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_1_5()
 		{
 			string solver = "gecode";
@@ -5950,6 +1731,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_1.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_1_6()
 		{
 			string solver = "gecode";
@@ -5967,6 +1749,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_3_2()
 		{
 			string solver = "gecode";
@@ -5975,6 +1758,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_3_3()
 		{
 			string solver = "gecode";
@@ -5983,6 +1767,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_3_4()
 		{
 			string solver = "coin-bc";
@@ -5991,6 +1776,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_3_5()
 		{
 			string solver = "gecode";
@@ -5999,6 +1785,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_3.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_3_6()
 		{
 			string solver = "gecode";
@@ -6016,6 +1803,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_4.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_4_2()
 		{
 			string solver = "gecode";
@@ -6024,6 +1812,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_4.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_4_3()
 		{
 			string solver = "gecode";
@@ -6032,6 +1821,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_4.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_4_4()
 		{
 			string solver = "coin-bc";
@@ -6040,6 +1830,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_4.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_4_5()
 		{
 			string solver = "gecode";
@@ -6048,6 +1839,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_4.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_4_6()
 		{
 			string solver = "gecode";
@@ -6065,6 +1857,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_5_2()
 		{
 			string solver = "gecode";
@@ -6073,6 +1866,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_5_3()
 		{
 			string solver = "gecode";
@@ -6081,6 +1875,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_5_4()
 		{
 			string solver = "coin-bc";
@@ -6089,6 +1884,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_5_5()
 		{
 			string solver = "gecode";
@@ -6097,6 +1893,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_5.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_5_6()
 		{
 			string solver = "gecode";
@@ -6114,6 +1911,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_6.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_6_2()
 		{
 			string solver = "gecode";
@@ -6122,6 +1920,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_6.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_6_3()
 		{
 			string solver = "gecode";
@@ -6130,6 +1929,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_6.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_6_4()
 		{
 			string solver = "coin-bc";
@@ -6138,6 +1938,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_6.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_6_5()
 		{
 			string solver = "gecode";
@@ -6146,6 +1947,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/tenpenki_6.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_tenpenki_6_6()
 		{
 			string solver = "gecode";
@@ -6163,6 +1965,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/timetabling.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_timetabling_2()
 		{
 			string solver = "gecode";
@@ -6171,6 +1974,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/timetabling.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_timetabling_3()
 		{
 			string solver = "gecode";
@@ -6179,6 +1983,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/timetabling.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_timetabling_4()
 		{
 			string solver = "coin-bc";
@@ -6187,6 +1992,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/timetabling.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_timetabling_5()
 		{
 			string solver = "gecode";
@@ -6195,6 +2001,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/timetabling.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_timetabling_6()
 		{
 			string solver = "gecode";
@@ -6212,6 +2019,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/warehouses.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_warehouses_2()
 		{
 			string solver = "gecode";
@@ -6220,6 +2028,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/warehouses.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_warehouses_3()
 		{
 			string solver = "gecode";
@@ -6228,6 +2037,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/warehouses.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_warehouses_4()
 		{
 			string solver = "coin-bc";
@@ -6236,6 +2046,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/warehouses.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_warehouses_5()
 		{
 			string solver = "gecode";
@@ -6244,6 +2055,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/warehouses.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_warehouses_6()
 		{
 			string solver = "gecode";
@@ -6261,6 +2073,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/zebra.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_zebra_2()
 		{
 			string solver = "gecode";
@@ -6269,6 +2082,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/zebra.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_zebra_3()
 		{
 			string solver = "gecode";
@@ -6277,6 +2091,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/zebra.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_zebra_4()
 		{
 			string solver = "coin-bc";
@@ -6285,6 +2100,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/zebra.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_zebra_5()
 		{
 			string solver = "gecode";
@@ -6293,6 +2109,7 @@ namespace MiniZinc.Tests
 			await RunSolveTest("examples/zebra.mzn",solver,args,solution);
 		}
 
+		[Test]
 		public async Task test_examples_zebra_6()
 		{
 			string solver = "gecode";

@@ -30,14 +30,14 @@ enum YamlTag
     AnonEnum
 }
 
-public sealed class TestParser : IYamlTypeConverter
+public sealed class MiniZincYamlTestParser : IYamlTypeConverter
 {
     const string TAG = "__tag__";
     const string VAL = "__val__";
     private IParser _parser = null!;
     public readonly FileInfo? SpecFile;
 
-    public TestParser(FileInfo? file)
+    public MiniZincYamlTestParser(FileInfo? file)
     {
         SpecFile = file;
     }
@@ -56,15 +56,15 @@ public sealed class TestParser : IYamlTypeConverter
         switch (node)
         {
             case JsonObject obj when SpecFile is not null:
-                return ParseTestSpec(SpecFile, obj);
+                return ParseTestSpecFromFile(SpecFile, obj);
             case JsonObject obj:
-                return ParseTestCaseYaml(obj);
+                return ParseTestCaseFromYaml(obj);
             default:
                 return null;
         }
     }
 
-    private TestSpec ParseTestSpec(FileInfo specFile, JsonObject node)
+    private TestSpec ParseTestSpecFromFile(FileInfo specFile, JsonObject node)
     {
         var spec = new TestSpec();
         foreach (var kv in node)
@@ -77,41 +77,44 @@ public sealed class TestParser : IYamlTypeConverter
     }
 
     private void ParseTestSuite(
-        FileInfo specFile,
-        TestSpec spec,
-        string suiteName,
-        JsonObject suiteNode
+        FileInfo testSpecFile,
+        TestSpec testSpec,
+        string testSuiteName,
+        JsonObject testSuiteNode
     )
     {
         // var strict = suiteNode["strict"]?.GetValue<bool>();
-        var suiteOptions = suiteNode["options"]?.AsObject();
-        var suiteSolvers = suiteNode["solvers"]
+        JsonObject? suiteOptions = testSuiteNode["options"]?.AsObject();
+        List<string>? suiteSolvers = testSuiteNode["solvers"]
             ?.AsArray()
             .Select(x => x!.GetValue<string>())
             .ToList();
-        var suiteGlobs = suiteNode["includes"]!
+        List<string> suiteGlobs = testSuiteNode["includes"]!
             .AsArray()
             .Select(x => x!.GetValue<string>())
             .ToList();
-        var specDir = specFile.Directory!;
+        DirectoryInfo specDir = testSpecFile.Directory!;
 
-        foreach (var glob in suiteGlobs)
+        foreach (string suiteGlob in suiteGlobs)
         {
-            foreach (var file in specDir.EnumerateFiles(glob, SearchOption.AllDirectories))
+            foreach (
+                FileInfo testFile in specDir.EnumerateFiles(suiteGlob, SearchOption.AllDirectories)
+            )
             {
-                if (file.Extension != ".mzn")
+                if (testFile.Extension != ".mzn")
                     continue;
 
-                var path = Path.GetRelativePath(specDir.FullName, file.FullName).Replace('\\', '/');
+                string testPath = Path.GetRelativePath(specDir.FullName, testFile.FullName)
+                    .Replace('\\', '/');
 
-                foreach (var testCasesYaml in GetTestCaseYaml(file))
+                foreach (string testCasesYaml in GetTestCaseYaml(testFile))
                 {
-                    var testCase = ParseTestCaseYaml(testCasesYaml);
+                    TestCase? testCase = ParseTestCaseFromYaml(testCasesYaml);
                     if (testCase is null)
                         continue;
 
-                    testCase.Path = path;
-                    testCase.Suite = suiteName;
+                    testCase.Path = testPath;
+                    testCase.Suite = testSuiteName;
                     var opts = testCase.Options;
                     var solvers = (testCase.Solvers ?? suiteSolvers ?? []).ToImmutableArray();
 
@@ -132,7 +135,7 @@ public sealed class TestParser : IYamlTypeConverter
                     if (allSolutions is true)
                         testCase.Type = TestType.ALL_SOLUTIONS;
 
-                    spec.TestCases ??= [];
+                    testSpec.TestCases ??= [];
 
                     if (solvers.Length > 0)
                     {
@@ -143,7 +146,7 @@ public sealed class TestParser : IYamlTypeConverter
                     if (testCase.Type is TestType.SOLVE && testCase.Solutions is { Count: > 1 })
                         testCase.Type = TestType.ANY_SOLUTION;
 
-                    spec.TestCases.Add(testCase);
+                    testSpec.TestCases.Add(testCase);
                 }
             }
         }
@@ -217,7 +220,7 @@ public sealed class TestParser : IYamlTypeConverter
             args = null;
     }
 
-    private TestCase ParseTestCaseYaml(JsonObject node)
+    private TestCase ParseTestCaseFromYaml(JsonObject node)
     {
         var solvers = node["solvers"]?.ToNonEmptyList<string>();
         var test_type = node["type"]?.GetValue<string>();
@@ -394,7 +397,7 @@ public sealed class TestParser : IYamlTypeConverter
 
     public static TestSpec ParseTestSpecFile(FileInfo file)
     {
-        var parser = new TestParser(file);
+        var parser = new MiniZincYamlTestParser(file);
         var deserializer = new DeserializerBuilder()
             .WithTagMapping("!Test", typeof(object))
             .WithTypeConverter(parser)
@@ -404,9 +407,9 @@ public sealed class TestParser : IYamlTypeConverter
         return spec;
     }
 
-    public static TestCase? ParseTestCaseYaml(string yaml)
+    public static TestCase? ParseTestCaseFromYaml(string yaml)
     {
-        var parser = new TestParser(null);
+        var parser = new MiniZincYamlTestParser(null);
         var deserializer = new DeserializerBuilder()
             .WithTagMapping("!Test", typeof(object))
             .WithTypeConverter(parser)

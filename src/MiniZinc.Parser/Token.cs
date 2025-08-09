@@ -3,16 +3,16 @@
 using System.Globalization;
 using static TokenKind;
 
-public struct Token : IEquatable<Token>
+public readonly struct Token : IEquatable<Token>
 {
-    public TokenKind Kind;
-    public int Line;
-    public int Col;
-    public int Start;
-    public int Length;
-    public int IntValue;
-    public string? StringValue;
-    public decimal FloatValue;
+    public readonly TokenKind Kind;
+    public readonly int Line;
+    public readonly int Col;
+    public readonly int Start;
+    public readonly int Length;
+    public readonly int IntValue;
+    public readonly string? StringValue;
+    public readonly decimal FloatValue;
     public int End => Start + Length;
 
     public Token(

@@ -58,7 +58,7 @@ Add(
         FileInfo input = Repo.TestSpecYaml;
         FileInfo output = Repo.TestSpecJson;
         Console.WriteLine($"Parsing {input.FullName}");
-        var spec = TestParser.ParseTestSpecFile(input);
+        var spec = MiniZincYamlTestParser.ParseTestSpecFile(input);
         Console.WriteLine($"Writing to {output.FullName}");
         spec.ToJsonFile(output);
         return Task.CompletedTask;

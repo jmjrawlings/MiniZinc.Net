@@ -287,7 +287,7 @@ public sealed class Writer
                 WriteArray2d(e);
                 break;
 
-            case Array3dSyntax e:
+            case Array3dExpr e:
                 WriteArray3d(e);
                 break;
 
@@ -621,7 +621,7 @@ public sealed class Writer
         }
     }
 
-    private void WriteArray3d(Array3dSyntax arr)
+    private void WriteArray3d(Array3dExpr arr)
     {
         WriteString("[|");
         var array = arr.Elements;

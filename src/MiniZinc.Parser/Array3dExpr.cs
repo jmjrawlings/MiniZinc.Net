@@ -1,8 +1,8 @@
 ﻿namespace MiniZinc.Parser;
 
-public sealed class Array3dSyntax : ArrayExpr
+public sealed class Array3dExpr : ArrayExpr
 {
-    public Array3dSyntax(in Token start, List<MiniZincExpr>? elements)
+    public Array3dExpr(in Token start, List<MiniZincExpr>? elements)
         : base(start, elements) { }
 
     public int I { get; set; }

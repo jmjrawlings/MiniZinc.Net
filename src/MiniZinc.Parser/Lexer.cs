@@ -723,15 +723,16 @@ internal ref struct Lexer
         if (_outdex >= _tokens.Length)
             Array.Resize(ref _tokens, _tokens.Length * 2);
 
-        ref Token token = ref _tokens[_outdex++];
-        token.Kind = kind;
-        token.Line = _startLine;
-        token.Start = _startPos;
-        token.Col = _startCol;
-        token.Length = _length - 1;
-        token.FloatValue = f;
-        token.IntValue = i;
-        token.StringValue = s;
+        _tokens[_outdex++] = new Token(
+            kind,
+            _startLine,
+            _startPos,
+            _startCol,
+            _length - 1,
+            i,
+            s,
+            f
+        );
     }
 
     private bool SkipReturn(in char c, in TokenKind kind)

@@ -1624,7 +1624,21 @@ public ref struct Parser
             if (!Skip(TOKEN_COMMA))
                 break;
         }
-        result = new CallExpr(name, exprs);
+
+        // Some manual call handling
+        switch (name.StringValue)
+        {
+            // case "array2d":
+            //     result = new Array2dExpr(name, exprs, null,)
+            //     break;
+            //
+            // case "array3d":
+            //     result = new CallExpr(name, exprs);
+            //     break;
+            default:
+                result = new CallExpr(name, exprs);
+                break;
+        }
 
         if (!Expect(TOKEN_CLOSE_PAREN))
             return false;
@@ -2033,7 +2047,7 @@ public ref struct Parser
      * `[| |1,1|1,1|, |2,2|2,2|, |3,3|3,3| |]`
      *
      */
-    private bool Parse3dArrayLiteral(in Token start, out Array3dSyntax arr)
+    private bool Parse3dArrayLiteral(in Token start, out Array3dExpr arr)
     {
         List<MiniZincExpr>? elements = null;
         int i = 0;
@@ -2091,14 +2105,14 @@ public ref struct Parser
             goto err;
 
         ok:
-        arr = new Array3dSyntax(start, elements);
+        arr = new Array3dExpr(start, elements);
         arr.I = i;
         arr.J = j;
         arr.K = k;
         return true;
 
         err:
-        arr = new Array3dSyntax(start, elements);
+        arr = new Array3dExpr(start, elements);
         arr.I = i;
         arr.J = j;
         arr.K = k;
