@@ -7,12 +7,6 @@ using MiniZinc.Tests;
 using Cmd = MiniZinc.Command.Command;
 using Command = System.CommandLine.Command;
 
-TestSpec LoadSpec()
-{
-    var spec = TestSpec.FromJsonFile(Repo.TestSpecJson);
-    return spec;
-}
-
 var root = new RootCommand("MiniZinc.NET build options");
 
 Add(
@@ -49,22 +43,6 @@ Add(
     }
 );
 
-Add(
-    "--parse-libminizinc-tests",
-    "Generate test cases from the libminizinc test spec",
-    () =>
-    {
-        Console.WriteLine("Parsing libminiznc test suite");
-        FileInfo input = Repo.TestSpecYaml;
-        FileInfo output = Repo.TestSpecJson;
-        Console.WriteLine($"Parsing {input.FullName}");
-        var spec = MiniZincYamlTestParser.ParseTestSpecFile(input);
-        Console.WriteLine($"Writing to {output.FullName}");
-        spec.ToJsonFile(output);
-        return Task.CompletedTask;
-    }
-);
-
 // Add(
 //     "--make-parser-tests",
 //     "Generate parser tests",
@@ -85,7 +63,10 @@ Add(
     "Generate client tests",
     async () =>
     {
-        var spec = LoadSpec();
+        Console.WriteLine("Parsing libminiznc test suite");
+        FileInfo input = Repo.TestSpecYaml;
+        Console.WriteLine($"Parsing {input.FullName}");
+        var spec = MiniZincYamlTestParser.ParseTestSpecFile(input);
         ClientTestsBuilder.Build(spec, Repo.IntegrationTestsDir);
     }
 );
