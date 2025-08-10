@@ -10,34 +10,14 @@ using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using static Console;
 
-enum YamlTag
-{
-    Set = 1,
-    Range,
-    Test,
-    SingleQuoted,
-    DoubleQuoted,
-    TestSuite,
-    Solution,
-    SolutionSet,
-    Result,
-    EnumConstructor,
-    Duration,
-    Error,
-    Approx,
-    FlatZinc,
-    OutputModel,
-    AnonEnum
-}
-
-public sealed class MiniZincYamlTestParser : IYamlTypeConverter
+public sealed class YamlParser : IYamlTypeConverter
 {
     const string TAG = "__tag__";
     const string VAL = "__val__";
     private IParser _parser = null!;
     public readonly FileInfo? SpecFile;
 
-    public MiniZincYamlTestParser(FileInfo? file)
+    public YamlParser(FileInfo? file)
     {
         SpecFile = file;
     }
@@ -397,7 +377,7 @@ public sealed class MiniZincYamlTestParser : IYamlTypeConverter
 
     public static TestSpec ParseTestSpecFile(FileInfo file)
     {
-        var parser = new MiniZincYamlTestParser(file);
+        var parser = new YamlParser(file);
         var deserializer = new DeserializerBuilder()
             .WithTagMapping("!Test", typeof(object))
             .WithTypeConverter(parser)
@@ -409,7 +389,7 @@ public sealed class MiniZincYamlTestParser : IYamlTypeConverter
 
     public static TestCase? ParseTestCaseFromYaml(string yaml)
     {
-        var parser = new MiniZincYamlTestParser(null);
+        var parser = new YamlParser(null);
         var deserializer = new DeserializerBuilder()
             .WithTagMapping("!Test", typeof(object))
             .WithTypeConverter(parser)
@@ -452,7 +432,7 @@ public sealed class MiniZincYamlTestParser : IYamlTypeConverter
 
                     case (_, _, _) when checkAgainst is not null:
                         testCase.Type = TestType.CHECK_AGAINST;
-                        testCase.CheckAgainst = checkAgainst;
+                        testCase.CheckAgainstSolvers = checkAgainst;
                         break;
 
                     case (YamlTag.Solution, JsonObject sol, _):
@@ -695,4 +675,24 @@ public sealed class MiniZincYamlTestParser : IYamlTypeConverter
             return null;
         return tag;
     }
+}
+
+enum YamlTag
+{
+    Set = 1,
+    Range,
+    Test,
+    SingleQuoted,
+    DoubleQuoted,
+    TestSuite,
+    Solution,
+    SolutionSet,
+    Result,
+    EnumConstructor,
+    Duration,
+    Error,
+    Approx,
+    FlatZinc,
+    OutputModel,
+    AnonEnum
 }

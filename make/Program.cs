@@ -66,8 +66,8 @@ Add(
         Console.WriteLine("Parsing libminiznc test suite");
         FileInfo input = Repo.TestSpecYaml;
         Console.WriteLine($"Parsing {input.FullName}");
-        var spec = MiniZincYamlTestParser.ParseTestSpecFile(input);
-        ClientTestsBuilder.Build(spec, Repo.IntegrationTestsDir);
+        TestSpec spec = YamlParser.ParseTestSpecFile(input);
+        ClientTestsBuilder.BuildSolveTests(spec, Repo.IntegrationTestsDir);
     }
 );
 

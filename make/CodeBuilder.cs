@@ -13,13 +13,13 @@ using System.Text;
 /// is called will be disposed of then.  That way we dont have to wrap
 /// every single scope in a `using` block allowing for things like:
 /// </summary>
-public class CodeBuilder
+public sealed class CodeBuilder
 {
     // Underlying StringBuilder
-    protected readonly StringBuilder _sb;
+    readonly StringBuilder _sb;
 
     // Current indentation level
-    protected int _indent;
+    int _indent;
 
     // All created scopes
     private Stack<Scope>? _scopes;
@@ -136,7 +136,7 @@ public class CodeBuilder
             WriteLn($"return {s};");
     }
 
-    protected void Attribute(string name, params string?[] args)
+    public void Attribute(string name, params string?[] args)
     {
         Write('[');
         Append(name);
@@ -319,7 +319,7 @@ public class CodeBuilder
     /// <summary>
     /// Create a new scope with the given disposable action
     /// </summary>
-    protected IDisposable PushScope(Action action)
+    IDisposable PushScope(Action action)
     {
         var scope = new Scope(action);
         _scopes ??= new Stack<Scope>();
