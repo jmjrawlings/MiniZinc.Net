@@ -9,11 +9,9 @@ using static CodeBuilder;
 
 public static class ClientTestsBuilder
 {
-    public static void BuildSolveTests(TestSpec spec, DirectoryInfo dir)
+    public static string Build(TestCase[] tests, string className)
     {
         var cb = new CodeBuilder();
-        var className = $"SolveIntegrationTests";
-        var file = dir.JoinFile($"{className}.cs");
 
         using (cb.BlockComment())
         {
@@ -30,10 +28,7 @@ public static class ClientTestsBuilder
         cb.Block($"public class {className} : IntegrationTests");
         cb.NewLine();
 
-        var cases = spec
-            .TestCases.Where(tc => tc.Type == TestType.SOLVE)
-            .GroupBy(tc => tc.Path)
-            .ToArray();
+        var cases = tests.GroupBy(tc => tc.Path).ToArray();
 
         foreach (var kv in cases)
         {
@@ -82,7 +77,7 @@ public static class ClientTestsBuilder
             }
         }
         var source = cb.ToString();
-        File.WriteAllText(file.FullName, source);
+        return source;
     }
 
     private static string QuoteSolution(string? solution)

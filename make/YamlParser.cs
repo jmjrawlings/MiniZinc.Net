@@ -489,6 +489,7 @@ public sealed class YamlParser : IYamlTypeConverter
                     ParseExpectedSolution(testCase, result, checkAgainst);
                 break;
             default:
+                break;
                 throw new Exception();
         }
     }

@@ -67,7 +67,16 @@ Add(
         FileInfo input = Repo.TestSpecYaml;
         Console.WriteLine($"Parsing {input.FullName}");
         TestSpec spec = YamlParser.ParseTestSpecFile(input);
-        ClientTestsBuilder.BuildSolveTests(spec, Repo.IntegrationTestsDir);
+        var testsBySuite = spec.TestCases.GroupBy(t => t.Suite).ToArray();
+        foreach (var kv in testsBySuite)
+        {
+            var suite = kv.Key;
+            var tests = kv.ToArray();
+            var testClass = $"{suite}IntegrationTests";
+            var testFile = Repo.IntegrationTestsDir.JoinFile($"{testClass}.cs");
+            var testSource = ClientTestsBuilder.Build(tests, testClass);
+            File.WriteAllText(testFile.FullName, testSource);
+        }
     }
 );
 

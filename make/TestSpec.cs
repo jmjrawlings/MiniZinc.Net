@@ -8,7 +8,7 @@ public sealed class TestSpec
     public List<TestCase> TestCases = new();
 }
 
-[DebuggerDisplay("{Path}")]
+[DebuggerDisplay("{Path} - {Type} - {Args}")]
 public record TestCase
 {
     public string Suite;
