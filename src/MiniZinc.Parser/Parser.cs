@@ -1628,13 +1628,30 @@ public ref struct Parser
         // Some manual call handling
         switch (name.StringValue)
         {
-            // case "array2d":
-            //     result = new Array2dExpr(name, exprs, null,)
-            //     break;
-            //
-            // case "array3d":
-            //     result = new CallExpr(name, exprs);
-            //     break;
+            case "array1d":
+
+                if (exprs is not [var i1, Array1dExpr { Elements: not null } els1])
+                    return Error($"array1d had incorrect args");
+
+                result = new Array1dCallExpr(name, i1, els1.Elements);
+                break;
+
+            case "array2d":
+
+                if (exprs is not [var i2, var j2, Array1dExpr { Elements: not null } els2])
+                    return Error($"array2d had incorrect args");
+
+                result = new Array2dCallExpr(name, i2, j2, els2.Elements);
+                break;
+
+            case "array3d":
+
+                if (exprs is not [var i3, var j3, var k3, Array1dExpr { Elements: not null } els3])
+                    return Error($"array3d had incorrect args");
+
+                result = new Array3dCallExpr(name, i3, j3, k3, els3.Elements);
+                break;
+
             default:
                 result = new CallExpr(name, exprs);
                 break;
