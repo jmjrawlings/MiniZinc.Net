@@ -25,6 +25,7 @@ public static class ClientTestsBuilder
         cb.WriteLn("namespace MiniZinc.Tests;");
         cb.NewLine();
         cb.Attribute("NotInParallel");
+        cb.Attribute("Timeout", "10_000");
         cb.Block($"public class {className} : IntegrationTests");
         cb.NewLine();
 

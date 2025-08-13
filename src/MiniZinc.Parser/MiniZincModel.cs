@@ -484,14 +484,17 @@ public sealed class MiniZincModel
         if (!_addedFiles.Add(file.FullName))
             return;
 
-        var result = TryParseItemsFromFile(
-            file.FullName,
-            out var items,
-            out _,
-            out _,
-            out _,
-            out _
-        );
+        if (
+            !TryParseItemsFromFile(
+                file.FullName,
+                out var items,
+                out var errorMessage,
+                out var errorTrace,
+                out var finalToken,
+                out var elapsed
+            )
+        )
+            throw new MiniZincParseException(errorMessage, finalToken, errorTrace);
 
         // Use the directory of the added file as another search path
         if (file.Directory is { } dir)

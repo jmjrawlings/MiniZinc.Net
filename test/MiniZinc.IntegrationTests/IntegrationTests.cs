@@ -32,6 +32,9 @@ public abstract class IntegrationTests
         MiniZincModel model = MiniZincModel.FromFile(path);
         model.ClearOutput();
 
+        if (extraFile is not null)
+            model.AddFile(extraFile);
+
         string mzn = model.Write();
         WriteLine(mzn);
         WriteLine("--------------------------------------");
@@ -79,6 +82,9 @@ public abstract class IntegrationTests
         MiniZincModel model = MiniZincModel.FromFile(path);
         model.ClearOutput();
 
+        if (extraFile is not null)
+            model.AddFile(extraFile);
+
         string mzn = model.Write();
         WriteLine(mzn);
         WriteLine("--------------------------------------");
@@ -108,7 +114,7 @@ public abstract class IntegrationTests
                 return;
         }
 
-        throw new Exception();
+        Assert.Fail($"The actual solution did not match any of the expected solutions");
     }
 
     public async Task RunTest(

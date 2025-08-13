@@ -3,12 +3,12 @@
 public sealed class Array1dCallExpr : MiniZincExpr
 {
     public MiniZincExpr I { get; }
-    public IReadOnlyList<MiniZincExpr> Elements { get; }
+    public Array1dExpr Array { get; }
 
-    public Array1dCallExpr(in Token start, MiniZincExpr i, IReadOnlyList<MiniZincExpr> elements)
+    public Array1dCallExpr(in Token start, MiniZincExpr i, Array1dExpr array)
         : base(start)
     {
         I = i;
-        Elements = elements;
+        Array = array;
     }
 }

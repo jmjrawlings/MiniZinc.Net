@@ -310,6 +310,40 @@ public sealed class Writer
                 WriteAnnotations(e);
                 break;
 
+            case Array1dCallExpr e:
+                WriteToken(e.Start);
+                WriteChar(OPEN_PAREN);
+                WriteExpr(e.I);
+                WriteChar(COMMA);
+                WriteExpr(e.Array);
+                WriteChar(CLOSE_PAREN);
+                WriteAnnotations(e);
+                break;
+
+            case Array2dCallExpr1d e:
+                WriteToken(e.Start);
+                WriteChar(OPEN_PAREN);
+                WriteExpr(e.I);
+                WriteChar(COMMA);
+                WriteExpr(e.J);
+                WriteChar(COMMA);
+                WriteExpr(e.Array);
+                WriteChar(CLOSE_PAREN);
+                WriteAnnotations(e);
+                break;
+
+            case Array2dCallExpr2d e:
+                WriteToken(e.Start);
+                WriteChar(OPEN_PAREN);
+                WriteExpr(e.I);
+                WriteChar(COMMA);
+                WriteExpr(e.J);
+                WriteChar(COMMA);
+                WriteExpr(e.Array);
+                WriteChar(CLOSE_PAREN);
+                WriteAnnotations(e);
+                break;
+
             case SetCompExpr e:
                 WriteChar(OPEN_BRACE);
                 WriteExpr(e.Expr);
