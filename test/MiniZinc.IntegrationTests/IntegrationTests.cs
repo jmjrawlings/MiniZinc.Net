@@ -16,7 +16,13 @@ public abstract class IntegrationTests
     private static CancellationTokenSource _cts = new CancellationTokenSource();
     private static MiniZincClient _client = MiniZincClient.Autodetect();
 
-    public async Task RunSolveTest(string slug, string solver, string? args, string? output)
+    public async Task RunSolveTest(
+        string slug,
+        string solver,
+        string? args,
+        string? extraFile,
+        string? solution
+    )
     {
         string path = $"spec/{slug}";
         FileInfo file = new FileInfo(path);
@@ -33,13 +39,13 @@ public abstract class IntegrationTests
         result.IsSolution.ShouldBeTrue(result.Error);
 
         // Test case has no expected output
-        if (output is null)
+        if (solution is null)
             return;
 
         // If we cannot parse the test case dzn then ignore (for now)
         if (
             !Parser.TryParseDataString(
-                output,
+                solution,
                 out var expectedData,
                 out var err,
                 out var trace,
@@ -47,7 +53,7 @@ public abstract class IntegrationTests
             )
         )
         {
-            WriteLine($"Could not parse test case output:\n{output}");
+            WriteLine($"Could not parse test case output:\n{solution}");
             return;
         }
 
@@ -55,6 +61,54 @@ public abstract class IntegrationTests
             return;
 
         Check(expectedData, actualData).ShouldBeTrue();
+    }
+
+    public async Task RunAnySolutionTest(
+        string slug,
+        string solver,
+        string? args,
+        string? extraFile,
+        string[] solutions
+    )
+    {
+        string path = $"spec/{slug}";
+        FileInfo file = new FileInfo(path);
+        WriteLine($"{path}");
+        WriteLine("--------------------------------------");
+        string source = await File.ReadAllTextAsync(path);
+        MiniZincModel model = MiniZincModel.FromFile(path);
+        model.ClearOutput();
+
+        string mzn = model.Write();
+        WriteLine(mzn);
+        WriteLine("--------------------------------------");
+        var result = await _client.Solution(model, solver, _cts.Token, args);
+        result.IsSolution.ShouldBeTrue(result.Error);
+        if (result.Data is not { } actualData)
+            return;
+
+        foreach (var solution in solutions)
+        {
+            // If we cannot parse the test case dzn then ignore (for now)
+            if (
+                !Parser.TryParseDataString(
+                    solution,
+                    out var expectedData,
+                    out var err,
+                    out var trace,
+                    out var token
+                )
+            )
+            {
+                WriteLine($"Could not parse test case output:\n{solution}");
+                return;
+            }
+
+            if (Check(expectedData, actualData))
+                return;
+        }
+
+        throw new Exception();
     }
 
     public async Task RunTest(

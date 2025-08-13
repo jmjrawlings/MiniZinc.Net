@@ -28,50 +28,64 @@ public static class ClientTestsBuilder
         cb.Block($"public class {className} : IntegrationTests");
         cb.NewLine();
 
-        var cases = tests.GroupBy(tc => tc.Path).ToArray();
-
-        foreach (var kv in cases)
+        foreach (var testCase in tests)
         {
-            var path = kv.Key;
-            var testCases = kv.ToArray();
-            var qpath = Quote(path);
-            int i = 0;
-
-            foreach (TestCase testCase in testCases)
+            var testType = testCase.Type;
+            var testPath = testCase.Path;
+            var testSolutions = testCase.Solutions;
+            var quotedPath = Quote(testPath);
+            string quotedArgs = Quote(testCase.Args);
+            string quotedSolutions = "null";
+            switch (testType, testSolutions)
             {
-                string qargs = Quote(testCase.Args);
-                string qsolution = testCase.Solutions switch
+                case (TestType.SOLVE, [var solveSolution]):
+                    quotedSolutions = QuoteSolution(solveSolution);
+                    break;
+
+                case (TestType.ANY_SOLUTION, { Count: > 0 } anySolutions):
+                    quotedSolutions =
+                        '[' + string.Join(',', anySolutions.Select(QuoteSolution)) + ']';
+                    break;
+            }
+
+            if (testCase.Solvers is not { Count: > 0 } solvers)
+                solvers = ["gecode"];
+
+            if (testCase.ExtraFiles is not { Count: > 0 } extraFiles)
+                extraFiles = [null];
+
+            foreach (string testSolver in solvers)
+            {
+                var (solverId, solverEnabled) = GetSolverInfo(testSolver);
+                if (!solverEnabled)
+                    continue;
+
+                var quotedSolver = Quote(solverId);
+                foreach (string? extraFile in extraFiles)
                 {
-                    { Count: 1 } => QuoteSolution(testCase.Solutions[0]),
-                    null => "null",
-                    _ => throw new Exception()
-                };
-
-                if (testCase.Solvers is not { Count: > 0 } solvers)
-                    solvers = ["gecode"];
-
-                if (testCase.ExtraFiles is not { Count: > 0 } extras)
-                    extras = [null];
-
-                var testName = GetTestName(path);
-
-                foreach (var tsolver in solvers)
-                {
-                    var (solver, enabled) = GetSolverInfo(tsolver);
-                    var qsolver = Quote(solver);
-                    foreach (string? extra in extras)
+                    string quotedExtraFile = Quote(extraFile);
+                    var testName = GetTestName(testPath, testSolver);
+                    cb.Attribute("Test");
+                    cb.Attribute("DisplayName", Quote($"{testPath} {solverId}"));
+                    using var _ = cb.Function($"public async Task {testName}");
+                    cb.Declare("string", "solver", quotedSolver);
+                    cb.Declare("string?", "args", quotedArgs);
+                    cb.Declare("string?", "extraFile", quotedExtraFile);
+                    switch (testType)
                     {
-                        var qextra = Quote(extra);
-                        cb.Attribute("Test");
-                        cb.Attribute(
-                            "DisplayName",
-                            Quote($"{path} {solver} {qargs.Replace("\"", "")}")
-                        );
-                        using var _ = cb.Function($"public async Task {testName}_{++i}");
-                        cb.Declare("string", "solver", qsolver);
-                        cb.Declare("string?", "args", qargs);
-                        cb.Declare("string?", "solution", qsolution);
-                        cb.WriteLn($"await RunSolveTest({qpath},solver,args,solution);");
+                        case TestType.SOLVE:
+                            cb.Declare("string?", "solution", quotedSolutions);
+                            cb.WriteLn(
+                                $"await RunSolveTest({quotedPath},solver,args,extraFile,solution);"
+                            );
+                            break;
+
+                        case TestType.ANY_SOLUTION:
+                            cb.Declare("string[]", "solution", quotedSolutions);
+                            cb.WriteLn(
+                                $"await RunAnySolutionTest({quotedPath},solver,args,extraFile,solution);"
+                            );
+                            break;
                     }
                 }
             }
@@ -97,13 +111,13 @@ public static class ClientTestsBuilder
         return solutionsCs;
     }
 
-    private static string GetTestName(string path)
+    private static string GetTestName(string path, string solver)
     {
         var name = path.Replace(".mzn", "");
         name = name.Replace("/", "_");
         name = name.Replace("-", "_");
         name = name.Replace(".", "");
-        name = $"test_{name}";
+        name = $"test_{name}_{solver}";
         return name;
     }
 
@@ -134,24 +148,6 @@ public static class ClientTestsBuilder
     }
 
     static void WriteSection(this CodeBuilder cb) => cb.WriteMessage("new string('-',80)");
-
-    // static string GetTypeName(TestType type) =>
-    //     type switch
-    //     {
-    //         TestType.SOLVE => "Solve",
-    //         TestType.COMPILE => "Compile",
-    //         TestType.OUTPUT_MODEL => "OutputModel",
-    //         TestType.CHECK_AGAINST => "CheckAgainst",
-    //         TestType.ALL_SOLUTIONS => "AllSolutions",
-    //         TestType.UNSATISFIABLE => "Unsatisfiable",
-    //         TestType.ERROR => "Error",
-    //         TestType.ASSERTION_ERROR => "AssertionError",
-    //         TestType.EVALUATION_ERROR => "EvaluationError",
-    //         TestType.MINIZINC_ERROR => "MiniZincError",
-    //         TestType.TYPE_ERROR => "TypeError",
-    //         TestType.SYNTAX_ERROR => "SyntaxError",
-    //         TestType.OUTPUT => "Output"
-    //     };
 
     private static (string id, bool enabled) GetSolverInfo(string solver) =>
         solver switch

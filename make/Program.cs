@@ -4,6 +4,7 @@ using Make;
 using MiniZinc.Build;
 using MiniZinc.Command;
 using MiniZinc.Tests;
+using static Make.Prelude;
 using Cmd = MiniZinc.Command.Command;
 using Command = System.CommandLine.Command;
 
@@ -72,7 +73,7 @@ Add(
         {
             var suite = kv.Key;
             var tests = kv.ToArray();
-            var testClass = $"{suite}IntegrationTests";
+            var testClass = $"IntegrationTests{suite.ToClassName()}";
             var testFile = Repo.IntegrationTestsDir.JoinFile($"{testClass}.cs");
             var testSource = ClientTestsBuilder.Build(tests, testClass);
             File.WriteAllText(testFile.FullName, testSource);
