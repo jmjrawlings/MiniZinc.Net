@@ -271,3 +271,8 @@ coverage.*.xml
 
 .fake
 .ionide
+
+# Claude Code
+CLAUDE.md
+.claude/
+.claude.json
