@@ -115,7 +115,7 @@ public sealed partial class MiniZincClient
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             command = new Command("where", "minizinc");
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            command = new Command("find", "minizinc");
+            command = new Command("which", "minizinc");
         else
             throw new NotSupportedException();
 
