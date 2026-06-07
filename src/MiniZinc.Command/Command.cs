@@ -14,7 +14,7 @@ public struct Command
     public readonly string Exe;
 
     /// <summary>
-    /// Arguments parsed by <see cref="Args.Parse"/>
+    /// The arguments passed to the executable
     /// </summary>
     public readonly Args Arguments;
 
@@ -28,7 +28,8 @@ public struct Command
         if (string.IsNullOrEmpty(exe))
             throw new ArgumentNullException(exe);
         Exe = exe;
-        Arguments = Args.Parse(args);
+        Arguments = new Args();
+        Arguments.Add(args);
     }
 
     public Command(string exe, Args args)

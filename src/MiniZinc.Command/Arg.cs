@@ -1,12 +1,11 @@
-﻿namespace MiniZinc.Command;
-
-using System.Collections;
-using System.Text.RegularExpressions;
+namespace MiniZinc.Command;
 
 /// <summary>
-/// A command line argument
+/// A single command line argument: a bare flag (<c>--all-solutions</c>), a
+/// positional value (a model file path), or a flag paired with a value
+/// (<c>--solver gecode</c> or <c>--solver=gecode</c>).
 /// </summary>
-public readonly partial struct Arg
+public readonly struct Arg
 {
     /// <summary>
     /// eg: --output, -a
@@ -19,40 +18,29 @@ public readonly partial struct Arg
     public readonly string? Value;
 
     /// <summary>
-    /// True if equals assignment was used
+    /// How the flag and value combine
     /// </summary>
     public readonly ArgType ArgType;
 
     /// <summary>
-    /// The full string
+    /// Create an Arg from a flag, a value, or both. When both are given,
+    /// <paramref name="eq"/> controls whether they render as "flag=value"
+    /// (true) or as the two tokens "flag" "value" (false).
     /// </summary>
-    public readonly string String;
-
-    /// <summary>
-    /// Create an Arg from a flag, value, or both
-    /// </summary>
-    /// <param name="flag"></param>
-    /// <param name="value"></param>
-    /// <param name="eq"></param>
-    /// <exception cref="ArgumentException"></exception>
     public Arg(string? flag, string? value, bool eq = false)
     {
         switch (flag, value)
         {
             case (null, null):
                 throw new ArgumentException("One of 'flag' or 'value' must be provided");
-
             case (not null, null):
-                String = flag;
                 ArgType = ArgType.FlagOnly;
                 break;
             case (null, not null):
-                String = value;
                 ArgType = ArgType.ValueOnly;
                 break;
             default:
                 ArgType = eq ? ArgType.FlagOptionEqual : ArgType.FlagOptionSpace;
-                String = eq ? $"{flag}={value}" : $"{flag} {value}";
                 break;
         }
         Flag = flag;
@@ -60,44 +48,45 @@ public readonly partial struct Arg
     }
 
     /// <summary>
-    /// Regex pattern used to match command line arguments
+    /// The process-level tokens (argv entries) this argument expands to.
+    /// One token, except a space-separated option which yields two.
     /// </summary>
-    const string RegexPattern = """(-{1,2}[a-zA-Z][a-zA-Z0-9_-]*)?\s*(=)?\s*("[^"]*"|[^\s]+)?""";
-
-    [GeneratedRegex(RegexPattern)]
-    internal static partial Regex Regex();
-
-    /// <summary>
-    /// Parse args from the given string
-    /// </summary>
-    public static IEnumerable<Arg> Parse(string s)
+    public IEnumerable<string> Tokens
     {
-        var regex = Regex();
-        var matches = regex.Matches(s.Trim());
-        foreach (Match m in matches)
+        get
         {
-            if (m.Length <= 0)
-                continue;
-
-            Group g;
-            g = m.Groups[1];
-            var flag = g.Success ? g.Value : null;
-
-            g = m.Groups[2];
-            var eq = g.Success;
-
-            g = m.Groups[3];
-            var value = g.Success ? g.Value : null;
-            var arg = new Arg(flag, value, eq);
-            yield return arg;
+            switch (ArgType)
+            {
+                case ArgType.FlagOnly:
+                    yield return Flag!;
+                    break;
+                case ArgType.ValueOnly:
+                    yield return Value!;
+                    break;
+                case ArgType.FlagOptionSpace:
+                    yield return Flag!;
+                    yield return Value!;
+                    break;
+                case ArgType.FlagOptionEqual:
+                    yield return $"{Flag}={Value}";
+                    break;
+            }
         }
     }
-
-    public static implicit operator string(Arg a) => a.String;
 
     ///
     public override string ToString()
     {
-        return String;
+        switch (ArgType)
+        {
+            case ArgType.FlagOnly:
+                return Flag!;
+            case ArgType.ValueOnly:
+                return Value!;
+            case ArgType.FlagOptionEqual:
+                return $"{Flag}={Value}";
+            default:
+                return $"{Flag} {Value}";
+        }
     }
 }

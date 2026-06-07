@@ -1,11 +1,11 @@
-﻿namespace MiniZinc.Command;
+namespace MiniZinc.Command;
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
 
-public sealed class CommandProcess
+public sealed class CommandProcess : IDisposable
 {
     /// The originating command
     private readonly Command _command;
@@ -19,7 +19,7 @@ public sealed class CommandProcess
     /// Time the process ended if it has ended
     private DateTimeOffset _endTime;
 
-    /// Current elapsed duration or total duration if exted
+    /// Current elapsed duration or total duration if exited
     private TimeSpan _elapsed => _watch.Elapsed;
 
     /// The process exit code if it has exited
@@ -40,6 +40,16 @@ public sealed class CommandProcess
     /// If iterating, a channel to implement AsyncEnumerable
     private Channel<ProcessMessage>? _channel;
 
+    // Completion gating: the channel must not complete until BOTH redirected
+    // streams have reached EOF AND the process has exited. Process.Exited can
+    // fire before the final async stdout/stderr callbacks, so completing on
+    // exit alone truncates output. All three flags are guarded by _gate.
+    private readonly object _gate = new();
+    private bool _stdoutEof;
+    private bool _stderrEof;
+    private bool _exited;
+    private bool _completed;
+
     /// <summary>
     /// Create a process from the given command
     /// </summary>
@@ -49,12 +59,16 @@ public sealed class CommandProcess
         _startInfo = new ProcessStartInfo
         {
             FileName = command.Exe,
-            Arguments = string.Join(' ', command.Arguments),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
         };
+
+        // Pass arguments via ArgumentList so each token is escaped independently;
+        // a single joined string mishandles values containing spaces (e.g. paths).
+        foreach (string token in command.Arguments.Tokens)
+            _startInfo.ArgumentList.Add(token);
 
         if (command.WorkingDirectory is { } path)
         {
@@ -91,11 +105,11 @@ public sealed class CommandProcess
                     break;
                 case ProcessEventType.StdOut:
                     if (captureStdOut)
-                        (stdout ??= new StringBuilder()).Append(msg.Content);
+                        (stdout ??= new StringBuilder()).AppendLine(msg.Content);
                     break;
                 case ProcessEventType.StdErr:
                     if (captureStdErr)
-                        (stderr ??= new StringBuilder()).Append(msg.Content);
+                        (stderr ??= new StringBuilder()).AppendLine(msg.Content);
                     break;
                 case ProcessEventType.Exited:
                     break;
@@ -114,7 +128,7 @@ public sealed class CommandProcess
             StartTime = _startTime,
             EndTime = _endTime,
             Duration = _elapsed,
-            ExitCode = _exitCode
+            ExitCode = _exitCode,
         };
         return result;
     }
@@ -123,7 +137,7 @@ public sealed class CommandProcess
     internal async Task<ProcessResult> Run(CancellationToken cancellation = default) =>
         await Run(true, true, cancellation);
 
-    internal ProcessResult WaitSync() => Run(CancellationToken.None).Result;
+    internal ProcessResult WaitSync() => Run(CancellationToken.None).GetAwaiter().GetResult();
 
     /// <summary>
     /// Start the process and consume events until it
@@ -134,18 +148,19 @@ public sealed class CommandProcess
     )
     {
         if (_status is not ProcessStatus.Idle)
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("This process has already been started");
 
         _startTime = DateTimeOffset.Now;
         _endTime = _startTime;
         _status = ProcessStatus.Running;
-        _status = ProcessStatus.Running;
+        // Multiple callback threads (stdout, stderr, exit) write to the channel,
+        // so SingleWriter must be false.
         _channel = Channel.CreateUnbounded<ProcessMessage>(
             new UnboundedChannelOptions
             {
-                SingleWriter = true,
+                SingleWriter = false,
                 SingleReader = true,
-                AllowSynchronousContinuations = true
+                AllowSynchronousContinuations = false,
             }
         );
         _watch.Start();
@@ -157,16 +172,25 @@ public sealed class CommandProcess
         {
             ProcessId = _processId,
             EventType = ProcessEventType.Started,
-            TimeStamp = _startTime
+            TimeStamp = _startTime,
         };
 
+        CancellationTokenRegistration registration = default;
         if (cancellation.IsCancellationRequested)
             Stop();
         else
-            cancellation.Register(Stop, useSynchronizationContext: false);
+            registration = cancellation.Register(Stop, useSynchronizationContext: false);
 
-        await foreach (var msg in _channel.Reader.ReadAllAsync())
-            yield return msg;
+        try
+        {
+            await foreach (var msg in _channel.Reader.ReadAllAsync())
+                yield return msg;
+        }
+        finally
+        {
+            registration.Dispose();
+            Dispose();
+        }
     }
 
     private void Stop()
@@ -180,20 +204,26 @@ public sealed class CommandProcess
         _status = ProcessStatus.Signalled;
         try
         {
-            _process.Kill();
+            _process.Kill(entireProcessTree: true);
         }
         catch { }
     }
 
     private void OnOutput(object _, DataReceivedEventArgs e)
     {
-        var elapsed = _elapsed;
+        // null Data signals end-of-stream for the redirected reader.
+        if (e.Data is null)
+        {
+            MarkEof(stdout: true);
+            return;
+        }
+
         var msg = new ProcessMessage
         {
             ProcessId = _processId,
             Content = e.Data,
             EventType = ProcessEventType.StdOut,
-            TimeStamp = _startTime + elapsed
+            TimeStamp = _startTime + _elapsed,
         };
         _current = msg;
         _channel?.Writer.TryWrite(msg);
@@ -201,13 +231,18 @@ public sealed class CommandProcess
 
     private void OnError(object _, DataReceivedEventArgs e)
     {
-        var elapsed = _elapsed;
+        if (e.Data is null)
+        {
+            MarkEof(stdout: false);
+            return;
+        }
+
         var msg = new ProcessMessage
         {
             ProcessId = _processId,
             Content = e.Data,
             EventType = ProcessEventType.StdErr,
-            TimeStamp = _startTime + elapsed
+            TimeStamp = _startTime + _elapsed,
         };
         _current = msg;
         _channel?.Writer.TryWrite(msg);
@@ -216,6 +251,7 @@ public sealed class CommandProcess
     private void OnExit(object? _s, EventArgs _e)
     {
         _watch.Stop();
+        _endTime = _startTime + _elapsed;
         _exitCode = _process.ExitCode;
         switch (_exitCode)
         {
@@ -230,14 +266,42 @@ public sealed class CommandProcess
                 break;
         }
 
-        _current = new ProcessMessage
+        lock (_gate)
+            _exited = true;
+        TryComplete();
+    }
+
+    private void MarkEof(bool stdout)
+    {
+        lock (_gate)
+        {
+            if (stdout)
+                _stdoutEof = true;
+            else
+                _stderrEof = true;
+        }
+        TryComplete();
+    }
+
+    /// Emit the terminal Exited message and complete the channel, but only once
+    /// both streams have drained and the process has exited.
+    private void TryComplete()
+    {
+        lock (_gate)
+        {
+            if (_completed || !_stdoutEof || !_stderrEof || !_exited)
+                return;
+            _completed = true;
+        }
+
+        var exitMsg = new ProcessMessage
         {
             ProcessId = _processId,
             EventType = ProcessEventType.Exited,
-            TimeStamp = _startTime + _elapsed
+            TimeStamp = _startTime + _elapsed,
         };
-
-        _channel?.Writer.TryWrite(_current);
+        _current = exitMsg;
+        _channel?.Writer.TryWrite(exitMsg);
         _channel?.Writer.TryComplete();
     }
 

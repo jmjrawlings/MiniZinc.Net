@@ -56,7 +56,7 @@ public sealed partial class MiniZincClient
 
     public static MiniZincClient Autodetect()
     {
-        var path = FindMiniZincExecutableAsync().Result;
+        var path = FindMiniZincExecutable();
         if (path is null)
             throw new FileNotFoundException($"Could not autodetect the MiniZinc executable");
 
@@ -104,32 +104,30 @@ public sealed partial class MiniZincClient
     /// </summary>
     public Command Command(params string[] args)
     {
-        var cmd = new Command($"\"{_exe.FullName}\"");
+        // No surrounding quotes: with UseShellExecute=false the exe path is used
+        // verbatim as the process filename, so quotes would become part of the
+        // path and the launch fails (esp. on Linux).
+        var cmd = new Command(_exe.FullName);
         cmd.AddArgs(args);
         return cmd;
     }
 
-    private static async Task<string?> FindMiniZincExecutableAsync()
+    private static string? FindMiniZincExecutable()
     {
-        Command command;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            command = new Command("where", "minizinc");
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            command = new Command("which", "minizinc");
-        else
-            throw new NotSupportedException();
+        // `where` on Windows, `which` everywhere else (Linux + macOS).
+        var finder = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "where" : "which";
+        var result = new Command(finder, "minizinc").Run().GetAwaiter().GetResult();
+        if (result.ExitCode != 0)
+            return null;
 
-        string? path = null;
-        await foreach (var msg in command.Watch())
-        {
-            if (msg.EventType is ProcessEventType.StdOut)
-            {
-                path = msg.Content;
-                break;
-            }
-        }
-
-        return path;
+        // `where` can return several matches; take the first.
+        var path = result
+            .StdOut.Split(
+                '\n',
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+            )
+            .FirstOrDefault();
+        return string.IsNullOrWhiteSpace(path) ? null : path;
     }
 
     public async Task<MiniZincMessage> Solution(
@@ -180,20 +178,23 @@ public sealed partial class MiniZincClient
 
         await File.WriteAllTextAsync(modelFile, modelString, token);
         var command = Command();
-        command.AddArgs(args);
-        foreach (var arg in command.Arguments.Values)
-            if (arg.Flag?.Equals("solver") ?? false)
-                if (solver is not null)
-                    throw new ArgumentException(
-                        $"Solver was provided both as an argument and command line"
-                    );
-                else
-                    solver = arg.Value;
+        foreach (string? arg in args)
+            if (arg is not null)
+                command.Arguments.AddCommandLine(arg);
+
+        if (command.Arguments.TryGetOption("--solver", out string? solverArg))
+        {
+            if (solver is not null)
+                throw new ArgumentException(
+                    $"Solver was provided both as an argument and command line"
+                );
+            solver = solverArg;
+        }
         command.AddArgs("--json-stream", "--output-objective", "--statistics");
         solver ??= MiniZincSolver.GECODE;
         var solverInfo = GetSolver(solver);
         command.AddArgs(modelFile);
-        command.AddArgs($"--solver {solverInfo.Id}");
+        command.AddArgs("--solver", solverInfo.Id);
         var commandString = command.ToString();
 
         var startInfo = new ProcessStartInfo
