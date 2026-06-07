@@ -1,0 +1,23 @@
+# Skip-list for the generated integration tests.
+#
+# Each entry marks a (path, optional solver) combination to skip with a reason.
+# Matched entries are emitted as [Fact(Skip = "<reason>")] so they stay visible
+# in the test runner instead of silently disappearing.
+#
+# Fields:
+#   path:   spec-relative .mzn path; '*' globs within a single path segment
+#           (e.g. unit/regression/checker_*.mzn)
+#   reason: required; shown in the test runner
+#   solver: optional; omit to skip on every solver, or scope to one (gecode,
+#           chuffed, coin-bc, ...)
+#
+# Regenerate after editing:
+#   dotnet run --project make -- --make-client-tests
+#
+# Example:
+#   skips:
+#     - path: examples/steiner-triples.mzn
+#       reason: solver returns an alternate valid optimum; comparator is exact
+#       solver: gecode
+
+skips: []

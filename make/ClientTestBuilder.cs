@@ -11,12 +11,17 @@ using static CodeBuilder;
 ///
 /// Only solve-style cases produce tests: a single expected solution becomes a
 /// <c>RunSolveTest</c>, multiple expected solutions become a
-/// <c>RunAnySolutionTest</c>. Compile / output-model / check-against /
-/// unsatisfiable / error cases have no runtime support and are skipped.
+/// <c>RunAnySolutionTest</c>, and an unsatisfiable expectation becomes a
+/// <c>RunUnsatisfiableTest</c>. Compile / output-model / check-against / error
+/// cases have no runtime support and are skipped.
+///
+/// Per-test entries in <c>spec/skip-list.yml</c> (matched on path and optional
+/// solver) are emitted as <c>[Fact(Skip = ...)]</c> so they remain visible in
+/// the test runner with their documented reason.
 /// </summary>
 public static class ClientTestsBuilder
 {
-    public static string Build(IReadOnlyList<TestCase> tests, string className)
+    public static string Build(IReadOnlyList<TestCase> tests, string className, ISkipList skipList)
     {
         var cb = new CodeBuilder();
 
@@ -39,24 +44,34 @@ public static class ClientTestsBuilder
         // the same (path, solver); track emitted names so each method is unique.
         var usedNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (var testCase in tests)
-            WriteTestCase(cb, testCase, usedNames);
+            WriteTestCase(cb, testCase, usedNames, skipList);
 
         return cb.ToString();
     }
 
-    private static void WriteTestCase(CodeBuilder cb, TestCase testCase, HashSet<string> usedNames)
+    private static void WriteTestCase(
+        CodeBuilder cb,
+        TestCase testCase,
+        HashSet<string> usedNames,
+        ISkipList skipList
+    )
     {
         if (testCase.Kind != TestKind.Solve || testCase.SkipReason is not null)
             return;
 
-        // Translate the expected results into a list of DZN solution strings.
-        // A non-solve expectation (unsat/error) means there is nothing to
-        // compare against, so the case is skipped entirely.
+        // Translate the expected results. An ExpectedUnsatisfiable turns the case
+        // into an unsatisfiability test; solution bodies become a solve / any-
+        // solution test. Error / compile / output-model expectations have no
+        // runtime support, so the case is skipped entirely.
+        bool unsatisfiable = false;
         var solutions = new List<string>();
         foreach (var expected in testCase.Expected)
         {
             switch (expected)
             {
+                case ExpectedUnsatisfiable:
+                    unsatisfiable = true;
+                    break;
                 case ExpectedSolution s:
                     AddSolution(solutions, s.Solution);
                     break;
@@ -69,7 +84,7 @@ public static class ClientTestsBuilder
                         AddSolution(solutions, sol);
                     break;
                 default:
-                    // Unsatisfiable / error / compile / output-model etc.
+                    // Error / compile / output-model etc.
                     return;
             }
         }
@@ -88,10 +103,27 @@ public static class ClientTestsBuilder
                 continue;
 
             var quotedSolver = Quote(solverId);
+            string? skipReason = skipList.Reason(testCase.Path, solverId);
+
             foreach (string? extraFile in extraFiles)
             {
                 string quotedExtraFile = Quote(extraFile);
                 var testName = UniqueName(usedNames, GetTestName(testCase.Path, testSolver));
+
+                // A skip-list match still emits a method so the skip is visible
+                // (with its reason) in the test runner.
+                if (skipReason is not null)
+                {
+                    cb.Attribute(
+                        "Fact",
+                        $"DisplayName = {Quote($"{testCase.Path} {solverId}")}",
+                        $"Skip = {CsString(skipReason)}"
+                    );
+                    using var _skip = cb.Function($"public async Task {testName}");
+                    cb.WriteLn("await Task.CompletedTask;");
+                    continue;
+                }
+
                 cb.Attribute(
                     "Fact",
                     $"DisplayName = {Quote($"{testCase.Path} {solverId}")}",
@@ -102,7 +134,11 @@ public static class ClientTestsBuilder
                 cb.Declare("string?", "args", quotedArgs);
                 cb.Declare("string?", "extraFile", quotedExtraFile);
 
-                if (solutions.Count > 1)
+                if (unsatisfiable)
+                {
+                    cb.WriteLn($"await RunUnsatisfiableTest({quotedPath},solver,args,extraFile);");
+                }
+                else if (solutions.Count > 1)
                 {
                     var arr = '[' + string.Join(",", solutions.Select(CsString)) + ']';
                     cb.Declare("string[]", "solutions", arr);

@@ -37,6 +37,11 @@ Add(
         Console.WriteLine($"Parsing {suitesFile.FullName}");
         var suites = YamlSpecParser.ParseSuites(suitesFile);
 
+        var skipFile = specDir.JoinFile("skip-list.yml");
+        var skipList = YamlSkipList.LoadOrEmpty(skipFile);
+        if (skipFile.Exists)
+            Console.WriteLine($"Loaded skip-list {skipFile.FullName}");
+
         foreach (var suite in suites)
         {
             // Each suite's include globs are matched against the spec tree; a
@@ -57,7 +62,7 @@ Add(
 
             var testClass = $"IntegrationTests{suite.Name.ToClassName()}";
             var testFile = Repo.IntegrationTestsDir.JoinFile($"{testClass}.cs");
-            var testSource = ClientTestsBuilder.Build(cases, testClass);
+            var testSource = ClientTestsBuilder.Build(cases, testClass, skipList);
             File.WriteAllText(testFile.FullName, testSource);
             Console.WriteLine($"  {suite.Name} -> {testClass}.cs ({cases.Count} cases)");
         }

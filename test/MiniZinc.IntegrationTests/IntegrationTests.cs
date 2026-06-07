@@ -117,6 +117,29 @@ public abstract class IntegrationTests
         Assert.Fail($"The actual solution did not match any of the expected solutions");
     }
 
+    public async Task RunUnsatisfiableTest(
+        string slug,
+        string solver,
+        string? args,
+        string? extraFile
+    )
+    {
+        string path = $"spec/{slug}";
+        WriteLine($"{path}");
+        WriteLine("--------------------------------------");
+        MiniZincModel model = MiniZincModel.FromFile(path);
+        model.ClearOutput();
+
+        if (extraFile is not null)
+            model.AddFile(extraFile);
+
+        string mzn = model.Write();
+        WriteLine(mzn);
+        WriteLine("--------------------------------------");
+        var result = await _client.Solution(model, solver, _cts.Token, args);
+        result.Status.ShouldBe(SolveStatus.Unsatisfiable, result.Error);
+    }
+
     /// Compare the solution data against the expected solution json
     public bool Check(MiniZincData expected, MiniZincData actual)
     {
