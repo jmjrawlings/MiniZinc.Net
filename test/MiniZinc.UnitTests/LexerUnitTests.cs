@@ -19,13 +19,13 @@ public sealed class LexerUnitTests
     [InlineData("B")]
     [InlineData("_A_NAME")]
     [InlineData("aN4m3w1thnumb3r5")]
-    public void Test_identifer(string mzn)
+    public void test_identifier(string mzn)
     {
         TestTokens(mzn, TOKEN_IDENTIFIER);
     }
 
     [Fact]
-    public void Test_keywords()
+    public void test_keywords()
     {
         TestTokens(
             "if else then constraint maximize",
@@ -117,7 +117,7 @@ public sealed class LexerUnitTests
     }
 
     [Fact]
-    public void xd()
+    public void test_string_interp_nested()
     {
         var s =
             $"""output ["full var: \(x)\nvar array: \(y)\nnested: \(z)\nelement: \(z.2.1)\npartial: \(init)\ndata: \(dat)\nenumtup: \(enumtup)\n"];""";

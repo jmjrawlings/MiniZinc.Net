@@ -8,7 +8,7 @@ namespace MiniZinc.TestSpec.Tests;
 public class YamlScannerTests
 {
     [Fact]
-    public void scans_simple_block_mapping()
+    public void test_scans_simple_block_mapping()
     {
         const string yaml = """
             foo: bar
@@ -25,7 +25,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void scans_inline_flow_sequence()
+    public void test_scans_inline_flow_sequence()
     {
         const string yaml = "solvers: [gecode, chuffed]";
         var docs = new YamlScanner(yaml).ParseStream();
@@ -37,7 +37,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void scans_tagged_block_mapping()
+    public void test_scans_tagged_block_mapping()
     {
         const string yaml = """
             !Test
@@ -54,7 +54,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void scans_block_literal_scalar()
+    public void test_scans_block_literal_scalar()
     {
         const string yaml = """
             _output_item: |
@@ -70,7 +70,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void scans_double_doc_with_doc_separator()
+    public void test_scans_double_doc_with_doc_separator()
     {
         const string yaml = """
             --- !Test
@@ -85,7 +85,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void scans_flow_style_set()
+    public void test_scans_flow_style_set()
     {
         // `dset: !!set {"Fri", "Sat", "Sun"}` — pattern from spec/unit/json/coerce_enum_str.mzn
         const string yaml = """dset: !!set {"Fri", "Sat", "Sun"}""";
@@ -98,7 +98,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void scans_compact_block_sequence_under_key()
+    public void test_scans_compact_block_sequence_under_key()
     {
         // The block sequence is at the same indent as its parent key — YAML "compact" form.
         const string yaml = """
@@ -115,7 +115,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void scans_nested_compact_block_sequences()
+    public void test_scans_nested_compact_block_sequences()
     {
         // Pattern from spec/unit/types/common_struct_bottom.mzn — nested array literals.
         const string yaml = """
@@ -135,7 +135,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void scans_quoted_strings()
+    public void test_scans_quoted_strings()
     {
         const string yaml = """
             single: 'hello'
@@ -154,7 +154,7 @@ public class YamlScannerTests
     }
 
     [Fact]
-    public void duplicate_keys_are_last_wins()
+    public void test_duplicate_keys_are_last_wins()
     {
         // Real pattern from spec/unit/globals/cumulative/github_589.mzn —
         // upstream YAML occasionally has an empty placeholder followed by the

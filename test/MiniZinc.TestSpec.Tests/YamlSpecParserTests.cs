@@ -51,7 +51,7 @@ public class YamlSpecParserTests
     // ----- Sample 1: from spec/unit/compilation/aggregation.mzn -----
 
     [Fact]
-    public void interprets_compile_with_flatzinc_expected()
+    public void test_interprets_compile_with_flatzinc_expected()
     {
         var tc = Interpret("""
             --- !Test
@@ -70,7 +70,7 @@ public class YamlSpecParserTests
     // ----- Sample 2: from spec/unit/regression/bug570.mzn (pattern) -----
 
     [Fact]
-    public void interprets_output_model_expected()
+    public void test_interprets_output_model_expected()
     {
         var tc = Interpret("""
             !Test
@@ -86,7 +86,7 @@ public class YamlSpecParserTests
     // ----- Sample 3: typed error with regex -----
 
     [Fact]
-    public void interprets_error_with_type_and_regex()
+    public void test_interprets_error_with_type_and_regex()
     {
         var tc = Interpret("""
             !Test
@@ -105,7 +105,7 @@ public class YamlSpecParserTests
     // ----- Sample 4: empty error body -----
 
     [Fact]
-    public void interprets_empty_error()
+    public void test_interprets_empty_error()
     {
         // Pattern from spec/unit/general/test_bad_array_size-bad.mzn
         var tc = Interpret("""
@@ -122,7 +122,7 @@ public class YamlSpecParserTests
     // ----- Sample 5: solve with !!set value -----
 
     [Fact]
-    public void interprets_solution_with_flow_set()
+    public void test_interprets_solution_with_flow_set()
     {
         // Pattern from spec/unit/json/coerce_enum_str.mzn
         var tc = Interpret("""
@@ -142,7 +142,7 @@ public class YamlSpecParserTests
     // ----- Sample 6: !Approx wrapping a numeric -----
 
     [Fact]
-    public void interprets_approx_modifier()
+    public void test_interprets_approx_modifier()
     {
         // Pattern from spec/unit/general/mortgage.mzn
         var tc = Interpret("""
@@ -161,7 +161,7 @@ public class YamlSpecParserTests
     // ----- Sample 7: block-literal _output_item with !Trim -----
 
     [Fact]
-    public void interprets_trim_output_item()
+    public void test_interprets_trim_output_item()
     {
         // Pattern from spec/unit/regression/bug259.mzn
         var tc = Interpret("""
@@ -186,7 +186,7 @@ public class YamlSpecParserTests
     // ----- Sample 8: !SolutionSet (multiple solutions, all-solutions mode) -----
 
     [Fact]
-    public void interprets_solution_set()
+    public void test_interprets_solution_set()
     {
         // Pattern from spec/unit/general/md_exists.mzn
         var tc = Interpret("""
@@ -214,7 +214,7 @@ public class YamlSpecParserTests
     // ----- Sample 9: multi-document YAML preamble -----
 
     [Fact]
-    public void interprets_multi_document_preamble()
+    public void test_interprets_multi_document_preamble()
     {
         // Pattern: many spec/unit/search/*.mzn files have two --- !Test documents.
         var cases = InterpretAll("""
@@ -238,7 +238,7 @@ public class YamlSpecParserTests
     // ----- Sample 10b: long-form Python pickle ConstrEnum tag -----
 
     [Fact]
-    public void interprets_python_pickle_constr_enum_tag()
+    public void test_interprets_python_pickle_constr_enum_tag()
     {
         // Pattern from spec/unit/regression/bug_empty_enum_extension.mzn and
         // spec/unit/types/non_contig_enum.mzn — uses the !!python/object: form
@@ -271,7 +271,7 @@ public class YamlSpecParserTests
     // ----- Sample 10: nested-array solution (preserves dimensionality) -----
 
     [Fact]
-    public void interprets_2d_array_solution_preserving_shape()
+    public void test_interprets_2d_array_solution_preserving_shape()
     {
         // Pattern from spec/unit/general/test_set_lt_2.mzn (and many others)
         var tc = Interpret("""

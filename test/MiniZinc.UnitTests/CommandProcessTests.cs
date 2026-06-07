@@ -9,7 +9,7 @@ using MiniZinc.Command;
 public class CommandProcessTests
 {
     [Fact]
-    public async Task run_captures_all_stdout_including_final_unterminated_line()
+    public async Task test_run_captures_all_stdout_including_final_unterminated_line()
     {
         // "last" has no trailing newline and lands right before exit — exactly the
         // output the old complete-on-exit race used to drop.
@@ -24,7 +24,7 @@ public class CommandProcessTests
     }
 
     [Fact]
-    public async Task run_reports_nonzero_exit_as_error()
+    public async Task test_run_reports_nonzero_exit_as_error()
     {
         var cmd = Command.From("sh").With("-c", "exit 7");
         var result = await cmd.RunAsync(Cancellation);
@@ -34,7 +34,7 @@ public class CommandProcessTests
     }
 
     [Fact]
-    public async Task run_captures_stderr()
+    public async Task test_run_captures_stderr()
     {
         var cmd = Command.From("sh").With("-c", "printf boom 1>&2");
         var result = await cmd.RunAsync(Cancellation);
@@ -42,7 +42,7 @@ public class CommandProcessTests
     }
 
     [Fact]
-    public async Task run_captures_both_streams()
+    public async Task test_run_captures_both_streams()
     {
         var cmd = Command.From("sh").With("-c", "printf out; printf oops 1>&2");
         var result = await cmd.RunAsync(Cancellation);
@@ -51,7 +51,7 @@ public class CommandProcessTests
     }
 
     [Fact]
-    public async Task argument_with_spaces_is_passed_as_one_token()
+    public async Task test_argument_with_spaces_is_passed_as_one_token()
     {
         // $@ expands the trailing operands; printf repeats the format once each.
         // If "a b" were split, we'd see "[a][b]" instead of "[a b]".
@@ -63,7 +63,7 @@ public class CommandProcessTests
     }
 
     [Fact]
-    public async Task watch_streams_lines_then_exit()
+    public async Task test_watch_streams_lines_then_exit()
     {
         var cmd = Command.From("sh").With("-c", "printf 'a\\nb\\n'");
         var stdout = new List<string>();
@@ -85,7 +85,7 @@ public class CommandProcessTests
     }
 
     [Fact]
-    public async Task cancellation_kills_the_process_promptly()
+    public async Task test_cancellation_kills_the_process_promptly()
     {
         var cmd = Command.From("sh").With("-c", "sleep 30");
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
@@ -95,7 +95,7 @@ public class CommandProcessTests
     }
 
     [Fact]
-    public async Task missing_executable_surfaces_an_error()
+    public async Task test_missing_executable_surfaces_an_error()
     {
         var cmd = Command.From("minizinc-net-no-such-binary-xyz");
         await Should.ThrowAsync<Exception>(async () => await cmd.RunAsync());

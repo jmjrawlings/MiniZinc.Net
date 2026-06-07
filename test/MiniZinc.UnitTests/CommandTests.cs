@@ -9,7 +9,7 @@ public class CommandTests
     // ----- Arg -----
 
     [Fact]
-    public void arg_flag_only()
+    public void test_arg_flag_only()
     {
         var arg = new Arg("--all-solutions", null);
         arg.ArgType.ShouldBe(ArgType.FlagOnly);
@@ -20,7 +20,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void arg_value_only()
+    public void test_arg_value_only()
     {
         var arg = new Arg(null, "model.mzn");
         arg.ArgType.ShouldBe(ArgType.ValueOnly);
@@ -30,7 +30,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void arg_option_space_is_two_tokens()
+    public void test_arg_option_space_is_two_tokens()
     {
         var arg = new Arg("--solver", "gecode");
         arg.ArgType.ShouldBe(ArgType.FlagOptionSpace);
@@ -39,7 +39,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void arg_option_equal_is_one_token()
+    public void test_arg_option_equal_is_one_token()
     {
         var arg = new Arg("--solver", "gecode", eq: true);
         arg.ArgType.ShouldBe(ArgType.FlagOptionEqual);
@@ -48,7 +48,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void arg_requires_flag_or_value()
+    public void test_arg_requires_flag_or_value()
     {
         Should.Throw<ArgumentException>(() => new Arg(null, null));
     }
@@ -56,7 +56,7 @@ public class CommandTests
     // ----- Args construction -----
 
     [Fact]
-    public void add_tokens_classifies_by_leading_dash()
+    public void test_add_tokens_classifies_by_leading_dash()
     {
         var args = new Args();
         args.Add("--flag", "value", "-x");
@@ -68,7 +68,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void add_skips_nulls()
+    public void test_add_skips_nulls()
     {
         var args = new Args();
         args.Add("a", null, "b");
@@ -76,7 +76,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void add_option_preserves_pairing()
+    public void test_add_option_preserves_pairing()
     {
         var args = new Args();
         args.AddOption("--solver", "gecode");
@@ -85,7 +85,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void add_value_with_space_is_a_single_token()
+    public void test_add_value_with_space_is_a_single_token()
     {
         var args = new Args();
         args.AddValue("a path with spaces.mzn");
@@ -93,7 +93,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void add_combines_two_arg_sets()
+    public void test_add_combines_two_arg_sets()
     {
         var a = new Args();
         a.Add("--one");
@@ -106,7 +106,7 @@ public class CommandTests
     // ----- AddCommandLine (the only place strings are tokenised) -----
 
     [Fact]
-    public void command_line_splits_on_whitespace()
+    public void test_command_line_splits_on_whitespace()
     {
         var args = new Args();
         args.AddCommandLine("--time-limit 1000");
@@ -114,7 +114,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void command_line_collapses_extra_whitespace()
+    public void test_command_line_collapses_extra_whitespace()
     {
         var args = new Args();
         args.AddCommandLine("  -a   -b \t -c ");
@@ -122,7 +122,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void command_line_respects_double_quotes()
+    public void test_command_line_respects_double_quotes()
     {
         var args = new Args();
         args.AddCommandLine("""--cmdline-data "x = 5" """);
@@ -130,7 +130,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void command_line_empty_is_no_args()
+    public void test_command_line_empty_is_no_args()
     {
         var args = new Args();
         args.AddCommandLine("   ");
@@ -140,7 +140,7 @@ public class CommandTests
     // ----- Introspection -----
 
     [Fact]
-    public void has_flag_matches_bare_and_equals_forms()
+    public void test_has_flag_matches_bare_and_equals_forms()
     {
         var args = new Args();
         args.Add("--statistics");
@@ -151,7 +151,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void try_get_option_space_form()
+    public void test_try_get_option_space_form()
     {
         var args = new Args();
         args.AddCommandLine("--solver gecode");
@@ -160,7 +160,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void try_get_option_equals_form()
+    public void test_try_get_option_equals_form()
     {
         var args = new Args();
         args.AddOption("--solver", "chuffed", eq: true);
@@ -169,7 +169,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void try_get_option_absent()
+    public void test_try_get_option_absent()
     {
         var args = new Args();
         args.Add("--statistics");
@@ -180,14 +180,14 @@ public class CommandTests
     // ----- Command -----
 
     [Fact]
-    public void command_tokens_round_trip()
+    public void test_command_tokens_round_trip()
     {
         var cmd = Command.From("git").With("remote", "add", "origin", "https://example.com/x.git");
         cmd.Tokens.ShouldBe(["remote", "add", "origin", "https://example.com/x.git"]);
     }
 
     [Fact]
-    public void command_with_methods_produce_tokens_in_order()
+    public void test_command_with_methods_produce_tokens_in_order()
     {
         var cmd = Command
             .From("minizinc")
@@ -202,7 +202,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void command_with_does_not_mutate_the_original()
+    public void test_command_with_does_not_mutate_the_original()
     {
         var basis = Command.From("minizinc").WithFlag("--statistics");
         var derived = basis.WithOption("--solver", "gecode");
@@ -212,7 +212,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void command_forks_from_a_base_are_independent()
+    public void test_command_forks_from_a_base_are_independent()
     {
         var basis = Command.From("minizinc").WithFlag("--statistics");
         var a = basis.WithFlag("--all-solutions");
@@ -225,7 +225,7 @@ public class CommandTests
     }
 
     [Fact]
-    public void command_to_string_includes_exe_and_args()
+    public void test_command_to_string_includes_exe_and_args()
     {
         var cmd = Command.From("minizinc").WithFlag("--statistics").WithValue("model.mzn");
         cmd.ToString().ShouldBe("minizinc --statistics model.mzn");
