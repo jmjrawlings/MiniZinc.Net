@@ -1,25 +1,22 @@
-﻿namespace MiniZinc.Command;
+namespace MiniZinc.Command;
 
 /// <summary>
-/// The state of a Process
+/// The terminal outcome of running a process.
 /// </summary>
 public enum ProcessStatus : byte
 {
-    /// Process has not been started yet
-    Idle,
-
-    /// Process is currently running
-    Running,
-
-    /// Process exited with a zero exit code
+    /// <summary>
+    /// Exited with a zero exit code.
+    /// </summary>
     Ok,
 
-    /// Process exited with a non-zero exit code
+    /// <summary>
+    /// Exited with a non-zero exit code.
+    /// </summary>
     Error,
 
-    /// Process was cancelled by the user
+    /// <summary>
+    /// Killed because cancellation was requested.
+    /// </summary>
     Cancelled,
-
-    /// Process has been signalled to terminate
-    Signalled,
 }

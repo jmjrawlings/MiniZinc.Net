@@ -5,13 +5,19 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
 
-public sealed class CommandProcess : IDisposable
+internal sealed class CommandProcess : IDisposable
 {
     /// The originating command
     private readonly Command _command;
 
-    /// Current state of the process
+    /// The terminal outcome, set when the process exits
     private ProcessStatus _status;
+
+    /// Has the process been started? (one-shot guard)
+    private bool _started;
+
+    /// Was cancellation requested? (distinguishes Cancelled from Error)
+    private bool _cancelled;
 
     /// Time the process was started
     private DateTimeOffset _startTime;
@@ -24,9 +30,6 @@ public sealed class CommandProcess : IDisposable
 
     /// The process exit code if it has exited
     private int _exitCode;
-
-    /// If listening, the last ProcessMessage received
-    private ProcessMessage _current;
 
     /// The Id of the process if it ever started
     private int _processId;
@@ -53,7 +56,7 @@ public sealed class CommandProcess : IDisposable
     /// <summary>
     /// Create a process from the given command
     /// </summary>
-    internal CommandProcess(in Command command)
+    internal CommandProcess(Command command)
     {
         _watch = new Stopwatch();
         _startInfo = new ProcessStartInfo
@@ -85,46 +88,33 @@ public sealed class CommandProcess : IDisposable
     }
 
     /// <summary>
-    /// Run the process until it either terminates or a cancellation
-    /// is requested.
+    /// Run the process to completion (or until cancelled), capturing stdout and
+    /// stderr into the returned <see cref="ProcessResult"/>.
     /// </summary>
-    internal async Task<ProcessResult> Run(
-        bool captureStdOut = true,
-        bool captureStdErr = true,
-        CancellationToken cancellation = default
-    )
+    internal async Task<ProcessResult> Run(CancellationToken cancellation = default)
     {
         StringBuilder? stdout = null;
         StringBuilder? stderr = null;
 
-        await foreach (var msg in Watch(cancellation))
+        await foreach (ProcessMessage msg in Watch(cancellation))
         {
-            switch (msg.EventType)
+            switch (msg)
             {
-                case ProcessEventType.Started:
+                case ProcessStdOut o:
+                    (stdout ??= new StringBuilder()).AppendLine(o.Text);
                     break;
-                case ProcessEventType.StdOut:
-                    if (captureStdOut)
-                        (stdout ??= new StringBuilder()).AppendLine(msg.Content);
-                    break;
-                case ProcessEventType.StdErr:
-                    if (captureStdErr)
-                        (stderr ??= new StringBuilder()).AppendLine(msg.Content);
-                    break;
-                case ProcessEventType.Exited:
+                case ProcessStdErr e:
+                    (stderr ??= new StringBuilder()).AppendLine(e.Text);
                     break;
             }
         }
-
-        var output = stdout?.ToString() ?? string.Empty;
-        var error = stderr?.ToString() ?? string.Empty;
 
         var result = new ProcessResult
         {
             Command = _command.ToString(),
             Status = _status,
-            StdOut = output,
-            StdErr = error,
+            StdOut = stdout?.ToString() ?? string.Empty,
+            StdErr = stderr?.ToString() ?? string.Empty,
             StartTime = _startTime,
             EndTime = _endTime,
             Duration = _elapsed,
@@ -132,12 +122,6 @@ public sealed class CommandProcess : IDisposable
         };
         return result;
     }
-
-    /// <inheritdoc cref="Run(bool,bool,System.Threading.CancellationToken)"/>
-    internal async Task<ProcessResult> Run(CancellationToken cancellation = default) =>
-        await Run(true, true, cancellation);
-
-    internal ProcessResult WaitSync() => Run(CancellationToken.None).GetAwaiter().GetResult();
 
     /// <summary>
     /// Start the process and consume events until it
@@ -147,12 +131,12 @@ public sealed class CommandProcess : IDisposable
         [EnumeratorCancellation] CancellationToken cancellation = default
     )
     {
-        if (_status is not ProcessStatus.Idle)
+        if (_started)
             throw new InvalidOperationException("This process has already been started");
+        _started = true;
 
         _startTime = DateTimeOffset.Now;
         _endTime = _startTime;
-        _status = ProcessStatus.Running;
         // Multiple callback threads (stdout, stderr, exit) write to the channel,
         // so SingleWriter must be false.
         _channel = Channel.CreateUnbounded<ProcessMessage>(
@@ -165,15 +149,13 @@ public sealed class CommandProcess : IDisposable
         );
         _watch.Start();
         _process.Start();
+        _processId = _process.Id;
+        // Emit Started before reading begins so it is always the first message.
+        _channel.Writer.TryWrite(
+            new ProcessStarted { ProcessId = _processId, TimeStamp = _startTime }
+        );
         _process.BeginOutputReadLine();
         _process.BeginErrorReadLine();
-        _processId = _process.Id;
-        _current = new ProcessMessage
-        {
-            ProcessId = _processId,
-            EventType = ProcessEventType.Started,
-            TimeStamp = _startTime,
-        };
 
         CancellationTokenRegistration registration = default;
         if (cancellation.IsCancellationRequested)
@@ -195,13 +177,10 @@ public sealed class CommandProcess : IDisposable
 
     private void Stop()
     {
-        if (_status is not ProcessStatus.Running)
+        if (!_started || _process.HasExited)
             return;
 
-        if (_process.HasExited)
-            return;
-
-        _status = ProcessStatus.Signalled;
+        _cancelled = true;
         try
         {
             _process.Kill(entireProcessTree: true);
@@ -218,15 +197,14 @@ public sealed class CommandProcess : IDisposable
             return;
         }
 
-        var msg = new ProcessMessage
-        {
-            ProcessId = _processId,
-            Content = e.Data,
-            EventType = ProcessEventType.StdOut,
-            TimeStamp = _startTime + _elapsed,
-        };
-        _current = msg;
-        _channel?.Writer.TryWrite(msg);
+        _channel?.Writer.TryWrite(
+            new ProcessStdOut
+            {
+                ProcessId = _processId,
+                Text = e.Data,
+                TimeStamp = _startTime + _elapsed,
+            }
+        );
     }
 
     private void OnError(object _, DataReceivedEventArgs e)
@@ -237,15 +215,14 @@ public sealed class CommandProcess : IDisposable
             return;
         }
 
-        var msg = new ProcessMessage
-        {
-            ProcessId = _processId,
-            Content = e.Data,
-            EventType = ProcessEventType.StdErr,
-            TimeStamp = _startTime + _elapsed,
-        };
-        _current = msg;
-        _channel?.Writer.TryWrite(msg);
+        _channel?.Writer.TryWrite(
+            new ProcessStdErr
+            {
+                ProcessId = _processId,
+                Text = e.Data,
+                TimeStamp = _startTime + _elapsed,
+            }
+        );
     }
 
     private void OnExit(object? _s, EventArgs _e)
@@ -258,7 +235,7 @@ public sealed class CommandProcess : IDisposable
             case 0:
                 _status = ProcessStatus.Ok;
                 break;
-            case { } when _status is ProcessStatus.Signalled:
+            case { } when _cancelled:
                 _status = ProcessStatus.Cancelled;
                 break;
             default:
@@ -294,14 +271,14 @@ public sealed class CommandProcess : IDisposable
             _completed = true;
         }
 
-        var exitMsg = new ProcessMessage
-        {
-            ProcessId = _processId,
-            EventType = ProcessEventType.Exited,
-            TimeStamp = _startTime + _elapsed,
-        };
-        _current = exitMsg;
-        _channel?.Writer.TryWrite(exitMsg);
+        _channel?.Writer.TryWrite(
+            new ProcessExited
+            {
+                ProcessId = _processId,
+                ExitCode = _exitCode,
+                TimeStamp = _startTime + _elapsed,
+            }
+        );
         _channel?.Writer.TryComplete();
     }
 

@@ -5,7 +5,7 @@ namespace MiniZinc.Command;
 /// positional value (a model file path), or a flag paired with a value
 /// (<c>--solver gecode</c> or <c>--solver=gecode</c>).
 /// </summary>
-public readonly struct Arg
+internal readonly struct Arg
 {
     /// <summary>
     /// eg: --output, -a

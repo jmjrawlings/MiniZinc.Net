@@ -78,7 +78,7 @@ public sealed partial class MiniZincClient
     /// </summary>
     private List<MiniZincSolver> GetSolvers()
     {
-        var result = Command("--solvers-json").Run().Result;
+        var result = Cmd("--solvers-json").Run();
         Guard.IsEqualTo(result.ExitCode, 0);
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var solvers = JsonSerializer.Deserialize<List<MiniZincSolver>>(result.StdOut, options)!;
@@ -87,7 +87,7 @@ public sealed partial class MiniZincClient
 
     private Version GetVersion()
     {
-        var result = Command("--version").Run().Result;
+        var result = Cmd("--version").Run();
         Guard.IsEqualTo(result.ExitCode, 0);
         var match = VersionRegex().Match(result.StdOut);
         var version = new Version(
@@ -100,23 +100,21 @@ public sealed partial class MiniZincClient
     }
 
     /// <summary>
-    /// Create a minizinc command with the given arguments
+    /// Create a command for the minizinc executable with the given arguments.
     /// </summary>
-    public Command Command(params string[] args)
+    private Command Cmd(params string[] args)
     {
         // No surrounding quotes: with UseShellExecute=false the exe path is used
         // verbatim as the process filename, so quotes would become part of the
         // path and the launch fails (esp. on Linux).
-        var cmd = new Command(_exe.FullName);
-        cmd.AddArgs(args);
-        return cmd;
+        return Command.From(_exe.FullName).With(args);
     }
 
     private static string? FindMiniZincExecutable()
     {
         // `where` on Windows, `which` everywhere else (Linux + macOS).
         var finder = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "where" : "which";
-        var result = new Command(finder, "minizinc").Run().GetAwaiter().GetResult();
+        var result = Command.From(finder).With("minizinc").Run();
         if (result.ExitCode != 0)
             return null;
 
@@ -177,12 +175,12 @@ public sealed partial class MiniZincClient
         );
 
         await File.WriteAllTextAsync(modelFile, modelString, token);
-        var command = Command();
+        Command command = Cmd();
         foreach (string? arg in args)
             if (arg is not null)
-                command.Arguments.AddCommandLine(arg);
+                command = command.WithCommandLine(arg);
 
-        if (command.Arguments.TryGetOption("--solver", out string? solverArg))
+        if (command.TryGetOption("--solver", out string? solverArg))
         {
             if (solver is not null)
                 throw new ArgumentException(
@@ -190,17 +188,19 @@ public sealed partial class MiniZincClient
                 );
             solver = solverArg;
         }
-        command.AddArgs("--json-stream", "--output-objective", "--statistics");
+        command = command
+            .WithFlag("--json-stream")
+            .WithFlag("--output-objective")
+            .WithFlag("--statistics");
         solver ??= MiniZincSolver.GECODE;
         var solverInfo = GetSolver(solver);
-        command.AddArgs(modelFile);
-        command.AddArgs("--solver", solverInfo.Id);
+        command = command.WithValue(modelFile).WithOption("--solver", solverInfo.Id);
         var commandString = command.ToString();
 
         var startInfo = new ProcessStartInfo
         {
             FileName = command.Exe,
-            Arguments = string.Join(' ', command.Arguments),
+            Arguments = string.Join(" ", command.Tokens),
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardError = true,

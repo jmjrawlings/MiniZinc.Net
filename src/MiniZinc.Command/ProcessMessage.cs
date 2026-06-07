@@ -1,19 +1,57 @@
-﻿namespace MiniZinc.Command;
+namespace MiniZinc.Command;
 
 /// <summary>
-/// Message streamed
+/// A message emitted while a process runs. Pattern-match on the concrete type:
+/// <see cref="ProcessStarted"/>, <see cref="ProcessStdOut"/>,
+/// <see cref="ProcessStdErr"/>, or <see cref="ProcessExited"/>.
 /// </summary>
-public readonly struct ProcessMessage
+public abstract record ProcessMessage
 {
-    /// Time this message was created
+    /// <summary>
+    /// The id of the process that produced this message.
+    /// </summary>
     public required int ProcessId { get; init; }
 
-    /// Time this message was created
+    /// <summary>
+    /// When the message was produced.
+    /// </summary>
     public required DateTimeOffset TimeStamp { get; init; }
+}
 
-    /// The type of event
-    public required ProcessEventType EventType { get; init; }
+/// <summary>
+/// The process has started.
+/// </summary>
+public sealed record ProcessStarted : ProcessMessage;
 
-    /// The string content of the message
-    public string? Content { get; init; }
+/// <summary>
+/// A line written to standard output.
+/// </summary>
+public sealed record ProcessStdOut : ProcessMessage
+{
+    /// <summary>
+    /// The line of text, without its trailing newline.
+    /// </summary>
+    public required string Text { get; init; }
+}
+
+/// <summary>
+/// A line written to standard error.
+/// </summary>
+public sealed record ProcessStdErr : ProcessMessage
+{
+    /// <summary>
+    /// The line of text, without its trailing newline.
+    /// </summary>
+    public required string Text { get; init; }
+}
+
+/// <summary>
+/// The process has exited.
+/// </summary>
+public sealed record ProcessExited : ProcessMessage
+{
+    /// <summary>
+    /// The process exit code.
+    /// </summary>
+    public required int ExitCode { get; init; }
 }

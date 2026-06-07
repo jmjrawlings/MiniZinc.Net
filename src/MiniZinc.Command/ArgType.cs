@@ -3,7 +3,7 @@
 /// <summary>
 /// Type of argument
 /// </summary>
-public enum ArgType : byte
+internal enum ArgType : byte
 {
     /// <summary>
     /// --flag

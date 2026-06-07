@@ -10,7 +10,7 @@ using System.Text;
 /// record of what will be passed to the process. Use <see cref="AddCommandLine"/>
 /// for the one case where a raw, user-supplied argument string must be tokenised.
 /// </summary>
-public sealed class Args
+internal sealed class Args
 {
     private List<Arg>? _args;
 
@@ -55,6 +55,16 @@ public sealed class Args
     {
         foreach (Arg arg in args.Values)
             Add(arg);
+    }
+
+    /// <summary>
+    /// A shallow copy (Arg is a value type, so this is an independent set).
+    /// </summary>
+    public Args Copy()
+    {
+        Args copy = new Args();
+        copy.Add(this);
+        return copy;
     }
 
     /// <summary>

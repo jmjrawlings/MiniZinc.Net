@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <InternalsVisibleTo Include="UnitTests" />
+        <InternalsVisibleTo Include="MiniZinc.UnitTests" />
     </ItemGroup>
 
 </Project>
