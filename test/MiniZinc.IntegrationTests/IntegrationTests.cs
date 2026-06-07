@@ -8,7 +8,7 @@ using MiniZinc.Core;
 using MiniZinc.Parser;
 using MiniZinc.Tests;
 using Shouldly;
-using TUnit;
+using Xunit;
 using static System.Console;
 
 public abstract class IntegrationTests
@@ -115,46 +115,6 @@ public abstract class IntegrationTests
         }
 
         Assert.Fail($"The actual solution did not match any of the expected solutions");
-    }
-
-    public async Task RunTest(
-        string slug,
-        TestType ttype,
-        string? solver,
-        string? args,
-        string? solutions,
-        string? errorMessage,
-        string? errorRegex
-    )
-    {
-        string path = $"spec/{slug}";
-        WriteLine($"{path}");
-        WriteLine("--------------------------------------");
-        var source = await File.ReadAllTextAsync(path);
-
-        MiniZincModel? model;
-        try
-        {
-            model = MiniZincModel.FromFile(path);
-        }
-        catch (Exception exn)
-        {
-            model = null;
-            return;
-        }
-
-        var mzn = model.Write();
-        WriteLine(mzn);
-        WriteLine("--------------------------------------");
-
-        await foreach (var sol in _client.Solve(model, solver, _cts.Token))
-        {
-            WriteLine($"{sol.Iteration} - {sol.Status}");
-            if (sol.Error is not null)
-                WriteLine(sol.Error);
-        }
-
-        var a = 2;
     }
 
     /// Compare the solution data against the expected solution json

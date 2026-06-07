@@ -4,6 +4,25 @@ using System.Reflection;
 
 public static class Repo
 {
+    public const string LibMiniZincCommit = "d028bc222040f6aa138697c57dcd00c1e6fd4be1";
+
+    public static DirectoryInfo LibMiniZincCacheDir
+    {
+        get
+        {
+            string baseDir =
+                Environment.GetEnvironmentVariable("XDG_CACHE_HOME")
+                ?? Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    ".cache"
+                );
+            string shortSha = LibMiniZincCommit.Substring(0, 12);
+            return new DirectoryInfo(
+                Path.Combine(baseDir, "MiniZinc.Net", $"libminizinc-{shortSha}")
+            );
+        }
+    }
+
     public static string JoinPath(this string path, params string[] a)
     {
         string p = path;
@@ -90,7 +109,7 @@ public static class Repo
                 return _solutionFile;
 
             var assembly = Assembly.GetExecutingAssembly().Location.ToFile();
-            var sln = assembly.Directory!.JoinFile("MiniZinc.Net.sln");
+            var sln = assembly.Directory!.JoinFile("MiniZinc.Net.slnx");
             while (!sln.Exists)
             {
                 var dir = sln.Directory!.Parent;
@@ -108,5 +127,4 @@ public static class Repo
     public static DirectoryInfo BuildDir => SolutionDir.JoinDir("build");
     public static DirectoryInfo TestSpecDir => IntegrationTestsDir.JoinDir("spec");
     public static FileInfo TestSpecYaml => TestSpecDir.JoinFile("suites.yml");
-    public static FileInfo TestSpecJson => IntegrationTestsDir.JoinFile("spec.json");
 }

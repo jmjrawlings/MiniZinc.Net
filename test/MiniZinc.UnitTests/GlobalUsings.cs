@@ -1,2 +1,3 @@
 ﻿global using Shouldly;
-global using TUnit.Core;
+global using Xunit;
+global using static TestEnv;

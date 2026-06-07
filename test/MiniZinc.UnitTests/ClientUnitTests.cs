@@ -13,49 +13,49 @@ public sealed class ManualClientTests
         Client = MiniZincClient.Autodetect();
     }
 
-    [Test]
+    [Fact]
     public async Task test_gecode_installed()
     {
         var gecode = Client.GetSolver(MiniZincSolver.GECODE);
         gecode.Name.ShouldBe("Gecode");
     }
 
-    [Test]
+    [Fact]
     public async Task test_chuffed_installed()
     {
         var chuffed = Client.GetSolver(MiniZincSolver.CHUFFED);
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_satisfy_result()
     {
         var model = new MiniZincModel();
         var a = model.AddInt("a", 10, 20);
         var b = model.AddInt("b", 10, 20);
         model.AddConstraint(a < b);
-        var result = await Client.Solution(model);
+        var result = await Client.Solution(model, token: Cancellation);
         int aval = result.Data.Get<IntExpr>(a);
         int bval = result.Data.Get<IntExpr>(b);
         aval.ShouldBeLessThan(bval);
         result.Status.ShouldBe(SolveStatus.Satisfied);
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_unsat_result()
     {
         var model = MiniZincModel.ParseString("var 10..20: a; constraint a < 0;");
-        var solution = await Client.Solution(model);
+        var solution = await Client.Solution(model, token: Cancellation);
         solution.Status.ShouldBe(SolveStatus.Unsatisfiable);
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_maximize_result()
     {
         var model = new MiniZincModel();
         model.AddVariable("a", "10..20");
         model.AddVariable("b", "10..20");
         model.Maximize("a + b");
-        var result = await Client.Solution(model);
+        var result = await Client.Solution(model, token: Cancellation);
         result.Status.ShouldBe(SolveStatus.Optimal);
         int a = result.Data.Get<IntExpr>("a");
         int b = result.Data.Get<IntExpr>("b");
@@ -64,21 +64,21 @@ public sealed class ManualClientTests
         // result.Objective.ShouldBe(40);
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_return_array()
     {
         var model = MiniZincModel.ParseString("array[1..10] of var 0..100: xd;");
-        var result = await Client.Solution(model);
+        var result = await Client.Solution(model, token: Cancellation);
         var arr = result.Data.Get<Array1dExpr>("xd");
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_satisfy_foreach()
     {
         var model = new MiniZincModel();
         model.AddVariable("a", "10..20");
         model.AddVariable("b", "10..20");
-        await foreach (var result in Client.Solve(model))
+        await foreach (var result in Client.Solve(model, token: Cancellation))
         {
             int a = result.Data.Get<IntExpr>("a");
             int b = result.Data.Get<IntExpr>("b");
@@ -86,45 +86,45 @@ public sealed class ManualClientTests
         }
     }
 
-    [Test]
+    [Fact]
     public async Task test_model_replace_objective()
     {
         var model = new MiniZincModel();
         model.AddInt("a", 0, 10);
         model.AddInt("b", 0, 10);
         model.Minimize("a+b");
-        var minimum = await Client.Solution(model);
+        var minimum = await Client.Solution(model, token: Cancellation);
         // minimum.Objective.ShouldBe(0);
 
         model.Maximize("a+b");
-        var maximum = await Client.Solution(model);
+        var maximum = await Client.Solution(model, token: Cancellation);
         // maximum.Objective.ShouldBe(20);
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_unsat_foreach()
     {
         var model = MiniZincModel.ParseString("var 10..20: a; constraint a < 0;");
-        await foreach (var result in Client.Solve(model))
+        await foreach (var result in Client.Solve(model, token: Cancellation))
         {
             result.Status.ShouldBe(SolveStatus.Unsatisfiable);
         }
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_maximize_foreach()
     {
         var model = new MiniZincModel();
         var a = model.AddVariable("a", "10..20");
         var b = model.AddVariable("b", "10..20");
         model.Maximize("a+b");
-        await foreach (var result in Client.Solve(model))
+        await foreach (var result in Client.Solve(model, token: Cancellation))
         {
             result.Status.ShouldBeOneOf(SolveStatus.Optimal, SolveStatus.Satisfied);
         }
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_nqueens_with_timeout()
     {
         var model = MiniZincModel.ParseString(
@@ -147,7 +147,7 @@ public sealed class ManualClientTests
         msg.Status.ShouldBe(SolveStatus.Cancelled);
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_already_cancelled()
     {
         var model = MiniZincModel.ParseString(
@@ -168,7 +168,7 @@ public sealed class ManualClientTests
         msg.Status.ShouldBe(SolveStatus.Cancelled);
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_unsat_model()
     {
         var model = MiniZincModel.ParseString(
@@ -178,11 +178,11 @@ public sealed class ManualClientTests
             constraint a > b;
             """
         );
-        var msg = await Client.Solution(model);
+        var msg = await Client.Solution(model, token: Cancellation);
         msg.Status.ShouldBe(SolveStatus.Unsatisfiable);
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_extra_args()
     {
         var model = MiniZincModel.ParseString(
@@ -190,7 +190,7 @@ public sealed class ManualClientTests
             var 1..2: a;
             """
         );
-        var msg = await Client.Solution(model, default, default, "--no-optimize");
+        var msg = await Client.Solution(model, default, Cancellation, "--no-optimize");
 
         msg.Status.ShouldBe(SolveStatus.Satisfied);
     }

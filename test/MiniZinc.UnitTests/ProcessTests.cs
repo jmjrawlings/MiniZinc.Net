@@ -4,26 +4,30 @@ using static System.Console;
 
 public class ProcessTests
 {
-    [Test]
+    [Fact]
     public async Task test_command_runs()
     {
-        var cmd = new Command("minizinc", "--version");
-        var result = await cmd.Run();
+        var cmd = Command.From("minizinc").With("--version");
+        var result = await cmd.RunAsync(Cancellation);
         result.Status.ShouldBe(ProcessStatus.Ok);
     }
 
-    [Test]
+    [Fact]
     public async Task test_command_watch()
     {
-        var cmd = new Command("minizinc", "--version");
+        var cmd = Command.From("minizinc").With("--version");
         string? output = null;
-        await foreach (var msg in cmd.Watch())
-            output ??= msg.Content;
+        await foreach (var msg in cmd.WatchAsync(Cancellation))
+            if (msg is ProcessStdOut o)
+            {
+                output = o.Text;
+                break;
+            }
         WriteLine(output);
-        output.ShouldNotBeEmpty();
+        output.ShouldNotBeNullOrEmpty();
     }
 
-    [Test]
+    [Fact]
     public async Task test_solve_nqueens_with_timeout()
     {
         var model = """
@@ -38,20 +42,21 @@ public class ProcessTests
             satisfy;
             """;
         var tmp = Path.GetTempPath().ToDirectory().JoinFile("nqueens.mzn");
-        await File.WriteAllTextAsync(tmp.FullName, model);
-        var cmd = new Command(
-            "minizinc",
-            "--solver Gecode",
+        await File.WriteAllTextAsync(tmp.FullName, model, Cancellation);
+        var cmd = Command
+            .From("minizinc")
+            .With(
+            "--solver",
+            "Gecode",
             "--all-solutions",
             "--json-stream",
             tmp.FullName
         );
         var timeout = TimeSpan.FromSeconds(1);
         var cts = new CancellationTokenSource(timeout);
-        await foreach (var msg in cmd.Watch(cts.Token))
+        await foreach (var msg in cmd.WatchAsync(cts.Token))
         {
-            WriteLine($"{msg.ProcessId} - {msg.TimeStamp} - {msg.EventType}");
-            WriteLine(msg.Content);
+            WriteLine(msg);
             WriteLine("------------------------------------");
         }
     }

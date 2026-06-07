@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MiniZinc.TestSpec</RootNamespace>
+    <Description>Parses libminizinc test-spec YAML preambles into a typed model.</Description>
+  </PropertyGroup>
+
+</Project>
