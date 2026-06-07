@@ -1,43 +1,34 @@
 {
-    "name": "MiniZinc.NET",
-    "build": {
-        "context": "..",
-        "dockerfile": "../Dockerfile",
-        "target": "dev"
+  "name": "MiniZinc.Net",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "username": "vscode",
     },
-    "mounts": [
-        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-    ],
-    "remoteUser": "harken",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "ms-dotnettools.csdevkit",
-                "ms-azuretools.vscode-docker"
-            ]
-        },
-        "settings": {
-            "terminal.integrated.defaultProfile.linux": "zsh",
-            "terminal.integrated.profiles.linux": {
-                "zsh": {
-                    "path": "/bin/zsh",
-                    "args": [
-                        "-l"
-                    ]
-                }
-            },
-            "editor.detectIndentation": false,
-            "editor.insertSpaces": true,
-            "telemetry.telemetryLevel": "off"
-        }
+  },
+  "remoteUser": "vscode",
+  "init": true,
+  "postCreateCommand": "dotnet tool restore && dotnet restore",
+  "containerEnv": {
+    "DO_NOT_TRACK": "1",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "editorconfig.editorconfig",
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "telemetry.telemetryLevel": "off",
+      },
     },
-    "runArgs": [
-        "--init",
-        "--hostname",
-        "monash"
-    ],
-    "containerEnv": {
-        "DO_NOT_TRACK": "1",
-        "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
-    }
+  },
 }

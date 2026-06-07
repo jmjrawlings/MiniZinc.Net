@@ -54,11 +54,11 @@ result.Status; // SolveStatus.Optimal
 
 ## Developer Guide 
 
-To develop and test the codebase you need will need to have access to an environment where both the .NET8 SDK and MiniZinc toolchain installed.  You can install these dependencies manually or use a preconfigured docker container.
+To develop and test the codebase you need will need to have access to an environment where both the .NET 10 SDK and MiniZinc toolchain installed.  You can install these dependencies manually or use a preconfigured docker container.
 
 ### Option 1 - Manual Setup
 
-- Install the [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) 
+- Install the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) 
 - Install [MiniZinc](https://www.minizinc.org/downloads/) toolchain
 - `git clone https://github.com/jmjrawlings/MiniZinc.Net.git`
 - `cd MiniZinc.Net`
@@ -68,12 +68,18 @@ To develop and test the codebase you need will need to have access to an environ
 
 ### Option 2 - Devcontainer
 
+The devcontainer ships the .NET 10 SDK, the MiniZinc toolchain and the Google
+OR-Tools (CP-SAT) solver preinstalled, and builds for both amd64 and arm64
+(Apple Silicon). Nothing else to install.
+
 - Install [Docker](https://www.docker.com/)
-- Install [VSCode](https://code.visualstudio.com/)
+- Install [VSCode](https://code.visualstudio.com/) + the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
 - `git clone https://github.com/jmjrawlings/MiniZinc.Net.git`
 - `code MiniZinc.Net`
 - "Reopen in container" when prompted
 - `dotnet test` from within the container
+
+Or open the repository directly in [GitHub Codespaces](https://github.com/features/codespaces) for the same environment in the browser.
 
 
 ## Design
