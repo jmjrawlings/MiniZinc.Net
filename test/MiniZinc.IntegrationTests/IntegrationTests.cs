@@ -16,6 +16,37 @@ public abstract class IntegrationTests
     private static CancellationTokenSource _cts = new CancellationTokenSource();
     private static MiniZincClient _client = MiniZincClient.Autodetect();
 
+    /// <summary>
+    /// Wire up an extra data/model file for the test. MiniZinc-native, JSON-based
+    /// formats (.json data files and .mpc parameter-configuration files) are
+    /// passed to the solver as a separate file argument and returned here: the
+    /// parser only understands MiniZinc/DZN syntax, and JSON data coercion is
+    /// type-directed (the same JSON string can be an enum member or a string
+    /// depending on the declared type), so it must be done by minizinc itself.
+    /// Plain MiniZinc data (.dzn/.mzn) is valid syntax and is inlined into the
+    /// model via <see cref="MiniZincModel.AddFile(string)"/>.
+    /// </summary>
+    private static string? AddExtraFile(MiniZincModel model, string path, string? extraFile)
+    {
+        if (extraFile is null)
+            return null;
+
+        if (
+            extraFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+            || extraFile.EndsWith(".mpc", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            string? dir = Path.GetDirectoryName(path);
+            string dataPath = Path.GetFullPath(
+                dir is null ? extraFile : Path.Combine(dir, extraFile)
+            );
+            return $"\"{dataPath}\"";
+        }
+
+        model.AddFile(extraFile);
+        return null;
+    }
+
     public async Task RunSolveTest(
         string slug,
         string solver,
@@ -32,13 +63,12 @@ public abstract class IntegrationTests
         MiniZincModel model = MiniZincModel.FromFile(path);
         model.ClearOutput();
 
-        if (extraFile is not null)
-            model.AddFile(extraFile);
+        string? dataArg = AddExtraFile(model, path, extraFile);
 
         string mzn = model.Write();
         WriteLine(mzn);
         WriteLine("--------------------------------------");
-        var result = await _client.Solution(model, solver, _cts.Token, args);
+        var result = await _client.Solution(model, solver, _cts.Token, args, dataArg);
         result.IsSolution.ShouldBeTrue(result.Error);
 
         // Test case has no expected output
@@ -82,13 +112,12 @@ public abstract class IntegrationTests
         MiniZincModel model = MiniZincModel.FromFile(path);
         model.ClearOutput();
 
-        if (extraFile is not null)
-            model.AddFile(extraFile);
+        string? dataArg = AddExtraFile(model, path, extraFile);
 
         string mzn = model.Write();
         WriteLine(mzn);
         WriteLine("--------------------------------------");
-        var result = await _client.Solution(model, solver, _cts.Token, args);
+        var result = await _client.Solution(model, solver, _cts.Token, args, dataArg);
         result.IsSolution.ShouldBeTrue(result.Error);
         if (result.Data is not { } actualData)
             return;
@@ -130,13 +159,12 @@ public abstract class IntegrationTests
         MiniZincModel model = MiniZincModel.FromFile(path);
         model.ClearOutput();
 
-        if (extraFile is not null)
-            model.AddFile(extraFile);
+        string? dataArg = AddExtraFile(model, path, extraFile);
 
         string mzn = model.Write();
         WriteLine(mzn);
         WriteLine("--------------------------------------");
-        var result = await _client.Solution(model, solver, _cts.Token, args);
+        var result = await _client.Solution(model, solver, _cts.Token, args, dataArg);
         result.Status.ShouldBe(SolveStatus.Unsatisfiable, result.Error);
     }
 
@@ -255,15 +283,18 @@ public abstract class IntegrationTests
         return true;
     }
 
-    public static bool CheckSeq(IReadOnlyList<MiniZincExpr> a, IReadOnlyList<MiniZincExpr> b)
+    public static bool CheckSeq(IReadOnlyList<MiniZincExpr>? a, IReadOnlyList<MiniZincExpr>? b)
     {
-        if (a.Count != b.Count)
+        // Empty arrays/sets carry a null element list rather than an empty one.
+        int countA = a?.Count ?? 0;
+        int countB = b?.Count ?? 0;
+        if (countA != countB)
             return false;
 
-        for (int i = 0; i < a.Count; i++)
+        for (int i = 0; i < countA; i++)
         {
-            var ia = a[i];
-            var ib = b[i];
+            var ia = a![i];
+            var ib = b![i];
             if (!Check(ia, ib))
                 return false;
         }

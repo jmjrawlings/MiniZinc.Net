@@ -502,11 +502,12 @@ public sealed class Writer
                 WriteChar(DOT);
                 break;
 
-            // case IndexAndNode e:
-            //     WriteExpr(e.Index);
-            //     WriteChar(COLON);
-            //     WriteExpr(e.Value);
-            //     break;
+            case IndexedExpr e:
+                WriteExpr(e.Index);
+                WriteChar(COLON);
+                WriteExpr(e.Value);
+                WriteAnnotations(e);
+                break;
 
             default:
                 throw new Exception(expr.GetType().ToString());
