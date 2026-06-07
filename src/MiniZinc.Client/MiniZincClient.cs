@@ -3,10 +3,10 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using System.Threading.Channels;
 using Command;
 using Core;
 using Parser;
@@ -175,67 +175,40 @@ public sealed partial class MiniZincClient
         );
 
         await File.WriteAllTextAsync(modelFile, modelString, token);
-        Command command = Cmd();
-        foreach (string? arg in args)
-            if (arg is not null)
-                command = command.WithCommandLine(arg);
-
-        if (command.TryGetOption("--solver", out string? solverArg))
+        try
         {
-            if (solver is not null)
-                throw new ArgumentException(
-                    $"Solver was provided both as an argument and command line"
-                );
-            solver = solverArg;
-        }
-        command = command
-            .WithFlag("--json-stream")
-            .WithFlag("--output-objective")
-            .WithFlag("--statistics");
-        solver ??= MiniZincSolver.GECODE;
-        var solverInfo = GetSolver(solver);
-        command = command.WithValue(modelFile).WithOption("--solver", solverInfo.Id);
-        var commandString = command.ToString();
+            Command command = Cmd();
+            foreach (string? arg in args)
+                if (arg is not null)
+                    command = command.WithCommandLine(arg);
 
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = command.Exe,
-            Arguments = string.Join(" ", command.Tokens),
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardError = true,
-            RedirectStandardOutput = true
-        };
-
-        if (command.WorkingDirectory is { } path)
-            startInfo.WorkingDirectory = path;
-
-        Channel<MiniZincMessage> channel = Channel.CreateUnbounded<MiniZincMessage>(
-            new UnboundedChannelOptions
+            if (command.TryGetOption("--solver", out string? solverArg))
             {
-                SingleWriter = true,
-                SingleReader = true,
-                AllowSynchronousContinuations = true
+                if (solver is not null)
+                    throw new ArgumentException(
+                        $"Solver was provided both as an argument and command line"
+                    );
+                solver = solverArg;
             }
-        );
+            command = command
+                .WithFlag("--json-stream")
+                .WithFlag("--output-objective")
+                .WithFlag("--statistics");
+            solver ??= MiniZincSolver.GECODE;
+            var solverInfo = GetSolver(solver);
+            command = command.WithValue(modelFile).WithOption("--solver", solverInfo.Id);
+            var commandString = command.ToString();
 
-        Task processTask = Task.Run(async () =>
-        {
-            using Process process = new Process();
-            process.StartInfo = startInfo;
             Dictionary<string, JsonValue>? statistics = null;
             List<string>? warnings = null;
             int iteration = 0;
             DateTimeOffset startTime = DateTimeOffset.Now;
-            DateTimeOffset lastTime = DateTimeOffset.Now;
-            DateTimeOffset endTime = DateTimeOffset.Now;
+            DateTimeOffset lastTime = startTime;
+            DateTimeOffset endTime = startTime;
             TimeSpan iterTime = TimeSpan.Zero;
             TimeSpan totalTime = TimeSpan.Zero;
-            token.Register(() =>
-            {
-                if (!process.HasExited)
-                    process.Kill();
-            });
+            StringBuilder? stderr = null;
+
             MiniZincMessage msg = new MiniZincMessage
             {
                 Command = commandString,
@@ -244,197 +217,189 @@ public sealed partial class MiniZincClient
                 TimeStamp = startTime
             };
 
-            try
+            // The command runner owns the process, multiplexes stdout/stderr onto
+            // a single stream (no two-pipe deadlock), and kills the process on
+            // cancellation — surfacing the kill as a normal ProcessExited rather
+            // than an exception, so cancellation is detected via the token below.
+            await foreach (ProcessMessage message in command.WatchAsync(token))
             {
-                process.Start();
-
-                msg = msg with { ProcessId = process.Id };
-
-                while (await process.StandardOutput.ReadLineAsync(token) is { } line)
+                switch (message)
                 {
-                    endTime = DateTimeOffset.Now;
-                    iterTime = endTime - lastTime;
-                    totalTime = endTime - startTime;
-                    lastTime = endTime;
-                    JsonOutput output = JsonOutput.Deserialize(line);
-                    switch (output)
-                    {
-                        case StatusOutput o:
-                            msg = msg with
-                            {
-                                TimeStamp = endTime,
-                                TotalTime = totalTime,
-                                Status = o.Status switch
+                    case ProcessStarted started:
+                        msg = msg with { ProcessId = started.ProcessId };
+                        break;
+
+                    case ProcessStdOut stdout:
+                        endTime = DateTimeOffset.Now;
+                        iterTime = endTime - lastTime;
+                        totalTime = endTime - startTime;
+                        lastTime = endTime;
+                        bool emit = false;
+                        JsonOutput output = JsonOutput.Deserialize(stdout.Text);
+                        switch (output)
+                        {
+                            case StatusOutput o:
+                                msg = msg with
                                 {
-                                    "ALL_SOLUTIONS" => SolveStatus.AllSolutions,
-                                    "OPTIMAL_SOLUTION" => SolveStatus.Optimal,
-                                    "UNSATISFIABLE" => SolveStatus.Unsatisfiable,
-                                    "UNBOUNDED" => SolveStatus.Unbounded,
-                                    "UNSAT_OR_UNBOUNDED" => SolveStatus.UnsatOrUnbounded,
-                                    "ERROR" => SolveStatus.Error,
-                                    _ => SolveStatus.Timeout
-                                },
-                                IterationTime = iterTime,
-                                Iteration = iteration
-                            };
-                            channel.Writer.TryWrite(msg);
-                            break;
-
-                        case WarningOutput o:
-                            warnings ??= [];
-                            warnings.Add(o.Message);
-                            break;
-
-                        case ErrorOutput o:
-                            msg = msg with
-                            {
-                                TimeStamp = endTime,
-                                TotalTime = totalTime,
-                                Status = o.Kind switch
-                                {
-                                    "SyntaxError" => SolveStatus.SyntaxError,
-                                    "TypeError" => SolveStatus.TypeError,
-                                    "AssertionError" => SolveStatus.AssertionError,
-                                    "EvaluationError" => SolveStatus.EvaluationError,
-                                    _ => SolveStatus.Error
-                                },
-                                IterationTime = iterTime,
-                                Iteration = iteration,
-                                Error = o.Message
-                            };
-                            channel.Writer.TryWrite(msg);
-                            break;
-
-                        case SolutionOutput o:
-
-                            string? dzn = null;
-                            string? raw = null;
-                            if (o.Sections is { } sections)
-                            {
-                                foreach (var section in sections)
-                                {
-                                    switch (section)
+                                    TimeStamp = endTime,
+                                    TotalTime = totalTime,
+                                    Status = o.Status switch
                                     {
-                                        case "dzn":
-                                            dzn = o.Output[section].ToString();
-                                            break;
-                                        case "raw":
-                                            raw = o.Output[section].ToString();
-                                            break;
+                                        "ALL_SOLUTIONS" => SolveStatus.AllSolutions,
+                                        "OPTIMAL_SOLUTION" => SolveStatus.Optimal,
+                                        "UNSATISFIABLE" => SolveStatus.Unsatisfiable,
+                                        "UNBOUNDED" => SolveStatus.Unbounded,
+                                        "UNSAT_OR_UNBOUNDED" => SolveStatus.UnsatOrUnbounded,
+                                        "ERROR" => SolveStatus.Error,
+                                        _ => SolveStatus.Timeout
+                                    },
+                                    IterationTime = iterTime,
+                                    Iteration = iteration
+                                };
+                                emit = true;
+                                break;
+
+                            case WarningOutput o:
+                                warnings ??= [];
+                                warnings.Add(o.Message);
+                                break;
+
+                            case ErrorOutput o:
+                                msg = msg with
+                                {
+                                    TimeStamp = endTime,
+                                    TotalTime = totalTime,
+                                    Status = o.Kind switch
+                                    {
+                                        "SyntaxError" => SolveStatus.SyntaxError,
+                                        "TypeError" => SolveStatus.TypeError,
+                                        "AssertionError" => SolveStatus.AssertionError,
+                                        "EvaluationError" => SolveStatus.EvaluationError,
+                                        _ => SolveStatus.Error
+                                    },
+                                    IterationTime = iterTime,
+                                    Iteration = iteration,
+                                    Error = o.Message
+                                };
+                                emit = true;
+                                break;
+
+                            case SolutionOutput o:
+
+                                string? dzn = null;
+                                string? raw = null;
+                                if (o.Sections is { } sections)
+                                {
+                                    foreach (var section in sections)
+                                    {
+                                        switch (section)
+                                        {
+                                            case "dzn":
+                                                dzn = o.Output[section].ToString();
+                                                break;
+                                            case "raw":
+                                                raw = o.Output[section].ToString();
+                                                break;
+                                        }
                                     }
                                 }
-                            }
 
-                            iteration++;
-                            if (string.IsNullOrWhiteSpace(dzn))
-                            {
-                                msg = msg with
+                                iteration++;
+                                if (string.IsNullOrWhiteSpace(dzn))
                                 {
-                                    TimeStamp = endTime,
-                                    TotalTime = totalTime,
-                                    Status = SolveStatus.Satisfied,
-                                    IterationTime = iterTime,
-                                    Iteration = iteration,
-                                    Output = raw
-                                };
-                            }
-                            else if (
-                                !Parser.TryParseDataString(
-                                    dzn,
-                                    out var data,
-                                    out var err,
-                                    out var trace,
-                                    out var token
+                                    msg = msg with
+                                    {
+                                        TimeStamp = endTime,
+                                        TotalTime = totalTime,
+                                        Status = SolveStatus.Satisfied,
+                                        IterationTime = iterTime,
+                                        Iteration = iteration,
+                                        Output = raw
+                                    };
+                                }
+                                else if (
+                                    !Parser.TryParseDataString(
+                                        dzn,
+                                        out var data,
+                                        out var err,
+                                        out var trace,
+                                        out _
+                                    )
                                 )
-                            )
-                            {
-                                msg = msg with
                                 {
-                                    TimeStamp = endTime,
-                                    TotalTime = totalTime,
-                                    Status = SolveStatus.Error,
-                                    IterationTime = iterTime,
-                                    Iteration = iteration,
-                                    Error = trace,
-                                    Output = raw
-                                };
-                            }
-                            else
-                            {
-                                data.Remove("_objective", out var objective);
-                                msg = msg with
+                                    msg = msg with
+                                    {
+                                        TimeStamp = endTime,
+                                        TotalTime = totalTime,
+                                        Status = SolveStatus.Error,
+                                        IterationTime = iterTime,
+                                        Iteration = iteration,
+                                        Error = trace,
+                                        Output = raw
+                                    };
+                                }
+                                else
                                 {
-                                    TimeStamp = endTime,
-                                    TotalTime = totalTime,
-                                    Status = SolveStatus.Satisfied,
-                                    IterationTime = iterTime,
-                                    Iteration = iteration,
-                                    Objective = objective,
-                                    Data = data,
-                                    Output = raw
-                                };
-                            }
-                            channel.Writer.TryWrite(msg);
-                            break;
+                                    data.Remove("_objective", out var objective);
+                                    msg = msg with
+                                    {
+                                        TimeStamp = endTime,
+                                        TotalTime = totalTime,
+                                        Status = SolveStatus.Satisfied,
+                                        IterationTime = iterTime,
+                                        Iteration = iteration,
+                                        Objective = objective,
+                                        Data = data,
+                                        Output = raw
+                                    };
+                                }
+                                emit = true;
+                                break;
 
-                        case StatisticsOutput o:
-                            statistics ??= new Dictionary<string, JsonValue>();
-                            foreach (KeyValuePair<string, JsonNode?> kv in o.Statistics)
+                            case StatisticsOutput o:
+                                statistics ??= new Dictionary<string, JsonValue>();
+                                foreach (KeyValuePair<string, JsonNode?> kv in o.Statistics)
+                                {
+                                    var name = kv.Key;
+                                    var value = kv.Value!.AsValue();
+                                    statistics[name] = value;
+                                    msg = msg with { Statistics = statistics };
+                                }
+
+                                break;
+
+                            case CommentOutput _:
+                                break;
+                        }
+
+                        if (emit)
+                            yield return msg;
+                        break;
+
+                    case ProcessStdErr e:
+                        (stderr ??= new StringBuilder()).AppendLine(e.Text);
+                        break;
+
+                    case ProcessExited exited:
+                        if (token.IsCancellationRequested)
+                        {
+                            msg = msg with { Status = SolveStatus.Cancelled };
+                            yield return msg;
+                        }
+                        else if (
+                            (stderr is { Length: > 0 } || exited.ExitCode > 0) && !msg.IsError
+                        )
+                        {
+                            msg = msg with
                             {
-                                var name = kv.Key;
-                                var value = kv.Value!.AsValue();
-                                statistics[name] = value;
-                                msg = msg with { Statistics = statistics };
-                            }
-
-                            break;
-
-                        case CommentOutput _:
-                            break;
-                    }
-                }
-
-                string stderr = await process.StandardError.ReadToEndAsync();
-                await process.WaitForExitAsync();
-                int exitCode = process.ExitCode;
-
-                if (!string.IsNullOrEmpty(stderr) || exitCode > 0)
-                {
-                    if (!msg.IsError)
-                    {
-                        msg = msg with { Error = stderr, Status = SolveStatus.Error };
-                        channel.Writer.TryWrite(msg);
-                    }
+                                Error = stderr?.ToString(),
+                                Status = SolveStatus.Error
+                            };
+                            yield return msg;
+                        }
+                        break;
                 }
             }
-            catch (OperationCanceledException exn)
-            {
-                if (!process.HasExited)
-                    process.Kill();
-                msg = msg with { Status = SolveStatus.Cancelled };
-                channel.Writer.TryWrite(msg);
-            }
-            catch (Exception exn)
-            {
-                if (!process.HasExited)
-                    process.Kill();
-                msg = msg with { Status = SolveStatus.Error, Error = exn.Message };
-                channel.Writer.TryWrite(msg);
-            }
-            finally
-            {
-                channel.Writer.Complete();
-            }
-        });
-
-        await foreach (var message in channel.Reader.ReadAllAsync())
-        {
-            yield return message;
-        }
-
-        try
-        {
-            await processTask;
         }
         finally
         {
