@@ -78,7 +78,8 @@ public static class ClientTestsBuilder
         var quotedArgs = Quote(OptionRenderer.Render(testCase.Options));
 
         var solvers = testCase.Solvers is { Count: > 0 } sv ? sv : new[] { "gecode" };
-        var extraFiles = testCase.ExtraFiles is { Count: > 0 } e ? e : new string?[] { null };
+        IReadOnlyList<string?> extraFiles =
+            testCase.ExtraFiles is { Count: > 0 } e ? (IReadOnlyList<string?>)e : new string?[] { null };
 
         foreach (string testSolver in solvers)
         {

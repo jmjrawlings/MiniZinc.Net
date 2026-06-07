@@ -172,7 +172,7 @@ public sealed class Writer
             case IncludeItem e:
                 WriteKeyword(INCLUDE);
                 WriteChar(DOUBLE_QUOTE);
-                WriteString(e.Path.StringValue);
+                WriteString(e.Path.StringValue!);
                 WriteChar(DOUBLE_QUOTE);
                 break;
 
@@ -441,7 +441,7 @@ public sealed class Writer
             case RecordAccessExpr e:
                 WriteExpr(e.Expr);
                 WriteChar(DOT);
-                WriteString(e.Field.StringValue);
+                WriteString(e.Field.StringValue!);
                 WriteAnnotations(e);
                 break;
 
@@ -658,7 +658,7 @@ public sealed class Writer
     private void WriteArray3d(Array3dExpr arr)
     {
         WriteString("[|");
-        var array = arr.Elements;
+        var array = arr.Elements!;
         var index = -1;
         for (int i = 0; i < arr.I; i++)
         {
@@ -895,7 +895,7 @@ public sealed class Writer
                 {
                     for (int j = 0; j < arr.J; j++)
                     {
-                        var v = arr.Elements[x++];
+                        var v = arr.Elements![x++];
                         WriteExpr(v);
                         if (j < arr.J - 1)
                             WriteChar(COMMA);

@@ -12,7 +12,7 @@ public sealed class MiniZincParseException : Exception
     /// </summary>
     public readonly Token Location;
 
-    public MiniZincParseException(string message, Token location, string? trace = null)
+    public MiniZincParseException(string? message, Token location, string? trace = null)
         : base(message)
     {
         Trace = trace;
