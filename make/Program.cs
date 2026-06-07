@@ -12,39 +12,6 @@ using Command = System.CommandLine.Command;
 
 var root = new RootCommand("MiniZinc.NET build options");
 
-Add(
-    "--clone-libminizinc-tests",
-    "Clone the test suite from libminizinc",
-    async () =>
-    {
-        Console.WriteLine("Cloning libminiznc tests");
-        var url = $"https://github.com/MiniZinc/libminizinc.git";
-        var cloneDir = Environment
-            .CurrentDirectory.ToDirectory()
-            .JoinDir("libminiznc")
-            .CreateOrClear();
-
-        async Task Git(params string[] args)
-        {
-            var cmd = Cmd.From("git").With(args).WithWorkingDirectory(cloneDir.FullName);
-            Console.WriteLine(cmd);
-            var result = await cmd.RunAsync();
-            Guard.IsEqualTo((int)result.Status, (int)ProcessStatus.Ok);
-        }
-
-        await Git("init");
-        await Git("remote", "add", "origin", url);
-        await Git("sparse-checkout", "set", "tests/spec");
-        await Git("fetch", "origin", "master");
-        await Git("checkout", "master");
-
-        var sourceDir = cloneDir.JoinDir("tests", "spec").EnsureExists();
-        var targetDir = Directory.CreateTempSubdirectory();
-        Console.WriteLine($"Copying tests to {targetDir}");
-        sourceDir.CopyContentsTo(targetDir);
-    }
-);
-
 // Add(
 //     "--make-parser-tests",
 //     "Generate parser tests",
