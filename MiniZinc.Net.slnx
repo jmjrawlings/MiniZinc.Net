@@ -1,0 +1,24 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/make/">
+    <Project Path="make/Make.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <Project Path="src/MiniZinc.Client/MiniZinc.Client.csproj" />
+    <Project Path="src/MiniZinc.Command/MiniZinc.Command.csproj" />
+    <Project Path="src/MiniZinc.Core/MiniZinc.Core.csproj" />
+    <Project Path="src/MiniZinc.Parser/MiniZinc.Parser.csproj" />
+    <Project Path="src/MiniZinc.TestSpec/MiniZinc.TestSpec.csproj" />
+    <Project Path="src/MiniZinc.Toolkit/MiniZinc.Toolkit.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/MiniZinc.IntegrationTests/MiniZinc.IntegrationTests.csproj" />
+    <Project Path="test/MiniZinc.TestSpec.Tests/MiniZinc.TestSpec.Tests.csproj" />
+    <Project Path="test/MiniZinc.UnitTests/MiniZinc.UnitTests.csproj" />
+  </Folder>
+</Solution>
