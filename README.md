@@ -62,7 +62,6 @@ To develop and test the codebase you need will need to have access to an environ
 - Install [MiniZinc](https://www.minizinc.org/downloads/) toolchain
 - `git clone https://github.com/jmjrawlings/MiniZinc.Net.git`
 - `cd MiniZinc.Net`
-- `dotnet tool restore`
 - `dotnet test`
  
 
