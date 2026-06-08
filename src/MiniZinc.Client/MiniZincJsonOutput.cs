@@ -16,6 +16,7 @@ using System.Text.Json.Serialization;
 [JsonDerivedType(typeof(ErrorOutput), typeDiscriminator: "error")]
 [JsonDerivedType(typeof(WarningOutput), typeDiscriminator: "warning")]
 [JsonDerivedType(typeof(StatusOutput), typeDiscriminator: "status")]
+[JsonDerivedType(typeof(CheckerOutput), typeDiscriminator: "checker")]
 internal class JsonOutput
 {
     public static readonly JsonSerializerOptions JsonSerializerOptions;
@@ -104,4 +105,17 @@ internal sealed class StatusOutput : JsonOutput
     public required string Status { get; init; }
 
     public int? Time { get; init; }
+}
+
+/// <summary>
+/// Output produced by a solution checker. Mirrors <see cref="SolutionOutput"/>'s
+/// shape (an <c>output</c> map keyed by section name). Without this derived type
+/// STJ throws on the <c>"checker"</c> discriminator (eg the
+/// <c>param_file_resolution</c> case and any <c>--check-against</c> run).
+/// </summary>
+internal sealed class CheckerOutput : JsonOutput
+{
+    public Dictionary<string, object>? Output { get; init; }
+
+    public List<string>? Sections { get; init; }
 }

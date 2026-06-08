@@ -67,6 +67,12 @@ public sealed record MiniZincMessage
     /// </summary>
     public string? Output { get; init; }
 
+    /// <summary>
+    /// Output produced by a solution checker (the <c>checker</c> json-stream
+    /// message), when one is run via <c>--check-against</c> or a checker model.
+    /// </summary>
+    public string? Checker { get; init; }
+
     // /// <summary>
     // /// Items from the output section
     // /// </summary>

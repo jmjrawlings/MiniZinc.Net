@@ -164,7 +164,10 @@ public sealed class ManualClientTests
             """
         );
         var cnc = new CancellationToken(true);
-        var msg = await Client.Solution(model, null, cnc);
+        // Cast disambiguates between the legacy (string? solver) overload and the
+        // new Solution(model, SolveOptions, token) overload — bare null binds to
+        // neither preferentially.
+        var msg = await Client.Solution(model, (string?)null, cnc);
         msg.Status.ShouldBe(SolveStatus.Cancelled);
     }
 

@@ -128,15 +128,28 @@ public sealed partial class MiniZincClient
         return string.IsNullOrWhiteSpace(path) ? null : path;
     }
 
-    public async Task<MiniZincMessage> Solution(
+    /// <summary>
+    /// Legacy overload: solve with an optional solver and raw command-line args.
+    /// Delegates to the <see cref="SolveOptions"/> core.
+    /// </summary>
+    public Task<MiniZincMessage> Solution(
         MiniZincModel model,
         string? solver = null,
         CancellationToken token = default,
         params string?[] args
+    ) => Solution(model, new SolveOptions { Solver = solver, ExtraArgs = ToExtraArgs(args) }, token);
+
+    /// <summary>
+    /// Run the model to completion and return the final <see cref="MiniZincMessage"/>.
+    /// </summary>
+    public async Task<MiniZincMessage> Solution(
+        MiniZincModel model,
+        SolveOptions options,
+        CancellationToken token = default
     )
     {
         MiniZincMessage? msg = null;
-        await foreach (var message in Solve(model, solver, token, args))
+        await foreach (var message in Solve(model, options, token))
         {
             msg = message;
         }
@@ -147,13 +160,38 @@ public sealed partial class MiniZincClient
         return msg;
     }
 
-    public async IAsyncEnumerable<MiniZincMessage> Solve(
+    /// <summary>
+    /// Legacy overload: solve with an optional solver and raw command-line args.
+    /// Delegates to the <see cref="SolveOptions"/> core.
+    /// </summary>
+    public IAsyncEnumerable<MiniZincMessage> Solve(
         MiniZincModel model,
         string? solver = null,
-        [EnumeratorCancellation] CancellationToken token = default,
+        CancellationToken token = default,
         params string?[] args
+    ) => Solve(model, new SolveOptions { Solver = solver, ExtraArgs = ToExtraArgs(args) }, token);
+
+    private static IReadOnlyList<string>? ToExtraArgs(string?[] args)
+    {
+        if (args.Length == 0)
+            return null;
+        List<string>? list = null;
+        foreach (string? arg in args)
+            if (arg is not null)
+                (list ??= new List<string>()).Add(arg);
+        return list;
+    }
+
+    public async IAsyncEnumerable<MiniZincMessage> Solve(
+        MiniZincModel model,
+        SolveOptions options,
+        [EnumeratorCancellation] CancellationToken token = default
     )
     {
+        // `(model, null, token)` resolves here (the params-less overload wins over
+        // the legacy params overload); tolerate it by falling back to defaults.
+        options ??= new SolveOptions();
+
         if (token.IsCancellationRequested)
         {
             yield return new MiniZincMessage
@@ -167,6 +205,17 @@ public sealed partial class MiniZincClient
             yield break;
         }
 
+        // A timeout becomes a token cancellation linked to the caller's token, so
+        // the existing tree-kill on cancel tears down the whole solver process
+        // group rather than orphaning it.
+        CancellationTokenSource? timeoutCts = null;
+        if (options.Timeout is { } timeout)
+        {
+            timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            timeoutCts.CancelAfter(timeout);
+        }
+        CancellationToken cancellation = timeoutCts?.Token ?? token;
+
         var directory = Path.GetTempPath();
         string modelString = model.Write();
         string modelFile = Path.Join(
@@ -174,14 +223,15 @@ public sealed partial class MiniZincClient
             $"{Path.GetFileNameWithoutExtension(Path.GetTempFileName())}.mzn"
         );
 
-        await File.WriteAllTextAsync(modelFile, modelString, token);
+        await File.WriteAllTextAsync(modelFile, modelString, cancellation);
         try
         {
             Command command = Cmd();
-            foreach (string? arg in args)
-                if (arg is not null)
+            if (options.ExtraArgs is { } extraArgs)
+                foreach (string arg in extraArgs)
                     command = command.WithCommandLine(arg);
 
+            string? solver = options.Solver;
             if (command.TryGetOption("--solver", out string? solverArg))
             {
                 if (solver is not null)
@@ -190,13 +240,38 @@ public sealed partial class MiniZincClient
                     );
                 solver = solverArg;
             }
-            command = command
-                .WithFlag("--json-stream")
-                .WithFlag("--output-objective")
-                .WithFlag("--statistics");
+
+            if (options.CompileOnly)
+            {
+                command = command.WithFlag("--compile");
+                if (options.OutputFile is { } outputFile)
+                    command = command.WithOption("--output-to-file", outputFile);
+            }
+            else
+            {
+                command = command
+                    .WithFlag("--json-stream")
+                    .WithFlag("--output-objective")
+                    .WithFlag("--statistics");
+            }
+
             solver ??= MiniZincSolver.GECODE;
             var solverInfo = GetSolver(solver);
-            command = command.WithValue(modelFile).WithOption("--solver", solverInfo.Id);
+            command = command.WithOption("--solver", solverInfo.Id);
+
+            if (options.SearchPaths is { } searchPaths)
+                foreach (string searchPath in searchPaths)
+                    command = command.WithOption("-I", searchPath);
+
+            if (options.ExtraModelFiles is { } extraModelFiles)
+                foreach (string file in extraModelFiles)
+                    command = command.WithValue(file);
+
+            if (options.DataFiles is { } dataFiles)
+                foreach (string file in dataFiles)
+                    command = command.WithValue(file);
+
+            command = command.WithValue(modelFile);
             var commandString = command.ToString();
 
             Dictionary<string, JsonValue>? statistics = null;
@@ -221,7 +296,7 @@ public sealed partial class MiniZincClient
             // a single stream (no two-pipe deadlock), and kills the process on
             // cancellation — surfacing the kill as a normal ProcessExited rather
             // than an exception, so cancellation is detected via the token below.
-            await foreach (ProcessMessage message in command.WatchAsync(token))
+            await foreach (ProcessMessage message in command.WatchAsync(cancellation))
             {
                 switch (message)
                 {
@@ -235,6 +310,10 @@ public sealed partial class MiniZincClient
                         totalTime = endTime - startTime;
                         lastTime = endTime;
                         bool emit = false;
+                        // Compile-only output is FlatZinc text, not a json-stream;
+                        // full capture/compare lands in a later phase.
+                        if (options.CompileOnly)
+                            break;
                         JsonOutput output = JsonOutput.Deserialize(stdout.Text);
                         switch (output)
                         {
@@ -368,6 +447,18 @@ public sealed partial class MiniZincClient
 
                                 break;
 
+                            case CheckerOutput o:
+                                if (o.Output is { } checkerOutput && o.Sections is { } checkerSections)
+                                {
+                                    StringBuilder? sb = null;
+                                    foreach (var section in checkerSections)
+                                        if (checkerOutput.TryGetValue(section, out var val))
+                                            (sb ??= new StringBuilder()).Append(val);
+                                    if (sb is not null)
+                                        msg = msg with { Checker = sb.ToString() };
+                                }
+                                break;
+
                             case CommentOutput _:
                                 break;
                         }
@@ -381,7 +472,7 @@ public sealed partial class MiniZincClient
                         break;
 
                     case ProcessExited exited:
-                        if (token.IsCancellationRequested)
+                        if (cancellation.IsCancellationRequested)
                         {
                             msg = msg with { Status = SolveStatus.Cancelled };
                             yield return msg;
@@ -414,6 +505,7 @@ public sealed partial class MiniZincClient
                     Debug.WriteLine($"Error deleting temporary model file: {ex}");
                 }
             }
+            timeoutCts?.Dispose();
         }
     }
 
