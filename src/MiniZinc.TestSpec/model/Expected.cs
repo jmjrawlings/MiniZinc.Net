@@ -2,11 +2,11 @@ namespace MiniZinc.TestSpec.Model;
 
 public abstract record Expected;
 
-public sealed record ExpectedSolution(Solution Solution) : Expected;
+public sealed record ExpectedSolution(TestCaseSolution TestCaseSolution) : Expected;
 
-public sealed record ExpectedSolutionSet(IReadOnlyList<Solution> Solutions) : Expected;
+public sealed record ExpectedSolutionSet(IReadOnlyList<TestCaseSolution> Solutions) : Expected;
 
-public sealed record ExpectedAllSolutions(IReadOnlyList<Solution> Solutions) : Expected;
+public sealed record ExpectedAllSolutions(IReadOnlyList<TestCaseSolution> Solutions) : Expected;
 
 public sealed record ExpectedUnsatisfiable : Expected;
 

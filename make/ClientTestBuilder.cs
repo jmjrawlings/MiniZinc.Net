@@ -73,7 +73,7 @@ public static class ClientTestsBuilder
                     unsatisfiable = true;
                     break;
                 case ExpectedSolution s:
-                    AddSolution(solutions, s.Solution);
+                    AddSolution(solutions, s.TestCaseSolution);
                     break;
                 case ExpectedSolutionSet set:
                     foreach (var sol in set.Solutions)
@@ -154,9 +154,9 @@ public static class ClientTestsBuilder
         }
     }
 
-    private static void AddSolution(List<string> solutions, Solution solution)
+    private static void AddSolution(List<string> solutions, TestCaseSolution solution)
     {
-        var dzn = SolutionDzn.Render(solution);
+        var dzn = TestCaseSolutionDzn.Render(solution);
         if (dzn is not null)
             solutions.Add(dzn);
     }

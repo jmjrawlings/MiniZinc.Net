@@ -209,13 +209,13 @@ public static class YamlSpecParser
         if (options is not null && options.TryGetValue("all_solutions", out var allSol)
             && string.Equals(allSol, "true", StringComparison.OrdinalIgnoreCase))
         {
-            var sols = new List<Solution>();
+            var sols = new List<TestCaseSolution>();
             bool promote = false;
             foreach (var e in expected)
             {
                 switch (e)
                 {
-                    case ExpectedSolution s: sols.Add(s.Solution); promote = true; break;
+                    case ExpectedSolution s: sols.Add(s.TestCaseSolution); promote = true; break;
                     case ExpectedSolutionSet ss: sols.AddRange(ss.Solutions); promote = true; break;
                     case ExpectedAllSolutions all: sols.AddRange(all.Solutions); promote = true; break;
                     default: promote = false; break;
@@ -280,14 +280,14 @@ public static class YamlSpecParser
                     InterpretResult(rmap, output, ref kind);
                 else if (node is YamlSequence rseq)
                 {
-                    var sols = new List<Solution>();
+                    var sols = new List<TestCaseSolution>();
                     foreach (var item in rseq.Items)
                         if (item is YamlMapping sm)
                             sols.Add(InterpretSolution(sm));
                     output.Add(new ExpectedSolutionSet(sols));
                 }
                 else
-                    output.Add(new ExpectedSolution(new Solution(new Dictionary<string, SolutionValue>())));
+                    output.Add(new ExpectedSolution(new TestCaseSolution(new Dictionary<string, TestCaseSolutionValue>())));
                 return;
             case "!Error":
                 if (node is YamlMapping emap)
@@ -336,13 +336,13 @@ public static class YamlSpecParser
         if (solutionNode is null)
         {
             // Could be just `status: SATISFIED` with no body — emit an empty solution
-            output.Add(new ExpectedSolution(new Solution(new Dictionary<string, SolutionValue>())));
+            output.Add(new ExpectedSolution(new TestCaseSolution(new Dictionary<string, TestCaseSolutionValue>())));
             return;
         }
 
         if (solutionNode is YamlSequence sset && solutionNode.Tag == "!SolutionSet")
         {
-            var sols = new List<Solution>();
+            var sols = new List<TestCaseSolution>();
             foreach (var s in sset.Items)
                 if (s is YamlMapping sm)
                     sols.Add(InterpretSolution(sm));
@@ -360,15 +360,15 @@ public static class YamlSpecParser
         }
 
         // Empty solution placeholder, e.g. `solution: !SolutionSet` with no value.
-        output.Add(new ExpectedSolution(new Solution(new Dictionary<string, SolutionValue>())));
+        output.Add(new ExpectedSolution(new TestCaseSolution(new Dictionary<string, TestCaseSolutionValue>())));
     }
 
-    private static Solution InterpretSolution(YamlMapping map)
+    private static TestCaseSolution InterpretSolution(YamlMapping map)
     {
-        var vars = new Dictionary<string, SolutionValue>(StringComparer.Ordinal);
+        var vars = new Dictionary<string, TestCaseSolutionValue>(StringComparer.Ordinal);
         foreach (var entry in map.Entries)
             vars[entry.Key.Value] = InterpretSolutionValue(entry.Value);
-        return new Solution(vars);
+        return new TestCaseSolution(vars);
     }
 
     private static ExpectedError InterpretError(YamlMapping map)
@@ -397,7 +397,7 @@ public static class YamlSpecParser
         return new ExpectedError(kind, message, regex);
     }
 
-    private static SolutionValue InterpretSolutionValue(YamlNode node)
+    private static TestCaseSolutionValue InterpretSolutionValue(YamlNode node)
     {
         // Handle tag-driven modifiers first.
         switch (node)
@@ -431,7 +431,7 @@ public static class YamlSpecParser
                 return SeqToArrayVal(seq);
             case YamlMapping m:
                 {
-                    var fields = new Dictionary<string, SolutionValue>(StringComparer.Ordinal);
+                    var fields = new Dictionary<string, TestCaseSolutionValue>(StringComparer.Ordinal);
                     foreach (var entry in m.Entries)
                         fields[entry.Key.Value] = InterpretSolutionValue(entry.Value);
                     return new RecordVal(fields);
@@ -440,7 +440,7 @@ public static class YamlSpecParser
         throw new YamlParseException("unsupported value shape", node.Line, node.Column);
     }
 
-    private static SolutionValue InterpretScalarValue(YamlScalar s)
+    private static TestCaseSolutionValue InterpretScalarValue(YamlScalar s)
     {
         if (s.Style is ScalarStyle.SingleQuoted or ScalarStyle.DoubleQuoted)
             return new StringVal(s.Value);
@@ -457,7 +457,7 @@ public static class YamlSpecParser
         return new StringVal(s.Value);
     }
 
-    private static SolutionValue ParseNumeric(string raw, int line, int column)
+    private static TestCaseSolutionValue ParseNumeric(string raw, int line, int column)
     {
         if (long.TryParse(raw, NumberStyles.Integer | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out long i))
             return new IntVal(i);
@@ -466,7 +466,7 @@ public static class YamlSpecParser
         throw new YamlParseException($"could not parse '{raw}' as a number", line, column);
     }
 
-    private static SolutionValue ParseRange(string raw, int line, int column)
+    private static TestCaseSolutionValue ParseRange(string raw, int line, int column)
     {
         // !Range a..b
         int dotdot = raw.IndexOf("..", StringComparison.Ordinal);
@@ -477,7 +477,7 @@ public static class YamlSpecParser
         return new RangeVal(ParseNumeric(lo, line, column), ParseNumeric(hi, line, column));
     }
 
-    private static SolutionValue SeqToArrayVal(YamlSequence seq)
+    private static TestCaseSolutionValue SeqToArrayVal(YamlSequence seq)
     {
         // Detect array of arrays for multi-dimensional inference.
         var items = seq.Items.Select(InterpretSolutionValue).ToList();
@@ -506,10 +506,10 @@ public static class YamlSpecParser
         return new ArrayVal(1, new[] { items.Count }, items);
     }
 
-    private static SolutionValue InterpretConstrEnum(YamlMapping map)
+    private static TestCaseSolutionValue InterpretConstrEnum(YamlMapping map)
     {
         string ctor = "";
-        SolutionValue? arg = null;
+        TestCaseSolutionValue? arg = null;
         foreach (var entry in map.Entries)
         {
             switch (entry.Key.Value)
@@ -521,10 +521,10 @@ public static class YamlSpecParser
         return new EnumVal(ctor, arg);
     }
 
-    private static SolutionValue InterpretAnonEnum(YamlMapping map)
+    private static TestCaseSolutionValue InterpretAnonEnum(YamlMapping map)
     {
         string ename = "";
-        SolutionValue idx = new IntVal(0);
+        TestCaseSolutionValue idx = new IntVal(0);
         foreach (var entry in map.Entries)
         {
             switch (entry.Key.Value)

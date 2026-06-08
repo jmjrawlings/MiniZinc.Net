@@ -1,7 +1,7 @@
 using MiniZinc.Parser;
 using MiniZinc.TestRunner;
 
-public sealed class SolutionComparerTests
+public sealed class MiniZincDataComparerTests
 {
     /// Parse a DZN data fragment into MiniZincData (the same path the client uses
     /// for actual solver output and the converter for expected output).
@@ -14,13 +14,13 @@ public sealed class SolutionComparerTests
 
     private static void ShouldMatch(string expected, string actual)
     {
-        CompareResult r = SolutionComparer.Compare(Data(expected), Data(actual));
+        CompareResult r = MiniZincDataComparer.Compare(Data(expected), Data(actual));
         r.IsMatch.ShouldBeTrue(r.Diff);
     }
 
     private static void ShouldMiss(string expected, string actual)
     {
-        CompareResult r = SolutionComparer.Compare(Data(expected), Data(actual));
+        CompareResult r = MiniZincDataComparer.Compare(Data(expected), Data(actual));
         r.IsMatch.ShouldBeFalse();
         r.Diff.ShouldNotBeNull();
     }
@@ -123,7 +123,7 @@ public sealed class SolutionComparerTests
         // <> ≡ <>
         ShouldMatch("x = <>;", "x = <>;");
         // expected <> with the key absent from actual is still a match
-        CompareResult r = SolutionComparer.Compare(Data("x = <>;"), Data("y = 1;"));
+        CompareResult r = MiniZincDataComparer.Compare(Data("x = <>;"), Data("y = 1;"));
         r.IsMatch.ShouldBeTrue(r.Diff);
     }
 
@@ -132,7 +132,7 @@ public sealed class SolutionComparerTests
     {
         MiniZincData actual = Data("x = 2;");
         List<MiniZincData> expected = [Data("x = 1;"), Data("x = 2;"), Data("x = 3;")];
-        SolutionComparer.CompareAny(expected, actual).IsMatch.ShouldBeTrue();
+        MiniZincDataComparer.CompareAny(expected, actual).IsMatch.ShouldBeTrue();
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public sealed class SolutionComparerTests
     {
         MiniZincData actual = Data("x = 9;");
         List<MiniZincData> expected = [Data("x = 1;"), Data("x = 2;")];
-        CompareResult r = SolutionComparer.CompareAny(expected, actual);
+        CompareResult r = MiniZincDataComparer.CompareAny(expected, actual);
         r.IsMatch.ShouldBeFalse();
         r.Diff.ShouldNotBeNull();
     }
@@ -148,6 +148,6 @@ public sealed class SolutionComparerTests
     [Fact]
     public void compare_any_empty_expected_fails()
     {
-        SolutionComparer.CompareAny([], Data("x = 1;")).IsMatch.ShouldBeFalse();
+        MiniZincDataComparer.CompareAny([], Data("x = 1;")).IsMatch.ShouldBeFalse();
     }
 }

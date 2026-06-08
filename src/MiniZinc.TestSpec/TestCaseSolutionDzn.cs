@@ -5,7 +5,7 @@ using System.Text;
 using MiniZinc.TestSpec.Model;
 
 /// <summary>
-/// Renders a parsed <see cref="Solution"/> back into a DZN fragment
+/// Renders a parsed <see cref="TestCaseSolution"/> back into a DZN fragment
 /// (<c>name=value;…</c>) so it can be round-tripped through the MiniZinc parser
 /// and compared against an actual solver result by the integration tests.
 ///
@@ -13,9 +13,9 @@ using MiniZinc.TestSpec.Model;
 /// an <c>_output_item</c>/<c>_checker</c> solution, which describes raw output
 /// text rather than variable bindings.
 /// </summary>
-public static class SolutionDzn
+public static class TestCaseSolutionDzn
 {
-    public static string? Render(Solution solution)
+    public static string? Render(TestCaseSolution solution)
     {
         if (solution.HasOutputItem || solution.HasChecker)
             return null;
@@ -34,7 +34,7 @@ public static class SolutionDzn
         return sb.ToString();
     }
 
-    private static void RenderValue(SolutionValue value, StringBuilder sb)
+    private static void RenderValue(TestCaseSolutionValue value, StringBuilder sb)
     {
         switch (value)
         {
@@ -65,7 +65,7 @@ public static class SolutionDzn
                 break;
             case ArrayVal a:
                 sb.Append('[');
-                var leaves = new List<SolutionValue>();
+                var leaves = new List<TestCaseSolutionValue>();
                 Flatten(a, leaves);
                 RenderList(leaves, sb);
                 sb.Append(']');
@@ -127,7 +127,7 @@ public static class SolutionDzn
 
     /// Flatten nested arrays into a single element list (the integration-test
     /// comparison flattens multi-dimensional arrays anyway).
-    private static void Flatten(ArrayVal array, List<SolutionValue> leaves)
+    private static void Flatten(ArrayVal array, List<TestCaseSolutionValue> leaves)
     {
         foreach (var element in array.Elements)
         {
@@ -138,7 +138,7 @@ public static class SolutionDzn
         }
     }
 
-    private static void RenderList(IReadOnlyList<SolutionValue> values, StringBuilder sb)
+    private static void RenderList(IReadOnlyList<TestCaseSolutionValue> values, StringBuilder sb)
     {
         for (int i = 0; i < values.Count; i++)
         {

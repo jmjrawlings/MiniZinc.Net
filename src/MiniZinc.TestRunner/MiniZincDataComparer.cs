@@ -26,17 +26,17 @@ public sealed record CompareOptions
 
 /// <summary>
 /// Compares an expected solution against an actual one, both as
-/// <see cref="MiniZincData"/> (see <see cref="SolutionConverter"/>). This replaces
+/// <see cref="MiniZincData"/> (see <see cref="TestCaseSolutionConverter"/>). This replaces
 /// the hand-rolled <c>Check</c> family in the old integration harness; each rule
 /// below fixes a defect that one had (float <c>==</c>, silently-skipped missing
 /// keys, no unordered sets, no enum equivalence).
 ///
-/// Because the expected side comes through <see cref="SolutionConverter"/> (which
+/// Because the expected side comes through <see cref="TestCaseSolutionConverter"/> (which
 /// flattens <c>!Approx</c>/<c>!Unordered</c> annotations and array shape), float
 /// tolerance and unordered-set semantics are applied <em>universally</em>, and
 /// arrays are compared by row-major element list rather than declared shape.
 /// </summary>
-public static class SolutionComparer
+public static class MiniZincDataComparer
 {
     /// <summary>Actual matches expected. Expected keys must all be present (missing = FAIL,
     /// except an expected <c>&lt;&gt;</c>/absent); surplus actual keys are ignored.</summary>

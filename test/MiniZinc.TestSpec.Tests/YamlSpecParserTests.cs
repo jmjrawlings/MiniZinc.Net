@@ -129,11 +129,11 @@ public class YamlSpecParserTests
             !Test
             solvers: [gecode]
             expected: !Result
-              solution: !Solution
+              solution: !TestCaseSolution
                 dset: !!set {Fri, Sat, Sun}
             """);
 
-        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().Solution;
+        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().TestCaseSolution;
         sol.Variables.ContainsKey("dset").ShouldBeTrue();
         var set = sol.Variables["dset"].ShouldBeOfType<SetVal>();
         set.Elements.Count.ShouldBe(3);
@@ -149,11 +149,11 @@ public class YamlSpecParserTests
             !Test
             solvers: [gecode]
             expected: !Result
-              solution: !Solution
+              solution: !TestCaseSolution
                 P: !Approx 373.0277986476333
             """);
 
-        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().Solution;
+        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().TestCaseSolution;
         var approx = sol.Variables["P"].ShouldBeOfType<ApproxVal>();
         approx.Inner.ShouldBeOfType<FloatVal>().Value.ShouldBe(373.0277986476333m);
     }
@@ -168,14 +168,14 @@ public class YamlSpecParserTests
             !Test
             expected:
             - !Result
-              solution: !Solution
+              solution: !TestCaseSolution
                 _output_item: !Trim |
                   sz[1][1] = 1
                   sz[1][2] = 0
                 obj: 62
             """);
 
-        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().Solution;
+        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().TestCaseSolution;
         sol.HasOutputItem.ShouldBeTrue();
         var trim = sol.Variables["_output_item"].ShouldBeOfType<TrimmedString>();
         trim.Value.ShouldContain("sz[1][1] = 1");
@@ -196,10 +196,10 @@ public class YamlSpecParserTests
             solvers: [gecode]
             expected: !Result
               solution: !SolutionSet
-              - !Solution
+              - !TestCaseSolution
                 b: true
                 bs: [1, 2]
-              - !Solution
+              - !TestCaseSolution
                 b: false
                 bs: [3, 4]
             """);
@@ -247,7 +247,7 @@ public class YamlSpecParserTests
             !Test
             solvers: [gecode]
             expected: !Result
-              solution: !Solution
+              solution: !TestCaseSolution
                 as:
                 - !!python/object:minizinc.types.ConstrEnum
                   argument: z2
@@ -257,7 +257,7 @@ public class YamlSpecParserTests
                   constructor: x
             """);
 
-        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().Solution;
+        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().TestCaseSolution;
         var arr = sol.Variables["as"].ShouldBeOfType<ArrayVal>();
         arr.Elements.Count.ShouldBe(2);
         var first = arr.Elements[0].ShouldBeOfType<EnumVal>();
@@ -278,13 +278,13 @@ public class YamlSpecParserTests
             !Test
             solvers: [gecode]
             expected: !Result
-              solution: !Solution
+              solution: !TestCaseSolution
                 grid:
                 - [1, 2, 3]
                 - [4, 5, 6]
             """);
 
-        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().Solution;
+        var sol = tc.Expected[0].ShouldBeOfType<ExpectedSolution>().TestCaseSolution;
         var arr = sol.Variables["grid"].ShouldBeOfType<ArrayVal>();
         arr.Dimensionality.ShouldBe(2);
         arr.Shape.ShouldBe(new[] { 2, 3 });
