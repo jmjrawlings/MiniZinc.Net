@@ -10,6 +10,8 @@
     <ProjectReference Include="..\..\src\MiniZinc.Command\MiniZinc.Command.csproj" />
     <ProjectReference Include="..\..\src\MiniZinc.Core\MiniZinc.Core.csproj" />
     <ProjectReference Include="..\..\src\MiniZinc.Parser\MiniZinc.Parser.csproj" />
+    <ProjectReference Include="..\..\src\MiniZinc.TestSpec\MiniZinc.TestSpec.csproj" />
+    <ProjectReference Include="..\..\src\MiniZinc.TestRunner\MiniZinc.TestRunner.csproj" />
   </ItemGroup>
   
   <ItemGroup>

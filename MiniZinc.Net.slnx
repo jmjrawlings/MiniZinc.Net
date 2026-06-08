@@ -13,6 +13,7 @@
     <Project Path="src/MiniZinc.Command/MiniZinc.Command.csproj" />
     <Project Path="src/MiniZinc.Core/MiniZinc.Core.csproj" />
     <Project Path="src/MiniZinc.Parser/MiniZinc.Parser.csproj" />
+    <Project Path="src/MiniZinc.TestRunner/MiniZinc.TestRunner.csproj" />
     <Project Path="src/MiniZinc.TestSpec/MiniZinc.TestSpec.csproj" />
     <Project Path="src/MiniZinc.Toolkit/MiniZinc.Toolkit.csproj" />
   </Folder>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MiniZinc.TestRunner</RootNamespace>
+    <Description>Converts and compares MiniZinc solutions for the integration-test harness.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MiniZinc.Parser\MiniZinc.Parser.csproj" />
+    <ProjectReference Include="..\MiniZinc.Client\MiniZinc.Client.csproj" />
+    <ProjectReference Include="..\MiniZinc.TestSpec\MiniZinc.TestSpec.csproj" />
+  </ItemGroup>
+
+</Project>
